@@ -71,7 +71,7 @@
 			<argument index="0" name="animation" type="Animation">
 			</argument>
 			<description>
-				Returns the name of [code]animation[/code] or empty string if not found.
+				Returns the name of [code]animation[/code] or an empty string if not found.
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
@@ -112,6 +112,7 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns a list of the animation names that are currently queued to play.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
@@ -284,6 +285,7 @@
 		</signal>
 		<signal name="caches_cleared">
 			<description>
+				Notifies when the caches have been cleared, either automatically, or manually via [method clear_caches].
 			</description>
 		</signal>
 	</signals>

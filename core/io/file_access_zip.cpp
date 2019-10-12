@@ -117,7 +117,7 @@ static void godot_free(voidpf opaque, voidpf address) {
 
 void ZipArchive::close_handle(unzFile p_file) const {
 
-	ERR_FAIL_COND(!p_file);
+	ERR_FAIL_COND_MSG(!p_file, "Cannot close a file if none is open.");
 	FileAccess *f = (FileAccess *)unzGetOpaque(p_file);
 	unzCloseCurrentFile(p_file);
 	unzClose(p_file);
@@ -126,11 +126,11 @@ void ZipArchive::close_handle(unzFile p_file) const {
 
 unzFile ZipArchive::get_file_handle(String p_file) const {
 
-	ERR_FAIL_COND_V(!file_exists(p_file), NULL);
+	ERR_FAIL_COND_V_MSG(!file_exists(p_file), NULL, "File '" + p_file + " doesn't exist.");
 	File file = files[p_file];
 
 	FileAccess *f = FileAccess::open(packages[file.package].filename, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V_MSG(!f, NULL, "Cannot open file '" + packages[file.package].filename + "'.");
 
 	zlib_filefunc_def io;
 	zeromem(&io, sizeof(io));
@@ -160,7 +160,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path) {
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
@@ -194,7 +194,7 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 	packages.push_back(pkg);
 	int pkg_num = packages.size() - 1;
 
-	for (unsigned int i = 0; i < gi.number_entry; i++) {
+	for (uint64_t i = 0; i < gi.number_entry; i++) {
 
 		char filename_inzip[256];
 
@@ -210,7 +210,7 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this);
+		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files);
 		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
 
 		if ((i + 1) < gi.number_entry) {

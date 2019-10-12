@@ -61,10 +61,6 @@ uniform ivec2 skeleton_texture_size;
 
 #endif
 
-uniform highp mat4 skeleton_transform;
-uniform highp mat4 skeleton_transform_inverse;
-uniform bool skeleton_in_world_coords;
-
 #endif
 
 #ifdef USE_INSTANCING
@@ -410,12 +406,7 @@ void main() {
 
 #endif
 
-	if (skeleton_in_world_coords) {
-		bone_transform = skeleton_transform * (bone_transform * skeleton_transform_inverse);
-		world_matrix = bone_transform * world_matrix;
-	} else {
-		world_matrix = world_matrix * bone_transform;
-	}
+	world_matrix = world_matrix * bone_transform;
 
 #endif
 

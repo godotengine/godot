@@ -31,6 +31,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "core/error_macros.h"
 #include "core/safe_refcount.h"
 
 #include <stddef.h>

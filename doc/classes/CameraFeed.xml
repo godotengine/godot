@@ -14,28 +14,30 @@
 			<return type="int">
 			</return>
 			<description>
-				Gets the unique ID for this feed.
+				Returns the unique ID for this feed.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Gets the camera's name.
+				Returns the camera's name.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="int" enum="CameraFeed.FeedPosition">
 			</return>
 			<description>
-				Position of camera on the device.
+				Returns the position of camera on the device.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
+			If [code]true[/code], the feed is active.
 		</member>
 		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D( 1, 0, 0, -1, 0, 1 )">
+			The transform applied to the camera's image.
 		</member>
 	</members>
 	<constants>

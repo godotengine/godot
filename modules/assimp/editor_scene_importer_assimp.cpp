@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_assimp.h"
+
 #include "core/bind/core_bind.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_settings.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor_settings.h"
 #include "import_utils.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
@@ -529,7 +530,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 }
 
 //
-// Mesh Generation from indicies ? why do we need so much mesh code
+// Mesh Generation from indices ? why do we need so much mesh code
 // [debt needs looked into]
 Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		ImportState &state,
@@ -540,6 +541,25 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
 	bool has_uvs = false;
+
+	Map<String, uint32_t> morph_mesh_string_lookup;
+
+	for (int i = 0; i < p_surface_indices.size(); i++) {
+		const unsigned int mesh_idx = p_surface_indices[0];
+		const aiMesh *ai_mesh = state.assimp_scene->mMeshes[mesh_idx];
+		for (size_t j = 0; j < ai_mesh->mNumAnimMeshes; j++) {
+
+			String ai_anim_mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mAnimMeshes[j]->mName);
+			if (!morph_mesh_string_lookup.has(ai_anim_mesh_name)) {
+				morph_mesh_string_lookup.insert(ai_anim_mesh_name, j);
+				mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+				if (ai_anim_mesh_name.empty()) {
+					ai_anim_mesh_name = String("morph_") + itos(j);
+				}
+				mesh->add_blend_shape(ai_anim_mesh_name);
+			}
+		}
+	}
 
 	//
 	// Process Vertex Weights
@@ -680,6 +700,25 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		mat->set_cull_mode(SpatialMaterial::CULL_BACK);
 
 		// Now process materials
+		aiTextureType base_color = aiTextureType_BASE_COLOR;
+		{
+			String filename, path;
+			AssimpImageData image_data;
+
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, base_color, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+
+				// anything transparent must be culled
+				if (image_data.raw_image->detect_alpha() != Image::ALPHA_NONE) {
+					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+					mat->set_cull_mode(SpatialMaterial::CULL_DISABLED); // since you can see both sides in transparent mode
+				}
+
+				mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, image_data.texture);
+			}
+		}
+
 		aiTextureType tex_diffuse = aiTextureType_DIFFUSE;
 		{
 			String filename, path;
@@ -731,6 +770,60 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			}
 		}
 
+		aiTextureType tex_normal_camera = aiTextureType_NORMAL_CAMERA;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_normal_camera, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_emission_color = aiTextureType_EMISSION_COLOR;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_emission_color, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_metalness = aiTextureType_METALNESS;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_metalness, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_roughness = aiTextureType_DIFFUSE_ROUGHNESS;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_roughness, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, image_data.texture);
+			}
+		}
+
 		aiTextureType tex_emissive = aiTextureType_EMISSIVE;
 		{
 			String filename = "";
@@ -772,16 +865,17 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			}
 		}
 
-		aiTextureType tex_roughness = aiTextureType_SHININESS;
+		aiTextureType tex_ao_map = aiTextureType_AMBIENT_OCCLUSION;
 		{
 			String filename, path;
 			Ref<ImageTexture> texture;
 			AssimpImageData image_data;
 
 			// Process texture normal map
-			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_roughness, filename, path, image_data)) {
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_ao_map, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, image_data.texture);
+				mat->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, image_data.texture);
 			}
 		}
 
@@ -789,16 +883,15 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		Array morphs;
 		morphs.resize(ai_mesh->mNumAnimMeshes);
 		Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
-		Map<uint32_t, String> morph_mesh_idx_names;
+
 		for (size_t j = 0; j < ai_mesh->mNumAnimMeshes; j++) {
 
 			String ai_anim_mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mAnimMeshes[j]->mName);
-			mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+
 			if (ai_anim_mesh_name.empty()) {
 				ai_anim_mesh_name = String("morph_") + itos(j);
 			}
-			mesh->add_blend_shape(ai_anim_mesh_name);
-			morph_mesh_idx_names.insert(j, ai_anim_mesh_name);
+
 			Array array_copy;
 			array_copy.resize(VisualServer::ARRAY_MAX);
 
@@ -1188,7 +1281,6 @@ void EditorSceneImporterAssimp::create_bone(ImportState &state, RecursiveState &
 	// this transform is a bone
 	recursive_state.skeleton->add_bone(recursive_state.node_name);
 
-	ERR_FAIL_COND(recursive_state.skeleton == NULL); // serious bug we must now exit.
 	//ERR_FAIL_COND(recursive_state.skeleton->get_name() == "");
 	print_verbose("Bone added to lookup: " + AssimpUtils::get_assimp_string(recursive_state.bone->mName));
 	print_verbose("Skeleton attached to: " + recursive_state.skeleton->get_name());

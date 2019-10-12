@@ -88,7 +88,7 @@ float BakedLightmapData::get_energy() const {
 
 void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance) {
 
-	ERR_FAIL_COND(p_lightmap.is_null());
+	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
 	User user;
 	user.path = p_path;
 	user.lightmap = p_lightmap;
@@ -215,6 +215,7 @@ float BakedLightmap::get_capture_cell_size() const {
 void BakedLightmap::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
+	_change_notify("bake_extents");
 }
 
 Vector3 BakedLightmap::get_extents() const {
@@ -359,7 +360,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		//check for valid save path
 		DirAccessRef d = DirAccess::open(save_path);
 		if (!d) {
-			ERR_PRINTS("Invalid Save Path: " + save_path);
+			ERR_PRINTS("Invalid Save Path '" + save_path + "'.");
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}
 	}

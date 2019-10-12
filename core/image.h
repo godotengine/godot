@@ -356,7 +356,7 @@ public:
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {
-		ERR_FAIL_COND(p_image.is_null());
+		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;

@@ -5,11 +5,12 @@
 # Scott Starkey <yekrats@gmail.com>, 2019.
 # AlexHoratio <yukithetupper@gmail.com>, 2019.
 # Teashrock <kajitsu22@gmail.com>, 2019.
+# Brandon Dyer <brandondyer64@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-08-29 13:34+0000\n"
-"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
+"PO-Revision-Date: 2019-09-15 20:01+0000\n"
+"Last-Translator: Brandon Dyer <brandondyer64@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
@@ -57,9 +58,37 @@ msgstr "Malvalidaj argumentoj por konstrui '%s'"
 msgid "On call to '%s':"
 msgstr "En voko al '%s':"
 
+#: core/ustring.cpp
+msgid "B"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "KiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "MiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "GiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "TiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "PiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "EiB"
+msgstr ""
+
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Libera"
+msgstr "Senkosta"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -475,6 +504,10 @@ msgid "Select None"
 msgstr "Elektaro nur"
 
 #: editor/animation_track_editor.cpp
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Nur vidigi vojetojn el elektis nodojn en arbo."
 
@@ -734,7 +767,7 @@ msgstr "Konektu al skripto:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
-msgstr ""
+msgstr "De Signalo:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
@@ -777,6 +810,7 @@ msgstr "Diferita"
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Prokrastas la signalon, memoras ĝin en atendovico kaj nur pafas atende."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -797,16 +831,17 @@ msgstr "Ne povas konekti signalo"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Fermiĝu"
+msgstr "Fermiĝi"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr "Konektu"
+msgstr "Konekti"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
@@ -814,24 +849,24 @@ msgstr "Signalo:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Konektu '%s' al '%s'"
+msgstr "Konekti '%s' al '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Malkonektu '%s' de '%s'"
+msgstr "Malkonekti '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "Malkonektu ĉiuj de signalo: '%s'"
+msgstr "Malkonekti ĉiuj de signalo: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Konekti..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Malkonektu"
+msgstr "Malkonekti"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
@@ -839,7 +874,7 @@ msgstr "Konektu la signalo al metodo"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
-msgstr ""
+msgstr "Redakti Konekton:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -855,11 +890,11 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr "Malkonektu ĉiuj"
+msgstr "Malkonektigi ĉiun"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr "Redaktu..."
+msgstr "Redakti..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
@@ -898,7 +933,8 @@ msgstr "Serĉo:"
 msgid "Matches:"
 msgstr "Matĉoj:"
 
-#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -937,7 +973,7 @@ msgstr "Rimedo"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr "Pado"
+msgstr "Vojo"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -1198,7 +1234,7 @@ msgid "Delete Bus Effect"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio Bus, Drag and Drop to rearrange."
+msgid "Drag & drop to rearrange."
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
@@ -1389,6 +1425,7 @@ msgid "Add AutoLoad"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr ""
@@ -1608,6 +1645,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr ""
 
@@ -1678,6 +1716,7 @@ msgid "New Folder..."
 msgstr ""
 
 #: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -1835,15 +1874,12 @@ msgid "Inherited by:"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Brief Description:"
-msgstr ""
+#, fuzzy
+msgid "Brief Description"
+msgstr "Priskribo:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Properties:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1851,27 +1887,11 @@ msgid "Methods"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Methods:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Theme Properties"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Theme Properties:"
-msgstr ""
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Signals:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Enumerations:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1883,19 +1903,11 @@ msgid "Constants"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Constants:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Class Description"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Class Description:"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Online Tutorials:"
+msgid "Online Tutorials"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1910,10 +1922,6 @@ msgid "Property Descriptions"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Property Descriptions:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -1921,10 +1929,6 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Method Descriptions:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1994,8 +1998,8 @@ msgstr ""
 msgid "Copy Selection"
 msgstr ""
 
-#: editor/editor_log.cpp editor/editor_profiler.cpp
-#: editor/editor_properties.cpp
+#: editor/editor_log.cpp editor/editor_network_profiler.cpp
+#: editor/editor_profiler.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
@@ -2006,6 +2010,48 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: editor/editor_profiler.cpp
+msgid "Stop"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
+#: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
+msgid "Start"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "%s/s"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Down"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Up"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+msgid "Node"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RSET"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RSET"
 msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
@@ -2548,6 +2594,18 @@ msgstr ""
 msgid "Project Settings..."
 msgstr ""
 
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Set Up Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Shut Down Version Control"
+msgstr ""
+
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Export..."
@@ -2748,10 +2806,6 @@ msgstr ""
 msgid "Stop the scene."
 msgstr ""
 
-#: editor/editor_node.cpp editor/editor_profiler.cpp
-msgid "Stop"
-msgstr ""
-
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
 msgstr ""
@@ -2803,10 +2857,6 @@ msgid "Inspector"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Node"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
 msgstr ""
 
@@ -2828,15 +2878,21 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"This will install the Android project for custom builds.\n"
-"Note that, in order to use it, it needs to be enabled per export preset."
+"This will set up your project for custom Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make custom builds instead of using pre-built APKs, "
+"the \"Use Custom Build\" option should be enabled in the Android export "
+"preset."
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Android build template is already installed and it won't be overwritten.\n"
-"Remove the \"build\" directory manually before attempting this operation "
-"again."
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2899,6 +2955,10 @@ msgstr ""
 msgid "Open the previous Editor"
 msgstr ""
 
+#: editor/editor_path.cpp
+msgid "No sub-resources found."
+msgstr ""
+
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
 msgstr ""
@@ -2906,6 +2966,11 @@ msgstr ""
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
 msgstr ""
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Main Script:"
+msgstr "Konektu al skripto:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -2934,11 +2999,6 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
-msgstr ""
-
-#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
-#: editor/rename_dialog.cpp
-msgid "Start"
 msgstr ""
 
 #: editor/editor_profiler.cpp
@@ -3717,8 +3777,8 @@ msgstr ""
 msgid "Import As:"
 msgstr ""
 
-#: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
+#: editor/import_dock.cpp
+msgid "Preset"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4144,6 +4204,7 @@ msgid "Change Animation Name:"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
 msgstr ""
 
@@ -4703,10 +4764,6 @@ msgid "Sort:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse sorting."
-msgstr ""
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr ""
@@ -4968,6 +5025,10 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Ruler Mode"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6020,7 +6081,7 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr ""
 
@@ -6220,11 +6281,11 @@ msgid "Toggle Scripts Panel"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Over"
+msgid "Step Into"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Into"
+msgid "Step Over"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -6304,7 +6365,7 @@ msgstr ""
 msgid "Connections to method:"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 msgid "Source"
 msgstr ""
 
@@ -7072,6 +7133,10 @@ msgid "(empty)"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Move Frame"
+msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
 msgstr ""
 
@@ -7386,6 +7451,14 @@ msgid "Enable Priority"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Filter tiles"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Give a TileSet resource to this TileMap to use its tiles."
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr ""
 
@@ -7513,6 +7586,11 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7668,6 +7746,105 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No VCS addons are available."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+msgid "Error"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No files added to stage"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "VCS Addon is not initialized"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control System"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Initialize"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Staging area"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect new changes"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Changes"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Modified"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Renamed"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Deleted"
+msgstr "Forigi Ŝlosilo(j)n"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Typechange"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage Selected"
+msgstr "Skali Elektaron"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage All"
+msgstr "Elektaro ĉiuj"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Add a commit message"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "Ŝanĝu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Status"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "View file diffs before committing them to the latest version"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No file diff is active"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect changes in file diff"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7900,6 +8077,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9093,6 +9275,10 @@ msgid "Settings saved OK."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+msgid "Moved Input Action Event"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Override for Feature"
 msgstr ""
 
@@ -9226,6 +9412,10 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
+msgstr ""
+
+#: editor/property_editor.cpp
+msgid "Preset..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -9392,10 +9582,6 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: editor/rename_dialog.cpp
-msgid "Error"
-msgstr ""
-
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
 msgstr ""
@@ -9451,6 +9637,10 @@ msgid "Instance Scene(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Replace with Branch Scene"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr ""
 
@@ -9491,8 +9681,22 @@ msgid "Make node as Root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)?"
+#, fuzzy
+msgid "Delete %d nodes?"
+msgstr "Forigi Ŝlosilo(j)n"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete the root node \"%s\"?"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\" and its children?"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete node \"%s\"?"
+msgstr "Forigi Ŝlosilo(j)n"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -9869,11 +10073,38 @@ msgid "Bytes:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Stack Trace"
+#, fuzzy
+msgid "Warning:"
+msgstr "Avertoj"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Error:"
+msgstr "Spegulo"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Error"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Pick one or more items from the list to display the graph."
+msgid "C++ Error:"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Source:"
+msgstr "Rimedo"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source:"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Stack Trace"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -9881,11 +10112,15 @@ msgid "Errors"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Child Process Connected"
+msgid "Child process connected."
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Skip Breakpoints"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -9905,6 +10140,10 @@ msgid "Profiler"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+msgid "Network Profiler"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr ""
 
@@ -9914,6 +10153,10 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -10113,15 +10356,15 @@ msgid "Library"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Status"
-msgstr ""
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
+msgstr ""
+
+#: modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -10276,6 +10519,14 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Filter meshes"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -10408,6 +10659,10 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new variable."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Signals:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10568,6 +10823,10 @@ msgid "Editing Signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Make Tool:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
 msgstr ""
 
@@ -10715,7 +10974,8 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
-"Android project is not installed for compiling. Install from Editor menu."
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp

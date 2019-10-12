@@ -82,6 +82,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #define _DEPTH_COMPONENT24_OES 0x81A6
 
 #ifndef GLES_OVER_GL
+#define glClearDepth glClearDepthf
+
 // enable extensions manually for android and ios
 #include <dlfcn.h> // needed to load extensions
 
@@ -1480,8 +1482,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	}
 
 	Error err = shaders.compiler.compile(p_shader->mode, p_shader->code, actions, p_shader->path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		return;
+	}
 
 	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.custom_defines);
 
@@ -2432,7 +2435,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	// from surface->data.
 
 	// if USE_SKELETON_SOFTWARE is active
-	if (!config.float_texture_supported) {
+	if (config.use_skeleton_software) {
 		// if this geometry is used specifically for skinning
 		if (p_format & (VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS))
 			surface->data = array;
@@ -3514,7 +3517,7 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->size = p_bones;
 	skeleton->use_2d = p_2d_skeleton;
 
-	if (config.float_texture_supported) {
+	if (!config.use_skeleton_software) {
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
@@ -3663,23 +3666,6 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageGLES2::skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {
-
-	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
-
-	ERR_FAIL_COND(skeleton->use_2d);
-
-	skeleton->world_transform = p_world_transform;
-	skeleton->use_world_transform = p_enable;
-	if (p_enable) {
-		skeleton->world_transform_inverse = skeleton->world_transform.affine_inverse();
-	}
-
-	if (!skeleton->update_list.in_list()) {
-		skeleton_update_list.add(&skeleton->update_list);
-	}
-}
-
 void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);
@@ -3699,7 +3685,7 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 
 void RasterizerStorageGLES2::update_dirty_skeletons() {
 
-	if (!config.float_texture_supported)
+	if (config.use_skeleton_software)
 		return;
 
 	glActiveTexture(GL_TEXTURE0);
@@ -4603,6 +4589,9 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		color_format = GL_RGB;
 	}
 
+	rt->used_dof_blur_near = false;
+	rt->mip_maps_allocated = false;
+
 	{
 
 		/* Front FBO */
@@ -4797,6 +4786,126 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		}
 	}
 
+	// Allocate mipmap chains for post_process effects
+	if (!rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D] && rt->width >= 2 && rt->height >= 2) {
+
+		for (int i = 0; i < 2; i++) {
+
+			ERR_FAIL_COND(rt->mip_maps[i].sizes.size());
+			int w = rt->width;
+			int h = rt->height;
+
+			if (i > 0) {
+				w >>= 1;
+				h >>= 1;
+			}
+
+			int level = 0;
+			int fb_w = w;
+			int fb_h = h;
+
+			while (true) {
+
+				RenderTarget::MipMaps::Size mm;
+				mm.width = w;
+				mm.height = h;
+				rt->mip_maps[i].sizes.push_back(mm);
+
+				w >>= 1;
+				h >>= 1;
+
+				if (w < 2 || h < 2)
+					break;
+
+				level++;
+			}
+
+			GLsizei width = fb_w;
+			GLsizei height = fb_h;
+
+			if (config.render_to_mipmap_supported) {
+
+				glGenTextures(1, &rt->mip_maps[i].color);
+				glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].color);
+
+				for (int l = 0; l < level + 1; l++) {
+					glTexImage2D(GL_TEXTURE_2D, l, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					width = MAX(1, (width / 2));
+					height = MAX(1, (height / 2));
+				}
+#ifdef GLES_OVER_GL
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+#endif
+			} else {
+
+				// Can't render to specific levels of a mipmap in ES 2.0 or Webgl so create a texture for each level
+				for (int l = 0; l < level + 1; l++) {
+					glGenTextures(1, &rt->mip_maps[i].sizes.write[l].color);
+					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[l].color);
+					glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, width, height, 0, color_format, color_type, NULL);
+					width = MAX(1, (width / 2));
+					height = MAX(1, (height / 2));
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				}
+			}
+
+			glDisable(GL_SCISSOR_TEST);
+			glColorMask(1, 1, 1, 1);
+			glDepthMask(GL_TRUE);
+
+			for (int j = 0; j < rt->mip_maps[i].sizes.size(); j++) {
+
+				RenderTarget::MipMaps::Size &mm = rt->mip_maps[i].sizes.write[j];
+
+				glGenFramebuffers(1, &mm.fbo);
+				glBindFramebuffer(GL_FRAMEBUFFER, mm.fbo);
+
+				if (config.render_to_mipmap_supported) {
+
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->mip_maps[i].color, j);
+				} else {
+
+					glBindTexture(GL_TEXTURE_2D, rt->mip_maps[i].sizes[j].color);
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->mip_maps[i].sizes[j].color, 0);
+				}
+
+				bool used_depth = false;
+				if (j == 0 && i == 0) { //use always
+					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+					used_depth = true;
+				}
+
+				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				if (status != GL_FRAMEBUFFER_COMPLETE) {
+					WARN_PRINT_ONCE("Cannot allocate mipmaps for 3D post processing effects");
+					glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+					return;
+				}
+
+				glClearColor(1.0, 0.0, 1.0, 0.0);
+				glClear(GL_COLOR_BUFFER_BIT);
+				if (used_depth) {
+					glClearDepth(1.0);
+					glClear(GL_DEPTH_BUFFER_BIT);
+				}
+			}
+
+			rt->mip_maps[i].levels = level;
+
+			if (config.render_to_mipmap_supported) {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+		}
+		rt->mip_maps_allocated = true;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 }
 
@@ -4852,6 +4961,20 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 
 		glDeleteTextures(1, &rt->copy_screen_effect.color);
 		rt->copy_screen_effect.color = 0;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (rt->mip_maps[i].sizes.size()) {
+			for (int j = 0; j < rt->mip_maps[i].sizes.size(); j++) {
+				glDeleteFramebuffers(1, &rt->mip_maps[i].sizes[j].fbo);
+				glDeleteTextures(1, &rt->mip_maps[i].sizes[j].color);
+			}
+
+			glDeleteTextures(1, &rt->mip_maps[i].color);
+			rt->mip_maps[i].sizes.clear();
+			rt->mip_maps[i].levels = 0;
+			rt->mip_maps[i].color = 0;
+		}
 	}
 
 	if (rt->multisample_active) {
@@ -5634,6 +5757,14 @@ void RasterizerStorageGLES2::initialize() {
 	config.multisample_supported = config.extensions.has("GL_EXT_framebuffer_multisample") || config.extensions.has("GL_EXT_multisampled_render_to_texture") || config.extensions.has("GL_APPLE_framebuffer_multisample");
 
 #ifdef GLES_OVER_GL
+	//TODO: causes huge problems with desktop video drivers. Making false for now, needs to be true to render SCREEN_TEXTURE mipmaps
+	config.render_to_mipmap_supported = false;
+#else
+	//check if mipmaps can be used for SCREEN_TEXTURE and Glow on Mobile and web platforms
+	config.render_to_mipmap_supported = config.extensions.has("GL_OES_fbo_render_mipmap") && config.extensions.has("GL_EXT_texture_lod");
+#endif
+
+#ifdef GLES_OVER_GL
 	config.use_rgba_2d_shadows = false;
 	config.support_depth_texture = true;
 	config.use_rgba_3d_shadows = false;
@@ -5751,8 +5882,13 @@ void RasterizerStorageGLES2::initialize() {
 	frame.current_rt = NULL;
 	frame.clear_request = false;
 
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &config.max_vertex_texture_image_units);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
+
+	// the use skeleton software path should be used if either float texture is not supported,
+	// OR max_vertex_texture_image_units is zero
+	config.use_skeleton_software = (config.float_texture_supported == false) || (config.max_vertex_texture_image_units == 0);
 
 	shaders.copy.init();
 	shaders.cubemap_filter.init();

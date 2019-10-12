@@ -105,11 +105,11 @@
 				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
 				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
-				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code].
+				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
 				Example of blocking mode and retrieving the shell output:
 				[codeblock]
 				var output = []
-				OS.execute("ls", ["-l", "/tmp"], true, output)
+				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
 				[/codeblock]
 				Example of non-blocking mode, running another instance of the project and storing its process ID:
 				[codeblock]
@@ -326,7 +326,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dots per inch density of the specified screen.
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 				On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
 				   ldpi - 120 dpi
@@ -344,7 +344,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the position of the specified screen by index. If no screen index is provided, the current screen will be used.
+				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
@@ -353,7 +353,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dimensions in pixels of the specified screen.
+				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_splash_tick_msec" qualifiers="const">
@@ -820,6 +820,7 @@
 			</argument>
 			<description>
 				Sets the window title to the specified string.
+				[b]Note:[/b] This should be used sporadically. Don't set this every frame, as that will negatively affect performance on some window managers.
 			</description>
 		</method>
 		<method name="shell_open">
@@ -828,9 +829,10 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
-				Requests the OS to open a resource with the most appropriate program. For example.
-					[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
-					[code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				Requests the OS to open a resource with the most appropriate program. For example:
+				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">

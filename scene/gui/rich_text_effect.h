@@ -64,6 +64,8 @@ public:
 	Dictionary environment;
 
 	CharFXTransform();
+	~CharFXTransform();
+
 	uint64_t get_relative_index() { return relative_index; }
 	void set_relative_index(uint64_t p_index) { relative_index = p_index; }
 	uint64_t get_absolute_index() { return absolute_index; }

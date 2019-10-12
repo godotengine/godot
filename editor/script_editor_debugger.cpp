@@ -423,16 +423,27 @@ void ScriptEditorDebugger::_scene_tree_request() {
 int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &nodes, int current_index) {
 	String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
 	String item_text = nodes[current_index + 1];
+	String item_type = nodes[current_index + 2];
 	bool keep = filter.is_subsequence_ofi(item_text);
 
 	TreeItem *item = inspect_scene_tree->create_item(parent);
 	item->set_text(0, item_text);
+	item->set_tooltip(0, TTR("Type:") + " " + item_type);
 	ObjectID id = ObjectID(nodes[current_index + 3]);
 	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
 	if (icon.is_valid()) {
 		item->set_icon(0, icon);
 	}
 	item->set_metadata(0, id);
+
+	if (id == inspected_object_id) {
+		TreeItem *cti = item->get_parent();
+		while (cti) {
+			cti->set_collapsed(false);
+			cti = cti->get_parent();
+		}
+		item->select(0);
+	}
 
 	// Set current item as collapsed if necessary
 	if (parent) {
@@ -717,6 +728,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			}
 
 			variables->add_property("Members/" + n, v, h, hs);
+
+			if (n == "self") {
+				_scene_tree_property_select_object(v);
+			}
 		}
 
 		ofs += mcount * 2;
@@ -795,60 +810,102 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "error") {
 
+		// Should have at least two elements, error array and stack items count.
+		ERR_FAIL_COND_MSG(p_data.size() < 2, "Malformed error message from script debugger.");
+
+		// Error or warning data.
 		Array err = p_data[0];
+		ERR_FAIL_COND_MSG(err.size() < 10, "Malformed error message from script debugger.");
 
-		Array vals;
-		vals.push_back(err[0]);
-		vals.push_back(err[1]);
-		vals.push_back(err[2]);
-		vals.push_back(err[3]);
-
-		bool warning = err[9];
+		// Format time.
+		Array time_vals;
+		time_vals.push_back(err[0]);
+		time_vals.push_back(err[1]);
+		time_vals.push_back(err[2]);
+		time_vals.push_back(err[3]);
 		bool e;
-		String time = String("%d:%02d:%02d:%04d").sprintf(vals, &e);
-		String txt = err[8].is_zero() ? String(err[7]) : String(err[8]);
+		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
 
+		// Rest of the error data.
+		String method = err[4];
+		String source_file = err[5];
+		String source_line = err[6];
+		String error_cond = err[7];
+		String error_msg = err[8];
+		bool is_warning = err[9];
+		bool has_method = !method.empty();
+		bool has_error_msg = !error_msg.empty();
+		bool source_is_project_file = source_file.begins_with("res://");
+
+		// Metadata to highlight error line in scripts.
+		Array source_meta;
+		source_meta.push_back(source_file);
+		source_meta.push_back(source_line);
+
+		// Create error tree to display above error or warning details.
 		TreeItem *r = error_tree->get_root();
 		if (!r) {
 			r = error_tree->create_item();
 		}
 
+		// Also provide the relevant details as tooltip to quickly check without
+		// uncollapsing the tree.
+		String tooltip = is_warning ? TTR("Warning:") : TTR("Error:");
+
 		TreeItem *error = error_tree->create_item(r);
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_icon(warning ? "Warning" : "Error", "EditorIcons"));
+		error->set_icon(0, get_icon(is_warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
-		error->set_text(1, txt);
+		String error_title;
+		// Include method name, when given, in error title.
+		if (has_method)
+			error_title += method + ": ";
+		// If we have a (custom) error message, use it as title, and add a C++ Error
+		// item with the original error condition.
+		error_title += error_msg.empty() ? error_cond : error_msg;
+		error->set_text(1, error_title);
+		tooltip += " " + error_title + "\n";
 
-		String source(err[5]);
-		bool source_is_project_file = source.begins_with("res://");
-		if (source_is_project_file)
-			txt = source.get_file() + ":" + String(err[6]);
-		else
-			txt = source + ":" + String(err[6]);
-
-		String method = err[4];
-		if (method.length() > 0)
-			txt += " @ " + method + "()";
-
-		TreeItem *c_info = error_tree->create_item(error);
-		c_info->set_text(0, "<" + TTR(source_is_project_file ? "Source" : "C Source") + ">");
-		c_info->set_text(1, txt);
-		c_info->set_text_align(0, TreeItem::ALIGN_LEFT);
-
-		if (source_is_project_file) {
-			Array meta;
-			meta.push_back(source);
-			meta.push_back(err[6]);
-			error->set_metadata(0, meta);
-			c_info->set_metadata(0, meta);
+		if (has_error_msg) {
+			// Add item for C++ error condition.
+			TreeItem *cpp_cond = error_tree->create_item(error);
+			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
+			cpp_cond->set_text(1, error_cond);
+			cpp_cond->set_text_align(0, TreeItem::ALIGN_LEFT);
+			tooltip += TTR("C++ Error:") + " " + error_cond + "\n";
+			if (source_is_project_file)
+				cpp_cond->set_metadata(0, source_meta);
 		}
 
-		int scc = p_data[1];
+		// Source of the error.
+		String source_txt = (source_is_project_file ? source_file.get_file() : source_file) + ":" + source_line;
+		if (has_method)
+			source_txt += " @ " + method + "()";
 
-		for (int i = 0; i < scc; i += 3) {
+		TreeItem *cpp_source = error_tree->create_item(error);
+		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
+		cpp_source->set_text(1, source_txt);
+		cpp_source->set_text_align(0, TreeItem::ALIGN_LEFT);
+		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
+
+		// Set metadata to highlight error line in scripts.
+		if (source_is_project_file) {
+			error->set_metadata(0, source_meta);
+			cpp_source->set_metadata(0, source_meta);
+		}
+
+		error->set_tooltip(0, tooltip);
+		error->set_tooltip(1, tooltip);
+
+		// Format stack trace.
+		// stack_items_count is the number of elements to parse, with 3 items per frame
+		// of the stack trace (script, method, line).
+		int stack_items_count = p_data[1];
+
+		for (int i = 0; i < stack_items_count; i += 3) {
 			String script = p_data[2 + i];
 			String method2 = p_data[3 + i];
 			int line = p_data[4 + i];
@@ -867,7 +924,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_trace->set_text(1, script.get_file() + ":" + itos(line) + " @ " + method2 + "()");
 		}
 
-		if (warning)
+		if (is_warning)
 			warning_count++;
 		else
 			error_count++;
@@ -1042,17 +1099,15 @@ void ScriptEditorDebugger::_performance_draw() {
 			which.push_back(i);
 	}
 
-	Ref<Font> graph_font = get_font("font", "TextEdit");
-
 	if (which.empty()) {
-		String text = TTR("Pick one or more items from the list to display the graph.");
-
-		perf_draw->draw_string(graph_font, Point2i(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
-
+		info_message->show();
 		return;
 	}
 
+	info_message->hide();
+
 	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+	Ref<Font> graph_font = get_font("font", "TextEdit");
 
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
@@ -1121,7 +1176,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			forward->set_icon(get_icon("Forward", "EditorIcons"));
 			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
-			//scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
 			le_set->connect("pressed", this, "_live_edit_set");
 			le_clear->connect("pressed", this, "_live_edit_clear");
 			error_tree->connect("item_selected", this, "_error_selected");
@@ -1193,7 +1247,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (connection.is_null())
 						break;
 
-					EditorNode::get_log()->add_message("** Debug Process Started **");
+					EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 
 					ppeer->set_stream_peer(connection);
 
@@ -1203,7 +1257,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
-					_set_reason_text(TTR("Child Process Connected"), MESSAGE_SUCCESS);
+					_set_reason_text(TTR("Child process connected."), MESSAGE_SUCCESS);
 					profiler->clear();
 
 					inspect_scene_tree->clear();
@@ -1391,7 +1445,7 @@ void ScriptEditorDebugger::stop() {
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	if (connection.is_valid()) {
-		EditorNode::get_log()->add_message("** Debug Process Stopped **");
+		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
 		connection.unref();
 
 		reason->set_text("");
@@ -2142,11 +2196,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		step = memnew(ToolButton);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
+		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect("pressed", this, "debug_step");
 
 		next = memnew(ToolButton);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
+		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect("pressed", this, "debug_next");
 
 		hbc->add_child(memnew(VSeparator));
@@ -2154,11 +2210,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		dobreak = memnew(ToolButton);
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
+		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect("pressed", this, "debug_break");
 
 		docontinue = memnew(ToolButton);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
+		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect("pressed", this, "debug_continue");
 
 		back = memnew(Button);
@@ -2299,11 +2357,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_monitors->set_column_title(0, TTR("Monitor"));
 		perf_monitors->set_column_title(1, TTR("Value"));
 		perf_monitors->set_column_titles_visible(true);
-		hsp->add_child(perf_monitors);
 		perf_monitors->connect("item_edited", this, "_performance_select");
+		hsp->add_child(perf_monitors);
+
 		perf_draw = memnew(Control);
+		perf_draw->set_clip_contents(true);
 		perf_draw->connect("draw", this, "_performance_draw");
 		hsp->add_child(perf_draw);
+
 		hsp->set_name(TTR("Monitors"));
 		hsp->set_split_offset(340 * EDSCALE);
 		tabs->add_child(hsp);
@@ -2337,6 +2398,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 			perf_items.push_back(it);
 			perf_max.write[i] = 0;
 		}
+
+		info_message = memnew(Label);
+		info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
+		info_message->set_valign(Label::VALIGN_CENTER);
+		info_message->set_align(Label::ALIGN_CENTER);
+		info_message->set_autowrap(true);
+		info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+		perf_draw->add_child(info_message);
 	}
 
 	{ //vmem inspect
@@ -2348,7 +2417,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_hb->add_child(memnew(Label(TTR("Total:") + " ")));
 		vmem_total = memnew(LineEdit);
 		vmem_total->set_editable(false);
-		vmem_total->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
+		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);

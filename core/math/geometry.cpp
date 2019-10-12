@@ -241,10 +241,7 @@ PoolVector<PoolVector<Face3> > Geometry::separate_objects(PoolVector<Face3> p_ar
 
 	bool error = _connect_faces(_fcptr, len, -1);
 
-	if (error) {
-
-		ERR_FAIL_COND_V(error, PoolVector<PoolVector<Face3> >()); // Invalid geometry.
-	}
+	ERR_FAIL_COND_V_MSG(error, PoolVector<PoolVector<Face3> >(), "Invalid geometry.");
 
 	// Group connected faces in separate objects.
 
@@ -715,7 +712,7 @@ Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> po
 
 		decomp.write[idx].resize(tp.GetNumPoints());
 
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 			decomp.write[idx].write[i] = tp.GetPoint(i);
 		}
 

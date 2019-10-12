@@ -903,7 +903,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	}
 
 	Error err = cf->save(path);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save config file to '" + path + "'.");
 }
 
 bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags) {
@@ -2212,27 +2212,27 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDIT_UNDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't UNDO while mouse buttons are pressed.");
+				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
 
 				if (!editor_data.get_undo_redo().undo()) {
-					log->add_message("There is nothing to UNDO.");
+					log->add_message("Nothing to undo.", EditorLog::MSG_TYPE_EDITOR);
 				} else if (action != "") {
-					log->add_message("UNDO: " + action);
+					log->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
 		case EDIT_REDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't REDO while mouse buttons are pressed.");
+				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
-					log->add_message("There is nothing to REDO.");
+					log->add_message("Nothing to redo.", EditorLog::MSG_TYPE_EDITOR);
 				} else {
 					String action = editor_data.get_undo_redo().get_current_action_name();
-					log->add_message("REDO: " + action);
+					log->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
@@ -2364,6 +2364,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					custom_build_manage_templates->popup_centered_minsize();
 				}
 			}
+		} break;
+		case RUN_PROJECT_DATA_FOLDER: {
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
@@ -2519,7 +2522,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			bool was_visible = OS::get_singleton()->is_console_visible();
 			OS::get_singleton()->set_console_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", !was_visible);
+			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 
@@ -2571,8 +2574,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			save_all_scenes();
 			restart_editor();
 		} break;
-		default: {
-		}
 	}
 }
 
@@ -2597,16 +2598,13 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	img->flip_y();
 	viewport->set_clear_mode(Viewport::CLEAR_MODE_ALWAYS);
 	Error error = img->save_png(p_path);
-	ERR_FAIL_COND(error != OK);
+	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
 
 void EditorNode::_tool_menu_option(int p_idx) {
 	switch (tool_menu->get_item_id(p_idx)) {
 		case TOOLS_ORPHAN_RESOURCES: {
 			orphan_resources->show();
-		} break;
-		case RUN_PROJECT_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -3133,7 +3131,14 @@ void EditorNode::_clear_undo_history() {
 
 void EditorNode::set_current_scene(int p_idx) {
 
+	//Save the folding in case the scene gets reloaded.
+	if (editor_data.get_scene_path(p_idx) != "")
+		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
+
 	if (editor_data.check_and_update_scene(p_idx)) {
+		if (editor_data.get_scene_path(p_idx) != "")
+			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
+
 		call_deferred("_clear_undo_history");
 	}
 
@@ -3676,7 +3681,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 }
 
 Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
-	ERR_FAIL_COND_V(p_class.empty(), NULL);
+	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
 
 	if (gui_base->has_icon(p_class, "EditorIcons")) {
 		return gui_base->get_icon(p_class, "EditorIcons");
@@ -4886,7 +4891,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	}
 
 	int max_rows = 6;
-	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); //Don't waste a row to say "1 more file" - list it instead.
+	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); // Don't waste a row to say "1 more file" - list it instead.
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	for (int i = 0; i < num_rows; i++) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
@@ -4900,6 +4905,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 			label->set_text(p_paths[i].get_file());
 			icon->set_texture(gui_base->get_icon("File", "EditorIcons"));
 		}
+		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		icon->set_size(Size2(16, 16));
 		hbox->add_child(icon);
 		hbox->add_child(label);

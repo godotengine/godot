@@ -250,22 +250,37 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 		return;
 	}
 
+	UndoRedo *undo_redo = editor->get_undo_redo();
+	undo_redo->create_action(TTR("Replace with Branch Scene"));
+
 	Node *parent = base->get_parent();
 	int pos = base->get_index();
-	parent->remove_child(base);
-	parent->add_child(instanced_scene);
-	parent->move_child(instanced_scene, pos);
-	instanced_scene->set_owner(edited_scene);
-	editor_selection->clear();
-	editor_selection->add_node(instanced_scene);
-	scene_tree->set_selected(instanced_scene);
+	undo_redo->add_do_method(parent, "remove_child", base);
+	undo_redo->add_undo_method(parent, "remove_child", instanced_scene);
+	undo_redo->add_do_method(parent, "add_child", instanced_scene);
+	undo_redo->add_undo_method(parent, "add_child", base);
+	undo_redo->add_do_method(parent, "move_child", instanced_scene, pos);
+	undo_redo->add_undo_method(parent, "move_child", base, pos);
 
-	// Delete the node as late as possible because before another one is selected
-	// an editor plugin could be referencing it to do something with it before
-	// switching to another (or to none); and since some steps of changing the
-	// editor state are deferred, the safest thing is to do this is as the last
-	// step of this function and also by enqueing instead of memdelete()-ing it here
-	base->queue_delete();
+	List<Node *> owned;
+	base->get_owned_by(base->get_owner(), &owned);
+	Array owners;
+	for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
+		owners.push_back(F->get());
+	}
+	undo_redo->add_do_method(instanced_scene, "set_owner", edited_scene);
+	undo_redo->add_undo_method(this, "_set_owners", edited_scene, owners);
+
+	undo_redo->add_do_method(editor_selection, "clear");
+	undo_redo->add_undo_method(editor_selection, "clear");
+	undo_redo->add_do_method(editor_selection, "add_node", instanced_scene);
+	undo_redo->add_undo_method(editor_selection, "add_node", base);
+	undo_redo->add_do_property(scene_tree, "set_selected", instanced_scene);
+	undo_redo->add_undo_property(scene_tree, "set_selected", base);
+
+	undo_redo->add_do_reference(instanced_scene);
+	undo_redo->add_undo_reference(base);
+	undo_redo->commit_action();
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
@@ -699,9 +714,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			editor_data->get_undo_redo().create_action(TTR("Make node as Root"));
 			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
-			editor_data->get_undo_redo().add_do_method(root->get_parent(), "remove_child", root);
-			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
+			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
 			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
 			editor_data->get_undo_redo().add_do_method(root, "set_filename", String());
 			editor_data->get_undo_redo().add_do_method(node, "set_owner", (Object *)NULL);
@@ -713,14 +727,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_undo_method(node, "remove_child", root);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
 			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
+			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "move_child", node, node->get_index());
 			editor_data->get_undo_redo().add_undo_method(root, "set_owner", (Object *)NULL);
 			editor_data->get_undo_redo().add_undo_method(node, "set_owner", root);
-
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
-			editor_data->get_undo_redo().add_undo_reference(root);
 			editor_data->get_undo_redo().commit_action();
 		} break;
 		case TOOL_MULTI_EDIT: {
@@ -759,8 +772,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				_delete_confirm();
 
 			} else {
-				if (remove_list.size() > 1) {
+				if (remove_list.size() >= 2) {
 					delete_dialog->set_text(vformat(TTR("Delete %d nodes?"), remove_list.size()));
+				} else if (remove_list.size() == 1 && remove_list[0] == editor_data->get_edited_scene_root()) {
+					delete_dialog->set_text(vformat(TTR("Delete the root node \"%s\"?"), remove_list[0]->get_name()));
+				} else if (remove_list.size() == 1 && remove_list[0]->get_filename() == "" && remove_list[0]->get_child_count() >= 1) {
+					// Display this message only for non-instanced scenes
+					delete_dialog->set_text(vformat(TTR("Delete node \"%s\" and its children?"), remove_list[0]->get_name()));
 				} else {
 					delete_dialog->set_text(vformat(TTR("Delete node \"%s\"?"), remove_list[0]->get_name()));
 				}
@@ -890,16 +908,22 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
+					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 					bool placeholder = node->get_scene_instance_load_placeholder();
+
+					// Fire confirmation dialog when children are editable.
+					if (editable && !placeholder) {
+						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+						placeholder_editable_instance_remove_dialog->popup_centered_minsize();
+						break;
+					}
+
 					placeholder = !placeholder;
-					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
-					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
+
 					if (placeholder)
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 
 					node->set_scene_instance_load_placeholder(placeholder);
-					menu->set_item_checked(editable_item_idx, false);
-					menu->set_item_checked(placeholder_item_idx, placeholder);
 					scene_tree->update_tree();
 				}
 			}
@@ -1504,7 +1528,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 		// When edited_scene inherits from another one the root Node will be the parent Scene,
 		// we don't want to consider that Node a foreign one otherwise we would not be able to
-		// delete it
+		// delete it.
 		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene == E->get()) {
 			continue;
 		}
@@ -1528,7 +1552,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	if (selection.empty())
-		return; //nothing to reparent
+		return; // Nothing to reparent.
 
 	Vector<Node *> nodes;
 
@@ -1544,18 +1568,32 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Node *new_parent = p_new_parent;
 	ERR_FAIL_COND(!new_parent);
 
+	if (p_nodes.size() == 0)
+		return; // Nothing to reparent.
+
+	p_nodes.sort_custom<Node::Comparator>(); //Makes result reliable.
+
+	bool no_change = true;
+	for (int ni = 0; ni < p_nodes.size(); ni++) {
+
+		if (p_nodes[ni] == p_new_parent)
+			return; // Attempt to reparent to itself.
+
+		if (p_nodes[ni]->get_parent() != p_new_parent || p_position_in_parent + ni != p_nodes[ni]->get_position_in_parent())
+			no_change = false;
+	}
+
+	if (no_change)
+		return; // Position and parent didn't change.
+
 	Node *validate = new_parent;
 	while (validate) {
 
-		ERR_FAIL_COND_MSG(p_nodes.find(validate) != -1, "Selection changed at some point.. can't reparent.");
+		ERR_FAIL_COND_MSG(p_nodes.find(validate) != -1, "Selection changed at some point. Can't reparent.");
 		validate = validate->get_parent();
 	}
-	//ok all valid
 
-	if (p_nodes.size() == 0)
-		return; //nothing to reparent
-
-	//sort by tree order, so re-adding is easy
+	// Sort by tree order, so re-adding is easy.
 	p_nodes.sort_custom<Node::Comparator>();
 
 	editor_data->get_undo_redo().create_action(TTR("Reparent Node"));
@@ -1567,7 +1605,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 
-		//no undo for now, sorry
+		// No undo implemented for this yet.
 		Node *node = p_nodes[ni];
 
 		fill_path_renames(node, new_parent, &path_renames);
@@ -1577,14 +1615,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		node->get_owned_by(node->get_owner(), &owned);
 		Array owners;
 		for (List<Node *>::Element *E = owned.front(); E; E = E->next()) {
-
 			owners.push_back(E->get());
 		}
 
-		if (new_parent == node->get_parent() && node->get_index() < p_position_in_parent + ni) {
-			//if child will generate a gap when moved, adjust
-			inc--;
-		}
+		if (new_parent == node->get_parent() && node->get_index() < p_position_in_parent + ni)
+			inc--; // If the child will generate a gap when moved, adjust.
 
 		editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
 		editor_data->get_undo_redo().add_do_method(new_parent, "add_child", node);
@@ -1596,17 +1631,17 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		String old_name = former_names[ni];
 		String new_name = new_parent->validate_child_name(node);
 
-		// name was modified, fix the path renames
+		// Name was modified, fix the path renames.
 		if (old_name.casecmp_to(new_name) != 0) {
 
-			// Fix the to name to have the new name
+			// Fix the to name to have the new name.
 			NodePath old_new_name = path_renames[ni].second;
 			NodePath new_path;
 
 			Vector<StringName> unfixed_new_names = old_new_name.get_names();
 			Vector<StringName> fixed_new_names;
 
-			// Get last name and replace with fixed new name
+			// Get last name and replace with fixed new name.
 			for (int a = 0; a < (unfixed_new_names.size() - 1); a++) {
 				fixed_new_names.push_back(unfixed_new_names[a]);
 			}
@@ -1640,8 +1675,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		inc++;
 	}
 
-	//add and move in a second step.. (so old order is preserved)
-
+	// Add and move in a second step (so old order is preserved).
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 
 		Node *node = p_nodes[ni];
@@ -1758,6 +1792,25 @@ void SceneTreeDock::_toggle_editable_children_from_selection() {
 
 	if (e) {
 		_toggle_editable_children(e->get());
+	}
+}
+
+void SceneTreeDock::_toggle_placeholder_from_selection() {
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *>::Element *e = selection.front();
+
+	if (e) {
+		Node *node = e->get();
+		if (node) {
+			_toggle_editable_children(node);
+
+			bool placeholder = node->get_scene_instance_load_placeholder();
+			placeholder = !placeholder;
+
+			node->set_scene_instance_load_placeholder(placeholder);
+			scene_tree->update_tree();
+		}
 	}
 }
 
@@ -2698,6 +2751,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_nodes_drag_begin"), &SceneTreeDock::_nodes_drag_begin);
 	ClassDB::bind_method(D_METHOD("_delete_confirm"), &SceneTreeDock::_delete_confirm);
 	ClassDB::bind_method(D_METHOD("_toggle_editable_children_from_selection"), &SceneTreeDock::_toggle_editable_children_from_selection);
+	ClassDB::bind_method(D_METHOD("_toggle_placeholder_from_selection"), &SceneTreeDock::_toggle_placeholder_from_selection);
 	ClassDB::bind_method(D_METHOD("_node_prerenamed"), &SceneTreeDock::_node_prerenamed);
 	ClassDB::bind_method(D_METHOD("_import_subscene"), &SceneTreeDock::_import_subscene);
 	ClassDB::bind_method(D_METHOD("_selection_changed"), &SceneTreeDock::_selection_changed);
@@ -2871,6 +2925,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	add_child(editable_instance_remove_dialog);
 	editable_instance_remove_dialog->connect("confirmed", this, "_toggle_editable_children_from_selection");
 
+	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
+	add_child(placeholder_editable_instance_remove_dialog);
+	placeholder_editable_instance_remove_dialog->connect("confirmed", this, "_toggle_placeholder_from_selection");
+
 	import_subscene_dialog = memnew(EditorSubScene);
 	add_child(import_subscene_dialog);
 	import_subscene_dialog->connect("subscene_selected", this, "_import_subscene");
@@ -2903,5 +2961,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	profile_allow_script_editing = true;
 
 	EDITOR_DEF("interface/editors/show_scene_tree_root_selection", true);
+	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
 	EDITOR_DEF("_use_favorites_root_selection", false);
 }

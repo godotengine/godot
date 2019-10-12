@@ -264,7 +264,9 @@ void EditorPropertyArray::update_property() {
 		edit->set_text(String("(Nil) ") + arrtype);
 		edit->set_pressed(false);
 		if (vbox) {
+			set_bottom_editor(NULL);
 			memdelete(vbox);
+			vbox = NULL;
 		}
 		return;
 	}
@@ -631,7 +633,9 @@ void EditorPropertyDictionary::update_property() {
 		edit->set_text("Dictionary (Nil)"); //This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (vbox) {
+			set_bottom_editor(NULL);
 			memdelete(vbox);
+			vbox = NULL;
 		}
 		return;
 	}

@@ -590,10 +590,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-					var min_angle = deg2rad(0.0)
-					var max_angle = deg2rad(90.0)
-					rotation = lerp_angle(min_angle, max_angle, elapsed)
-					elapsed += delta
+				    var min_angle = deg2rad(0.0)
+				    var max_angle = deg2rad(90.0)
+				    rotation = lerp_angle(min_angle, max_angle, elapsed)
+				    elapsed += delta
 				[/codeblock]
 			</description>
 		</method>
@@ -692,6 +692,14 @@
 				nearest_po2(4) # Returns 4
 				nearest_po2(5) # Returns 8
 				[/codeblock]
+			</description>
+		</method>
+		<method name="ord">
+			<return type="int">
+			</return>
+			<argument index="0" name="char" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="parse_json">

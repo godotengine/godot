@@ -464,9 +464,11 @@ void SpriteFramesEditor::_animation_select() {
 	if (updating)
 		return;
 
-	double value = anim_speed->get_line_edit()->get_text().to_double();
-	if (!Math::is_equal_approx(value, frames->get_animation_speed(edited_anim)))
-		_animation_fps_changed(value);
+	if (frames->has_animation(edited_anim)) {
+		double value = anim_speed->get_line_edit()->get_text().to_double();
+		if (!Math::is_equal_approx(value, frames->get_animation_speed(edited_anim)))
+			_animation_fps_changed(value);
+	}
 
 	TreeItem *selected = animations->get_selected();
 	ERR_FAIL_COND(!selected);
@@ -548,6 +550,7 @@ void SpriteFramesEditor::_animation_name_edited() {
 
 	undo_redo->commit_action();
 }
+
 void SpriteFramesEditor::_animation_add() {
 
 	String name = "New Anim";
@@ -578,12 +581,20 @@ void SpriteFramesEditor::_animation_add() {
 	undo_redo->commit_action();
 	animations->grab_focus();
 }
+
 void SpriteFramesEditor::_animation_remove() {
+
 	if (updating)
 		return;
 
 	if (!frames->has_animation(edited_anim))
 		return;
+
+	delete_dialog->set_text(TTR("Delete Animation?"));
+	delete_dialog->popup_centered_minsize();
+}
+
+void SpriteFramesEditor::_animation_remove_confirmed() {
 
 	undo_redo->create_action(TTR("Remove Animation"));
 	undo_redo->add_do_method(frames, "remove_animation", edited_anim);
@@ -597,6 +608,8 @@ void SpriteFramesEditor::_animation_remove() {
 	}
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
+
+	edited_anim = StringName();
 
 	undo_redo->commit_action();
 }
@@ -743,7 +756,9 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	if (frame.is_null())
 		return Variant();
 
-	return EditorNode::get_singleton()->drag_resource(frame, p_from);
+	Dictionary drag_data = EditorNode::get_singleton()->drag_resource(frame, p_from);
+	drag_data["frame"] = idx; // store the frame, incase we want to reorder frames inside 'drop_data_fw'
+	return drag_data;
 }
 
 bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -753,8 +768,9 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	if (!d.has("type"))
 		return false;
 
+	// reordering frames
 	if (d.has("from") && (Object *)(d["from"]) == tree)
-		return false;
+		return true;
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -806,13 +822,31 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Ref<Texture> texture = r;
 
 		if (texture.is_valid()) {
+			bool reorder = false;
+			if (d.has("from") && (Object *)(d["from"]) == tree)
+				reorder = true;
 
-			undo_redo->create_action(TTR("Add Frame"));
-			undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
-			undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
-			undo_redo->add_do_method(this, "_update_library");
-			undo_redo->add_undo_method(this, "_update_library");
-			undo_redo->commit_action();
+			if (reorder) { //drop is from reordering frames
+				int from_frame = -1;
+				if (d.has("frame"))
+					from_frame = d["frame"];
+
+				undo_redo->create_action(TTR("Move Frame"));
+				undo_redo->add_do_method(frames, "remove_frame", edited_anim, from_frame == -1 ? frames->get_frame_count(edited_anim) : from_frame);
+				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) - 1 : at_pos);
+				undo_redo->add_undo_method(frames, "add_frame", edited_anim, texture, from_frame);
+				undo_redo->add_do_method(this, "_update_library");
+				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->commit_action();
+			} else {
+				undo_redo->create_action(TTR("Add Frame"));
+				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
+				undo_redo->add_do_method(this, "_update_library");
+				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->commit_action();
+			}
 		}
 	}
 
@@ -840,6 +874,7 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_name_edited"), &SpriteFramesEditor::_animation_name_edited);
 	ClassDB::bind_method(D_METHOD("_animation_add"), &SpriteFramesEditor::_animation_add);
 	ClassDB::bind_method(D_METHOD("_animation_remove"), &SpriteFramesEditor::_animation_remove);
+	ClassDB::bind_method(D_METHOD("_animation_remove_confirmed"), &SpriteFramesEditor::_animation_remove_confirmed);
 	ClassDB::bind_method(D_METHOD("_animation_loop_changed"), &SpriteFramesEditor::_animation_loop_changed);
 	ClassDB::bind_method(D_METHOD("_animation_fps_changed"), &SpriteFramesEditor::_animation_fps_changed);
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
@@ -870,7 +905,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	new_anim = memnew(ToolButton);
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
-	new_anim->set_h_size_flags(SIZE_EXPAND_FILL);
 	new_anim->connect("pressed", this, "_animation_add");
 
 	remove_anim = memnew(ToolButton);
@@ -926,7 +960,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	paste->set_tooltip(TTR("Paste"));
 	hbc->add_child(paste);
 
-	hbc->add_spacer(false);
+	hbc->add_child(memnew(VSeparator));
 
 	empty = memnew(ToolButton);
 	empty->set_tooltip(TTR("Insert Empty (Before)"));
@@ -986,6 +1020,10 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	updating = false;
 
 	edited_anim = "default";
+
+	delete_dialog = memnew(ConfirmationDialog);
+	add_child(delete_dialog);
+	delete_dialog->connect("confirmed", this, "_animation_remove_confirmed");
 
 	split_sheet_dialog = memnew(ConfirmationDialog);
 	add_child(split_sheet_dialog);

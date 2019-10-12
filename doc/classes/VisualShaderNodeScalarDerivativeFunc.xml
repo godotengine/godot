@@ -9,6 +9,7 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, 0.0 ]" />
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeScalarDerivativeFunc.Function" default="0">
 		</member>
 	</members>

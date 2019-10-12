@@ -546,7 +546,7 @@ void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 }
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", editor, "_clear_selection");
+	connect("clear_selection", editor, "_clear_selection", varray(false));
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
@@ -920,13 +920,6 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 				float oldpos = animation->track_get_key_time(track, E->get());
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, oldpos, animation->track_get_key_value(track, E->get()), 1);
-			}
-
-			// 6-(undo) reinsert overlapped keys
-			for (List<AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
-
-				AnimMoveRestore &amr = E->get();
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, 1);
 			}
 
 			// 6-(undo) reinsert overlapped keys

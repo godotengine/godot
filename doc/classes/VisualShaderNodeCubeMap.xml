@@ -11,6 +11,7 @@
 	<members>
 		<member name="cube_map" type="CubeMap" setter="set_cube_map" getter="get_cube_map">
 		</member>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeCubeMap.TextureType" default="0">
 		</member>
 	</members>

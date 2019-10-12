@@ -223,6 +223,7 @@ public:
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
+	String repeat(int p_count) const;
 	String insert(int p_at_pos, const String &p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
@@ -321,7 +322,7 @@ public:
 	String path_to_file(const String &p_path) const;
 	String get_base_dir() const;
 	String get_file() const;
-	static String humanize_size(size_t p_size);
+	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;

@@ -43,25 +43,13 @@
 #include "utils/android_utils.h"
 #endif
 
+#include "mono_gd/gd_mono.h"
+
 namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
 	return "Tools";
-#else
-
-#ifdef DEBUG_ENABLED
-	return "Debug";
-#else
-	return "Release";
-#endif
-
-#endif
-}
-
-String _get_expected_api_build_config() {
-#ifdef TOOLS_ENABLED
-	return "Debug";
 #else
 
 #ifdef DEBUG_ENABLED
@@ -134,7 +122,7 @@ private:
 		res_data_dir = "res://.mono";
 		res_metadata_dir = res_data_dir.plus_file("metadata");
 		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
-		res_assemblies_dir = res_assemblies_base_dir.plus_file(_get_expected_api_build_config());
+		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
 		res_config_dir = res_data_dir.plus_file("etc").plus_file("mono");
 
 		// TODO use paths from csproj

@@ -103,8 +103,7 @@ private:
 		}
 	};
 
-	struct Item : public Object {
-
+	struct Item {
 		int index;
 		Item *parent;
 		ItemType type;
@@ -128,7 +127,6 @@ private:
 	};
 
 	struct ItemFrame : public Item {
-
 		int parent_line;
 		bool cell;
 		Vector<Line> lines;
@@ -144,70 +142,58 @@ private:
 	};
 
 	struct ItemText : public Item {
-
 		String text;
 		ItemText() { type = ITEM_TEXT; }
 	};
 
 	struct ItemImage : public Item {
-
 		Ref<Texture> image;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
 	struct ItemFont : public Item {
-
 		Ref<Font> font;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
 	struct ItemColor : public Item {
-
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
 	};
 
 	struct ItemUnderline : public Item {
-
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
 	struct ItemStrikethrough : public Item {
-
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
 	};
 
 	struct ItemMeta : public Item {
-
 		Variant meta;
 		ItemMeta() { type = ITEM_META; }
 	};
 
 	struct ItemAlign : public Item {
-
 		Align align;
 		ItemAlign() { type = ITEM_ALIGN; }
 	};
 
 	struct ItemIndent : public Item {
-
 		int level;
 		ItemIndent() { type = ITEM_INDENT; }
 	};
 
 	struct ItemList : public Item {
-
 		ListType list_type;
 		ItemList() { type = ITEM_LIST; }
 	};
 
 	struct ItemNewline : public Item {
-
 		ItemNewline() { type = ITEM_NEWLINE; }
 	};
 
 	struct ItemTable : public Item {
-
 		struct Column {
 			bool expand;
 			int expand_ratio;
@@ -301,18 +287,20 @@ private:
 	};
 
 	struct ItemCustomFX : public ItemFX {
-		String identifier;
-		Dictionary environment;
+		Ref<CharFXTransform> char_fx_transform;
+		Ref<RichTextEffect> custom_effect;
 
 		ItemCustomFX() {
-			identifier = "";
-			environment = Dictionary();
 			type = ITEM_CUSTOMFX;
+
+			char_fx_transform.instance();
 		}
 
 		virtual ~ItemCustomFX() {
 			_clear_children();
-			environment.clear();
+
+			char_fx_transform.unref();
+			custom_effect.unref();
 		}
 	};
 
@@ -391,32 +379,7 @@ private:
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
-	template <typename T>
-	T *_fetch_by_type(Item *p_item, ItemType p_type) {
-		Item *item = p_item;
-		T *result = NULL;
-		while (item) {
-			if (item->type == p_type) {
-				result = Object::cast_to<T>(item);
-				if (result)
-					return result;
-			}
-			item = item->parent;
-		}
-
-		return result;
-	};
-	template <typename T>
-	void _fetch_item_stack(Item *p_item, Vector<T *> &r_stack) {
-		Item *item = p_item;
-		while (item) {
-			T *found = Object::cast_to<T>(item);
-			if (found) {
-				r_stack.push_back(found);
-			}
-			item = item->parent;
-		}
-	}
+	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, float p_delta_time);
@@ -456,11 +419,11 @@ public:
 	void push_meta(const Variant &p_meta);
 	void push_table(int p_columns);
 	void push_fade(int p_start_index, int p_length);
-	void push_shake(int p_level, float p_rate);
+	void push_shake(int p_strength, float p_rate);
 	void push_wave(float p_frequency, float p_amplitude);
 	void push_tornado(float p_frequency, float p_radius);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
-	void push_customfx(String p_identifier, Dictionary p_environment);
+	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	int get_current_table_column() const;
 	void push_cell();

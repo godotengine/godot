@@ -2168,8 +2168,9 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	}
 
 	Error err = shaders.compiler.compile(p_shader->mode, p_shader->code, actions, p_shader->path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		return;
+	}
 
 	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
 
@@ -2955,7 +2956,9 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_VEC3: {
+			zeromem(data, 12);
+		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
@@ -5158,20 +5161,6 @@ void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;
-}
-
-void RasterizerStorageGLES3::skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {
-
-	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
-
-	ERR_FAIL_COND(skeleton->use_2d);
-
-	skeleton->world_transform = p_world_transform;
-	skeleton->use_world_transform = p_enable;
-
-	if (!skeleton->update_list.in_list()) {
-		skeleton_update_list.add(&skeleton->update_list);
-	}
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {

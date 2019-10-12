@@ -34,7 +34,7 @@ namespace GodotTools.Build
 
                             if (_msbuildToolsPath.Empty())
                             {
-                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMsbuildVs}'. Tried with path: {_msbuildToolsPath}");
+                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMsbuildVs}'.");
                             }
                         }
 
@@ -142,7 +142,7 @@ namespace GodotTools.Build
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
                 blocking: true, output: (Godot.Collections.Array) outputArray);
 
-            if (exitCode == 0)
+            if (exitCode != 0)
                 return string.Empty;
 
             if (outputArray.Count == 0)

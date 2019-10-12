@@ -44,6 +44,9 @@ class Array {
 	void _ref(const Array &p_from) const;
 	void _unref() const;
 
+	int _clamp_index(int p_index) const;
+	static int _fix_slice_index(int p_index, int p_arr_len, int p_top_mod);
+
 public:
 	Variant &operator[](int p_idx);
 	const Variant &operator[](int p_idx) const;
@@ -90,6 +93,8 @@ public:
 	Variant pop_front();
 
 	Array duplicate(bool p_deep = false) const;
+
+	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
 
 	Variant min() const;
 	Variant max() const;

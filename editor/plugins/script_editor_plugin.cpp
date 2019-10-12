@@ -43,6 +43,7 @@
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
+#include "scene/scene_string_names.h"
 #include "script_text_editor.h"
 #include "text_editor.h"
 
@@ -538,9 +539,13 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		// if it's a path then it's most likely a deleted file not help
 	} else if (path.find("::") != -1) {
 		// built-in script
-		String scene_path = path.get_slice("::", 0);
-		if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
-			EditorNode::get_singleton()->load_scene(scene_path);
+		String res_path = path.get_slice("::", 0);
+		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+			if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+				EditorNode::get_singleton()->load_scene(res_path);
+			}
+		} else {
+			EditorNode::get_singleton()->load_resource(res_path);
 		}
 		Ref<Script> script = ResourceLoader::load(path);
 		if (script.is_valid()) {
@@ -1028,12 +1033,16 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			if (extensions.find(path.get_extension()) || built_in) {
 				if (built_in) {
-					String scene_path = path.get_slice("::", 0);
-					if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
-						EditorNode::get_singleton()->load_scene(scene_path);
-						script_editor->call_deferred("_menu_option", p_option);
-						previous_scripts.push_back(path); //repeat the operation
-						return;
+					String res_path = path.get_slice("::", 0);
+					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+							EditorNode::get_singleton()->load_scene(res_path);
+							script_editor->call_deferred("_menu_option", p_option);
+							previous_scripts.push_back(path); //repeat the operation
+							return;
+						}
+					} else {
+						EditorNode::get_singleton()->load_resource(res_path);
 					}
 				}
 
@@ -1317,6 +1326,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				case HELP_SEARCH_FIND_NEXT: {
 					help->search_again();
 				} break;
+				case HELP_SEARCH_FIND_PREVIOUS: {
+					help->search_again(true);
+				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
 				} break;
@@ -1409,16 +1421,6 @@ void ScriptEditor::_notification(int p_what) {
 			members_overview->connect("item_selected", this, "_members_overview_selected");
 			help_overview->connect("item_selected", this, "_help_overview_selected");
 			script_split->connect("dragged", this, "_script_split_dragged");
-			autosave_timer->connect("timeout", this, "_autosave_scripts");
-			{
-				float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
-				if (autosave_time > 0) {
-					autosave_timer->set_wait_time(autosave_time);
-					autosave_timer->start();
-				} else {
-					autosave_timer->stop();
-				}
-			}
 
 			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 			FALLTHROUGH;
@@ -1965,7 +1967,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	Ref<TextFile> text_res(text_file);
 	Error err = text_file->load_text(path);
 
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load text file '" + path + "'.");
 
 	text_file->set_file_path(local_path);
 	text_file->set_path(local_path, true);
@@ -1990,10 +1992,7 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	if (err) {
-
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
@@ -2327,13 +2326,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 
-	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
-	if (autosave_time > 0) {
-		autosave_timer->set_wait_time(autosave_time);
-		autosave_timer->start();
-	} else {
-		autosave_timer->stop();
-	}
+	_update_autosave_timer();
 
 	if (current_theme == "") {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
@@ -2359,6 +2352,21 @@ void ScriptEditor::_editor_settings_changed() {
 void ScriptEditor::_autosave_scripts() {
 
 	save_all_scripts();
+}
+
+void ScriptEditor::_update_autosave_timer() {
+
+	if (!autosave_timer->is_inside_tree()) {
+		return;
+	}
+
+	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+	if (autosave_time > 0) {
+		autosave_timer->set_wait_time(autosave_time);
+		autosave_timer->start();
+	} else {
+		autosave_timer->stop();
+	}
 }
 
 void ScriptEditor::_tree_changed() {
@@ -2822,6 +2830,7 @@ void ScriptEditor::_update_selected_editor_menu() {
 
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
 		script_search_menu->show();
@@ -3083,6 +3092,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_show_debugger", &ScriptEditor::_show_debugger);
 	ClassDB::bind_method("_get_debug_tooltip", &ScriptEditor::_get_debug_tooltip);
 	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
+	ClassDB::bind_method("_update_autosave_timer", &ScriptEditor::_update_autosave_timer);
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
@@ -3300,8 +3310,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->set_switch_on_hover(true);
 	debug_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11), DEBUG_STEP);
+	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/break", TTR("Break")), DEBUG_BREAK);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/continue", TTR("Continue"), KEY_F12), DEBUG_CONTINUE);
@@ -3419,6 +3429,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
+	autosave_timer->connect(SceneStringNames::get_singleton()->tree_entered, this, "_update_autosave_timer");
+	autosave_timer->connect("timeout", this, "_autosave_scripts");
 	add_child(autosave_timer);
 
 	grab_focus_block = false;
@@ -3463,15 +3475,18 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 	if (Object::cast_to<Script>(p_object)) {
 
 		Script *p_script = Object::cast_to<Script>(p_object);
-		String scene_path = p_script->get_path().get_slice("::", 0);
+		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (_is_built_in_script(p_script) && !EditorNode::get_singleton()->is_scene_open(scene_path)) {
-			EditorNode::get_singleton()->load_scene(scene_path);
-
-			script_editor->call_deferred("edit", p_script);
-		} else {
-			script_editor->edit(p_script);
+		if (_is_built_in_script(p_script)) {
+			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+					EditorNode::get_singleton()->load_scene(res_path);
+				}
+			} else {
+				EditorNode::get_singleton()->load_resource(res_path);
+			}
 		}
+		script_editor->edit(p_script);
 	} else if (Object::cast_to<TextFile>(p_object)) {
 		script_editor->edit(Object::cast_to<TextFile>(p_object));
 	}

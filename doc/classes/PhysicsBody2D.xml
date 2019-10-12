@@ -85,6 +85,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this area scans for collisions.
 		</member>
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" override="true" default="false" />
 		<member name="layers" type="int" setter="_set_layers" getter="_get_layers">
 			Both [member collision_layer] and [member collision_mask]. Returns [member collision_layer] when accessed. Updates [member collision_layer] and [member collision_mask] when modified.
 		</member>

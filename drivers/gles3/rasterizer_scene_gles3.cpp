@@ -2260,11 +2260,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
-		if (skeleton) {
-			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_TRANSFORM, skeleton->world_transform);
-			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_IN_WORLD_COORDS, skeleton->use_world_transform);
-		}
-
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
 		_render_geometry(e);
@@ -4335,6 +4330,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			if (storage->frame.current_rt->buffers.active) {
 				current_fbo = storage->frame.current_rt->buffers.fbo;
 			} else {
+				if (storage->frame.current_rt->effects.mip_maps[0].sizes.size() == 0) {
+					ERR_PRINT_ONCE("Can't use canvas background mode in a render target configured without sampling");
+					return;
+				}
 				current_fbo = storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo;
 			}
 

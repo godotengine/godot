@@ -52,14 +52,16 @@ protected:
 
 private:
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
+	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
 
 public:
+	Variant nativeSymbol(const Dictionary &p_params);
 	Array documentSymbol(const Dictionary &p_params);
 	Array completion(const Dictionary &p_params);
 	Dictionary resolve(const Dictionary &p_params);
 	Array foldingRange(const Dictionary &p_params);
 	Array codeLens(const Dictionary &p_params);
-	Variant documentLink(const Dictionary &p_params);
+	Array documentLink(const Dictionary &p_params);
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);

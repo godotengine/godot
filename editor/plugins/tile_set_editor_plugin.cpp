@@ -579,6 +579,14 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	scroll->set_clip_contents(true);
 
+	empty_message = memnew(Label);
+	empty_message->set_text(TTR("Add or select a texture on the left panel to edit the tiles bound to it."));
+	empty_message->set_valign(Label::VALIGN_CENTER);
+	empty_message->set_align(Label::ALIGN_CENTER);
+	empty_message->set_autowrap(true);
+	empty_message->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_vb->add_child(empty_message);
+
 	workspace_container = memnew(Control);
 	scroll->add_child(workspace_container);
 
@@ -627,7 +635,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	helper = memnew(TilesetEditorContext(this));
 	tile_names_visible = false;
 
-	// config scale
+	// Config scale.
 	max_scale = 10.0f;
 	min_scale = 0.1f;
 	scale_ratio = 1.2f;
@@ -3123,12 +3131,28 @@ void TileSetEditor::update_workspace_tile_mode() {
 		}
 		tools[SELECT_NEXT]->set_disabled(true);
 		tools[SELECT_PREVIOUS]->set_disabled(true);
+
+		tools[ZOOM_OUT]->hide();
+		tools[ZOOM_1]->hide();
+		tools[ZOOM_IN]->hide();
+		tools[VISIBLE_INFO]->hide();
+
+		scroll->hide();
+		empty_message->show();
 	} else {
 		for (int i = 1; i < WORKSPACE_MODE_MAX; i++) {
 			tool_workspacemode[i]->set_disabled(false);
 		}
 		tools[SELECT_NEXT]->set_disabled(false);
 		tools[SELECT_PREVIOUS]->set_disabled(false);
+
+		tools[ZOOM_OUT]->show();
+		tools[ZOOM_1]->show();
+		tools[ZOOM_IN]->show();
+		tools[VISIBLE_INFO]->show();
+
+		scroll->show();
+		empty_message->hide();
 	}
 
 	if (workspace_mode != WORKSPACE_EDIT) {

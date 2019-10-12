@@ -509,7 +509,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	err = ResourceSaver::save(save_path, meshes.front()->get());
 
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Mesh to file '" + save_path + "'.");
 
 	r_gen_files->push_back(save_path);
 

@@ -188,7 +188,7 @@ void StaticBody::set_friction(real_t p_friction) {
 
 	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
+	ERR_FAIL_COND_MSG(p_friction < 0 || p_friction > 1, "Friction must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -216,7 +216,7 @@ void StaticBody::set_bounce(real_t p_bounce) {
 
 	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
+	ERR_FAIL_COND_MSG(p_bounce < 0 || p_bounce > 1, "Bounce must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -1137,7 +1137,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
-//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+//so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
@@ -2182,7 +2182,7 @@ void PhysicalBone::_notification(int p_what) {
 
 void PhysicalBone::_direct_state_changed(Object *p_state) {
 
-	if (!simulate_physics) {
+	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
@@ -2205,7 +2205,7 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	// Update skeleton
 	if (parent_skeleton) {
 		if (-1 != bone_id) {
-			parent_skeleton->set_bone_global_pose(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse));
+			parent_skeleton->set_bone_global_pose_override(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse), 1.0, true);
 		}
 	}
 }
@@ -2716,7 +2716,6 @@ void PhysicalBone::_start_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
-	parent_skeleton->set_bone_ignore_animation(bone_id, true);
 	_internal_simulate_physics = true;
 }
 
@@ -2728,6 +2727,6 @@ void PhysicalBone::_stop_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
-	parent_skeleton->set_bone_ignore_animation(bone_id, false);
+	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
 }

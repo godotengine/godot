@@ -1100,9 +1100,9 @@ void Object::get_meta_list(List<String> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 
-	ERR_FAIL_COND(p_signal.name == "");
-	ERR_FAIL_COND(ClassDB::has_signal(get_class_name(), p_signal.name));
-	ERR_FAIL_COND(signal_map.has(p_signal.name));
+	ERR_FAIL_COND_MSG(p_signal.name == "", "Signal name cannot be empty.");
+	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
+	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
 	Signal s;
 	s.user = p_signal;
 	signal_map[p_signal.name] = s;

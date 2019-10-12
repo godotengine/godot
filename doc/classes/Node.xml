@@ -171,6 +171,7 @@
 			<description>
 				Duplicates the node, returning a new node.
 				You can fine-tune the behavior using the [code]flags[/code] (see [enum DuplicateFlags]).
+				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">
@@ -961,6 +962,14 @@
 		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
+		</constant>
+		<constant name="NOTIFICATION_APP_RESUMED" value="1014">
+			Notification received from the OS when the app is resumed.
+			Specific to the Android platform.
+		</constant>
+		<constant name="NOTIFICATION_APP_PAUSED" value="1015">
+			Notification received from the OS when the app is paused.
+			Specific to the Android platform.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.

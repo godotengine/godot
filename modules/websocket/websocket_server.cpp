@@ -42,17 +42,56 @@ WebSocketServer::~WebSocketServer() {
 void WebSocketServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_listening"), &WebSocketServer::is_listening);
-	ClassDB::bind_method(D_METHOD("listen", "port", "protocols", "gd_mp_api"), &WebSocketServer::listen, DEFVAL(PoolVector<String>()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("listen", "port", "protocols", "gd_mp_api"), &WebSocketServer::listen, DEFVAL(Vector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &WebSocketServer::stop);
 	ClassDB::bind_method(D_METHOD("has_peer", "id"), &WebSocketServer::has_peer);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketServer::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &WebSocketServer::get_peer_port);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketServer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("get_private_key"), &WebSocketServer::get_private_key);
+	ClassDB::bind_method(D_METHOD("set_private_key"), &WebSocketServer::set_private_key);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "private_key", PROPERTY_HINT_RESOURCE_TYPE, "CryptoKey", 0), "set_private_key", "get_private_key");
+
+	ClassDB::bind_method(D_METHOD("get_ssl_certificate"), &WebSocketServer::get_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_ssl_certificate"), &WebSocketServer::set_ssl_certificate);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_ssl_certificate", "get_ssl_certificate");
+
+	ClassDB::bind_method(D_METHOD("get_ca_chain"), &WebSocketServer::get_ca_chain);
+	ClassDB::bind_method(D_METHOD("set_ca_chain"), &WebSocketServer::set_ca_chain);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ca_chain", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_ca_chain", "get_ca_chain");
+
 	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
 	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol")));
 	ADD_SIGNAL(MethodInfo("data_received", PropertyInfo(Variant::INT, "id")));
+}
+
+Ref<CryptoKey> WebSocketServer::get_private_key() const {
+	return private_key;
+}
+
+void WebSocketServer::set_private_key(Ref<CryptoKey> p_key) {
+	ERR_FAIL_COND(is_listening());
+	private_key = p_key;
+}
+
+Ref<X509Certificate> WebSocketServer::get_ssl_certificate() const {
+	return ssl_cert;
+}
+
+void WebSocketServer::set_ssl_certificate(Ref<X509Certificate> p_cert) {
+	ERR_FAIL_COND(is_listening());
+	ssl_cert = p_cert;
+}
+
+Ref<X509Certificate> WebSocketServer::get_ca_chain() const {
+	return ca_chain;
+}
+
+void WebSocketServer::set_ca_chain(Ref<X509Certificate> p_ca_chain) {
+	ERR_FAIL_COND(is_listening());
+	ca_chain = p_ca_chain;
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {

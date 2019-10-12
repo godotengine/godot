@@ -160,9 +160,16 @@ namespace GodotTools
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
 
-            // Make sure to update the API assemblies if they happen to be missing. Just in
-            // case the user decided to delete them at some point after they were loaded.
-            Internal.UpdateApiAssembliesFromPrebuilt();
+            // Make sure the API assemblies are up to date before building the project.
+            // We may not have had the chance to update the release API assemblies, and the debug ones
+            // may have been deleted by the user at some point after they were loaded by the Godot editor.
+            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(config == "Release" ? "Release" : "Debug");
+
+            if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
+            {
+                ShowBuildErrorDialog("Failed to update the Godot API assemblies");
+                return false;
+            }
 
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
             var buildTool = (BuildTool) editorSettings.GetSetting("mono/builds/build_tool");

@@ -149,7 +149,7 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Crypto resource to file '" + p_path + "'.");
 	return OK;
 }
 

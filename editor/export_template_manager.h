@@ -72,8 +72,6 @@ class ExportTemplateManager : public ConfirmationDialog {
 	virtual void ok_pressed();
 	bool _install_from_file(const String &p_file, bool p_use_progress = true);
 
-	Error _extract_libs_from_apk(const String &p_target_name);
-
 	void _http_download_mirror_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	void _http_download_templates_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 

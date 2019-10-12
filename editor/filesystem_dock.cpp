@@ -477,6 +477,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 }
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
+	file_list_search_box->clear();
 	_navigate_to_path(p_path);
 }
 
@@ -1709,7 +1710,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				reimport.push_back(p_selected[i]);
 			}
 
-			ERR_FAIL_COND(reimport.size() == 0);
+			ERR_FAIL_COND_MSG(reimport.size() == 0, "You need to select files to reimport them.");
 		} break;
 
 		case FILE_NEW_FOLDER: {
@@ -2087,7 +2088,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders.
-	ERR_FAIL_COND(p_paths.empty());
+	ERR_FAIL_COND_MSG(p_paths.empty(), "Path cannot be empty.");
 
 	Vector<String> filenames;
 	Vector<String> foldernames;
@@ -2099,6 +2100,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	bool all_folders = true;
 	bool all_favorites = true;
 	bool all_not_favorites = true;
+
 	for (int i = 0; i < p_paths.size(); i++) {
 		String fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
@@ -2128,25 +2130,25 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (all_files) {
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
-				p_popup->add_item(TTR("Open Scene"), FILE_OPEN);
-				p_popup->add_item(TTR("New Inherited Scene"), FILE_INHERIT);
+				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scene"), FILE_OPEN);
+				p_popup->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("New Inherited Scene"), FILE_INHERIT);
 			} else {
-				p_popup->add_item(TTR("Open Scenes"), FILE_OPEN);
+				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scenes"), FILE_OPEN);
 			}
-			p_popup->add_item(TTR("Instance"), FILE_INSTANCE);
+			p_popup->add_icon_item(get_icon("Instance", "EditorIcons"), TTR("Instance"), FILE_INSTANCE);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
-			p_popup->add_item(TTR("Open"), FILE_OPEN);
+			p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
 		}
 	}
 
 	if (p_paths.size() >= 1) {
 		if (!all_favorites) {
-			p_popup->add_item(TTR("Add to Favorites"), FILE_ADD_FAVORITE);
+			p_popup->add_icon_item(get_icon("Favorites", "EditorIcons"), TTR("Add to Favorites"), FILE_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_item(TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
+			p_popup->add_icon_item(get_icon("NonFavorite", "EditorIcons"), TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
 		}
 		p_popup->add_separator();
 	}
@@ -2159,36 +2161,36 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		}
 
 	} else if (all_folders && foldernames.size() > 0) {
-		p_popup->add_item(TTR("Open"), FILE_OPEN);
+		p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open"), FILE_OPEN);
 		p_popup->add_separator();
 	}
 
 	if (p_paths.size() == 1) {
-		p_popup->add_item(TTR("Copy Path"), FILE_COPY_PATH);
+		p_popup->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Path"), FILE_COPY_PATH);
 		if (p_paths[0] != "res://") {
-			p_popup->add_item(TTR("Rename..."), FILE_RENAME);
-			p_popup->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
+			p_popup->add_icon_item(get_icon("Rename", "EditorIcons"), TTR("Rename..."), FILE_RENAME);
+			p_popup->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Duplicate..."), FILE_DUPLICATE);
 		}
 	}
 
 	if (p_paths.size() > 1 || p_paths[0] != "res://") {
-		p_popup->add_item(TTR("Move To..."), FILE_MOVE);
-		p_popup->add_item(TTR("Delete"), FILE_REMOVE);
+		p_popup->add_icon_item(get_icon("MoveUp", "EditorIcons"), TTR("Move To..."), FILE_MOVE);
+		p_popup->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Delete"), FILE_REMOVE);
 	}
 
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
 		if (p_display_path_dependent_options) {
-			p_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-			p_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-			p_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-			p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+			p_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
+			p_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
+			p_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
+			p_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 			p_popup->add_separator();
 		}
 
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
-		p_popup->add_item(item_text, FILE_SHOW_IN_EXPLORER);
+		p_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, FILE_SHOW_IN_EXPLORER);
 	}
 }
 
@@ -2198,8 +2200,8 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 
 	if (paths.size() == 1) {
 		if (paths[0].ends_with("/")) {
-			tree_popup->add_item(TTR("Expand All"), FOLDER_EXPAND_ALL);
-			tree_popup->add_item(TTR("Collapse All"), FOLDER_COLLAPSE_ALL);
+			tree_popup->add_icon_item(get_icon("GuiTreeArrowDown", "EditorIcons"), TTR("Expand All"), FOLDER_EXPAND_ALL);
+			tree_popup->add_icon_item(get_icon("GuiTreeArrowRight", "EditorIcons"), TTR("Collapse All"), FOLDER_COLLAPSE_ALL);
 			tree_popup->add_separator();
 		}
 	}
@@ -2219,10 +2221,10 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	path = "res://";
 	tree_popup->clear();
 	tree_popup->set_size(Size2(1, 1));
-	tree_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	tree_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-	tree_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	tree_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
+	tree_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
+	tree_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
+	tree_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->set_position(tree->get_global_position() + p_pos);
 	tree_popup->popup();
 }
@@ -2262,12 +2264,12 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->clear();
 	file_list_popup->set_size(Size2(1, 1));
 
-	file_list_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_list_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-	file_list_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_list_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	file_list_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
+	file_list_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
+	file_list_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
+	file_list_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_separator();
-	file_list_popup->add_item(TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
+	file_list_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);
 	file_list_popup->popup();
 }

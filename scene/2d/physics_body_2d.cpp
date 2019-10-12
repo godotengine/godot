@@ -199,7 +199,7 @@ void StaticBody2D::set_friction(real_t p_friction) {
 
 	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
+	ERR_FAIL_COND_MSG(p_friction < 0 || p_friction > 1, "Friction must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -227,7 +227,7 @@ void StaticBody2D::set_bounce(real_t p_bounce) {
 
 	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
+	ERR_FAIL_COND_MSG(p_bounce < 0 || p_bounce > 1, "Bounce must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -622,7 +622,7 @@ void RigidBody2D::set_friction(real_t p_friction) {
 
 	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
+	ERR_FAIL_COND_MSG(p_friction < 0 || p_friction > 1, "Friction must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -1209,7 +1209,7 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 	return colliding;
 }
 
-//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+//so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {

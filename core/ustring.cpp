@@ -2147,13 +2147,13 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 
 				if (c >= '0' && c <= '9') {
 
-					if (integer > INT32_MAX / 10) {
+					if (integer > INT64_MAX / 10) {
 						String number("");
 						str = p_str;
 						while (*str && str != limit) {
 							number += *(str++);
 						}
-						ERR_FAIL_V_MSG(sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+						ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 					}
 					integer *= 10;
 					integer += c - '0';
@@ -3049,6 +3049,22 @@ String String::replacen(const String &p_key, const String &p_with) const {
 	return new_string;
 }
 
+String String::repeat(int p_count) const {
+
+	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
+
+	String new_string;
+	const CharType *src = this->c_str();
+
+	new_string.resize(length() * p_count + 1);
+
+	for (int i = 0; i < p_count; i++)
+		for (int j = 0; j < length(); j++)
+			new_string[i * length() + j] = src[j];
+
+	return new_string;
+}
+
 String String::left(int p_pos) const {
 
 	if (p_pos <= 0)
@@ -3272,9 +3288,7 @@ String String::simplify_path() const {
 
 static int _humanize_digits(int p_num) {
 
-	if (p_num < 10)
-		return 2;
-	else if (p_num < 100)
+	if (p_num < 100)
 		return 2;
 	else if (p_num < 1024)
 		return 1;
@@ -3282,21 +3296,29 @@ static int _humanize_digits(int p_num) {
 		return 0;
 }
 
-String String::humanize_size(size_t p_size) {
+String String::humanize_size(uint64_t p_size) {
 
 	uint64_t _div = 1;
-	static const char *prefix[] = { " B", " KiB", " MiB", " GiB", " TiB", " PiB", " EiB", "" };
+	Vector<String> prefixes;
+	prefixes.push_back(RTR("B"));
+	prefixes.push_back(RTR("KiB"));
+	prefixes.push_back(RTR("MiB"));
+	prefixes.push_back(RTR("GiB"));
+	prefixes.push_back(RTR("TiB"));
+	prefixes.push_back(RTR("PiB"));
+	prefixes.push_back(RTR("EiB"));
+
 	int prefix_idx = 0;
 
-	while (p_size > (_div * 1024) && prefix[prefix_idx][0]) {
+	while (prefix_idx < prefixes.size() && p_size > (_div * 1024)) {
 		_div *= 1024;
 		prefix_idx++;
 	}
 
-	int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
-	double divisor = prefix_idx > 0 ? _div : 1;
+	const int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
+	const double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor).pad_decimals(digits) + RTR(prefix[prefix_idx]);
+	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
 bool String::is_abs_path() const {
 

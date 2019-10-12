@@ -196,34 +196,40 @@ enum aiTextureType
      *  (#aiMaterialProperty::mSemantic) for all material properties
      *  *not* related to textures.
      */
-    aiTextureType_NONE = 0x0,
+    aiTextureType_NONE = 0,
+
+    /** LEGACY API MATERIALS 
+     * Legacy refers to materials which 
+     * Were originally implemented in the specifications around 2000.
+     * These must never be removed, as most engines support them.
+     */
 
     /** The texture is combined with the result of the diffuse
      *  lighting equation.
      */
-    aiTextureType_DIFFUSE = 0x1,
+    aiTextureType_DIFFUSE = 1,
 
     /** The texture is combined with the result of the specular
      *  lighting equation.
      */
-    aiTextureType_SPECULAR = 0x2,
+    aiTextureType_SPECULAR = 2,
 
     /** The texture is combined with the result of the ambient
      *  lighting equation.
      */
-    aiTextureType_AMBIENT = 0x3,
+    aiTextureType_AMBIENT = 3,
 
     /** The texture is added to the result of the lighting
      *  calculation. It isn't influenced by incoming light.
      */
-    aiTextureType_EMISSIVE = 0x4,
+    aiTextureType_EMISSIVE = 4,
 
     /** The texture is a height map.
      *
      *  By convention, higher gray-scale values stand for
      *  higher elevations from the base height.
      */
-    aiTextureType_HEIGHT = 0x5,
+    aiTextureType_HEIGHT = 5,
 
     /** The texture is a (tangent space) normal-map.
      *
@@ -231,7 +237,7 @@ enum aiTextureType
      *  normal maps. Assimp does (intentionally) not
      *  distinguish here.
      */
-    aiTextureType_NORMALS = 0x6,
+    aiTextureType_NORMALS = 6,
 
     /** The texture defines the glossiness of the material.
      *
@@ -240,21 +246,21 @@ enum aiTextureType
      *  function defined to map the linear color values in the
      *  texture to a suitable exponent. Have fun.
     */
-    aiTextureType_SHININESS = 0x7,
+    aiTextureType_SHININESS = 7,
 
     /** The texture defines per-pixel opacity.
      *
      *  Usually 'white' means opaque and 'black' means
      *  'transparency'. Or quite the opposite. Have fun.
     */
-    aiTextureType_OPACITY = 0x8,
+    aiTextureType_OPACITY = 8,
 
     /** Displacement texture
      *
      *  The exact purpose and format is application-dependent.
      *  Higher color values stand for higher vertex displacements.
     */
-    aiTextureType_DISPLACEMENT = 0x9,
+    aiTextureType_DISPLACEMENT = 9,
 
     /** Lightmap texture (aka Ambient Occlusion)
      *
@@ -263,14 +269,28 @@ enum aiTextureType
      *  scaling value for the final color value of a pixel. Its
      *  intensity is not affected by incoming light.
     */
-    aiTextureType_LIGHTMAP = 0xA,
+    aiTextureType_LIGHTMAP = 10,
 
     /** Reflection texture
      *
      * Contains the color of a perfect mirror reflection.
      * Rarely used, almost never for real-time applications.
     */
-    aiTextureType_REFLECTION = 0xB,
+    aiTextureType_REFLECTION = 11,
+
+    /** PBR Materials
+     * PBR definitions from maya and other modelling packages now use this standard.
+     * This was originally introduced around 2012.
+     * Support for this is in game engines like Godot, Unreal or Unity3D.
+     * Modelling packages which use this are very common now.
+     */
+
+    aiTextureType_BASE_COLOR = 12,
+    aiTextureType_NORMAL_CAMERA = 13,
+    aiTextureType_EMISSION_COLOR = 14,
+    aiTextureType_METALNESS = 15,
+    aiTextureType_DIFFUSE_ROUGHNESS = 16,
+    aiTextureType_AMBIENT_OCCLUSION = 17,
 
     /** Unknown texture
      *
@@ -278,7 +298,7 @@ enum aiTextureType
      *  above is considered to be 'unknown'. It is still imported,
      *  but is excluded from any further post-processing.
     */
-    aiTextureType_UNKNOWN = 0xC,
+    aiTextureType_UNKNOWN = 18,
 
 
 #ifndef SWIG

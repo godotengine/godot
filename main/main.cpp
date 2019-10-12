@@ -444,6 +444,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				audio_driver = I->next()->get();
+
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
+					if (audio_driver == OS::get_singleton()->get_audio_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options are ", audio_driver.utf8().get_data());
+
+					for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
+						if (i == OS::get_singleton()->get_audio_driver_count() - 1) {
+							OS::get_singleton()->print(" and ");
+						} else if (i != 0) {
+							OS::get_singleton()->print(", ");
+						}
+
+						OS::get_singleton()->print("'%s'", OS::get_singleton()->get_audio_driver_name(i));
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
@@ -455,6 +481,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				video_driver = I->next()->get();
+
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+					if (video_driver == OS::get_singleton()->get_video_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown video driver '%s', aborting.\nValid options are ", video_driver.utf8().get_data());
+
+					for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+						if (i == OS::get_singleton()->get_video_driver_count() - 1) {
+							OS::get_singleton()->print(" and ");
+						} else if (i != 0) {
+							OS::get_singleton()->print(", ");
+						}
+
+						OS::get_singleton()->print("'%s'", OS::get_singleton()->get_video_driver_name(i));
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
@@ -930,10 +982,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			video_mode.height = GLOBAL_GET("display/window/size/height");
 
 			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
+
 				int tw = globals->get("display/window/size/test_width");
-				int th = globals->get("display/window/size/test_height");
-				if (tw > 0 && th > 0) {
+				if (tw > 0) {
 					video_mode.width = tw;
+				}
+				int th = globals->get("display/window/size/test_height");
+				if (th > 0) {
 					video_mode.height = th;
 				}
 			}
@@ -989,10 +1044,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (video_driver_idx < 0) {
-
-		//OS::get_singleton()->alert("Invalid Video Driver: " + video_driver);
 		video_driver_idx = 0;
-		//goto error;
 	}
 
 	if (audio_driver == "") { // specified in project.godot
@@ -1009,10 +1061,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver_idx < 0) {
-
-		OS::get_singleton()->alert("Invalid Audio Driver: " + audio_driver);
 		audio_driver_idx = 0;
-		//goto error;
 	}
 
 	{
@@ -1182,7 +1231,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo.instance();
 			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 			if (load_err)
-				ERR_PRINTS("Non-existing or invalid boot splash at: " + boot_logo_path + ". Loading default splash.");
+				ERR_PRINTS("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
 		}
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
@@ -1457,12 +1506,11 @@ bool Main::start() {
 	};
 
 	if (test != "") {
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 		main_loop = test_main(test, args);
 
 		if (!main_loop)
 			return false;
-
 #endif
 
 	} else if (script != "") {

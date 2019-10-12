@@ -81,7 +81,7 @@ public:
 	void remove_feed(const Ref<CameraFeed> &p_feed);
 
 	// get our feeds
-	Ref<CameraFeed> get_feed(int p_idx);
+	Ref<CameraFeed> get_feed(int p_index);
 	int get_feed_count();
 	Array get_feeds();
 

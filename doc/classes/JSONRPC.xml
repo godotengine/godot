@@ -81,15 +81,15 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="ParseError" value="-32700" enum="ErrorCode">
+		<constant name="PARSE_ERROR" value="-32700" enum="ErrorCode">
 		</constant>
-		<constant name="InvalidRequest" value="-32600" enum="ErrorCode">
+		<constant name="INVALID_REQUEST" value="-32600" enum="ErrorCode">
 		</constant>
-		<constant name="MethodNotFound" value="-32601" enum="ErrorCode">
+		<constant name="METHOD_NOT_FOUND" value="-32601" enum="ErrorCode">
 		</constant>
-		<constant name="InvalidParams" value="-32602" enum="ErrorCode">
+		<constant name="INVALID_PARAMS" value="-32602" enum="ErrorCode">
 		</constant>
-		<constant name="InternalError" value="-32603" enum="ErrorCode">
+		<constant name="INTERNAL_ERROR" value="-32603" enum="ErrorCode">
 		</constant>
 	</constants>
 </class>

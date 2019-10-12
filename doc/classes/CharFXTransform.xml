@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CharFXTransform" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_value_or">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="String">
+			</argument>
+			<argument index="1" name="default_value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="absolute_index" type="int" setter="set_absolute_index" getter="get_absolute_index" default="0">
+		</member>
+		<member name="character" type="int" setter="set_character" getter="get_character" default="0">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
+		</member>
+		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		</member>
+		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
+		</member>
+		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -38,7 +38,7 @@
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND(tasks.has(p_task));
+	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	BackgroundProgress::Task t;
 	t.hb = memnew(HBoxContainer);
 	Label *l = memnew(Label);
@@ -172,7 +172,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 		return;
 	}
 
-	ERR_FAIL_COND(tasks.has(p_task));
+	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	ProgressDialog::Task t;
 	t.vb = memnew(VBoxContainer);
 	VBoxContainer *vb2 = memnew(VBoxContainer);

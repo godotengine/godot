@@ -50,30 +50,8 @@ if lib_arch_dir != '':
     else:  # release_debug, debug
         lib_type_dir = 'debug'
 
-    out_dir = '#platform/android/java/libs/' + lib_type_dir + '/' + lib_arch_dir
+    out_dir = '#platform/android/java/lib/libs/' + lib_type_dir + '/' + lib_arch_dir
     env_android.Command(out_dir + '/libgodot_android.so', '#bin/libgodot' + env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))
 
     stl_lib_path = str(env['ANDROID_NDK_ROOT']) + '/sources/cxx-stl/llvm-libc++/libs/' + lib_arch_dir + '/libc++_shared.so'
     env_android.Command(out_dir + '/libc++_shared.so', stl_lib_path, Copy("$TARGET", "$SOURCE"))
-
-# Zip android/java folder for the source export template.
-print("Archiving platform/android/java as bin/android_source.zip...")
-import os
-import zipfile
-# Change dir to avoid have zipped paths start from the android/java folder.
-olddir = os.getcwd()
-os.chdir(Dir('#platform/android/java').abspath)
-bindir = Dir('#bin').abspath
-# Make 'bin' dir if missing, can happen on fresh clone.
-if not os.path.exists(bindir):
-    os.makedirs(bindir)
-zipf = zipfile.ZipFile(os.path.join(bindir, 'android_source.zip'), 'w', zipfile.ZIP_DEFLATED)
-exclude_dirs = ['.gradle', 'build', 'libs', 'patches']
-for root, dirs, files in os.walk('.', topdown=True):
-    # Change 'dirs' in place to exclude folders we don't want.
-    # https://stackoverflow.com/a/19859907
-    dirs[:] = [d for d in dirs if d not in exclude_dirs]
-    for f in files:
-        zipf.write(os.path.join(root, f))
-zipf.close()
-os.chdir(olddir)

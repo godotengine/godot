@@ -340,7 +340,7 @@ StringName ClassDB::get_parent_class(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, StringName());
+	ERR_FAIL_COND_V_MSG(!ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
 	return ti->inherits;
 }
 
@@ -350,7 +350,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 
-	ERR_FAIL_COND_V(!ti, API_NONE);
+	ERR_FAIL_COND_V_MSG(!ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
 	return ti->api;
 }
 
@@ -375,7 +375,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 
 		ClassInfo *t = classes.getptr(E->get());
-		ERR_FAIL_COND_V(!t, 0);
+		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E->get()) + "'.");
 		if (t->api != p_api || !t->exposed)
 			continue;
 		hash = hash_djb2_one_64(t->name.hash(), hash);
@@ -528,8 +528,8 @@ Object *ClassDB::instance(const StringName &p_class) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
-		ERR_FAIL_COND_V(!ti, NULL);
-		ERR_FAIL_COND_V(ti->disabled, NULL);
+		ERR_FAIL_COND_V_MSG(!ti, NULL, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_V_MSG(ti->disabled, NULL, "Class '" + String(p_class) + "' is disabled.");
 		ERR_FAIL_COND_V(!ti->creation_func, NULL);
 	}
 #ifdef TOOLS_ENABLED
@@ -545,7 +545,7 @@ bool ClassDB::can_instance(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
@@ -560,7 +560,7 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 
 	const StringName &name = p_class;
 
-	ERR_FAIL_COND(classes.has(name));
+	ERR_FAIL_COND_MSG(classes.has(name), "Class '" + String(p_class) + "' already exists.");
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
@@ -836,7 +836,7 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *check = type;
 	while (check) {
-		ERR_FAIL_COND_MSG(check->signal_map.has(sname), "Type " + String(p_class) + " already has signal: " + String(sname) + ".");
+		ERR_FAIL_COND_MSG(check->signal_map.has(sname), "Class '" + String(p_class) + "' already has signal '" + String(sname) + "'.");
 		check = check->inherits_ptr;
 	}
 #endif
@@ -922,10 +922,10 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name + ".");
+		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name + ".");
+		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
 #endif
 	}
 
@@ -935,15 +935,15 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name + ".");
+		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name + ".");
+		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
 #endif
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), "Object " + p_class + " already has property: " + p_pinfo.name + ".");
+	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), "Object '" + p_class + "' already has property '" + p_pinfo.name + "'.");
 #endif
 
 	OBJTYPE_WLOCK
@@ -1228,20 +1228,20 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 	ClassInfo *type = classes.getptr(instance_type);
 	if (!type) {
 		memdelete(p_bind);
-		ERR_FAIL_V_MSG(NULL, "Couldn't bind method '" + mdname + "' for instance: " + instance_type + ".");
+		ERR_FAIL_V_MSG(NULL, "Couldn't bind method '" + mdname + "' for instance '" + instance_type + "'.");
 	}
 
 	if (type->method_map.has(mdname)) {
 		memdelete(p_bind);
 		// overloading not supported
-		ERR_FAIL_V_MSG(NULL, "Method already bound: " + instance_type + "::" + mdname + ".");
+		ERR_FAIL_V_MSG(NULL, "Method already bound '" + instance_type + "::" + mdname + "'.");
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (method_name.args.size() > p_bind->get_argument_count()) {
 		memdelete(p_bind);
-		ERR_FAIL_V_MSG(NULL, "Method definition provides more arguments than the method actually has: " + instance_type + "::" + mdname + ".");
+		ERR_FAIL_V_MSG(NULL, "Method definition provides more arguments than the method actually has '" + instance_type + "::" + mdname + "'.");
 	}
 
 	p_bind->set_argument_names(method_name.args);
@@ -1265,7 +1265,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 }
 
 void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual) {
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 	OBJTYPE_WLOCK;
 
@@ -1280,7 +1280,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -1304,7 +1304,7 @@ void ClassDB::set_class_enabled(StringName p_class, bool p_enable) {
 
 	OBJTYPE_WLOCK;
 
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 	classes[p_class].disabled = !p_enable;
 }
 
@@ -1319,7 +1319,7 @@ bool ClassDB::is_class_enabled(StringName p_class) {
 		}
 	}
 
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return !ti->disabled;
 }
 
@@ -1328,7 +1328,7 @@ bool ClassDB::is_class_exposed(StringName p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return ti->exposed;
 }
 
