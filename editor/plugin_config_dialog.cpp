@@ -73,7 +73,7 @@ void PluginConfigDialog::_on_confirmed() {
 		// TODO Use script templates. Right now, this code won't add the 'tool' annotation to other languages.
 		// TODO Better support script languages with named classes (has_named_classes).
 
-		#ifdef GDSCRIPT_ENABLED
+#ifdef GDSCRIPT_ENABLED
 		if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
 			// Hard-coded GDScript template to keep usability until we use script templates.
 			Ref<GDScript> gdscript = memnew(GDScript);
@@ -91,15 +91,15 @@ void PluginConfigDialog::_on_confirmed() {
 			ResourceSaver::save(script_path, gdscript);
 			script = gdscript;
 		} else {
-		#endif
+#endif
 			String script_path = path.plus_file(script_edit->get_text());
 			String class_name = script_path.get_file().get_basename();
 			script = ScriptServer::get_language(lang_idx)->get_template(class_name, "EditorPlugin");
 			script->set_path(script_path);
 			ResourceSaver::save(script_path, script);
-		#ifdef GDSCRIPT_ENABLED
+#ifdef GDSCRIPT_ENABLED
 		}
-		#endif
+#endif
 
 		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder_edit->get_text() : "");
 	} else {
