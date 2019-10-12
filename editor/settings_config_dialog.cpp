@@ -60,22 +60,27 @@ void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
 		case MENU_COLLAPSE_ALL: {
 
 			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
 				for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
 					item->set_collapsed(true);
 				}
+				autocollapsing = false;
 			}
 		} break;
 		case MENU_EXPAND_ALL: {
 
 			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
 				for (TreeItem *item = shortcuts->get_root()->get_children(); item; item = item->get_next()) {
 					item->set_collapsed(false);
 				}
+				autocollapsing = false;
 			}
 		} break;
 		case MENU_COLLAPSE_UNSELECTED: {
 
 			if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
+				autocollapsing = true;
 				TreeItem *selected = shortcuts->get_selected();
 				if (shortcuts->get_root() && shortcuts->get_root()->get_children()) {
 					TreeItem *shortcutsSections = shortcuts->get_root()->get_children();
@@ -97,11 +102,20 @@ void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
 						}
 					}
 				}
+				autocollapsing = false;
 			}
 		} break;
 		case MENU_RESTORE_DEFAULTS: {
 
 		} break;
+	}
+}
+
+void EditorSettingsDialog::_shortcut_section_collapsed(Object *p_item) {
+
+	if (!autocollapsing) {
+		TreeItem *item = Object::cast_to<TreeItem>(p_item);
+		item->select(0);
 	}
 }
 
@@ -477,6 +491,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_general_menu_option"), &EditorSettingsDialog::_general_menu_option);
 	ClassDB::bind_method(D_METHOD("_shortcut_menu_option"), &EditorSettingsDialog::_shortcut_menu_option);
+	ClassDB::bind_method(D_METHOD("_shortcut_section_collapsed"), &EditorSettingsDialog::_shortcut_section_collapsed);
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);

@@ -64,8 +64,10 @@ class EditorSettingsDialog : public AcceptDialog {
 	MenuButton *general_menu;
 	MenuButton *shortcut_menu;
 
+	bool autocollapsing;
 	void _general_menu_option(int p_option);
 	void _shortcut_menu_option(int p_option);
+	void _shortcut_section_collapsed(Object *p_item);
 	void _update_menus();
 
 	Timer *timer;
