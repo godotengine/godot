@@ -694,7 +694,7 @@ Body2DSW::Body2DSW() :
 
 	still_time = 0;
 	continuous_cd_mode = Physics2DServer::CCD_MODE_DISABLED;
-	can_sleep = false;
+	can_sleep = true;
 	fi_callback = NULL;
 }
 
