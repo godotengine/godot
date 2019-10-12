@@ -116,7 +116,7 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 	uint64_t modified_time = 0;
 
 	if (p_str.begins_with("ID:")) {
-		hash = p_str.get_slicec(':', 2).to_int();
+		hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
 		path = "ID:" + p_str.get_slicec(':', 1);
 	} else {
 		modified_time = FileAccess::get_modified_time(path);
@@ -203,7 +203,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			}
 			Error err;
 			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE, &err);
-			ERR_FAIL_COND(err != OK);
+			ERR_FAIL_COND_MSG(err != OK, "Cannot create file '" + cache_base + ".txt'.");
 			f->store_line(itos(thumbnail_size));
 			f->store_line(itos(has_small_texture));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
@@ -295,8 +295,9 @@ void EditorResourcePreview::_thread() {
 								//update modified time
 
 								f = FileAccess::open(file, FileAccess::WRITE);
-								f->store_line(itos(modtime));
+								f->store_line(itos(thumbnail_size));
 								f->store_line(itos(has_small_texture));
+								f->store_line(itos(modtime));
 								f->store_line(md5);
 								memdelete(f);
 							}
@@ -449,7 +450,7 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND(thread);
+	ERR_FAIL_COND_MSG(thread, "Thread already started.");
 	thread = Thread::create(_thread_func, this);
 }
 

@@ -88,7 +88,6 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	} else {
 		if (changed) { // to avoid tree collapse
 			_clear_buffer();
-			_update_custom_nodes();
 			_update_options_menu();
 			_update_preview();
 		}
@@ -178,7 +177,10 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 	return (p_mode == -1 || (p_mode & current_mode) != 0);
 }
 
-void VisualShaderEditor::_update_custom_nodes() {
+void VisualShaderEditor::update_custom_nodes() {
+	if (members_dialog->is_visible()) {
+		return;
+	}
 	clear_custom_types();
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
@@ -228,6 +230,7 @@ void VisualShaderEditor::_update_custom_nodes() {
 			add_custom_type(name, script, description, return_icon_type, category, sub_category);
 		}
 	}
+	_update_options_menu();
 }
 
 String VisualShaderEditor::_get_description(int p_idx) {
@@ -359,8 +362,8 @@ void VisualShaderEditor::_update_options_menu() {
 					case VisualShaderNode::PORT_TYPE_TRANSFORM:
 						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
 						break;
-					case VisualShaderNode::PORT_TYPE_ICON_COLOR:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
+					case VisualShaderNode::PORT_TYPE_SAMPLER:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"));
 						break;
 					default:
 						break;
@@ -410,6 +413,7 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 		node->add_color_override("title_color", c);
 		c.a = 0.7;
 		node->add_color_override("close_color", c);
+		node->add_color_override("resizer_color", c);
 	}
 }
 
@@ -436,11 +440,12 @@ void VisualShaderEditor::_update_graph() {
 		}
 	}
 
-	static const Color type_color[4] = {
+	static const Color type_color[5] = {
 		Color(0.38, 0.85, 0.96), // scalar
 		Color(0.84, 0.49, 0.93), // vector
 		Color(0.55, 0.65, 0.94), // boolean
-		Color(0.96, 0.66, 0.43) // transform
+		Color(0.96, 0.66, 0.43), // transform
+		Color(1.0, 1.0, 0.0) // sampler
 	};
 
 	List<VisualShader::Connection> connections;
@@ -545,14 +550,14 @@ void VisualShaderEditor::_update_graph() {
 				HBoxContainer *hb2 = memnew(HBoxContainer);
 
 				Button *add_input_btn = memnew(Button);
-				add_input_btn->set_text(TTR("Add input +"));
+				add_input_btn->set_text(TTR("Add Input"));
 				add_input_btn->connect("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_input_btn);
 
 				hb2->add_spacer();
 
 				Button *add_output_btn = memnew(Button);
-				add_output_btn->set_text(TTR("Add output +"));
+				add_output_btn->set_text(TTR("Add Output"));
 				add_output_btn->connect("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_output_btn);
 
@@ -639,6 +644,7 @@ void VisualShaderEditor::_update_graph() {
 						type_box->add_item(TTR("Vector"));
 						type_box->add_item(TTR("Boolean"));
 						type_box->add_item(TTR("Transform"));
+						type_box->add_item(TTR("Sampler"));
 						type_box->select(group_node->get_input_port_type(i));
 						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 						type_box->connect("item_selected", this, "_change_input_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
@@ -662,6 +668,15 @@ void VisualShaderEditor::_update_graph() {
 						label->set_text(name_left);
 						label->add_style_override("normal", label_style); //more compact
 						hb->add_child(label);
+
+						if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
+
+							Label *hint_label = memnew(Label);
+							hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
+							hint_label->add_color_override("font_color", get_color("font_color_readonly", "TextEdit"));
+							hint_label->add_style_override("normal", label_style);
+							hb->add_child(hint_label);
+						}
 					}
 				}
 
@@ -703,7 +718,7 @@ void VisualShaderEditor::_update_graph() {
 				}
 			}
 
-			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM) {
+			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
 				preview->set_normal_texture(get_icon("GuiVisibilityHidden", "EditorIcons"));
@@ -730,15 +745,19 @@ void VisualShaderEditor::_update_graph() {
 			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
 		}
 
-		if (vsnode->get_output_port_for_preview() >= 0 && vsnode->get_output_port_type(vsnode->get_output_port_for_preview()) != VisualShaderNode::PORT_TYPE_TRANSFORM) {
-			offset = memnew(Control);
-			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
-			node->add_child(offset);
+		if (vsnode->get_output_port_for_preview() >= 0) {
+			int port_type = vsnode->get_output_port_type(vsnode->get_output_port_for_preview());
 
-			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
-			port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
-			port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
-			node->add_child(port_preview);
+			if (port_type != VisualShaderNode::PORT_TYPE_TRANSFORM && port_type != VisualShaderNode::PORT_TYPE_SAMPLER) {
+				offset = memnew(Control);
+				offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+				node->add_child(offset);
+
+				VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
+				port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
+				port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
+				node->add_child(port_preview);
+			}
 		}
 
 		offset = memnew(Control);
@@ -1212,9 +1231,31 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	editing_port = p_port;
 }
 
-void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
+void VisualShaderEditor::_add_custom_node(const String &p_path) {
 
-	ERR_FAIL_INDEX(p_idx, add_options.size());
+	int idx = -1;
+
+	for (int i = custom_node_option_idx; i < add_options.size(); i++) {
+		if (add_options[i].script.is_valid()) {
+			if (add_options[i].script->get_path() == p_path) {
+				idx = i;
+				break;
+			}
+		}
+	}
+	if (idx != -1) {
+		_add_node(idx);
+	}
+}
+
+void VisualShaderEditor::_add_texture_node(const String &p_path) {
+	VisualShaderNodeTexture *texture = (VisualShaderNodeTexture *)_add_node(texture_node_option_idx, -1);
+	texture->set_texture(ResourceLoader::load(p_path));
+}
+
+VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx, add_options.size(), NULL);
 
 	Ref<VisualShaderNode> vsnode;
 
@@ -1222,7 +1263,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 	if (!is_custom && add_options[p_idx].type != String()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_COND_V(!vsn, NULL);
 
 		VisualShaderNodeScalarConstant *constant = Object::cast_to<VisualShaderNodeScalarConstant>(vsn);
 
@@ -1308,10 +1349,10 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
-		ERR_FAIL_COND(add_options[p_idx].script.is_null());
+		ERR_FAIL_COND_V(add_options[p_idx].script.is_null(), NULL);
 		String base_type = add_options[p_idx].script->get_instance_base_type();
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(base_type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_COND_V(!vsn, NULL);
 		vsnode = Ref<VisualShaderNode>(vsn);
 		vsnode->set_script(add_options[p_idx].script.get_ref_ptr());
 	}
@@ -1366,6 +1407,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
+	return vsnode.ptr();
 }
 
 void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node) {
@@ -2037,6 +2079,9 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 		if (d.has("id")) {
 			return true;
 		}
+		if (d.has("files")) {
+			return true;
+		}
 	}
 
 	return false;
@@ -2053,6 +2098,30 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			saved_node_pos = p_point;
 			saved_node_pos_dirty = true;
 			_add_node(idx, add_options[idx].sub_func);
+		} else if (d.has("files")) {
+			if (d["files"].get_type() == Variant::POOL_STRING_ARRAY) {
+
+				int j = 0;
+				PoolStringArray arr = d["files"];
+				for (int i = 0; i < arr.size(); i++) {
+
+					String type = ResourceLoader::get_resource_type(arr[i]);
+					if (type == "GDScript") {
+						Ref<Script> script = ResourceLoader::load(arr[i]);
+						if (script->get_instance_base_type() == "VisualShaderNodeCustom") {
+							saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+							saved_node_pos_dirty = true;
+							_add_custom_node(arr[i]);
+							j++;
+						}
+					} else if (ClassDB::get_parent_class(type) == "Texture") {
+						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_texture_node(arr[i]);
+						j++;
+					}
+				}
+			}
 		}
 	}
 }
@@ -2190,6 +2259,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_BOOLEAN);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
 	//graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
@@ -2213,6 +2283,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_BOOLEAN, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_BOOLEAN, VisualShaderNode::PORT_TYPE_BOOLEAN);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SAMPLER, VisualShaderNode::PORT_TYPE_SAMPLER);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);
@@ -2349,8 +2420,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Screen", "Color", "Operators", "VisualShaderNodeColorOp", TTR("Screen operator."), VisualShaderNodeColorOp::OP_SCREEN, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("SoftLight", "Color", "Operators", "VisualShaderNodeColorOp", TTR("SoftLight operator."), VisualShaderNodeColorOp::OP_SOFT_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR));
 
-	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, -1));
+	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, -1));
 
 	// CONDITIONAL
 
@@ -2366,6 +2437,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("LessThanEqual", "Conditional", "Functions", "VisualShaderNodeCompare", vformat(compare_func_desc, TTR("Less Than or Equal (<=)")), VisualShaderNodeCompare::FUNC_LESS_THAN_EQUAL, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("NotEqual", "Conditional", "Functions", "VisualShaderNodeCompare", vformat(compare_func_desc, TTR("Not Equal (!=)")), VisualShaderNodeCompare::FUNC_NOT_EQUAL, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("Switch", "Conditional", "Functions", "VisualShaderNodeSwitch", TTR("Returns an associated vector if the provided boolean value is true or false."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
+	add_options.push_back(AddOption("SwitchS", "Conditional", "Functions", "VisualShaderNodeScalarSwitch", TTR("Returns an associated scalar if the provided boolean value is true or false."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 
 	add_options.push_back(AddOption("Compare", "Conditional", "Common", "VisualShaderNodeCompare", TTR("Returns the boolean result of the comparison between two parameters."), -1, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("Is", "Conditional", "Common", "VisualShaderNodeIs", TTR("Returns the boolean result of the comparison between INF (or NaN) and a scalar parameter."), -1, VisualShaderNode::PORT_TYPE_BOOLEAN));
@@ -2381,6 +2453,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("InvCamera", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_camera"), "inv_camera", VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvProjection", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_projection"), "inv_projection", VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Normal", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "normal"), "normal", VisualShaderNode::PORT_TYPE_VECTOR, -1, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("OutputIsSRGB", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "output_is_srgb"), "output_is_srgb", VisualShaderNode::PORT_TYPE_BOOLEAN, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Projection", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "camera"), "projection", VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Time", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "time"), "time", VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ViewportSize", "Input", "All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "viewport_size"), "viewport_size", VisualShaderNode::PORT_TYPE_VECTOR, -1, Shader::MODE_SPATIAL));
@@ -2411,6 +2484,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Binormal", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "binormal"), "binormal", VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Color", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "color"), "color", VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("FragCoord", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "fragcoord"), "fragcoord", VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("FrontFacing", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "front_facing"), "front_facing", VisualShaderNode::PORT_TYPE_BOOLEAN, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("PointCoord", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "point_coord"), "point_coord", VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ScreenUV", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "screen_uv"), "screen_uv", VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Side", "Input", "Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "side"), "side", VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT, Shader::MODE_SPATIAL));
@@ -2553,12 +2627,13 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// TEXTURES
 
-	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, -1));
+	texture_node_option_idx = add_options.size();
+	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, -1));
 
-	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
+	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));
+	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, -1, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
 
 	// TRANSFORM
 
@@ -2662,6 +2737,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("DdYS", "Special", "Derivative", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) (Scalar) Derivative in 'y' using local differencing."), VisualShaderNodeScalarDerivativeFunc::FUNC_Y, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("Sum", "Special", "Derivative", "VisualShaderNodeVectorDerivativeFunc", TTR("(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'."), VisualShaderNodeVectorDerivativeFunc::FUNC_SUM, VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("SumS", "Special", "Derivative", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."), VisualShaderNodeScalarDerivativeFunc::FUNC_SUM, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
+	custom_node_option_idx = add_options.size();
 
 	/////////////////////////////////////////////////////////////////////
 
@@ -2703,6 +2779,7 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(visual_shader_editor);
+		visual_shader_editor->update_custom_nodes();
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {

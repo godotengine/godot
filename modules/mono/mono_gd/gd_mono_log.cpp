@@ -104,7 +104,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 	ERR_FAIL_COND(!da);
 
 	Error err = da->change_dir(p_logs_dir);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot change directory to '" + p_logs_dir + "'.");
 
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 
@@ -159,7 +159,7 @@ void GDMonoLog::initialize() {
 
 		log_file = FileAccess::open(log_file_path, FileAccess::WRITE);
 		if (!log_file) {
-			ERR_PRINT("Mono: Cannot create log file.");
+			ERR_PRINTS("Mono: Cannot create log file at: " + log_file_path);
 		}
 	}
 

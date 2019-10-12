@@ -100,9 +100,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
-	bool is_same_workspace = root == workspace->root;
+	bool is_same_workspace;
+#ifndef WINDOWS_ENABLED
 	is_same_workspace = root.to_lower() == workspace->root.to_lower();
-#ifdef WINDOWS_ENABLED
+#else
 	is_same_workspace = root.replace("\\", "/").to_lower() == workspace->root.to_lower();
 #endif
 
@@ -133,6 +134,22 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
+
+	lsp::GodotCapabilities capabilities;
+
+	DocData *doc = EditorHelp::get_doc_data();
+	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+
+		lsp::GodotNativeClassInfo gdclass;
+		gdclass.name = E->get().name;
+		gdclass.class_doc = &(E->get());
+		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E->get().name))) {
+			gdclass.class_info = ptr;
+		}
+		capabilities.native_classes.push_back(gdclass);
+	}
+
+	notify_client("gdscript/capabilities", capabilities.to_json());
 }
 
 void GDScriptLanguageProtocol::poll() {
@@ -142,6 +159,7 @@ void GDScriptLanguageProtocol::poll() {
 Error GDScriptLanguageProtocol::start(int p_port) {
 	if (server == NULL) {
 		server = dynamic_cast<WebSocketServer *>(ClassDB::instance("WebSocketServer"));
+		ERR_FAIL_COND_V(!server, FAILED);
 		server->set_buffers(8192, 1024, 8192, 1024); // 8mb should be way more than enough
 		server->connect("data_received", this, "on_data_received");
 		server->connect("client_connected", this, "on_client_connected");
@@ -151,7 +169,13 @@ Error GDScriptLanguageProtocol::start(int p_port) {
 }
 
 void GDScriptLanguageProtocol::stop() {
+	const int *ptr = clients.next(NULL);
+	while (ptr) {
+		clients.get(*ptr)->close();
+		ptr = clients.next(ptr);
+	}
 	server->stop();
+	clients.clear();
 }
 
 void GDScriptLanguageProtocol::notify_all_clients(const String &p_method, const Variant &p_params) {

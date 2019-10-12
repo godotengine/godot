@@ -596,8 +596,14 @@ void TextEdit::_update_minimap_drag() {
 		return;
 	}
 
+	int control_height = _get_control_height();
+	int scroll_height = v_scroll->get_max() * (minimap_char_size.y + minimap_line_spacing);
+	if (control_height > scroll_height) {
+		control_height = scroll_height;
+	}
+
 	Point2 mp = get_local_mouse_position();
-	double diff = (mp.y - minimap_scroll_click_pos) / _get_control_height();
+	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
 	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
@@ -605,7 +611,6 @@ void TextEdit::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			_update_caches();
 			if (cursor_changed_dirty)
 				MessageQueue::get_singleton()->push_call(this, "_cursor_changed_emit");
@@ -614,12 +619,16 @@ void TextEdit::_notification(int p_what) {
 			_update_wrap_at();
 		} break;
 		case NOTIFICATION_RESIZED: {
-
 			_update_scrollbars();
 			_update_wrap_at();
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				call_deferred("_update_scrollbars");
+				call_deferred("_update_wrap_at");
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			_update_caches();
 			_update_wrap_at();
 			syntax_highlighting_cache.clear();
@@ -638,7 +647,7 @@ void TextEdit::_notification(int p_what) {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = sqrt(target_y * target_y);
-				// To ensure minimap is responsive overide the speed setting.
+				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
 				if (Math::abs(vel) >= dist) {
@@ -1262,7 +1271,8 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Loop through characters in one line.
-					for (int j = 0; j < str.length(); j++) {
+					int j = 0;
+					for (; j < str.length(); j++) {
 
 						if (syntax_coloring) {
 							if (color_map.has(last_wrap_column + j)) {
@@ -1492,7 +1502,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (cursor.column == last_wrap_column + str.length() && cursor.line == line && cursor_wrap_index == line_wrap_index && (char_ofs + char_margin) >= xmargin_beg) {
+					if (cursor.column == (last_wrap_column + j) && cursor.line == line && cursor_wrap_index == line_wrap_index && (char_ofs + char_margin) >= xmargin_beg) {
 
 						cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
 						cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
@@ -1729,7 +1739,9 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
-			if (!caret_blink_enabled) {
+			if (caret_blink_enabled) {
+				caret_blink_timer->start();
+			} else {
 				draw_caret = true;
 			}
 
@@ -1741,6 +1753,10 @@ void TextEdit::_notification(int p_what) {
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
+
+			if (caret_blink_enabled) {
+				caret_blink_timer->stop();
+			}
 
 			OS::get_singleton()->set_ime_position(Point2());
 			OS::get_singleton()->set_ime_active(false);
@@ -2064,6 +2080,44 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 
 	r_row = row;
 	r_col = col;
+}
+
+Vector2i TextEdit::_get_cursor_pixel_pos() {
+	adjust_viewport_to_cursor();
+	int row = (cursor.line - get_first_visible_line() - cursor.wrap_ofs);
+	// Correct for hidden and wrapped lines
+	for (int i = get_first_visible_line(); i < cursor.line; i++) {
+		if (is_line_hidden(i)) {
+			row -= 1;
+			continue;
+		}
+		row += times_line_wraps(i);
+	}
+	// Row might be wrapped. Adjust row and r_column
+	Vector<String> rows2 = get_wrap_rows_text(cursor.line);
+	while (rows2.size() > 1) {
+		if (cursor.column >= rows2[0].length()) {
+			cursor.column -= rows2[0].length();
+			rows2.remove(0);
+			row++;
+		} else {
+			break;
+		}
+	}
+
+	// Calculate final pixel position
+	int y = (row - get_v_scroll_offset() + 1 /*Bottom of line*/) * get_row_height();
+	int x = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+	int ix = 0;
+	while (ix < rows2[0].size() && ix < cursor.column) {
+		if (cache.font != NULL) {
+			x += cache.font->get_char_size(rows2[0].get(ix)).width;
+		}
+		ix++;
+	}
+	x += get_indent_level(cursor.line) * cache.font->get_char_size(' ').width;
+
+	return Vector2i(x, y);
 }
 
 void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const {
@@ -2402,7 +2456,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mm.is_valid()) {
 
 		if (select_identifiers_enabled) {
-			if (mm->get_command() && mm->get_button_mask() == 0) {
+			if (!dragging_minimap && !dragging_selection && mm->get_command() && mm->get_button_mask() == 0) {
 
 				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
@@ -2460,7 +2514,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 #endif
 			if (select_identifiers_enabled) {
 
-				if (k->is_pressed()) {
+				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
 
 					highlighted_word = get_word_at_pos(get_local_mouse_position());
 					update();
@@ -3207,7 +3261,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (readonly)
 					break;
 
-				if (k->get_shift() && !k->get_command() && !k->get_alt()) {
+				if (k->get_shift() && !k->get_command() && !k->get_alt() && is_shortcut_keys_enabled()) {
 					cut();
 					break;
 				}
@@ -3438,13 +3492,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				select_all();
+				if (is_shortcut_keys_enabled()) {
+					select_all();
+				}
 #else
 				if ((!k->get_command() && !k->get_control())) {
 					scancode_handled = false;
 					break;
 				}
-				if (!k->get_shift() && k->get_command())
+				if (!k->get_shift() && k->get_command() && is_shortcut_keys_enabled())
 					select_all();
 				else if (k->get_control()) {
 					if (k->get_shift())
@@ -3500,8 +3556,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-
-				cut();
+				if (is_shortcut_keys_enabled()) {
+					cut();
+				}
 
 			} break;
 			case KEY_C: {
@@ -3511,7 +3568,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				copy();
+				if (is_shortcut_keys_enabled()) {
+					copy();
+				}
 
 			} break;
 			case KEY_Z: {
@@ -3525,10 +3584,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				if (k->get_shift())
-					redo();
-				else
-					undo();
+				if (is_shortcut_keys_enabled()) {
+					if (k->get_shift())
+						redo();
+					else
+						undo();
+				}
 			} break;
 			case KEY_Y: {
 
@@ -3541,7 +3602,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				redo();
+				if (is_shortcut_keys_enabled()) {
+					redo();
+				}
 			} break;
 			case KEY_V: {
 				if (readonly) {
@@ -3552,7 +3615,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				paste();
+				if (is_shortcut_keys_enabled()) {
+					paste();
+				}
 
 			} break;
 			case KEY_SPACE: {
@@ -3568,6 +3633,16 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 				}
 
+			} break;
+
+			case KEY_MENU: {
+				if (context_menu_enabled) {
+					menu->set_position(get_global_transform().xform(_get_cursor_pixel_pos()));
+					menu->set_size(Vector2(1, 1));
+					menu->set_scale(get_global_transform().get_scale());
+					menu->popup();
+					menu->grab_focus();
+				}
 			} break;
 
 			default: {
@@ -3891,7 +3966,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
 
-	if (!setting_text)
+	if (!setting_text && idle_detect->is_inside_tree())
 		idle_detect->start();
 
 	if (undo_enabled) {
@@ -3945,7 +4020,7 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 
 void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
 
-	if (!setting_text)
+	if (!setting_text && idle_detect->is_inside_tree())
 		idle_detect->start();
 
 	String text;
@@ -3996,6 +4071,7 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
+	_update_scrollbars();
 	cursor_set_line(new_line);
 	cursor_set_column(new_column);
 
@@ -4044,6 +4120,25 @@ int TextEdit::_get_control_height() const {
 		control_height -= h_scroll->get_size().height;
 	}
 	return control_height;
+}
+
+void TextEdit::_generate_context_menu() {
+	// Reorganize context menu.
+	menu->clear();
+	if (!readonly)
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_X : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_C : 0);
+	if (!readonly)
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
+	menu->add_separator();
+	if (is_selecting_enabled())
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
+	if (!readonly) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
+		menu->add_separator();
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_Z : 0);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z : 0);
+	}
 }
 
 int TextEdit::get_visible_rows() const {
@@ -4387,11 +4482,14 @@ bool TextEdit::cursor_get_blink_enabled() const {
 void TextEdit::cursor_set_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
 
-	if (p_enabled) {
-		caret_blink_timer->start();
-	} else {
-		caret_blink_timer->stop();
+	if (has_focus()) {
+		if (p_enabled) {
+			caret_blink_timer->start();
+		} else {
+			caret_blink_timer->stop();
+		}
 	}
+
 	draw_caret = true;
 }
 
@@ -4751,6 +4849,7 @@ void TextEdit::set_readonly(bool p_readonly) {
 		return;
 
 	readonly = p_readonly;
+	_generate_context_menu();
 
 	// Reorganize context menu.
 	menu->clear();
@@ -4808,10 +4907,12 @@ int TextEdit::get_max_chars() const {
 
 void TextEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
-		caret_blink_timer->stop();
-		caret_blink_timer->start();
 		draw_caret = true;
-		update();
+		if (has_focus()) {
+			caret_blink_timer->stop();
+			caret_blink_timer->start();
+			update();
+		}
 	}
 }
 
@@ -5088,6 +5189,8 @@ void TextEdit::paste() {
 }
 
 void TextEdit::select_all() {
+	if (!selecting_enabled)
+		return;
 
 	if (text.size() == 1 && text[0].length() == 0)
 		return;
@@ -5112,6 +5215,8 @@ void TextEdit::deselect() {
 }
 
 void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+	if (!selecting_enabled)
+		return;
 
 	if (p_from_line < 0)
 		p_from_line = 0;
@@ -5356,6 +5461,9 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 						break;
 					}
 					pos_from = last_pos - p_key.length();
+					if (pos_from < 0) {
+						break;
+					}
 				}
 			} else {
 				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, pos_from) : text_line.findn(p_key, pos_from)) != -1) {
@@ -6004,7 +6112,7 @@ bool TextEdit::is_indent_using_spaces() const {
 }
 
 void TextEdit::set_indent_size(const int p_size) {
-	ERR_FAIL_COND(p_size <= 0);
+	ERR_FAIL_COND_MSG(p_size <= 0, "Indend size must be greater than 0.");
 	indent_size = p_size;
 	text.set_indent_size(p_size);
 
@@ -6224,7 +6332,7 @@ void TextEdit::_confirm_completion() {
 	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
 
 	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
-		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+		_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
 	if (last_completion_char == '(') {
@@ -6752,6 +6860,29 @@ bool TextEdit::is_context_menu_enabled() {
 	return context_menu_enabled;
 }
 
+void TextEdit::set_shortcut_keys_enabled(bool p_enabled) {
+	shortcut_keys_enabled = p_enabled;
+
+	_generate_context_menu();
+}
+
+void TextEdit::set_selecting_enabled(bool p_enabled) {
+	selecting_enabled = p_enabled;
+
+	if (!selecting_enabled)
+		deselect();
+
+	_generate_context_menu();
+}
+
+bool TextEdit::is_selecting_enabled() const {
+	return selecting_enabled;
+}
+
+bool TextEdit::is_shortcut_keys_enabled() const {
+	return shortcut_keys_enabled;
+}
+
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
 }
@@ -6807,6 +6938,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_wrap_enabled"), &TextEdit::is_wrap_enabled);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &TextEdit::set_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &TextEdit::is_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
+	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
@@ -6897,6 +7032,8 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
@@ -7055,7 +7192,9 @@ TextEdit::TextEdit() {
 	minimap_char_size = Point2(1, 2);
 	minimap_line_spacing = 1;
 
+	selecting_enabled = true;
 	context_menu_enabled = true;
+	shortcut_keys_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.

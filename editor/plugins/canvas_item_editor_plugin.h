@@ -80,6 +80,7 @@ public:
 		TOOL_ROTATE,
 		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
+		TOOL_RULER,
 		TOOL_MAX
 	};
 
@@ -258,13 +259,14 @@ private:
 
 	float snap_rotation_step;
 	float snap_rotation_offset;
-	bool snap_active;
+	bool smart_snap_active;
+	bool grid_snap_active;
+
 	bool snap_node_parent;
 	bool snap_node_anchors;
 	bool snap_node_sides;
 	bool snap_node_center;
 	bool snap_other_nodes;
-	bool snap_grid;
 	bool snap_guides;
 	bool snap_rotation;
 	bool snap_relative;
@@ -275,6 +277,9 @@ private:
 	bool key_scale;
 	bool panning;
 	bool pan_pressed;
+
+	bool ruler_tool_active;
+	Point2 ruler_tool_origin;
 
 	MenuOption last_option;
 
@@ -341,7 +346,10 @@ private:
 	ToolButton *pivot_button;
 	ToolButton *pan_button;
 
-	ToolButton *snap_button;
+	ToolButton *ruler_button;
+
+	ToolButton *smart_snap_button;
+	ToolButton *grid_snap_button;
 	MenuButton *snap_config_menu;
 	PopupMenu *smartsnap_config_popup;
 
@@ -457,6 +465,7 @@ private:
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_ruler_tool();
 	void _draw_control_anchors(Control *control);
 	void _draw_control_helpers(Control *control);
 	void _draw_selection();
@@ -476,6 +485,7 @@ private:
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
+	bool _gui_input_ruler_tool(const Ref<InputEvent> &p_event);
 	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
@@ -517,10 +527,12 @@ private:
 
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
+	void _update_zoom_label();
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();
-	void _button_toggle_snap(bool p_status);
+	void _button_toggle_smart_snap(bool p_status);
+	void _button_toggle_grid_snap(bool p_status);
 	void _button_tool_select(int p_index);
 
 	HSplitContainer *palette_split;

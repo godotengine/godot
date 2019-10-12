@@ -110,8 +110,10 @@
 			</return>
 			<argument index="0" name="to_position" type="Vector3">
 			</argument>
+			<argument index="1" name="include_disabled" type="bool" default="false">
+			</argument>
 			<description>
-				Returns the ID of the closest point to [code]to_position[/code]. Returns -1 if there are no points in the points pool.
+				Returns the ID of the closest point to [code]to_position[/code], optionally taking disabled points into account. Returns -1 if there are no points in the points pool.
 			</description>
 		</method>
 		<method name="get_closest_position_in_segment" qualifiers="const">

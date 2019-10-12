@@ -578,6 +578,10 @@ void VisualScript::get_data_connection_list(const StringName &p_func, List<DataC
 	}
 }
 
+void VisualScript::set_tool_enabled(bool p_enabled) {
+	is_tool_script = p_enabled;
+}
+
 void VisualScript::add_variable(const StringName &p_name, const Variant &p_default_value, bool p_export) {
 
 	ERR_FAIL_COND(instances.size());
@@ -894,7 +898,7 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 
 #ifdef TOOLS_ENABLED
 
-	if (!ScriptServer::is_scripting_enabled()) {
+	if (!ScriptServer::is_scripting_enabled() && !is_tool_script) {
 
 		PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(VisualScriptLanguage::singleton, Ref<Script>((Script *)this), p_this));
 		placeholders.insert(sins);
@@ -958,7 +962,7 @@ Error VisualScript::reload(bool p_keep_state) {
 
 bool VisualScript::is_tool() const {
 
-	return false;
+	return is_tool_script;
 }
 
 bool VisualScript::is_valid() const {
@@ -1010,17 +1014,16 @@ void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 			Ref<VisualScriptFunction> func = E->get().nodes[E->get().function_id].node;
 			if (func.is_valid()) {
-
 				for (int i = 0; i < func->get_argument_count(); i++) {
 					PropertyInfo arg;
 					arg.name = func->get_argument_name(i);
 					arg.type = func->get_argument_type(i);
 					mi.arguments.push_back(arg);
 				}
+
+				p_list->push_back(mi);
 			}
 		}
-
-		p_list->push_back(mi);
 	}
 }
 
@@ -1133,6 +1136,9 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 	Array funcs = d["functions"];
 	functions.clear();
 
+	Vector2 last_pos = Vector2(-100 * funcs.size(), -100 * funcs.size()); // this is the center of the last fn box
+	Vector2 last_size = Vector2(0.0, 0.0);
+
 	for (int i = 0; i < funcs.size(); i++) {
 
 		Dictionary func = funcs[i];
@@ -1145,11 +1151,42 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 
 		Array nodes = func["nodes"];
 
-		for (int j = 0; j < nodes.size(); j += 3) {
+		if (!d.has("vs_unify") && nodes.size() > 0) {
+			Vector2 top_left = nodes[1];
+			Vector2 bottom_right = nodes[1];
 
-			add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
+			for (int j = 0; j < nodes.size(); j += 3) {
+				Point2 pos = nodes[j + 1];
+				if (pos.y > top_left.y) {
+					top_left.y = pos.y;
+				}
+				if (pos.y < bottom_right.y) {
+					bottom_right.y = pos.y;
+				}
+				if (pos.x > bottom_right.x) {
+					bottom_right.x = pos.x;
+				}
+				if (pos.x < top_left.x) {
+					top_left.x = pos.x;
+				}
+			}
+
+			Vector2 size = Vector2(bottom_right.x - top_left.x, top_left.y - bottom_right.y);
+
+			Vector2 offset = last_pos + (last_size / 2.0) + (size / 2.0); // dunno I might just keep it in one axis but diagonal feels better....
+
+			last_pos = offset;
+			last_size = size;
+
+			for (int j = 0; j < nodes.size(); j += 3) {
+				add_node(name, nodes[j], nodes[j + 2], offset + nodes[j + 1]); // also add an additional buffer if you want to
+			}
+
+		} else {
+			for (int j = 0; j < nodes.size(); j += 3) {
+				add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
+			}
 		}
-
 		Array sequence_connections = func["sequence_connections"];
 
 		for (int j = 0; j < sequence_connections.size(); j += 3) {
@@ -1164,6 +1201,11 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 			data_connect(name, data_connections[j + 0], data_connections[j + 1], data_connections[j + 2], data_connections[j + 3]);
 		}
 	}
+
+	if (d.has("is_tool_script"))
+		is_tool_script = d["is_tool_script"];
+	else
+		is_tool_script = false;
 }
 
 Dictionary VisualScript::_get_data() const {
@@ -1245,6 +1287,8 @@ Dictionary VisualScript::_get_data() const {
 	}
 
 	d["functions"] = funcs;
+	d["is_tool_script"] = is_tool_script;
+	d["vs_unify"] = true;
 
 	return d;
 }
@@ -1317,6 +1361,10 @@ void VisualScript::_bind_methods() {
 VisualScript::VisualScript() {
 
 	base_type = "Object";
+}
+
+StringName VisualScript::get_default_func() const {
+	return StringName("f_312843592");
 }
 
 Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_func, int from_node) {
@@ -1392,6 +1440,10 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 	for (const Map<StringName, VisualScript::Function>::Element *E = script->functions.front(); E; E = E->next()) {
 
+		if (E->key() == script->get_default_func()) {
+			continue;
+		}
+
 		MethodInfo mi;
 		mi.name = E->key();
 		if (E->get().function_id >= 0 && E->get().nodes.has(E->get().function_id)) {
@@ -1410,8 +1462,6 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 				if (!vsf->is_sequenced()) { //assumed constant if not sequenced
 					mi.flags |= METHOD_FLAG_CONST;
 				}
-
-				//vsf->Get_ for now at least it does not return..
 			}
 		}
 
@@ -1419,6 +1469,9 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 bool VisualScriptInstance::has_method(const StringName &p_method) const {
+
+	if (p_method == script->get_default_func())
+		return false;
 
 	return script->functions.has(p_method);
 }
@@ -1991,6 +2044,9 @@ Ref<Script> VisualScriptInstance::get_script() const {
 
 MultiplayerAPI::RPCMode VisualScriptInstance::get_rpc_mode(const StringName &p_method) const {
 
+	if (p_method == script->get_default_func())
+		return MultiplayerAPI::RPC_MODE_DISABLED;
+
 	const Map<StringName, VisualScript::Function>::Element *E = script->functions.find(p_method);
 	if (!E) {
 		return MultiplayerAPI::RPC_MODE_DISABLED;
@@ -2039,10 +2095,13 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 	for (const Map<StringName, VisualScript::Variable>::Element *E = script->variables.front(); E; E = E->next()) {
 		variables[E->key()] = E->get().default_value;
-		//no hacer que todo exporte, solo las que queres!
 	}
 
 	for (const Map<StringName, VisualScript::Function>::Element *E = script->functions.front(); E; E = E->next()) {
+
+		if (E->key() == script->get_default_func()) {
+			continue;
+		}
 
 		Function function;
 		function.node = E->get().function_id;
@@ -2080,6 +2139,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 		for (const Map<int, VisualScript::Function::NodeData>::Element *F = E->get().nodes.front(); F; F = F->next()) {
 
 			Ref<VisualScriptNode> node = F->get().node;
+
 			VisualScriptNodeInstance *instance = node->instance(this); //create instance
 			ERR_FAIL_COND(!instance);
 
@@ -2450,7 +2510,7 @@ bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, c
 		_debug_parse_err_node = p_node;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false);
+		ScriptDebugger::get_singleton()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -2464,7 +2524,7 @@ bool VisualScriptLanguage::debug_break(const String &p_error, bool p_allow_conti
 		_debug_parse_err_node = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
+		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, true);
 		return true;
 	} else {
 		return false;

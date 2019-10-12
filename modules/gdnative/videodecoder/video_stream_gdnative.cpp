@@ -149,7 +149,7 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	if (mix_callback) {
 		if (pcm_write_idx >= 0) {
 			// Previous remains
-			int mixed = mix_callback(mix_udata, pcm, samples_decoded);
+			int mixed = mix_callback(mix_udata, pcm + pcm_write_idx * num_channels, samples_decoded);
 			if (mixed == samples_decoded) {
 				pcm_write_idx = -1;
 			} else {
@@ -168,8 +168,12 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 		}
 	}
 
-	while (interface->get_playback_position(data_struct) < time && playing) {
+	if (seek_backward) {
+		update_texture();
+		seek_backward = false;
+	}
 
+	while (interface->get_playback_position(data_struct) < time && playing) {
 		update_texture();
 	}
 }
@@ -197,6 +201,7 @@ VideoStreamPlaybackGDNative::VideoStreamPlaybackGDNative() :
 		mix_callback(NULL),
 		num_channels(-1),
 		time(0),
+		seek_backward(false),
 		mix_rate(0),
 		delay_compensation(0),
 		pcm(NULL),
@@ -261,6 +266,13 @@ void VideoStreamPlaybackGDNative::stop() {
 void VideoStreamPlaybackGDNative::seek(float p_time) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->seek(data_struct, p_time);
+	if (p_time < time)
+		seek_backward = true;
+	time = p_time;
+	// reset audio buffers
+	memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+	pcm_write_idx = -1;
+	samples_decoded = 0;
 }
 
 void VideoStreamPlaybackGDNative::set_paused(bool p_paused) {

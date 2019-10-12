@@ -138,6 +138,7 @@ class TileSetEditor : public HSplitContainer {
 	int current_item_index;
 	Sprite *preview;
 	ScrollContainer *scroll;
+	Label *empty_message;
 	Control *workspace_container;
 	bool draw_handles;
 	Control *workspace_overlay;

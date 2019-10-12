@@ -1522,7 +1522,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return err;
 				if (tk.type != TK_STRING) {
 					r_err_str = "Error reading quoted string";
-					return err;
+					return ERR_INVALID_DATA;
 				}
 
 				what = tk.value;

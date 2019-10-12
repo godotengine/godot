@@ -80,6 +80,14 @@
 				Returns the number of visible lines.
 			</description>
 		</method>
+		<method name="install_effect">
+			<return type="void">
+			</return>
+			<argument index="0" name="effect" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
@@ -94,6 +102,14 @@
 			</argument>
 			<description>
 				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+			</description>
+		</method>
+		<method name="parse_expressions_for_values">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="expressions" type="PoolStringArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="pop">
@@ -228,6 +244,8 @@
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
+		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
+		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
@@ -237,6 +255,7 @@
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
 			The text's visibility, as a [float] between 0.0 and 1.0.
 		</member>
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -319,7 +338,19 @@
 		</constant>
 		<constant name="ITEM_TABLE" value="11" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="12" enum="ItemType">
+		<constant name="ITEM_FADE" value="12" enum="ItemType">
+		</constant>
+		<constant name="ITEM_SHAKE" value="13" enum="ItemType">
+		</constant>
+		<constant name="ITEM_WAVE" value="14" enum="ItemType">
+		</constant>
+		<constant name="ITEM_TORNADO" value="15" enum="ItemType">
+		</constant>
+		<constant name="ITEM_RAINBOW" value="16" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="18" enum="ItemType">
+		</constant>
+		<constant name="ITEM_META" value="17" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>

@@ -340,7 +340,7 @@ bool MessageQueue::is_flushing() const {
 
 MessageQueue::MessageQueue() {
 
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND_MSG(singleton != NULL, "MessageQueue singleton already exist.");
 	singleton = this;
 	flushing = false;
 

@@ -574,6 +574,8 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		}, cursors[p_shape].utf8().get_data());
 		/* clang-format on */
 		cursors[p_shape] = "";
+
+		cursors_cache.erase(p_shape);
 	}
 
 	set_cursor_shape(cursor_shape);

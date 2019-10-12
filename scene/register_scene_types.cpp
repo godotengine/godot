@@ -101,6 +101,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
@@ -138,7 +139,6 @@
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
-#include "scene/resources/dynamic_font_stb.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape.h"
 #include "scene/resources/line_shape_2d.h"
@@ -343,6 +343,8 @@ void register_scene_types() {
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();
+	ClassDB::register_class<RichTextEffect>();
+	ClassDB::register_class<CharFXTransform>();
 	ClassDB::register_class<PopupDialog>();
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
@@ -360,6 +362,9 @@ void register_scene_types() {
 #endif
 
 	/* REGISTER 3D */
+
+	ClassDB::register_class<Skin>();
+	ClassDB::register_virtual_class<SkinReference>();
 
 	ClassDB::register_class<Spatial>();
 	ClassDB::register_virtual_class<SpatialGizmo>();
@@ -528,6 +533,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
+	ClassDB::register_class<VisualShaderNodeScalarSwitch>();
 	ClassDB::register_class<VisualShaderNodeFresnel>();
 	ClassDB::register_class<VisualShaderNodeExpression>();
 	ClassDB::register_class<VisualShaderNodeGlobalExpression>();

@@ -82,7 +82,7 @@
 			</return>
 			<argument index="0" name="string" type="String">
 			</argument>
-			<argument index="1" name="p_width" type="float">
+			<argument index="1" name="width" type="float">
 			</argument>
 			<description>
 			</description>

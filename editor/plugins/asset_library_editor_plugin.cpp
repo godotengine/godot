@@ -32,8 +32,8 @@
 
 #include "core/io/json.h"
 #include "core/version.h"
-#include "editor_node.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
@@ -290,6 +290,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_vbox->add_child(description);
 	description->set_v_size_flags(SIZE_EXPAND_FILL);
 	description->connect("meta_clicked", this, "_link_click");
+	description->add_constant_override("line_separation", Math::round(5 * EDSCALE));
 
 	VBoxContainer *previews_vbox = memnew(VBoxContainer);
 	hbox->add_child(previews_vbox);
@@ -577,7 +578,6 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
-			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 
@@ -585,7 +585,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible() && initial_loading) {
 				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
@@ -611,7 +611,6 @@ void EditorAssetLibrary::_notification(int p_what) {
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
 			downloads_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
-			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
@@ -644,23 +643,27 @@ void EditorAssetLibrary::_install_asset() {
 }
 
 const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
-	"downloads",
+	"updated",
+	"updated",
+	"name",
 	"name",
 	"cost",
-	"updated"
+	"cost",
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Downloads",
-	"Name",
-	"License", // "cost" stores the SPDX license name in the Godot Asset Library.
-	"Updated"
+	"Recently Updated",
+	"Least Recently Updated",
+	"Name (A-Z)",
+	"Name (Z-A)",
+	"License (A-Z)", // "cost" stores the SPDX license name in the Godot Asset Library.
+	"License (Z-A)", // "cost" stores the SPDX license name in the Godot Asset Library.
 };
 
 const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 	"official",
 	"community",
-	"testing"
+	"testing",
 };
 
 void EditorAssetLibrary::_select_author(int p_id) {
@@ -927,8 +930,8 @@ void EditorAssetLibrary::_search(int p_page) {
 		args += "&category=" + itos(categories->get_item_metadata(categories->get_selected()));
 	}
 
-	if (reverse->is_pressed()) {
-
+	// Sorting options with an odd index are always the reverse of the previous one
+	if (sort->get_selected() % 2 == 1) {
 		args += "&reverse=true";
 	}
 
@@ -1132,6 +1135,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		} break;
 		case REQUESTING_SEARCH: {
 
+			initial_loading = false;
+
 			// The loading text only needs to be displayed before the first page is loaded
 			library_loading->hide();
 
@@ -1327,6 +1332,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
+	initial_loading = true;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
 
@@ -1376,12 +1382,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(SIZE_EXPAND_FILL);
 	sort->connect("item_selected", this, "_rerun_search");
-
-	reverse = memnew(ToolButton);
-	reverse->set_toggle_mode(true);
-	reverse->connect("toggled", this, "_rerun_search");
-	reverse->set_tooltip(TTR("Reverse sorting."));
-	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
 

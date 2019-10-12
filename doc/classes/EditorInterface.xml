@@ -25,6 +25,12 @@
 				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
+		<method name="get_current_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_edited_scene_root">
 			<return type="Node">
 			</return>

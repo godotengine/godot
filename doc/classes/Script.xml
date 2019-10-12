@@ -32,6 +32,38 @@
 				Returns the script's base type.
 			</description>
 		</method>
+		<method name="get_property_default_value">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_constant_map">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_method_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_property_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_signal_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="has_script_signal" qualifiers="const">
 			<return type="bool">
 			</return>

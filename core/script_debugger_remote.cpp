@@ -129,10 +129,13 @@ void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
 	ResourceSaver::save(p_path, ps);
 }
 
-void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) {
+void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint) {
 
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
+
+	if (skip_breakpoints && !p_is_error_breakpoint)
+		return;
 
 	ERR_FAIL_COND_MSG(!tcp_client->is_connected_to_host(), "Script Debugger failed to connect, but being used anyway.");
 
@@ -155,6 +158,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 			Variant var;
 			Error err = packet_peer_stream->get_var(var);
+
 			ERR_CONTINUE(err != OK);
 			ERR_CONTINUE(var.get_type() != Variant::ARRAY);
 
@@ -266,7 +270,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				break;
 
 			} else if (command == "continue") {
-
 				set_depth(-1);
 				set_lines_left(-1);
 				OS::get_singleton()->move_window_to_foreground();
@@ -302,6 +305,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 			} else if (command == "save_node") {
 				_save_node(cmd[1], cmd[2]);
+			} else if (command == "set_skip_breakpoints") {
+				skip_breakpoints = cmd[1];
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -764,6 +769,14 @@ void ScriptDebuggerRemote::_poll_events() {
 			profiling = false;
 			_send_profiling_data(false);
 			print_line("PROFILING END!");
+		} else if (command == "start_network_profiling") {
+
+			multiplayer->profiling_start();
+			profiling_network = true;
+		} else if (command == "stop_network_profiling") {
+
+			multiplayer->profiling_end();
+			profiling_network = false;
 		} else if (command == "reload_scripts") {
 			reload_all_scripts = true;
 		} else if (command == "breakpoint") {
@@ -773,6 +786,8 @@ void ScriptDebuggerRemote::_poll_events() {
 				insert_breakpoint(cmd[2], cmd[1]);
 			else
 				remove_breakpoint(cmd[2], cmd[1]);
+		} else if (command == "set_skip_breakpoints") {
+			skip_breakpoints = cmd[1];
 		} else {
 			_parse_live_edit(cmd);
 		}
@@ -911,6 +926,18 @@ void ScriptDebuggerRemote::idle_poll() {
 		}
 	}
 
+	if (profiling_network) {
+		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		if (pt - last_net_bandwidth_time > 200) {
+			last_net_bandwidth_time = pt;
+			_send_network_bandwidth_usage();
+		}
+		if (pt - last_net_prof_time > 100) {
+			last_net_prof_time = pt;
+			_send_network_profiling_data();
+		}
+	}
+
 	if (reload_all_scripts) {
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -920,6 +947,35 @@ void ScriptDebuggerRemote::idle_poll() {
 	}
 
 	_poll_events();
+}
+
+void ScriptDebuggerRemote::_send_network_profiling_data() {
+	ERR_FAIL_COND(multiplayer.is_null());
+
+	int n_nodes = multiplayer->get_profiling_frame(&network_profile_info.write[0]);
+
+	packet_peer_stream->put_var("network_profile");
+	packet_peer_stream->put_var(n_nodes * 6);
+	for (int i = 0; i < n_nodes; ++i) {
+		packet_peer_stream->put_var(network_profile_info[i].node);
+		packet_peer_stream->put_var(network_profile_info[i].node_path);
+		packet_peer_stream->put_var(network_profile_info[i].incoming_rpc);
+		packet_peer_stream->put_var(network_profile_info[i].incoming_rset);
+		packet_peer_stream->put_var(network_profile_info[i].outgoing_rpc);
+		packet_peer_stream->put_var(network_profile_info[i].outgoing_rset);
+	}
+}
+
+void ScriptDebuggerRemote::_send_network_bandwidth_usage() {
+	ERR_FAIL_COND(multiplayer.is_null());
+
+	int incoming_bandwidth = multiplayer->get_incoming_bandwidth_usage();
+	int outgoing_bandwidth = multiplayer->get_outgoing_bandwidth_usage();
+
+	packet_peer_stream->put_var("network_bandwidth");
+	packet_peer_stream->put_var(2);
+	packet_peer_stream->put_var(incoming_bandwidth);
+	packet_peer_stream->put_var(outgoing_bandwidth);
 }
 
 void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_args) {
@@ -1061,6 +1117,10 @@ void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
 	live_edit_funcs = p_funcs;
 }
 
+void ScriptDebuggerRemote::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
+	multiplayer = p_multiplayer;
+}
+
 bool ScriptDebuggerRemote::is_profiling() const {
 
 	return profiling;
@@ -1102,16 +1162,23 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	physics_frame_time = p_physics_frame_time;
 }
 
+void ScriptDebuggerRemote::set_skip_breakpoints(bool p_skip_breakpoints) {
+	skip_breakpoints = p_skip_breakpoints;
+}
+
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		profiling(false),
+		profiling_network(false),
 		max_frame_functions(16),
 		skip_profile_frame(false),
 		reload_all_scripts(false),
 		tcp_client(Ref<StreamPeerTCP>(memnew(StreamPeerTCP))),
 		packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
 		last_perf_time(0),
+		last_net_prof_time(0),
+		last_net_bandwidth_time(0),
 		performance(Engine::get_singleton()->get_singleton_object("Performance")),
 		requested_quit(false),
 		mutex(Mutex::create()),
@@ -1143,6 +1210,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 	add_error_handler(&eh);
 
 	profile_info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
+	network_profile_info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
 	profile_info_ptrs.resize(profile_info.size());
 }
 

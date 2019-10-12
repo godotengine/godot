@@ -56,15 +56,16 @@ void GDScriptLanguageServer::_notification(int p_what) {
 void GDScriptLanguageServer::thread_main(void *p_userdata) {
 	GDScriptLanguageServer *self = static_cast<GDScriptLanguageServer *>(p_userdata);
 	while (!self->thread_exit) {
+		// Poll 20 times per second
 		self->protocol.poll();
-		OS::get_singleton()->delay_usec(10);
+		OS::get_singleton()->delay_usec(50000);
 	}
 }
 
 void GDScriptLanguageServer::start() {
 	int port = (int)_EDITOR_GET("network/language_server/remote_port");
 	if (protocol.start(port) == OK) {
-		EditorNode::get_log()->add_message("** GDScript Language Server Started **");
+		EditorNode::get_log()->add_message("--- GDScript language server started ---", EditorLog::MSG_TYPE_EDITOR);
 		ERR_FAIL_COND(thread != NULL || thread_exit);
 		thread_exit = false;
 		thread = Thread::create(GDScriptLanguageServer::thread_main, this);
@@ -78,7 +79,7 @@ void GDScriptLanguageServer::stop() {
 	memdelete(thread);
 	thread = NULL;
 	protocol.stop();
-	EditorNode::get_log()->add_message("** GDScript Language Server Stopped **");
+	EditorNode::get_log()->add_message("--- GDScript language server stopped ---", EditorLog::MSG_TYPE_EDITOR);
 }
 
 void register_lsp_types() {

@@ -146,7 +146,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector2] or [Rect2] by this transform.
+				Transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -155,7 +155,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector2] or [Rect2] by this transform.
+				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
 			</description>
 		</method>
 	</methods>

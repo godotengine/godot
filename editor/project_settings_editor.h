@@ -158,6 +158,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	void _toggle_search_bar(bool p_pressed);
 
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
 	void _copy_to_platform_about_to_show();
 
 	ProjectSettingsEditor();
@@ -174,6 +178,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _editor_restart_close();
 
 protected:
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 

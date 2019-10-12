@@ -31,11 +31,16 @@
 #ifndef GODOT_LSP_H
 #define GODOT_LSP_H
 
-#include "core/variant.h"
+#include "core/class_db.h"
+#include "core/list.h"
+#include "editor/doc/doc_data.h"
 
 namespace lsp {
 
 typedef String DocumentUri;
+
+/** Format BBCode documentation from DocData to markdown */
+static String marked_documentation(const String &p_bbcode);
 
 /**
  * Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
@@ -199,6 +204,41 @@ struct TextDocumentPositionParams {
 	}
 };
 
+struct DocumentLinkParams {
+	/**
+	 * The document to provide document links for.
+	 */
+	TextDocumentIdentifier textDocument;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		textDocument.load(p_params["textDocument"]);
+	}
+};
+
+/**
+ * A document link is a range in a text document that links to an internal or external resource, like another
+ * text document or a web site.
+ */
+struct DocumentLink {
+
+	/**
+	 * The range this link applies to.
+	 */
+	Range range;
+
+	/**
+	 * The uri this link points to. If missing a resolve request is sent later.
+	 */
+	DocumentUri target;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		dict["target"] = target;
+		return dict;
+	}
+};
+
 /**
  * A textual edit applicable to a text document.
  */
@@ -246,6 +286,9 @@ struct Command {
 		return dict;
 	}
 };
+
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
 
 namespace TextDocumentSyncKind {
 /**
@@ -557,6 +600,7 @@ struct TextDocumentContentChangeEvent {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 namespace DiagnosticSeverity {
 /**
 	 * Reports an error.
@@ -657,6 +701,7 @@ struct Diagnostic {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * Describes the content type that a client supports in various
  * result literals like `Hover`, `ParameterInfo` or `CompletionItem`.
@@ -721,6 +766,9 @@ struct MarkupContent {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// And here C++ compilers are unhappy with our enumeration name like Color, File, Reference etc.
 /**
  * The kind of a completion entry.
  */
@@ -752,6 +800,7 @@ static const int Operator = 24;
 static const int TypeParameter = 25;
 }; // namespace CompletionItemKind
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * Defines whether the insert text in a completion item should be interpreted as
  * plain text or a snippet.
@@ -944,36 +993,39 @@ struct CompletionList {
 	Vector<CompletionItem> items;
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// And here C++ compilers are unhappy with our enumeration name like String, Array, Object etc
 /**
  * A symbol kind.
  */
 namespace SymbolKind {
-static const int File = 1;
-static const int Module = 2;
-static const int Namespace = 3;
-static const int Package = 4;
-static const int Class = 5;
-static const int Method = 6;
-static const int Property = 7;
-static const int Field = 8;
-static const int Constructor = 9;
-static const int Enum = 10;
-static const int Interface = 11;
-static const int Function = 12;
-static const int Variable = 13;
-static const int Constant = 14;
-static const int String = 15;
-static const int Number = 16;
-static const int Boolean = 17;
-static const int Array = 18;
-static const int Object = 19;
-static const int Key = 20;
-static const int Null = 21;
-static const int EnumMember = 22;
-static const int Struct = 23;
-static const int Event = 24;
-static const int Operator = 25;
-static const int TypeParameter = 26;
+static const int File = 0;
+static const int Module = 1;
+static const int Namespace = 2;
+static const int Package = 3;
+static const int Class = 4;
+static const int Method = 5;
+static const int Property = 6;
+static const int Field = 7;
+static const int Constructor = 8;
+static const int Enum = 9;
+static const int Interface = 10;
+static const int Function = 11;
+static const int Variable = 12;
+static const int Constant = 13;
+static const int String = 14;
+static const int Number = 15;
+static const int Boolean = 16;
+static const int Array = 17;
+static const int Object = 18;
+static const int Key = 19;
+static const int Null = 20;
+static const int EnumMember = 21;
+static const int Struct = 22;
+static const int Event = 23;
+static const int Operator = 24;
+static const int TypeParameter = 25;
 }; // namespace SymbolKind
 
 /**
@@ -1099,7 +1151,7 @@ struct DocumentSymbol {
 	 */
 	Vector<DocumentSymbol> children;
 
-	_FORCE_INLINE_ Dictionary to_json() const {
+	Dictionary to_json(bool with_doc = false) const {
 		Dictionary dict;
 		dict["name"] = name;
 		dict["detail"] = detail;
@@ -1107,10 +1159,14 @@ struct DocumentSymbol {
 		dict["deprecated"] = deprecated;
 		dict["range"] = range.to_json();
 		dict["selectionRange"] = selectionRange.to_json();
+		if (with_doc) {
+			dict["documentation"] = documentation;
+			dict["native_class"] = native_class;
+		}
 		Array arr;
 		arr.resize(children.size());
 		for (int i = 0; i < children.size(); i++) {
-			arr[i] = children[i].to_json();
+			arr[i] = children[i].to_json(with_doc);
 		}
 		dict["children"] = arr;
 		return dict;
@@ -1142,7 +1198,7 @@ struct DocumentSymbol {
 			markdown.value = "\t" + detail + "\n\n";
 		}
 		if (documentation.length()) {
-			markdown.value += documentation + "\n\n";
+			markdown.value += marked_documentation(documentation) + "\n\n";
 		}
 		if (script_path.length()) {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
@@ -1191,6 +1247,17 @@ struct DocumentSymbol {
 		}
 
 		return item;
+	}
+};
+
+struct NativeSymbolInspectParams {
+
+	String native_class;
+	String symbol_name;
+
+	void load(const Dictionary &p_params) {
+		native_class = p_params["native_class"];
+		symbol_name = p_params["symbol_name"];
 	}
 };
 
@@ -1254,6 +1321,7 @@ struct FoldingRange {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * How a completion was triggered
  */
@@ -1500,6 +1568,94 @@ struct InitializeResult {
 		return dict;
 	}
 };
+
+struct GodotNativeClassInfo {
+
+	String name;
+	const DocData::ClassDoc *class_doc = NULL;
+	const ClassDB::ClassInfo *class_info = NULL;
+
+	Dictionary to_json() {
+		Dictionary dict;
+		dict["name"] = name;
+		dict["inherits"] = class_doc->inherits;
+		return dict;
+	}
+};
+
+/** Features not included in the standart lsp specifications */
+struct GodotCapabilities {
+
+	/**
+	 * Native class list
+	*/
+	List<GodotNativeClassInfo> native_classes;
+
+	Dictionary to_json() {
+		Dictionary dict;
+		Array classes;
+		for (List<GodotNativeClassInfo>::Element *E = native_classes.front(); E; E = E->next()) {
+			classes.push_back(E->get().to_json());
+		}
+		dict["native_classes"] = classes;
+		return dict;
+	}
+};
+
+/** Format BBCode documentation from DocData to markdown */
+static String marked_documentation(const String &p_bbcode) {
+
+	String markdown = p_bbcode.strip_edges();
+
+	Vector<String> lines = markdown.split("\n");
+	bool in_code_block = false;
+	int code_block_indent = -1;
+
+	markdown = "";
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+		int block_start = line.find("[codeblock]");
+		if (block_start != -1) {
+			code_block_indent = block_start;
+			in_code_block = true;
+			line = "\n";
+		} else if (in_code_block) {
+			line = "\t" + line.substr(code_block_indent, line.length());
+		}
+
+		if (in_code_block && line.find("[/codeblock]") != -1) {
+			line = "\n";
+			in_code_block = false;
+		}
+
+		if (!in_code_block) {
+			line = line.strip_edges();
+			line = line.replace("[code]", "`");
+			line = line.replace("[/code]", "`");
+			line = line.replace("[i]", "*");
+			line = line.replace("[/i]", "*");
+			line = line.replace("[b]", "**");
+			line = line.replace("[/b]", "**");
+			line = line.replace("[u]", "__");
+			line = line.replace("[/u]", "__");
+			line = line.replace("[method ", "`");
+			line = line.replace("[member ", "`");
+			line = line.replace("[signal ", "`");
+			line = line.replace("[enum ", "`");
+			line = line.replace("[constant ", "`");
+			line = line.replace("[", "`");
+			line = line.replace("]", "`");
+		}
+
+		if (!in_code_block && i < lines.size() - 1) {
+			line += "\n\n";
+		} else if (i < lines.size() - 1) {
+			line += "\n";
+		}
+		markdown += line;
+	}
+	return markdown;
+}
 
 } // namespace lsp
 

@@ -149,12 +149,38 @@ Ref<Mesh> MeshInstance::get_mesh() const {
 
 void MeshInstance::_resolve_skeleton_path() {
 
-	if (skeleton_path.is_empty())
-		return;
+	Ref<SkinReference> new_skin_reference;
 
-	Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
-	if (skeleton)
-		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skeleton->get_skeleton());
+	if (!skeleton_path.is_empty()) {
+		Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
+		if (skeleton) {
+			new_skin_reference = skeleton->register_skin(skin);
+			if (skin.is_null()) {
+				//a skin was created for us
+				skin = new_skin_reference->get_skin();
+				_change_notify();
+			}
+		}
+	}
+
+	skin_ref = new_skin_reference;
+
+	if (skin_ref.is_valid()) {
+		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+	} else {
+		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
+	}
+}
+
+void MeshInstance::set_skin(const Ref<Skin> &p_skin) {
+	skin = p_skin;
+	if (!is_inside_tree())
+		return;
+	_resolve_skeleton_path();
+}
+
+Ref<Skin> MeshInstance::get_skin() const {
+	return skin;
 }
 
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
@@ -365,6 +391,8 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
+	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance::set_skin);
+	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance::get_skin);
 
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
@@ -380,6 +408,7 @@ void MeshInstance::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton"), "set_skeleton_path", "get_skeleton_path");
 }
 

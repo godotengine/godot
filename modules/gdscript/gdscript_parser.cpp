@@ -252,6 +252,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 		}
 
+		// Check that the next token is not TK_CURSOR and if it is, the offset should be incremented.
+		int next_valid_offset = 1;
+		if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_CURSOR) {
+			next_valid_offset++;
+			// There is a chunk of the identifier that also needs to be ignored (not always there!)
+			if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_IDENTIFIER) {
+				next_valid_offset++;
+			}
+		}
+
 		if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 			//subexpression ()
 			tokenizer->advance();
@@ -668,7 +678,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				expr = cn;
 			}
 
-		} else if (tokenizer->get_token(1) == GDScriptTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
+		} else if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
 			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			//function or constructor
 
@@ -1197,7 +1207,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					if (_get_completable_identifier(COMPLETION_INDEX, identifier)) {
 
 						if (identifier == StringName()) {
-							identifier = "@temp"; //so it parses allright
+							identifier = "@temp"; //so it parses alright
 						}
 						completion_node = op;
 
@@ -1389,9 +1399,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					unary = true;
 					break;
 				case OperatorNode::OP_NEG:
-					priority = 1;
-					unary = true;
-					break;
 				case OperatorNode::OP_POS:
 					priority = 1;
 					unary = true;
@@ -2836,15 +2843,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					assigned = subexpr;
 				} else {
 
-					ConstantNode *c = alloc_node<ConstantNode>();
-					if (lv->datatype.has_type && lv->datatype.kind == DataType::BUILTIN) {
-						Variant::CallError err;
-						c->value = Variant::construct(lv->datatype.builtin_type, NULL, 0, err);
-					} else {
-						c->value = Variant();
-					}
-					c->line = var_line;
-					assigned = c;
+					assigned = _get_default_value_for_type(lv->datatype, var_line);
 				}
 				lv->assign = assigned;
 				//must be added later, to avoid self-referencing.
@@ -3270,15 +3269,36 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 			case GDScriptTokenizer::TK_PR_ASSERT: {
 
 				tokenizer->advance();
-				Node *condition = _parse_and_reduce_expression(p_block, p_static);
-				if (!condition) {
-					if (_recover_from_completion()) {
-						break;
-					}
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+					_set_error("Expected '(' after assert");
 					return;
 				}
+
+				tokenizer->advance();
+
+				Vector<Node *> args;
+				const bool result = _parse_arguments(p_block, args, p_static);
+				if (!result) {
+					return;
+				}
+
+				if (args.empty() || args.size() > 2) {
+					_set_error("Wrong number of arguments, expected 1 or 2");
+					return;
+				}
+
 				AssertNode *an = alloc_node<AssertNode>();
-				an->condition = condition;
+				an->condition = _reduce_expression(args[0], p_static);
+
+				if (args.size() == 2) {
+					an->message = _reduce_expression(args[1], p_static);
+				} else {
+					ConstantNode *message_node = alloc_node<ConstantNode>();
+					message_node->value = String();
+					an->message = message_node;
+				}
+
 				p_block->statements.push_back(an);
 
 				if (!_end_statement()) {
@@ -3520,6 +3540,15 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				if (ClassDB::class_exists(p_class->name)) {
 					_set_error("The class \"" + p_class->name + "\" shadows a native class.");
+					return;
+				}
+
+				if (p_class->classname_used && ProjectSettings::get_singleton()->has_setting("autoload/" + p_class->name)) {
+					const String autoload_path = ProjectSettings::get_singleton()->get_setting("autoload/" + p_class->name);
+					if (autoload_path.begins_with("*")) {
+						// It's a singleton, and not just a regular AutoLoad script.
+						_set_error("The class \"" + p_class->name + "\" conflicts with the AutoLoad singleton of the same name, and is therefore redundant. Remove the class_name declaration to fix this error.");
+					}
 					return;
 				}
 
@@ -4829,35 +4858,29 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 
-					Variant::Type initial_type = member.data_type.has_type ? member.data_type.builtin_type : member._export.type;
+					Node *expr;
 
-					if (initial_type != Variant::NIL && initial_type != Variant::OBJECT) {
-						IdentifierNode *id = alloc_node<IdentifierNode>();
-						id->name = member.identifier;
-
-						Node *expr;
-
-						// Make sure arrays and dictionaries are not shared
-						if (initial_type == Variant::ARRAY) {
-							expr = alloc_node<ArrayNode>();
-						} else if (initial_type == Variant::DICTIONARY) {
-							expr = alloc_node<DictionaryNode>();
-						} else {
-							ConstantNode *cn = alloc_node<ConstantNode>();
-							Variant::CallError ce2;
-							cn->value = Variant::construct(initial_type, NULL, 0, ce2);
-							expr = cn;
-						}
-
-						OperatorNode *op = alloc_node<OperatorNode>();
-						op->op = OperatorNode::OP_INIT_ASSIGN;
-						op->arguments.push_back(id);
-						op->arguments.push_back(expr);
-
-						p_class->initializer->statements.push_back(op);
-
-						member.initial_assignment = op;
+					if (member.data_type.has_type) {
+						expr = _get_default_value_for_type(member.data_type);
+					} else {
+						DataType exported_type;
+						exported_type.has_type = true;
+						exported_type.kind = DataType::BUILTIN;
+						exported_type.builtin_type = member._export.type;
+						expr = _get_default_value_for_type(exported_type);
 					}
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = member.identifier;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_INIT_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(expr);
+
+					p_class->initializer->statements.push_back(op);
+
+					member.initial_assignment = op;
 				}
 
 				if (autoexport && member.data_type.has_type) {
@@ -5245,6 +5268,31 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 					return;
 				}
 				p = NULL;
+			} else {
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+					String s = E->get().name;
+					if (!s.begins_with("autoload/")) {
+						continue;
+					}
+					String name = s.get_slice("/", 1);
+					if (name == base) {
+						String singleton_path = ProjectSettings::get_singleton()->get(s);
+						if (singleton_path.begins_with("*")) {
+							singleton_path = singleton_path.right(1);
+						}
+						if (!singleton_path.begins_with("res://")) {
+							singleton_path = "res://" + singleton_path;
+						}
+						base_script = ResourceLoader::load(singleton_path);
+						if (!base_script.is_valid()) {
+							_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+							return;
+						}
+						p = NULL;
+					}
+				}
 			}
 
 			while (p) {
@@ -5589,9 +5637,49 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 				}
 				name_part++;
 				continue;
-			} else {
-				p = current_class;
 			}
+			List<PropertyInfo> props;
+			ProjectSettings::get_singleton()->get_property_list(&props);
+			String singleton_path;
+			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+				String s = E->get().name;
+				if (!s.begins_with("autoload/")) {
+					continue;
+				}
+				String name = s.get_slice("/", 1);
+				if (name == id) {
+					singleton_path = ProjectSettings::get_singleton()->get(s);
+					if (singleton_path.begins_with("*")) {
+						singleton_path = singleton_path.right(1);
+					}
+					if (!singleton_path.begins_with("res://")) {
+						singleton_path = "res://" + singleton_path;
+					}
+					break;
+				}
+			}
+			if (!singleton_path.empty()) {
+				Ref<Script> script = ResourceLoader::load(singleton_path);
+				Ref<GDScript> gds = script;
+				if (gds.is_valid()) {
+					if (!gds->is_valid()) {
+						_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic inheritance).", p_line);
+						return DataType();
+					}
+					result.kind = DataType::GDSCRIPT;
+					result.script_type = gds;
+				} else if (script.is_valid()) {
+					result.kind = DataType::SCRIPT;
+					result.script_type = script;
+				} else {
+					_set_error("Couldn't fully load singleton script '" + id + "' (possible cyclic reference or parse error).", p_line);
+					return DataType();
+				}
+				name_part++;
+				continue;
+			}
+
+			p = current_class;
 		} else if (base_type.kind == DataType::CLASS) {
 			p = base_type.class_type;
 		}
@@ -5652,27 +5740,34 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 			}
 		}
 
-		// Still look for class constants in parent script
+		// Still look for class constants in parent scripts
 		if (!found && (base_type.kind == DataType::GDSCRIPT || base_type.kind == DataType::SCRIPT)) {
 			Ref<Script> scr = base_type.script_type;
 			ERR_FAIL_COND_V(scr.is_null(), result);
-			Map<StringName, Variant> constants;
-			scr->get_constants(&constants);
+			while (scr.is_valid()) {
+				Map<StringName, Variant> constants;
+				scr->get_constants(&constants);
 
-			if (constants.has(id)) {
-				Ref<GDScript> gds = constants[id];
+				if (constants.has(id)) {
+					Ref<GDScript> gds = constants[id];
 
-				if (gds.is_valid()) {
-					result.kind = DataType::GDSCRIPT;
-					result.script_type = gds;
-					found = true;
-				} else {
-					Ref<Script> scr2 = constants[id];
-					if (scr2.is_valid()) {
-						result.kind = DataType::SCRIPT;
-						result.script_type = scr2;
+					if (gds.is_valid()) {
+						result.kind = DataType::GDSCRIPT;
+						result.script_type = gds;
 						found = true;
+					} else {
+						Ref<Script> scr2 = constants[id];
+						if (scr2.is_valid()) {
+							result.kind = DataType::SCRIPT;
+							result.script_type = scr2;
+							found = true;
+						}
 					}
+				}
+				if (found) {
+					break;
+				} else {
+					scr = scr->get_base_script();
 				}
 			}
 		}
@@ -6063,6 +6158,31 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 	}
 
 	return false;
+}
+
+GDScriptParser::Node *GDScriptParser::_get_default_value_for_type(const DataType &p_type, int p_line) {
+	Node *result;
+
+	if (p_type.has_type && p_type.kind == DataType::BUILTIN && p_type.builtin_type != Variant::NIL && p_type.builtin_type != Variant::OBJECT) {
+		if (p_type.builtin_type == Variant::ARRAY) {
+			result = alloc_node<ArrayNode>();
+		} else if (p_type.builtin_type == Variant::DICTIONARY) {
+			result = alloc_node<DictionaryNode>();
+		} else {
+			ConstantNode *c = alloc_node<ConstantNode>();
+			Variant::CallError err;
+			c->value = Variant::construct(p_type.builtin_type, NULL, 0, err);
+			result = c;
+		}
+	} else {
+		ConstantNode *c = alloc_node<ConstantNode>();
+		c->value = Variant();
+		result = c;
+	}
+
+	result->line = p_line;
+
+	return result;
 }
 
 GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
@@ -6510,7 +6630,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							return DataType();
 						}
 					}
-					if (check_types && !node_type.has_type) {
+					if (check_types && !node_type.has_type && base_type.kind == DataType::BUILTIN) {
 						// Can infer indexing type for some variant types
 						DataType result;
 						result.has_type = true;
@@ -6580,7 +6700,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 		}
 	}
 
-	p_node->set_datatype(_resolve_type(node_type, p_node->line));
+	node_type = _resolve_type(node_type, p_node->line);
+	p_node->set_datatype(node_type);
 	return node_type;
 }
 

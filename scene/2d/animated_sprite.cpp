@@ -102,7 +102,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
 	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size())
 		E->get().frames.insert(p_at_pos, p_frame);
@@ -114,7 +114,7 @@ void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_fra
 
 int SpriteFrames::get_frame_count(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND_V(!E, 0);
+	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 
 	return E->get().frames.size();
 }
@@ -122,7 +122,7 @@ int SpriteFrames::get_frame_count(const StringName &p_anim) const {
 void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
 	E->get().frames.remove(p_idx);
 	emit_changed();
@@ -130,7 +130,7 @@ void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
 void SpriteFrames::clear(const StringName &p_anim) {
 
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
 	E->get().frames.clear();
 	emit_changed();
@@ -144,7 +144,7 @@ void SpriteFrames::clear_all() {
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
 
-	ERR_FAIL_COND(animations.has(p_anim));
+	ERR_FAIL_COND_MSG(animations.has(p_anim), "SpriteFrames already has animation '" + p_anim + "'.");
 
 	animations[p_anim] = Anim();
 	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
@@ -161,8 +161,8 @@ void SpriteFrames::remove_animation(const StringName &p_anim) {
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {
 
-	ERR_FAIL_COND(!animations.has(p_prev));
-	ERR_FAIL_COND(animations.has(p_next));
+	ERR_FAIL_COND_MSG(!animations.has(p_prev), "SpriteFrames doesn't have animation '" + String(p_prev) + "'.");
+	ERR_FAIL_COND_MSG(animations.has(p_next), "Animation '" + String(p_next) + "' already exists.");
 
 	Anim anim = animations[p_prev];
 	animations.erase(p_prev);
@@ -202,26 +202,26 @@ Vector<String> SpriteFrames::get_animation_names() const {
 
 void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
 
-	ERR_FAIL_COND(p_fps < 0);
+	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().speed = p_fps;
 }
 float SpriteFrames::get_animation_speed(const StringName &p_anim) const {
 
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND_V(!E, 0);
+	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->get().speed;
 }
 
 void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().loop = p_loop;
 }
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-	ERR_FAIL_COND_V(!E, false);
+	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->get().loop;
 }
 

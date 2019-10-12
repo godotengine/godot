@@ -68,6 +68,7 @@
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
 	</members>
 	<signals>
 		<signal name="about_to_show">

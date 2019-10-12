@@ -195,7 +195,7 @@ bool FileAccessCompressed::is_open() const {
 
 void FileAccessCompressed::seek(size_t p_position) {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	if (writing) {
 
 		ERR_FAIL_COND(p_position > write_max);
@@ -227,7 +227,7 @@ void FileAccessCompressed::seek(size_t p_position) {
 
 void FileAccessCompressed::seek_end(int64_t p_position) {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	if (writing) {
 
 		seek(write_max + p_position);
@@ -238,7 +238,7 @@ void FileAccessCompressed::seek_end(int64_t p_position) {
 }
 size_t FileAccessCompressed::get_position() const {
 
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
 
 		return write_pos;
@@ -249,7 +249,7 @@ size_t FileAccessCompressed::get_position() const {
 }
 size_t FileAccessCompressed::get_len() const {
 
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
 
 		return write_max;
@@ -260,7 +260,7 @@ size_t FileAccessCompressed::get_len() const {
 
 bool FileAccessCompressed::eof_reached() const {
 
-	ERR_FAIL_COND_V(!f, false);
+	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use.");
 	if (writing) {
 		return false;
 	} else {
@@ -270,8 +270,8 @@ bool FileAccessCompressed::eof_reached() const {
 
 uint8_t FileAccessCompressed::get_8() const {
 
-	ERR_FAIL_COND_V(writing, 0);
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 
 	if (at_end) {
 		read_eof = true;
@@ -301,8 +301,8 @@ uint8_t FileAccessCompressed::get_8() const {
 }
 int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	ERR_FAIL_COND_V(writing, 0);
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 
 	if (at_end) {
 		read_eof = true;
@@ -342,16 +342,16 @@ Error FileAccessCompressed::get_error() const {
 }
 
 void FileAccessCompressed::flush() {
-	ERR_FAIL_COND(!f);
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	// compressed files keep data in memory till close()
 }
 
 void FileAccessCompressed::store_8(uint8_t p_dest) {
 
-	ERR_FAIL_COND(!f);
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	WRITE_FIT(1);
 	write_ptr[write_pos++] = p_dest;

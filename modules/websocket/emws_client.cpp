@@ -64,13 +64,20 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 }
 
-Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
+Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const PoolVector<String> p_protocols, const Vector<String> p_custom_headers) {
 
 	String proto_string = p_protocols.join(",");
 	String str = "ws://";
 
-	if (p_ssl)
+	if (p_custom_headers.size()) {
+		WARN_PRINT_ONCE("Custom headers are not supported in in HTML5 platform.");
+	}
+	if (p_ssl) {
 		str = "wss://";
+		if (ssl_cert.is_valid()) {
+			WARN_PRINT_ONCE("Custom SSL certificate is not supported in HTML5 platform.");
+		}
+	}
 	str += p_host + ":" + itos(p_port) + p_path;
 
 	_is_connecting = true;
@@ -193,12 +200,12 @@ void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 
 IP_Address EMWSClient::get_connected_host() const {
 
-	return IP_Address();
+	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSClient::get_connected_port() const {
 
-	return 1025;
+	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
 int EMWSClient::get_max_packet_size() const {

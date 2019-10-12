@@ -178,8 +178,12 @@ private:
 		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
+		RUN_VCS_SETTINGS,
+		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
 		SETTINGS_UPDATE_WHEN_CHANGED,
+		SETTINGS_UPDATE_ALWAYS,
+		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_UPDATE_SPINNER_HIDE,
 		SETTINGS_PREFERENCES,
 		SETTINGS_LAYOUT_SAVE,
@@ -322,6 +326,7 @@ private:
 	EditorSettingsDialog *settings_config_dialog;
 	RunSettingsDialog *run_settings_dialog;
 	ProjectSettingsEditor *project_settings;
+	PopupMenu *vcs_actions_menu;
 	EditorFileDialog *file;
 	ExportTemplateManager *export_template_manager;
 	EditorFeatureProfileManager *feature_profile_manager;
@@ -477,6 +482,7 @@ private:
 	void _get_scene_metadata(const String &p_file);
 	void _update_title();
 	void _update_scene_tabs();
+	void _version_control_menu_option(int p_idx);
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();

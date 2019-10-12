@@ -365,9 +365,14 @@ private:
 	int search_result_line;
 	int search_result_col;
 
+	bool selecting_enabled;
+
 	bool context_menu_enabled;
+	bool shortcut_keys_enabled;
 
 	int executing_line;
+
+	void _generate_context_menu();
 
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
@@ -582,6 +587,7 @@ public:
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
+	Vector2i _get_cursor_pixel_pos();
 
 	bool cursor_get_blink_enabled() const;
 	void cursor_set_blink_enabled(const bool p_enabled);
@@ -736,6 +742,12 @@ public:
 
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
+
+	void set_selecting_enabled(bool p_enabled);
+	bool is_selecting_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
 
 	PopupMenu *get_menu() const;
 

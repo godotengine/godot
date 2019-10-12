@@ -113,6 +113,10 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 			log->add_text(" ");
 			tool_button->set_icon(icon);
 		} break;
+		case MSG_TYPE_EDITOR: {
+			// Distinguish editor messages from messages printed by the project
+			log->push_color(get_color("font_color", "Editor") * Color(1, 1, 1, 0.6));
+		} break;
 	}
 
 	log->add_text(p_msg);
@@ -128,7 +132,7 @@ void EditorLog::set_tool_button(ToolButton *p_tool_button) {
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 
 	EditorLog *self = (EditorLog *)p_self;
-	self->add_message(p_name);
+	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
 void EditorLog::_bind_methods() {

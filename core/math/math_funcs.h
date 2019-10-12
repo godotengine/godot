@@ -300,6 +300,11 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
 		real_t tolerance = CMP_EPSILON * abs(a);
 		if (tolerance < CMP_EPSILON) {
 			tolerance = CMP_EPSILON;
@@ -308,6 +313,11 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
 		return abs(a - b) < tolerance;
 	}
 

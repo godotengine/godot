@@ -199,7 +199,8 @@ public:
 		SOURCE_SCREEN,
 		SOURCE_2D_TEXTURE,
 		SOURCE_2D_NORMAL,
-		SOURCE_DEPTH
+		SOURCE_DEPTH,
+		SOURCE_PORT,
 	};
 
 	enum TextureType {
@@ -225,6 +226,8 @@ public:
 	virtual int get_output_port_count() const;
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
+
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
@@ -256,6 +259,11 @@ class VisualShaderNodeCubeMap : public VisualShaderNode {
 	Ref<CubeMap> cube_map;
 
 public:
+	enum Source {
+		SOURCE_TEXTURE,
+		SOURCE_PORT
+	};
+
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
@@ -263,6 +271,7 @@ public:
 	};
 
 private:
+	Source source;
 	TextureType texture_type;
 
 protected:
@@ -274,6 +283,7 @@ public:
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	virtual int get_output_port_count() const;
 	virtual PortType get_output_port_type(int p_port) const;
@@ -282,6 +292,9 @@ public:
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_source(Source p_source);
+	Source get_source() const;
 
 	void set_cube_map(Ref<CubeMap> p_value);
 	Ref<CubeMap> get_cube_map() const;
@@ -295,6 +308,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::TextureType)
+VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::Source)
 
 ///////////////////////////////////////
 /// OPS
@@ -1409,7 +1423,7 @@ public:
 		COLOR_DEFAULT_BLACK
 	};
 
-private:
+protected:
 	TextureType texture_type;
 	ColorDefault color_default;
 
@@ -1422,6 +1436,7 @@ public:
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	virtual int get_output_port_count() const;
 	virtual PortType get_output_port_type(int p_port) const;
@@ -1456,6 +1471,8 @@ public:
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
 
+	virtual String get_input_port_default_hint(int p_port) const;
+
 	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
@@ -1465,8 +1482,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeCubeMapUniform : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeCubeMapUniform, VisualShaderNode);
+class VisualShaderNodeCubeMapUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeCubeMapUniform, VisualShaderNodeTextureUniform);
 
 public:
 	virtual String get_caption() const;
@@ -1479,6 +1496,8 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
+	virtual String get_input_port_default_hint(int p_port) const;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeCubeMapUniform();
@@ -1528,6 +1547,18 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeSwitch();
+};
+
+class VisualShaderNodeScalarSwitch : public VisualShaderNodeSwitch {
+	GDCLASS(VisualShaderNodeScalarSwitch, VisualShaderNodeSwitch);
+
+public:
+	virtual String get_caption() const;
+
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual PortType get_output_port_type(int p_port) const;
+
+	VisualShaderNodeScalarSwitch();
 };
 
 ///////////////////////////////////////

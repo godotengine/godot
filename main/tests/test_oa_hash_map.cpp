@@ -140,6 +140,19 @@ MainLoop *test() {
 		OS::get_singleton()->print("test for issue #31402 passed.\n");
 	}
 
+	// test collision resolution, should not crash or run indefinitely
+	{
+		OAHashMap<int, int> map(4);
+		map.set(1, 1);
+		map.set(5, 1);
+		map.set(9, 1);
+		map.set(13, 1);
+		map.remove(5);
+		map.remove(9);
+		map.remove(13);
+		map.set(5, 1);
+	}
+
 	return NULL;
 }
 } // namespace TestOAHashMap

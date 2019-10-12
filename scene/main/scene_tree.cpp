@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
+#include "core/os/dir_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -560,6 +561,8 @@ bool SceneTree::idle(float p_time) {
 		E = N;
 	}
 
+	flush_transform_notifications(); //additional transforms after timers update
+
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
@@ -629,6 +632,7 @@ void SceneTree::_notification(int p_notification) {
 				break;
 			}
 		} break;
+
 		case NOTIFICATION_WM_GO_BACK_REQUEST: {
 
 			get_root()->propagate_notification(p_notification);
@@ -638,28 +642,23 @@ void SceneTree::_notification(int p_notification) {
 				break;
 			}
 		} break;
-		case NOTIFICATION_OS_MEMORY_WARNING:
-		case NOTIFICATION_OS_IME_UPDATE:
-		case NOTIFICATION_WM_MOUSE_ENTER:
-		case NOTIFICATION_WM_MOUSE_EXIT:
-		case NOTIFICATION_WM_FOCUS_IN:
-		case NOTIFICATION_WM_FOCUS_OUT:
-		case NOTIFICATION_WM_ABOUT: {
 
-			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
-				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
-				if (id) {
-					id->ensure_touch_mouse_raised();
-				}
+		case NOTIFICATION_WM_FOCUS_IN: {
+
+			InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+			if (id) {
+				id->ensure_touch_mouse_raised();
 			}
 
 			get_root()->propagate_notification(p_notification);
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				get_root()->propagate_notification(p_notification);
 			}
 		} break;
+
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
 			notify_group_flags(GROUP_CALL_REALTIME | GROUP_CALL_MULTILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
@@ -668,7 +667,15 @@ void SceneTree::_notification(int p_notification) {
 
 		} break;
 
-		case NOTIFICATION_CRASH: {
+		case NOTIFICATION_OS_MEMORY_WARNING:
+		case NOTIFICATION_OS_IME_UPDATE:
+		case NOTIFICATION_WM_MOUSE_ENTER:
+		case NOTIFICATION_WM_MOUSE_EXIT:
+		case NOTIFICATION_WM_FOCUS_OUT:
+		case NOTIFICATION_WM_ABOUT:
+		case NOTIFICATION_CRASH:
+		case NOTIFICATION_APP_RESUMED:
+		case NOTIFICATION_APP_PAUSED: {
 
 			get_root()->propagate_notification(p_notification);
 		} break;
@@ -1953,6 +1960,38 @@ bool SceneTree::is_using_font_oversampling() const {
 	return use_font_oversampling;
 }
 
+void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+
+	if (p_function == "change_scene") {
+		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		List<String> directories;
+		directories.push_back(dir_access->get_current_dir());
+
+		while (!directories.empty()) {
+			dir_access->change_dir(directories.back()->get());
+			directories.pop_back();
+
+			dir_access->list_dir_begin();
+			String filename = dir_access->get_next();
+
+			while (filename != "") {
+				if (filename == "." || filename == "..") {
+					filename = dir_access->get_next();
+					continue;
+				}
+
+				if (dir_access->dir_exists(filename)) {
+					directories.push_back(dir_access->get_current_dir().plus_file(filename));
+				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
+					r_options->push_back("\"" + dir_access->get_current_dir().plus_file(filename) + "\"");
+				}
+
+				filename = dir_access->get_next();
+			}
+		}
+	}
+}
+
 SceneTree::SceneTree() {
 
 	if (singleton == NULL) singleton = this;
@@ -2063,6 +2102,7 @@ SceneTree::SceneTree() {
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree, this);
+		ScriptDebugger::get_singleton()->set_multiplayer(multiplayer);
 	}
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));

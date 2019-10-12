@@ -60,10 +60,10 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 		use_ssl = true;
 		port = 443;
 	} else {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL.");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL: " + url + ".");
 	}
 
-	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short.");
+	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short: " + url + ".");
 
 	int slash_pos = url.find("/");
 

@@ -191,7 +191,7 @@ void Tween::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Are we processing during 'regular' time?
 			if (tween_process_mode == TWEEN_PROCESS_IDLE)
-				// Do nothing since we whould only process during idle time
+				// Do nothing since we would only process during idle time
 				break;
 
 			// Should we update?
@@ -783,10 +783,12 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
+
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Tween was not added to the SceneTree!");
+
 	// Are there any pending updates?
 	if (pending_update != 0) {
 		// Start the tweens after deferring
-		call_deferred("start");
 		return true;
 	}
 

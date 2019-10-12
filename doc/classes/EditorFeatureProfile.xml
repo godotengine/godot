@@ -36,7 +36,7 @@
 			</return>
 			<argument index="0" name="class_name" type="String">
 			</argument>
-			<argument index="1" name="arg1" type="String">
+			<argument index="1" name="property" type="String">
 			</argument>
 			<description>
 			</description>
@@ -92,7 +92,7 @@
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
-			<argument index="2" name="arg2" type="bool">
+			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
 			</description>

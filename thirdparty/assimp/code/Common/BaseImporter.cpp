@@ -76,9 +76,25 @@ BaseImporter::~BaseImporter() {
     // nothing to do here
 }
 
+void BaseImporter::UpdateImporterScale( Importer* pImp )
+{
+    ai_assert(pImp != nullptr);
+    ai_assert(importerScale != 0.0);
+    ai_assert(fileScale != 0.0);
+
+    double activeScale = importerScale * fileScale;
+
+    // Set active scaling
+    pImp->SetPropertyFloat( AI_CONFIG_APP_SCALE_KEY, activeScale);
+
+    ASSIMP_LOG_DEBUG_F("UpdateImporterScale scale set: %f", activeScale );
+}
+
 // ------------------------------------------------------------------------------------------------
 // Imports the given file and returns the imported data.
-aiScene* BaseImporter::ReadFile(const Importer* pImp, const std::string& pFile, IOSystem* pIOHandler) {
+aiScene* BaseImporter::ReadFile(Importer* pImp, const std::string& pFile, IOSystem* pIOHandler) {
+
+
     m_progress = pImp->GetProgressHandler();
     if (nullptr == m_progress) {
         return nullptr;
@@ -100,6 +116,11 @@ aiScene* BaseImporter::ReadFile(const Importer* pImp, const std::string& pFile, 
     {
         InternReadFile( pFile, sc.get(), &filter);
 
+        // Calculate import scale hook - required because pImp not available anywhere else
+        // passes scale into ScaleProcess
+        UpdateImporterScale(pImp);
+
+
     } catch( const std::exception& err )    {
         // extract error description
         m_ErrorText = err.what();
@@ -112,7 +133,7 @@ aiScene* BaseImporter::ReadFile(const Importer* pImp, const std::string& pFile, 
 }
 
 // ------------------------------------------------------------------------------------------------
-void BaseImporter::SetupProperties(const Importer* /*pImp*/)
+void BaseImporter::SetupProperties(const Importer* pImp)
 {
     // the default implementation does nothing
 }
@@ -587,6 +608,8 @@ aiScene* BatchLoader::GetImport( unsigned int which )
     }
     return nullptr;
 }
+
+
 
 // ------------------------------------------------------------------------------------------------
 void BatchLoader::LoadAll()

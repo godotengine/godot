@@ -115,9 +115,11 @@
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode" default="0">
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
 		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="-1">
 			Set the default channel to be used to transfer data. By default, this value is [code]-1[/code] which means that ENet will only use 2 channels, one for reliable and one for unreliable packets. Channel [code]0[/code] is reserved, and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data.
 		</member>
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
 	</members>
 	<constants>
 		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">

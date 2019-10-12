@@ -149,6 +149,8 @@
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
 		</member>
+		<member name="use_hidden_tabs_for_min_size" type="bool" setter="set_use_hidden_tabs_for_min_size" getter="get_use_hidden_tabs_for_min_size" default="false">
+		</member>
 	</members>
 	<signals>
 		<signal name="pre_popup_pressed">

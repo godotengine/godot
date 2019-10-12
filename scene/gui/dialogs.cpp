@@ -35,6 +35,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "scene/main/viewport.h" // Only used to check for more modals when dimming the editor.
 #endif
 
 // WindowDialog
@@ -59,7 +60,7 @@ void WindowDialog::_fix_size() {
 	float left = 0;
 	float bottom = 0;
 	float right = 0;
-	// Check validity, because the theme could contain a different type of StyleBox
+	// Check validity, because the theme could contain a different type of StyleBox.
 	if (panel->get_class() == "StyleBoxTexture") {
 		Ref<StyleBoxTexture> panel_texture = Object::cast_to<StyleBoxTexture>(*panel);
 		top = panel_texture->get_expand_margin_size(MARGIN_TOP);
@@ -205,9 +206,9 @@ void WindowDialog::_notification(int p_what) {
 			Color title_color = get_color("title_color", "WindowDialog");
 			int title_height = get_constant("title_height", "WindowDialog");
 			int font_height = title_font->get_height() - title_font->get_descent() * 2;
-			int x = (size.x - title_font->get_string_size(title).x) / 2;
+			int x = (size.x - title_font->get_string_size(xl_title).x) / 2;
 			int y = (-title_height + font_height) / 2;
-			title_font->draw(canvas, Point2(x, y), title, title_color, size.x - panel->get_minimum_size().x);
+			title_font->draw(canvas, Point2(x, y), xl_title, title_color, size.x - panel->get_minimum_size().x);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
@@ -221,8 +222,9 @@ void WindowDialog::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_title = tr(title);
-			if (title != new_title) {
-				title = new_title;
+			if (new_title != xl_title) {
+				xl_title = new_title;
+				minimum_size_changed();
 				update();
 			}
 		} break;
@@ -242,7 +244,7 @@ void WindowDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POPUP_HIDE: {
-			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !get_viewport()->gui_has_modal_stack())
 				EditorNode::get_singleton()->dim_editor(false);
 		} break;
 #endif
@@ -282,9 +284,10 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 void WindowDialog::set_title(const String &p_title) {
 
-	String new_title = tr(p_title);
-	if (title != new_title) {
-		title = new_title;
+	if (title != p_title) {
+		title = p_title;
+		xl_title = tr(p_title);
+		minimum_size_changed();
 		update();
 	}
 }
@@ -305,7 +308,7 @@ Size2 WindowDialog::get_minimum_size() const {
 	Ref<Font> font = get_font("title_font", "WindowDialog");
 
 	const int button_width = close_button->get_combined_minimum_size().x;
-	const int title_width = font->get_string_size(title).x;
+	const int title_width = font->get_string_size(xl_title).x;
 	const int padding = button_width / 2;
 	const int button_area = button_width + padding;
 

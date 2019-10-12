@@ -187,7 +187,7 @@ uint64_t OS_Unix::get_system_time_secs() const {
 uint64_t OS_Unix::get_system_time_msecs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	return uint64_t(tv_now.tv_sec * 1000 + tv_now.tv_usec / 1000);
+	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
 OS::Date OS_Unix::get_date(bool utc) const {
@@ -298,7 +298,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
 
 		char buf[65535];
 
@@ -314,7 +314,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		int rv = pclose(f);
 		if (r_exitcode)
-			*r_exitcode = rv;
+			*r_exitcode = WEXITSTATUS(rv);
 
 		return OK;
 	}

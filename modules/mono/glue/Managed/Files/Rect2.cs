@@ -157,13 +157,13 @@ namespace Godot
 
         public bool Intersects(Rect2 b)
         {
-            if (_position.x > b._position.x + b._size.x)
+            if (_position.x >= b._position.x + b._size.x)
                 return false;
-            if (_position.x + _size.x < b._position.x)
+            if (_position.x + _size.x <= b._position.x)
                 return false;
-            if (_position.y > b._position.y + b._size.y)
+            if (_position.y >= b._position.y + b._size.y)
                 return false;
-            if (_position.y + _size.y < b._position.y)
+            if (_position.y + _size.y <= b._position.y)
                 return false;
 
             return true;

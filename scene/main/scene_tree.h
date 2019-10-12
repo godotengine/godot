@@ -408,6 +408,7 @@ public:
 
 	void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
 	void global_menu_action(const Variant &p_id, const Variant &p_meta);
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	//network API
 

@@ -34,7 +34,7 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
             {
                 pr.Step("Generating C# project...".TTR());
 
@@ -73,9 +73,23 @@ namespace GodotTools
                         return false;
                     }
 
-                    // Make sure to update the API assemblies if they happen to be missing. Just in
-                    // case the user decided to delete them at some point after they were loaded.
-                    Internal.UpdateApiAssembliesFromPrebuilt();
+                    pr.Step("Updating Godot API assemblies...".TTR());
+
+                    string debugApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Debug");
+
+                    if (!string.IsNullOrEmpty(debugApiAssembliesError))
+                    {
+                        ShowErrorDialog("Failed to update the Godot API assemblies: " + debugApiAssembliesError);
+                        return false;
+                    }
+
+                    string releaseApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Release");
+
+                    if (!string.IsNullOrEmpty(releaseApiAssembliesError))
+                    {
+                        ShowErrorDialog("Failed to update the Godot API assemblies: " + releaseApiAssembliesError);
+                        return false;
+                    }
 
                     pr.Step("Done".TTR());
 

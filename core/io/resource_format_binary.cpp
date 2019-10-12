@@ -378,10 +378,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			for (uint32_t i = 0; i < len; i++) {
 				Variant key;
 				Error err = parse_variant(key);
-				ERR_FAIL_COND_V(err, ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Error when trying to parse Variant.");
 				Variant value;
 				err = parse_variant(value);
-				ERR_FAIL_COND_V(err, ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Error when trying to parse Variant.");
 				d[key] = value;
 			}
 			r_v = d;
@@ -395,7 +395,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			for (uint32_t i = 0; i < len; i++) {
 				Variant val;
 				Error err = parse_variant(val);
-				ERR_FAIL_COND_V(err, ERR_FILE_CORRUPT);
+				ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Error when trying to parse Variant.");
 				a[i] = val;
 			}
 			r_v = a;
@@ -983,7 +983,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + p_path + "'.");
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1032,7 +1032,7 @@ bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "Cannot open file '" + p_path + "'.");
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1046,7 +1046,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	//Error error=OK;
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
 	FileAccess *fw = NULL; //=FileAccess::open(p_path+".depren");
 
@@ -1066,7 +1066,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		if (err) {
 			memdelete(fac);
 			memdelete(facw);
-			ERR_FAIL_COND_V(err, ERR_FILE_CORRUPT);
+			ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".depren'.");
 		}
 
 		fw = facw;
@@ -1076,13 +1076,13 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		//error=ERR_FILE_UNRECOGNIZED;
 		memdelete(f);
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file: " + local_path + ".");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file '" + local_path + "'.");
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 		if (!fw) {
 			memdelete(f);
 		}
-		ERR_FAIL_COND_V(!fw, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(!fw, ERR_CANT_CREATE, "Cannot create file '" + p_path + ".depren'.");
 
 		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magic, 4);
@@ -1113,12 +1113,12 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		memdelete(da);
 		//use the old approach
 
-		WARN_PRINTS("This file is old, so it can't refactor dependencies, opening and resaving: " + p_path + ".");
+		WARN_PRINTS("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-		ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
 		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1751,7 +1751,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	}
 
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create file '" + p_path + "'.");
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;

@@ -31,24 +31,22 @@
 #ifndef ASSET_LIBRARY_EDITOR_PLUGIN_H
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
-#include "editor_plugin.h"
+#include "editor/editor_asset_installer.h"
+#include "editor/editor_plugin.h"
+#include "editor/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/tab_container.h"
-
-#include "editor_plugin_settings.h"
-#include "scene/gui/grid_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
-
-#include "editor_asset_installer.h"
 #include "scene/main/http_request.h"
 
 class EditorAssetLibraryItem : public PanelContainer {
@@ -190,7 +188,6 @@ class EditorAssetLibrary : public PanelContainer {
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	ToolButton *reverse;
 	Button *search;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
@@ -206,6 +203,7 @@ class EditorAssetLibrary : public PanelContainer {
 	HTTPRequest *request;
 
 	bool templates_only;
+	bool initial_loading;
 
 	enum Support {
 		SUPPORT_OFFICIAL,
@@ -215,10 +213,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	enum SortOrder {
-		SORT_DOWNLOADS,
-		SORT_NAME,
-		SORT_COST,
 		SORT_UPDATED,
+		SORT_UPDATED_REVERSE,
+		SORT_NAME,
+		SORT_NAME_REVERSE,
+		SORT_COST,
+		SORT_COST_REVERSE,
 		SORT_MAX
 	};
 

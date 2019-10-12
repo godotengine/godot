@@ -165,11 +165,12 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 				e.vertex[0] = edge.x;
 				e.vertex[1] = edge.y;
 				edges.push_back(e);
+				v[j]->edges.push_back(face.edges[j]);
+				v[(j + 1) % 3]->edges.push_back(face.edges[j]);
 			}
 
 			edges.write[face.edges[j]].faces.push_back(fidx);
 			v[j]->faces.push_back(fidx);
-			v[j]->edges.push_back(face.edges[j]);
 		}
 
 		faces.push_back(face);

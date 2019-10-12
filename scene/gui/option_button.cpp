@@ -116,10 +116,16 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
 
 	popup->set_item_text(p_idx, p_text);
+
+	if (current == p_idx)
+		set_text(p_text);
 }
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 
 	popup->set_item_icon(p_idx, p_icon);
+
+	if (current == p_idx)
+		set_icon(p_icon);
 }
 void OptionButton::set_item_id(int p_idx, int p_id) {
 

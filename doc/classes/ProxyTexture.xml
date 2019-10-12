@@ -11,6 +11,7 @@
 	<members>
 		<member name="base" type="Texture" setter="set_base" getter="get_base">
 		</member>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
 	</members>
 	<constants>
 	</constants>

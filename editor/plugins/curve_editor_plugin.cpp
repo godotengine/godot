@@ -167,10 +167,20 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					_has_undo_data = true;
 				}
 
+				const float curve_amplitude = curve.get_max_value() - curve.get_min_value();
+				// Snap to "round" coordinates when holding Ctrl.
+				// Be more precise when holding Shift as well.
+				float snap_threshold;
+				if (mm.get_control()) {
+					snap_threshold = mm.get_shift() ? 0.025 : 0.1;
+				} else {
+					snap_threshold = 0.0;
+				}
+
 				if (_selected_tangent == TANGENT_NONE) {
 					// Drag point
 
-					Vector2 point_pos = get_world_pos(mpos);
+					Vector2 point_pos = get_world_pos(mpos).snapped(Vector2(snap_threshold, snap_threshold * curve_amplitude));
 
 					int i = curve.set_point_offset(_selected_point, point_pos.x);
 					// The index may change if the point is dragged across another one
@@ -188,8 +198,8 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					// Drag tangent
 
-					Vector2 point_pos = curve.get_point_position(_selected_point);
-					Vector2 control_pos = get_world_pos(mpos);
+					const Vector2 point_pos = curve.get_point_position(_selected_point);
+					const Vector2 control_pos = get_world_pos(mpos).snapped(Vector2(snap_threshold, snap_threshold * curve_amplitude));
 
 					Vector2 dir = (control_pos - point_pos).normalized();
 
@@ -445,6 +455,9 @@ void CurveEditor::remove_point(int index) {
 
 	if (index == _selected_point)
 		set_selected_point(-1);
+
+	if (index == _hover_point)
+		set_hover_point_index(-1);
 
 	ur.commit_action();
 }
@@ -769,7 +782,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
-	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());
+	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97

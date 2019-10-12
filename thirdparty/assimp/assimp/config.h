@@ -983,6 +983,13 @@ enum aiComponent {
 #define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT 1.0f
 #endif // !! AI_DEBONE_THRESHOLD
 
+#define AI_CONFIG_APP_SCALE_KEY "APP_SCALE_FACTOR"
+
+#if (!defined AI_CONFIG_APP_SCALE_KEY)
+#   define AI_CONFIG_APP_SCALE_KEY 1.0
+#endif // AI_CONFIG_APP_SCALE_KEY
+
+
 // ---------- All the Build/Compile-time defines ------------
 
 /** @brief Specifies if double precision is supported inside assimp

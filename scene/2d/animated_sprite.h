@@ -85,7 +85,7 @@ public:
 	_FORCE_INLINE_ Ref<Texture> get_frame(const StringName &p_anim, int p_idx) const {
 
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V(!E, Ref<Texture>());
+		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 		if (p_idx >= E->get().frames.size())
 			return Ref<Texture>();
@@ -96,7 +96,7 @@ public:
 	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
 
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V(!E, Ref<Texture>());
+		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 
 		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
@@ -109,7 +109,7 @@ public:
 
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture> &p_frame) {
 		Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND(!E);
+		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND(p_idx < 0);
 		if (p_idx >= E->get().frames.size())
 			return;

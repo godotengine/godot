@@ -928,15 +928,35 @@ public:
 	TextureButton *favorite_button;
 	TextureRect *icon;
 	bool icon_needs_reload;
+	bool hover;
 
 	ProjectListItemControl() {
 		favorite_button = NULL;
 		icon = NULL;
 		icon_needs_reload = true;
+		hover = false;
 	}
 
 	void set_is_favorite(bool fav) {
 		favorite_button->set_modulate(fav ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+	}
+
+	void _notification(int p_what) {
+		switch (p_what) {
+			case NOTIFICATION_MOUSE_ENTER: {
+				hover = true;
+				update();
+			} break;
+			case NOTIFICATION_MOUSE_EXIT: {
+				hover = false;
+				update();
+			} break;
+			case NOTIFICATION_DRAW: {
+				if (hover) {
+					draw_style_box(get_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
+				}
+			} break;
+		}
 	}
 };
 
@@ -1260,6 +1280,8 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureButton *favorite = memnew(TextureButton);
 	favorite->set_name("FavoriteButton");
 	favorite->set_normal_texture(favorite_icon);
+	// This makes the project's "hover" style display correctly when hovering the favorite icon
+	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", this, "_favorite_pressed", varray(hb));
 	favorite_box->add_child(favorite);
 	favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
@@ -1667,7 +1689,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
-		if (mb->is_doubleclick()) {
+		if (!mb->get_control() && mb->is_doubleclick()) {
 			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
 		}
 	}
@@ -1731,10 +1753,22 @@ void ProjectManager::_notification(int p_what) {
 
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
+		case NOTIFICATION_RESIZED: {
+
+			if (open_templates->is_visible()) {
+				open_templates->popup_centered_minsize();
+			}
+		} break;
 		case NOTIFICATION_READY: {
 
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
 				open_templates->popup_centered_minsize();
+
+			if (_project_list->get_project_count() >= 1) {
+				// Focus on the search box immediately to allow the user
+				// to search without having to reach for their mouse
+				project_filter->search_box->grab_focus();
+			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 

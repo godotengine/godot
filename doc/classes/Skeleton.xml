@@ -4,7 +4,7 @@
 		Skeleton for characters and animated objects.
 	</brief_description>
 	<description>
-		Skeleton provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). Skeleton will support rag doll dynamics in the future.
+		Skeleton provides a hierarchical interface for managing bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
 		The overall transform of a bone with respect to the skeleton is determined by the following hierarchical order: rest pose, custom pose and pose.
 		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it not the actual global/world transform of the bone.
 	</description>
@@ -109,15 +109,6 @@
 				Returns the rest transform for a bone [code]bone_idx[/code].
 			</description>
 		</method>
-		<method name="get_bone_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<description>
-				Returns the combination of custom pose and pose. The returned transform is in skeleton's reference frame.
-			</description>
-		</method>
 		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -171,6 +162,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="register_skin">
+			<return type="SkinReference">
+			</return>
+			<argument index="0" name="skin" type="Skin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bone_custom_pose">
 			<return type="void">
 			</return>
@@ -191,22 +190,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_bone_global_pose">
+		<method name="set_bone_global_pose_override">
 			<return type="void">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<argument index="1" name="pose" type="Transform">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bone_ignore_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone" type="int">
+			<argument index="2" name="amount" type="float">
 			</argument>
-			<argument index="1" name="ignore" type="bool">
+			<argument index="3" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -265,10 +258,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="bones_in_world_transform" type="bool" setter="set_use_bones_in_world_transform" getter="is_using_bones_in_world_transform" default="false">
-		</member>
-	</members>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>

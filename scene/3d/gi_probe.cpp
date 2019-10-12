@@ -243,6 +243,7 @@ void GIProbe::set_extents(const Vector3 &p_extents) {
 
 	extents = p_extents;
 	update_gizmo();
+	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {

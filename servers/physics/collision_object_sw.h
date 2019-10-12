@@ -88,7 +88,7 @@ protected:
 	_FORCE_INLINE_ void _set_transform(const Transform &p_transform, bool p_update_shapes = true) {
 #ifdef DEBUG_ENABLED
 
-		ERR_FAIL_COND_MSG(p_transform.origin.length_squared() > MAX_OBJECT_DISTANCE_X2, "Object went too far away (more than " + itos(MAX_OBJECT_DISTANCE) + " units from origin).");
+		ERR_FAIL_COND_MSG(p_transform.origin.length_squared() > MAX_OBJECT_DISTANCE_X2, "Object went too far away (more than '" + itos(MAX_OBJECT_DISTANCE) + "' units from origin).");
 #endif
 
 		transform = p_transform;

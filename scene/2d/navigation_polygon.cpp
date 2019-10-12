@@ -271,7 +271,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 		struct Polygon p;
 
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 
 			Map<Vector2, int>::Element *E = points.find(tp[i]);
 			if (!E) {

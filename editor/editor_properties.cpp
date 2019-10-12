@@ -922,16 +922,29 @@ EditorPropertyFloat::EditorPropertyFloat() {
 
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
-	Ref<InputEventMouseButton> mb = p_ev;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-		preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
-		preset->popup();
-	}
-	if (mb.is_valid() && mb->is_doubleclick() && mb->get_button_index() == BUTTON_LEFT) {
-		_setup_spin();
+	const Ref<InputEventMouseButton> mb = p_ev;
+	if (mb.is_valid()) {
+		if (mb->is_doubleclick() && mb->get_button_index() == BUTTON_LEFT) {
+			_setup_spin();
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+			preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
+			preset->popup();
+
+			// Ensure the easing doesn't appear as being dragged
+			dragging = false;
+			easing_draw->update();
+		}
+
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			dragging = mb->is_pressed();
+			// Update to display the correct dragging color
+			easing_draw->update();
+		}
 	}
 
-	Ref<InputEventMouseMotion> mm = p_ev;
+	const Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
 
@@ -969,13 +982,19 @@ void EditorPropertyEasing::_draw_easing() {
 	Rect2 r(Point2(), s);
 	r = r.grow(3);
 
-	int points = 48;
+	const int points = 48;
 
 	float prev = 1.0;
-	float exp = get_edited_object()->get(get_edited_property());
+	const float exp = get_edited_object()->get(get_edited_property());
 
-	Ref<Font> f = get_font("font", "Label");
-	Color color = get_color("font_color", "Label");
+	const Ref<Font> f = get_font("font", "Label");
+	const Color font_color = get_color("font_color", "Label");
+	Color line_color;
+	if (dragging) {
+		line_color = get_color("accent_color", "Editor");
+	} else {
+		line_color = get_color("font_color", "Label") * Color(1, 1, 1, 0.9);
+	}
 
 	Vector<Point2> lines;
 	for (int i = 1; i <= points; i++) {
@@ -983,7 +1002,7 @@ void EditorPropertyEasing::_draw_easing() {
 		float ifl = i / float(points);
 		float iflp = (i - 1) / float(points);
 
-		float h = 1.0 - Math::ease(ifl, exp);
+		const float h = 1.0 - Math::ease(ifl, exp);
 
 		if (flip) {
 			ifl = 1.0 - ifl;
@@ -995,8 +1014,8 @@ void EditorPropertyEasing::_draw_easing() {
 		prev = h;
 	}
 
-	easing_draw->draw_multiline(lines, color, 1.0, true);
-	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), color);
+	easing_draw->draw_multiline(lines, line_color, 1.0, true);
+	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -1033,6 +1052,9 @@ void EditorPropertyEasing::_spin_value_changed(double p_value) {
 
 void EditorPropertyEasing::_spin_focus_exited() {
 	spin->hide();
+	// Ensure the easing doesn't appear as being dragged
+	dragging = false;
+	easing_draw->update();
 }
 
 void EditorPropertyEasing::setup(bool p_full, bool p_flip) {
@@ -1095,6 +1117,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->hide();
 	add_child(spin);
 
+	dragging = false;
 	flip = false;
 	full = false;
 }
@@ -1842,10 +1865,20 @@ void EditorPropertyColor::_popup_closed() {
 	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 }
 
+void EditorPropertyColor::_picker_created() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	if (default_color_mode == 1)
+		picker->get_picker()->set_hsv_mode(true);
+	else if (default_color_mode == 2)
+		picker->get_picker()->set_raw_mode(true);
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
 	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
+	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1864,6 +1897,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
 	picker->connect("popup_closed", this, "_popup_closed");
+	picker->connect("picker_created", this, "_picker_created");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -2027,7 +2061,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	RES res = ResourceLoader::load(p_path);
 
-	ERR_FAIL_COND(res.is_null());
+	ERR_FAIL_COND_MSG(res.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);
@@ -2615,6 +2649,7 @@ void EditorPropertyResource::update_property() {
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture>());
 		assign->set_text(TTR("[empty]"));
+		assign->set_tooltip("");
 	} else {
 
 		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Node"));

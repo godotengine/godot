@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "dependency_editor.h"
+#include "editor_file_system.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -1085,7 +1086,7 @@ void EditorFileDialog::_make_dir_confirm() {
 		update_filters();
 		update_dir();
 		_push_history();
-
+		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
 	}

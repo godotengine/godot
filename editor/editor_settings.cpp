@@ -440,25 +440,27 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/draw_tabs", true);
 	_initial_set("text_editor/indent/draw_spaces", false);
 
-	// Line numbers
-	_initial_set("text_editor/line_numbers/show_line_numbers", true);
-	_initial_set("text_editor/line_numbers/line_numbers_zero_padded", false);
-	_initial_set("text_editor/line_numbers/show_bookmark_gutter", true);
-	_initial_set("text_editor/line_numbers/show_breakpoint_gutter", true);
-	_initial_set("text_editor/line_numbers/show_info_gutter", true);
-	_initial_set("text_editor/line_numbers/code_folding", true);
-	_initial_set("text_editor/line_numbers/word_wrap", false);
-	_initial_set("text_editor/line_numbers/draw_minimap", true);
-	_initial_set("text_editor/line_numbers/minimap_width", 80);
-	hints["text_editor/line_numbers/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
-	_initial_set("text_editor/line_numbers/show_line_length_guideline", false);
-	_initial_set("text_editor/line_numbers/line_length_guideline_column", 80);
-	hints["text_editor/line_numbers/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+	// Navigation
+	_initial_set("text_editor/navigation/smooth_scrolling", true);
+	_initial_set("text_editor/navigation/v_scroll_speed", 80);
+	_initial_set("text_editor/navigation/show_minimap", true);
+	_initial_set("text_editor/navigation/minimap_width", 80);
+	hints["text_editor/navigation/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/navigation/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
 
-	// Open scripts
-	_initial_set("text_editor/open_scripts/smooth_scrolling", true);
-	_initial_set("text_editor/open_scripts/v_scroll_speed", 80);
-	_initial_set("text_editor/open_scripts/show_members_overview", true);
+	// Appearance
+	_initial_set("text_editor/appearance/show_line_numbers", true);
+	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
+	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
+	_initial_set("text_editor/appearance/show_breakpoint_gutter", true);
+	_initial_set("text_editor/appearance/show_info_gutter", true);
+	_initial_set("text_editor/appearance/code_folding", true);
+	_initial_set("text_editor/appearance/word_wrap", false);
+	_initial_set("text_editor/appearance/show_line_length_guideline", false);
+	_initial_set("text_editor/appearance/line_length_guideline_column", 80);
+	hints["text_editor/appearance/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
+
+	// Script list
+	_initial_set("text_editor/script_list/show_members_overview", true);
 
 	// Files
 	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
@@ -664,6 +666,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/keyword_color", Color(1.0, 1.0, 0.7));
 	_initial_set("text_editor/highlighting/base_type_color", Color(0.64, 1.0, 0.83));
 	_initial_set("text_editor/highlighting/engine_type_color", Color(0.51, 0.83, 1.0));
+	_initial_set("text_editor/highlighting/user_type_color", Color(0.42, 0.67, 0.93));
 	_initial_set("text_editor/highlighting/comment_color", Color(0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/string_color", Color(0.94, 0.43, 0.75));
 	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color(0.0, 0.0, 0.0, 0.23) : Color(0.2, 0.23, 0.31));
@@ -791,13 +794,13 @@ void EditorSettings::create() {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/._sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path: " + exe_path + "/._sc_");
+			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
 		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/_sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path: " + exe_path + "/_sc_");
+			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
 		}
 	}
 	memdelete(d);
@@ -1233,10 +1236,10 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err;
 	err = cf->load(path);
-	ERR_FAIL_COND(err != OK && err != ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_MSG(err != OK && err != ERR_FILE_NOT_FOUND, "Cannot load editor settings from file '" + path + "'.");
 	cf->set_value(p_section, p_key, p_data);
 	err = cf->save(path);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save editor settings to file '" + path + "'.");
 }
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {

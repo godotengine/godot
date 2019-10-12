@@ -56,6 +56,8 @@ void register_visual_script_types() {
 	ClassDB::register_virtual_class<VisualScriptNode>();
 	ClassDB::register_class<VisualScriptFunctionState>();
 	ClassDB::register_class<VisualScriptFunction>();
+	ClassDB::register_virtual_class<VisualScriptLists>();
+	ClassDB::register_class<VisualScriptComposeArray>();
 	ClassDB::register_class<VisualScriptOperator>();
 	ClassDB::register_class<VisualScriptVariableSet>();
 	ClassDB::register_class<VisualScriptVariableGet>();

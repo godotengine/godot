@@ -543,7 +543,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (target_peer != 0) {
 
 		E = peer_map.find(ABS(target_peer));
-		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
+		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer '" + itos(target_peer) + "'.");
 	}
 
 	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 8, packet_flags);

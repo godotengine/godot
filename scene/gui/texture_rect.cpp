@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "texture_rect.h"
+#include "core/core_string_names.h"
 #include "servers/visual_server.h"
 
 void TextureRect::_notification(int p_what) {
@@ -123,6 +124,7 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &TextureRect::is_flipped_v);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &TextureRect::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &TextureRect::_texture_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
@@ -140,9 +142,27 @@ void TextureRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
+void TextureRect::_texture_changed() {
+
+	if (texture.is_valid()) {
+		update();
+		minimum_size_changed();
+	}
+}
+
 void TextureRect::set_texture(const Ref<Texture> &p_tex) {
 
+	if (p_tex == texture)
+		return;
+
+	if (texture.is_valid())
+		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+
 	texture = p_tex;
+
+	if (texture.is_valid())
+		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+
 	update();
 	/*
 	if (texture.is_valid())

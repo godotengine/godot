@@ -142,6 +142,7 @@ $GODOT_HEAD_INCLUDE
 
 		(function() {
 
+			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
@@ -180,9 +181,9 @@ $GODOT_HEAD_INCLUDE
 				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
 					elem.style.display = 'none';
 				});
-				if (animateStatusIndeterminate in animationCallbacks) {
-					animationCallbacks.erase(animateStatusIndeterminate);
-				}
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
 				switch (mode) {
 					case 'progress':
 						statusProgress.style.display = 'block';
@@ -254,7 +255,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(MAIN_PACK).then(() => {
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

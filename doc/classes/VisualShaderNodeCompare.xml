@@ -11,6 +11,7 @@
 	<members>
 		<member name="condition" type="int" setter="set_condition" getter="get_condition" enum="VisualShaderNodeCompare.Condition" default="0">
 		</member>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, 0.0, 1, 0.0, 2, 1e-05 ]" />
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeCompare.Function" default="0">
 		</member>
 		<member name="type" type="int" setter="set_comparsion_type" getter="get_comparsion_type" enum="VisualShaderNodeCompare.ComparsionType" default="0">

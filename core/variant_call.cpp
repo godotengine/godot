@@ -256,6 +256,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(String, format);
 	VCALL_LOCALMEM2R(String, replace);
 	VCALL_LOCALMEM2R(String, replacen);
+	VCALL_LOCALMEM1R(String, repeat);
 	VCALL_LOCALMEM2R(String, insert);
 	VCALL_LOCALMEM0R(String, capitalize);
 	VCALL_LOCALMEM3R(String, split);
@@ -283,6 +284,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, sha1_buffer);
 	VCALL_LOCALMEM0R(String, sha256_buffer);
 	VCALL_LOCALMEM0R(String, empty);
+	VCALL_LOCALMEM1R(String, humanize_size);
 	VCALL_LOCALMEM0R(String, is_abs_path);
 	VCALL_LOCALMEM0R(String, is_rel_path);
 	VCALL_LOCALMEM0R(String, get_base_dir);
@@ -314,6 +316,10 @@ struct _VariantCall {
 	static void _call_String_to_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->ascii();
 
 		PoolByteArray retval;
@@ -329,6 +335,10 @@ struct _VariantCall {
 	static void _call_String_to_utf8(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->utf8();
 
 		PoolByteArray retval;
@@ -534,6 +544,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Array, bsearch);
 	VCALL_LOCALMEM4R(Array, bsearch_custom);
 	VCALL_LOCALMEM1R(Array, duplicate);
+	VCALL_LOCALMEM4R(Array, slice);
 	VCALL_LOCALMEM0(Array, invert);
 	VCALL_LOCALMEM0R(Array, max);
 	VCALL_LOCALMEM0R(Array, min);
@@ -542,7 +553,7 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		String s;
-		if (ba->size() >= 0) {
+		if (ba->size() > 0) {
 			PoolByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size() + 1);
@@ -558,7 +569,7 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		String s;
-		if (ba->size() >= 0) {
+		if (ba->size() > 0) {
 			PoolByteArray::Read r = ba->read();
 			s.parse_utf8((const char *)r.ptr(), ba->size());
 		}
@@ -569,14 +580,15 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		PoolByteArray compressed;
-		Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
+		if (ba->size() > 0) {
+			Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
 
-		compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
-		int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
+			compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
+			int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
 
-		result = result >= 0 ? result : 0;
-		compressed.resize(result);
-
+			result = result >= 0 ? result : 0;
+			compressed.resize(result);
+		}
 		r_ret = compressed;
 	}
 
@@ -588,9 +600,9 @@ struct _VariantCall {
 
 		int buffer_size = (int)(*p_args[0]);
 
-		if (buffer_size < 0) {
+		if (buffer_size <= 0) {
 			r_ret = decompressed;
-			ERR_FAIL_MSG("Decompression buffer size is less than zero.");
+			ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
 		}
 
 		decompressed.resize(buffer_size);
@@ -604,6 +616,10 @@ struct _VariantCall {
 
 	static void _call_PoolByteArray_hex_encode(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		if (ba->size() == 0) {
+			r_ret = String();
+			return;
+		}
 		PoolByteArray::Read r = ba->read();
 		String s = String::hex_encode_buffer(&r[0], ba->size());
 		r_ret = s;
@@ -751,6 +767,7 @@ struct _VariantCall {
 
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2()); return;
+			case Variant::POOL_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PoolVector2Array()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -761,6 +778,7 @@ struct _VariantCall {
 
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2()); return;
+			case Variant::POOL_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PoolVector2Array()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -817,6 +835,7 @@ struct _VariantCall {
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
+			case Variant::POOL_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PoolVector3Array()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -828,6 +847,7 @@ struct _VariantCall {
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
+			case Variant::POOL_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PoolVector3Array()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -1525,6 +1545,7 @@ void register_variant_methods() {
 	ADDFUNC2R(STRING, STRING, String, format, NIL, "values", STRING, "placeholder", varray("{_}"));
 	ADDFUNC2R(STRING, STRING, String, replace, STRING, "what", STRING, "forwhat", varray());
 	ADDFUNC2R(STRING, STRING, String, replacen, STRING, "what", STRING, "forwhat", varray());
+	ADDFUNC1R(STRING, STRING, String, repeat, INT, "count", varray());
 	ADDFUNC2R(STRING, STRING, String, insert, INT, "position", STRING, "what", varray());
 	ADDFUNC0R(STRING, STRING, String, capitalize, varray());
 	ADDFUNC3R(STRING, POOL_STRING_ARRAY, String, split, STRING, "delimiter", BOOL, "allow_empty", INT, "maxsplit", varray(true, 0));
@@ -1554,6 +1575,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha1_buffer, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha256_buffer, varray());
 	ADDFUNC0R(STRING, BOOL, String, empty, varray());
+	ADDFUNC1R(STRING, STRING, String, humanize_size, INT, "size", varray());
 	ADDFUNC0R(STRING, BOOL, String, is_abs_path, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_rel_path, varray());
 	ADDFUNC0R(STRING, STRING, String, get_base_dir, varray());
@@ -1755,6 +1777,7 @@ void register_variant_methods() {
 	ADDFUNC4R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "obj", STRING, "func", BOOL, "before", varray(true));
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
 	ADDFUNC1R(ARRAY, ARRAY, Array, duplicate, BOOL, "deep", varray(false));
+	ADDFUNC4R(ARRAY, ARRAY, Array, slice, INT, "begin", INT, "end", INT, "step", BOOL, "deep", varray(1, false));
 	ADDFUNC0R(ARRAY, NIL, Array, max, varray());
 	ADDFUNC0R(ARRAY, NIL, Array, min, varray());
 

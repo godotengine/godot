@@ -43,13 +43,13 @@ protected:
 	static void _bind_methods();
 	virtual void _update_shape();
 
-	virtual Vector<Vector3> _gen_debug_mesh_lines();
-
 public:
 	void set_radius(float p_radius);
 	float get_radius() const;
 	void set_height(float p_height);
 	float get_height() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines();
 
 	CylinderShape();
 };

@@ -50,6 +50,52 @@ void Script::_notification(int p_what) {
 	}
 }
 
+Variant Script::_get_property_default_value(const StringName &p_property) {
+	Variant ret;
+	get_property_default_value(p_property, ret);
+	return ret;
+}
+
+Array Script::_get_script_property_list() {
+	Array ret;
+	List<PropertyInfo> list;
+	get_script_property_list(&list);
+	for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
+		ret.append(E->get().operator Dictionary());
+	}
+	return ret;
+}
+
+Array Script::_get_script_method_list() {
+	Array ret;
+	List<MethodInfo> list;
+	get_script_method_list(&list);
+	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
+		ret.append(E->get().operator Dictionary());
+	}
+	return ret;
+}
+
+Array Script::_get_script_signal_list() {
+	Array ret;
+	List<MethodInfo> list;
+	get_script_signal_list(&list);
+	for (List<MethodInfo>::Element *E = list.front(); E; E = E->next()) {
+		ret.append(E->get().operator Dictionary());
+	}
+	return ret;
+}
+
+Dictionary Script::_get_script_constant_map() {
+	Dictionary ret;
+	Map<StringName, Variant> map;
+	get_constants(&map);
+	for (Map<StringName, Variant>::Element *E = map.front(); E; E = E->next()) {
+		ret[E->key()] = E->value();
+	}
+	return ret;
+}
+
 void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("can_instance"), &Script::can_instance);
@@ -63,6 +109,12 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_base_type"), &Script::get_instance_base_type);
 
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
+
+	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);
+	ClassDB::bind_method(D_METHOD("get_script_method_list"), &Script::_get_script_method_list);
+	ClassDB::bind_method(D_METHOD("get_script_signal_list"), &Script::_get_script_signal_list);
+	ClassDB::bind_method(D_METHOD("get_script_constant_map"), &Script::_get_script_constant_map);
+	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 

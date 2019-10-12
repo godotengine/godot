@@ -10,12 +10,13 @@
 # Magnus Helander <helander@fastmail.net>, 2018.
 # Daniel K <danielkimblad@hotmail.com>, 2018.
 # Toiya <elviraa98@gmail.com>, 2019.
+# Fredrik Welin <figgemail@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-19 15:04+0000\n"
-"Last-Translator: Toiya <elviraa98@gmail.com>\n"
+"PO-Revision-Date: 2019-09-07 13:51+0000\n"
+"Last-Translator: Fredrik Welin <figgemail@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -35,14 +36,15 @@ msgstr "Ogiltligt typargument till convert(), använd TYPE_* konstanter."
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
+"Inte tillräckligt antal bytes eller ogiltigt format för avkodning av bytes."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Ogiltig indata %i (ej överförd) i uttrycket"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "\"self\" kan inte användas eftersom instansen är null (ej överförd)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -64,6 +66,34 @@ msgstr ""
 msgid "On call to '%s':"
 msgstr ""
 
+#: core/ustring.cpp
+msgid "B"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "KiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "MiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "GiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "TiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "PiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "EiB"
+msgstr ""
+
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "Gratis"
@@ -81,9 +111,8 @@ msgid "Time:"
 msgstr "Tid:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Värde"
+msgstr "Värde:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -491,6 +520,11 @@ msgid "Select None"
 msgstr "Välj Node"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "Välj en AnimationPlayer från Scenträdet för att redigera animationer."
+
+#: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr ""
 
@@ -845,7 +879,8 @@ msgstr "Ansluter Signal:"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -960,7 +995,8 @@ msgstr "Sök:"
 msgid "Matches:"
 msgstr "Matchar:"
 
-#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -1326,7 +1362,7 @@ msgstr "Ta bort Buss-Effekt"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
-msgid "Audio Bus, Drag and Drop to rearrange."
+msgid "Drag & drop to rearrange."
 msgstr "Ljud-Buss, dra och släpp för att ändra ordning."
 
 #: editor/editor_audio_buses.cpp
@@ -1556,6 +1592,7 @@ msgid "Add AutoLoad"
 msgstr "Lägg till AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Path:"
@@ -1802,6 +1839,7 @@ msgstr "Nuvarande:"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr "Ny"
 
@@ -1884,6 +1922,7 @@ msgid "New Folder..."
 msgstr "Ny Mapp..."
 
 #: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Uppdatera"
 
@@ -2057,7 +2096,8 @@ msgid "Inherited by:"
 msgstr "Ärvd av:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description:"
+#, fuzzy
+msgid "Brief Description"
 msgstr "Kort Beskrivning:"
 
 #: editor/editor_help.cpp
@@ -2066,17 +2106,8 @@ msgid "Properties"
 msgstr "Egenskaper"
 
 #: editor/editor_help.cpp
-msgid "Properties:"
-msgstr ""
-
-#: editor/editor_help.cpp
 #, fuzzy
 msgid "Methods"
-msgstr "Metoder"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Methods:"
 msgstr "Metoder"
 
 #: editor/editor_help.cpp
@@ -2085,22 +2116,8 @@ msgid "Theme Properties"
 msgstr "Egenskaper"
 
 #: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties:"
-msgstr "Egenskaper"
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Signals:"
-msgstr "Signaler:"
-
-#: editor/editor_help.cpp
 msgid "Enumerations"
 msgstr "Enumerations"
-
-#: editor/editor_help.cpp
-msgid "Enumerations:"
-msgstr "Enumerations:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2113,22 +2130,13 @@ msgid "Constants"
 msgstr "Konstanter"
 
 #: editor/editor_help.cpp
-msgid "Constants:"
-msgstr "Konstanter:"
-
-#: editor/editor_help.cpp
 #, fuzzy
 msgid "Class Description"
 msgstr "Beskrivning"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description:"
-msgstr "Beskrivning:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials:"
+msgid "Online Tutorials"
 msgstr "Dokumentation Online"
 
 #: editor/editor_help.cpp
@@ -2148,11 +2156,6 @@ msgstr "Egenskapsbeskrivning:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Property Descriptions:"
-msgstr "Egenskapsbeskrivning:"
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -2163,11 +2166,6 @@ msgstr ""
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Method Descriptions"
-msgstr "Metodbeskrivning:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Method Descriptions:"
 msgstr "Metodbeskrivning:"
 
 #: editor/editor_help.cpp
@@ -2251,8 +2249,8 @@ msgstr "Output:"
 msgid "Copy Selection"
 msgstr "Ta bort Urval"
 
-#: editor/editor_log.cpp editor/editor_profiler.cpp
-#: editor/editor_properties.cpp
+#: editor/editor_log.cpp editor/editor_network_profiler.cpp
+#: editor/editor_profiler.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
@@ -2266,6 +2264,50 @@ msgstr "Rensa"
 #, fuzzy
 msgid "Clear Output"
 msgstr "Output:"
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: editor/editor_profiler.cpp
+#, fuzzy
+msgid "Stop"
+msgstr "Stanna"
+
+#: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
+#: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
+msgid "Start"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "%s/s"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+#, fuzzy
+msgid "Down"
+msgstr "Ladda ner"
+
+#: editor/editor_network_profiler.cpp
+msgid "Up"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+msgid "Node"
+msgstr "Node"
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RSET"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RSET"
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2924,6 +2966,19 @@ msgstr "Projekt"
 msgid "Project Settings..."
 msgstr "Projektinställningar"
 
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Version Control"
+msgstr "Version:"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Set Up Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Shut Down Version Control"
+msgstr ""
+
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Export..."
@@ -3136,11 +3191,6 @@ msgstr "Pausa Scen"
 msgid "Stop the scene."
 msgstr "Stanna scenen."
 
-#: editor/editor_node.cpp editor/editor_profiler.cpp
-#, fuzzy
-msgid "Stop"
-msgstr "Stanna"
-
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Play the edited scene."
@@ -3196,10 +3246,6 @@ msgid "Inspector"
 msgstr "Inspektör"
 
 #: editor/editor_node.cpp
-msgid "Node"
-msgstr "Node"
-
-#: editor/editor_node.cpp
 #, fuzzy
 msgid "Expand Bottom Panel"
 msgstr "Expandera alla"
@@ -3223,15 +3269,21 @@ msgstr "Mallar"
 
 #: editor/editor_node.cpp
 msgid ""
-"This will install the Android project for custom builds.\n"
-"Note that, in order to use it, it needs to be enabled per export preset."
+"This will set up your project for custom Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make custom builds instead of using pre-built APKs, "
+"the \"Use Custom Build\" option should be enabled in the Android export "
+"preset."
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Android build template is already installed and it won't be overwritten.\n"
-"Remove the \"build\" directory manually before attempting this operation "
-"again."
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3297,6 +3349,11 @@ msgstr ""
 msgid "Open the previous Editor"
 msgstr ""
 
+#: editor/editor_path.cpp
+#, fuzzy
+msgid "No sub-resources found."
+msgstr "Resurser"
+
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
 msgstr ""
@@ -3305,6 +3362,11 @@ msgstr ""
 #, fuzzy
 msgid "Thumbnail..."
 msgstr "Miniatyr..."
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Main Script:"
+msgstr "Öppna Skript"
 
 #: editor/editor_plugin_settings.cpp
 #, fuzzy
@@ -3336,11 +3398,6 @@ msgstr "Status:"
 #, fuzzy
 msgid "Edit:"
 msgstr "Redigera"
-
-#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
-#: editor/rename_dialog.cpp
-msgid "Start"
-msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -4208,9 +4265,10 @@ msgstr ""
 msgid "Import As:"
 msgstr "Importera Som:"
 
-#: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
-msgstr ""
+#: editor/import_dock.cpp
+#, fuzzy
+msgid "Preset"
+msgstr "Återställ Zoom"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -4682,6 +4740,7 @@ msgid "Change Animation Name:"
 msgstr "Ändra Animationsnamn:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
 msgstr "Ta bort Animation?"
 
@@ -5284,10 +5343,6 @@ msgid "Sort:"
 msgstr "Sortera:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse sorting."
-msgstr ""
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "Kategori:"
@@ -5566,6 +5621,11 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Ruler Mode"
+msgstr "Växla Läge"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -6663,7 +6723,7 @@ msgstr "Instans:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Type:"
 msgstr "Typ:"
@@ -6897,11 +6957,11 @@ msgid "Toggle Scripts Panel"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Over"
+msgid "Step Into"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Into"
+msgid "Step Over"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -6988,7 +7048,7 @@ msgstr "Rensa Senaste Scener"
 msgid "Connections to method:"
 msgstr "Anslut Till Node:"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Source"
 msgstr "Källa:"
@@ -7833,6 +7893,11 @@ msgstr "(tom)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
+msgid "Move Frame"
+msgstr "Flytta Nod(er)"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
 msgid "Animations:"
 msgstr "Animationer"
 
@@ -8173,6 +8238,15 @@ msgid "Enable Priority"
 msgstr "Redigera Filter"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Filter tiles"
+msgstr "Filtrera Filer..."
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Give a TileSet resource to this TileMap to use its tiles."
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr ""
 
@@ -8315,6 +8389,11 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -8493,6 +8572,109 @@ msgstr "Åtgärden kan inte göras utan en scen."
 #, fuzzy
 msgid "TileSet"
 msgstr "TileSet..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No VCS addons are available."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#, fuzzy
+msgid "Error"
+msgstr "Fel"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No files added to stage"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit"
+msgstr "Community"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "VCS Addon is not initialized"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control System"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Initialize"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Staging area"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Detect new changes"
+msgstr "Skapa Ny"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Changes"
+msgstr "Ändra"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Modified"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Renamed"
+msgstr "Byt namn"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Deleted"
+msgstr "Ta bort"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Typechange"
+msgstr "Ändra"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage Selected"
+msgstr "Skala urval"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage All"
+msgstr "Spara Alla"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Add a commit message"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "Synkronisera Skript-ändringar"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Status"
+msgstr "Status"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "View file diffs before committing them to the latest version"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No file diff is active"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect changes in file diff"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -8744,6 +8926,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9995,6 +10182,10 @@ msgid "Settings saved OK."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+msgid "Moved Input Action Event"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Override for Feature"
 msgstr ""
 
@@ -10136,6 +10327,10 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
+msgstr ""
+
+#: editor/property_editor.cpp
+msgid "Preset..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -10316,11 +10511,6 @@ msgstr "Versaler"
 msgid "Reset"
 msgstr "Återställ Zoom"
 
-#: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Error"
-msgstr "Fel"
-
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Reparent Node"
@@ -10379,6 +10569,10 @@ msgid "Instance Scene(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Replace with Branch Scene"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Instance Child Scene"
 msgstr "Instansiera Barn-Scen"
@@ -10426,8 +10620,21 @@ msgstr "Vettigt!"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Delete Node(s)?"
-msgstr "Ta bort Nod(er)?"
+msgid "Delete %d nodes?"
+msgstr "Ta bort Nod(er)"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete the root node \"%s\"?"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\" and its children?"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete node \"%s\"?"
+msgstr "Ta bort Nod(er)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10856,11 +11063,41 @@ msgid "Bytes:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Stack Trace"
-msgstr ""
+#, fuzzy
+msgid "Warning:"
+msgstr "Varning"
 
 #: editor/script_editor_debugger.cpp
-msgid "Pick one or more items from the list to display the graph."
+msgid "Error:"
+msgstr "Fel:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Error"
+msgstr "Fel"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Error:"
+msgstr "Fel:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Source"
+msgstr "Källa:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Source:"
+msgstr "Källa:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Source:"
+msgstr "Källa:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Stack Trace"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -10870,13 +11107,18 @@ msgstr "Fel"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
-msgid "Child Process Connected"
+msgid "Child process connected."
 msgstr "Barnprocess Ansluten"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Copy Error"
 msgstr "Fel"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Skip Breakpoints"
+msgstr "Radera punkter"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10895,6 +11137,11 @@ msgid "Profiler"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Network Profiler"
+msgstr "Exportera Projekt"
+
+#: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr ""
 
@@ -10905,6 +11152,10 @@ msgstr "Värde"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -11115,10 +11366,6 @@ msgid "Library"
 msgstr "Bibliotek"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Status"
-msgstr "Status"
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
 msgid "Libraries: "
 msgstr "Bibliotek: "
@@ -11126,6 +11373,10 @@ msgstr "Bibliotek: "
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
 msgstr "GDNative"
+
+#: modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -11291,6 +11542,15 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Filter meshes"
+msgstr "Filtrera noder"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -11429,6 +11689,11 @@ msgstr "Variabler:"
 #, fuzzy
 msgid "Create a new variable."
 msgstr "Skapa Ny"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Signals:"
+msgstr "Signaler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11603,6 +11868,11 @@ msgid "Editing Signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Tool:"
+msgstr "Gör Patch"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
 msgstr ""
 
@@ -11757,7 +12027,8 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
-"Android project is not installed for compiling. Install from Editor menu."
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12461,6 +12732,36 @@ msgid "Constants cannot be modified."
 msgstr ""
 
 #, fuzzy
+#~ msgid "Methods:"
+#~ msgstr "Metoder"
+
+#, fuzzy
+#~ msgid "Theme Properties:"
+#~ msgstr "Egenskaper"
+
+#~ msgid "Enumerations:"
+#~ msgstr "Enumerations:"
+
+#~ msgid "Constants:"
+#~ msgstr "Konstanter:"
+
+#, fuzzy
+#~ msgid "Class Description:"
+#~ msgstr "Beskrivning:"
+
+#, fuzzy
+#~ msgid "Property Descriptions:"
+#~ msgstr "Egenskapsbeskrivning:"
+
+#, fuzzy
+#~ msgid "Method Descriptions:"
+#~ msgstr "Metodbeskrivning:"
+
+#, fuzzy
+#~ msgid "Delete Node(s)?"
+#~ msgstr "Ta bort Nod(er)?"
+
+#, fuzzy
 #~ msgid "Error: could not load file."
 #~ msgstr "Fel - Kunde inte skapa Skript i filsystemet."
 
@@ -12592,10 +12893,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Instansiera valda scen(er) som barn till vald Node."
-
-#, fuzzy
-#~ msgid "Warnings:"
-#~ msgstr "Varning"
 
 #, fuzzy
 #~ msgid "Font Size:"
@@ -12730,9 +13027,6 @@ msgstr ""
 
 #~ msgid "Warning"
 #~ msgstr "Varning"
-
-#~ msgid "Error:"
-#~ msgstr "Fel:"
 
 #, fuzzy
 #~ msgid "Variable"

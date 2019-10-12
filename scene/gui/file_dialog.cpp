@@ -637,6 +637,8 @@ bool FileDialog::is_mode_overriding_title() const {
 
 void FileDialog::set_mode(Mode p_mode) {
 
+	ERR_FAIL_INDEX((int)p_mode, 5);
+
 	mode = p_mode;
 	switch (mode) {
 
