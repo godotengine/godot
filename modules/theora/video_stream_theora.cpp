@@ -634,7 +634,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	size_t buffer_size = (size_t)BUFFERSIZE; //Cast BUFFERSIZE
 	size_t end_file = file->get_len();
 	size_t start_file = 0;
-	size_t number_of_blocks = (end_file - start_file) / buffer_size + ((end_file - start_file) % buffer_size ? 1 : 0);
+	size_t number_of_blocks = (end_file - start_file) / buffer_size;
 
 	ogg_packet op;
 	size_t left = 0;
@@ -642,7 +642,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 
 	struct _page_info left_page = { .time = 0, .block_number = 0, .granulepos = 0 };
 	struct _page_info mid_page = { .time = 0, .block_number = 0, .granulepos = 0 };
-	struct _page_info right_page = { .time = DBL_MAX, .block_number = 0x7FFFFFFFFFFFFFFF, .granulepos = 0x7FFFFFFFFFFFFFFF };
+	struct _page_info right_page = { .time = DBL_MAX, .block_number = right, .granulepos = 0x7FFFFFFFFFFFFFFF };
 	HashMap<ogg_int64_t, _page_info> page_info_table;
 	HashMap<int, double> block_time;
 
@@ -736,6 +736,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		file->seek(current_block * buffer_size);
 		buffer_data();
 		bool seeked_file = false;
+		bool buffer_packet = false;
 		while (!seeked_file) {
 			int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
 			if (ogg_page_sync_state == -1) {
@@ -758,6 +759,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 							buffer_data();
 						}
 					}
+					buffer_packet = true;
 					if (th_packet_iskeyframe(&op)) {
 						videobuf_time = th_granule_time(td, op.granulepos);
 						if (videobuf_time < p_time) {
@@ -768,10 +770,12 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 				}
 			}
 		}
-		if (th_packet_iskeyframe(&op)) {
-			videobuf_time = th_granule_time(td, op.granulepos);
-			if (videobuf_time < p_time) {
-				break;
+		if(buffer_packet) {
+			if (th_packet_iskeyframe(&op)) {
+				videobuf_time = th_granule_time(td, op.granulepos);
+				if (videobuf_time < p_time) {
+					break;
+				}
 			}
 		}
 		current_block--;
