@@ -34,7 +34,6 @@
 #ifdef DEBUG_ENABLED
 
 #include "test_astar.h"
-
 #include "test_gui.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
