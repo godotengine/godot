@@ -736,7 +736,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		file->seek(current_block * buffer_size);
 		buffer_data();
 		bool seeked_file = false;
-		bool buffer_packet = false;
+		bool keyframe_found = false;
 		while (!seeked_file) {
 			int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
 			if (ogg_page_sync_state == -1) {
@@ -759,10 +759,10 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 							buffer_data();
 						}
 					}
-					buffer_packet = true;
 					if (th_packet_iskeyframe(&op)) {
 						videobuf_time = th_granule_time(td, op.granulepos);
 						if (videobuf_time < p_time) {
+							keyframe_found = true;
 							break;
 						}
 					} else
@@ -770,13 +770,8 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 				}
 			}
 		}
-		if(buffer_packet) {
-			if (th_packet_iskeyframe(&op)) {
-				videobuf_time = th_granule_time(td, op.granulepos);
-				if (videobuf_time < p_time) {
-					break;
-				}
-			}
+		if(keyframe_found) {
+			break;
 		}
 		current_block--;
 	}
