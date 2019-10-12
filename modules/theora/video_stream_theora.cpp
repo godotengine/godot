@@ -779,14 +779,30 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	ogg_int64_t audio_granulepos = 0;
 	ogg_int64_t total_packets = 0;
 	vorbis_synthesis_restart(&vd);
-	//decode video until the proper time is found
+	//Set to the lowest processing level
 	pp_level = 0;
 	th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level, sizeof(pp_level));
+
+	//Process keyframe
+	ogg_int64_t video_granulepos;
+	th_decode_packetin(td, &op, &video_granulepos);
+	th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &video_granulepos, sizeof(video_granulepos));
+	th_ycbcr_buffer yuv;
+	th_decode_ycbcr_out(td, yuv); //dump frame
+	ogg_stream_packetout(&to, &op);
+
+	//decode video until the proper time is found
 	while (videobuf_time <= p_time) {
+		int ogg_sync_state = ogg_sync_pageout(&oy, &og);
+		while (ogg_sync_state < 1) {
+			buffer_data();
+			ogg_sync_state = ogg_sync_pageout(&oy, &og);
+		}
 		if(ogg_page_serialno(&og) == to.serialno) {
 			queue_page(&og);
 			while (ogg_stream_packetout(&to, &op) > 0) {
 				ogg_int64_t videobuf_granulepos;
+				print_line("frame submitted is keyframe: " + itos(th_packet_iskeyframe(&op)));
 				th_decode_packetin(td, &op, &videobuf_granulepos);
 				if (op.granulepos > 0) {
 					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
@@ -805,11 +821,6 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 				audio_granulepos = ogg_page_granulepos(&og);
 				total_packets = ogg_page_packets(&og);
 			}
-		}
-		int ogg_sync_state = ogg_sync_pageout(&oy, &og);
-		while (ogg_sync_state < 1) {
-			buffer_data();
-			ogg_sync_state = ogg_sync_pageout(&oy, &og);
 		}
 	}
 	//Update the audioframes time
