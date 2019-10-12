@@ -62,12 +62,16 @@ class EditorSettingsDialog : public AcceptDialog {
 	SectionedInspector *inspector;
 
 	MenuButton *general_menu;
+	ConfirmationDialog *restore_default_settings_ask;
 	MenuButton *shortcut_menu;
+	ConfirmationDialog *restore_default_shortcuts_ask;
 
-	bool autocollapsing;
+	bool autocollapsing = false;
 	void _general_menu_option(int p_option);
+	void _restore_default_settings();
 	void _shortcut_menu_option(int p_option);
 	void _shortcut_section_collapsed(Object *p_item);
+	void _restore_default_shortcuts();
 	void _update_menus();
 
 	Timer *timer;

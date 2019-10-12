@@ -50,9 +50,15 @@ void EditorSettingsDialog::_general_menu_option(int p_option) {
 
 		} break;
 		case MENU_RESTORE_DEFAULTS: {
-
+			restore_default_settings_ask->set_text(TTR("Restore all default settings? (No undo)"));
+			restore_default_settings_ask->popup_centered_minsize();
 		} break;
 	}
+}
+
+void EditorSettingsDialog::_restore_default_settings() {
+
+	print_line("Restore default settings accepted");
 }
 
 void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
@@ -107,8 +113,15 @@ void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
 		} break;
 		case MENU_RESTORE_DEFAULTS: {
 
+			restore_default_shortcuts_ask->set_text(TTR("Restore all default shortcuts? (No undo)"));
+			restore_default_shortcuts_ask->popup_centered_minsize();
 		} break;
 	}
+}
+
+void EditorSettingsDialog::_restore_default_shortcuts() {
+
+	print_line("Restore default shortcuts accepted");
 }
 
 void EditorSettingsDialog::_shortcut_section_collapsed(Object *p_item) {
@@ -492,6 +505,8 @@ void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_general_menu_option"), &EditorSettingsDialog::_general_menu_option);
 	ClassDB::bind_method(D_METHOD("_shortcut_menu_option"), &EditorSettingsDialog::_shortcut_menu_option);
 	ClassDB::bind_method(D_METHOD("_shortcut_section_collapsed"), &EditorSettingsDialog::_shortcut_section_collapsed);
+	ClassDB::bind_method(D_METHOD("_restore_default_shortcuts"), &EditorSettingsDialog::_restore_default_shortcuts);
+	ClassDB::bind_method(D_METHOD("_restore_default_settings"), &EditorSettingsDialog::_restore_default_settings);
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
@@ -535,6 +550,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	PopupMenu *general_popup = general_menu->get_popup();
 	general_popup->set_anchors_preset(PRESET_TOP_RIGHT);
 	general_popup->connect("id_pressed", this, "_general_menu_option");
+	restore_default_settings_ask = memnew(ConfirmationDialog);
+	add_child(restore_default_settings_ask);
+	restore_default_settings_ask->connect("confirmed", this, "_restore_default_settings");
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -586,6 +604,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	PopupMenu *shortcut_popup = shortcut_menu->get_popup();
 	shortcut_popup->set_anchors_preset(PRESET_TOP_RIGHT);
 	shortcut_popup->connect("id_pressed", this, "_shortcut_menu_option");
+	restore_default_shortcuts_ask = memnew(ConfirmationDialog);
+	add_child(restore_default_shortcuts_ask);
+	restore_default_shortcuts_ask->connect("confirmed", this, "_restore_default_shortcuts");
 
 	shortcut_search_box = memnew(LineEdit);
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
