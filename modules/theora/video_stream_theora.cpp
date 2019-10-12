@@ -556,11 +556,8 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 void VideoStreamPlaybackTheora::play() {
 
-	if (!playing)
-		time = 0;
-	else {
+	if (playing)
 		stop();
-	}
 
 	playing = true;
 	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
@@ -623,15 +620,14 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
-	bool play_state = playing;
-	playing = false;
+	bool play_state = playing; //Save the playing state
+	stop();
 	struct _page_info {
 		size_t block_number;
 		double_t time;
 		ogg_int64_t granulepos;
 	};
 	//https://xiph.org/oggz/doc/group__basics.html
-
 	float true_time = p_time - AudioServer::get_singleton()->get_output_latency() - delay_compensation;
 	p_time = fmax(0, true_time);
 
@@ -730,21 +726,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	if (mid_page.time > p_time || ogg_page_continued(&og)) {
 		current_block--;
 	}
-	/*
-	ogg_stream_reset(&to);
-	ogg_stream_reset(&vo);
-	ogg_sync_reset(&oy);
-	file->seek(current_block * buffer_size);
-	while(buffer_data() > 0) {
-		while(ogg_sync_pageout(&oy, &og) > 0) {
-			queue_page(&og);
-			print_line("page: " + itos(ogg_page_pageno(&og)) + "block num: " + itos(current_block));
-			while(ogg_stream_packetout(&to, &op) > 0) {
-				print_line(itos(th_packet_iskeyframe(&op)) + " grand "  + itos(op.granulepos));
-			}
-		}
-		current_block++;
-	}*/
+	
 	// Backtrack to find the keyframe
 	// Keyframes seem to reside on their own page
 	while (current_block >= 0) {
@@ -798,6 +780,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	ogg_int64_t total_packets = 0;
 	vorbis_synthesis_restart(&vd);
 	//decode video until the proper time is found
+	pp_level = 0;
 	th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level, sizeof(pp_level));
 	while (videobuf_time <= p_time) {
 		if(ogg_page_serialno(&og) == to.serialno) {
@@ -843,12 +826,14 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			for(int i = 0; i < m; i++)
 				aux_buffer[i] = 0;
 			int mixed = mix_callback(mix_udata, aux_buffer, m);
-			audio_frames_wrote = m + videobuf_time * vi.rate;
+			audio_frames_wrote = mixed + videobuf_time * vi.rate;
 			break;
 		}
 	}
 	time = videobuf_time;
-	playing = play_state;
+	//Easier to call stop and play to reset the video
+	if(play_state)
+		play();
 };
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
