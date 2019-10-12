@@ -34,7 +34,6 @@
 #ifdef DEBUG_ENABLED
 
 #include "test_astar.h"
-#include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
@@ -44,6 +43,10 @@
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
+
+#ifdef GDSCRIPT_ENABLED
+#include "test_gdscript.h"
+#endif
 
 const char **tests_get_names() {
 
@@ -112,6 +115,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestShaderLang::test();
 	}
 
+#ifdef GDSCRIPT_ENABLED
 	if (p_test == "gd_tokenizer") {
 
 		return TestGDScript::test(TestGDScript::TEST_TOKENIZER);
@@ -131,6 +135,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
 	}
+#endif
 
 	if (p_test == "ordered_hash_map") {
 
