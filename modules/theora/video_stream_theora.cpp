@@ -791,7 +791,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	th_decode_ycbcr_out(td, yuv); //dump frame
 	ogg_stream_packetout(&to, &op);
 
-	//decode video until the proper time is found
+	//decode video until the decoder catches up to the seek time
 	while (videobuf_time <= p_time) {
 		int ogg_sync_state = ogg_sync_pageout(&oy, &og);
 		while (ogg_sync_state < 1) {
@@ -802,7 +802,6 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			queue_page(&og);
 			while (ogg_stream_packetout(&to, &op) > 0) {
 				ogg_int64_t videobuf_granulepos;
-				print_line("frame submitted is keyframe: " + itos(th_packet_iskeyframe(&op)));
 				th_decode_packetin(td, &op, &videobuf_granulepos);
 				if (op.granulepos > 0) {
 					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
@@ -823,7 +822,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			}
 		}
 	}
-	//Update the audioframes time
+	//Update the audioframe time
 	audio_frames_wrote = videobuf_time * vi.rate;
 	
 	while(ogg_stream_packetout(&vo, &op) > 0) {
@@ -841,7 +840,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			break;
 		}
 	}
-	time = videobuf_time;
+	time = videobuf_time; //Set the time to current frame
 	//Easier to call stop and play to reset the video
 	if(play_state)
 		play();
