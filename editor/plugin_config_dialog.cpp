@@ -228,11 +228,11 @@ PluginConfigDialog::PluginConfigDialog() {
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);
 		script_option_edit->add_item(lang->get_name());
-		#ifdef GDSCRIPT_ENABLED
+#ifdef GDSCRIPT_ENABLED
 		if (lang == GDScriptLanguage::get_singleton()) {
 			default_lang = i;
 		}
-		#endif
+#endif
 	}
 	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
