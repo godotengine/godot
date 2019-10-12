@@ -121,7 +121,23 @@ void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
 
 void EditorSettingsDialog::_restore_default_shortcuts() {
 
-	print_line("Restore default shortcuts accepted");
+	List<String> slist;
+	EditorSettings::get_singleton()->get_shortcut_list(&slist);
+	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
+
+		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+		if (!sc->has_meta("original"))
+			continue;
+
+		Ref<InputEvent> original = sc->get_meta("original");
+		if (sc->get_shortcut() == original)
+			continue;
+
+		sc->set_shortcut(original);
+		print_line("restored one");
+	}
+
+	_update_shortcuts();
 }
 
 void EditorSettingsDialog::_shortcut_section_collapsed(Object *p_item) {
