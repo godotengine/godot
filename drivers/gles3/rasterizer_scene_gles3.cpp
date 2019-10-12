@@ -1093,7 +1093,7 @@ void RasterizerSceneGLES3::gi_probe_instance_set_bounds(RID p_probe, const Vecto
 ////////////////////////////
 ////////////////////////////
 
-bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_material, bool p_alpha_pass) {
+bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_alpha_pass) {
 
 	/* this is handled outside
 	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES3::Shader::Spatial::CULL_MODE_DISABLED) {
@@ -1121,7 +1121,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 	if (state.current_depth_draw != p_material->shader->spatial.depth_draw_mode) {
 		switch (p_material->shader->spatial.depth_draw_mode) {
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS: {
-				glDepthMask(GL_TRUE);
+				glDepthMask(p_depth_pass);
 				// If some transparent objects write to depth, we need to re-copy depth texture when we need it
 				if (p_alpha_pass && !state.used_depth_prepass) {
 					state.prepared_depth_texture = false;
@@ -2241,7 +2241,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 			storage->info.render.material_switch_count++;
 
-			rebind = _setup_material(material, p_alpha_pass);
+			rebind = _setup_material(material, use_opaque_prepass, p_alpha_pass);
 
 			if (rebind) {
 				storage->info.render.shader_rebind_count++;
