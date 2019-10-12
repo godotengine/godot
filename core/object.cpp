@@ -979,7 +979,7 @@ void Object::set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_i
 	script_instance = p_instance;
 }
 
-void Object::set_script(const RefPtr &p_script) {
+void Object::set_script(const RefPtr &p_script, bool p_instantiate) {
 
 	if (script == p_script)
 		return;
@@ -993,7 +993,7 @@ void Object::set_script(const RefPtr &p_script) {
 	Ref<Script> s(script);
 
 	if (!s.is_null()) {
-		if (s->can_instance()) {
+		if (p_instantiate && s->can_instance()) {
 			OBJ_DEBUG_LOCK
 			script_instance = s->instance_create(this);
 		} else if (Engine::get_singleton()->is_editor_hint()) {
@@ -1667,7 +1667,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
-	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
+	ClassDB::bind_method(D_METHOD("set_script", "script", "instantiate"), &Object::set_script, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);

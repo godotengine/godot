@@ -679,7 +679,7 @@ public:
 
 	/* SCRIPT */
 
-	void set_script(const RefPtr &p_script);
+	void set_script(const RefPtr &p_script, bool p_instantiate = true);
 	RefPtr get_script() const;
 
 	/* SCRIPT */

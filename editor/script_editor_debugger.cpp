@@ -600,7 +600,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					var = ResourceLoader::load(var);
 
 					if (pinfo.hint_string == "Script")
-						debugObj->set_script(var);
+						debugObj->set_script(var, false);
 				} else if (var.get_type() == Variant::OBJECT) {
 					if (((Object *)var)->is_class("EncodedObjectAsID")) {
 						var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
