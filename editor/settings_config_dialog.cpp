@@ -58,7 +58,27 @@ void EditorSettingsDialog::_general_menu_option(int p_option) {
 
 void EditorSettingsDialog::_restore_default_settings() {
 
-	print_line("Restore default settings accepted");
+	List<PropertyInfo> plist;
+	EditorSettings *settings = EditorSettings::get_singleton();
+	settings->get_property_list(&plist);
+	bool requireRestart = false;
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+
+		PropertyInfo propInfo = E->get();
+		if (settings->property_can_revert(propInfo.name)) {
+			Variant revert = settings->property_get_revert(propInfo.name);
+			settings->set_setting(propInfo.name, revert);
+		}
+
+		if (propInfo.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
+			requireRestart = true;
+		}
+	}
+
+	if (requireRestart) {
+		_editor_restart_request();
+	}
 }
 
 void EditorSettingsDialog::_shortcut_menu_option(int p_option) {
@@ -134,7 +154,6 @@ void EditorSettingsDialog::_restore_default_shortcuts() {
 			continue;
 
 		sc->set_shortcut(original);
-		print_line("restored one");
 	}
 
 	_update_shortcuts();
