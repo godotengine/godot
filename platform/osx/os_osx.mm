@@ -921,6 +921,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
 		//if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+	} else {
+		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 #endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
