@@ -268,12 +268,13 @@ public:
 
 	FUNCRID(gi_probe)
 
-	FUNC7(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+	FUNC8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
 
 	FUNC1RC(AABB, gi_probe_get_bounds, RID)
 	FUNC1RC(Vector3i, gi_probe_get_octree_size, RID)
 	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
 	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
+	FUNC1RC(PoolVector<uint8_t>, gi_probe_get_distance_field, RID)
 	FUNC1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
 	FUNC1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
