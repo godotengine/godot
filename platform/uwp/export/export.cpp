@@ -1148,12 +1148,12 @@ public:
 			valid = false;
 			err += TTR("Invalid package short name.") + "\n";
 		}
-		
+
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
 			err += TTR("Invalid package unique name.") + "\n";
 		}
-		
+
 		if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
 			valid = false;
 			err += TTR("Invalid package publisher display name.") + "\n";
