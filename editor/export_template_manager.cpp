@@ -69,9 +69,15 @@ void ExportTemplateManager::_update_template_list() {
 	memdelete(d);
 
 	String current_version = VERSION_FULL_CONFIG;
-	// Downloadable export templates are only available for stable, alpha, beta and RC versions.
+	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
+	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
-	const bool downloads_available = String(VERSION_STATUS) != String("dev");
+	// (whose builds aren't numbered).
+	const bool downloads_available =
+			String(VERSION_STATUS) != String("dev") &&
+			String(VERSION_STATUS) != String("alpha") &&
+			String(VERSION_STATUS) != String("beta") &&
+			String(VERSION_STATUS) != String("rc");
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
