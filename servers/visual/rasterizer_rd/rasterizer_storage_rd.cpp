@@ -3552,7 +3552,7 @@ RID RasterizerStorageRD::gi_probe_create() {
 	return gi_probe_owner.make_rid(GIProbe());
 }
 
-void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts) {
+void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -3591,7 +3591,19 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 		gi_probe->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
 		gi_probe->data_buffer_size = p_data_cells.size();
 
-		{
+		if (p_distance_field.size()) {
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R8_UNORM;
+			tf.width = gi_probe->octree_size.x;
+			tf.height = gi_probe->octree_size.y;
+			tf.depth = gi_probe->octree_size.z;
+			tf.type = RD::TEXTURE_TYPE_3D;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			Vector<PoolVector<uint8_t> > s;
+			s.push_back(p_distance_field);
+			gi_probe->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
+		}
+#if 0
 			{
 				RD::TextureFormat tf;
 				tf.format = RD::DATA_FORMAT_R8_UNORM;
@@ -3659,6 +3671,7 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 			RD::get_singleton()->free(uniform_set);
 			RD::get_singleton()->free(shared_tex);
 		}
+#endif
 	}
 
 	gi_probe->version++;
@@ -3694,6 +3707,15 @@ PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe)
 
 	if (gi_probe->data_buffer.is_valid()) {
 		return RD::get_singleton()->buffer_get_data(gi_probe->data_buffer);
+	}
+	return PoolVector<uint8_t>();
+}
+PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_distance_field(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+
+	if (gi_probe->data_buffer.is_valid()) {
+		return RD::get_singleton()->texture_get_data(gi_probe->sdf_texture, 0);
 	}
 	return PoolVector<uint8_t>();
 }
@@ -4341,7 +4363,7 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
 		reflection_probe_owner.free(p_rid);
 	} else if (gi_probe_owner.owns(p_rid)) {
-		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<int>()); //deallocate
+		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<int>()); //deallocate
 		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
 		gi_probe->instance_dependency.instance_notify_deleted(p_rid);
 		gi_probe_owner.free(p_rid);
