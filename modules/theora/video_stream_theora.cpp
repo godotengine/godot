@@ -823,9 +823,8 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	}
 	//Update the audioframe time
 	audio_frames_wrote = videobuf_time * vi.rate;
-	
 	while(ogg_stream_packetout(&vo, &op) > 0) {
-		double current_audio_time = vorbis_granule_time(&vd, audio_granulepos + op.packetno - total_packets--);
+		double current_audio_time = vorbis_granule_time(&vd, audio_granulepos + total_packets--);
 		double diff = current_audio_time - videobuf_time;
 		if( diff > 0 ) {
 			int blank_frames = diff * vi.rate * vi.channels;
