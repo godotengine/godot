@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_editor_plugin.h                                             */
+/*  skeleton_definition.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,76 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_EDITOR_PLUGIN_H
-#define SKELETON_EDITOR_PLUGIN_H
+#ifndef SKELETON_DEFINITION_H
+#define SKELETON_DEFINITION_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/skeleton.h"
+#include "core/resource.h"
 
-class PhysicalBone;
-class Joint;
-class EditorFileDialog;
+/**
+	@author Marios Staikopoulos <marios@staik.net>
+*/
 
-class SkeletonEditor : public Node {
-	GDCLASS(SkeletonEditor, Node);
+#ifndef BONE_ID_DEF
+#define BONE_ID_DEF
+typedef int BoneId;
+#endif // BONE_ID_DEF
 
-	enum Menu {
-		MENU_OPTION_CREATE_PHYSICAL_SKELETON,
-		MENU_OPTION_SAVE_DEFINITION
+class Skeleton;
+
+class SkeletonDefinition : public Resource {
+	GDCLASS(SkeletonDefinition, Resource);
+	RES_BASE_EXTENSION("skel");
+
+public:
+private:
+	struct Bone {
+		String name;
+		BoneId parent;
+		Transform rest;
+
+		Bone() :
+				parent(-1) {
+		}
 	};
 
-	struct BoneInfo {
-		PhysicalBone *physical_bone;
-		Transform relative_rest; // Relative to skeleton node
-		BoneInfo() :
-				physical_bone(NULL) {}
-	};
-
-	Skeleton *skeleton;
-
-	MenuButton *options;
-
-	EditorFileDialog *file_dialog;
-
-	void _on_click_option(int p_option);
-
-	friend class SkeletonEditorPlugin;
-
-	void save_skeleton_definition();
-	void _file_selected(const String &p_file);
+	Vector<Bone> bones;
 
 protected:
-	void _notification(int p_what);
-	void _node_removed(Node *p_node);
-	static void _bind_methods();
-
-	void create_physical_skeleton();
-	PhysicalBone *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void edit(Skeleton *p_node);
+	void add_bone(const String &p_name);
+	BoneId find_bone(const String &p_name) const;
+	String get_bone_name(const BoneId p_bone) const;
 
-	SkeletonEditor();
-	~SkeletonEditor();
+	bool is_bone_parent_of(const BoneId p_bone_id, const BoneId p_parent_bone_id) const;
+
+	void set_bone_parent(const BoneId p_bone, const BoneId p_parent);
+	BoneId get_bone_parent(const BoneId p_bone) const;
+
+	int get_bone_count() const;
+
+	void set_bone_rest(const BoneId p_bone, const Transform &p_rest);
+	Transform get_bone_rest(const BoneId p_bone) const;
+
+	void clear_bones();
+
+	static Ref<SkeletonDefinition> create_from_skeleton(const Skeleton *skeleton);
 };
 
-class SkeletonEditorPlugin : public EditorPlugin {
-
-	GDCLASS(SkeletonEditorPlugin, EditorPlugin);
-
-	EditorNode *editor;
-	SkeletonEditor *skeleton_editor;
-
-public:
-	virtual String get_name() const { return "Skeleton"; }
-	virtual bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	SkeletonEditorPlugin(EditorNode *p_node);
-	~SkeletonEditorPlugin();
-};
-
-#endif // SKELETON_EDITOR_PLUGIN_H
+#endif
