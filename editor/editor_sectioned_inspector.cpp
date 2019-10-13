@@ -136,6 +136,9 @@ void SectionedInspector::_bind_methods() {
 	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
 	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
 
+	ClassDB::bind_method("collapse_all_sections", &SectionedInspector::collapse_all_sections);
+	ClassDB::bind_method("expand_all_sections", &SectionedInspector::expand_all_sections);
+	ClassDB::bind_method("collapse_unselected", &SectionedInspector::collapse_unselected);
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
 
@@ -305,6 +308,37 @@ void SectionedInspector::_search_changed(const String &p_what) {
 EditorInspector *SectionedInspector::get_inspector() {
 
 	return inspector;
+}
+
+void SectionedInspector::collapse_all_sections() {
+
+	if (sections->get_root() && sections->get_root()->get_children()) {
+		for (TreeItem *section = sections->get_root()->get_children(); section; section = section->get_next()) {
+			section->set_collapsed(true);
+		}
+	}
+}
+
+void SectionedInspector::expand_all_sections() {
+
+	if (sections->get_root() && sections->get_root()->get_children()) {
+		for (TreeItem *section = sections->get_root()->get_children(); section; section = section->get_next()) {
+			section->set_collapsed(false);
+		}
+	}
+}
+
+void SectionedInspector::collapse_unselected() {
+
+	if (sections->get_root() && sections->get_root()->get_children()) {
+		for (TreeItem *section = sections->get_root()->get_children(); section; section = section->get_next()) {
+
+			String sectionName = section->get_metadata(0);
+			if (!get_current_section().begins_with(sectionName)) {
+				section->set_collapsed(true);
+			}
+		}
+	}
 }
 
 SectionedInspector::SectionedInspector() :

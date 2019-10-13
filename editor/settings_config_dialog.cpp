@@ -41,13 +41,13 @@
 void EditorSettingsDialog::_general_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COLLAPSE_ALL: {
-
+			inspector->collapse_all_sections();
 		} break;
 		case MENU_EXPAND_ALL: {
-
+			inspector->expand_all_sections();
 		} break;
 		case MENU_COLLAPSE_UNSELECTED: {
-
+			inspector->collapse_unselected();
 		} break;
 		case MENU_RESTORE_DEFAULTS: {
 			restore_default_settings_ask->set_text(TTR("Restore all default settings? (No undo)"));

@@ -68,6 +68,10 @@ public:
 
 	void update_category_list();
 
+	void collapse_all_sections();
+	void expand_all_sections();
+	void collapse_unselected();
+
 	SectionedInspector();
 	~SectionedInspector();
 };
