@@ -2925,7 +2925,7 @@ void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
 
-	float default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 
 	switch (p_type) {
 
