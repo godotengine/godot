@@ -6023,6 +6023,7 @@ void TextEdit::undo() {
 		}
 	}
 
+	_update_scrollbars();
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
 		cursor_set_line(undo_stack_pos->get().to_line);
 		cursor_set_column(undo_stack_pos->get().to_column);
@@ -6058,6 +6059,8 @@ void TextEdit::redo() {
 				break;
 		}
 	}
+
+	_update_scrollbars();
 	cursor_set_line(undo_stack_pos->get().to_line);
 	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos = undo_stack_pos->next();
