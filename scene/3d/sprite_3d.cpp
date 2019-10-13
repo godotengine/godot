@@ -593,8 +593,8 @@ int Sprite3D::get_frame() const {
 }
 
 void Sprite3D::set_frame_coords(const Vector2 &p_coord) {
-	ERR_FAIL_INDEX(int(p_coord.x), vframes);
-	ERR_FAIL_INDEX(int(p_coord.y), hframes);
+	ERR_FAIL_INDEX(int(p_coord.x), hframes);
+	ERR_FAIL_INDEX(int(p_coord.y), vframes);
 
 	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
 }
