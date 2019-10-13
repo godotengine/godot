@@ -4751,6 +4751,9 @@ void TextEdit::set_text(String p_text) {
 		selection.active = false;
 	}
 
+	cursor_set_line(0);
+	cursor_set_column(0);
+
 	update();
 	setting_text = false;
 };
