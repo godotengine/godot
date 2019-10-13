@@ -30,10 +30,13 @@
 
 #include "skeleton_editor_plugin.h"
 
+#include "core/io/resource_saver.h"
+#include "editor/editor_file_dialog.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/resources/capsule_shape.h"
+#include "scene/resources/skeleton_definition.h"
 #include "scene/resources/sphere_shape.h"
 #include "spatial_editor_plugin.h"
 
@@ -45,7 +48,26 @@ void SkeletonEditor::_on_click_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_CREATE_PHYSICAL_SKELETON: {
 			create_physical_skeleton();
-		} break;
+			break;
+		}
+		case MENU_OPTION_SAVE_DEFINITION: {
+			save_skeleton_definition();
+			break;
+		}
+	}
+}
+
+void SkeletonEditor::save_skeleton_definition() {
+	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->popup_centered_ratio();
+}
+
+void SkeletonEditor::_file_selected(const String &p_file) {
+	const Ref<SkeletonDefinition> def = SkeletonDefinition::create_from_skeleton(skeleton);
+	const Error result = ResourceSaver::save(p_file, def);
+
+	if (result != Error::OK) {
+		ERR_FAIL_MSG("Failed to Save the SkeletonDefinition");
 	}
 }
 
@@ -132,8 +154,11 @@ void SkeletonEditor::edit(Skeleton *p_node) {
 }
 
 void SkeletonEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		get_tree()->connect("node_removed", this, "_node_removed");
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", this, "_node_removed");
+			file_dialog->connect("file_selected", this, "_file_selected");
+		}
 	}
 }
 
@@ -148,6 +173,7 @@ void SkeletonEditor::_node_removed(Node *p_node) {
 void SkeletonEditor::_bind_methods() {
 	ClassDB::bind_method("_on_click_option", &SkeletonEditor::_on_click_option);
 	ClassDB::bind_method("_node_removed", &SkeletonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_file_selected"), &SkeletonEditor::_file_selected);
 }
 
 SkeletonEditor::SkeletonEditor() {
@@ -159,9 +185,14 @@ SkeletonEditor::SkeletonEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Skeleton", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
+	options->get_popup()->add_item(TTR("Export Skeleton Definition"), MENU_OPTION_SAVE_DEFINITION);
 
 	options->get_popup()->connect("id_pressed", this, "_on_click_option");
 	options->hide();
+
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->add_filter("*.skel");
+	options->add_child(file_dialog);
 }
 
 SkeletonEditor::~SkeletonEditor() {}
