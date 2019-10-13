@@ -41,6 +41,7 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("octree_size"));
 	ERR_FAIL_COND(!p_data.has("octree_cells"));
 	ERR_FAIL_COND(!p_data.has("octree_data"));
+	ERR_FAIL_COND(!p_data.has("octree_df"));
 	ERR_FAIL_COND(!p_data.has("level_counts"));
 	ERR_FAIL_COND(!p_data.has("to_cell_xform"));
 
@@ -48,10 +49,11 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 	Vector3 octree_size = p_data["octree_size"];
 	PoolVector<uint8_t> octree_cells = p_data["octree_cells"];
 	PoolVector<uint8_t> octree_data = p_data["octree_data"];
+	PoolVector<uint8_t> octree_df = p_data["octree_df"];
 	PoolVector<int> octree_levels = p_data["level_counts"];
 	Transform to_cell_xform = p_data["to_cell_xform"];
 
-	allocate(to_cell_xform, bounds, octree_size, octree_cells, octree_data, octree_levels);
+	allocate(to_cell_xform, bounds, octree_size, octree_cells, octree_data, octree_df, octree_levels);
 }
 
 Dictionary GIProbeData::_get_data() const {
@@ -60,13 +62,14 @@ Dictionary GIProbeData::_get_data() const {
 	d["octree_size"] = get_octree_size();
 	d["octree_cells"] = get_octree_cells();
 	d["octree_data"] = get_data_cells();
+	d["octree_df"] = get_distance_field();
 	d["level_counts"] = get_level_counts();
 	d["to_cell_xform"] = get_to_cell_xform();
 	return d;
 }
 
-void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts) {
-	VS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_level_counts);
+void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts) {
+	VS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
 	octree_size = p_octree_size;
@@ -84,6 +87,10 @@ PoolVector<uint8_t> GIProbeData::get_octree_cells() const {
 PoolVector<uint8_t> GIProbeData::get_data_cells() const {
 	return VS::get_singleton()->gi_probe_get_data_cells(probe);
 }
+PoolVector<uint8_t> GIProbeData::get_distance_field() const {
+	return VS::get_singleton()->gi_probe_get_distance_field(probe);
+}
+
 PoolVector<int> GIProbeData::get_level_counts() const {
 	return VS::get_singleton()->gi_probe_get_level_counts(probe);
 }
@@ -410,7 +417,13 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		if (probe_data.is_null())
 			probe_data.instance();
 
-		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_giprobe_octree_size(), baker.get_giprobe_octree_cells(), baker.get_giprobe_data_cells(), baker.get_giprobe_level_cell_count());
+		if (bake_step_function) {
+			bake_step_function(pmc++, RTR("Generating Distance Field"));
+		}
+
+		PoolVector<uint8_t> df = baker.get_sdf_3d_image();
+
+		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_giprobe_octree_size(), baker.get_giprobe_octree_cells(), baker.get_giprobe_data_cells(), df, baker.get_giprobe_level_cell_count());
 
 		set_probe_data(probe_data);
 		probe_data->set_edited(true); //so it gets saved
