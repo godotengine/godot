@@ -339,6 +339,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
 	if (OS_OSX::singleton->is_hidpi_allowed()) {
 		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+	} else {
+		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
@@ -1492,6 +1494,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
 		//if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+	} else {
+		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
