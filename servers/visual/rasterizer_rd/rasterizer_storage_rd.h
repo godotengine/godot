@@ -967,12 +967,14 @@ public:
 
 	RID gi_probe_create();
 
-	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts);
+	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts);
 
 	AABB gi_probe_get_bounds(RID p_gi_probe) const;
 	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
 	PoolVector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
 	PoolVector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
+	PoolVector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
+
 	PoolVector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
 	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
 

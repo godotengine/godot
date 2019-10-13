@@ -981,6 +981,122 @@ PoolVector<int> Voxelizer::get_giprobe_level_cell_count() const {
 	return level_count;
 }
 
+// euclidean distance computation based on:
+// https://prideout.net/blog/distance_fields/
+
+#define square(m_s) ((m_s) * (m_s))
+#define INF 1e20
+
+/* dt of 1d function using squared distance */
+static void edt(float *f, int stride, int n) {
+
+	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
+	int *v = (int *)&(d[n]);
+	float *z = (float *)&v[n];
+
+	int k = 0;
+	v[0] = 0;
+	z[0] = -INF;
+	z[1] = +INF;
+	for (int q = 1; q <= n - 1; q++) {
+		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+		while (s <= z[k]) {
+			k--;
+			s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+		}
+		k++;
+		v[k] = q;
+
+		z[k] = s;
+		z[k + 1] = +INF;
+	}
+
+	k = 0;
+	for (int q = 0; q <= n - 1; q++) {
+		while (z[k + 1] < q)
+			k++;
+		d[q] = square(q - v[k]) + f[v[k] * stride];
+	}
+
+	for (int i = 0; i < n; i++) {
+		f[i * stride] = d[i];
+	}
+}
+
+#undef square
+
+PoolVector<uint8_t> Voxelizer::get_sdf_3d_image() const {
+
+	Vector3i octree_size = get_giprobe_octree_size();
+
+	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
+	float *work_memory = memnew_arr(float, float_count);
+	for (uint32_t i = 0; i < float_count; i++) {
+		work_memory[i] = INF;
+	}
+
+	uint32_t y_mult = octree_size.x;
+	uint32_t z_mult = y_mult * octree_size.y;
+
+	//plot solid cells
+	{
+		const Cell *cells = bake_cells.ptr();
+		uint32_t cell_count = bake_cells.size();
+
+		for (uint32_t i = 0; i < cell_count; i++) {
+
+			if (cells[i].level < (cell_subdiv - 1)) {
+				continue; //do not care about this level
+			}
+
+			work_memory[cells[i].x + cells[i].y * y_mult + cells[i].z * z_mult] = 0;
+		}
+	}
+
+	//process in each direction
+
+	//xy->z
+
+	for (int i = 0; i < octree_size.x; i++) {
+		for (int j = 0; j < octree_size.y; j++) {
+			edt(&work_memory[i + j * y_mult], z_mult, octree_size.z);
+		}
+	}
+
+	//xz->y
+
+	for (int i = 0; i < octree_size.x; i++) {
+		for (int j = 0; j < octree_size.z; j++) {
+			edt(&work_memory[i + j * z_mult], y_mult, octree_size.y);
+		}
+	}
+
+	//yz->x
+	for (int i = 0; i < octree_size.y; i++) {
+		for (int j = 0; j < octree_size.z; j++) {
+			edt(&work_memory[i * y_mult + j * z_mult], 1, octree_size.x);
+		}
+	}
+
+	PoolVector<uint8_t> image3d;
+	image3d.resize(float_count);
+	{
+		PoolVector<uint8_t>::Write w = image3d.write();
+		for (uint32_t i = 0; i < float_count; i++) {
+			uint32_t d = uint32_t(Math::sqrt(work_memory[i]));
+			if (d == 0) {
+				w[i] = 0;
+			} else {
+				w[i] = CLAMP(d, 0, 254) + 1;
+			}
+		}
+	}
+
+	return image3d;
+}
+
+#undef INF
+
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 
 	if (p_level == cell_subdiv - 1) {
