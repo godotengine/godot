@@ -61,11 +61,12 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 
 public:
-	void allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts);
+	void allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<uint8_t> &p_distance_field, const PoolVector<int> &p_level_counts);
 	AABB get_bounds() const;
 	Vector3 get_octree_size() const;
 	PoolVector<uint8_t> get_octree_cells() const;
 	PoolVector<uint8_t> get_data_cells() const;
+	PoolVector<uint8_t> get_distance_field() const;
 	PoolVector<int> get_level_counts() const;
 	Transform get_to_cell_xform() const;
 

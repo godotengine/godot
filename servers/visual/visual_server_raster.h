@@ -344,12 +344,13 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND7(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+	BIND8(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
 
 	BIND1RC(AABB, gi_probe_get_bounds, RID)
 	BIND1RC(Vector3i, gi_probe_get_octree_size, RID)
 	BIND1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
 	BIND1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_distance_field, RID)
 	BIND1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
 	BIND1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
