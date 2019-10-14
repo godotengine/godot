@@ -329,28 +329,29 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 		OS_OSX::singleton->window_size.width = fbRect.size.width * newDisplayScale;
 		OS_OSX::singleton->window_size.height = fbRect.size.height * newDisplayScale;
 
+#if defined(VULKAN_ENABLED)
+		if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+			CALayer* layer = [OS_OSX::singleton->window_view layer];
+			layer.contentsScale = OS_OSX::singleton->_display_scale();
+		}
+#endif
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
-
-#if defined(OPENGL_ENABLED)
-			if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
-
-				OS_OSX::singleton->context_gles2->update();
-			}
-#endif
-
 #if defined(VULKAN_ENABLED)
 			if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
-				CALayer* layer = [OS_OSX::singleton->window_view layer];
-				layer.contentsScale = OS_OSX::singleton->_display_scale();
 				OS_OSX::singleton->context_vulkan->window_resize(0, OS_OSX::singleton->window_size.width, OS_OSX::singleton->window_size.height);
 			}
 #endif
+#if defined(OPENGL_ENABLED)
+			if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
+				OS_OSX::singleton->context_gles2->update();
+			}
 
 			//Force window resize ???
 			NSRect frame = [OS_OSX::singleton->window_object frame];
 			[OS_OSX::singleton->window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
 			[OS_OSX::singleton->window_object setFrame:frame display:YES];
+#endif
 		}
 	}
 }
