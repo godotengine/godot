@@ -346,7 +346,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								} else if (p.begins_with("ro.opengles.version=")) {
 									uint32_t opengl = p.get_slice("=", 1).to_int();
 									d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl)&0xFF) + "\n";
+								} else if (p.begins_with("ro.boot.serialno=")) {
+									d.description += "Serial: " + p.get_slice("=", 1).strip_edges() + "\n";
 								}
+							}
+
+							if (d.usb) {
+								d.description += "Connection: USB\n";
+							} else {
+								d.description += "Connection: " + d.id + "\n";
 							}
 
 							d.name = vendor + " " + device;
