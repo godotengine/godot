@@ -951,13 +951,28 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				Variant::CallError err;
 				call(E->get().setter, &val, 1, err);
 				if (err.error == Variant::CallError::CALL_OK) {
-					return true; //function exists, call was successful
+					if (E->get().observer) {
+						// call observer without changing data beforehand
+						call(E->get().observer, NULL, 0, err);
+						if (err.error != Variant::CallError::CALL_OK) {
+							return false; // error in calling observer function
+						}
+					}
+					return true; // function exists, call was successful
 				}
+
 			} else {
 				if (!E->get().data_type.is_type(p_value)) {
 					return false; // Type mismatch
 				}
 				members.write[E->get().index] = p_value;
+				if (E->get().observer) {
+					Variant::CallError err;
+					call(E->get().observer, NULL, 0, err);
+					if (err.error == Variant::CallError::CALL_OK) {
+						return true;
+					}
+				}
 			}
 			return true;
 		}
@@ -1790,6 +1805,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"func",
 		"preload",
 		"setget",
+		"observer",
 		"signal",
 		"tool",
 		"yield",

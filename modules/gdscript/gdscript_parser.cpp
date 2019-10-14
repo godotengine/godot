@@ -4904,6 +4904,18 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					}
 				}
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_OBSERVER) {
+					// observer before setget
+					tokenizer->advance();
+
+					if (!tokenizer->is_token_literal()) {
+						_set_error("Expected an identifier for the observer function after \"observer\".");
+					}
+
+					member.observer = tokenizer->get_token_literal();
+					tokenizer->advance();
+				}
+
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_SETGET) {
 
 					tokenizer->advance();
@@ -4928,6 +4940,23 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 
 						member.getter = tokenizer->get_token_literal();
+						tokenizer->advance();
+					}
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_OBSERVER) {
+						// check if observer already set
+						if (!(member.observer == StringName())) {
+							_set_error("Cannot set observer twice");
+							return;
+						}
+
+						// observer after setget section
+						tokenizer->advance();
+
+						if (!tokenizer->is_token_literal()) {
+							_set_error("Expected an identifier for the observer function after \"observer\".");
+						}
+						member.observer = tokenizer->get_token_literal();
 						tokenizer->advance();
 					}
 				}
@@ -7690,12 +7719,25 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			}
 		}
 
-		// Setter and getter
-		if (v.setter == StringName() && v.getter == StringName()) continue;
+		// Setter, getter and observer
+		if (v.setter == StringName() && v.getter == StringName() && v.observer == StringName()) continue;
 
 		bool found_getter = false;
 		bool found_setter = false;
+		bool found_observer = false;
 		for (int j = 0; j < p_class->functions.size(); j++) {
+			if (v.observer == p_class->functions[j]->name) {
+				found_observer = true;
+				FunctionNode *observer = p_class->functions[j];
+
+				if (observer->get_required_argument_count() != 0) {
+					_set_error("The observer function needs to receive exactly 0 arguments. See \"" + observer->name +
+									   "()\" definition at line " + itos(observer->line) + ".",
+							v.line);
+					return;
+				}
+				continue;
+			}
 			if (v.setter == p_class->functions[j]->name) {
 				found_setter = true;
 				FunctionNode *setter = p_class->functions[j];
@@ -7734,10 +7776,10 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					return;
 				}
 			}
-			if (found_getter && found_setter) break;
+			if (found_getter && found_setter && found_observer) break;
 		}
 
-		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName())) continue;
+		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName()) && (found_observer || v.observer == StringName())) continue;
 
 		// Check for static functions
 		for (int j = 0; j < p_class->static_functions.size(); j++) {
@@ -7751,6 +7793,10 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 				_set_error("The getter can't be a static function. See \"" + getter->name + "()\" definition at line " + itos(getter->line) + ".", v.line);
 				return;
 			}
+			if (v.observer == p_class->static_functions[j]->name) {
+				FunctionNode *observer = p_class->static_functions[j];
+				_set_error("The observer function can't be a static function. See \"" + observer->name + "()\" definitino at line " + itos(observer->line) + ".", v.line);
+			}
 		}
 
 		if (!found_setter && v.setter != StringName()) {
@@ -7760,6 +7806,11 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 		if (!found_getter && v.getter != StringName()) {
 			_set_error("The getter function isn't defined.", v.line);
+			return;
+		}
+
+		if (!found_observer && v.observer != StringName()) {
+			_set_error("The observer function isn't defined.", v.line);
 			return;
 		}
 	}

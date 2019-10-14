@@ -1895,6 +1895,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
 		minfo.getter = p_class->variables[i].getter;
+		minfo.observer = p_class->variables[i].observer;
 		minfo.rpc_mode = p_class->variables[i].rpc_mode;
 		minfo.data_type = _gdtype_from_datatype(p_class->variables[i].data_type);
 

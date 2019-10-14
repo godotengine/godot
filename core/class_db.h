@@ -105,6 +105,7 @@ public:
 		int index;
 		StringName setter;
 		StringName getter;
+		StringName observer;
 		MethodBind *_setptr;
 		MethodBind *_getptr;
 		Variant::Type type;

@@ -164,6 +164,7 @@ public:
 			DataType data_type;
 			StringName setter;
 			StringName getter;
+			StringName observer;
 			int line;
 			Node *expression;
 			OperatorNode *initial_assignment;
