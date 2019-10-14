@@ -1916,8 +1916,6 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	return false;
 }
 
-#ifdef TOOLS_ENABLED
-
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
@@ -1936,8 +1934,6 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 
 	return NULL;
 }
-
-#endif
 
 void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 
@@ -2456,12 +2452,8 @@ Ref<Texture> VisualScriptEditor::get_icon() {
 }
 
 bool VisualScriptEditor::is_unsaved() {
-#ifdef TOOLS_ENABLED
 
 	return script->is_edited() || script->are_subnodes_edited();
-#else
-	return false;
-#endif
 }
 
 Variant VisualScriptEditor::get_edit_state() {
