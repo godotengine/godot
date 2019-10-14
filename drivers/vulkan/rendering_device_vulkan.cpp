@@ -5277,7 +5277,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(in
 	scissor.offset.x = 0;
 	scissor.offset.y = 0;
 	scissor.extent.width = size_x;
-	scissor.extent.height = size_x;
+	scissor.extent.height = size_y;
 
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
