@@ -331,6 +331,12 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 		OS_OSX::singleton->window_size.width = fbRect.size.width * newDisplayScale;
 		OS_OSX::singleton->window_size.height = fbRect.size.height * newDisplayScale;
 
+#if defined(VULKAN_ENABLED)
+		if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+			CALayer* layer = [OS_OSX::singleton->window_view layer];
+			layer.contentsScale = OS_OSX::singleton->_display_scale();
+		}
+#endif
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
 			//Force window resize event
