@@ -53,6 +53,8 @@ class GIProbeData : public Resource {
 	float normal_bias;
 	float propagation;
 	float anisotropy_strength;
+	float ao;
+	float ao_strength;
 	bool interior;
 	bool use_two_bounces;
 
@@ -78,6 +80,12 @@ public:
 
 	void set_anisotropy_strength(float p_anisotropy_strength);
 	float get_anisotropy_strength() const;
+
+	void set_ao(float p_ao);
+	float get_ao() const;
+
+	void set_ao_strength(float p_ao_strength);
+	float get_ao_strength() const;
 
 	void set_energy(float p_energy);
 	float get_energy() const;
