@@ -262,7 +262,9 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		uint32_t texture_slot;
 
 		float anisotropy_strength;
-		uint32_t pad[3];
+		float ao;
+		float ao_strength;
+		uint32_t pad[1];
 	};
 
 	enum {

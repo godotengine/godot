@@ -1555,6 +1555,8 @@ void RasterizerSceneForwardRD::_setup_gi_probes(RID *p_gi_probe_probe_cull_resul
 		gi_probe_ubo.blend_ambient = !storage->gi_probe_is_interior(base_probe);
 		gi_probe_ubo.texture_slot = gi_probe_instance_get_slot(rpi);
 		gi_probe_ubo.anisotropy_strength = storage->gi_probe_get_anisotropy_strength(base_probe);
+		gi_probe_ubo.ao = storage->gi_probe_get_ao(base_probe);
+		gi_probe_ubo.ao_strength = storage->gi_probe_get_ao_strength(base_probe);
 
 		if (gi_probe_is_anisotropic()) {
 			gi_probe_ubo.texture_slot *= 3;

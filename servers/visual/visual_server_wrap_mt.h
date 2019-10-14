@@ -287,6 +287,12 @@ public:
 	FUNC2(gi_probe_set_energy, RID, float)
 	FUNC1RC(float, gi_probe_get_energy, RID)
 
+	FUNC2(gi_probe_set_ao, RID, float)
+	FUNC1RC(float, gi_probe_get_ao, RID)
+
+	FUNC2(gi_probe_set_ao_strength, RID, float)
+	FUNC1RC(float, gi_probe_get_ao_strength, RID)
+
 	FUNC2(gi_probe_set_bias, RID, float)
 	FUNC1RC(float, gi_probe_get_bias, RID)
 

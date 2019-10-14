@@ -207,8 +207,8 @@ struct GIProbeData {
 	uint texture_slot;
 
 	float anisotropy_strength;
-	uint pad0;
-	uint pad1;
+	float ambient_occlusion;
+	float ambient_occlusion_strength;
 	uint pad2;
 };
 

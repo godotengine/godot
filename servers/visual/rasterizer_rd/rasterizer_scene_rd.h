@@ -229,6 +229,7 @@ private:
 	bool gi_probe_use_anisotropy = false;
 	GIProbeQuality gi_probe_quality = GIPROBE_QUALITY_MEDIUM;
 	bool gi_probe_slots_dirty = true;
+
 	Vector<RID> gi_probe_slots;
 
 	enum {
