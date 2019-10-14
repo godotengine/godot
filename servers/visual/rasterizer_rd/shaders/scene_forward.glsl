@@ -956,37 +956,7 @@ vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 
 	return color;
 }
-#if 0
-vec4 voxel_cone_trace_skiplod(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
 
-	float dist = p_bias;
-	vec4 color = vec4(0.0);
-	float skip_lod = 1.0;
-
-	while (dist < max_distance && color.a < 0.95) {
-		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
-		vec3 uvw_pos = (pos + dist * direction) * cell_size;
-		float half_diameter = diameter * 0.5;
-		//check if outside, then break
-		if ( any(greaterThan(abs(uvw_pos - 0.5),vec3(0.5f + half_diameter * cell_size)) ) ) {
-			break;
-		}
-		vec4 scolor = textureLod(sampler3D(probe,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, log2(diameter));
-		float a = (1.0 - color.a);
-		color += a * scolor;
-
-		float upper_opacity = textureLod(sampler3D(probe,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, skip_lod).a;
-		float skip_factor = exp2( max( 0.0f, skip_lod * 0.5f - 1.0f ) ) * (1.0f - upper_opacity) + upper_opacity;
-
-		skip_factor = mix( skip_factor, 1.0f, min( -1.0 + upper_opacity * probeParams.vctSpecularSdfFactor + tan_half_angle * 50.0f, 1.0f ) );
-		skip_lod = clamp( skip_lod + (1.0f - upper_opacity) * 2.0f - 1.0f, 1.0f, probeParams.vctSpecSdfMaxMip );
-
-		dist += half_diameter * skip_factor;
-	}
-
-	return color;
-}
-#endif
 
 #ifndef GI_PROBE_HIGH_QUALITY
 //faster version for 45 degrees
@@ -1015,7 +985,8 @@ vec4 voxel_cone_trace_anisotropic_45_degrees(texture3D probe,texture3D aniso_pos
 		lod_level+=1.0;
 
 		float a = (1.0 - color.a);
-		color += a * scolor;
+		scolor *= a;
+		color += scolor;
 		dist += radius;
 		radius = max(0.5, tan_half_angle * dist);
 
@@ -1026,7 +997,7 @@ vec4 voxel_cone_trace_anisotropic_45_degrees(texture3D probe,texture3D aniso_pos
 }
 #else
 
-vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
+vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias ) {
 
 	float dist = p_bias;
 	vec4 color = vec4(0.0);
@@ -1044,7 +1015,8 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 		lod_level+=1.0;
 
 		float a = (1.0 - color.a);
-		color += a * scolor;
+		scolor *= a;
+		color += scolor;
 		dist += radius;
 		radius = max(0.5, tan_half_angle * dist);
 
@@ -1060,7 +1032,7 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 
 
 //standard voxel cone trace
-vec4 voxel_cone_trace_anisotropic(texture3D probe,texture3D aniso_pos,texture3D aniso_neg,vec3 normal, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
+vec4 voxel_cone_trace_anisotropic(texture3D probe,texture3D aniso_pos,texture3D aniso_neg,vec3 normal, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias ) {
 
 	float dist = p_bias;
 	vec4 color = vec4(0.0);
@@ -1081,7 +1053,8 @@ vec4 voxel_cone_trace_anisotropic(texture3D probe,texture3D aniso_pos,texture3D 
 		scolor.rgb*=dot(max(vec3(0.0),(normal * aniso_pos)),vec3(1.0)) + dot(max(vec3(0.0),(-normal * aniso_neg)),vec3(1.0));
 
 		float a = (1.0 - color.a);
-		color += a * scolor;
+		scolor *= a;
+		color += scolor;
 		dist += half_diameter;
 
 	}
@@ -1155,8 +1128,8 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 
 #endif
 	vec3 light = vec3(0.0);
-	for (int i = 0; i < MAX_CONE_DIRS; i++) {
 
+	for (int i = 0; i < MAX_CONE_DIRS; i++) {
 
 		vec3 dir = normalize((gi_probes.data[index].xform * vec4(normal_xform * cone_dirs[i], 0.0)).xyz);
 
@@ -1165,10 +1138,13 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 #ifdef GI_PROBE_USE_ANISOTROPY
 		vec4 cone_light = voxel_cone_trace_anisotropic(gi_probe_textures[gi_probes.data[index].texture_slot],gi_probe_textures[gi_probes.data[index].texture_slot+1],gi_probe_textures[gi_probes.data[index].texture_slot+2],normalize(mix(dir,normal,gi_probes.data[index].anisotropy_strength)),cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
 #else
+
 		vec4 cone_light = voxel_cone_trace(gi_probe_textures[gi_probes.data[index].texture_slot], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
+
 #endif // GI_PROBE_USE_ANISOTROPY
 
 #else
+
 
 #ifdef GI_PROBE_USE_ANISOTROPY
 		vec4 cone_light = voxel_cone_trace_anisotropic_45_degrees(gi_probe_textures[gi_probes.data[index].texture_slot],gi_probe_textures[gi_probes.data[index].texture_slot+1],gi_probe_textures[gi_probes.data[index].texture_slot+2],normalize(mix(dir,normal,gi_probes.data[index].anisotropy_strength)),cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
@@ -1180,10 +1156,23 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 		if (gi_probes.data[index].blend_ambient) {
 			cone_light.rgb = mix(ambient, cone_light.rgb, min(1.0, cone_light.a / 0.95));
 		}
+
 		light+=cone_weights[i] * cone_light.rgb;
+
+
 	}
 
 	light *= gi_probes.data[index].dynamic_range;
+
+	if (gi_probes.data[index].ambient_occlusion > 0.01) {
+		float ao = 0.0;
+
+		for (int i=0;i<5;i++) {
+			vec3 ofs = (position + normal * float(1<<i) * 1.5) * cell_size;
+			ao += textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]),ofs,float(i) ).a;
+			light *= mix(max(0.0,1.0-(ao * gi_probes.data[index].ambient_occlusion )),1.0,gi_probes.data[index].ambient_occlusion_strength);
+		}
+	}
 
 	out_diff += vec4(light * blend, blend);
 
@@ -1415,13 +1404,12 @@ FRAGMENT_SHADER_CODE
 
 			vec4 amb_accum = vec4(0.0);
 			vec4 spec_accum = vec4(0.0);
-
-			gi_probe_compute(index1, vertex, normal, ref_vec,normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum );
+			gi_probe_compute(index1, vertex, normal, ref_vec,normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
 			uint index2 = instances.data[instance_index].gi_offset>>16;
 
 			if (index2!=0xFFFF) {
-				gi_probe_compute(index2, vertex, normal, ref_vec,normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum );
+				gi_probe_compute(index2, vertex, normal, ref_vec,normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 			}
 
 			if (amb_accum.a > 0.0) {

@@ -423,6 +423,8 @@ private:
 
 		float dynamic_range = 4.0;
 		float energy = 1.0;
+		float ao = 0.0;
+		float ao_strength = 0.5;
 		float bias = 1.4;
 		float normal_bias = 0.0;
 		float propagation = 0.7;
@@ -986,6 +988,12 @@ public:
 
 	void gi_probe_set_energy(RID p_gi_probe, float p_energy);
 	float gi_probe_get_energy(RID p_gi_probe) const;
+
+	void gi_probe_set_ao(RID p_gi_probe, float p_ao);
+	float gi_probe_get_ao(RID p_gi_probe) const;
+
+	void gi_probe_set_ao_strength(RID p_gi_probe, float p_strength);
+	float gi_probe_get_ao_strength(RID p_gi_probe) const;
 
 	void gi_probe_set_bias(RID p_gi_probe, float p_bias);
 	float gi_probe_get_bias(RID p_gi_probe) const;
