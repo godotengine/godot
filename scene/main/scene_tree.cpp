@@ -70,9 +70,8 @@ float SceneTreeTimer::get_time_left() const {
 }
 
 void SceneTreeTimer::set_pause_mode_process(bool p_pause_mode_process) {
-	if (process_pause != p_pause_mode_process) {
-		process_pause = p_pause_mode_process;
-	}
+
+	process_pause = p_pause_mode_process;
 }
 
 bool SceneTreeTimer::is_pause_mode_process() {

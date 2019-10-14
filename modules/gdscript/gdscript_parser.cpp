@@ -2232,9 +2232,7 @@ void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBran
 			break; // go back a level
 		}
 
-		if (pending_newline != -1) {
-			pending_newline = -1;
-		}
+		pending_newline = -1;
 
 		PatternBranchNode *branch = alloc_node<PatternBranchNode>();
 		branch->body = alloc_node<BlockNode>();

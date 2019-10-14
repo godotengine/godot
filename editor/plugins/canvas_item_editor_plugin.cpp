@@ -1197,7 +1197,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 					//Pan the viewport
 					panning = true;
 				}
-			} else if (panning) {
+			} else {
 				if (!k->is_pressed()) {
 					// Stop panning the viewport (for any mouse button press)
 					panning = false;
@@ -4894,7 +4894,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
 	if (state.has("grid_snap_active")) {
 		grid_snap_active = state["grid_snap_active"];
-		grid_snap_button->set_pressed(smart_snap_active);
+		grid_snap_button->set_pressed(grid_snap_active);
 	}
 
 	if (state.has("snap_node_parent")) {
