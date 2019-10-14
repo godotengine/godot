@@ -2399,19 +2399,11 @@ void EditorPropertyResource::_update_menu_items() {
 
 				inheritors_array.push_back(t);
 
+				if (!icon.is_valid())
+					icon = get_icon(has_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
+
 				int id = TYPE_BASE_ID + idx;
-
-				if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
-					icon = get_icon(t, "EditorIcons");
-				}
-
-				if (icon.is_valid()) {
-
-					menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
-				} else {
-
-					menu->add_item(vformat(TTR("New %s"), t), id);
-				}
+				menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 
 				idx++;
 			}
