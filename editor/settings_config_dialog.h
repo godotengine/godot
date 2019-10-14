@@ -34,7 +34,9 @@
 #include "editor/editor_sectioned_inspector.h"
 #include "editor_inspector.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -62,8 +64,10 @@ class EditorSettingsDialog : public AcceptDialog {
 	SectionedInspector *inspector;
 
 	MenuButton *general_menu;
+	PopupMenu *general_popup;
 	ConfirmationDialog *restore_default_settings_ask;
 	MenuButton *shortcut_menu;
+	PopupMenu *shortcut_popup;
 	ConfirmationDialog *restore_default_shortcuts_ask;
 
 	bool autocollapsing = false;

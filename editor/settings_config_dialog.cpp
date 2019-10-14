@@ -306,7 +306,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void EditorSettingsDialog::_update_menus() {
 
-	PopupMenu *general_popup = general_menu->get_popup();
+	general_popup = general_menu->get_popup();
 	general_popup->clear();
 	general_popup->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
 	general_popup->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
@@ -314,7 +314,7 @@ void EditorSettingsDialog::_update_menus() {
 	general_popup->add_separator();
 	general_popup->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
 
-	PopupMenu *shortcut_popup = shortcut_menu->get_popup();
+	shortcut_popup = shortcut_menu->get_popup();
 	shortcut_popup->clear();
 	shortcut_popup->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
 	shortcut_popup->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
