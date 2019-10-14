@@ -458,6 +458,11 @@ namespace Godot
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y);
         }
 
+        public bool IsEqualApprox(Vector2 other)
+        {
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y);
+        }
+
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode();

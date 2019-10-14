@@ -816,7 +816,7 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
-	VCALL_PTR2R(Basis, is_equal_approx);
+	VCALL_PTR2R(Basis, is_equal_approx); // TODO: Break compatibility in 4.0 to change this to an instance method (a.is_equal_approx(b) as VCALL_PTR1R) for consistency.
 	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);

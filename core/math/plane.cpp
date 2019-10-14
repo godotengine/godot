@@ -161,6 +161,11 @@ bool Plane::is_almost_like(const Plane &p_plane) const {
 	return (normal.dot(p_plane.normal) > _PLANE_EQ_DOT_EPSILON && Math::absd(d - p_plane.d) < _PLANE_EQ_D_EPSILON);
 }
 
+bool Plane::is_equal_approx(const Plane &p_plane) const {
+
+	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
+}
+
 Plane::operator String() const {
 
 	return normal.operator String() + ", " + rtos(d);

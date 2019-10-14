@@ -92,6 +92,8 @@ struct Vector2 {
 	Vector2 bounce(const Vector2 &p_normal) const;
 	Vector2 reflect(const Vector2 &p_normal) const;
 
+	bool is_equal_approx(const Vector2 &p_v) const;
+
 	Vector2 operator+(const Vector2 &p_v) const;
 	void operator+=(const Vector2 &p_v);
 	Vector2 operator-(const Vector2 &p_v) const;
