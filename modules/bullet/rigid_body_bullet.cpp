@@ -473,7 +473,7 @@ void RigidBodyBullet::assert_no_constraints() {
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
 	if (p_active) {
-		btBody->setActivationState(ACTIVE_TAG);
+		btBody->activate();
 	} else {
 		btBody->setActivationState(WANTS_DEACTIVATION);
 	}
