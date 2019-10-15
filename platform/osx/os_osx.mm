@@ -268,6 +268,8 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 	//_Godotwindow* window;
 }
 
+- (void)windowWillClose:(NSNotification *)notification;
+
 @end
 
 @implementation GodotWindowDelegate
@@ -278,6 +280,24 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 
 	return NO;
+}
+
+- (void)windowWillClose:(NSNotification *)notification {
+#if defined(VULKAN_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+
+		if (OS_OSX::singleton->rendering_device_vulkan) {
+			OS_OSX::singleton->rendering_device_vulkan->finalize();
+			memdelete(OS_OSX::singleton->rendering_device_vulkan);
+			OS_OSX::singleton->rendering_device_vulkan = NULL;
+		}
+
+		if (OS_OSX::singleton->context_vulkan) {
+			memdelete(OS_OSX::singleton->context_vulkan);
+			OS_OSX::singleton->context_vulkan = NULL;
+		}
+	}
+#endif
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -1616,19 +1636,6 @@ void OS_OSX::finalize() {
 
 		if (context_gles2)
 			memdelete(context_gles2);
-	}
-#endif
-#if defined(VULKAN_ENABLED)
-	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
-
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
-
-		if (context_vulkan)
-			memdelete(context_vulkan);
-
 	}
 #endif
 
