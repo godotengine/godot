@@ -67,6 +67,7 @@ class SnapDialog : public ConfirmationDialog {
 	SpinBox *grid_offset_y;
 	SpinBox *grid_step_x;
 	SpinBox *grid_step_y;
+	SpinBox *primary_grid_steps;
 	SpinBox *rotation_offset;
 	SpinBox *rotation_step;
 
@@ -132,6 +133,24 @@ public:
 		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
 
+		label = memnew(Label);
+		label->set_text(TTR("Primary Line Every"));
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+		child_container->add_child(label);
+
+		primary_grid_steps = memnew(SpinBox);
+		primary_grid_steps->set_min(0);
+		primary_grid_steps->set_step(1);
+		primary_grid_steps->set_max(100);
+		primary_grid_steps->set_allow_greater(true);
+		primary_grid_steps->set_h_size_flags(SIZE_EXPAND_FILL);
+		child_container->add_child(primary_grid_steps);
+
+		label = memnew(Label);
+		label->set_text(TTR("steps"));
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+		child_container->add_child(label);
+
 		container->add_child(memnew(HSeparator));
 
 		child_container = memnew(GridContainer);
@@ -163,18 +182,20 @@ public:
 		child_container->add_child(rotation_step);
 	}
 
-	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const float p_rotation_offset, const float p_rotation_step) {
+	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const float p_rotation_offset, const float p_rotation_step) {
 		grid_offset_x->set_value(p_grid_offset.x);
 		grid_offset_y->set_value(p_grid_offset.y);
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
+		primary_grid_steps->set_value(p_primary_grid_steps);
 		rotation_offset->set_value(p_rotation_offset * (180 / Math_PI));
 		rotation_step->set_value(p_rotation_step * (180 / Math_PI));
 	}
 
-	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, float &p_rotation_offset, float &p_rotation_step) {
+	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, float &p_rotation_offset, float &p_rotation_step) {
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
+		p_primary_grid_steps = int(primary_grid_steps->get_value());
 		p_rotation_offset = rotation_offset->get_value() / (180 / Math_PI);
 		p_rotation_step = rotation_step->get_value() / (180 / Math_PI);
 	}
@@ -898,7 +919,7 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 }
 
 void CanvasItemEditor::_snap_changed() {
-	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
+	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step);
 	grid_step_multiplier = 0;
 	viewport->update();
 }
@@ -2639,41 +2660,72 @@ void CanvasItemEditor::_draw_rulers() {
 }
 
 void CanvasItemEditor::_draw_grid() {
-	if (show_grid || grid_snap_active) {
-		//Draw the grid
-		Size2 s = viewport->get_size();
-		int last_cell = 0;
-		Transform2D xform = transform.affine_inverse();
 
+	if (show_grid || grid_snap_active) {
+		// Draw the grid
 		Vector2 real_grid_offset;
-		List<CanvasItem *> selection = _get_edited_canvas_items();
+		const List<CanvasItem *> selection = _get_edited_canvas_items();
+
 		if (snap_relative && selection.size() > 0) {
-			Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
+			const Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
 			real_grid_offset.x = fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
 			real_grid_offset.y = fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}
 
-		const Color grid_color = EditorSettings::get_singleton()->get("editors/2d/grid_color");
+		// Draw a "primary" line every several lines to make measurements easier.
+		// The step is configurable in the Configure Snap dialog.
+		const Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/2d/grid_color");
+		const Color primary_grid_color =
+				Color(secondary_grid_color.r, secondary_grid_color.g, secondary_grid_color.b, secondary_grid_color.a * 2.5);
+
+		const Size2 viewport_size = viewport->get_size();
+		const Transform2D xform = transform.affine_inverse();
+		int last_cell = 0;
+
 		if (grid_step.x != 0) {
-			for (int i = 0; i < s.width; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
-				if (i == 0)
+			for (int i = 0; i < viewport_size.width; i++) {
+				const int cell =
+						Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
+
+				if (i == 0) {
 					last_cell = cell;
-				if (last_cell != cell)
-					viewport->draw_line(Point2(i, 0), Point2(i, s.height), grid_color, Math::round(EDSCALE));
+				}
+
+				if (last_cell != cell) {
+					Color grid_color;
+					if (primary_grid_steps == 0) {
+						grid_color = secondary_grid_color;
+					} else {
+						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+					}
+
+					viewport->draw_line(Point2(i, 0), Point2(i, viewport_size.height), grid_color, Math::round(EDSCALE));
+				}
 				last_cell = cell;
 			}
 		}
 
 		if (grid_step.y != 0) {
-			for (int i = 0; i < s.height; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / (grid_step.y * Math::pow(2.0, grid_step_multiplier))));
-				if (i == 0)
+			for (int i = 0; i < viewport_size.height; i++) {
+				const int cell =
+						Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / (grid_step.y * Math::pow(2.0, grid_step_multiplier))));
+
+				if (i == 0) {
 					last_cell = cell;
-				if (last_cell != cell)
-					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_color, Math::round(EDSCALE));
+				}
+
+				if (last_cell != cell) {
+					Color grid_color;
+					if (primary_grid_steps == 0) {
+						grid_color = secondary_grid_color;
+					} else {
+						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+					}
+
+					viewport->draw_line(Point2(0, i), Point2(viewport_size.width, i), grid_color, Math::round(EDSCALE));
+				}
 				last_cell = cell;
 			}
 		}
@@ -4309,8 +4361,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
-			snap_dialog->popup_centered(Size2(220, 160));
+			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step);
+			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
 			skeleton_show_bones = !skeleton_show_bones;
@@ -4857,6 +4909,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
+	state["primary_grid_steps"] = primary_grid_steps;
 	state["snap_rotation_offset"] = snap_rotation_offset;
 	state["snap_rotation_step"] = snap_rotation_step;
 	state["smart_snap_active"] = smart_snap_active;
@@ -4903,6 +4956,10 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
 	if (state.has("grid_step")) {
 		grid_step = state["grid_step"];
+	}
+
+	if (state.has("primary_grid_steps")) {
+		primary_grid_steps = state["primary_grid_steps"];
 	}
 
 	if (state.has("snap_rotation_step")) {
@@ -5094,6 +5151,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
 	grid_step = Point2(10, 10);
+	primary_grid_steps = 8; // A power-of-two value works better as a default
 	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;
 	snap_rotation_step = 15 / (180 / Math_PI);
