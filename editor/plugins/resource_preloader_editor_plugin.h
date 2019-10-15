@@ -101,7 +101,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	ResourcePreloaderEditorPlugin(EditorNode *p_node);
+	explicit ResourcePreloaderEditorPlugin(EditorNode *p_node);
 	~ResourcePreloaderEditorPlugin();
 };
 

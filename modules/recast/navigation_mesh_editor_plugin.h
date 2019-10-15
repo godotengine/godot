@@ -77,7 +77,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	NavigationMeshEditorPlugin(EditorNode *p_node);
+	explicit NavigationMeshEditorPlugin(EditorNode *p_node);
 	~NavigationMeshEditorPlugin();
 };
 

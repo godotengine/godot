@@ -364,7 +364,7 @@ public:
 
 	virtual void process_and_drop_events();
 
-	OS_Windows(HINSTANCE _hInstance);
+	explicit OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 };
 

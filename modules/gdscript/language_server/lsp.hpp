@@ -753,7 +753,7 @@ struct MarkupContent {
 		kind = MarkupKind::Markdown;
 	}
 
-	MarkupContent(const String &p_value) {
+	explicit MarkupContent(const String &p_value) {
 		value = p_value;
 		kind = MarkupKind::Markdown;
 	}

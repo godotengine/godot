@@ -63,7 +63,7 @@ public:
 	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
 
 		const btDiscreteDynamicsWorld *m_world;
-		CreateFunc(const btDiscreteDynamicsWorld *world);
+		explicit CreateFunc(const btDiscreteDynamicsWorld *world);
 
 		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
 			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));
@@ -74,7 +74,7 @@ public:
 	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc {
 
 		const btDiscreteDynamicsWorld *m_world;
-		SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
+		explicit SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
 
 		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
 			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));

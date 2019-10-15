@@ -360,7 +360,7 @@ public:
 
 	String(const char *p_str);
 	String(const CharType *p_str, int p_clip_to_len = -1);
-	String(const StrRange &p_range);
+	explicit String(const StrRange &p_range);
 };
 
 bool operator==(const char *p_chr, const String &p_str);

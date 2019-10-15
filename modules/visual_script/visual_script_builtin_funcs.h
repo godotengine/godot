@@ -143,7 +143,7 @@ public:
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
-	VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func);
+	explicit VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func);
 	VisualScriptBuiltinFunc();
 };
 

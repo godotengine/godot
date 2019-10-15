@@ -50,7 +50,7 @@ class GraphEditFilter : public Control {
 	virtual bool has_point(const Point2 &p_point) const;
 
 public:
-	GraphEditFilter(GraphEdit *p_edit);
+	explicit GraphEditFilter(GraphEdit *p_edit);
 };
 
 class GraphEdit : public Control {

@@ -459,7 +459,7 @@ public:
 	static void register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func);
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(EditorNode *p_editor);
+	explicit ScriptEditor(EditorNode *p_editor);
 	~ScriptEditor();
 };
 
@@ -491,7 +491,7 @@ public:
 
 	virtual void edited_scene_changed();
 
-	ScriptEditorPlugin(EditorNode *p_node);
+	explicit ScriptEditorPlugin(EditorNode *p_node);
 	~ScriptEditorPlugin();
 };
 

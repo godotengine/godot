@@ -64,7 +64,7 @@ public:
 	}
 #endif
 
-	SignalAwaiterHandle(MonoObject *p_managed);
+	explicit SignalAwaiterHandle(MonoObject *p_managed);
 	~SignalAwaiterHandle();
 };
 

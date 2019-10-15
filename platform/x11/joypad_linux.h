@@ -41,7 +41,7 @@ struct input_absinfo;
 
 class JoypadLinux {
 public:
-	JoypadLinux(InputDefault *in);
+	explicit JoypadLinux(InputDefault *in);
 	~JoypadLinux();
 	void process_joypads();
 

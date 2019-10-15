@@ -317,7 +317,7 @@ struct Vector2i {
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
 	operator Vector2() const { return Vector2(x, y); }
-	inline Vector2i(const Vector2 &p_vec2) {
+	inline explicit Vector2i(const Vector2 &p_vec2) {
 		x = (int)p_vec2.x;
 		y = (int)p_vec2.y;
 	}

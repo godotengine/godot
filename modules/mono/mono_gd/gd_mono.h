@@ -255,7 +255,7 @@ class ScopeDomain {
 	MonoDomain *prev_domain;
 
 public:
-	ScopeDomain(MonoDomain *p_domain) {
+	explicit ScopeDomain(MonoDomain *p_domain) {
 		MonoDomain *prev_domain = mono_domain_get();
 		if (prev_domain != p_domain) {
 			this->prev_domain = prev_domain;
@@ -275,7 +275,7 @@ class ScopeExitDomainUnload {
 	MonoDomain *domain;
 
 public:
-	ScopeExitDomainUnload(MonoDomain *p_domain) :
+	explicit ScopeExitDomainUnload(MonoDomain *p_domain) :
 			domain(p_domain) {
 	}
 

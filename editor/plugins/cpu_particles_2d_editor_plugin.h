@@ -86,7 +86,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	CPUParticles2DEditorPlugin(EditorNode *p_node);
+	explicit CPUParticles2DEditorPlugin(EditorNode *p_node);
 	~CPUParticles2DEditorPlugin();
 };
 

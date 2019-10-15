@@ -277,7 +277,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
+	explicit AudioBusesEditorPlugin(EditorAudioBuses *p_node);
 	~AudioBusesEditorPlugin();
 };
 

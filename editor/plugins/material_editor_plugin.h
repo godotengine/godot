@@ -95,7 +95,7 @@ class MaterialEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Material"; }
 
-	MaterialEditorPlugin(EditorNode *p_node);
+	explicit MaterialEditorPlugin(EditorNode *p_node);
 };
 
 class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {

@@ -631,7 +631,7 @@ public:
 
 	bool is_anchors_mode_enabled() { return anchors_mode; };
 
-	CanvasItemEditor(EditorNode *p_editor);
+	explicit CanvasItemEditor(EditorNode *p_editor);
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
@@ -652,7 +652,7 @@ public:
 
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
-	CanvasItemEditorPlugin(EditorNode *p_node);
+	explicit CanvasItemEditorPlugin(EditorNode *p_node);
 	~CanvasItemEditorPlugin();
 };
 

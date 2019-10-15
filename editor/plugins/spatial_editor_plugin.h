@@ -726,7 +726,7 @@ public:
 	void edit(Spatial *p_spatial);
 	void clear();
 
-	SpatialEditor(EditorNode *p_editor);
+	explicit SpatialEditor(EditorNode *p_editor);
 	~SpatialEditor();
 };
 
@@ -756,7 +756,7 @@ public:
 
 	virtual void edited_scene_changed();
 
-	SpatialEditorPlugin(EditorNode *p_node);
+	explicit SpatialEditorPlugin(EditorNode *p_node);
 	~SpatialEditorPlugin();
 };
 

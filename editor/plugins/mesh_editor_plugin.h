@@ -87,7 +87,7 @@ class MeshEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Mesh"; }
 
-	MeshEditorPlugin(EditorNode *p_node);
+	explicit MeshEditorPlugin(EditorNode *p_node);
 };
 
 #endif

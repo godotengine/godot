@@ -91,7 +91,7 @@ struct CameraMatrix {
 	operator Transform() const;
 
 	CameraMatrix();
-	CameraMatrix(const Transform &p_transform);
+	explicit CameraMatrix(const Transform &p_transform);
 	~CameraMatrix();
 };
 

@@ -50,7 +50,7 @@ public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
 	Object *instance();
-	GDScriptNativeClass(const StringName &p_name);
+	explicit GDScriptNativeClass(const StringName &p_name);
 };
 
 class GDScript : public Script {

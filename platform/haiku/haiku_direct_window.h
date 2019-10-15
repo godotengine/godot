@@ -68,7 +68,7 @@ private:
 	inline int GetMouseButtonState(uint32 p_state);
 
 public:
-	HaikuDirectWindow(BRect p_frame);
+	explicit HaikuDirectWindow(BRect p_frame);
 	~HaikuDirectWindow();
 
 	void SetHaikuGLView(HaikuGLView *p_view);

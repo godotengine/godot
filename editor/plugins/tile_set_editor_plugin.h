@@ -188,7 +188,7 @@ public:
 	void edit(const Ref<TileSet> &p_tileset);
 	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml, bool p_merge = true);
 
-	TileSetEditor(EditorNode *p_editor);
+	explicit TileSetEditor(EditorNode *p_editor);
 	~TileSetEditor();
 
 private:
@@ -272,7 +272,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	TilesetEditorContext(TileSetEditor *p_tileset_editor);
+	explicit TilesetEditorContext(TileSetEditor *p_tileset_editor);
 };
 
 class TileSetEditorPlugin : public EditorPlugin {
@@ -292,7 +292,7 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
-	TileSetEditorPlugin(EditorNode *p_node);
+	explicit TileSetEditorPlugin(EditorNode *p_node);
 };
 
 #endif // TILE_SET_EDITOR_PLUGIN_H

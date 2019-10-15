@@ -68,7 +68,7 @@ class TextureEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Texture"; }
 
-	TextureEditorPlugin(EditorNode *p_node);
+	explicit TextureEditorPlugin(EditorNode *p_node);
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

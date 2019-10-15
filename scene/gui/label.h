@@ -141,7 +141,7 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	Label(const String &p_text = String());
+	explicit Label(const String &p_text = String());
 	~Label();
 };
 

@@ -224,7 +224,7 @@ public:
 
 	void edit(Node *p_tile_map);
 
-	TileMapEditor(EditorNode *p_editor);
+	explicit TileMapEditor(EditorNode *p_editor);
 	~TileMapEditor();
 };
 
@@ -247,7 +247,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	TileMapEditorPlugin(EditorNode *p_node);
+	explicit TileMapEditorPlugin(EditorNode *p_node);
 	~TileMapEditorPlugin();
 };
 

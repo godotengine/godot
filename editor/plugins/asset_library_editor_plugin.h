@@ -303,7 +303,7 @@ protected:
 public:
 	void disable_community_support();
 
-	EditorAssetLibrary(bool p_templates_only = false);
+	explicit EditorAssetLibrary(bool p_templates_only = false);
 };
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
@@ -323,7 +323,7 @@ public:
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);
 
-	AssetLibraryEditorPlugin(EditorNode *p_node);
+	explicit AssetLibraryEditorPlugin(EditorNode *p_node);
 	~AssetLibraryEditorPlugin();
 };
 

@@ -175,7 +175,7 @@ public:
 		btScalar safe_margin;
 		Vector<KinematicShape> shapes;
 
-		KinematicUtilities(RigidBodyBullet *p_owner);
+		explicit KinematicUtilities(RigidBodyBullet *p_owner);
 		~KinematicUtilities();
 
 		void setSafeMargin(btScalar p_margin);

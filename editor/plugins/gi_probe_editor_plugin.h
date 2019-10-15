@@ -62,7 +62,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	GIProbeEditorPlugin(EditorNode *p_node);
+	explicit GIProbeEditorPlugin(EditorNode *p_node);
 	~GIProbeEditorPlugin();
 };
 

@@ -72,7 +72,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "StyleBox"; }
 
-	StyleBoxEditorPlugin(EditorNode *p_node);
+	explicit StyleBoxEditorPlugin(EditorNode *p_node);
 };
 
 #endif // STYLE_BOX_EDITOR_PLUGIN_H

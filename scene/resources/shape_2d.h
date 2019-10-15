@@ -42,7 +42,7 @@ class Shape2D : public Resource {
 
 protected:
 	static void _bind_methods();
-	Shape2D(const RID &p_rid);
+	explicit Shape2D(const RID &p_rid);
 
 public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return get_rect().has_point(p_point); }

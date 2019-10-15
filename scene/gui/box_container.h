@@ -63,7 +63,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 
-	BoxContainer(bool p_vertical = false);
+	explicit BoxContainer(bool p_vertical = false);
 };
 
 class HBoxContainer : public BoxContainer {

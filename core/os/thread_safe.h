@@ -54,7 +54,7 @@ class ThreadSafeMethod {
 	const ThreadSafe *_ts;
 
 public:
-	ThreadSafeMethod(const ThreadSafe *p_ts) {
+	explicit ThreadSafeMethod(const ThreadSafe *p_ts) {
 
 		_ts = p_ts;
 		_ts->lock();

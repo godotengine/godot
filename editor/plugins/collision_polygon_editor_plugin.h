@@ -92,7 +92,7 @@ protected:
 public:
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_collision_polygon);
-	Polygon3DEditor(EditorNode *p_editor);
+	explicit Polygon3DEditor(EditorNode *p_editor);
 	~Polygon3DEditor();
 };
 
@@ -112,7 +112,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	Polygon3DEditorPlugin(EditorNode *p_node);
+	explicit Polygon3DEditorPlugin(EditorNode *p_node);
 	~Polygon3DEditorPlugin();
 };
 

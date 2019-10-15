@@ -228,7 +228,7 @@ public:
 	DEFAULT_PROJECT_RANGE_CAST
 
 	_FORCE_INLINE_ RayShape2DSW() {}
-	_FORCE_INLINE_ RayShape2DSW(real_t p_length) { length = p_length; }
+	_FORCE_INLINE_ explicit RayShape2DSW(real_t p_length) { length = p_length; }
 };
 
 class SegmentShape2DSW : public Shape2DSW {

@@ -93,7 +93,7 @@ class Body2DSW : public CollisionObject2DSW {
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
 		_FORCE_INLINE_ AreaCMP() {}
-		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) {
+		_FORCE_INLINE_ explicit AreaCMP(Area2DSW *p_area) {
 			area = p_area;
 			refCount = 1;
 		}

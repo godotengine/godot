@@ -244,7 +244,7 @@ public:
 
 	void edit(GridMap *p_gridmap);
 	GridMapEditor() {}
-	GridMapEditor(EditorNode *p_editor);
+	explicit GridMapEditor(EditorNode *p_editor);
 	~GridMapEditor();
 };
 
@@ -266,7 +266,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	GridMapEditorPlugin(EditorNode *p_node);
+	explicit GridMapEditorPlugin(EditorNode *p_node);
 	~GridMapEditorPlugin();
 };
 

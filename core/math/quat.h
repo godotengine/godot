@@ -119,8 +119,8 @@ public:
 	}
 	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
-	Quat(const Vector3 &euler) { set_euler(euler); }
-	Quat(const Quat &q) :
+	explicit Quat(const Vector3 &euler) { set_euler(euler); }
+	explicit Quat(const Quat &q) :
 			x(q.x),
 			y(q.y),
 			z(q.z),

@@ -286,7 +286,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	VisualShaderEditorPlugin(EditorNode *p_node);
+	explicit VisualShaderEditorPlugin(EditorNode *p_node);
 	~VisualShaderEditorPlugin();
 };
 
