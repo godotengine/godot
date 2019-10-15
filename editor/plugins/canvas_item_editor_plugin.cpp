@@ -2721,8 +2721,10 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		viewport->draw_string(font, text_pos, vformat("%.2f px", length_vector.length()), font_color);
 
 		if (draw_secondary_lines) {
-			int horizontal_axis_angle = round(180 * atan2(length_vector.y, length_vector.x) / Math_PI);
-			int vertictal_axis_angle = 90 - horizontal_axis_angle;
+			const float horizontal_angle_rad = atan2(length_vector.y, length_vector.x);
+			const float vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
+			const int horizontal_angle = round(180 * horizontal_angle_rad / Math_PI);
+			const int vertical_angle = round(180 * vertical_angle_rad / Math_PI);
 
 			Point2 text_pos2 = text_pos;
 			text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
@@ -2731,7 +2733,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			Point2 v_angle_text_pos = Point2();
 			v_angle_text_pos.x = CLAMP(begin.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5);
-			viewport->draw_string(font, v_angle_text_pos, vformat("%d deg", vertictal_axis_angle), font_secondary_color);
+			viewport->draw_string(font, v_angle_text_pos, vformat("%d deg", vertical_angle), font_secondary_color);
 
 			text_pos2 = text_pos;
 			text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y - text_height / 2) : MAX(text_pos.y + text_height * 2, end.y - text_height / 2);
@@ -2752,7 +2754,35 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
 				}
 			}
-			viewport->draw_string(font, h_angle_text_pos, vformat("%d deg", horizontal_axis_angle), font_secondary_color);
+			viewport->draw_string(font, h_angle_text_pos, vformat("%d deg", horizontal_angle), font_secondary_color);
+
+			// Angle arcs
+			int arc_point_count = 8;
+			float arc_radius_max_length_percent = 0.1;
+			float ruler_length = length_vector.length() * zoom;
+			float arc_max_radius = 50.0;
+			float arc_line_width = 2.0;
+
+			const Vector2 end_to_begin = (end - begin);
+
+			float arc_1_start_angle =
+					end_to_begin.x < 0 ?
+							(end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0) :
+							(end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
+			float arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
+			// Constrain arc to triangle height & max size
+			float arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
+
+			float arc_2_start_angle =
+					end_to_begin.x < 0 ?
+							(end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad) :
+							(end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
+			float arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
+			// Constrain arc to triangle width & max size
+			float arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
+
+			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
+			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 		}
 
 		if (is_snap_active) {
