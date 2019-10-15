@@ -5915,7 +5915,7 @@ void TextEdit::unfold_line(int p_line) {
 
 	if (!is_folded(p_line) && !is_line_hidden(p_line))
 		return;
-	int fold_start = p_line;
+	int fold_start;
 	for (fold_start = p_line; fold_start > 0; fold_start--) {
 		if (is_folded(fold_start))
 			break;
