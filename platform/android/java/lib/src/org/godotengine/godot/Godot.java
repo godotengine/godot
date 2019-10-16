@@ -56,11 +56,14 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.annotation.Keep;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -126,6 +129,9 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	private boolean activityResumed;
 	private int mState;
 
+	// Used to dispatch events to the main thread.
+	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+
 	static private Intent mCurrentIntent;
 
 	@Override
@@ -185,6 +191,20 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			}
 
 			Godot.singletons[Godot.singleton_count++] = this;
+		}
+
+		/**
+		 * Invoked once during the Godot Android initialization process after creation of the
+		 * {@link GodotView} view.
+		 * <p>
+		 * This method should be overridden by descendants of this class that would like to add
+		 * their view/layout to the Godot view hierarchy.
+		 *
+		 * @return the view to be included; null if no views should be included.
+		 */
+		@Nullable
+		protected View onMainCreateView(Activity activity) {
+			return null;
 		}
 
 		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
@@ -306,6 +326,20 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			public void run() {
 				GodotLib.setup(current_command_line);
 				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+
+				// The Godot Android plugins are setup on completion of GodotLib.setup
+				mainThreadHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						// Include the non-null views returned in the Godot view hierarchy.
+						for (int i = 0; i < singleton_count; i++) {
+							View view = singletons[i].onMainCreateView(Godot.this);
+							if (view != null) {
+								layout.addView(view);
+							}
+						}
+					}
+				});
 			}
 		});
 	}
