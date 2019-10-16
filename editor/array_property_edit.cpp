@@ -269,16 +269,14 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 	if (!p_hint_string.empty()) {
 		int hint_subtype_seperator = p_hint_string.find(":");
 		if (hint_subtype_seperator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_seperator);
-
-			int slash_pos = subtype_string.find("/");
-			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
-				subtype_string = subtype_string.substr(0, slash_pos);
+			String sub_str = p_hint_string.substr(0, hint_subtype_seperator);
+			subtype = Variant::Type(sub_str.to_int());
+			sub_str = p_hint_string.substr(hint_subtype_seperator + 1);
+			int slash_pos = sub_str.find("/");
+			if(slash_pos >= 0) {
+				subtype_hint = PropertyHint(sub_str.substr(0, slash_pos).to_int());
+				subtype_hint_string = sub_str.substr(slash_pos);
 			}
-
-			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator + 1, p_hint_string.size() - hint_subtype_seperator - 1);
-			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}
 }
