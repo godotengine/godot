@@ -77,6 +77,13 @@ public:
 		PARSED_GEOMETRY_MAX
 	};
 
+	enum SourceGeometryMode {
+		SOURCE_GEOMETRY_NAVMESH_CHILDREN = 0,
+		SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN,
+		SOURCE_GEOMETRY_GROUPS_EXPLICIT,
+		SOURCE_GEOMETRY_MAX
+	};
+
 protected:
 	float cell_size;
 	float cell_height;
@@ -96,6 +103,9 @@ protected:
 	ParsedGeometryType parsed_geometry_type;
 	uint32_t collision_mask;
 
+	SourceGeometryMode source_geometry_mode;
+	StringName source_group_name;
+
 	bool filter_low_hanging_obstacles;
 	bool filter_ledge_spans;
 	bool filter_walkable_low_height_spans;
@@ -113,6 +123,12 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_source_geometry_mode(int p_source_mode);
+	int get_source_geometry_mode() const;
+
+	void set_source_group_name(StringName p_group_name);
+	StringName get_source_group_name() const;
 
 	void set_cell_size(float p_value);
 	float get_cell_size() const;
