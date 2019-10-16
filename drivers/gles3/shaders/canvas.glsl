@@ -137,7 +137,6 @@ VERTEX_SHADER_GLOBALS
 void main() {
 
 	vec4 color = color_attrib;
-
 #ifdef USE_INSTANCING
 	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
 	color *= instance_color;
@@ -172,6 +171,7 @@ void main() {
 	outvec.xy /= color_texpixel_size;
 #endif
 
+	vec2 src_vertex = vertex;
 #define extra_matrix extra_matrix_instance
 
 	float point_size = 1.0;
@@ -513,7 +513,6 @@ void main() {
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
-
 	uv = uv * src_rect.zw + src_rect.xy; //apply region if needed
 #endif
 

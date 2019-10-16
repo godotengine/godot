@@ -133,6 +133,7 @@ void main() {
 
 	vec4 color = color_attrib;
 	vec2 uv;
+	vec2 src_vertex = vertex;
 
 #ifdef USE_INSTANCING
 	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
