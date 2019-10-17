@@ -354,6 +354,11 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	selection.current = p_end;
 
 	_update_selection_transform();
+
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CLEAR), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CUT), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_DUPLICATE), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_FILL), !selection.active);
 }
 
 bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click) {
@@ -1465,7 +1470,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		}
 	}
 
-	selection.active = false;
+	_set_selection(false);
 	updating = false;
 	accumulated_floor_delta = 0.0;
 }
