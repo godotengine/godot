@@ -969,7 +969,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			case BUTTON_WHEEL_UP: {
 				if (_get_key_modifier(b) == KEY_CONTROL) {
 					_update_camera(0.0);
-					Vector3 point = camera->project_position(b->get_position());
+					Vector3 point = camera->project_position(b->get_position(), camera->get_znear());
 					_walk_towards_point(point);
 				} else if (is_freelook_active()) {
 					scale_freelook_speed(zoom_factor);
@@ -981,7 +981,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			case BUTTON_WHEEL_DOWN: {
 				if (_get_key_modifier(b) == KEY_CONTROL) {
 					_update_camera(0.0);
-					Vector3 point = camera->project_position(b->get_position());
+					Vector3 point = camera->project_position(b->get_position(), camera->get_znear());
 					_walk_away_point(point);
 				} else if (is_freelook_active()) {
 					scale_freelook_speed(1.0 / zoom_factor);
