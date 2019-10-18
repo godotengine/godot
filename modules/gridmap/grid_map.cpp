@@ -227,10 +227,10 @@ Ref<MeshLibrary> GridMap::get_mesh_library() const {
 }
 
 void GridMap::set_cell_size(const Vector3 &p_size) {
-
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
 	_recreate_octant_data();
+	emit_signal("cell_size_changed", cell_size);
 }
 Vector3 GridMap::get_cell_size() const {
 
@@ -902,6 +902,8 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
+
+	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
