@@ -849,12 +849,8 @@ void GDScriptTokenizerText::_advance() {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
 
-										_make_error("Malformed hex constant in string");
-										return;
-									}
-									CharType v;
+									CharType v = 0;
 									if (c >= '0' && c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
@@ -864,8 +860,8 @@ void GDScriptTokenizerText::_advance() {
 										v = c - 'A';
 										v += 10;
 									} else {
-										ERR_PRINT("BUG");
-										v = 0;
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 
 									res <<= 4;
