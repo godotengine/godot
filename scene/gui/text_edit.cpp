@@ -2843,19 +2843,30 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// No need to indent if we are going upwards.
 				if (auto_indent && !(k->get_command() && k->get_shift())) {
-					// Indent once again if previous line will end with ':' or '{' and the line is not a comment
+					// Indent once again if previous line will end with ':','{','[','(' and the line is not a comment
 					// (i.e. colon/brace precedes current cursor position).
-					if (cursor.column > 0 && (text[cursor.line][cursor.column - 1] == ':' || text[cursor.line][cursor.column - 1] == '{') && !is_line_comment(cursor.line)) {
-						if (indent_using_spaces) {
-							ins += space_indent;
-						} else {
-							ins += "\t";
-						}
+					if (cursor.column > 0) {
+						char prev_char = text[cursor.line][cursor.column - 1];
+						switch (prev_char) {
+							case ':':
+							case '{':
+							case '[':
+							case '(': {
+								if (!is_line_comment(cursor.line)) {
+									if (indent_using_spaces) {
+										ins += space_indent;
+									} else {
+										ins += "\t";
+									}
 
-						// No need to move the brace below if we are not taking the text with us.
-						if (text[cursor.line][cursor.column] == '}' && !k->get_command()) {
-							brace_indent = true;
-							ins += "\n" + ins.substr(1, ins.length() - 2);
+									// No need to move the brace below if we are not taking the text with us.
+									char closing_char = _get_right_pair_symbol(prev_char);
+									if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column]) && !k->get_command()) {
+										brace_indent = true;
+										ins += "\n" + ins.substr(1, ins.length() - 2);
+									}
+								}
+							} break;
 						}
 					}
 				}
