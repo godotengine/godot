@@ -1215,9 +1215,6 @@ ProjectSettings::ProjectSettings() {
 	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
-	// Would ideally be defined in an Android-specific file, but then it doesn't appear in the docs
-	GLOBAL_DEF("android/modules", "");
-
 	using_datapack = false;
 }
 

@@ -3,6 +3,7 @@ apply plugin: 'com.android.library'
 dependencies {
     implementation libraries.supportCoreUtils
     implementation libraries.kotlinStdLib
+    implementation libraries.v4Support
 }
 
 def pathToRootDir = "../../../../"

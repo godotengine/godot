@@ -66,6 +66,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
 	_vibrate = p_env->GetMethodID(cls, "vibrate", "(I)V");
 	_get_input_fallback_mapping = p_env->GetMethodID(cls, "getInputFallbackMapping", "()Ljava/lang/String;");
+	_on_gl_godot_main_loop_started = p_env->GetMethodID(cls, "onGLGodotMainLoopStarted", "()V");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -105,6 +106,15 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _on_video_init);
+}
+
+void GodotJavaWrapper::on_gl_godot_main_loop_started(JNIEnv *p_env) {
+	if (_on_gl_godot_main_loop_started) {
+		if (p_env == NULL) {
+			p_env = ThreadAndroid::get_env();
+		}
+	}
+	p_env->CallVoidMethod(godot_instance, _on_gl_godot_main_loop_started);
 }
 
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
