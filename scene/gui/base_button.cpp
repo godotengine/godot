@@ -271,6 +271,11 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
+	// Make sure to set 'pressed' to false if we are not in toggle mode
+	if (!p_on) {
+		set_pressed(false);
+	}
+
 	toggle_mode = p_on;
 }
 
