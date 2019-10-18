@@ -1,24 +1,63 @@
 ext.versions = [
-        androidGradlePlugin : '3.4.2',
-        compileSdk : 28,
-        minSdk : 18,
-        targetSdk : 28,
-        buildTools : '28.0.3',
-        supportCoreUtils : '28.0.0'
+    androidGradlePlugin: '3.4.2',
+    compileSdk         : 28,
+    minSdk             : 18,
+    targetSdk          : 28,
+    buildTools         : '28.0.3',
+    supportCoreUtils   : '28.0.0',
+    v4Support          : '28.0.0'
 
 ]
 
 ext.libraries = [
-        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-        supportCoreUtils : "com.android.support:support-core-utils:$versions.supportCoreUtils"
+    androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
+    supportCoreUtils   : "com.android.support:support-core-utils:$versions.supportCoreUtils",
+    v4Support          : "com.android.support:support-v4:$versions.v4Support"
 ]
 
 ext.getExportPackageName = { ->
-	// Retrieve the app id from the project property set by the Godot build command.
-	String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
-	// Check if the app id is valid, otherwise use the default.
-	if (appId == null || appId.isEmpty()) {
-		appId = "com.godot.game"
-	}
-	return appId
+    // Retrieve the app id from the project property set by the Godot build command.
+    String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
+    // Check if the app id is valid, otherwise use the default.
+    if (appId == null || appId.isEmpty()) {
+        appId = "com.godot.game"
+    }
+    return appId
+}
+
+/**
+ * Parse the project properties for the 'custom_template_plugins' property and return
+ * their binaries for inclusion in the build dependencies.
+ *
+ * The listed plugins must have their binaries in the project plugins directory.
+ */
+ext.getGodotPluginsBinaries = { ->
+    String[] binDeps = []
+
+    // Retrieve the list of enabled plugins.
+    if (project.hasProperty("custom_template_plugins")) {
+        String pluginsList = project.property("custom_template_plugins")
+        if (pluginsList != null && !pluginsList.trim().isEmpty()) {
+            for (String plugin : pluginsList.split(",")) {
+                binDeps += plugin.trim() + "*.aar"
+            }
+        }
+    }
+
+    return binDeps
+}
+
+/**
+ * Parse the project properties for the 'custom_template_plugins_dir' property and return
+ * its value.
+ *
+ * The returned value is the directory containing user plugins.
+ */
+ext.getGodotPluginsDirectory = { ->
+    // The plugins directory is provided by the 'custom_template_plugins_dir' property.
+    String pluginsDir = project.hasProperty("custom_template_plugins_dir")
+        ? project.property("custom_template_plugins_dir")
+        : ""
+
+    return pluginsDir
 }
