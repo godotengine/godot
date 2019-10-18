@@ -179,9 +179,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="android/modules" type="String" setter="" getter="" default="&quot;&quot;">
-			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]org/godotengine/org/GodotPaymentV3,org/godotengine/godot/MyCustomSingleton"[/code].
-		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
 			Background color for the boot splash.
 		</member>

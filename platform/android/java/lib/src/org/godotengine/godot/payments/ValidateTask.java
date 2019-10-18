@@ -34,7 +34,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import java.lang.ref.WeakReference;
-import org.godotengine.godot.GodotPaymentV3;
 import org.godotengine.godot.utils.HttpRequester;
 import org.godotengine.godot.utils.RequestParams;
 import org.json.JSONException;
@@ -43,7 +42,7 @@ import org.json.JSONObject;
 abstract public class ValidateTask {
 
 	private Activity context;
-	private GodotPaymentV3 godotPaymentsV3;
+	private GodotPaymentInterface godotPayments;
 	private ProgressDialog dialog;
 	private String mSku;
 
@@ -80,9 +79,9 @@ abstract public class ValidateTask {
 		}
 	}
 
-	public ValidateTask(Activity context, GodotPaymentV3 godotPaymentsV3) {
+	public ValidateTask(Activity context, GodotPaymentInterface godotPayments) {
 		this.context = context;
-		this.godotPaymentsV3 = godotPaymentsV3;
+		this.godotPayments = godotPayments;
 	}
 
 	public void validatePurchase(final String sku) {
@@ -96,7 +95,7 @@ abstract public class ValidateTask {
 
 	private String doInBackground(String... params) {
 		PaymentsCache pc = new PaymentsCache(context);
-		String url = godotPaymentsV3.getPurchaseValidationUrlPrefix();
+		String url = godotPayments.getPurchaseValidationUrlPrefix();
 		RequestParams param = new RequestParams();
 		param.setUrl(url);
 		param.put("ticket", pc.getConsumableValue("ticket", mSku));

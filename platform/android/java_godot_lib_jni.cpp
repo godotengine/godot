@@ -63,47 +63,6 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
-static HashMap<String, JNISingleton *> jni_singletons;
-
-static void _initialize_java_modules() {
-
-	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
-		return;
-	}
-
-	String modules = ProjectSettings::get_singleton()->get("android/modules");
-	modules = modules.strip_edges();
-	if (modules == String()) {
-		return;
-	}
-	Vector<String> mods = modules.split(",", false);
-
-	if (mods.size()) {
-		jobject cls = godot_java->get_class_loader();
-
-		// TODO create wrapper for class loader
-
-		JNIEnv *env = ThreadAndroid::get_env();
-		jclass classLoader = env->FindClass("java/lang/ClassLoader");
-		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-
-		for (int i = 0; i < mods.size(); i++) {
-
-			String m = mods[i];
-
-			print_line("Loading Android module: " + m);
-			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
-			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
-			ERR_CONTINUE_MSG(!singletonClass, "Couldn't find singleton for class: " + m + ".");
-
-			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
-			ERR_CONTINUE_MSG(!initialize, "Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m + ".");
-
-			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, godot_java->get_activity());
-			env->NewGlobalRef(obj);
-		}
-	}
-}
 
 extern "C" {
 
@@ -199,7 +158,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
-	_initialize_java_modules();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jint width, jint height) {
@@ -249,6 +207,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		}
 
 		os_android->main_loop_begin();
+		godot_java->on_gl_godot_main_loop_started(env);
 		++step;
 	}
 
@@ -433,57 +392,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jc
 	AudioDriverAndroid::thread_func(env);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_singleton(JNIEnv *env, jclass clazz, jstring name, jobject p_object) {
-
-	String singname = jstring_to_string(name, env);
-	JNISingleton *s = memnew(JNISingleton);
-	s->set_instance(env->NewGlobalRef(p_object));
-	jni_singletons[singname] = s;
-
-	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
-	ProjectSettings::get_singleton()->set(singname, s);
-}
-
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path) {
 
 	String js = jstring_to_string(path, env);
 
 	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
-
-	String singname = jstring_to_string(sname, env);
-
-	ERR_FAIL_COND(!jni_singletons.has(singname));
-
-	JNISingleton *s = jni_singletons.get(singname);
-
-	String mname = jstring_to_string(name, env);
-	String retval = jstring_to_string(ret, env);
-	Vector<Variant::Type> types;
-	String cs = "(";
-
-	int stringCount = env->GetArrayLength(args);
-
-	for (int i = 0; i < stringCount; i++) {
-
-		jstring string = (jstring)env->GetObjectArrayElement(args, i);
-		const String rawString = jstring_to_string(string, env);
-		types.push_back(get_jni_type(rawString));
-		cs += get_jni_sig(rawString);
-	}
-
-	cs += ")";
-	cs += get_jni_sig(retval);
-	jclass cls = env->GetObjectClass(s->get_instance());
-	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
-	if (!mid) {
-
-		print_line("Failed getting method ID " + mname);
-	}
-
-	s->add_method(mname, mid, types, get_jni_type(retval));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jint ID, jstring method, jobjectArray params) {
