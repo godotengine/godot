@@ -1229,8 +1229,6 @@ void SceneTreeDock::_node_selected() {
 	Node *node = scene_tree->get_selected();
 
 	if (!node) {
-
-		editor->push_item(NULL);
 		return;
 	}
 
@@ -1933,11 +1931,10 @@ void SceneTreeDock::_selection_changed() {
 	if (selection_size > 1) {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
-	} else if (selection_size == 1) {
-		editor->push_item(EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()[0]);
-	} else {
+	} else if (selection_size == 0) {
 		editor->push_item(NULL);
 	}
+
 	_update_script_button();
 }
 
