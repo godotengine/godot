@@ -40,6 +40,8 @@
 #include "core/self_list.h"
 #include "servers/arvr/arvr_interface.h"
 
+#include <atomic>
+
 class VisualServerScene {
 public:
 	enum {
@@ -527,7 +529,7 @@ public:
 	void _gi_probe_bake_thread();
 	static void _gi_probe_bake_threads(void *);
 
-	volatile bool probe_bake_thread_exit;
+	std::atomic<bool> probe_bake_thread_exit;
 	Thread *probe_bake_thread;
 	Semaphore *probe_bake_sem;
 	Mutex *probe_bake_mutex;

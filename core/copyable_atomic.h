@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_preview.h                                               */
+/*  copyable_atomic.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PREVIEW_H
-#define AUDIO_STREAM_PREVIEW_H
+#ifndef COPYABLE_ATOMIC_H
+#define COPYABLE_ATOMIC_H
 
-#include "core/copyable_atomic.h"
-#include "core/os/thread.h"
-#include "scene/main/node.h"
-#include "servers/audio/audio_stream.h"
+#include <atomic>
 
-class AudioStreamPreview : public Reference {
-	GDCLASS(AudioStreamPreview, Reference);
-	friend class AudioStream;
-	Vector<uint8_t> preview;
-	float length;
+// Atomic integral types are trivially copyable, but they have their default copy constructor
+// deleted. Therefore, when a class has a member of any of such types, it ends up being not
+// copyable. This little helper allows to overcome this limitation, for instance to put a class
+// that contains an atomic in a container, but must be used with care.
 
-	friend class AudioStreamPreviewGenerator;
-
+template <typename T>
+class CopyableAtomic : public std::atomic<T> {
 public:
-	float get_length() const;
-	float get_max(float p_time, float p_time_next) const;
-	float get_min(float p_time, float p_time_next) const;
+	CopyableAtomic() = default;
 
-	AudioStreamPreview();
+	CopyableAtomic<T> &operator=(const CopyableAtomic<T> &p_other) {
+		this->store(p_other.load());
+		return *this;
+	}
+
+	CopyableAtomic<T> &operator=(const T &p_value) {
+		this->store(p_value);
+		return *this;
+	}
 };
 
-class AudioStreamPreviewGenerator : public Node {
-	GDCLASS(AudioStreamPreviewGenerator, Node);
-
-	static AudioStreamPreviewGenerator *singleton;
-
-	struct Preview {
-		Ref<AudioStreamPreview> preview;
-		Ref<AudioStream> base_stream;
-		Ref<AudioStreamPlayback> playback;
-		CopyableAtomic<bool> generating;
-		ObjectID id;
-		Thread *thread;
-	};
-
-	Map<ObjectID, Preview> previews;
-
-	static void _preview_thread(void *p_preview);
-
-	void _update_emit(ObjectID p_id);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
-
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
-
-	AudioStreamPreviewGenerator();
-};
-
-#endif // AUDIO_STREAM_PREVIEW_H
+#endif // COPYABLE_ATOMIC_H

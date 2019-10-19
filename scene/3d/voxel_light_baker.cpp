@@ -1914,7 +1914,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 	{
 		LightMap *lightmap_ptr = lightmap.ptrw();
 		uint64_t begin_time = OS::get_singleton()->get_ticks_usec();
-		volatile int lines = 0;
+		int lines = 0;
 
 		// make sure our OS-level rng is seeded
 

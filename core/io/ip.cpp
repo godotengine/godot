@@ -42,7 +42,7 @@ struct _IP_ResolverPrivate {
 
 	struct QueueItem {
 
-		volatile IP::ResolverStatus status;
+		std::atomic<IP::ResolverStatus> status;
 		IP_Address response;
 		String hostname;
 		IP::Type type;

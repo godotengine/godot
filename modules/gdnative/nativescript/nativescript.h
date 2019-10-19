@@ -48,6 +48,8 @@
 #include "core/os/mutex.h"
 #endif
 
+#include <atomic>
+
 struct NativeScriptDesc {
 
 	struct Method {
@@ -242,7 +244,7 @@ private:
 
 	Set<Ref<GDNativeLibrary> > libs_to_init;
 	Set<NativeScript *> scripts_to_register;
-	volatile bool has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
+	std::atomic<bool> has_objects_to_register; // so that we don't lock mutex every frame - it's rarely needed
 	void defer_init_library(Ref<GDNativeLibrary> lib, NativeScript *script);
 #endif
 

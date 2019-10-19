@@ -31,6 +31,8 @@
 #include "java_godot_io_wrapper.h"
 #include "core/error_list.h"
 
+#include <atomic>
+
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
 // For GodotIO we call all access methods from our thread and we thus get a valid JNIEnv
@@ -194,9 +196,9 @@ void GodotIOJavaWrapper::stop_video() {
 	}
 }
 
-// volatile because it can be changed from non-main thread and we need to
+// atomic because it can be changed from non-main thread and we need to
 // ensure the change is immediately visible to other threads.
-static volatile int virtual_keyboard_height;
+static std::atomic<int> virtual_keyboard_height;
 
 int GodotIOJavaWrapper::get_vk_height() {
 	return virtual_keyboard_height;

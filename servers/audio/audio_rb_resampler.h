@@ -45,8 +45,8 @@ struct AudioRBResampler {
 	uint32_t src_mix_rate;
 	uint32_t target_mix_rate;
 
-	volatile int rb_read_pos;
-	volatile int rb_write_pos;
+	std::atomic<int> rb_read_pos;
+	std::atomic<int> rb_write_pos;
 
 	int32_t offset; //contains the fractional remainder of the resampler
 	enum {

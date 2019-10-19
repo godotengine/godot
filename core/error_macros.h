@@ -32,6 +32,9 @@
 #define ERROR_MACROS_H
 
 #include "core/typedefs.h"
+
+#include <atomic>
+
 /**
  * Error macros. Unlike exceptions and asserts, these macros try to maintain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the
@@ -473,22 +476,20 @@ extern bool _err_error_exists;
 
 #define WARN_DEPRECATED                                                                                                                                   \
 	{                                                                                                                                                     \
-		static volatile bool warning_shown = false;                                                                                                       \
-		if (!warning_shown) {                                                                                                                             \
+		static std::atomic_flag warning_shown = ATOMIC_FLAG_INIT;                                                                                         \
+		if (!warning_shown.test_and_set()) {                                                                                                              \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future", ERR_HANDLER_WARNING); \
 			_err_error_exists = false;                                                                                                                    \
-			warning_shown = true;                                                                                                                         \
 		}                                                                                                                                                 \
 	}
 
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                        \
 	{                                                                                                                                                     \
-		static volatile bool warning_shown = false;                                                                                                       \
-		if (!warning_shown) {                                                                                                                             \
+		static std::atomic_flag warning_shown = ATOMIC_FLAG_INIT;                                                                                         \
+		if (!warning_shown.test_and_set()) {                                                                                                              \
 			ERR_EXPLAIN(m_msg);                                                                                                                           \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future", ERR_HANDLER_WARNING); \
 			_err_error_exists = false;                                                                                                                    \
-			warning_shown = true;                                                                                                                         \
 		}                                                                                                                                                 \
 	}
 

@@ -38,6 +38,8 @@
 
 #include <vorbis/vorbisfile.h>
 
+#include <atomic>
+
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 
 	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlayback);
@@ -59,7 +61,7 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 	int64_t frames_mixed;
 
 	bool stream_loaded;
-	volatile bool playing;
+	std::atomic<bool> playing;
 	OggVorbis_File vf;
 	int stream_channels;
 	int stream_srate;
