@@ -858,11 +858,23 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				if (current_function) {
 					int arg_idx = current_function->arguments.find(identifier);
 					if (arg_idx != -1) {
-						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
-							// Assignment is not really usage
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] - 1;
-						} else {
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+						switch (tokenizer->get_token()) {
+							case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_DIV:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MOD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MUL:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SUB:
+							case GDScriptTokenizer::TK_OP_ASSIGN: {
+								// Assignment is not really usage
+							} break;
+							default: {
+								current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+							}
 						}
 					}
 				}
