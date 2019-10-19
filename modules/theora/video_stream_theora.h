@@ -44,6 +44,10 @@
 
 //#define THEORA_USE_THREAD_STREAMING
 
+#ifdef THEORA_USE_THREAD_STREAMING
+#include <atomic>
+#endif
+
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
@@ -114,7 +118,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	bool thread_eof;
 	Semaphore *thread_sem;
 	Thread *thread;
-	volatile bool thread_exit;
+	std::atomic<bool> thread_exit;
 
 	static void _streaming_thread(void *ud);
 

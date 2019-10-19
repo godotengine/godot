@@ -37,6 +37,8 @@
 
 #include <opus/opusfile.h>
 
+#include <atomic>
+
 /**
 	@author George Marques <george@gmarqu.es>
 */
@@ -63,7 +65,7 @@ class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 	int64_t frames_mixed;
 
 	bool stream_loaded;
-	volatile bool playing;
+	std::atomic<bool> playing;
 	OggOpusFile *opus_file;
 	int stream_channels;
 	int current_section;

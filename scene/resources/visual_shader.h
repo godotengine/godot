@@ -89,7 +89,7 @@ private:
 
 	static RenderModeEnums render_mode_enums[];
 
-	volatile mutable bool dirty;
+	mutable std::atomic<bool> dirty;
 	void _queue_update();
 
 	union ConnectionKey {

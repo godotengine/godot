@@ -34,6 +34,8 @@
 #include "core/rid.h"
 #include "scene/3d/visual_instance.h"
 
+#include <atomic>
+
 class CPUParticles : public GeometryInstance {
 private:
 	GDCLASS(CPUParticles, GeometryInstance);
@@ -142,7 +144,7 @@ private:
 
 	Transform inv_emission_transform;
 
-	volatile bool can_update;
+	std::atomic<bool> can_update;
 
 	DrawOrder draw_order;
 

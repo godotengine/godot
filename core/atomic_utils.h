@@ -59,4 +59,25 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(std::atomic<T> *p_target, T 
 	}
 }
 
+// Atomic integral types are trivially copyable, but they have their default copy constructor
+// deleted. Therefore, when a class has a member of any of such types, it ends up being not
+// copyable. This little helper allows to overcome this limitation, for instance to put a class
+// that contains an atomic in a container, but must be used with care.
+
+template <typename T>
+class CopyableAtomic : public std::atomic<T> {
+public:
+	CopyableAtomic() = default;
+
+	CopyableAtomic<T> &operator=(const CopyableAtomic<T> &p_other) {
+		this->store(p_other.load());
+		return *this;
+	}
+
+	CopyableAtomic<T> &operator=(const T &p_value) {
+		this->store(p_value);
+		return *this;
+	}
+};
+
 #endif

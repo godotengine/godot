@@ -230,7 +230,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
-	volatile bool update_script_classes_queued;
+	bool update_script_classes_queued;
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;

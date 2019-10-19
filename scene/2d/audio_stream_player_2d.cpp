@@ -251,7 +251,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 		//start playing if requested
 		if (setplay >= 0.0) {
-			setseek = setplay;
+			setseek.store(setplay);
 			active = true;
 			setplay = -1;
 			//do not update, this makes it easier to animate (will shut off otherwise)

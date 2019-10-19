@@ -35,6 +35,8 @@
 #include "core/os/thread.h"
 #include "servers/visual_server.h"
 
+#include <atomic>
+
 class VisualServerWrapMT : public VisualServer {
 
 	// the real visual server
@@ -46,9 +48,9 @@ class VisualServerWrapMT : public VisualServer {
 	void thread_loop();
 
 	Thread::ID server_thread;
-	volatile bool exit;
+	std::atomic<bool> exit;
 	Thread *thread;
-	volatile bool draw_thread_up;
+	std::atomic<bool> draw_thread_up;
 	bool create_thread;
 
 	uint64_t draw_pending;

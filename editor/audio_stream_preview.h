@@ -31,6 +31,7 @@
 #ifndef AUDIO_STREAM_PREVIEW_H
 #define AUDIO_STREAM_PREVIEW_H
 
+#include "core/atomic_utils.h"
 #include "core/os/thread.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
@@ -60,7 +61,7 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPreview> preview;
 		Ref<AudioStream> base_stream;
 		Ref<AudioStreamPlayback> playback;
-		volatile bool generating;
+		CopyableAtomic<bool> generating;
 		ObjectID id;
 		Thread *thread;
 	};

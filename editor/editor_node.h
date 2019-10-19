@@ -86,6 +86,8 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/viewport_container.h"
 
+#include <atomic>
+
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
@@ -116,7 +118,7 @@ public:
 		Thread *execute_output_thread;
 		Mutex *execute_output_mutex;
 		int exitcode;
-		volatile bool done;
+		std::atomic<bool> done;
 	};
 
 private:

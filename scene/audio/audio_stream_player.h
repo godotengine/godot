@@ -34,6 +34,8 @@
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
+#include <atomic>
+
 class AudioStreamPlayer : public Node {
 
 	GDCLASS(AudioStreamPlayer, Node);
@@ -52,10 +54,10 @@ private:
 	Vector<AudioFrame> fadeout_buffer;
 	bool use_fadeout;
 
-	volatile float setseek;
-	volatile bool active;
-	volatile bool setstop;
-	volatile bool stop_has_priority;
+	std::atomic<float> setseek;
+	std::atomic<bool> active;
+	std::atomic<bool> setstop;
+	std::atomic<bool> stop_has_priority;
 
 	float mix_volume_db;
 	float pitch_scale;

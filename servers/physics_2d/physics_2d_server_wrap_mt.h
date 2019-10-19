@@ -36,6 +36,8 @@
 #include "core/project_settings.h"
 #include "servers/physics_2d_server.h"
 
+#include <atomic>
+
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
@@ -53,9 +55,9 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	Thread::ID server_thread;
 	Thread::ID main_thread;
-	volatile bool exit;
+	std::atomic<bool> exit;
 	Thread *thread;
-	volatile bool step_thread_up;
+	std::atomic<bool> step_thread_up;
 	bool create_thread;
 
 	SemaphoreOld *step_sem;

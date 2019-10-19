@@ -37,6 +37,8 @@
 #include "node.h"
 #include "scene/main/timer.h"
 
+#include <atomic>
+
 class HTTPRequest : public Node {
 
 	GDCLASS(HTTPRequest, Node);
@@ -74,7 +76,7 @@ private:
 	bool request_sent;
 	Ref<HTTPClient> client;
 	PoolByteArray body;
-	volatile bool use_threads;
+	bool use_threads;
 
 	bool got_response;
 	int response_code;
@@ -85,7 +87,7 @@ private:
 	FileAccess *file;
 
 	int body_len;
-	volatile int downloaded;
+	std::atomic<int> downloaded;
 	int body_size_limit;
 
 	int redirections;
@@ -103,8 +105,8 @@ private:
 	Error _parse_url(const String &p_url);
 	Error _request();
 
-	volatile bool thread_done;
-	volatile bool thread_request_quit;
+	std::atomic<bool> thread_done;
+	std::atomic<bool> thread_request_quit;
 
 	Thread *thread;
 

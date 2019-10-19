@@ -108,8 +108,8 @@ public:
 
 private:
 	Command voice_cmd_rb[VOICE_RB_SIZE];
-	volatile int read_pos;
-	volatile int write_pos;
+	std::atomic<int> read_pos;
+	std::atomic<int> write_pos;
 
 public:
 	_FORCE_INLINE_ bool commands_left() const { return read_pos != write_pos; }

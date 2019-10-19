@@ -36,6 +36,8 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
+#include <atomic>
+
 class EditorResourcePreviewGenerator : public Reference {
 
 	GDCLASS(EditorResourcePreviewGenerator, Reference);
@@ -73,8 +75,8 @@ class EditorResourcePreview : public Node {
 	Mutex *preview_mutex;
 	SemaphoreOld *preview_sem;
 	Thread *thread;
-	volatile bool exit;
-	volatile bool exited;
+	std::atomic<bool> exit;
+	std::atomic<bool> exited;
 
 	struct Item {
 		Ref<Texture2D> preview;

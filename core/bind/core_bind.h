@@ -41,6 +41,8 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
+#include <atomic>
+
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
 
@@ -655,7 +657,7 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
+	std::atomic<bool> active;
 	Object *target_instance;
 	StringName target_method;
 	Thread *thread;

@@ -44,6 +44,7 @@
 #include "platform/android/run_icon.gen.h"
 
 #include <string.h>
+#include <atomic>
 
 static const char *android_perms[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
@@ -229,10 +230,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	Vector<Device> devices;
-	volatile bool devices_changed;
+	std::atomic<bool> devices_changed;
 	Mutex *device_lock;
 	Thread *device_thread;
-	volatile bool quit_request;
+	std::atomic<bool> quit_request;
 
 	static void _device_poll_thread(void *ud) {
 
