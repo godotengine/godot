@@ -54,7 +54,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Clears all the syntax coloring information.
+				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
 			</description>
 		</method>
 		<method name="clear_undo_history">

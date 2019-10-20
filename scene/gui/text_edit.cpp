@@ -5052,15 +5052,18 @@ Map<int, TextEdit::Text::ColorRegionInfo> TextEdit::_get_line_color_region_info(
 void TextEdit::clear_colors() {
 
 	keywords.clear();
+	member_keywords.clear();
 	color_regions.clear();
 	color_region_cache.clear();
 	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
+	update();
 }
 
 void TextEdit::add_keyword_color(const String &p_keyword, const Color &p_color) {
 
 	keywords[p_keyword] = p_color;
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -5077,12 +5080,14 @@ Color TextEdit::get_keyword_color(String p_keyword) const {
 void TextEdit::add_color_region(const String &p_begin_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
 
 	color_regions.push_back(ColorRegion(p_begin_key, p_end_key, p_color, p_line_only));
+	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
 	update();
 }
 
 void TextEdit::add_member_keyword(const String &p_keyword, const Color &p_color) {
 	member_keywords[p_keyword] = p_color;
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -5096,6 +5101,7 @@ Color TextEdit::get_member_color(String p_member) const {
 
 void TextEdit::clear_member_keywords() {
 	member_keywords.clear();
+	syntax_highlighting_cache.clear();
 	update();
 }
 
