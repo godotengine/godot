@@ -4276,6 +4276,44 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									current_export.hint_string += "," + rtos(sign * double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+										break;
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected \",\" or \")\" in the numeric range hint.");
+										return;
+									}
+
+									tokenizer->advance();
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "OR_GREATER") {
+										current_export.hint_string += ",or_greater";
+										tokenizer->advance();
+
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+											break;
+
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+
+											current_export = PropertyInfo();
+											_set_error("Expected \",\" or \")\" in the numeric range hint.");
+											return;
+										}
+
+										tokenizer->advance();
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "OR_LESSER") {
+										current_export.hint_string += ",or_lesser";
+										tokenizer->advance();
+									} else {
+										current_export = PropertyInfo();
+										_set_error("Expected optional OR_GREATER and/or OR_LESSER in the numeric range hint.");
+										return;
+									}
+
 								} break;
 								case Variant::STRING: {
 
