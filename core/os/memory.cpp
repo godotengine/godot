@@ -37,6 +37,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MEMORY_MARK_ALLOCATED 0xF1
+#define MEMORY_MARK_EXTENDED 0xF2
+#define MEMORY_MARK_SHRINKED_OUT 0xF3
+#define MEMORY_MARK_FREED 0xF4
+
 void *operator new(size_t p_size, const char *p_description) {
 
 	return Memory::alloc_static(p_size, false);
@@ -94,6 +99,10 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
 		uint8_t *s8 = (uint8_t *)mem;
 
+#ifdef DEBUG_MEMORY_MARKING
+		memset(s8 + PAD_ALIGN, MEMORY_MARK_ALLOCATED, p_bytes);
+#endif
+
 #ifdef DEBUG_ENABLED
 		atomic_add(&mem_usage, p_bytes);
 		atomic_exchange_if_greater(&max_usage, mem_usage);
@@ -132,13 +141,28 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 #endif
 
 		if (p_bytes == 0) {
+#ifdef DEBUG_MEMORY_MARKING
+			memset(mem + PAD_ALIGN, MEMORY_MARK_SHRINKED_OUT, *s);
+#endif
 			free(mem);
 			return NULL;
 		} else {
+#ifdef DEBUG_MEMORY_MARKING
+			int64_t diff = p_bytes - *s;
+			if (diff < 0) {
+				memset(mem + PAD_ALIGN + p_bytes, MEMORY_MARK_SHRINKED_OUT, -diff);
+			}
+#endif
 			*s = p_bytes;
 
 			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
 			ERR_FAIL_COND_V(!mem, NULL);
+
+#ifdef DEBUG_MEMORY_MARKING
+			if (diff > 0) {
+				memset(mem + PAD_ALIGN + (p_bytes - diff), MEMORY_MARK_EXTENDED, diff);
+			}
+#endif
 
 			s = (uint64_t *)mem;
 
@@ -178,6 +202,9 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 		atomic_sub(&mem_usage, *s);
 #endif
 
+#ifdef DEBUG_MEMORY_MARKING
+		memset(mem + PAD_ALIGN, MEMORY_MARK_FREED, *s);
+#endif
 		free(mem);
 	} else {
 
