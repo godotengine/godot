@@ -1225,6 +1225,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 	memdelete(dummy_scene);
 
+	scene_tree_dock->get_tree_editor()->update_tree();
+
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
