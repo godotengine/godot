@@ -1791,7 +1791,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				if (_is_node_movable(canvas_item)) {
 
 					Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
-					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					drag_type = DRAG_SCALE_BOTH;
@@ -1825,7 +1825,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
 			Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
-			Transform2D unscaled_transform = (transform * parent_xform * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D unscaled_transform = (transform * parent_xform * canvas_item->_edit_get_transform()).orthonormalized();
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->get_shift();
@@ -3048,7 +3048,7 @@ void CanvasItemEditor::_draw_selection() {
 			}
 		} else {
 
-			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 			viewport->draw_set_transform_matrix(simple_xform);
 			viewport->draw_texture(position_icon, -(position_icon->get_size() / 2));
@@ -3060,7 +3060,7 @@ void CanvasItemEditor::_draw_selection() {
 			if (canvas_item->_edit_use_pivot()) {
 
 				// Draw the node's pivot
-				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position() + canvas_item->_edit_get_pivot())).orthonormalized();
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 				viewport->draw_set_transform_matrix(simple_xform);
@@ -3105,7 +3105,7 @@ void CanvasItemEditor::_draw_selection() {
 			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
 			if ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 				if (_is_node_movable(canvas_item)) {
-					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
@@ -3324,7 +3324,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 
 		// Draw the node's position
 		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
-		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 		viewport->draw_set_transform_matrix(simple_xform);
 		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));

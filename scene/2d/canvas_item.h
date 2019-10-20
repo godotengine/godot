@@ -281,6 +281,8 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot){};
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
+	virtual Transform2D _edit_get_transform() const;
+
 	/* VISIBILITY */
 
 	void set_visible(bool p_visible);
