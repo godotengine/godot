@@ -56,6 +56,7 @@
 #include "editor/editor_help.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -3558,6 +3559,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<AnimationTrackEditPlugin>();
 	ClassDB::register_class<ScriptCreateDialog>();
 	ClassDB::register_class<EditorFeatureProfile>();
+	ClassDB::register_class<EditorSpinSlider>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
