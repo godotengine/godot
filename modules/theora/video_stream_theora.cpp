@@ -622,6 +622,7 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 void VideoStreamPlaybackTheora::seek(float p_time) {
 	bool play_state = playing; //Save the playing state
 	stop();
+	
 	struct _page_info {
 		size_t block_number;
 		double_t time;
@@ -800,11 +801,14 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		if(ogg_page_serialno(&og) == to.serialno) {
 			queue_page(&og);
 			while (ogg_stream_packetout(&to, &op) > 0) {
-				ogg_int64_t videobuf_granulepos;
-				th_decode_packetin(td, &op, &videobuf_granulepos);
+				ogg_int64_t tmp_granulepos;
+				th_decode_packetin(td, &op, &tmp_granulepos);
 				if (op.granulepos > 0) {
 					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
-					videobuf_time = th_granule_time(td, videobuf_granulepos);
+					videobuf_time = th_granule_time(td, tmp_granulepos);
+					video_granulepos = tmp_granulepos;
+				} else {
+					videobuf_time = th_granule_time(td, video_granulepos++);
 				}
 				th_ycbcr_buffer yuv;
 				th_decode_ycbcr_out(td, yuv); //dump frames
@@ -824,7 +828,8 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 	//Update the audioframe time
 	audio_frames_wrote = videobuf_time * vi.rate;
 	while(ogg_stream_packetout(&vo, &op) > 0) {
-		double current_audio_time = vorbis_granule_time(&vd, audio_granulepos + total_packets--);
+		ogg_int64_t offset = vorbis_packet_blocksize(&vi, &op) * total_packets--;
+		double current_audio_time = vorbis_granule_time(&vd, audio_granulepos - offset);
 		double diff = current_audio_time - videobuf_time;
 		if( diff > 0 ) {
 			int blank_frames = diff * vi.rate * vi.channels;
