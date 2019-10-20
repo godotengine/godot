@@ -417,22 +417,21 @@ Variant Array::pop_front() {
 
 Variant Array::min() const {
 
-	Variant minval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			minval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is less
-				minval = test;
-			}
+	if (size() == 0)
+		return Variant();
+
+	Variant minval = get(0);
+	for (int i = 1; i < size(); ++i) {
+		bool valid;
+		Variant ret;
+		Variant test = get(i);
+		Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(ret)) {
+			//is less
+			minval = test;
 		}
 	}
 	return minval;
@@ -440,22 +439,21 @@ Variant Array::min() const {
 
 Variant Array::max() const {
 
-	Variant maxval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			maxval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is less
-				maxval = test;
-			}
+	if (size() == 0)
+		return Variant();
+
+	Variant maxval = get(0);
+	for (int i = 1; i < size(); ++i) {
+		bool valid;
+		Variant ret;
+		Variant test = get(i);
+		Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(ret)) {
+			//is less
+			maxval = test;
 		}
 	}
 	return maxval;
