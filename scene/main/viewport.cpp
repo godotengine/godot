@@ -1985,13 +1985,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
 
+			//  Dragging nodes causes re-search of currently moused-over control
+			Control *dragged = _gui_find_control(mpos);
+
 			Control *top = gui.modal_stack.back()->get();
 
-			if (over != top && !top->is_a_parent_of(over)) {
+			if (dragged != top && !top->is_a_parent_of(dragged)) {
 
 				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
 				MenuButton *popup_menu_parent = NULL;
-				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
+				MenuButton *menu_button = Object::cast_to<MenuButton>(dragged);
 
 				if (popup_menu) {
 					popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
@@ -2016,6 +2019,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					popup_menu->hide();
 
 					menu_button->pressed();
+
+					gui.mouse_focus = dragged;
+					gui.last_mouse_focus = gui.mouse_focus;
 				} else {
 					over = NULL; //nothing can be found outside the modal stack
 				}
