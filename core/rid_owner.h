@@ -85,7 +85,7 @@ public:
 		T *ptr = &chunks[free_chunk][free_element];
 		memnew_placement(ptr, T(p_value));
 
-		uint32_t validator = (uint32_t)(_gen_id() % 0xFFFFFFFF);
+		uint32_t validator = (uint32_t)(_gen_id() & 0xFFFFFFFF);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
@@ -234,10 +234,17 @@ public:
 	}
 
 	void get_owned_list(List<RID> *p_owned) {
-		for (size_t i = 0; i < alloc_count; i++) {
-			uint64_t idx = free_list_chunks[i / elements_in_chunk][i % elements_in_chunk];
-			uint64_t validator = validator_chunks[idx / elements_in_chunk][idx % elements_in_chunk];
-			p_owned->push_back(_make_from_id((validator << 32) | idx));
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+		for (size_t i = 0; i < max_alloc; i++) {
+			uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
+			if (validator != 0xFFFFFFFF) {
+				p_owned->push_back(_make_from_id((validator << 32) | i));
+			}
+		}
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
 		}
 	}
 
@@ -264,9 +271,11 @@ public:
 				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + typeid(T).name() + "' were leaked at exit.");
 			}
 
-			for (uint32_t i = 0; i < alloc_count; i++) {
-				uint64_t idx = free_list_chunks[i / elements_in_chunk][i % elements_in_chunk];
-				chunks[idx / elements_in_chunk][idx % elements_in_chunk].~T();
+			for (size_t i = 0; i < max_alloc; i++) {
+				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
+				if (validator != 0xFFFFFFFF) {
+					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
+				}
 			}
 		}
 
