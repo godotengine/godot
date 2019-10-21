@@ -40,11 +40,8 @@
 
 void GridMapEditor::_node_removed(Node *p_node) {
 
-	if (p_node == node) {
+	if (p_node == node)
 		node = NULL;
-		hide();
-		mesh_library_palette->hide();
-	}
 }
 
 void GridMapEditor::_configure() {
