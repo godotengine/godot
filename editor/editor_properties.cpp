@@ -2607,14 +2607,6 @@ void EditorPropertyResource::update_property() {
 						get_tree()->call_deferred("call_group", "_editor_resource_properties", "_fold_other_editors", this);
 					}
 					opened_editor = true;
-					/*
-					Button *open_in_editor = memnew(Button);
-					open_in_editor->set_text(TTR("Open Editor"));
-					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
-					sub_inspector_vbox->add_child(open_in_editor);
-					open_in_editor->connect("pressed", this, "_open_editor_pressed");
-					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
-					*/
 				}
 			}
 
@@ -2644,7 +2636,7 @@ void EditorPropertyResource::update_property() {
 		assign->set_tooltip("");
 	} else {
 
-		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Node"));
+		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
 		if (res->get_name() != String()) {
 			assign->set_text(res->get_name());
