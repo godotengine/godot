@@ -50,7 +50,7 @@ public:
 	bool _is_connecting;
 
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const PoolVector<String> p_protocol = PoolVector<String>(), const Dictionary p_custom_headers = Dictionary());
+	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "");
 	IP_Address get_connected_host() const;
