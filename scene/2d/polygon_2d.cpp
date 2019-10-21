@@ -33,6 +33,7 @@
 #include "core/math/geometry.h"
 #include "skeleton_2d.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -87,6 +88,7 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 	}
 	return Geometry::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
+#endif
 
 void Polygon2D::_skeleton_bone_setup_changed() {
 	update();

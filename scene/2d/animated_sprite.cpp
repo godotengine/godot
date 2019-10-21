@@ -35,6 +35,7 @@
 
 #define NORMAL_SUFFIX "_normal"
 
+#ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -72,6 +73,7 @@ bool AnimatedSprite::_edit_use_rect() const {
 		t = frames->get_frame(animation, frame);
 	return t.is_valid();
 }
+#endif
 
 Rect2 AnimatedSprite::get_anchorable_rect() const {
 	return _get_rect();

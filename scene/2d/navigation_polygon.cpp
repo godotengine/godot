@@ -36,6 +36,7 @@
 
 #include "thirdparty/misc/triangulator.h"
 
+#ifdef TOOLS_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
@@ -75,6 +76,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 	}
 	return false;
 }
+#endif
 
 void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 
@@ -357,7 +359,7 @@ bool NavigationPolygonInstance::is_enabled() const {
 }
 
 /////////////////////////////
-
+#ifdef TOOLS_ENABLED
 Rect2 NavigationPolygonInstance::_edit_get_rect() const {
 
 	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();
@@ -367,6 +369,7 @@ bool NavigationPolygonInstance::_edit_is_selected_on_click(const Point2 &p_point
 
 	return navpoly.is_valid() ? navpoly->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
+#endif
 
 void NavigationPolygonInstance::_notification(int p_what) {
 

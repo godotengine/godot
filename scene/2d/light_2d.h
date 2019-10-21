@@ -85,6 +85,7 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -93,6 +94,7 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+#endif
 
 	virtual Rect2 get_anchorable_rect() const;
 

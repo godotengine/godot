@@ -249,7 +249,7 @@ public:
 	};
 
 	/* EDITOR */
-
+#ifdef TOOLS_ENABLED
 	// Select the node
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
@@ -282,6 +282,7 @@ public:
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
 	virtual Transform2D _edit_get_transform() const;
+#endif
 
 	/* VISIBILITY */
 

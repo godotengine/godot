@@ -33,6 +33,8 @@
 #include "core/engine.h"
 
 #define LINE_GRAB_WIDTH 8
+
+#ifdef TOOLS_ENABLED
 Rect2 OccluderPolygon2D::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
@@ -80,6 +82,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return false;
 	}
 }
+#endif
 
 void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 
@@ -215,6 +218,7 @@ void LightOccluder2D::_notification(int p_what) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 LightOccluder2D::_edit_get_rect() const {
 
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_get_rect() : Rect2();
@@ -224,6 +228,7 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
+#endif
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 

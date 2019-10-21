@@ -50,6 +50,7 @@ Line2D::Line2D() {
 	_antialiased = false;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
 
 	if (_points.size() == 0)
@@ -79,6 +80,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
+#endif
 
 void Line2D::set_points(const PoolVector<Vector2> &p_points) {
 	_points = p_points;

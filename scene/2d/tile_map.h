@@ -244,7 +244,9 @@ public:
 		INVALID_CELL = -1
 	};
 
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
+#endif
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
