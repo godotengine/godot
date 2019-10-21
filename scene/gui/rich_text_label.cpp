@@ -859,7 +859,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 void RichTextLabel::_scroll_changed(double) {
 
-	if (updating_scroll)
+	if (updating_scroll || !scroll_active)
 		return;
 
 	if (scroll_follow && vscroll->get_value() >= (vscroll->get_max() - vscroll->get_page()))
