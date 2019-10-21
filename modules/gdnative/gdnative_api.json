@@ -140,6 +140,21 @@
             "arguments": [
               ["const godot_pool_color_array *", "p_self"]
             ]
+          },
+          {
+            "name": "godot_get_class_tag",
+            "return_type": "void *",
+            "arguments": [
+              ["const godot_string_name *", "p_class"]
+            ]
+          },
+          {
+            "name": "godot_object_cast_to",
+            "return_type": "godot_object *",
+            "arguments": [
+              ["const godot_object *", "p_object"],
+              ["void *", "p_class_tag"]
+            ]
           }
         ]
       },

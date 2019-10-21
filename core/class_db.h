@@ -114,6 +114,7 @@ public:
 
 		APIType api;
 		ClassInfo *inherits_ptr;
+		void *class_ptr;
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName> > enum_map;
@@ -177,6 +178,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
@@ -188,6 +190,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		//nothing
 	}
 
@@ -206,6 +209,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
