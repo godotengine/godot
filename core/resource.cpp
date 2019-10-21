@@ -365,17 +365,38 @@ bool Resource::is_translation_remapped() const {
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, int p_id) {
 	if (p_id == -1) {
-		id_for_path.erase(p_path);
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_lock();
+		}
+		ResourceCache::resource_path_cache[p_path].erase(get_path());
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_unlock();
+		}
 	} else {
-		id_for_path[p_path] = p_id;
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_lock();
+		}
+		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_unlock();
+		}
 	}
 }
 
 int Resource::get_id_for_path(const String &p_path) const {
-
-	if (id_for_path.has(p_path)) {
-		return id_for_path[p_path];
+	if (ResourceCache::path_cache_lock) {
+		ResourceCache::path_cache_lock->read_lock();
+	}
+	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
+		int result = ResourceCache::resource_path_cache[p_path][get_path()];
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->read_unlock();
+		}
+		return result;
 	} else {
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->read_unlock();
+		}
 		return -1;
 	}
 }
@@ -430,12 +451,21 @@ Resource::~Resource() {
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
+#ifdef TOOLS_ENABLED
+HashMap<String, HashMap<String, int> > ResourceCache::resource_path_cache;
+#endif
 
 RWLock *ResourceCache::lock = NULL;
+#ifdef TOOLS_ENABLED
+RWLock *ResourceCache::path_cache_lock = NULL;
+#endif
 
 void ResourceCache::setup() {
 
 	lock = RWLock::create();
+#ifdef TOOLS_ENABLED
+	path_cache_lock = RWLock::create();
+#endif
 }
 
 void ResourceCache::clear() {
