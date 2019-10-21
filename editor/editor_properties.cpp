@@ -30,6 +30,7 @@
 
 #include "editor_properties.h"
 
+#include "core/os/input.h"
 #include "editor/editor_resource_preview.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
@@ -1856,13 +1857,10 @@ EditorPropertyTransform::EditorPropertyTransform() {
 ////////////// COLOR PICKER //////////////////////
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
-
-	emit_changed(get_edited_property(), p_color, "", true);
-}
-
-void EditorPropertyColor::_popup_closed() {
-
-	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT))
+		emit_changed(get_edited_property(), p_color, "", true);
+	else
+		get_edited_object()->set(get_edited_property(), p_color);
 }
 
 void EditorPropertyColor::_picker_created() {
@@ -1877,7 +1875,6 @@ void EditorPropertyColor::_picker_created() {
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
-	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
 }
 
@@ -1896,7 +1893,6 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
-	picker->connect("popup_closed", this, "_popup_closed");
 	picker->connect("picker_created", this, "_picker_created");
 }
 

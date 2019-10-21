@@ -469,13 +469,12 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 			last_hsv = color;
 			set_pick_color(color);
 			_update_color();
-			if (!deferred_mode_enabled)
-				emit_signal("color_changed", color);
-		} else if (deferred_mode_enabled && !bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
-			emit_signal("color_changed", color);
-			changing_color = false;
-		} else {
-			changing_color = false;
+		} else if (!bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
+			if (changing_color) {
+				changing_color = false;
+				if (!deferred_mode_enabled)
+					emit_signal("color_changed", color);
+			}
 		}
 	}
 
@@ -507,17 +506,17 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			changing_color = true;
 			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
 			h = y / w_edit->get_size().height;
-		} else {
-			changing_color = false;
+			color.set_hsv(h, s, v, color.a);
+			last_hsv = color;
+			set_pick_color(color);
+			_update_color();
+		} else if (!bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
+			if (changing_color) {
+				changing_color = false;
+				if (!deferred_mode_enabled)
+					emit_signal("color_changed", color);
+			}
 		}
-		color.set_hsv(h, s, v, color.a);
-		last_hsv = color;
-		set_pick_color(color);
-		_update_color();
-		if (!deferred_mode_enabled)
-			emit_signal("color_changed", color);
-		else if (!bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT)
-			emit_signal("color_changed", color);
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
