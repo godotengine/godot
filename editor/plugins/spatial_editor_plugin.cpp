@@ -2049,12 +2049,11 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 		return;
 	}
 
-	Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
-	Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
-	Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
+	const Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
+	const Vector3 right = camera->get_transform().basis.xform(Vector3(1, 0, 0));
+	const Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
 
 	Vector3 direction;
-	bool speed_modifier = false;
 
 	if (is_shortcut_pressed("spatial_editor/freelook_left")) {
 		direction -= right;
@@ -2074,17 +2073,17 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 	if (is_shortcut_pressed("spatial_editor/freelook_down")) {
 		direction -= up;
 	}
-	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
-		speed_modifier = true;
-	}
 
 	real_t speed = freelook_speed;
-	if (speed_modifier) {
-		real_t modifier_speed_factor = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_modifier_speed_factor");
-		speed *= modifier_speed_factor;
+
+	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
+		speed *= 3.0;
+	}
+	if (is_shortcut_pressed("spatial_editor/freelook_slow_modifier")) {
+		speed *= 0.333333;
 	}
 
-	Vector3 motion = direction * speed * delta;
+	const Vector3 motion = direction * speed * delta;
 	cursor.pos += motion;
 	cursor.eye_pos += motion;
 }
@@ -3588,6 +3587,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ED_SHORTCUT("spatial_editor/freelook_up", TTR("Freelook Up"), KEY_E);
 	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_Q);
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
+	ED_SHORTCUT("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), KEY_ALT);
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
