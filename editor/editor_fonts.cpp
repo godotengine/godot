@@ -64,7 +64,7 @@
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
-	if (CustomFont.is_valid()) {                                \
+	if (CustomFontBold.is_valid()) {                            \
 		m_name->set_font_data(CustomFontBold);                  \
 		m_name->add_fallback(DefaultFontBold);                  \
 	} else {                                                    \
