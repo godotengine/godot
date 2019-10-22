@@ -4762,6 +4762,9 @@ void TextEdit::set_text(String p_text) {
 		selection.active = false;
 	}
 
+	cursor_set_line(0);
+	cursor_set_column(0);
+
 	update();
 	setting_text = false;
 };
@@ -6037,6 +6040,7 @@ void TextEdit::undo() {
 		}
 	}
 
+	_update_scrollbars();
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
 		cursor_set_line(undo_stack_pos->get().to_line);
 		cursor_set_column(undo_stack_pos->get().to_column);
@@ -6072,6 +6076,8 @@ void TextEdit::redo() {
 				break;
 		}
 	}
+
+	_update_scrollbars();
 	cursor_set_line(undo_stack_pos->get().to_line);
 	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos = undo_stack_pos->next();
