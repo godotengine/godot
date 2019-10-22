@@ -254,6 +254,10 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
+    env.Tool("compilation_db")
+    env.Alias("compiledb", env.CompilationDatabase('compile_commands.json'))
+
+
     if env['dev']:
         env['verbose'] = True
         env['warnings'] = "extra"

@@ -103,21 +103,31 @@ matrix:
             - *linux_deps
 
 before_install:
+  # note: python3 specifiers only work when language is set to python so this workaround is required
+  # prevent build failures on osx by only using workaround on xenial / ubuntu linux
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      sudo rm -rf /usr/bin/python;
+      sudo ln -s /usr/bin/python3 /usr/bin/python;
+      sudo apt-get update;
+      sudo apt-get install -y python3 python3-pip python3-setuptools;
+    fi
+  - python3 -m pip install --user scons
+  - export PATH="$HOME/.local/bin:$PATH"
+  - scons --version
   - eval "${MATRIX_EVAL}"
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       unset SCONS_CACHE;
     fi
 
 install:
-  - pip install --user scons;
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
       export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64;
       export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
       java -version;
       misc/travis/android-tools-linux.sh;
     fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
+      misc/travis/android-tools-osx.sh;
     fi
 
 before_script:
