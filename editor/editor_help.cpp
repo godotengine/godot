@@ -1468,8 +1468,9 @@ void EditorHelp::_notification(int p_what) {
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
-			_class_desc_resized();
+			if (is_visible_in_tree()) {
+				_class_desc_resized();
+			}
 		} break;
 		default: break;
 	}
