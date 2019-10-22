@@ -735,6 +735,19 @@ void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vect
 	VisualServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
+void CanvasItem::draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width, bool p_antialiased) {
+
+	Vector<Point2> points;
+	points.resize(p_point_count);
+	const float delta_angle = p_end_angle - p_start_angle;
+	for (int i = 0; i < p_point_count; i++) {
+		float theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
+		points.set(i, p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius);
+	}
+
+	draw_polyline(points, p_color, p_width, p_antialiased);
+}
+
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width, bool p_antialiased) {
 
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -1152,6 +1165,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width", "antialiased"), &CanvasItem::draw_line, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(1.0), DEFVAL(false));

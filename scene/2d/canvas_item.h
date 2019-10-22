@@ -305,6 +305,7 @@ public:
 	void draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void draw_polyline(const Vector<Point2> &p_points, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false);
+	void draw_arc(const Vector2 &p_center, float p_radius, float p_start_angle, float p_end_angle, int p_point_count, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width = 1.0, bool p_antialiased = false);
 	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false);
 	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, float p_width = 1.0, bool p_antialiased = false);
