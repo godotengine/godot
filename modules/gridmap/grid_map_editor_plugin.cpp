@@ -350,7 +350,9 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	selection.click = p_begin;
 	selection.current = p_end;
 
-	_update_selection_transform();
+	if (is_visible_in_tree()) {
+		_update_selection_transform();
+	}
 
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CLEAR), !selection.active);
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CUT), !selection.active);
