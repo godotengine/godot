@@ -16,8 +16,13 @@
 			</return>
 			<argument index="0" name="image" type="Texture">
 			</argument>
+			<argument index="1" name="width" type="int" default="0">
+			</argument>
+			<argument index="2" name="height" type="int" default="0">
+			</argument>
 			<description>
-				Adds an image's opening and closing tags to the tag stack.
+				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
+				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 			</description>
 		</method>
 		<method name="add_text">
