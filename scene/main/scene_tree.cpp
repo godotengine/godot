@@ -78,6 +78,17 @@ bool SceneTreeTimer::is_pause_mode_process() {
 	return process_pause;
 }
 
+void SceneTreeTimer::release_connections() {
+
+	List<Connection> connections;
+	get_all_signal_connections(&connections);
+
+	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+		Connection const &connection = E->get();
+		disconnect(connection.signal, connection.target, connection.method);
+	}
+}
+
 SceneTreeTimer::SceneTreeTimer() {
 	time_left = 0;
 	process_pause = true;
@@ -611,6 +622,12 @@ void SceneTree::finish() {
 		memdelete(root); //delete root
 		root = NULL;
 	}
+
+	// cleanup timers
+	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E; E = E->next()) {
+		E->get()->release_connections();
+	}
+	timers.clear();
 }
 
 void SceneTree::quit() {
