@@ -1186,7 +1186,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (expression.parse(line) == OK) {
 					Variant result = expression.execute(Array(), Variant(), false);
 					if (expression.get_error_text() == "") {
-						results.append(whitespace + (String)result);
+						results.append(whitespace + result.get_construct_string());
 					} else {
 						results.append(line);
 					}
