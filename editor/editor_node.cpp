@@ -33,6 +33,7 @@
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
 #include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
@@ -3639,6 +3640,20 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
+Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) const {
+	if (p_path.length()) {
+		Ref<Image> img = memnew(Image);
+		Error err = ImageLoader::load_image(p_path, img);
+		if (err == OK) {
+			Ref<ImageTexture> icon = memnew(ImageTexture);
+			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+			icon->create_from_image(img);
+			return icon;
+		}
+	}
+	return NULL;
+}
+
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
@@ -3652,8 +3667,10 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			if (icon_path.length())
-				return ResourceLoader::load(icon_path);
+			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+			if (icon.is_valid()) {
+				return icon;
+			}
 
 			// should probably be deprecated in 4.x
 			StringName base = base_script->get_instance_base_type();
@@ -3691,12 +3708,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 
 	if (ScriptServer::is_global_class(p_class)) {
 		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
-		RES icon;
-
-		if (FileAccess::exists(icon_path)) {
-			icon = ResourceLoader::load(icon_path);
-			if (icon.is_valid())
-				return icon;
+		Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+		if (icon.is_valid()) {
+			return icon;
 		}
 
 		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
@@ -3704,10 +3718,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		while (script.is_valid()) {
 			String current_icon_path;
 			script->get_language()->get_global_class_name(script->get_path(), NULL, &current_icon_path);
-			if (FileAccess::exists(current_icon_path)) {
-				RES texture = ResourceLoader::load(current_icon_path);
-				if (texture.is_valid())
-					return texture;
+			icon = _load_custom_class_icon(current_icon_path);
+			if (icon.is_valid()) {
+				return icon;
 			}
 			script = script->get_base_script();
 		}
