@@ -376,6 +376,12 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	return OK;
 }
 
+Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
+	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+	return theme->get_icon("Play", "EditorIcons");
+}
+
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
 	String current_version = VERSION_FULL_CONFIG;
@@ -1403,7 +1409,7 @@ bool EditorExport::poll_export_platforms() {
 
 	bool changed = false;
 	for (int i = 0; i < export_platforms.size(); i++) {
-		if (export_platforms.write[i]->poll_devices()) {
+		if (export_platforms.write[i]->poll_export()) {
 			changed = true;
 		}
 	}
