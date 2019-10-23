@@ -30,7 +30,6 @@
 
 package org.godotengine.godot;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -64,7 +63,6 @@ import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.annotation.Keep;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -98,14 +96,12 @@ import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.input.GodotEditText;
 import org.godotengine.godot.payments.PaymentsManager;
+import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
 
 public abstract class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 
 	static final int MAX_SINGLETONS = 64;
-	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-	static final int REQUEST_CAMERA_PERMISSION = 2;
-	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -1007,32 +1003,15 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	}
 
 	public boolean requestPermission(String p_name) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			// Not necessary, asked on install already
-			return true;
-		}
+		return PermissionsUtil.requestPermission(p_name, this);
+	}
 
-		if (p_name.equals("RECORD_AUDIO")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD_AUDIO_PERMISSION);
-				return false;
-			}
-		}
+	public boolean requestPermissions() {
+		return PermissionsUtil.requestManifestPermissions(this);
+	}
 
-		if (p_name.equals("CAMERA")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
-				return false;
-			}
-		}
-
-		if (p_name.equals("VIBRATE")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
-				return false;
-			}
-		}
-		return true;
+	public String[] getGrantedPermissions() {
+		return PermissionsUtil.getGrantedPermissions(this);
 	}
 
 	/**

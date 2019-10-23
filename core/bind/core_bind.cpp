@@ -1136,6 +1136,16 @@ bool _OS::request_permission(const String &p_name) {
 	return OS::get_singleton()->request_permission(p_name);
 }
 
+bool _OS::request_permissions() {
+
+	return OS::get_singleton()->request_permissions();
+}
+
+Vector<String> _OS::get_granted_permissions() const {
+
+	return OS::get_singleton()->get_granted_permissions();
+}
+
 _OS *_OS::singleton = NULL;
 
 void _OS::_bind_methods() {
@@ -1319,6 +1329,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_power_percent_left"), &_OS::get_power_percent_left);
 
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
+	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
+	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");

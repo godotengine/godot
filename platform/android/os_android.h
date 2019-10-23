@@ -125,6 +125,8 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual bool request_permission(const String &p_name);
+	virtual bool request_permissions();
+	virtual Vector<String> get_granted_permissions() const;
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 

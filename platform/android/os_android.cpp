@@ -220,6 +220,16 @@ bool OS_Android::request_permission(const String &p_name) {
 	return godot_java->request_permission(p_name);
 }
 
+bool OS_Android::request_permissions() {
+
+	return godot_java->request_permissions();
+}
+
+Vector<String> OS_Android::get_granted_permissions() const {
+
+	return godot_java->get_granted_permissions();
+}
+
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
