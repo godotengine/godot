@@ -82,12 +82,12 @@ namespace Godot
             return Mathf.Abs(dist) <= epsilon;
         }
 
-        public Vector3 Intersect3(Plane b, Plane c)
+        public Vector3? Intersect3(Plane b, Plane c)
         {
             real_t denom = _normal.Cross(b._normal).Dot(c._normal);
 
-            if (Mathf.Abs(denom) <= Mathf.Epsilon)
-                return new Vector3();
+            if (Mathf.IsZeroApprox(denom))
+                return null;
 
             Vector3 result = b._normal.Cross(c._normal) * D +
                                 c._normal.Cross(_normal) * b.D +
@@ -96,34 +96,35 @@ namespace Godot
             return result / denom;
         }
 
-        public Vector3 IntersectRay(Vector3 from, Vector3 dir)
+        public Vector3? IntersectRay(Vector3 from, Vector3 dir)
         {
             real_t den = _normal.Dot(dir);
 
-            if (Mathf.Abs(den) <= Mathf.Epsilon)
-                return new Vector3();
+            if (Mathf.IsZeroApprox(den))
+                return null;
 
             real_t dist = (_normal.Dot(from) - D) / den;
 
             // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
-                return new Vector3();
+                return null;
 
             return from + dir * -dist;
         }
 
-        public Vector3 IntersectSegment(Vector3 begin, Vector3 end)
+        public Vector3? IntersectSegment(Vector3 begin, Vector3 end)
         {
             Vector3 segment = begin - end;
             real_t den = _normal.Dot(segment);
 
-            if (Mathf.Abs(den) <= Mathf.Epsilon)
-                return new Vector3();
+            if (Mathf.IsZeroApprox(den))
+                return null;
 
             real_t dist = (_normal.Dot(begin) - D) / den;
 
+            // Only allow dist to be in the range of 0 to 1, with tolerance.
             if (dist < -Mathf.Epsilon || dist > 1.0f + Mathf.Epsilon)
-                return new Vector3();
+                return null;
 
             return begin + segment * -dist;
         }
