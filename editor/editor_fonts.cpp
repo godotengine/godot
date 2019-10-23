@@ -256,6 +256,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
+	// Rotation widget font
+	MAKE_DEFAULT_FONT(df_rotation_control, 14 * EDSCALE);
+	p_theme->set_font("rotation_control", "EditorFonts", df_rotation_control);
+
 	// Code font
 	MAKE_SOURCE_FONT(df_code, int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
