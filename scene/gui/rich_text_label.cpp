@@ -555,12 +555,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									if (p_font_color_shadow.a > 0) {
 										float x_ofs_shadow = align_ofs + pofs;
 										float y_ofs_shadow = y + lh - line_descent;
-										font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, fx_char, c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y), fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y), fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y), fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
 										}
 									}
 
