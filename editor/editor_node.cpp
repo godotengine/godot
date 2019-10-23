@@ -206,7 +206,7 @@ void EditorNode::_update_title() {
 	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(VERSION_NAME + String(" - ") + appname);
 	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty())
-		title += " - " + String(edited.get_file());
+		title += " - " + edited.replace_first("res://", "");
 	if (unsaved_cache)
 		title += " (*)";
 
