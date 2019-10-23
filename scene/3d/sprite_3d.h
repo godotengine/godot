@@ -81,6 +81,7 @@ private:
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
 	SpatialMaterial::BillboardMode billboard_mode;
+	bool billboard_keep_scale;
 	bool pending_update;
 	void _im_update();
 
@@ -133,6 +134,8 @@ public:
 	AlphaCutMode get_alpha_cut_mode() const;
 	void set_billboard_mode(SpatialMaterial::BillboardMode p_mode);
 	SpatialMaterial::BillboardMode get_billboard_mode() const;
+	void set_billboard_keep_scale(bool p_enable);
+	bool is_billboard_keep_scale() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 

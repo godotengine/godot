@@ -48,6 +48,8 @@
 		</member>
 		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
 		</member>
+		<member name="billboard_keep_scale" type="bool" setter="set_billboard_keep_scale" getter="is_billboard_keep_scale" default="false">
+		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
 		</member>
