@@ -1470,7 +1470,7 @@ void EditorNode::_dialog_action(String p_file) {
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 
-			if (err == ERR_CANT_OPEN) {
+			if (err == ERR_FILE_CANT_OPEN || err == ERR_FILE_NOT_FOUND) {
 				config.instance(); // new config
 			} else if (err != OK) {
 				show_warning(TTR("Error trying to save layout!"));
