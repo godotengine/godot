@@ -1804,10 +1804,9 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
-	if (p_billboard) {
-		material->set_billboard_mode(BILLBOARD_ENABLED);
-	} else if (p_billboard_y) {
-		material->set_billboard_mode(BILLBOARD_FIXED_Y);
+	if (p_billboard || p_billboard_y) {
+		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
+		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
 	materials_for_2d[version] = material;
