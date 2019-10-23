@@ -421,53 +421,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				create_dialog->popup_create(false, true, selected->get_class());
 
 		} break;
+		case TOOL_EXTEND_SCRIPT: {
+			attach_script_to_selected(true);
+		} break;
 		case TOOL_ATTACH_SCRIPT: {
-
-			if (!profile_allow_script_editing) {
-				break;
-			}
-
-			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (selection.empty())
-				break;
-
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				selected = selection.front()->get();
-
-			Ref<Script> existing = selected->get_script();
-
-			String path = selected->get_filename();
-			if (path == "") {
-				String root_path = editor_data->get_edited_scene_root()->get_filename();
-				if (root_path == "") {
-					path = String("res://").plus_file(selected->get_name());
-				} else {
-					path = root_path.get_base_dir().plus_file(selected->get_name());
-				}
-			}
-
-			String inherits = selected->get_class();
-			if (existing.is_valid()) {
-				for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-					ScriptLanguage *l = ScriptServer::get_language(i);
-					if (l->get_type() == existing->get_class()) {
-						String name = l->get_global_class_name(existing->get_path());
-						if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
-							inherits = name;
-						} else if (l->can_inherit_from_file()) {
-							inherits = "\"" + existing->get_path() + "\"";
-						}
-						break;
-					}
-				}
-			}
-			script_create_dialog->connect("script_created", this, "_script_created");
-			script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
-			script_create_dialog->set_inheritance_base_type("Node");
-			script_create_dialog->config(inherits, path);
-			script_create_dialog->popup_centered();
-
+			attach_script_to_selected(false);
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
 
@@ -2482,10 +2440,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (profile_allow_script_editing) {
 
 		if (selection.size() == 1) {
-			if (!existing_script.is_valid()) {
-				menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
-			} else {
-				menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_ATTACH_SCRIPT);
+			menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			if (existing_script.is_valid()) {
+				menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
 		}
 		if (selection.size() > 1 || (existing_script.is_valid() && exisiting_script_removable)) {
@@ -2595,10 +2552,64 @@ void SceneTreeDock::_focus_node() {
 	}
 }
 
-void SceneTreeDock::open_script_dialog(Node *p_for_node) {
+void SceneTreeDock::attach_script_to_selected(bool p_extend) {
+	if (!profile_allow_script_editing) {
+		return;
+	}
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	if (selection.empty())
+		return;
+
+	Node *selected = scene_tree->get_selected();
+	if (!selected)
+		selected = selection.front()->get();
+
+	Ref<Script> existing = selected->get_script();
+
+	String path = selected->get_filename();
+	if (path == "") {
+		String root_path = editor_data->get_edited_scene_root()->get_filename();
+		if (root_path == "") {
+			path = String("res://").plus_file(selected->get_name());
+		} else {
+			path = root_path.get_base_dir().plus_file(selected->get_name());
+		}
+	}
+
+	String inherits = selected->get_class();
+
+	if (p_extend && existing.is_valid()) {
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *l = ScriptServer::get_language(i);
+			if (l->get_type() == existing->get_class()) {
+				String name = l->get_global_class_name(existing->get_path());
+				if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+					inherits = name;
+				} else if (l->can_inherit_from_file()) {
+					inherits = "\"" + existing->get_path() + "\"";
+				}
+				break;
+			}
+		}
+	}
+
+	script_create_dialog->connect("script_created", this, "_script_created");
+	script_create_dialog->connect("popup_hide", this, "_script_creation_closed");
+	script_create_dialog->set_inheritance_base_type("Node");
+	script_create_dialog->config(inherits, path);
+	script_create_dialog->popup_centered();
+}
+
+void SceneTreeDock::open_script_dialog(Node *p_for_node, bool p_extend) {
 
 	scene_tree->set_selected(p_for_node, false);
-	_tool_selected(TOOL_ATTACH_SCRIPT);
+
+	if (p_extend) {
+		_tool_selected(TOOL_EXTEND_SCRIPT);
+	} else {
+		_tool_selected(TOOL_ATTACH_SCRIPT);
+	}
 }
 
 void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
