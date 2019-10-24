@@ -71,7 +71,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
-#include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/doc/modules_doc_data.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/project_manager.h"
@@ -1443,9 +1443,9 @@ bool Main::start() {
 		Set<String> checked_paths;
 		print_line("Loading docs...");
 
-		for (int i = 0; i < _doc_data_class_path_count; i++) {
-			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
-			String name = _doc_data_class_paths[i].name;
+		for (int i = 0; i < _modules_doc_data_class_path_count; i++) {
+			String path = doc_tool.plus_file(_modules_doc_data_class_paths[i].path);
+			String name = _modules_doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
 			if (!checked_paths.has(path)) {
 				checked_paths.insert(path);

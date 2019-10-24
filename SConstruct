@@ -403,8 +403,12 @@ if selected_platform in platform_list:
     sys.modules.pop('detect')
 
     env.module_list = []
+    
+    env.module_doc_paths = []
+    env.module_default_doc_path = "doc_classes"
+    
     env.module_icons_paths = []
-    env.doc_class_path = {}
+    env.module_default_icons_path = "icons"
 
     for x in module_list:
         if not env['module_' + x + '_enabled']:
@@ -427,21 +431,19 @@ if selected_platform in platform_list:
             config.configure(env)
             env.module_list.append(x)
 
-            # Get doc classes paths (if present)
             try:
-                doc_classes = config.get_doc_classes()
                 doc_path = config.get_doc_path()
-                for c in doc_classes:
-                    env.doc_class_path[c] = "modules/" + x + "/" + doc_path
-            except:
-                pass
-            # Get icon paths (if present)
+            except AttributeError:
+                doc_path = env.module_default_doc_path
+            
+            env.module_doc_paths.append("modules/" + x + "/" + doc_path)
+
             try:
                 icons_path = config.get_icons_path()
-                env.module_icons_paths.append("modules/" + x + "/" + icons_path)
-            except:
-                # Default path for module icons
-                env.module_icons_paths.append("modules/" + x + "/" + "icons")
+            except AttributeError:
+                icons_path = env.module_default_icons_path
+            
+            env.module_icons_paths.append("modules/" + x + "/" + icons_path)
 
         sys.path.remove(tmppath)
         sys.modules.pop('config')

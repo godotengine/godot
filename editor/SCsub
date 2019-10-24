@@ -11,15 +11,17 @@ from compat import open_utf8
 import editor_builders
 
 
-def _make_doc_data_class_path(to_path):
+def _make_modules_doc_data(to_path, doc_pathmap):
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    g = open_utf8(os.path.join(to_path, "doc_data_class_path.gen.h"), "w")
-    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
+    g = open_utf8(os.path.join(to_path, "modules_doc_data.gen.h"), "w")
+    g.write("static const int _modules_doc_data_class_path_count = " + str(len(doc_pathmap)) + ";\n")
     g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
-    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n");
-    for c in sorted(env.doc_class_path):
-        g.write("\t{\"" + c + "\", \"" + env.doc_class_path[c] + "\"},\n")
+    g.write("static const _DocDataClassPath _modules_doc_data_class_paths[" + str(len(doc_pathmap) + 1) + "] = {\n");
+    
+    for name, rel_path in sorted(doc_pathmap.items()):
+        g.write("\t{\"" + name + "\", \"" + rel_path + "\"},\n")
+    
     g.write("\t{NULL, NULL}\n")
     g.write("};\n")
 
@@ -41,39 +43,45 @@ if env['tools']:
         f.write(reg_exporters_inc)
         f.write(reg_exporters)
 
+    from glob import glob
+    
     # API documentation
+    basepath = env.Dir('#').abspath
+    
     docs = []
-    doc_dirs = ["doc/classes"]
-
-    for p in env.doc_class_path.values():
-        if p not in doc_dirs:
-            doc_dirs.append(p)
-
-    for d in doc_dirs:
-        try:
-            for f in os.listdir(os.path.join(env.Dir('#').abspath, d)):
-                docs.append("#" + os.path.join(d, f))
-        except OSError:
-            pass
-
-    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor/doc"))
+    module_doc_pathmap = {}
+    
+    docs_glob = "*.xml"
+    
+    docs_path = os.path.join(basepath, "doc/classes", docs_glob)
+    docs += glob(docs_path)
+    
+    for p in env.module_doc_paths:
+        docs_path = os.path.join(basepath, p, docs_glob)
+        module_docs = glob(docs_path)
+        
+        for f in module_docs:
+            doc_class_name = os.path.basename(f).split('.')[0]
+            module_doc_pathmap[doc_class_name] = p
+        
+        docs += module_docs
+    
+    _make_modules_doc_data(os.path.join(basepath, "editor/doc"), module_doc_pathmap)
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, run_in_subprocess(editor_builders.make_doc_header))
 
-    import glob
-
-    path = env.Dir('.').abspath
-
     # Translations
-    tlist = glob.glob(path + "/translations/*.po")
+    basepath = env.Dir('.').abspath
+    tlist = glob(basepath + "/translations/*.po")
     env.Depends('#editor/translations.gen.h', tlist)
     env.CommandNoCache('#editor/translations.gen.h', tlist, run_in_subprocess(editor_builders.make_translations_header))
 
     # Fonts
-    flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
-    flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    basepath = env.Dir('.').abspath
+    flist = glob(basepath + "/../thirdparty/fonts/*.ttf")
+    flist.extend(glob(basepath + "/../thirdparty/fonts/*.otf"))
     flist.sort()
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
