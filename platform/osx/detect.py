@@ -91,6 +91,9 @@ def configure(env):
             env['RANLIB'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env['AS'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
             env.Append(CPPDEFINES=['__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+        else:
+            env['CC'] = 'clang'
+            env['CXX'] = 'clang++'
 
         detect_darwin_sdk_path('osx', env)
         env.Append(CCFLAGS=['-isysroot', '$MACOS_SDK_PATH'])

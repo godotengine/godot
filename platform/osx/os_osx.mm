@@ -620,7 +620,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
 
 	Vector<String> files;
-	for (int i = 0; i < filenames.count; i++) {
+	for (NSUInteger i = 0; i < filenames.count; i++) {
 		NSString *ns = [filenames objectAtIndex:i];
 		char *utfs = strdup([ns UTF8String]);
 		String ret;
@@ -1502,7 +1502,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
 	[window_object setAcceptsMouseMovedEvents:YES];
-	[window_object center];
+	[(NSWindow *)window_object center];
 
 	[window_object setRestorable:NO];
 
@@ -2338,12 +2338,12 @@ void OS_OSX::set_current_screen(int p_screen) {
 };
 
 Point2 OS_OSX::get_native_screen_position(int p_screen) const {
-	if (p_screen == -1) {
+	if (p_screen < 0) {
 		p_screen = get_current_screen();
 	}
 
 	NSArray *screenArray = [NSScreen screens];
-	if (p_screen < [screenArray count]) {
+	if ((NSUInteger)p_screen < [screenArray count]) {
 		float display_scale = _display_scale([screenArray objectAtIndex:p_screen]);
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
 		// Return the top-left corner of the screen, for OS X the y starts at the bottom
@@ -2362,12 +2362,12 @@ Point2 OS_OSX::get_screen_position(int p_screen) const {
 }
 
 int OS_OSX::get_screen_dpi(int p_screen) const {
-	if (p_screen == -1) {
+	if (p_screen < 0) {
 		p_screen = get_current_screen();
 	}
 
 	NSArray *screenArray = [NSScreen screens];
-	if (p_screen < [screenArray count]) {
+	if ((NSUInteger)p_screen < [screenArray count]) {
 		float displayScale = _display_scale([screenArray objectAtIndex:p_screen]);
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
 		NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
@@ -2381,12 +2381,12 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 }
 
 Size2 OS_OSX::get_screen_size(int p_screen) const {
-	if (p_screen == -1) {
+	if (p_screen < 0) {
 		p_screen = get_current_screen();
 	}
 
 	NSArray *screenArray = [NSScreen screens];
-	if (p_screen < [screenArray count]) {
+	if ((NSUInteger)p_screen < [screenArray count]) {
 		float displayScale = _display_scale([screenArray objectAtIndex:p_screen]);
 		// Note: Use frame to get the whole screen size
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
