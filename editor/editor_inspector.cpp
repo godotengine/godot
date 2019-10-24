@@ -1595,7 +1595,7 @@ void EditorInspector::update_tree() {
 			if (capitalize_paths)
 				cat = cat.capitalize();
 
-			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name))
+			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1)
 				continue;
 		}
 
