@@ -92,7 +92,7 @@ void InAppStore::_bind_methods() {
 	PoolStringArray localized_prices;
 	PoolStringArray currency_codes;
 
-	for (int i = 0; i < [products count]; i++) {
+	for (NSUInteger i = 0; i < [products count]; i++) {
 
 		SKProduct *product = [products objectAtIndex:i];
 

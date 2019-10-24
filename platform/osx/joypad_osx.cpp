@@ -578,7 +578,7 @@ JoypadOSX::JoypadOSX() {
 	const size_t n_elements = sizeof(vals) / sizeof(vals[0]);
 	CFArrayRef array = okay ? CFArrayCreate(kCFAllocatorDefault, vals, n_elements, &kCFTypeArrayCallBacks) : NULL;
 
-	for (int i = 0; i < n_elements; i++) {
+	for (size_t i = 0; i < n_elements; i++) {
 		if (vals[i]) {
 			CFRelease((CFTypeRef)vals[i]);
 		}

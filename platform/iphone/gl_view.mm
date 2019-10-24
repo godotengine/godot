@@ -729,40 +729,4 @@ static void clear_touches() {
 	_stop_video();
 }
 
-/*
-- (void)moviePlayBackDidFinish:(NSNotification*)notification {
-
-
-		NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
-		switch ([reason intValue]) {
-				case MPMovieFinishReasonPlaybackEnded:
-						//NSLog(@"Playback Ended");
-						break;
-				case MPMovieFinishReasonPlaybackError:
-						//NSLog(@"Playback Error");
-						video_found_error = true;
-						break;
-				case MPMovieFinishReasonUserExited:
-						//NSLog(@"User Exited");
-						video_found_error = true;
-						break;
-				default:
-					//NSLog(@"Unsupported reason!");
-					break;
-		}
-
-		MPMoviePlayerController *player = [notification object];
-
-		[[NSNotificationCenter defaultCenter]
-			removeObserver:self
-			name:MPMoviePlayerPlaybackDidFinishNotification
-			object:player];
-
-		[_instance.moviePlayerController stop];
-		[_instance.moviePlayerController.view removeFromSuperview];
-
-	video_playing = false;
-}
-*/
-
 @end

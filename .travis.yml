@@ -74,7 +74,7 @@ matrix:
 
     - name: macOS editor (debug, Clang)
       stage: build
-      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
 

@@ -95,7 +95,7 @@ static void handle_crash(int sig) {
 	if (strings) {
 		void *load_addr = (void *)load_address();
 
-		for (int i = 1; i < size; i++) {
+		for (size_t i = 1; i < size; i++) {
 			char fname[1024];
 			Dl_info info;
 
@@ -142,7 +142,7 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			fprintf(stderr, "[%d] %ls\n", i, output.c_str());
+			fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
 		}
 
 		free(strings);

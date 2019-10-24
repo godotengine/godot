@@ -81,7 +81,9 @@ class OS_Windows : public OS {
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 
+#ifdef STDOUT_FILE
 	FILE *stdo;
+#endif
 
 	struct KeyEvent {
 
@@ -107,7 +109,6 @@ class OS_Windows : public OS {
 	VisualServer *visual_server;
 	CameraWindows *camera_server;
 	int pressrc;
-	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
 	Point2 last_pos;
