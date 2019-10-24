@@ -703,6 +703,9 @@ void EditorFileDialog::update_file_list() {
 
 	item_list->clear();
 
+	// Scroll back to the top after opening a directory
+	item_list->get_v_scroll()->set_value(0);
+
 	if (display_mode == DISPLAY_THUMBNAILS) {
 
 		item_list->set_max_columns(0);
