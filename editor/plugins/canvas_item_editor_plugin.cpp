@@ -2287,9 +2287,7 @@ bool CanvasItemEditor::_gui_input_ruler_tool(const Ref<InputEvent> &p_event) {
 		return true;
 	}
 
-	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-
-	if (m.is_valid() && (ruler_tool_active || (is_snap_active && previous_origin != ruler_tool_origin))) {
+	if (m.is_valid() && (ruler_tool_active || (grid_snap_active && previous_origin != ruler_tool_origin))) {
 
 		viewport->update();
 		return true;
@@ -2687,8 +2685,6 @@ void CanvasItemEditor::_draw_ruler_tool() {
 	if (tool != TOOL_RULER)
 		return;
 
-	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-
 	if (ruler_tool_active) {
 		Color ruler_primary_color = get_color("accent_color", "Editor");
 		Color ruler_secondary_color = ruler_primary_color;
@@ -2744,13 +2740,13 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			if (begin.y < end.y) {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
 				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
-					int height_multiplier = 1.5 + (int)is_snap_active;
+					int height_multiplier = 1.5 + (int)grid_snap_active;
 					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height));
 				}
 			} else {
 				h_angle_text_pos.y = end.y - text_height * 0.5;
 				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
-					int height_multiplier = 1 + (int)is_snap_active;
+					int height_multiplier = 1 + (int)grid_snap_active;
 					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
 				}
 			}
@@ -2785,7 +2781,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 		}
 
-		if (is_snap_active) {
+		if (grid_snap_active) {
 
 			text_pos = (begin + end) / 2 + Vector2(-text_width / 2, text_height / 2);
 			text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
@@ -2807,7 +2803,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		}
 	} else {
 
-		if (is_snap_active) {
+		if (grid_snap_active) {
 			Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
 			viewport->draw_texture(get_icon("EditorPosition", "EditorIcons"), ruler_tool_origin - view_offset * zoom - position_icon->get_size() / 2);
 		}
