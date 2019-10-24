@@ -147,7 +147,7 @@ public:
 
 	void set_file(const String &p_file);
 
-	virtual Ref<Texture> get_texture();
+	virtual Ref<Texture> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
