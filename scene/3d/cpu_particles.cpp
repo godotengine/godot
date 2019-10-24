@@ -240,8 +240,7 @@ void CPUParticles::restart() {
 	inactive_time = 0;
 	frame_remainder = 0;
 	cycle = 0;
-
-	set_emitting(true);
+	emitting = false;
 
 	{
 		int pc = particles.size();
@@ -251,6 +250,8 @@ void CPUParticles::restart() {
 			w[i].active = false;
 		}
 	}
+
+	set_emitting(true);
 }
 
 void CPUParticles::set_direction(Vector3 p_direction) {
@@ -1494,6 +1495,7 @@ CPUParticles::CPUParticles() {
 	frame_remainder = 0;
 	cycle = 0;
 	redraw = false;
+	emitting = false;
 
 	set_notify_transform(true);
 
