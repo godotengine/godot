@@ -230,7 +230,7 @@ void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
 	audio_track = p_idx;
 }
 
-Ref<Texture> VideoStreamPlaybackWebm::get_texture() {
+Ref<Texture> VideoStreamPlaybackWebm::get_texture() const {
 
 	return texture;
 }

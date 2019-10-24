@@ -178,6 +178,7 @@ void SpriteEditor::_update_mesh_data() {
 		err_dialog->popup_centered_minsize();
 		return;
 	}
+
 	Ref<Image> image = texture->get_data();
 	ERR_FAIL_COND(image.is_null());
 	Rect2 rect;
@@ -190,7 +191,12 @@ void SpriteEditor::_update_mesh_data() {
 	bm.instance();
 	bm->create_from_image_alpha(image);
 
-	int grow = island_merging->get_value();
+	int shrink = shrink_pixels->get_value();
+	if (shrink > 0) {
+		bm->shrink_mask(shrink, rect);
+	}
+
+	int grow = grow_pixels->get_value();
 	if (grow > 0) {
 		bm->grow_mask(grow, rect);
 	}
@@ -338,6 +344,13 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 }
 
 void SpriteEditor::_convert_to_polygon_2d_node() {
+
+	if (computed_outline_lines.empty()) {
+		err_dialog->set_text(TTR("Invalid geometry, can't create polygon."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
 	Polygon2D *polygon_2d_instance = memnew(Polygon2D);
 
 	int total_point_count = 0;
@@ -361,12 +374,6 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 
 		Vector<Vector2> outline = computed_outline_lines[i];
 		Vector<Vector2> uv_outline = outline_lines[i];
-
-		if (outline.size() < 3) {
-			err_dialog->set_text(TTR("Invalid geometry, can't create polygon."));
-			err_dialog->popup_centered_minsize();
-			return;
-		}
 
 		PoolIntArray pia;
 		pia.resize(outline.size());
@@ -396,15 +403,16 @@ void SpriteEditor::_convert_to_polygon_2d_node() {
 }
 
 void SpriteEditor::_create_collision_polygon_2d_node() {
+
+	if (computed_outline_lines.empty()) {
+		err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
 
 		Vector<Vector2> outline = computed_outline_lines[i];
-
-		if (outline.size() < 3) {
-			err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
-			err_dialog->popup_centered_minsize();
-			continue;
-		}
 
 		CollisionPolygon2D *collision_polygon_2d_instance = memnew(CollisionPolygon2D);
 		collision_polygon_2d_instance->set_polygon(outline);
@@ -419,15 +427,16 @@ void SpriteEditor::_create_collision_polygon_2d_node() {
 }
 
 void SpriteEditor::_create_light_occluder_2d_node() {
+
+	if (computed_outline_lines.empty()) {
+		err_dialog->set_text(TTR("Invalid geometry, can't create light occluder."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
 
 		Vector<Vector2> outline = computed_outline_lines[i];
-
-		if (outline.size() < 3) {
-			err_dialog->set_text(TTR("Invalid geometry, can't create light occluder."));
-			err_dialog->popup_centered_minsize();
-			continue;
-		}
 
 		Ref<OccluderPolygon2D> polygon;
 		polygon.instance();
@@ -531,10 +540,14 @@ void SpriteEditor::_debug_uv_draw() {
 
 	Ref<Texture> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
+
+	Point2 draw_pos_offset = Point2(1.0, 1.0);
+	Size2 draw_size_offset = Size2(2.0, 2.0);
+
 	debug_uv->set_clip_contents(true);
-	debug_uv->draw_texture(tex, Point2());
-	debug_uv->set_custom_minimum_size(tex->get_size());
-	//debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
+	debug_uv->draw_texture(tex, draw_pos_offset);
+	debug_uv->set_custom_minimum_size(tex->get_size() + draw_size_offset);
+	debug_uv->draw_set_transform(draw_pos_offset, 0, Size2(1.0, 1.0));
 
 	Color color = Color(1.0, 0.8, 0.7);
 
@@ -604,13 +617,21 @@ SpriteEditor::SpriteEditor() {
 	simplification->set_value(2);
 	hb->add_child(simplification);
 	hb->add_spacer();
+	hb->add_child(memnew(Label(TTR("Shrink (Pixels): "))));
+	shrink_pixels = memnew(SpinBox);
+	shrink_pixels->set_min(0);
+	shrink_pixels->set_max(10);
+	shrink_pixels->set_step(1);
+	shrink_pixels->set_value(0);
+	hb->add_child(shrink_pixels);
+	hb->add_spacer();
 	hb->add_child(memnew(Label(TTR("Grow (Pixels): "))));
-	island_merging = memnew(SpinBox);
-	island_merging->set_min(0);
-	island_merging->set_max(10);
-	island_merging->set_step(1);
-	island_merging->set_value(2);
-	hb->add_child(island_merging);
+	grow_pixels = memnew(SpinBox);
+	grow_pixels->set_min(0);
+	grow_pixels->set_max(10);
+	grow_pixels->set_step(1);
+	grow_pixels->set_value(2);
+	hb->add_child(grow_pixels);
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));

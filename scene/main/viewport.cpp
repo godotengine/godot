@@ -98,22 +98,22 @@ NodePath ViewportTexture::get_viewport_path_in_scene() const {
 
 int ViewportTexture::get_width() const {
 
-	ERR_FAIL_COND_V(!vp, 0);
+	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
 	return vp->size.width;
 }
 int ViewportTexture::get_height() const {
 
-	ERR_FAIL_COND_V(!vp, 0);
+	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
 	return vp->size.height;
 }
 Size2 ViewportTexture::get_size() const {
 
-	ERR_FAIL_COND_V(!vp, Size2());
+	ERR_FAIL_COND_V_MSG(!vp, Size2(), "Viewport Texture must be set to use it.");
 	return vp->size;
 }
 RID ViewportTexture::get_rid() const {
 
-	//ERR_FAIL_COND_V(!vp, RID());
+	//ERR_FAIL_COND_V_MSG(!vp, RID(), "Viewport Texture must be set to use it.");
 	return proxy;
 }
 
@@ -123,7 +123,7 @@ bool ViewportTexture::has_alpha() const {
 }
 Ref<Image> ViewportTexture::get_data() const {
 
-	ERR_FAIL_COND_V(!vp, Ref<Image>());
+	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
 	return VS::get_singleton()->texture_get_data(vp->texture_rid);
 }
 void ViewportTexture::set_flags(uint32_t p_flags) {
@@ -1465,18 +1465,19 @@ void Viewport::_gui_show_tooltip() {
 	rp->add_child(gui.tooltip_popup);
 	gui.tooltip_popup->force_parent_owned();
 	gui.tooltip_popup->set_as_toplevel(true);
-	//gui.tooltip_popup->hide();
+	if (gui.tooltip) // Avoids crash when rapidly switching controls.
+		gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());
 
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_minimum_size());
 	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
-	if (r.size.x + r.position.x > vr.size.x)
-		r.position.x = vr.size.x - r.size.x;
+	if (r.size.x * gui.tooltip_popup->get_scale().x + r.position.x > vr.size.x)
+		r.position.x = vr.size.x - r.size.x * gui.tooltip_popup->get_scale().x;
 	else if (r.position.x < 0)
 		r.position.x = 0;
 
-	if (r.size.y + r.position.y > vr.size.y)
-		r.position.y = vr.size.y - r.size.y;
+	if (r.size.y * gui.tooltip_popup->get_scale().y + r.position.y > vr.size.y)
+		r.position.y = vr.size.y - r.size.y * gui.tooltip_popup->get_scale().y;
 	else if (r.position.y < 0)
 		r.position.y = 0;
 
@@ -1740,6 +1741,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							set_input_as_handled();
 
 							return; // no one gets the event if exclusive NO ONE
+						}
+
+						if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN || mb->get_button_index() == BUTTON_WHEEL_LEFT || mb->get_button_index() == BUTTON_WHEEL_RIGHT) {
+							//cancel scroll wheel events, only clicks should trigger focus changes.
+							set_input_as_handled();
+							return;
 						}
 
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
@@ -2367,7 +2374,6 @@ void Viewport::_gui_remove_from_modal_stack(List<Control *>::Element *MI, Object
 	List<Control *>::Element *next = MI->next();
 
 	gui.modal_stack.erase(MI);
-	MI = NULL;
 
 	if (p_prev_focus_owner) {
 

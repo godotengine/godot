@@ -203,6 +203,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	exceptions.push_back("StatusSuccess");
 	exceptions.push_back("StatusWarning");
 	exceptions.push_back("NodeWarning");
+	exceptions.push_back("OverbrightIndicator");
 
 	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
 
@@ -366,6 +367,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
 	theme->set_color("box_selection_fill_color", "Editor", accent_color * Color(1, 1, 1, 0.3));
 	theme->set_color("box_selection_stroke_color", "Editor", accent_color * Color(1, 1, 1, 0.8));
+
+	theme->set_color("axis_x_color", "Editor", Color(0.96, 0.20, 0.32));
+	theme->set_color("axis_y_color", "Editor", Color(0.53, 0.84, 0.01));
+	theme->set_color("axis_z_color", "Editor", Color(0.16, 0.55, 0.96));
 
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_color_hl);
@@ -785,7 +790,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_fg", "Tabs", font_color);
 	theme->set_color("font_color_bg", "Tabs", font_color_disabled);
 	theme->set_icon("menu", "TabContainer", theme->get_icon("GuiTabMenu", "EditorIcons"));
-	theme->set_icon("menu_hl", "TabContainer", theme->get_icon("GuiTabMenu", "EditorIcons"));
+	theme->set_icon("menu_highlight", "TabContainer", theme->get_icon("GuiTabMenuHl", "EditorIcons"));
 	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
 	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
@@ -795,10 +800,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
 	theme->set_icon("increment", "Tabs", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
 	theme->set_icon("decrement", "Tabs", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
-	theme->set_icon("increment_highlight", "Tabs", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
-	theme->set_icon("decrement_highlight", "Tabs", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
-	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
-	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_icon("increment_highlight", "Tabs", theme->get_icon("GuiScrollArrowRightHl", "EditorIcons"));
+	theme->set_icon("decrement_highlight", "Tabs", theme->get_icon("GuiScrollArrowLeftHl", "EditorIcons"));
+	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon("GuiScrollArrowRightHl", "EditorIcons"));
+	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon("GuiScrollArrowLeftHl", "EditorIcons"));
 	theme->set_constant("hseparation", "Tabs", 4 * EDSCALE);
 
 	// Content of each tab
@@ -1100,6 +1105,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("screen_picker", "ColorPicker", theme->get_icon("ColorPick", "EditorIcons"));
 	theme->set_icon("add_preset", "ColorPicker", theme->get_icon("Add", "EditorIcons"));
 	theme->set_icon("preset_bg", "ColorPicker", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
+	theme->set_icon("overbright_indicator", "ColorPicker", theme->get_icon("OverbrightIndicator", "EditorIcons"));
 
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
 
@@ -1124,7 +1130,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color symbol_color = Color(0.34, 0.57, 1.0).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color keyword_color = Color(1.0, 0.44, 0.52);
 	const Color basetype_color = dark_theme ? Color(0.26, 1.0, 0.76) : Color(0.0, 0.76, 0.38);
-	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
+	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.4 : 0.3);
+	const Color usertype_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
 	const Color comment_color = dim_color;
 	const Color string_color = (dark_theme ? Color(1.0, 0.85, 0.26) : Color(1.0, 0.82, 0.09)).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 
@@ -1163,6 +1170,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/keyword_color", keyword_color, true);
 		setting->set_initial_value("text_editor/highlighting/base_type_color", basetype_color, true);
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", type_color, true);
+		setting->set_initial_value("text_editor/highlighting/user_type_color", usertype_color, true);
 		setting->set_initial_value("text_editor/highlighting/comment_color", comment_color, true);
 		setting->set_initial_value("text_editor/highlighting/string_color", string_color, true);
 		setting->set_initial_value("text_editor/highlighting/background_color", te_background_color, true);

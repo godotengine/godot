@@ -220,6 +220,16 @@ bool OS_Android::request_permission(const String &p_name) {
 	return godot_java->request_permission(p_name);
 }
 
+bool OS_Android::request_permissions() {
+
+	return godot_java->request_permissions();
+}
+
+Vector<String> OS_Android::get_granted_permissions() const {
+
+	return godot_java->get_granted_permissions();
+}
+
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
@@ -473,6 +483,23 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 					break;
 				}
 			}
+		} break;
+	}
+}
+
+void OS_Android::process_hover(int p_type, Point2 p_pos) {
+	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
+	switch (p_type) {
+		case 7: // hover move
+		case 9: // hover enter
+		case 10: { // hover exit
+			Ref<InputEventMouseMotion> ev;
+			ev.instance();
+			ev->set_position(p_pos);
+			ev->set_global_position(p_pos);
+			ev->set_relative(p_pos - hover_prev_pos);
+			input->parse_input_event(ev);
+			hover_prev_pos = p_pos;
 		} break;
 	}
 }

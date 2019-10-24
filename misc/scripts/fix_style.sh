@@ -41,7 +41,7 @@ if $run_clang_format; then
     echo -e "Formatting ${extension} files..."
     find \( -path "./.git" \
             -o -path "./thirdparty" \
-            -o -path "./platform/android/java/src/com" \
+            -o -path "./platform/android/java/lib/src/com/google" \
          \) -prune \
          -o -name "*${extension}" \
          -exec clang-format -i {} \;
@@ -54,7 +54,7 @@ if $run_fix_headers; then
   find \( -path "./.git" -o -path "./thirdparty" \) -prune \
        -o -regex '.*\.\(c\|h\|cpp\|hpp\|cc\|hh\|cxx\|m\|mm\|java\)' \
        > tmp-files
-  cat tmp-files | grep -v ".git\|thirdparty\|theme_data.h\|platform/android/java/src/com\|platform/android/java/src/org/godotengine/godot/input/InputManager" > files
+  cat tmp-files | grep -v ".git\|thirdparty\|theme_data.h\|platform/android/java/lib/src/com/google\|platform/android/java/lib/src/org/godotengine/godot/input/InputManager" > files
   python misc/scripts/fix_headers.py
   rm -f tmp-files files
 fi

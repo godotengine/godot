@@ -305,7 +305,7 @@ IP *(*IP::_create)() = NULL;
 
 IP *IP::create() {
 
-	ERR_FAIL_COND_V(singleton, NULL);
+	ERR_FAIL_COND_V_MSG(singleton, NULL, "IP singleton already exist.");
 	ERR_FAIL_COND_V(!_create, NULL);
 	return _create();
 }

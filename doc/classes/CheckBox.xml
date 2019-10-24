@@ -10,6 +10,10 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" override="true" enum="Button.TextAlign" default="0" />
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
+	</members>
 	<constants>
 	</constants>
 	<theme_items>

@@ -61,11 +61,12 @@ protected:
 	static void _bind_methods();
 
 	virtual void _update_shape();
-	virtual Vector<Vector3> _gen_debug_mesh_lines();
 
 public:
 	void set_faces(const PoolVector<Vector3> &p_faces);
 	PoolVector<Vector3> get_faces() const;
+
+	Vector<Vector3> get_debug_mesh_lines();
 
 	ConcavePolygonShape();
 };

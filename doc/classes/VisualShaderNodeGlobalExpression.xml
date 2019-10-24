@@ -8,6 +8,9 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" override="true" default="false" />
+	</members>
 	<constants>
 	</constants>
 </class>

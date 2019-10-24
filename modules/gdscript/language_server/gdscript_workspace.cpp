@@ -198,7 +198,7 @@ Error GDScriptWorkspace::initialize() {
 		if (!class_data.inherits.empty()) {
 			class_symbol.detail += " extends " + class_data.inherits;
 		}
-		class_symbol.documentation = ExtendGDScriptParser::marked_documentation(class_data.brief_description) + "\n" + ExtendGDScriptParser::marked_documentation(class_data.description);
+		class_symbol.documentation = class_data.brief_description + "\n" + class_data.description;
 
 		for (int i = 0; i < class_data.constants.size(); i++) {
 			const DocData::ConstantDoc &const_data = class_data.constants[i];
@@ -211,7 +211,7 @@ Error GDScriptWorkspace::initialize() {
 				symbol.detail += ": " + const_data.enumeration;
 			}
 			symbol.detail += " = " + const_data.value;
-			symbol.documentation = ExtendGDScriptParser::marked_documentation(const_data.description);
+			symbol.documentation = const_data.description;
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -232,7 +232,7 @@ Error GDScriptWorkspace::initialize() {
 			} else {
 				symbol.detail += ": " + data.type;
 			}
-			symbol.documentation = ExtendGDScriptParser::marked_documentation(data.description);
+			symbol.documentation = data.description;
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -269,8 +269,12 @@ Error GDScriptWorkspace::initialize() {
 				params += params.empty() ? "..." : ", ...";
 			}
 
-			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + data.return_type;
-			symbol.documentation = ExtendGDScriptParser::marked_documentation(data.description);
+			String return_type = data.return_type;
+			if (return_type.empty()) {
+				return_type = "void";
+			}
+			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
+			symbol.documentation = data.description;
 			class_symbol.children.push_back(symbol);
 		}
 
@@ -471,6 +475,33 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 
 				_class = inner_classes.next(_class);
 			}
+		}
+	}
+}
+
+const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params) {
+
+	if (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.find(p_params.native_class)) {
+		const lsp::DocumentSymbol &symbol = E->get();
+		if (p_params.symbol_name.empty() || p_params.symbol_name == symbol.name) {
+			return &symbol;
+		}
+
+		for (int i = 0; i < symbol.children.size(); ++i) {
+			if (symbol.children[i].name == p_params.symbol_name) {
+				return &(symbol.children[i]);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
+	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
+		const List<lsp::DocumentLink> &links = parser->get_document_links();
+		for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
+			r_list.push_back(E->get());
 		}
 	}
 }

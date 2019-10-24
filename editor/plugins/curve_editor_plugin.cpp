@@ -456,6 +456,9 @@ void CurveEditor::remove_point(int index) {
 	if (index == _selected_point)
 		set_selected_point(-1);
 
+	if (index == _hover_point)
+		set_hover_point_index(-1);
+
 	ur.commit_action();
 }
 
@@ -779,7 +782,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
-	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());
+	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97

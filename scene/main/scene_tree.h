@@ -61,6 +61,8 @@ public:
 	void set_pause_mode_process(bool p_pause_mode_process);
 	bool is_pause_mode_process();
 
+	void release_connections();
+
 	SceneTreeTimer();
 };
 

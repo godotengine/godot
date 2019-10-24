@@ -28,7 +28,8 @@ env.CommandNoCache("#main/splash_editor.gen.h", "#main/splash_editor.png", run_i
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env.CommandNoCache("#main/app_icon.gen.h", "#main/app_icon.png", run_in_subprocess(main_builders.make_app_icon))
 
-SConscript('tests/SCsub')
+if env["tools"]:
+    SConscript('tests/SCsub')
 
 lib = env.add_library("main", env.main_sources)
 env.Prepend(LIBS=[lib])

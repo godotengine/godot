@@ -46,7 +46,6 @@ public:
 	};
 
 private:
-	int mouse_x_cache;
 	int first_tab_cache;
 	int tabs_ofs_cache;
 	int last_tab_cache;
@@ -54,6 +53,8 @@ private:
 	int previous;
 	bool tabs_visible;
 	bool buttons_visible_cache;
+	bool menu_hovered;
+	int highlight_arrow;
 	TabAlign align;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
@@ -65,6 +66,7 @@ private:
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
 	void _on_theme_changed();
+	void _on_mouse_exited();
 	void _update_current_tab();
 
 protected:

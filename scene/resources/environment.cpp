@@ -354,10 +354,6 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"tonemap_",
 		"ss_reflections_",
 		"ssao_",
-		"dof_blur_far_",
-		"dof_blur_near_",
-		"glow_",
-		"adjustment_",
 		NULL
 
 	};

@@ -4,11 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 # Unlimited Creativity <marinosah1@gmail.com>, 2019.
 # Patik <patrikfs5@gmail.com>, 2019.
+# Nikola Bunjevac <nikola.bunjevac@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-05-20 11:49+0000\n"
-"Last-Translator: Patik <patrikfs5@gmail.com>\n"
+"PO-Revision-Date: 2019-09-11 03:10+0000\n"
+"Last-Translator: Nikola Bunjevac <nikola.bunjevac@gmail.com>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hr/>\n"
 "Language: hr\n"
@@ -16,12 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Neispravni argument za convert(), upotrijebi konstantu TYPE_*"
+msgstr "Neispravan argument za convert(), upotrijebi konstantu TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -57,9 +58,37 @@ msgstr "Nevažeći argumenti za konstrukciju '%s'"
 msgid "On call to '%s':"
 msgstr "Pri pozivu '%s':"
 
+#: core/ustring.cpp
+msgid "B"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "KiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "MiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "GiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "TiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "PiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "EiB"
+msgstr ""
+
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr ""
+msgstr "Slobodno"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -67,15 +96,15 @@ msgstr "Balansiran"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Zrcaljenje"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Vrijeme:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Vrijednost:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -459,6 +488,10 @@ msgid "Select None"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Pokaži samo staze čvorova označenih u stablu."
 
@@ -525,35 +558,35 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Previous Step"
-msgstr ""
+msgstr "Idi na prethodni korak"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimiraj animaciju"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Očisti animaciju"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Odaberi čvor koji će se animirati:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Koristi Bezierove krivulje"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Anim. optimizator"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Najveća linearna pogreška:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Najveća kutna pogreška:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
@@ -561,15 +594,15 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Optimiraj"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "Ukloni neispravne ključeve"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "Ukloni nepronađene i prazne trake"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -626,23 +659,23 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Idi na liniju"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Broj linije:"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr ""
+msgstr "Zamijenjeno %d pojavljivanja."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d pojavljivanje."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d matches."
-msgstr ""
+msgstr "%d pojavljivanja."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -650,19 +683,19 @@ msgstr ""
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Cijele riječi"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Zamijeni"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Zamijeni sve"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Samo odabir"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
@@ -673,57 +706,59 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Zumiraj"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Odzumiraj"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Resetiraj zoom"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Upozorenja"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Brojevi linija i stupaca."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr ""
+msgstr "Metoda u ciljnom čvoru mora biti određena."
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
+"Ciljna metoda nije pronađena. Specificiraj ispravnu metodu ili dodaj skriptu "
+"na ciljni čvor."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
-msgstr ""
+msgstr "Spoji s čvorom:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr ""
+msgstr "Spoji sa skriptom:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
-msgstr ""
+msgstr "Iz signala:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr ""
+msgstr "Scena ne sadrži niti jednu skriptu."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Dodaj"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -734,15 +769,15 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Ukloni"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Dodaj argument poziva:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Dodatni argumenti poziva:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -751,24 +786,24 @@ msgstr "Balansiran"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Odgođeno"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "Odgađa signal spremanjem u red i okidanjem prilikom dokolice."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr ""
+msgstr "Jednookidajući"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Odspaja signal nakon prvog slanja."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
-msgstr ""
+msgstr "Ne mogu spojiti signal"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -777,142 +812,148 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Zatvori"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Spoji"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
-msgstr ""
+msgstr "Signal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Spoji '%s' na '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr ""
+msgstr "Odspoji '%s' od '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr ""
+msgstr "Odspoji sve sa signala: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Spoji..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Odspoji"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
-msgstr ""
+msgstr "Spoji signal na metodu"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
-msgstr ""
+msgstr "Uredi vezu:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
+msgstr "Jesi li siguran da želiš ukloniti sve veze s \"%s\" signala?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signali"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
+msgstr "Jesi li siguran da želiš ukloniti sve veze s ovog signala?"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr ""
+msgstr "Odspoji sve"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr ""
+msgstr "Uredi..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
-msgstr ""
+msgstr "Idi na metodu"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr ""
+msgstr "Promijeni tip %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Promijeni"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr ""
+msgstr "Napravi novi %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Favoriti:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Nedavno:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Pretraga:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
-msgstr ""
+msgstr "Podudaranja:"
 
-#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Opis:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr ""
+msgstr "Traži zamjenu za:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr ""
+msgstr "Ovisnosti za:"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Scena '%s' se trenutno uređuje.\n"
+"Promjene će biti vidljive tek nakon osvježavanja."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Resurs '%s' je u upotrebi.\n"
+"Promjene će biti vidljive tek nakon osvježavanja."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Ovisnosti"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Resurs"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
@@ -921,15 +962,15 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Ovisnosti:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Popravi neispravne"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Uređivač ovisnosti"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
@@ -943,7 +984,7 @@ msgstr ""
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Otvori"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -951,7 +992,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr ""
+msgstr "Ukloni odabrane datoteke iz projekta? (Neće ih biti moguće vratiti)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -959,46 +1000,49 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Datoteke koje se uklanjaju su nužne drugim resursima kako bi ispravno "
+"radili.\n"
+"Svejedno ih ukloni? (nema povratka)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr ""
+msgstr "Ne mogu ukloniti:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr ""
+msgstr "Pogreška učitavanja:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr ""
+msgstr "Učitavanje nije uspjelo zbog nepostojećih ovisnosti:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Svejedno otvori"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Koju radnju treba izvesti?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Popravi ovisnosti"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr ""
+msgstr "Pogreške učitavanja!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "Trajno obriši %d stavki? (Nema povratka!)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
-msgstr ""
+msgstr "Prikaži ovisnosti"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Istraživač napuštenih resursa"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -1006,11 +1050,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr ""
+msgstr "Obriši"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Posjeduje"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
@@ -1018,75 +1062,75 @@ msgstr ""
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "Promijeni ključ u rječniku"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr ""
+msgstr "Promijeni vrijednost u rječniku"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "Hvala od Godot zajednice!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot Engine suradnici"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr ""
+msgstr "Osnivači projekta"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Glavni razvijatelj"
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr ""
+msgstr "Projektni menadžer "
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Razvijatelji"
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr ""
+msgstr "Autori"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Platinasti sponzori"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Zlatni sponzori"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Mini sponzori"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Zlatni donatori"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Srebrni donatori"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "Brončani donatori"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Donatori"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Licenca"
 
 #: editor/editor_about.cpp
 msgid "Third-party Licenses"
-msgstr ""
+msgstr "Licence trećih strana"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -1098,19 +1142,19 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr ""
+msgstr "Sve komponente"
 
 #: editor/editor_about.cpp
 msgid "Components"
-msgstr ""
+msgstr "Komponente"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Licence"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
-msgstr ""
+msgstr "Pogreška prilikom otvaranja datoteke paketa, nije u ZIP formatu."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1118,16 +1162,16 @@ msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
-msgstr ""
+msgstr "Paket uspješno instaliran!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Uspjeh!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
-msgstr ""
+msgstr "Instaliraj"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
@@ -1135,19 +1179,19 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Zvučnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "Dodaj efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr ""
+msgstr "Preimenuj zvučnu sabirnicu"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr ""
+msgstr "Promijeni glasnoću zvučne sabirnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1167,7 +1211,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "Dodaj efekt zvučne sabirnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
@@ -1178,7 +1222,7 @@ msgid "Delete Bus Effect"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio Bus, Drag and Drop to rearrange."
+msgid "Drag & drop to rearrange."
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
@@ -1369,6 +1413,7 @@ msgid "Add AutoLoad"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr ""
@@ -1588,6 +1633,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr ""
 
@@ -1658,6 +1704,7 @@ msgid "New Folder..."
 msgstr ""
 
 #: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -1671,50 +1718,50 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Otvori datoteku"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Otvori datoteke"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "Otvori direktorij"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Otvori datoteku ili direktorij"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/editor_properties.cpp editor/inspector_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
-msgstr ""
+msgstr "Spremi"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Spremi datoteku"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Natrag"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Naprijed"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Idi gore"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Prikaži/sakrij skrivene datoteke"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr ""
+msgstr "Prikaži/sakrij favorite"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
@@ -1726,27 +1773,27 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
-msgstr ""
+msgstr "Pomakni favorita gore"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
-msgstr ""
+msgstr "Pomakni favorita dolje"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to previous folder."
-msgstr ""
+msgstr "Idi u prethodni direktorij."
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to next folder."
-msgstr ""
+msgstr "Idi u sljedeći direktorij."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
-msgstr ""
+msgstr "Idi u roditeljski direktorij."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh files."
-msgstr ""
+msgstr "Osvježi datoteke."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
@@ -1762,21 +1809,21 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
-msgstr ""
+msgstr "Prikaži stavke kao listu."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Direktoriji i datoteke:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
-msgstr ""
+msgstr "Pregled:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr ""
+msgstr "Datoteka:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
@@ -1813,15 +1860,12 @@ msgid "Inherited by:"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Brief Description:"
-msgstr ""
+#, fuzzy
+msgid "Brief Description"
+msgstr "Opis:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Properties:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1829,27 +1873,11 @@ msgid "Methods"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Methods:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Theme Properties"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Theme Properties:"
-msgstr ""
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Signals:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Enumerations:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1861,19 +1889,11 @@ msgid "Constants"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Constants:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Class Description"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Class Description:"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Online Tutorials:"
+msgid "Online Tutorials"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1888,10 +1908,6 @@ msgid "Property Descriptions"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid "Property Descriptions:"
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -1899,10 +1915,6 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Method Descriptions:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1972,8 +1984,8 @@ msgstr ""
 msgid "Copy Selection"
 msgstr ""
 
-#: editor/editor_log.cpp editor/editor_profiler.cpp
-#: editor/editor_properties.cpp
+#: editor/editor_log.cpp editor/editor_network_profiler.cpp
+#: editor/editor_profiler.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
@@ -1984,6 +1996,48 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: editor/editor_profiler.cpp
+msgid "Stop"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
+#: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
+msgid "Start"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "%s/s"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Down"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Up"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+msgid "Node"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RSET"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RSET"
 msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
@@ -2525,6 +2579,18 @@ msgstr ""
 msgid "Project Settings..."
 msgstr ""
 
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Set Up Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Shut Down Version Control"
+msgstr ""
+
 #: editor/editor_node.cpp
 msgid "Export..."
 msgstr ""
@@ -2724,10 +2790,6 @@ msgstr ""
 msgid "Stop the scene."
 msgstr ""
 
-#: editor/editor_node.cpp editor/editor_profiler.cpp
-msgid "Stop"
-msgstr ""
-
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
 msgstr ""
@@ -2779,10 +2841,6 @@ msgid "Inspector"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Node"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
 msgstr ""
 
@@ -2804,15 +2862,21 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"This will install the Android project for custom builds.\n"
-"Note that, in order to use it, it needs to be enabled per export preset."
+"This will set up your project for custom Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make custom builds instead of using pre-built APKs, "
+"the \"Use Custom Build\" option should be enabled in the Android export "
+"preset."
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Android build template is already installed and it won't be overwritten.\n"
-"Remove the \"build\" directory manually before attempting this operation "
-"again."
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2875,6 +2939,10 @@ msgstr ""
 msgid "Open the previous Editor"
 msgstr ""
 
+#: editor/editor_path.cpp
+msgid "No sub-resources found."
+msgstr ""
+
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
 msgstr ""
@@ -2882,6 +2950,11 @@ msgstr ""
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
 msgstr ""
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Main Script:"
+msgstr "Spoji sa skriptom:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -2910,11 +2983,6 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
-msgstr ""
-
-#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
-#: editor/rename_dialog.cpp
-msgid "Start"
 msgstr ""
 
 #: editor/editor_profiler.cpp
@@ -3693,8 +3761,8 @@ msgstr ""
 msgid "Import As:"
 msgstr ""
 
-#: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
+#: editor/import_dock.cpp
+msgid "Preset"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4120,6 +4188,7 @@ msgid "Change Animation Name:"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
 msgstr ""
 
@@ -4678,10 +4747,6 @@ msgid "Sort:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse sorting."
-msgstr ""
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr ""
@@ -4943,6 +5008,11 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
 msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Ruler Mode"
+msgstr "Način Interpolacije"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -5998,7 +6068,7 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr ""
 
@@ -6198,11 +6268,11 @@ msgid "Toggle Scripts Panel"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Over"
+msgid "Step Into"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Into"
+msgid "Step Over"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
@@ -6282,7 +6352,7 @@ msgstr ""
 msgid "Connections to method:"
 msgstr ""
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 msgid "Source"
 msgstr ""
 
@@ -7049,6 +7119,11 @@ msgid "(empty)"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Move Frame"
+msgstr "Pomakni favorita gore"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
 msgstr ""
 
@@ -7363,6 +7438,14 @@ msgid "Enable Priority"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Filter tiles"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Give a TileSet resource to this TileMap to use its tiles."
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr ""
 
@@ -7493,6 +7576,11 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7648,6 +7736,106 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No VCS addons are available."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+msgid "Error"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No files added to stage"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "VCS Addon is not initialized"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control System"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Initialize"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Staging area"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect new changes"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Changes"
+msgstr "Promijeni"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Modified"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Renamed"
+msgstr "Preimenuj zvučnu sabirnicu"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Deleted"
+msgstr "Obriši"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Typechange"
+msgstr "Promijeni"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage Selected"
+msgstr "Brisati odabrani ključ/odabrane ključeve"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage All"
+msgstr "Zamijeni sve"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Add a commit message"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "Promijeni"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Status"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "View file diffs before committing them to the latest version"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No file diff is active"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect changes in file diff"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7881,6 +8069,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9074,6 +9267,10 @@ msgid "Settings saved OK."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+msgid "Moved Input Action Event"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Override for Feature"
 msgstr ""
 
@@ -9207,6 +9404,10 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
+msgstr ""
+
+#: editor/property_editor.cpp
+msgid "Preset..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -9373,10 +9574,6 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: editor/rename_dialog.cpp
-msgid "Error"
-msgstr ""
-
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
 msgstr ""
@@ -9432,6 +9629,10 @@ msgid "Instance Scene(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Replace with Branch Scene"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr ""
 
@@ -9472,8 +9673,22 @@ msgid "Make node as Root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)?"
+#, fuzzy
+msgid "Delete %d nodes?"
+msgstr "Obriši ključ(eve)"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete the root node \"%s\"?"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\" and its children?"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete node \"%s\"?"
+msgstr "Obriši ključ(eve)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -9852,11 +10067,38 @@ msgid "Bytes:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Stack Trace"
+#, fuzzy
+msgid "Warning:"
+msgstr "Upozorenja"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Error:"
+msgstr "Zrcaljenje"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Error"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Pick one or more items from the list to display the graph."
+msgid "C++ Error:"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Source:"
+msgstr "Resurs"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source:"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Stack Trace"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -9864,11 +10106,15 @@ msgid "Errors"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Child Process Connected"
+msgid "Child process connected."
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Skip Breakpoints"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -9888,6 +10134,10 @@ msgid "Profiler"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+msgid "Network Profiler"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr ""
 
@@ -9897,6 +10147,10 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -10096,15 +10350,15 @@ msgid "Library"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Status"
-msgstr ""
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
+msgstr ""
+
+#: modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -10259,6 +10513,14 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Filter meshes"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -10391,6 +10653,10 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new variable."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Signals:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10550,6 +10816,10 @@ msgid "Editing Signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Make Tool:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
 msgstr ""
 
@@ -10697,7 +10967,8 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
-"Android project is not installed for compiling. Install from Editor menu."
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp

@@ -1207,7 +1207,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name(meshdata.name);
 					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
-					ERR_FAIL_COND_V(err, err);
+					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
 
 					mesh_cache[meshid] = mesh;
 				} else {
@@ -1259,7 +1259,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_tangents, bool p_use_compression) {
 
 	Error err = collada.load(p_path, p_flags);
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot load file '" + p_path + "'.");
 
 	force_make_tangents = p_force_make_tangents;
 	ERR_FAIL_COND_V(!collada.state.visual_scene_map.has(collada.state.root_visual_scene), ERR_INVALID_DATA);
@@ -1777,7 +1777,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 
 	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & EditorSceneImporter::IMPORT_USE_COMPRESSION);
 
-	ERR_FAIL_COND_V(err != OK, NULL);
+	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Cannot load scene from file '" + p_path + "'.");
 
 	if (state.missing_textures.size()) {
 
@@ -1830,7 +1830,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	state.use_mesh_builtin_materials = false;
 
 	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
 
 	state.create_animations(p_flags & EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS, p_flags & EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
 	if (state.scene)

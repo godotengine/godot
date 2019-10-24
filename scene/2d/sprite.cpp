@@ -135,12 +135,12 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 		return;
 
 	if (texture.is_valid())
-		texture->remove_change_receptor(this);
+		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
 
 	texture = p_texture;
 
 	if (texture.is_valid())
-		texture->add_change_receptor(this);
+		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
 
 	update();
 	emit_signal("texture_changed");
@@ -269,8 +269,8 @@ int Sprite::get_frame() const {
 }
 
 void Sprite::set_frame_coords(const Vector2 &p_coord) {
-	ERR_FAIL_INDEX(int(p_coord.x), vframes);
-	ERR_FAIL_INDEX(int(p_coord.y), hframes);
+	ERR_FAIL_INDEX(int(p_coord.x), hframes);
+	ERR_FAIL_INDEX(int(p_coord.y), vframes);
 
 	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
 }
@@ -281,7 +281,7 @@ Vector2 Sprite::get_frame_coords() const {
 
 void Sprite::set_vframes(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
 	vframes = p_amount;
 	update();
 	item_rect_changed();
@@ -294,7 +294,7 @@ int Sprite::get_vframes() const {
 
 void Sprite::set_hframes(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
 	hframes = p_amount;
 	update();
 	item_rect_changed();
@@ -387,13 +387,17 @@ void Sprite::_validate_property(PropertyInfo &property) const {
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	if (property.name == "frame_coords") {
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
 }
 
-void Sprite::_changed_callback(Object *p_changed, const char *p_prop) {
+void Sprite::_texture_changed() {
 
 	// Changes to the texture need to trigger an update to make
 	// the editor redraw the sprite with the updated texture.
-	if (texture.is_valid() && texture.ptr() == p_changed) {
+	if (texture.is_valid()) {
 		update();
 	}
 }
@@ -443,6 +447,8 @@ void Sprite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rect"), &Sprite::get_rect);
 
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &Sprite::_texture_changed);
+
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
@@ -480,6 +486,4 @@ Sprite::Sprite() {
 }
 
 Sprite::~Sprite() {
-	if (texture.is_valid())
-		texture->remove_change_receptor(this);
 }

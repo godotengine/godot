@@ -175,7 +175,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		memdelete(file);
 	}
 	file = FileAccess::open(p_file, FileAccess::READ);
-	ERR_FAIL_COND(!file);
+	ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_file + "'.");
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = false;
@@ -368,7 +368,7 @@ float VideoStreamPlaybackTheora::get_time() const {
 	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
 };
 
-Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
+Ref<Texture> VideoStreamPlaybackTheora::get_texture() const {
 
 	return texture;
 }

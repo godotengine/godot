@@ -121,6 +121,7 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 
 	int num_channels;
 	float time;
+	bool seek_backward;
 	int mix_rate;
 	double delay_compensation;
 
@@ -167,7 +168,7 @@ public:
 
 	//virtual int mix(int16_t* p_buffer,int p_frames)=0;
 
-	virtual Ref<Texture> get_texture();
+	virtual Ref<Texture> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);

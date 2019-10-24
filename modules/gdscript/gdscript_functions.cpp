@@ -572,37 +572,31 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		} break;
 		case OBJ_WEAKREF: {
 			VALIDATE_ARG_COUNT(1);
-			if (p_args[0]->get_type() != Variant::OBJECT) {
-
+			if (p_args[0]->get_type() == Variant::OBJECT) {
+				if (p_args[0]->is_ref()) {
+					Ref<WeakRef> wref = memnew(WeakRef);
+					REF r = *p_args[0];
+					if (r.is_valid()) {
+						wref->set_ref(r);
+					}
+					r_ret = wref;
+				} else {
+					Ref<WeakRef> wref = memnew(WeakRef);
+					Object *obj = *p_args[0];
+					if (obj) {
+						wref->set_obj(obj);
+					}
+					r_ret = wref;
+				}
+			} else if (p_args[0]->get_type() == Variant::NIL) {
+				r_ret = memnew(WeakRef);
+			} else {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
 				r_ret = Variant();
 				return;
 			}
-
-			if (p_args[0]->is_ref()) {
-
-				REF r = *p_args[0];
-				if (!r.is_valid()) {
-					r_ret = Variant();
-					return;
-				}
-
-				Ref<WeakRef> wref = memnew(WeakRef);
-				wref->set_ref(r);
-				r_ret = wref;
-			} else {
-				Object *obj = *p_args[0];
-				if (!obj) {
-					r_ret = Variant();
-					return;
-				}
-				Ref<WeakRef> wref = memnew(WeakRef);
-				wref->set_obj(obj);
-				r_ret = wref;
-			}
-
 		} break;
 		case FUNC_FUNCREF: {
 			VALIDATE_ARG_COUNT(2);

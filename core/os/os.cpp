@@ -722,7 +722,7 @@ int OS::get_audio_driver_count() const {
 const char *OS::get_audio_driver_name(int p_driver) const {
 
 	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
+	ERR_FAIL_COND_V_MSG(!driver, "", "Cannot get audio driver at index '" + itos(p_driver) + "'.");
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 

@@ -80,7 +80,7 @@ void AnimationCache::_update_cache() {
 		if (!node) {
 
 			path_cache.push_back(Path());
-			ERR_CONTINUE_MSG(!node, "Invalid track path in animation: " + np + ".");
+			ERR_CONTINUE_MSG(!node, "Invalid track path in animation '" + np + "'.");
 		}
 
 		Path path;
@@ -91,7 +91,7 @@ void AnimationCache::_update_cache() {
 
 			if (np.get_subname_count() > 1) {
 				path_cache.push_back(Path());
-				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM, "Transform tracks can't have a subpath: " + np + ".");
+				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM, "Transform tracks can't have a subpath '" + np + "'.");
 			}
 
 			Spatial *sp = Object::cast_to<Spatial>(node);
@@ -99,7 +99,7 @@ void AnimationCache::_update_cache() {
 			if (!sp) {
 
 				path_cache.push_back(Path());
-				ERR_CONTINUE_MSG(!sp, "Transform track not of type Spatial: " + np + ".");
+				ERR_CONTINUE_MSG(!sp, "Transform track not of type Spatial '" + np + "'.");
 			}
 
 			if (np.get_subname_count() == 1) {
@@ -110,13 +110,13 @@ void AnimationCache::_update_cache() {
 				if (!sk) {
 
 					path_cache.push_back(Path());
-					ERR_CONTINUE_MSG(!sk, "Property defined in Transform track, but not a Skeleton!: " + np + ".");
+					ERR_CONTINUE_MSG(!sk, "Property defined in Transform track, but not a Skeleton! '" + np + "'.");
 				}
 
 				int idx = sk->find_bone(ps);
 				if (idx == -1) {
 					path_cache.push_back(Path());
-					ERR_CONTINUE_MSG(idx == -1, "Property defined in Transform track, but not a Skeleton Bone!: " + np + ".");
+					ERR_CONTINUE_MSG(idx == -1, "Property defined in Transform track, but not a Skeleton Bone! '" + np + "'.");
 				}
 
 				path.bone_idx = idx;

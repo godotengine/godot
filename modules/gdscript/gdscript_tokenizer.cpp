@@ -849,12 +849,8 @@ void GDScriptTokenizerText::_advance() {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
 
-										_make_error("Malformed hex constant in string");
-										return;
-									}
-									CharType v;
+									CharType v = 0;
 									if (c >= '0' && c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
@@ -864,8 +860,8 @@ void GDScriptTokenizerText::_advance() {
 										v = c - 'A';
 										v += 10;
 									} else {
-										ERR_PRINT("BUG");
-										v = 0;
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 
 									res <<= 4;
@@ -1425,7 +1421,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		int len;
 		// Objects cannot be constant, never encode objects
 		Error err = encode_variant(E->get(), NULL, len, false);
-		ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
+		ERR_FAIL_COND_V_MSG(err != OK, Vector<uint8_t>(), "Error when trying to encode Variant.");
 		int pos = buf.size();
 		buf.resize(pos + len);
 		encode_variant(E->get(), &buf.write[pos], len, false);

@@ -71,6 +71,7 @@
 			<return type="int" enum="Input.CursorShape">
 			</return>
 			<description>
+				Returns the currently assigned cursor shape (see [enum CursorShape]).
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">

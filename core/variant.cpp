@@ -3299,7 +3299,7 @@ String vformat(const String &p_text, const Variant &p1, const Variant &p2, const
 	bool error = false;
 	String fmt = p_text.sprintf(args, &error);
 
-	ERR_FAIL_COND_V(error, String());
+	ERR_FAIL_COND_V_MSG(error, String(), fmt);
 
 	return fmt;
 }

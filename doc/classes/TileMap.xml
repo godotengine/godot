@@ -256,7 +256,7 @@
 	<members>
 		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
 		</member>
-		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform" default="Transform2D( 64, 0, 0, 64, 0, 0 )">
 			The custom [Transform2D] to be applied to the TileMap's cells.
 		</member>
 		<member name="cell_half_offset" type="int" setter="set_half_offset" getter="get_half_offset" enum="TileMap.HalfOffset" default="2">

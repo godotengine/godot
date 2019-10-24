@@ -2485,11 +2485,16 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		DeleteObject(bitmap);
 	} else {
 		// Reset to default system cursor
-		cursors[p_shape] = NULL;
+		if (cursors[p_shape]) {
+			DestroyIcon(cursors[p_shape]);
+			cursors[p_shape] = NULL;
+		}
 
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		set_cursor_shape(c);
+
+		cursors_cache.erase(p_shape);
 	}
 }
 
@@ -2663,7 +2668,7 @@ String OS_Windows::get_executable_path() const {
 void OS_Windows::set_native_icon(const String &p_filename) {
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "Cannot open file with icon '" + p_filename + "'.");
 
 	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
 	int pos = 0;

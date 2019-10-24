@@ -1767,7 +1767,8 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
 	xkeyevent_no_mod.state &= ~ShiftMask;
 	xkeyevent_no_mod.state &= ~ControlMask;
-	XLookupString(&xkeyevent_no_mod, str, 256, &keysym_keycode, NULL);
+	XLookupString(xkeyevent, str, 256, &keysym_unicode, NULL);
+	XLookupString(&xkeyevent_no_mod, NULL, 0, &keysym_keycode, NULL);
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
@@ -1776,8 +1777,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		xmbstring = (char *)memalloc(sizeof(char) * 8);
 		xmblen = 8;
 	}
-
-	keysym_unicode = keysym_keycode;
 
 	if (xkeyevent->type == KeyPress && xic) {
 
@@ -2996,6 +2995,8 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
 		set_cursor_shape(c);
+
+		cursors_cache.erase(p_shape);
 	}
 }
 

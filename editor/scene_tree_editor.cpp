@@ -959,6 +959,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
 			tf->set_texture(icons[i]);
+			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
 			Label *label = memnew(Label(selected[i]->get_name()));
 			hb->add_child(label);

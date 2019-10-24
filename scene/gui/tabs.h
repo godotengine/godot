@@ -58,6 +58,7 @@ private:
 	struct Tab {
 
 		String text;
+		String xl_text;
 		Ref<Texture> icon;
 		int ofs_cache;
 		bool disabled;
@@ -89,7 +90,7 @@ private:
 	bool cb_pressing;
 	CloseButtonDisplayPolicy cb_displaypolicy;
 
-	int hover; // hovered tab
+	int hover; // Hovered tab.
 	int min_width;
 	bool scrolling_enabled;
 	bool drag_to_rearrange_enabled;
@@ -100,6 +101,8 @@ private:
 
 	void _update_hover();
 	void _update_cache();
+
+	void _on_mouse_exited();
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);

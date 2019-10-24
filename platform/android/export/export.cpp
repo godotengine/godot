@@ -598,7 +598,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				String dst_path = String("lib").plus_file(abi).plus_file(p_so.path.get_file());
 				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
 				Error store_err = store_in_apk(ed, dst_path, array);
-				ERR_FAIL_COND_V(store_err, store_err);
+				ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 			}
 		}
 		if (!exported) {
@@ -766,17 +766,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
 						uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-						String value;
-						if (attr_value != 0xFFFFFFFF)
-							value = string_table[attr_value];
-						else
-							value = "Res #" + itos(attr_resid);
+						const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 						String attrname = string_table[attr_name];
-						String nspace;
-						if (attr_nspace != 0xFFFFFFFF)
-							nspace = string_table[attr_nspace];
-						else
-							nspace = "";
+						const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
 						//replace project information
 						if (tname == "manifest" && attrname == "package") {
@@ -828,14 +820,16 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "meta-data" && attrname == "name" && string_table[attr_value] == "xr_mode_metadata_name") {
+						// FIXME: `attr_value != 0xFFFFFFFF` below added as a stopgap measure for GH-32553,
+						// but the issue should be debugged further and properly addressed.
+						if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
 							// Update the meta-data 'android:name' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && string_table[attr_value] == "xr_mode_metadata_value") {
+						if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
 							// Update the meta-data 'android:value' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "vr_only";
@@ -1290,7 +1284,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_package/use_custom_build"), false));
@@ -1351,7 +1345,7 @@ public:
 		return logo;
 	}
 
-	virtual bool poll_devices() {
+	virtual bool poll_export() {
 
 		bool dc = devices_changed;
 		if (dc) {
@@ -1361,7 +1355,7 @@ public:
 		return dc;
 	}
 
-	virtual int get_device_count() const {
+	virtual int get_options_count() const {
 
 		device_lock->lock();
 		int dc = devices.size();
@@ -1370,20 +1364,31 @@ public:
 		return dc;
 	}
 
-	virtual String get_device_name(int p_device) const {
+	virtual String get_options_tooltip() const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		return TTR("Select device from the list");
+	}
+
+	virtual String get_option_label(int p_index) const {
+
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].name;
+		String s = devices[p_index].name;
 		device_lock->unlock();
 		return s;
 	}
 
-	virtual String get_device_info(int p_device) const {
+	virtual String get_option_tooltip(int p_index) const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].description;
+		String s = devices[p_index].description;
+		if (devices.size() == 1) {
+			// Tooltip will be:
+			// Name
+			// Description
+			s = devices[p_index].name + "\n\n" + s;
+		}
 		device_lock->unlock();
 		return s;
 	}
@@ -1670,7 +1675,7 @@ public:
 
 		DirAccessRef da = DirAccess::open("res://android");
 
-		ERR_FAIL_COND(!da);
+		ERR_FAIL_COND_MSG(!da, "Cannot open directory 'res://android'.");
 		Map<String, List<String> > directory_paths;
 		Map<String, List<String> > manifest_sections;
 		Map<String, List<String> > gradle_sections;
@@ -1875,7 +1880,7 @@ public:
 								new_file += "<!--CHUNK_" + text + "_BEGIN-->\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in AndroidManifest.conf for chunk: " + text);
+									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
 									f->seek(pos);
 								} else {
 									//add chunk lines
@@ -1894,7 +1899,7 @@ public:
 							String last_tag = "android:icon=\"@drawable/icon\"";
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
-								WARN_PRINTS("No adding of application tags because could not find last tag for <application: " + last_tag);
+								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
 								new_file += l + "\n";
 							} else {
 								String base = l.substr(0, last_tag_pos + last_tag.length());
@@ -1946,7 +1951,7 @@ public:
 			//build project if custom build is enabled
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
 
-			ERR_FAIL_COND_V(sdk_path == "", ERR_UNCONFIGURED);
+			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
 
 			_update_custom_build_project();
 
@@ -1980,9 +1985,9 @@ public:
 				return ERR_CANT_CREATE;
 			}
 			if (p_debug) {
-				src_apk = build_path.plus_file("build/outputs/apk/debug/build-debug-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/debug/android_debug.apk");
 			} else {
-				src_apk = build_path.plus_file("build/outputs/apk/release/build-release-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/release/android_release.apk");
 			}
 
 			if (!FileAccess::exists(src_apk)) {

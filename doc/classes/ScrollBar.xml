@@ -13,6 +13,8 @@
 	<members>
 		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
 		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="0" />
+		<member name="step" type="float" setter="set_step" getter="get_step" override="true" default="0.0" />
 	</members>
 	<signals>
 		<signal name="scrolling">

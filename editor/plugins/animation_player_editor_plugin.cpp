@@ -122,7 +122,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop->set_icon(get_icon("Stop", "EditorIcons"));
 
 			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+			onion_skinning->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
 
 			pin->set_icon(get_icon("Pin", "EditorIcons"));
 
@@ -304,6 +304,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
+	_animation_key_editor_seek(timeline_position, false);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -483,6 +484,8 @@ double AnimationPlayerEditor::_get_editor_step() const {
 	if (track_editor->is_snap_enabled()) {
 		const String current = player->get_assigned_animation();
 		const Ref<Animation> anim = player->get_animation(current);
+		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
+
 		// Use more precise snapping when holding Shift
 		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
@@ -736,8 +739,8 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 			ERR_FAIL_COND(!player);
 
 			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
-			ERR_FAIL_COND(res.is_null());
-			ERR_FAIL_COND(!res->is_class("Animation"));
+			ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + p_file + "'.");
+			ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + p_file + "' is not Animation.");
 			if (p_file.find_last("/") != -1) {
 
 				p_file = p_file.substr(p_file.find_last("/") + 1, p_file.length());
@@ -1072,12 +1075,18 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
 
+	timeline_position = p_pos;
+
 	if (!is_visible_in_tree())
 		return;
+
 	if (!player)
 		return;
 
 	if (player->is_playing())
+		return;
+
+	if (!player->has_animation(player->get_assigned_animation()))
 		return;
 
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
@@ -1753,6 +1762,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	renaming = false;
 	last_active = false;
+	timeline_position = 0;
 
 	set_process_unhandled_key_input(true);
 

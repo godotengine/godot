@@ -46,14 +46,22 @@ PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 
 void CPUParticles::set_emitting(bool p_emitting) {
 
+	if (emitting == p_emitting)
+		return;
+
 	emitting = p_emitting;
-	if (emitting)
+	if (emitting) {
 		set_process_internal(true);
+
+		// first update before rendering to avoid one frame delay after emitting starts
+		if (time == 0)
+			_update_internal();
+	}
 }
 
 void CPUParticles::set_amount(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles must be greater than 0.");
 
 	particles.resize(p_amount);
 	{
@@ -71,7 +79,7 @@ void CPUParticles::set_amount(int p_amount) {
 }
 void CPUParticles::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_COND(p_lifetime <= 0);
+	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 }
 
@@ -508,6 +516,81 @@ static float rand_from_seed(uint32_t &seed) {
 	return float(seed % uint32_t(65536)) / 65535.0;
 }
 
+void CPUParticles::_update_internal() {
+
+	if (particles.size() == 0 || !is_visible_in_tree()) {
+		_set_redraw(false);
+		return;
+	}
+
+	float delta = get_process_delta_time();
+	if (emitting) {
+		inactive_time = 0;
+	} else {
+		inactive_time += delta;
+		if (inactive_time > lifetime * 1.2) {
+			set_process_internal(false);
+			_set_redraw(false);
+
+			//reset variables
+			time = 0;
+			inactive_time = 0;
+			frame_remainder = 0;
+			cycle = 0;
+			return;
+		}
+	}
+	_set_redraw(true);
+
+	bool processed = false;
+
+	if (time == 0 && pre_process_time > 0.0) {
+
+		float frame_time;
+		if (fixed_fps > 0)
+			frame_time = 1.0 / fixed_fps;
+		else
+			frame_time = 1.0 / 30.0;
+
+		float todo = pre_process_time;
+
+		while (todo >= 0) {
+			_particles_process(frame_time);
+			processed = true;
+			todo -= frame_time;
+		}
+	}
+
+	if (fixed_fps > 0) {
+		float frame_time = 1.0 / fixed_fps;
+		float decr = frame_time;
+
+		float ldelta = delta;
+		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
+			ldelta = 0.1;
+		} else if (ldelta <= 0.0) { //unlikely but..
+			ldelta = 0.001;
+		}
+		float todo = frame_remainder + ldelta;
+
+		while (todo >= frame_time) {
+			_particles_process(frame_time);
+			processed = true;
+			todo -= decr;
+		}
+
+		frame_remainder = todo;
+
+	} else {
+		_particles_process(delta);
+		processed = true;
+	}
+
+	if (processed) {
+		_update_particle_data_buffer();
+	}
+}
+
 void CPUParticles::_particles_process(float p_delta) {
 
 	p_delta *= speed_scale;
@@ -915,8 +998,8 @@ void CPUParticles::_particles_process(float p_delta) {
 		}
 
 		//scale by scale
-		float base_scale = Math::lerp(parameters[PARAM_SCALE] * tex_scale, 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale == 0.0) base_scale = 0.000001;
+		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
+		if (base_scale < 0.000001) base_scale = 0.000001;
 
 		p.transform.basis.scale(Vector3(1, 1, 1) * base_scale);
 
@@ -1068,85 +1151,24 @@ void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		set_process_internal(emitting);
+
+		// first update before rendering to avoid one frame delay after emitting starts
+		if (emitting && (time == 0))
+			_update_internal();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_set_redraw(false);
 	}
 
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		// first update before rendering to avoid one frame delay after emitting starts
+		if (emitting && (time == 0))
+			_update_internal();
+	}
+
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-
-		if (particles.size() == 0 || !is_visible_in_tree()) {
-			_set_redraw(false);
-			return;
-		}
-
-		float delta = get_process_delta_time();
-		if (emitting) {
-			inactive_time = 0;
-		} else {
-			inactive_time += delta;
-			if (inactive_time > lifetime * 1.2) {
-				set_process_internal(false);
-				_set_redraw(false);
-
-				//reset variables
-				time = 0;
-				inactive_time = 0;
-				frame_remainder = 0;
-				cycle = 0;
-				return;
-			}
-		}
-		_set_redraw(true);
-
-		bool processed = false;
-
-		if (time == 0 && pre_process_time > 0.0) {
-
-			float frame_time;
-			if (fixed_fps > 0)
-				frame_time = 1.0 / fixed_fps;
-			else
-				frame_time = 1.0 / 30.0;
-
-			float todo = pre_process_time;
-
-			while (todo >= 0) {
-				_particles_process(frame_time);
-				processed = true;
-				todo -= frame_time;
-			}
-		}
-
-		if (fixed_fps > 0) {
-			float frame_time = 1.0 / fixed_fps;
-			float decr = frame_time;
-
-			float ldelta = delta;
-			if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
-				ldelta = 0.1;
-			} else if (ldelta <= 0.0) { //unlikely but..
-				ldelta = 0.001;
-			}
-			float todo = frame_remainder + ldelta;
-
-			while (todo >= frame_time) {
-				_particles_process(frame_time);
-				processed = true;
-				todo -= decr;
-			}
-
-			frame_remainder = todo;
-
-		} else {
-			_particles_process(delta);
-			processed = true;
-		}
-
-		if (processed) {
-			_update_particle_data_buffer();
-		}
+		_update_internal();
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
@@ -1193,7 +1215,7 @@ void CPUParticles::_notification(int p_what) {
 void CPUParticles::convert_from_particles(Node *p_particles) {
 
 	Particles *particles = Object::cast_to<Particles>(p_particles);
-	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND_MSG(!particles, "Only Particles nodes can be converted to CPUParticles.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());

@@ -205,7 +205,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		if (r_error)
 			*r_error = err;
 
-		ERR_FAIL_COND_V(err != OK, RES());
+		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Failed to load resource '" + p_path + "'.");
 	}
 }
 

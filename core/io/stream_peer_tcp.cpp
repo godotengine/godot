@@ -248,16 +248,7 @@ void StreamPeerTCP::set_no_delay(bool p_enabled) {
 
 bool StreamPeerTCP::is_connected_to_host() const {
 
-	if (status == STATUS_NONE || status == STATUS_ERROR) {
-
-		return false;
-	}
-
-	if (status != STATUS_CONNECTED) {
-		return true;
-	}
-
-	return _sock.is_valid() && _sock->is_open();
+	return _sock.is_valid() && _sock->is_open() && (status == STATUS_CONNECTED || status == STATUS_CONNECTING);
 }
 
 StreamPeerTCP::Status StreamPeerTCP::get_status() {

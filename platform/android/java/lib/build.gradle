@@ -5,8 +5,6 @@ dependencies {
 }
 
 def pathToRootDir = "../../../../"
-// Note: Only keep the abis you support to speed up the gradle 'assemble' task.
-def supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
 
 android {
     compileSdkVersion versions.compileSdk
@@ -56,27 +54,20 @@ android {
         // files is only setup for editing support.
         gradle.startParameter.excludedTaskNames += taskPrefix + "externalNativeBuild" + buildType
 
-        // Create tasks to generate the Godot native libraries.
-        def taskName = "compileGodotNativeLibs" + buildType
-        def releaseTarget = "release"
-        if (buildType == "Debug") {
-            releaseTarget += "_debug"
+        def releaseTarget = supportedTargets[buildType.toLowerCase()]
+        if (releaseTarget == null || releaseTarget == "") {
+            throw new GradleException("Invalid build type: " + buildType)
         }
 
-        def abiTaskNames = []
-        // Creating gradle tasks to generate the native libraries for the supported abis.
-        supportedAbis.each { abi ->
-            def abiTaskName = taskName + abi.capitalize()
-            abiTaskNames += abiTaskName
-            tasks.create(name: abiTaskName, type: Exec) {
-                executable "scons"
-                args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${abi}"
-            }
+        if (!supportedAbis.contains(defaultAbi)) {
+            throw new GradleException("Invalid default abi: " + defaultAbi)
         }
 
-        // Creating gradle task to run all of the previously generated tasks.
-        tasks.create(name: taskName, type: GradleBuild) {
-            tasks = abiTaskNames
+        // Creating gradle task to generate the native libraries for the default abi.
+        def taskName = getSconsTaskName(buildType)
+        tasks.create(name: taskName, type: Exec) {
+            executable "scons" + sconsExt
+            args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
         }
 
         // Schedule the tasks so the generated libs are present before the aar file is packaged.

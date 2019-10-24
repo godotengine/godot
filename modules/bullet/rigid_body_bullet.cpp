@@ -411,6 +411,8 @@ void RigidBodyBullet::on_collision_filters_change() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
+
+	set_activation_state(true);
 }
 
 void RigidBodyBullet::on_collision_checker_start() {
@@ -471,7 +473,7 @@ void RigidBodyBullet::assert_no_constraints() {
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
 	if (p_active) {
-		btBody->setActivationState(ACTIVE_TAG);
+		btBody->activate();
 	} else {
 		btBody->setActivationState(WANTS_DEACTIVATION);
 	}

@@ -253,13 +253,11 @@ void InspectorDock::_prepare_history() {
 			text = obj->get_class();
 		}
 
-		if (i == editor_history->get_history_pos()) {
+		if (i == editor_history->get_history_pos() && current) {
 			text = "[" + text + "]";
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
-
-	editor_path->update_path();
 }
 
 void InspectorDock::_select_history(int p_idx) const {
@@ -296,7 +294,7 @@ void InspectorDock::_edit_forward() {
 }
 void InspectorDock::_edit_back() {
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
-	if (editor_history->previous() || editor_history->get_path_size() == 1)
+	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1)
 		editor->edit_current();
 }
 

@@ -465,11 +465,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _selection_changed();
 
-	bool selected_all_tracks;
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
-	HBoxContainer *track_copy_options;
-	Button *select_all_button;
 
 	struct TrackClipboard {
 		NodePath full_path;

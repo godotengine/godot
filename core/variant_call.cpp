@@ -256,6 +256,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(String, format);
 	VCALL_LOCALMEM2R(String, replace);
 	VCALL_LOCALMEM2R(String, replacen);
+	VCALL_LOCALMEM1R(String, repeat);
 	VCALL_LOCALMEM2R(String, insert);
 	VCALL_LOCALMEM0R(String, capitalize);
 	VCALL_LOCALMEM3R(String, split);
@@ -283,6 +284,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, sha1_buffer);
 	VCALL_LOCALMEM0R(String, sha256_buffer);
 	VCALL_LOCALMEM0R(String, empty);
+	VCALL_LOCALMEM1R(String, humanize_size);
 	VCALL_LOCALMEM0R(String, is_abs_path);
 	VCALL_LOCALMEM0R(String, is_rel_path);
 	VCALL_LOCALMEM0R(String, get_base_dir);
@@ -314,6 +316,10 @@ struct _VariantCall {
 	static void _call_String_to_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->ascii();
 
 		PoolByteArray retval;
@@ -329,6 +335,10 @@ struct _VariantCall {
 	static void _call_String_to_utf8(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->utf8();
 
 		PoolByteArray retval;
@@ -543,7 +553,7 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		String s;
-		if (ba->size() >= 0) {
+		if (ba->size() > 0) {
 			PoolByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size() + 1);
@@ -559,7 +569,7 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		String s;
-		if (ba->size() >= 0) {
+		if (ba->size() > 0) {
 			PoolByteArray::Read r = ba->read();
 			s.parse_utf8((const char *)r.ptr(), ba->size());
 		}
@@ -570,14 +580,15 @@ struct _VariantCall {
 
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
 		PoolByteArray compressed;
-		Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
+		if (ba->size() > 0) {
+			Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
 
-		compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
-		int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
+			compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
+			int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
 
-		result = result >= 0 ? result : 0;
-		compressed.resize(result);
-
+			result = result >= 0 ? result : 0;
+			compressed.resize(result);
+		}
 		r_ret = compressed;
 	}
 
@@ -589,9 +600,9 @@ struct _VariantCall {
 
 		int buffer_size = (int)(*p_args[0]);
 
-		if (buffer_size < 0) {
+		if (buffer_size <= 0) {
 			r_ret = decompressed;
-			ERR_FAIL_MSG("Decompression buffer size is less than zero.");
+			ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
 		}
 
 		decompressed.resize(buffer_size);
@@ -605,6 +616,10 @@ struct _VariantCall {
 
 	static void _call_PoolByteArray_hex_encode(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		if (ba->size() == 0) {
+			r_ret = String();
+			return;
+		}
 		PoolByteArray::Read r = ba->read();
 		String s = String::hex_encode_buffer(&r[0], ba->size());
 		r_ret = s;
@@ -1530,6 +1545,7 @@ void register_variant_methods() {
 	ADDFUNC2R(STRING, STRING, String, format, NIL, "values", STRING, "placeholder", varray("{_}"));
 	ADDFUNC2R(STRING, STRING, String, replace, STRING, "what", STRING, "forwhat", varray());
 	ADDFUNC2R(STRING, STRING, String, replacen, STRING, "what", STRING, "forwhat", varray());
+	ADDFUNC1R(STRING, STRING, String, repeat, INT, "count", varray());
 	ADDFUNC2R(STRING, STRING, String, insert, INT, "position", STRING, "what", varray());
 	ADDFUNC0R(STRING, STRING, String, capitalize, varray());
 	ADDFUNC3R(STRING, POOL_STRING_ARRAY, String, split, STRING, "delimiter", BOOL, "allow_empty", INT, "maxsplit", varray(true, 0));
@@ -1559,6 +1575,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha1_buffer, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha256_buffer, varray());
 	ADDFUNC0R(STRING, BOOL, String, empty, varray());
+	ADDFUNC1R(STRING, STRING, String, humanize_size, INT, "size", varray());
 	ADDFUNC0R(STRING, BOOL, String, is_abs_path, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_rel_path, varray());
 	ADDFUNC0R(STRING, STRING, String, get_base_dir, varray());

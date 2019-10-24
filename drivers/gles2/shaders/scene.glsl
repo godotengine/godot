@@ -61,7 +61,6 @@ uniform ivec2 skeleton_texture_size;
 
 #endif
 
-
 #endif
 
 #ifdef USE_INSTANCING
@@ -407,9 +406,7 @@ void main() {
 
 #endif
 
-
 	world_matrix = world_matrix * bone_transform;
-
 
 #endif
 

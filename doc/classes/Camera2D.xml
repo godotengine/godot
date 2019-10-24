@@ -51,6 +51,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="get_limit" qualifiers="const">
@@ -59,6 +60,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 		<method name="make_current">
@@ -84,6 +86,7 @@
 			<argument index="1" name="drag_margin" type="float">
 			</argument>
 			<description>
+				Sets the specified margin. See also [member drag_margin_bottom], [member drag_margin_top], [member drag_margin_left], and [member drag_margin_right].
 			</description>
 		</method>
 		<method name="set_limit">
@@ -94,6 +97,7 @@
 			<argument index="1" name="limit" type="int">
 			</argument>
 			<description>
+				Sets the specified camera limit. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
 	</methods>
@@ -161,6 +165,7 @@
 			[b]Note:[/b] Used the same as [member offset_h].
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Camera2D.Camera2DProcessMode" default="1">
+			The camera's process callback. See [enum Camera2DProcessMode].
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating" default="false">
 			If [code]true[/code], the camera rotates with the target.
@@ -183,8 +188,10 @@
 			The camera's position takes into account vertical/horizontal offsets and the screen size.
 		</constant>
 		<constant name="CAMERA2D_PROCESS_PHYSICS" value="0" enum="Camera2DProcessMode">
+			The camera updates with the [code]_physics_process[/code] callback.
 		</constant>
 		<constant name="CAMERA2D_PROCESS_IDLE" value="1" enum="Camera2DProcessMode">
+			The camera updates with the [code]_process[/code] callback.
 		</constant>
 	</constants>
 </class>

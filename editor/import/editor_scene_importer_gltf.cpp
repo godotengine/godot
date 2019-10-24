@@ -156,7 +156,7 @@ static Transform _arr_to_xform(const Array &p_array) {
 }
 
 String EditorSceneImporterGLTF::_sanitize_scene_name(const String &name) {
-	RegEx regex("([^a-zA-Z0-9_ ]+)");
+	RegEx regex("([^a-zA-Z0-9_ -]+)");
 	String p_name = regex.sub(name, "", true);
 	return p_name;
 }
@@ -494,10 +494,10 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 
 			const Dictionary &s = d["sparse"];
 
-			ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
-			accessor.sparse_count = d["count"];
-			ERR_FAIL_COND_V(!d.has("indices"), ERR_PARSE_ERROR);
-			const Dictionary &si = d["indices"];
+			ERR_FAIL_COND_V(!s.has("count"), ERR_PARSE_ERROR);
+			accessor.sparse_count = s["count"];
+			ERR_FAIL_COND_V(!s.has("indices"), ERR_PARSE_ERROR);
+			const Dictionary &si = s["indices"];
 
 			ERR_FAIL_COND_V(!si.has("bufferView"), ERR_PARSE_ERROR);
 			accessor.sparse_indices_buffer_view = si["bufferView"];
@@ -508,8 +508,8 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 				accessor.sparse_indices_byte_offset = si["byteOffset"];
 			}
 
-			ERR_FAIL_COND_V(!d.has("values"), ERR_PARSE_ERROR);
-			const Dictionary &sv = d["values"];
+			ERR_FAIL_COND_V(!s.has("values"), ERR_PARSE_ERROR);
+			const Dictionary &sv = s["values"];
 
 			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
 			accessor.sparse_values_buffer_view = sv["bufferView"];
@@ -1656,6 +1656,14 @@ Error EditorSceneImporterGLTF::_expand_skin(GLTFState &state, GLTFSkin &skin) {
 }
 
 Error EditorSceneImporterGLTF::_verify_skin(GLTFState &state, GLTFSkin &skin) {
+
+	// This may seem duplicated from expand_skins, but this is really a sanity check! (so it kinda is)
+	// In case additional interpolating logic is added to the skins, this will help ensure that you
+	// do not cause it to self implode into a fiery blaze
+
+	// We are going to re-calculate the root nodes and compare them to the ones saved in the skin,
+	// then ensure the multiple trees (if they exist) are on the same sublevel
+
 	// Grab all nodes that lay in between skin joints/nodes
 	DisjointSet<GLTFNodeIndex> disjoint_set;
 
@@ -1673,15 +1681,28 @@ Error EditorSceneImporterGLTF::_verify_skin(GLTFState &state, GLTFSkin &skin) {
 		}
 	}
 
+	Vector<GLTFNodeIndex> out_owners;
+	disjoint_set.get_representatives(out_owners);
+
 	Vector<GLTFNodeIndex> out_roots;
-	disjoint_set.get_representatives(out_roots);
+
+	for (int i = 0; i < out_owners.size(); ++i) {
+		Vector<GLTFNodeIndex> set;
+		disjoint_set.get_members(set, out_owners[i]);
+
+		const GLTFNodeIndex root = _find_highest_node(state, set);
+		ERR_FAIL_COND_V(root < 0, FAILED);
+		out_roots.push_back(root);
+	}
+
 	out_roots.sort();
 
 	ERR_FAIL_COND_V(out_roots.size() == 0, FAILED);
 
+	// Make sure the roots are the exact same (they better be)
 	ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
 	for (int i = 0; i < out_roots.size(); ++i) {
-		ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
+		ERR_FAIL_COND_V(out_roots[i] != skin.roots[i], FAILED);
 	}
 
 	// Single rooted skin? Perfectly ok!
@@ -1952,7 +1973,7 @@ Error EditorSceneImporterGLTF::_reparent_to_fake_joint(GLTFState &state, GLTFSke
 	state.nodes.push_back(fake_joint);
 
 	// We better not be a joint, or we messed up in our logic
-	if (node->joint == true)
+	if (node->joint)
 		return FAILED;
 
 	fake_joint->translation = node->translation;
@@ -2390,14 +2411,14 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					track->weight_tracks.write[k] = cf;
 				}
 			} else {
-				WARN_PRINTS("Invalid path: " + path);
+				WARN_PRINTS("Invalid path '" + path + "'.");
 			}
 		}
 
 		state.animations.push_back(animation);
 	}
 
-	print_verbose("glTF: Total animations: " + itos(state.animations.size()));
+	print_verbose("glTF: Total animations '" + itos(state.animations.size()) + "'.");
 
 	return OK;
 }

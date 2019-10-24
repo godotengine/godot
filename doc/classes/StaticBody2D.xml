@@ -27,6 +27,8 @@
 			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
 	</members>
 	<constants>

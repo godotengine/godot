@@ -380,6 +380,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_addon_names() {
 
 		String path = ScriptServer::get_global_class_path(global_classes[i]);
 		Ref<Script> script = ResourceLoader::load(path);
+		ERR_FAIL_COND(script.is_null());
 
 		if (script->get_instance_base_type() == "EditorVCSInterface") {
 

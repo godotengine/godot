@@ -8,6 +8,9 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, Vector3( 0, 0, 0 ), 1, Vector3( 0, 0, 0 ), 2, false, 3, 1.0 ]" />
+	</members>
 	<constants>
 	</constants>
 </class>

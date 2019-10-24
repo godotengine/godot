@@ -826,6 +826,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jo
 	*/
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jobject obj, jint p_type, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_hover(p_type, Point2(p_x, p_y));
+}
+
 /*
  * Android Key codes.
  */
@@ -1385,6 +1392,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 	String permission = jstring_to_string(p_permission, env);
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
 		AudioDriver::get_singleton()->capture_start();
+	}
+
+	if (os_android->get_main_loop()) {
+		os_android->get_main_loop()->emit_signal("on_request_permissions_result", permission, p_result == JNI_TRUE);
 	}
 }
 

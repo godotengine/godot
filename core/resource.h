@@ -84,9 +84,7 @@ protected:
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
-#ifdef TOOLS_ENABLED
-	Map<String, int> id_for_path;
-#endif
+
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 
@@ -152,6 +150,10 @@ class ResourceCache {
 	friend class ResourceLoader; //need the lock
 	static RWLock *lock;
 	static HashMap<String, Resource *> resources;
+#ifdef TOOLS_ENABLED
+	static HashMap<String, HashMap<String, int> > resource_path_cache; // each tscn has a set of resource paths and IDs
+	static RWLock *path_cache_lock;
+#endif // TOOLS_ENABLED
 	friend void unregister_core_types();
 	static void clear();
 	friend void register_core_types();

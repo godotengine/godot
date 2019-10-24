@@ -31,6 +31,7 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
 		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
 	</members>
 	<signals>
 		<signal name="color_changed">
@@ -38,6 +39,10 @@
 			</argument>
 			<description>
 				Emitted when the color changes.
+			</description>
+		</signal>
+		<signal name="picker_created">
+			<description>
 			</description>
 		</signal>
 		<signal name="popup_closed">

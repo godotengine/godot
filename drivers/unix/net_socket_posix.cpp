@@ -30,6 +30,7 @@
 
 #include "net_socket_posix.h"
 
+#ifndef UNIX_SOCKET_UNAVAILABLE
 #if defined(UNIX_ENABLED)
 
 #include <errno.h>
@@ -280,6 +281,21 @@ void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_
 	_sock = p_sock;
 	_ip_type = p_ip_type;
 	_is_stream = p_is_stream;
+	// Disable descriptor sharing with subprocesses.
+	_set_close_exec_enabled(true);
+}
+
+void NetSocketPosix::_set_close_exec_enabled(bool p_enabled) {
+#ifndef WINDOWS_ENABLED
+	// Enable close on exec to avoid sharing with subprocesses. Off by default on Windows.
+#if defined(NO_FCNTL)
+	unsigned long par = p_enabled ? 1 : 0;
+	SOCK_IOCTL(_sock, FIOCLEX, &par);
+#else
+	int opts = fcntl(_sock, F_GETFD);
+	fcntl(_sock, F_SETFD, opts | FD_CLOEXEC);
+#endif
+#endif
 }
 
 Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
@@ -319,6 +335,9 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	}
 
 	_is_stream = p_sock_type == TYPE_TCP;
+
+	// Disable descriptor sharing with subprocesses.
+	_set_close_exec_enabled(true);
 
 #if defined(WINDOWS_ENABLED)
 	if (!_is_stream) {
@@ -691,3 +710,4 @@ Error NetSocketPosix::join_multicast_group(const IP_Address &p_multi_address, St
 Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
+#endif

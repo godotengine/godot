@@ -917,8 +917,7 @@ int MultiplayerAPI::_get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer,
 		i = (i + p_buffer.size() - 1) % p_buffer.size();
 	}
 
-	ERR_EXPLAIN("Reached the end of the bandwidth profiler buffer, values might be inaccurate.");
-	ERR_FAIL_COND_V(i == p_pointer, total_bandwidth);
+	ERR_FAIL_COND_V_MSG(i == p_pointer, total_bandwidth, "Reached the end of the bandwidth profiler buffer, values might be inaccurate.");
 	return total_bandwidth;
 }
 

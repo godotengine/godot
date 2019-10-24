@@ -103,6 +103,103 @@ public:
 	VisualScriptFunction();
 };
 
+class VisualScriptLists : public VisualScriptNode {
+
+	GDCLASS(VisualScriptLists, VisualScriptNode)
+
+	struct Port {
+		String name;
+		Variant::Type type;
+	};
+
+protected:
+	Vector<Port> inputports;
+	Vector<Port> outputports;
+
+	enum {
+		OUTPUT_EDITABLE = 0x0001,
+		OUTPUT_NAME_EDITABLE = 0x0002,
+		OUTPUT_TYPE_EDITABLE = 0x0004,
+		INPUT_EDITABLE = 0x0008,
+		INPUT_NAME_EDITABLE = 0x000F,
+		INPUT_TYPE_EDITABLE = 0x0010,
+	};
+
+	int flags;
+
+	bool sequenced;
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	static void _bind_methods();
+
+public:
+	virtual bool is_output_port_editable() const;
+	virtual bool is_output_port_name_editable() const;
+	virtual bool is_output_port_type_editable() const;
+
+	virtual bool is_input_port_editable() const;
+	virtual bool is_input_port_name_editable() const;
+	virtual bool is_input_port_type_editable() const;
+
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const = 0;
+	virtual String get_text() const = 0;
+	virtual String get_category() const = 0;
+
+	void add_input_data_port(Variant::Type p_type, const String &p_name, int p_index = -1);
+	void set_input_data_port_type(int p_idx, Variant::Type p_type);
+	void set_input_data_port_name(int p_idx, const String &p_name);
+	void remove_input_data_port(int p_argidx);
+
+	void add_output_data_port(Variant::Type p_type, const String &p_name, int p_index = -1);
+	void set_output_data_port_type(int p_idx, Variant::Type p_type);
+	void set_output_data_port_name(int p_idx, const String &p_name);
+	void remove_output_data_port(int p_argidx);
+
+	void set_sequenced(bool p_enable);
+	bool is_sequenced() const;
+
+	VisualScriptLists();
+};
+
+class VisualScriptComposeArray : public VisualScriptLists {
+
+	GDCLASS(VisualScriptComposeArray, VisualScriptLists)
+
+public:
+	virtual int get_output_sequence_port_count() const;
+	virtual bool has_input_sequence_port() const;
+
+	virtual String get_output_sequence_port_text(int p_port) const;
+
+	virtual int get_input_value_port_count() const;
+	virtual int get_output_value_port_count() const;
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_text() const;
+	virtual String get_category() const { return "functions"; }
+
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+
+	VisualScriptComposeArray();
+};
+
 class VisualScriptOperator : public VisualScriptNode {
 
 	GDCLASS(VisualScriptOperator, VisualScriptNode);

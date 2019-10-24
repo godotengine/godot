@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
+		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -55,6 +56,11 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the value of a setting.
+				[b]Example:[/b]
+				[codeblock]
+				print(ProjectSettings.get_setting("application/config/name"))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -80,9 +86,11 @@
 			</return>
 			<argument index="0" name="pack" type="String">
 			</argument>
+			<argument index="1" name="replace_files" type="bool" default="true">
+			</argument>
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
-				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
+				[b]Note:[/b] If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code] unless [code]replace_files[/code] is set to [code]false[/code].
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -395,19 +403,19 @@
 			Sets the window to full screen when it starts.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different height for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different width for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
-			Sets the main window width. On desktop platforms, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
@@ -762,7 +770,7 @@
 			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
 		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="" default="4096">
-			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance. The value will be rounded up to the nearest power of 2.
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 		</member>

@@ -61,6 +61,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
 		<member name="fps" type="float" setter="set_fps" getter="get_fps" default="4.0">
 			Animation speed in frames per second. This value defines the default time interval between two frames of the animation, and thus the overall duration of the animation loop based on the [member frames] property. A value of 0 means no predefined number of frames per second, the animation will play according to each frame's frame delay (see [method set_frame_delay]).
 			For example, an animation with 8 frames, no frame delay and a [code]fps[/code] value of 2 will run for 4 seconds, with each frame lasting 0.5 seconds.

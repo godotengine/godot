@@ -189,13 +189,13 @@
 			</argument>
 			<argument index="1" name="mesh" type="RID">
 			</argument>
-			<argument index="2" name="texture" type="Transform2D">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
-			<argument index="3" name="normal_map" type="Color">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="4" name="arg4" type="RID">
+			<argument index="4" name="texture" type="RID">
 			</argument>
-			<argument index="5" name="arg5" type="RID">
+			<argument index="5" name="normal_map" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -3855,7 +3855,7 @@
 			<argument index="1" name="size" type="int">
 			</argument>
 			<description>
-				Sets the size of the shadow atlas's images.
+				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="viewport_set_size">

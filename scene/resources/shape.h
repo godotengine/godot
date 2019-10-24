@@ -50,13 +50,13 @@ protected:
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape(RID p_shape);
 
-	virtual Vector<Vector3> _gen_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
 	virtual void _update_shape();
 
 public:
 	virtual RID get_rid() const { return shape; }
 
 	Ref<ArrayMesh> get_debug_mesh();
+	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
 
 	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
 

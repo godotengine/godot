@@ -339,6 +339,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
 	if (OS_OSX::singleton->is_hidpi_allowed()) {
 		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+	} else {
+		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
@@ -1492,6 +1494,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
 		//if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+	} else {
+		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
 	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
@@ -1973,11 +1977,16 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		[nsimage release];
 	} else {
 		// Reset to default system cursor
-		cursors[p_shape] = NULL;
+		if (cursors[p_shape] != NULL) {
+			[cursors[p_shape] release];
+			cursors[p_shape] = NULL;
+		}
 
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		set_cursor_shape(c);
+
+		cursors_cache.erase(p_shape);
 	}
 }
 

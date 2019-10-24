@@ -858,11 +858,23 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				if (current_function) {
 					int arg_idx = current_function->arguments.find(identifier);
 					if (arg_idx != -1) {
-						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
-							// Assignment is not really usage
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] - 1;
-						} else {
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+						switch (tokenizer->get_token()) {
+							case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_DIV:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MOD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MUL:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SUB:
+							case GDScriptTokenizer::TK_OP_ASSIGN: {
+								// Assignment is not really usage
+							} break;
+							default: {
+								current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+							}
 						}
 					}
 				}
@@ -2232,9 +2244,7 @@ void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBran
 			break; // go back a level
 		}
 
-		if (pending_newline != -1) {
-			pending_newline = -1;
-		}
+		pending_newline = -1;
 
 		PatternBranchNode *branch = alloc_node<PatternBranchNode>();
 		branch->body = alloc_node<BlockNode>();
@@ -6111,12 +6121,18 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 			break;
 	}
 
+	// Some classes are prefixed with `_` internally
+	if (!ClassDB::class_exists(expr_native)) {
+		expr_native = "_" + expr_native;
+	}
+
 	switch (p_container.kind) {
 		case DataType::NATIVE: {
 			if (p_container.is_meta_type) {
 				return ClassDB::is_parent_class(expr_native, GDScriptNativeClass::get_class_static());
 			} else {
-				return ClassDB::is_parent_class(expr_native, p_container.native_type);
+				StringName container_native = ClassDB::class_exists(p_container.native_type) ? p_container.native_type : StringName("_" + p_container.native_type);
+				return ClassDB::is_parent_class(expr_native, container_native);
 			}
 		} break;
 		case DataType::SCRIPT:
@@ -6700,7 +6716,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 		}
 	}
 
-	p_node->set_datatype(_resolve_type(node_type, p_node->line));
+	node_type = _resolve_type(node_type, p_node->line);
+	p_node->set_datatype(node_type);
 	return node_type;
 }
 

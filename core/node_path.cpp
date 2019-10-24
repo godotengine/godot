@@ -269,7 +269,7 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 
 NodePath NodePath::get_as_property_path() const {
 
-	if (!data->path.size()) {
+	if (!data || !data->path.size()) {
 		return *this;
 	} else {
 		Vector<StringName> new_path = data->subpath;
@@ -375,7 +375,7 @@ NodePath::NodePath(const String &p_path) {
 				if (str == "") {
 					if (path[i] == 0) continue; // Allow end-of-path :
 
-					ERR_FAIL_MSG("Invalid NodePath: " + p_path + ".");
+					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
 				}
 				subpath.push_back(str);
 

@@ -62,7 +62,7 @@
 			</argument>
 			<argument index="1" name="billboard" type="bool" default="false">
 			</argument>
-			<argument index="2" name="skeleton" type="RID">
+			<argument index="2" name="skeleton" type="SkinReference" default="null">
 			</argument>
 			<argument index="3" name="material" type="Material" default="null">
 			</argument>

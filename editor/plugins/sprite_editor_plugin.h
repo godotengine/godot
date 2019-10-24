@@ -67,7 +67,8 @@ class SpriteEditor : public Control {
 	Vector<int> computed_indices;
 
 	SpinBox *simplification;
-	SpinBox *island_merging;
+	SpinBox *grow_pixels;
+	SpinBox *shrink_pixels;
 	Button *update_preview;
 
 	void _menu_option(int p_option);

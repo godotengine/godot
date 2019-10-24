@@ -487,7 +487,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	String sizes;
 
 	DirAccess *da = DirAccess::open(p_iconset_dir);
-	ERR_FAIL_COND_V(!da, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_iconset_dir + "'.");
 
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		IconInfo info = icon_infos[i];
@@ -537,7 +537,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 
 Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
 	DirAccess *da = DirAccess::open(p_dest_dir);
-	ERR_FAIL_COND_V(!da, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
 
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		LoadingScreenInfo info = loading_screen_infos[i];
@@ -546,7 +546,7 @@ Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPre
 			Error err = da->copy(loading_screen_file, p_dest_dir + info.export_name);
 			if (err) {
 				memdelete(da);
-				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path: " + loading_screen_file;
+				String err_str = String("Failed to export loading screen (") + info.preset_key + ") from path '" + loading_screen_file + "'.";
 				ERR_PRINT(err_str.utf8().get_data());
 				return err;
 			}
@@ -757,7 +757,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 
 Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets) {
 	DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(!filesystem_da, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
 		if (!asset.begins_with("res://")) {

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptLists" inherits="VisualScriptNode" category="Core" version="3.2">
+	<brief_description>
+		A Visual Script virtual class for in-graph editable nodes.
+	</brief_description>
+	<description>
+		A Visual Script virtual class that defines the shape and the default behaviour of the nodes that have to be in-graph editable nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_input_data_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="Variant.Type">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_output_data_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="Variant.Type">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_input_data_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_output_data_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_data_port_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_data_port_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="type" type="int" enum="Variant.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_output_data_port_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_output_data_port_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="type" type="int" enum="Variant.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -31,6 +31,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include "core/error_macros.h"
 #include "core/set.h"
 
 // based on the very nice implementation of rb-trees by:

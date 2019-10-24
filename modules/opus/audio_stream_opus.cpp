@@ -119,9 +119,7 @@ Error AudioStreamPlaybackOpus::_load_stream() {
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + file + "'.");
 
 	int _err = 0;
 
@@ -185,9 +183,7 @@ Error AudioStreamPlaybackOpus::set_file(const String &p_file) {
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + file + "'.");
 
 	int _err;
 

@@ -91,6 +91,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		Color keyword_color;
 		Color basetype_color;
 		Color type_color;
+		Color usertype_color;
 		Color comment_color;
 		Color string_color;
 	} colors_cache;

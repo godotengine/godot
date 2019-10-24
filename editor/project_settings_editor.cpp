@@ -74,6 +74,26 @@ static const char *_axis_names[JOY_AXIS_MAX * 2] = {
 	"", " (R2)"
 };
 
+void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && is_window_modal_on_top() && k->is_pressed()) {
+
+		if (k->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+			if (search_button->is_pressed()) {
+				search_box->grab_focus();
+				search_box->select_all();
+			} else {
+				// This toggles the search bar display while giving the button its "pressed" appearance
+				search_button->set_pressed(true);
+			}
+
+			accept_event();
+		}
+	}
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -116,6 +136,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
+			set_process_unhandled_input(false);
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
@@ -800,6 +821,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	set_process_unhandled_input(true);
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -823,13 +845,9 @@ void ProjectSettingsEditor::_item_adds(String) {
 
 void ProjectSettingsEditor::_item_add() {
 
-	Variant value;
-	switch (type->get_selected()) {
-		case 0: value = false; break;
-		case 1: value = 0; break;
-		case 2: value = 0.0; break;
-		case 3: value = ""; break;
-	}
+	// Initialize the property with the default value for the given type
+	Variant::CallError ce;
+	const Variant value = Variant::construct(Variant::Type(type->get_selected()), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1078,7 +1096,7 @@ bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Varian
 
 	TreeItem *selected = input_editor->get_selected();
 	TreeItem *item = input_editor->get_item_at_position(p_point);
-	if (!selected || !item || item->get_parent() == selected)
+	if (!selected || !item || item == selected || item->get_parent() == selected)
 		return false;
 
 	return true;
@@ -1091,6 +1109,8 @@ void ProjectSettingsEditor::drop_data_fw(const Point2 &p_point, const Variant &p
 
 	TreeItem *selected = input_editor->get_selected();
 	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!item)
+		return;
 	TreeItem *target = item->get_parent() == input_editor->get_root() ? item : item->get_parent();
 
 	String selected_name = "input/" + selected->get_text(0);
@@ -1309,7 +1329,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
-	if (translation_locales_idxs_remap.size() > 0) {
+	if (translation_locales_idxs_remap.size() > which) {
 		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
 	} else {
 		r.set(idx, path + ":" + langs[which]);
@@ -1697,6 +1717,7 @@ void ProjectSettingsEditor::_editor_restart_close() {
 
 void ProjectSettingsEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
 	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
 	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);
@@ -1811,10 +1832,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	type = memnew(OptionButton);
 	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(type);
-	type->add_item("bool");
-	type->add_item("int");
-	type->add_item("float");
-	type->add_item("string");
+
+	// Start at 1 to avoid adding "Nil" as an option
+	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+		type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+	}
 
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);

@@ -729,7 +729,7 @@ void EditorSpatialGizmo::set_plugin(EditorSpatialGizmoPlugin *p_plugin) {
 void EditorSpatialGizmo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard"), &EditorSpatialGizmo::add_lines, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton", "material"), &EditorSpatialGizmo::add_mesh, DEFVAL(false), DEFVAL(RID()), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "billboard", "skeleton", "material"), &EditorSpatialGizmo::add_mesh, DEFVAL(false), DEFVAL(Ref<SkinReference>()), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorSpatialGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorSpatialGizmo::add_collision_triangles);
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1));
@@ -1074,7 +1074,8 @@ AudioStreamPlayer3DSpatialGizmoPlugin::AudioStreamPlayer3DSpatialGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/stream_player_3d", Color(0.4, 0.8, 1));
 
 	create_icon_material("stream_player_3d_icon", SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer", "EditorIcons"));
-	create_material("stream_player_3d_material", gizmo_color);
+	create_material("stream_player_3d_material_primary", gizmo_color);
+	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
 	create_handle_material("handles");
 }
 
@@ -1160,50 +1161,53 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_
 
 void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
-	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
+	const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 
-	Ref<Material> icon = get_material("stream_player_3d_icon", p_gizmo);
+	const Ref<Material> icon = get_material("stream_player_3d_icon", p_gizmo);
 
 	if (player->is_emission_angle_enabled()) {
 
-		Ref<Material> material = get_material("stream_player_3d_material", p_gizmo);
+		const float pc = player->get_emission_angle();
+		const float ofs = -Math::cos(Math::deg2rad(pc));
+		const float radius = Math::sin(Math::deg2rad(pc));
 
-		float pc = player->get_emission_angle();
-
-		Vector<Vector3> points;
-		points.resize(208);
-
-		float ofs = -Math::cos(Math::deg2rad(pc));
-		float radius = Math::sin(Math::deg2rad(pc));
+		Vector<Vector3> points_primary;
+		points_primary.resize(200);
 
 		for (int i = 0; i < 100; i++) {
 
-			float a = i * 2.0 * Math_PI / 100.0;
-			float an = (i + 1) * 2.0 * Math_PI / 100.0;
+			const float a = i * 2.0 * Math_PI / 100.0;
+			const float an = (i + 1) * 2.0 * Math_PI / 100.0;
 
-			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
-			Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
+			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
+			const Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
 
-			points.write[i * 2 + 0] = from;
-			points.write[i * 2 + 1] = to;
+			points_primary.write[i * 2 + 0] = from;
+			points_primary.write[i * 2 + 1] = to;
 		}
 
-		for (int i = 0; i < 4; i++) {
+		const Ref<Material> material_primary = get_material("stream_player_3d_material_primary", p_gizmo);
+		p_gizmo->add_lines(points_primary, material_primary);
 
-			float a = i * 2.0 * Math_PI / 4.0;
+		Vector<Vector3> points_secondary;
+		points_secondary.resize(16);
 
-			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
+		for (int i = 0; i < 8; i++) {
 
-			points.write[200 + i * 2 + 0] = from;
-			points.write[200 + i * 2 + 1] = Vector3();
+			const float a = i * 2.0 * Math_PI / 8.0;
+			const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
+
+			points_secondary.write[i * 2 + 0] = from;
+			points_secondary.write[i * 2 + 1] = Vector3();
 		}
 
-		p_gizmo->add_lines(points, material);
+		const Ref<Material> material_secondary = get_material("stream_player_3d_material_secondary", p_gizmo);
+		p_gizmo->add_lines(points_secondary, material_secondary);
 
 		Vector<Vector3> handles;
-		float ha = Math::deg2rad(player->get_emission_angle());
+		const float ha = Math::deg2rad(player->get_emission_angle());
 		handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
@@ -1556,12 +1560,12 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	cursor_points.push_back(Vector3(0, -cs, 0));
 	cursor_points.push_back(Vector3(0, 0, +cs));
 	cursor_points.push_back(Vector3(0, 0, -cs));
-	cursor_colors.push_back(Color(1, 0.5, 0.5, 0.7));
-	cursor_colors.push_back(Color(1, 0.5, 0.5, 0.7));
-	cursor_colors.push_back(Color(0.5, 1, 0.5, 0.7));
-	cursor_colors.push_back(Color(0.5, 1, 0.5, 0.7));
-	cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
-	cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_x_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_x_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_y_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_y_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_z_color", "Editor"));
+	cursor_colors.push_back(EditorNode::get_singleton()->get_gui_base()->get_color("axis_z_color", "Editor"));
 
 	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
@@ -3726,6 +3730,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Ref<ConcavePolygonShape> cs2 = s;
 		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
 		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
+		p_gizmo->add_collision_segments(cs2->get_debug_mesh_lines());
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {

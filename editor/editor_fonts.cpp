@@ -64,7 +64,7 @@
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
-	if (CustomFont.is_valid()) {                                \
+	if (CustomFontBold.is_valid()) {                            \
 		m_name->set_font_data(CustomFontBold);                  \
 		m_name->add_fallback(DefaultFontBold);                  \
 	} else {                                                    \
@@ -232,6 +232,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	// Default font
 	MAKE_DEFAULT_FONT(df, default_font_size);
 	p_theme->set_default_theme_font(df);
+	p_theme->set_font("main", "EditorFonts", df);
 
 	// Bold font
 	MAKE_BOLD_FONT(df_bold, default_font_size);

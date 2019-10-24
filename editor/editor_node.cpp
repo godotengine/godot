@@ -33,6 +33,7 @@
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
 #include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
@@ -56,6 +57,7 @@
 #include "editor/editor_help.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -370,7 +372,7 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-			Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+			theme = create_editor_theme(theme_base->get_theme());
 
 			theme_base->set_theme(theme);
 			gui_base->set_theme(theme);
@@ -903,7 +905,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	}
 
 	Error err = cf->save(path);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save config file to '" + path + "'.");
 }
 
 bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags) {
@@ -1469,7 +1471,7 @@ void EditorNode::_dialog_action(String p_file) {
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 
-			if (err == ERR_CANT_OPEN) {
+			if (err == ERR_FILE_CANT_OPEN || err == ERR_FILE_NOT_FOUND) {
 				config.instance(); // new config
 			} else if (err != OK) {
 				show_warning(TTR("Error trying to save layout!"));
@@ -2365,6 +2367,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
+		case RUN_PROJECT_DATA_FOLDER: {
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
 			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
@@ -2519,7 +2524,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			bool was_visible = OS::get_singleton()->is_console_visible();
 			OS::get_singleton()->set_console_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", !was_visible);
+			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 
@@ -2571,8 +2576,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			save_all_scenes();
 			restart_editor();
 		} break;
-		default: {
-		}
 	}
 }
 
@@ -2597,16 +2600,13 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	img->flip_y();
 	viewport->set_clear_mode(Viewport::CLEAR_MODE_ALWAYS);
 	Error error = img->save_png(p_path);
-	ERR_FAIL_COND(error != OK);
+	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
 
 void EditorNode::_tool_menu_option(int p_idx) {
 	switch (tool_menu->get_item_id(p_idx)) {
 		case TOOLS_ORPHAN_RESOURCES: {
 			orphan_resources->show();
-		} break;
-		case RUN_PROJECT_DATA_FOLDER: {
-			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -3560,6 +3560,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<AnimationTrackEditPlugin>();
 	ClassDB::register_class<ScriptCreateDialog>();
 	ClassDB::register_class<EditorFeatureProfile>();
+	ClassDB::register_class<EditorSpinSlider>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -3639,6 +3640,20 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
+Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) const {
+	if (p_path.length()) {
+		Ref<Image> img = memnew(Image);
+		Error err = ImageLoader::load_image(p_path, img);
+		if (err == OK) {
+			Ref<ImageTexture> icon = memnew(ImageTexture);
+			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+			icon->create_from_image(img);
+			return icon;
+		}
+	}
+	return NULL;
+}
+
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
@@ -3652,8 +3667,10 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			if (icon_path.length())
-				return ResourceLoader::load(icon_path);
+			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+			if (icon.is_valid()) {
+				return icon;
+			}
 
 			// should probably be deprecated in 4.x
 			StringName base = base_script->get_instance_base_type();
@@ -3683,7 +3700,7 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 }
 
 Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
-	ERR_FAIL_COND_V(p_class.empty(), NULL);
+	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
 
 	if (gui_base->has_icon(p_class, "EditorIcons")) {
 		return gui_base->get_icon(p_class, "EditorIcons");
@@ -3691,12 +3708,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 
 	if (ScriptServer::is_global_class(p_class)) {
 		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
-		RES icon;
-
-		if (FileAccess::exists(icon_path)) {
-			icon = ResourceLoader::load(icon_path);
-			if (icon.is_valid())
-				return icon;
+		Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+		if (icon.is_valid()) {
+			return icon;
 		}
 
 		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
@@ -3704,10 +3718,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		while (script.is_valid()) {
 			String current_icon_path;
 			script->get_language()->get_global_class_name(script->get_path(), NULL, &current_icon_path);
-			if (FileAccess::exists(current_icon_path)) {
-				RES texture = ResourceLoader::load(current_icon_path);
-				if (texture.is_valid())
-					return texture;
+			icon = _load_custom_class_icon(current_icon_path);
+			if (icon.is_valid()) {
+				return icon;
 			}
 			script = script->get_base_script();
 		}
@@ -4893,7 +4906,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	}
 
 	int max_rows = 6;
-	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); //Don't waste a row to say "1 more file" - list it instead.
+	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); // Don't waste a row to say "1 more file" - list it instead.
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	for (int i = 0; i < num_rows; i++) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
@@ -4907,6 +4920,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 			label->set_text(p_paths[i].get_file());
 			icon->set_texture(gui_base->get_icon("File", "EditorIcons"));
 		}
+		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		icon->set_size(Size2(16, 16));
 		hbox->add_child(icon);
 		hbox->add_child(label);
@@ -5639,6 +5653,9 @@ EditorNode::EditorNode() {
 	editor_export = memnew(EditorExport);
 	add_child(editor_export);
 
+	// Exporters might need the theme
+	theme = create_custom_theme();
+
 	register_exporters();
 
 	GLOBAL_DEF("editor/main_run_args", "");
@@ -5680,7 +5697,6 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	Ref<Theme> theme = create_custom_theme();
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
