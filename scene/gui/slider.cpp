@@ -101,26 +101,26 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (!mm.is_valid() && !mb.is_valid()) {
 
-		if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+		if (p_event->is_action_pressed("ui_left", true)) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+		} else if (p_event->is_action_pressed("ui_right", true)) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+		} else if (p_event->is_action_pressed("ui_up", true)) {
 
 			if (orientation != VERTICAL)
 				return;
 
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
-		} else if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+		} else if (p_event->is_action_pressed("ui_down", true)) {
 
 			if (orientation != VERTICAL)
 				return;
