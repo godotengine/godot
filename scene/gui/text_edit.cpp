@@ -1723,7 +1723,9 @@ void TextEdit::_notification(int p_what) {
 						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xFFFF)))).x;
 					}
 
-					draw_string(font, hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font->get_height() * i + spacing), l.replace(String::chr(0xFFFF), ""), font_color);
+					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font->get_height() * i + spacing);
+					round_ofs = round_ofs.round();
+					draw_string(font, round_ofs, l.replace(String::chr(0xFFFF), ""), font_color);
 					if (end > 0) {
 						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font->get_height() + font->get_height() * i + spacing - 1);
 						draw_line(b, b + Vector2(end - begin, 0), font_color);
