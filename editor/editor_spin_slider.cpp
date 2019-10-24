@@ -228,9 +228,9 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(focus, Rect2(Vector2(), get_size()));
 		}
 
-		draw_string(font, Vector2(sb->get_offset().x, vofs), label, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
 
-		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
+		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
 			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
