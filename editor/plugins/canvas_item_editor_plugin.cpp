@@ -2274,7 +2274,7 @@ bool CanvasItemEditor::_gui_input_ruler_tool(const Ref<InputEvent> &p_event) {
 
 	Point2 previous_origin = ruler_tool_origin;
 	if (!ruler_tool_active)
-		ruler_tool_origin = snap_point(viewport->get_local_mouse_position() / zoom + view_offset) * zoom;
+		ruler_tool_origin = snap_point(viewport->get_local_mouse_position() / zoom + view_offset);
 
 	if (b.is_valid() && b->get_button_index() == BUTTON_LEFT) {
 		if (b->is_pressed()) {
@@ -2694,12 +2694,12 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		Color ruler_secondary_color = ruler_primary_color;
 		ruler_secondary_color.a = 0.5;
 
-		Point2 begin = ruler_tool_origin - view_offset * zoom;
+		Point2 begin = (ruler_tool_origin - view_offset) * zoom;
 		Point2 end = snap_point(viewport->get_local_mouse_position() / zoom + view_offset) * zoom - view_offset * zoom;
 		Point2 corner = Point2(begin.x, end.y);
 		Vector2 length_vector = (begin - end).abs() / zoom;
 
-		bool draw_secondary_lines = (begin.y != corner.y && end.x != corner.x);
+		bool draw_secondary_lines = !(Math::is_equal_approx(begin.y, corner.y) || Math::is_equal_approx(end.x, corner.x));
 
 		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3), true);
 		if (draw_secondary_lines) {
@@ -2796,11 +2796,11 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 				Point2 text_pos2 = text_pos;
 				text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
-				viewport->draw_string(font, text_pos2, vformat("%d units", (int)(length_vector.y / grid_step.y)), font_secondary_color);
+				viewport->draw_string(font, text_pos2, vformat("%d units", roundf(length_vector.y / grid_step.y)), font_secondary_color);
 
 				text_pos2 = text_pos;
 				text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y + text_height / 2) : MAX(text_pos.y + text_height * 2, end.y + text_height / 2);
-				viewport->draw_string(font, text_pos2, vformat("%d units", (int)(length_vector.x / grid_step.x)), font_secondary_color);
+				viewport->draw_string(font, text_pos2, vformat("%d units", roundf(length_vector.x / grid_step.x)), font_secondary_color);
 			} else {
 				viewport->draw_string(font, text_pos, vformat("%d units", roundf((length_vector / grid_step).length())), font_color);
 			}
@@ -2809,7 +2809,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 		if (is_snap_active) {
 			Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
-			viewport->draw_texture(get_icon("EditorPosition", "EditorIcons"), ruler_tool_origin - view_offset * zoom - position_icon->get_size() / 2);
+			viewport->draw_texture(get_icon("EditorPosition", "EditorIcons"), (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 		}
 	}
 }
