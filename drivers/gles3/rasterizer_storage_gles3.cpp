@@ -135,13 +135,13 @@ void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, 
 
 GLuint RasterizerStorageGLES3::system_fbo = 0;
 
-Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &srgb) const {
+Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const {
 
 	r_compressed = false;
 	r_gl_format = 0;
 	r_real_format = p_format;
 	Ref<Image> image = p_image;
-	srgb = false;
+	r_srgb = false;
 
 	bool need_decompress = false;
 
@@ -188,7 +188,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_internal_format = (config.srgb_decode_supported || (p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8 : GL_RGB8;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			srgb = true;
+			r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA8: {
@@ -196,7 +196,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_format = GL_RGBA;
 			r_gl_internal_format = (config.srgb_decode_supported || (p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			srgb = true;
+			r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA4444: {
@@ -278,7 +278,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -294,7 +294,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -310,7 +310,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -355,7 +355,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -395,7 +395,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -410,7 +410,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -426,7 +426,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -442,7 +442,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -527,7 +527,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -542,7 +542,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -557,7 +557,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -570,7 +570,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 		}
 	}
 
-	if (need_decompress) {
+	if (need_decompress || p_force_decompress) {
 
 		if (!image.is_null()) {
 			image = image->duplicate();
@@ -584,7 +584,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 		r_gl_type = GL_UNSIGNED_BYTE;
 		r_compressed = false;
 		r_real_format = Image::FORMAT_RGBA8;
-		srgb = true;
+		r_srgb = true;
 
 		return image;
 	}
@@ -677,8 +677,22 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 		} break;
 	}
 
+	texture->is_npot_repeat_mipmap = false;
+#ifdef JAVASCRIPT_ENABLED
+	// WebGL 2.0 on browsers does not seem to properly support compressed non power-of-two (NPOT)
+	// textures with repeat/mipmaps, even though NPOT textures should be supported as per the spec.
+	// Force decompressing them to work it around on WebGL 2.0 at a performance cost (GH-33058).
+	int po2_width = next_power_of_2(p_width);
+	int po2_height = next_power_of_2(p_height);
+	bool is_po2 = p_width == po2_width && p_height == po2_height;
+
+	if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
+		texture->is_npot_repeat_mipmap = true;
+	}
+#endif // JAVASCRIPT_ENABLED
+
 	Image::Format real_format;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	texture->alloc_width = texture->width;
 	texture->alloc_height = texture->height;
@@ -753,13 +767,9 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	if (config.keep_original_textures && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 		texture->images.write[p_layer] = p_image;
 	}
-#ifndef GLES_OVER_GL
-	if (p_image->is_compressed() && p_image->has_mipmaps() && !p_image->is_size_po2()) {
-		ERR_PRINTS("Texuture '" + texture->path + "' is compressed, has mipmaps but is not of powerf-of-2 size. This does not work on OpenGL ES 3.0.");
-	}
-#endif
+
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	if (config.shrink_textures_x2 && (p_image->has_mipmaps() || !p_image->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 
@@ -992,7 +1002,7 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	}
 
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	GLenum blit_target = GL_TEXTURE_2D;
 
@@ -1091,7 +1101,8 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 				gl_internal_format,
 				gl_type,
 				compressed,
-				srgb);
+				srgb,
+				texture->is_npot_repeat_mipmap);
 
 		PoolVector<uint8_t> data;
 
@@ -1197,7 +1208,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	GLenum gl_type;
 	bool compressed;
 	bool srgb;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb, false);
 
 	PoolVector<uint8_t> data;
 
@@ -1267,7 +1278,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	GLenum gl_type;
 	bool compressed;
 	bool srgb;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	PoolVector<uint8_t> data;
 
