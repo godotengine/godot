@@ -69,7 +69,7 @@ struct ImportState {
 	Map<String, int> camera_cache;
 	// very useful for when you need to ask assimp for the bone mesh
 
-	Map<const aiNode *, const Node *> assimp_node_map;
+	Map<const aiNode *, Node *> assimp_node_map;
 	Map<String, Ref<Image> > path_to_image_cache;
 
 	// Generation 3 - determinisitic iteration

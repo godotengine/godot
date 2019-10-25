@@ -460,7 +460,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			if (skeleton && skeleton->find_bone(bone_name) == -1) {
 				print_verbose("[Godot Glue] Imported bone" + bone_name);
 				int boneIdx = skeleton->get_bone_count();
-				Transform xform = AssimpUtils::assimp_matrix_transform(bone->mOffsetMatrix);
+				
 				Transform pform = AssimpUtils::assimp_matrix_transform(bone->mNode->mTransformation);
 				skeleton->add_bone(bone_name);
 				skeleton->set_bone_rest(boneIdx, pform);
@@ -1346,6 +1346,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 	}
 
 	Skeleton *skeleton = NULL;
+	aiNode *armature = NULL;
 
 	if (!state.mesh_cache.has(mesh_key)) {
 		mesh = _generate_mesh_from_surface_indices(state, surface_indices, assimp_node, skin, skeleton);
@@ -1370,12 +1371,20 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 			int bind_count = 0;
 			for (unsigned int boneId = 0; boneId < ai_mesh->mNumBones; ++boneId) {
 				aiBone *iterBone = ai_mesh->mBones[boneId];
+
+				// used to reparent mesh to the correct armature later on if assigned.
+				if(!armature)
+				{
+					print_verbose("Configured mesh armature, will reparent later to armature");
+					armature = iterBone->mArmature;
+				}
+
 				if (skeleton) {
 					int id = skeleton->find_bone(AssimpUtils::get_assimp_string(iterBone->mName));
 					if (id != -1) {
 						print_verbose("Set bind bone: mesh: " + itos(mesh_index) + " bone index: " + itos(id));
 						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix);
-						Transform pose = AssimpUtils::_get_global_assimp_node_transform(iterBone->mNode);
+						
 						skin->add_bind(bind_count, t);
 						skin->set_bind_bone(bind_count, id);
 						bind_count++;
@@ -1388,10 +1397,28 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 		print_verbose("Finished configuring bind pose for skin mesh");
 	}
 
-	active_node->add_child(mesh_node);
-	mesh_node->set_global_transform(node_transform);
-	mesh_node->set_name(node_name);
-	mesh_node->set_owner(state.root);
+	// this code parents all meshes with bones to the armature they are for
+	// GLTF2 specification relies on this and we are enforcing it for FBX.
+	if(armature && state.flat_node_map[armature])
+	{
+		Node* armature_parent = state.flat_node_map[armature];
+		print_verbose("Parented mesh " + node_name + " to armature " + armature_parent->get_name() );
+		// static mesh handling
+		armature_parent->add_child(mesh_node);
+		// transform must be identity
+		mesh_node->set_global_transform(Transform());
+		mesh_node->set_name(node_name);
+		mesh_node->set_owner(state.root);
+	}
+	else
+	{		
+		// static mesh handling
+		active_node->add_child(mesh_node);
+		mesh_node->set_global_transform(node_transform);
+		mesh_node->set_name(node_name);
+		mesh_node->set_owner(state.root);
+	}	
+
 
 	if (skeleton) {
 		print_verbose("Attempted to set skeleton path!");
