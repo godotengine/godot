@@ -184,6 +184,7 @@ class EditorAssetLibrary : public PanelContainer {
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
 	Label *library_loading;
+	Label *library_error;
 	LineEdit *filter;
 	OptionButton *categories;
 	OptionButton *repository;
