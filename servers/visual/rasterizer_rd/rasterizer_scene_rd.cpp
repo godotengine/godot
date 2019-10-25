@@ -1989,7 +1989,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					rect.size.y = MAX(1, rect.size.y >> 1);
 
 					//shrink limits to ensure plot does not go outside map
-					if (gi_probe->dynamic_maps[i].mipmap > 0) {
+					if (gi_probe->dynamic_maps[k].mipmap > 0) {
 						for (int l = 0; l < 3; l++) {
 							push_constant.limits[l] = MAX(1, push_constant.limits[l] >> 1);
 						}
@@ -2002,8 +2002,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					push_constant.prev_rect_size[1] = push_constant.rect_size[1];
 					push_constant.rect_size[0] = rect.size[0];
 					push_constant.rect_size[1] = rect.size[1];
-					push_constant.keep_downsample_color = gi_probe->dynamic_maps[i].mipmap <= 0;
-					;
+					push_constant.keep_downsample_color = gi_probe->dynamic_maps[k].mipmap <= 0;
 
 					RD::get_singleton()->compute_list_add_barrier(compute_list);
 

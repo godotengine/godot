@@ -2250,10 +2250,10 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	return OK;
 }
 
-PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer) {
+PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d) {
 
 	uint32_t width, height, depth;
-	uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps, &width, &height, &depth);
+	uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, tex->mipmaps, &width, &height, &depth);
 
 	PoolVector<uint8_t> image_data;
 	image_data.resize(image_size);
@@ -2272,7 +2272,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::_texture_get_data_from_image(Texture 
 		uint32_t mipmap_offset = 0;
 		for (uint32_t mm_i = 0; mm_i < tex->mipmaps; mm_i++) {
 
-			uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, mm_i + 1, &width, &height, &depth);
+			uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, mm_i + 1, &width, &height, &depth);
 
 			uint8_t *write_ptr_mipmap = w.ptr() + mipmap_offset;
 			image_size = image_total - mipmap_offset;
@@ -2339,46 +2339,17 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 		//does not need anything fancy, map and read.
 		return _texture_get_data_from_image(tex, tex->image, tex->allocation, p_layer);
 	} else {
-		VkImageCreateInfo image_create_info;
-		image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		image_create_info.pNext = NULL;
-		image_create_info.flags = 0;
-		image_create_info.imageType = vulkan_image_type[tex->type];
-		image_create_info.format = vulkan_formats[tex->format];
-		image_create_info.extent.width = tex->width;
-		image_create_info.extent.height = tex->height;
-		image_create_info.extent.depth = tex->depth;
-		image_create_info.mipLevels = tex->mipmaps;
-		image_create_info.arrayLayers = 1; //for retrieving, only one layer
-		image_create_info.samples = rasterization_sample_count[tex->samples];
-		image_create_info.tiling = VK_IMAGE_TILING_LINEAR; // for retrieving, linear is recommended
-		image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		image_create_info.queueFamilyIndexCount = 0;
-		image_create_info.pQueueFamilyIndices = NULL;
-		image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VmaAllocationCreateInfo allocInfo;
-		allocInfo.flags = 0;
-		allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-		allocInfo.requiredFlags = 0;
-		allocInfo.preferredFlags = 0;
-		allocInfo.memoryTypeBits = 0;
-		allocInfo.pool = NULL;
-		allocInfo.pUserData = NULL;
+		//compute total image size
+		uint32_t width, height, depth;
+		uint32_t buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps, &width, &height, &depth);
 
-		VkImage image;
-		VmaAllocation allocation;
-		VmaAllocationInfo allocation_info;
-
-		//Allocate the image
-		VkResult err = vmaCreateImage(allocator, &image_create_info, &allocInfo, &image, &allocation, &allocation_info);
-		ERR_FAIL_COND_V(err, PoolVector<uint8_t>());
-
+		//allocate buffer
 		VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
-		//PRE Copy the image
+		Buffer tmp_buffer;
+		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
-		{ //Source
+		{ //Source image barrier
 			VkImageMemoryBarrier image_memory_barrier;
 			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			image_memory_barrier.pNext = NULL;
@@ -2398,69 +2369,42 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 
 			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
 		}
-		{ //Dest
-			VkImageMemoryBarrier image_memory_barrier;
-			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			image_memory_barrier.pNext = NULL;
-			image_memory_barrier.srcAccessMask = 0;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			image_memory_barrier.image = image;
-			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			image_memory_barrier.subresourceRange.baseMipLevel = 0;
-			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
-			image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-			image_memory_barrier.subresourceRange.layerCount = 1;
+		uint32_t computed_w = tex->width;
+		uint32_t computed_h = tex->height;
+		uint32_t computed_d = tex->depth;
 
-			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		uint32_t prev_size = 0;
+		uint32_t offset = 0;
+		for (uint32_t i = 0; i < tex->mipmaps; i++) {
+
+			VkBufferImageCopy buffer_image_copy;
+
+			uint32_t image_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1);
+			uint32_t size = image_size - prev_size;
+			prev_size = image_size;
+
+			buffer_image_copy.bufferOffset = offset;
+			buffer_image_copy.bufferImageHeight = 0;
+			buffer_image_copy.bufferRowLength = 0;
+			buffer_image_copy.imageSubresource.aspectMask = tex->read_aspect_mask;
+			buffer_image_copy.imageSubresource.baseArrayLayer = p_layer;
+			buffer_image_copy.imageSubresource.layerCount = 1;
+			buffer_image_copy.imageSubresource.mipLevel = i;
+			buffer_image_copy.imageOffset.x = 0;
+			buffer_image_copy.imageOffset.y = 0;
+			buffer_image_copy.imageOffset.z = 0;
+			buffer_image_copy.imageExtent.width = computed_w;
+			buffer_image_copy.imageExtent.height = computed_h;
+			buffer_image_copy.imageExtent.depth = computed_d;
+
+			vkCmdCopyImageToBuffer(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tmp_buffer.buffer, 1, &buffer_image_copy);
+
+			computed_w = MAX(1, computed_w >> 1);
+			computed_h = MAX(1, computed_h >> 1);
+			computed_d = MAX(1, computed_d >> 1);
+			offset += size;
 		}
-
-		//COPY
-
-		{
-
-			//despite textures being in block sizes, spec requiers they are in pixel sizes (?)
-			uint32_t computed_w = tex->width;
-			uint32_t computed_h = tex->height;
-
-			for (uint32_t i = 0; i < tex->mipmaps; i++) {
-
-				uint32_t mm_width, mm_height, mm_depth;
-				get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1, &mm_width, &mm_height, &mm_depth);
-
-				VkImageCopy image_copy_region;
-				image_copy_region.srcSubresource.aspectMask = tex->read_aspect_mask;
-				image_copy_region.srcSubresource.baseArrayLayer = p_layer;
-				image_copy_region.srcSubresource.layerCount = 1;
-				image_copy_region.srcSubresource.mipLevel = i;
-				image_copy_region.srcOffset.x = 0;
-				image_copy_region.srcOffset.y = 0;
-				image_copy_region.srcOffset.z = 0;
-
-				image_copy_region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				image_copy_region.dstSubresource.baseArrayLayer = p_layer;
-				image_copy_region.dstSubresource.layerCount = 1;
-				image_copy_region.dstSubresource.mipLevel = i;
-				image_copy_region.dstOffset.x = 0;
-				image_copy_region.dstOffset.y = 0;
-				image_copy_region.dstOffset.z = 0;
-
-				image_copy_region.extent.width = computed_w;
-				image_copy_region.extent.height = computed_h;
-				image_copy_region.extent.depth = mm_depth; //block is only x,y so this is fine anyway
-
-				vkCmdCopyImage(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy_region);
-
-				computed_w = MAX(1, computed_w >> 1);
-				computed_h = MAX(1, computed_h >> 1);
-			}
-		}
-
-		// RESTORE LAYOUT for SRC and DST
 
 		{ //restore src
 			VkImageMemoryBarrier image_memory_barrier;
@@ -2482,34 +2426,27 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
 		}
 
-		{ //make dst readable
-
-			VkImageMemoryBarrier image_memory_barrier;
-			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			image_memory_barrier.pNext = NULL;
-			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			image_memory_barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			image_memory_barrier.image = image;
-			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			image_memory_barrier.subresourceRange.baseMipLevel = 0;
-			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
-			image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-			image_memory_barrier.subresourceRange.layerCount = 1;
-
-			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
-		}
-
-		//flush everything so memory can be safely mapped
 		_flush(true);
 
-		PoolVector<uint8_t> ret = _texture_get_data_from_image(tex, image, allocation, p_layer);
-		vmaDestroyImage(allocator, image, allocation);
-		return ret;
+		void *buffer_mem;
+		VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
+		if (vkerr) {
+			ERR_FAIL_V(PoolVector<uint8_t>());
+		}
+
+		PoolVector<uint8_t> buffer_data;
+		{
+
+			buffer_data.resize(buffer_size);
+			PoolVector<uint8_t>::Write w = buffer_data.write();
+			copymem(w.ptr(), buffer_mem, buffer_size);
+		}
+
+		vmaUnmapMemory(allocator, tmp_buffer.allocation);
+
+		_buffer_free(&tmp_buffer);
+
+		return buffer_data;
 	}
 }
 
