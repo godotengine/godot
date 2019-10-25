@@ -294,14 +294,14 @@ public:
 	const TData &get(const TKey &p_key) const {
 
 		const TData *res = getptr(p_key);
-		ERR_FAIL_COND_V(!res, *res);
+		CRASH_COND_MSG(!res, "Map key not found.");
 		return *res;
 	}
 
 	TData &get(const TKey &p_key) {
 
 		TData *res = getptr(p_key);
-		ERR_FAIL_COND_V(!res, *res);
+		CRASH_COND_MSG(!res, "Map key not found.");
 		return *res;
 	}
 
