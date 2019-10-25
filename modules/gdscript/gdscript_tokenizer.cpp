@@ -450,11 +450,11 @@ void GDScriptTokenizerText::_make_error(const String &p_error) {
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
-void GDScriptTokenizerText::_make_newline(int p_spaces) {
+void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 	tk.type = TK_NEWLINE;
-	tk.constant = p_spaces;
+	tk.constant = Vector2(p_indentation, p_tabs);
 	tk.line = line;
 	tk.col = column;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
@@ -511,33 +511,6 @@ void GDScriptTokenizerText::_advance() {
 			case ' ':
 				INCPOS(1);
 				continue;
-			case '\n': {
-				line++;
-				INCPOS(1);
-				column = 1;
-				int i = 0;
-				while (true) {
-					if (GETCHAR(i) == ' ') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
-						if (file_indent_type != INDENT_SPACES) {
-							_make_error("Spaces used for indentation in tab-indented file!");
-							return;
-						}
-					} else if (GETCHAR(i) == '\t') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
-						if (file_indent_type != INDENT_TABS) {
-							_make_error("Tabs used for indentation in space-indented file!");
-							return;
-						}
-					} else {
-						break; // not indentation anymore
-					}
-					i++;
-				}
-
-				_make_newline(i);
-				return;
-			}
 			case '#': { // line comment skip
 #ifdef DEBUG_ENABLED
 				String comment;
@@ -565,33 +538,34 @@ void GDScriptTokenizerText::_advance() {
 					ignore_warnings = true;
 				}
 #endif // DEBUG_ENABLED
-				INCPOS(1);
-				column = 1;
+				FALLTHROUGH;
+			}
+			case '\n': {
 				line++;
+				INCPOS(1);
+				bool used_spaces = false;
+				int tabs = 0;
+				column = 1;
 				int i = 0;
 				while (true) {
 					if (GETCHAR(i) == ' ') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
-						if (file_indent_type != INDENT_SPACES) {
-							_make_error("Spaces used for indentation in tab-indented file!");
-							return;
-						}
+						i++;
+						used_spaces = true;
 					} else if (GETCHAR(i) == '\t') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
-						if (file_indent_type != INDENT_TABS) {
-							_make_error("Tabs used for indentation in space-indented file!");
+						if (used_spaces) {
+							_make_error("Spaces used before tabs on a line");
 							return;
 						}
+						i++;
+						tabs++;
 					} else {
 						break; // not indentation anymore
 					}
-					i++;
 				}
 
-				_make_newline(i);
+				_make_newline(i, tabs);
 				return;
-
-			} break;
+			}
 			case '/': {
 
 				switch (GETCHAR(1)) {
@@ -1108,7 +1082,6 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	ignore_warnings = false;
 #endif // DEBUG_ENABLED
 	last_error = "";
-	file_indent_type = INDENT_NONE;
 	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
 		_advance();
 }
@@ -1183,7 +1156,17 @@ int GDScriptTokenizerText::get_token_line_indent(int p_offset) const {
 
 	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
 	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
-	return tk_rb[ofs].constant;
+	return tk_rb[ofs].constant.operator Vector2().x;
+}
+
+int GDScriptTokenizerText::get_token_line_tab_indent(int p_offset) const {
+
+	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, 0);
+	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, 0);
+
+	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
+	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
+	return tk_rb[ofs].constant.operator Vector2().y;
 }
 
 String GDScriptTokenizerText::get_token_error(int p_offset) const {
