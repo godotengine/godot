@@ -435,21 +435,30 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Signals
     if len(class_def.signals) > 0:
         f.write(make_heading('Signals', '-'))
+        index = 0
+
         for signal in class_def.signals.values():
-            #f.write(".. _class_{}_{}:\n\n".format(class_name, signal.name))
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _class_{}_signal_{}:\n\n".format(class_name, signal.name))
             _, signature = make_method_signature(class_def, signal, False, state)
             f.write("- {}\n\n".format(signature))
 
-            if signal.description is None or signal.description.strip() == '':
-                continue
-            f.write(rstize_text(signal.description.strip(), state))
-            f.write("\n\n")
+            if signal.description is not None and signal.description.strip() != '':
+                f.write(rstize_text(signal.description.strip(), state) + '\n\n')
+
+            index += 1
 
     # Enums
     if len(class_def.enums) > 0:
         f.write(make_heading('Enumerations', '-'))
+        index = 0
+
         for e in class_def.enums.values():
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _enum_{}_{}:\n\n".format(class_name, e.name))
             # Sphinx seems to divide the bullet list into individual <ul> tags if we weave the labels into it.
             # As such I'll put them all above the list. Won't be perfect but better than making the list visually broken.
@@ -463,7 +472,10 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != '':
                     f.write(' --- ' + rstize_text(value.text.strip(), state))
+
                 f.write('\n\n')
+
+            index += 1
 
     # Constants
     if len(class_def.constants) > 0:
@@ -477,6 +489,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("- **{}** = **{}**".format(constant.name, constant.value))
             if constant.text is not None and constant.text.strip() != '':
                 f.write(' --- ' + rstize_text(constant.text.strip(), state))
+
             f.write('\n\n')
 
     # Class description
@@ -494,11 +507,15 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Property descriptions
     if any(not p.overridden for p in class_def.properties.values()) > 0:
         f.write(make_heading('Property Descriptions', '-'))
+        index = 0
+
         for property_def in class_def.properties.values():
             if property_def.overridden:
                 continue
 
-            #f.write(".. _class_{}_{}:\n\n".format(class_name, property_def.name))
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write('- {} **{}**\n\n'.format(property_def.type_name.to_rst(state), property_def.name))
 
@@ -514,24 +531,30 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != '':
-                f.write(rstize_text(property_def.text.strip(), state))
-                f.write('\n\n')
+                f.write(rstize_text(property_def.text.strip(), state) + '\n\n')
+
+            index += 1
 
     # Method descriptions
     if len(class_def.methods) > 0:
         f.write(make_heading('Method Descriptions', '-'))
+        index = 0
+
         for method_list in class_def.methods.values():
             for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write('----\n\n')
+
                 if i == 0:
-                    #f.write(".. _class_{}_{}:\n\n".format(class_name, m.name))
                     f.write(".. _class_{}_method_{}:\n\n".format(class_name, m.name))
+
                 ret_type, signature = make_method_signature(class_def, m, False, state)
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
-                if m.description is None or m.description.strip() == '':
-                    continue
-                f.write(rstize_text(m.description.strip(), state))
-                f.write("\n\n")
+                if m.description is not None and m.description.strip() != '':
+                    f.write(rstize_text(m.description.strip(), state) + '\n\n')
+
+                index += 1
 
 
 def make_class_list(class_list, columns):  # type: (List[str], int) -> None
@@ -897,7 +920,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
     if len(data) == 0:
         return
-    
+
     column_sizes = [0] * len(data[0])
     for row in data:
         for i, text in enumerate(row):
@@ -912,7 +935,7 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
         sep += "+" + "-" * (size + 2)
     sep += "+\n"
     f.write(sep)
-    
+
     for row in data:
         row_text = "|"
         for i, text in enumerate(row):
