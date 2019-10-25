@@ -845,9 +845,10 @@ void ProjectSettingsEditor::_item_adds(String) {
 
 void ProjectSettingsEditor::_item_add() {
 
-	// Initialize the property with the default value for the given type
+	// Initialize the property with the default value for the given type.
+	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected()), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1835,7 +1836,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	// Start at 1 to avoid adding "Nil" as an option
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-		type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+		type->add_item(Variant::get_type_name(Variant::Type(i)));
 	}
 
 	Button *add = memnew(Button);
