@@ -331,6 +331,7 @@ def configure_mingw(env):
     env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid'])
 
     env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
+    env.Append(CPPFLAGS=['-DMINGW_HAS_SECURE_API=1'])
 
     # resrc
     env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
