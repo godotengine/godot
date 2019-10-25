@@ -201,7 +201,8 @@ class GridMapEditor : public VBoxContainer {
 
 	EditorNode *editor;
 
-	void update_grid();
+	void update_grid(); // Change which and where the grid is displayed
+	void _draw_grids(const Vector3 &cell_size);
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
