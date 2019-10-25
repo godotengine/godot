@@ -85,6 +85,9 @@
 		<member name="icon" type="Texture2D" setter="set_button_icon" getter="get_button_icon">
 			Button's icon, if text is present the icon will be placed before the text.
 		</member>
+		<member name="icon_align" type="int" setter="set_icon_align" getter="get_icon_align" enum="Button.TextAlign" default="0">
+			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum TextAlign] constants as the text alignment. If centered, text will draw on top of the icon.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
