@@ -2852,8 +2852,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(cursor.line);
 						bool indent_char_found = false;
 						bool should_indent = false;
-						char indent_char;
-						char c;
+						char indent_char = ':';
+						char c = text[cursor.line][cursor.column];
 
 						for (int i = 0; i < cursor.column; i++) {
 							c = text[cursor.line][i];
