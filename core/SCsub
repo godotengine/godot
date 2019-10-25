@@ -80,6 +80,8 @@ if env['builtin_zlib']:
 	env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
 	# Needs to be available in main env too
 	env.Prepend(CPPPATH=[thirdparty_zlib_dir])
+	if (env['target'] == 'debug'):
+		env_thirdparty.Append(CPPDEFINES=['ZLIB_DEBUG'])
 
 	env_thirdparty.add_source_files(env.core_sources, thirdparty_zlib_sources)
 
