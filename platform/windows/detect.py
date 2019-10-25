@@ -350,7 +350,7 @@ def configure_mingw(env):
     env.Append(CPPDEFINES=[('WINVER', env['target_win_version']), ('_WIN32_WINNT', env['target_win_version'])])
     env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid'])
 
-    env.Append(CPPDEFINES=['MINGW_ENABLED'])
+    env.Append(CPPDEFINES=['MINGW_ENABLED', ('MINGW_HAS_SECURE_API', 1)])
 
     # resrc
     env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
