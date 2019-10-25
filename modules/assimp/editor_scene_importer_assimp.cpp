@@ -1358,7 +1358,6 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 
 	// if we have a valid skeleton set it up
 	if (skin.is_valid()) {
-		int bind_count = 0;
 		for (uint32_t i = 0; i < assimp_node->mNumMeshes; i++) {
 			unsigned int mesh_index = assimp_node->mMeshes[i];
 			const aiMesh *ai_mesh = state.assimp_scene->mMeshes[mesh_index];
@@ -1367,6 +1366,8 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 			// it is the index relative to the skeleton that is why
 			// we have state.bone_id_map, it allows for duplicate bone id's too :)
 			// hope this makes sense
+
+			int bind_count = 0;
 			for (unsigned int boneId = 0; boneId < ai_mesh->mNumBones; ++boneId) {
 				aiBone *iterBone = ai_mesh->mBones[boneId];
 				if (skeleton) {
@@ -1376,11 +1377,12 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix);
 						Transform pose = AssimpUtils::_get_global_assimp_node_transform(iterBone->mNode);
 						skin->add_bind(bind_count, t);
+						skin->set_bind_bone(bind_count, id);
+						bind_count++;
 					}
 				}
 			}
 
-			bind_count++;
 		}
 
 		print_verbose("Finished configuring bind pose for skin mesh");
