@@ -150,7 +150,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<Texture, true> texture_owner;
 	uint32_t texture_upload_region_size_px;
 
-	PoolVector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer);
+	PoolVector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer, bool p_2d = false);
 
 	/*****************/
 	/**** SAMPLER ****/
