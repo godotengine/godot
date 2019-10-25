@@ -281,7 +281,7 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(EASE_OUT_IN);
 }
 
-Variant &Tween::_get_initial_val(InterpolateData &p_data) {
+Variant Tween::_get_initial_val(const InterpolateData &p_data) const {
 
 	// What type of data are we interpolating?
 	switch (p_data.type) {
@@ -299,7 +299,7 @@ Variant &Tween::_get_initial_val(InterpolateData &p_data) {
 			ERR_FAIL_COND_V(object == NULL, p_data.initial_val);
 
 			// Are we targeting a property or a method?
-			static Variant initial_val;
+			Variant initial_val;
 			if (p_data.type == TARGETING_PROPERTY) {
 				// Get the property from the target object
 				bool valid = false;
@@ -320,6 +320,41 @@ Variant &Tween::_get_initial_val(InterpolateData &p_data) {
 	}
 	// If we've made it here, just return the delta value as the initial value
 	return p_data.delta_val;
+}
+
+Variant Tween::_get_final_val(const InterpolateData &p_data) const {
+	switch (p_data.type) {
+		case FOLLOW_PROPERTY:
+		case FOLLOW_METHOD: {
+			// Get the object that is being followed
+			Object *target = ObjectDB::get_instance(p_data.target_id);
+			ERR_FAIL_COND_V(target == NULL, p_data.initial_val);
+
+			// We want to figure out the final value
+			Variant final_val;
+			if (p_data.type == FOLLOW_PROPERTY) {
+				// Read the property as-is
+				bool valid = false;
+				final_val = target->get_indexed(p_data.target_key, &valid);
+				ERR_FAIL_COND_V(!valid, p_data.initial_val);
+			} else {
+				// We're looking at a method. Call the method on the target object
+				Variant::CallError error;
+				final_val = target->call(p_data.target_key[0], NULL, 0, error);
+				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
+			}
+
+			// If we're looking at an INT value, instead convert it to a REAL
+			// This is better for interpolation
+			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
+
+			return final_val;
+		}
+		default: {
+			// If we're not following a final value/method, use the final value from the data
+			return p_data.final_val;
+		}
+	}
 }
 
 Variant &Tween::_get_delta_val(InterpolateData &p_data) {
@@ -384,7 +419,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 
 Variant Tween::_run_equation(InterpolateData &p_data) {
 	// Get the initial and delta values from the data
-	Variant &initial_val = _get_initial_val(p_data);
+	Variant initial_val = _get_initial_val(p_data);
 	Variant &delta_val = _get_delta_val(p_data);
 	Variant result;
 
@@ -718,7 +753,8 @@ void Tween::_tween_process(float p_delta) {
 		// Is the tween now finished?
 		if (data.finish) {
 			// Set it to the final value directly
-			_apply_tween_value(data, data.final_val);
+			Variant final_val = _get_final_val(data);
+			_apply_tween_value(data, final_val);
 
 			// Mark the tween as completed and emit the signal
 			data.elapsed = 0;
