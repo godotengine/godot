@@ -411,6 +411,11 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
+	void push_normal();
+	void push_bold();
+	void push_bold_italics();
+	void push_italics();
+	void push_mono();
 	void push_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();

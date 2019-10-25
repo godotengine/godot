@@ -1721,6 +1721,41 @@ void RichTextLabel::push_font(const Ref<Font> &p_font) {
 	_add_item(item, true);
 }
 
+void RichTextLabel::push_normal() {
+	Ref<Font> normal_font = get_font("normal_font");
+	ERR_FAIL_COND(normal_font.is_null());
+
+	push_font(normal_font);
+}
+
+void RichTextLabel::push_bold() {
+	Ref<Font> bold_font = get_font("bold_font");
+	ERR_FAIL_COND(bold_font.is_null());
+
+	push_font(bold_font);
+}
+
+void RichTextLabel::push_bold_italics() {
+	Ref<Font> bold_italics_font = get_font("bold_italics_font");
+	ERR_FAIL_COND(bold_italics_font.is_null());
+
+	push_font(bold_italics_font);
+}
+
+void RichTextLabel::push_italics() {
+	Ref<Font> italics_font = get_font("italics_font");
+	ERR_FAIL_COND(italics_font.is_null());
+
+	push_font(italics_font);
+}
+
+void RichTextLabel::push_mono() {
+	Ref<Font> mono_font = get_font("mono_font");
+	ERR_FAIL_COND(mono_font.is_null());
+
+	push_font(mono_font);
+}
+
 void RichTextLabel::push_color(const Color &p_color) {
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
@@ -2636,6 +2671,11 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font"), &RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
+	ClassDB::bind_method(D_METHOD("push_bold"), &RichTextLabel::push_bold);
+	ClassDB::bind_method(D_METHOD("push_bold_italics"), &RichTextLabel::push_bold_italics);
+	ClassDB::bind_method(D_METHOD("push_italics"), &RichTextLabel::push_italics);
+	ClassDB::bind_method(D_METHOD("push_mono"), &RichTextLabel::push_mono);
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_align", "align"), &RichTextLabel::push_align);
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
