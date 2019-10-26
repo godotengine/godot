@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/iphone/logo.gen.h"
+#include "platform/iphone/run_icon.gen.h"
 #include "string.h"
 
 #include <sys/stat.h>
@@ -51,6 +52,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	int version_code;
 
 	Ref<ImageTexture> logo;
+	Ref<ImageTexture> run_icon;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata);
@@ -163,6 +165,21 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		return true;
 	}
 
+#ifdef OSX_ENABLED
+	struct Device {
+
+		String id;
+		String name;
+		bool simulator;
+	};
+
+	Vector<Device> devices;
+	volatile bool devices_changed;
+	Mutex *device_lock;
+	Thread *device_thread;
+	volatile bool quit_request;
+#endif
+
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
 	virtual void get_export_options(List<ExportOption> *r_options);
@@ -171,6 +188,375 @@ public:
 	virtual String get_name() const { return "iOS"; }
 	virtual String get_os_name() const { return "iOS"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
+	virtual Ref<Texture> get_run_icon() const { return run_icon; }
+
+#ifdef OSX_ENABLED
+	static void _device_poll_thread(void *ud) {
+
+		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
+
+		while (!ea->quit_request) {
+
+			bool valid_preset_find = false;
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+				Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+				if (ep->is_runnable() && ep->get_platform() == ea) {
+					valid_preset_find = true;
+					break;
+				}
+			}
+
+			if (valid_preset_find) {
+				Vector<Device> ldevices;
+
+				// Enum real devices
+				String idepl = EditorSettings::get_singleton()->get("export/ios/iosdeploy");
+				if (FileAccess::exists(idepl)) {
+					String devices;
+					List<String> args;
+					args.push_back("-c");
+					args.push_back("-timeout");
+					args.push_back("1");
+
+					int ec;
+					OS::get_singleton()->execute(idepl, args, true, NULL, &devices, &ec);
+
+					Vector<String> ds = devices.split("\n");
+					for (int i = 1; i < ds.size(); i++) {
+						if (ds[i].find("Found") == -1) continue;
+						int ids = 13;
+						int ide = ds[i].find("(", ids);
+						int nde = ds[i].find("connected through", ide);
+						if (ide != -1 && ids != -1 && nde != -1) {
+							Device nd;
+							nd.id = ds[i].substr(ids, ide - ids).strip_edges();
+							nd.name = ds[i].substr(ide, nde - ide).strip_edges();
+							nd.simulator = false;
+							ldevices.push_back(nd);
+						}
+					}
+				}
+
+				// Enum simulators
+				String xcrun = EditorSettings::get_singleton()->get("export/ios/xcrun");
+				if (FileAccess::exists(xcrun)) {
+					String devices;
+					List<String> args;
+					args.push_back("simctl");
+					args.push_back("list");
+					args.push_back("devices");
+
+					int ec;
+					OS::get_singleton()->execute(xcrun, args, true, NULL, &devices, &ec);
+
+					Vector<String> ds = devices.split("\n");
+					String os_type = "Unknown";
+					for (int i = 1; i < ds.size(); i++) {
+						if (ds[i].find("unavailable") != -1) continue;
+						if (ds[i].begins_with("--")) {
+							os_type = ds[i].substr(2, ds[i].length() - 4).strip_edges();
+							continue;
+						}
+						if (ds[i].find("(Booted)") == -1) continue;
+						if (ds[i].begins_with("==")) continue;
+						int ids = 0;
+						int ide = 0;
+
+						while (ide - ids != 37 && ide != -1) {
+							ids = ds[i].find("(", ide);
+							ide = ds[i].find(")", ids);
+						}
+						if (ide != -1 && ids != -1) {
+							Device nd;
+							nd.id = ds[i].substr(ids + 1, ide - ids - 1);
+							nd.name = ds[i].substr(0, ids).strip_edges() + " (" + os_type + ")";
+							nd.simulator = true;
+							ldevices.push_back(nd);
+						}
+					}
+				}
+
+				{ // Update devices
+					ea->device_lock->lock();
+
+					bool different = false;
+
+					if (ea->devices.size() != ldevices.size()) {
+						different = true;
+					} else {
+						for (int i = 0; i < ea->devices.size(); i++) {
+							if (ea->devices[i].id != ldevices[i].id) {
+								different = true;
+								break;
+							}
+						}
+					}
+
+					if (different) {
+						ea->devices = ldevices;
+						ea->devices_changed = true;
+					}
+
+					ea->device_lock->unlock();
+				}
+			}
+
+			uint64_t sleep = OS::get_singleton()->get_power_state() == OS::POWERSTATE_ON_BATTERY ? 1000 : 100;
+			uint64_t wait = 3000000;
+			uint64_t time = OS::get_singleton()->get_ticks_usec();
+			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+				OS::get_singleton()->delay_usec(1000 * sleep);
+				if (ea->quit_request)
+					break;
+			}
+		}
+	}
+
+	virtual bool poll_export() {
+		bool dc = devices_changed;
+		if (dc) {
+			// don't clear unless we're reporting true, to avoid race
+			devices_changed = false;
+		}
+		return dc;
+	}
+
+	virtual int get_options_count() const {
+		device_lock->lock();
+		int dc = devices.size();
+		device_lock->unlock();
+		return dc;
+	}
+
+	virtual String get_options_tooltip() const {
+		return TTR("Select device from the list");
+	}
+
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const {
+		device_lock->lock();
+		Ref<ImageTexture> icon;
+		if (p_index >= 0 || p_index < devices.size()) {
+			Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+			if (theme.is_valid()) {
+				if (devices[p_index].simulator) {
+					icon = theme->get_icon("IOSSimulator", "EditorIcons");
+				} else {
+					icon = theme->get_icon("IOSDevice", "EditorIcons");
+				}
+			}
+		}
+		device_lock->unlock();
+		return icon;
+	}
+
+	virtual String get_option_label(int p_index) const {
+		device_lock->lock();
+		String s;
+		if (p_index >= 0 || p_index < devices.size()) {
+			s = devices[p_index].name;
+		} else {
+			s = "";
+		}
+		device_lock->unlock();
+		return s;
+	}
+
+	virtual String get_option_tooltip(int p_index) const {
+		device_lock->lock();
+		String s;
+		if (p_index >= 0 || p_index < devices.size()) {
+			s = "UUID: " + devices[p_index].id;
+		} else {
+			s = "";
+		}
+		device_lock->unlock();
+		return s;
+	}
+
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_index, int p_debug_flags) {
+		device_lock->lock();
+		if (p_index < 0 || p_index >= devices.size()) {
+			device_lock->unlock();
+			return ERR_UNCONFIGURED;
+		}
+		Device dev = devices[p_index];
+		device_lock->unlock();
+
+		EditorProgress ep("run", "Running on " + dev.name, 4);
+
+		String identifier = p_preset->get("application/identifier");
+		String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_ios_export");
+		String buildpath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_ios_build");
+		String xcrun = EditorSettings::get_singleton()->get("export/ios/xcrun");
+		List<String> args;
+
+		if (ep.step("Exporting project...", 1)) {
+			return ERR_SKIP;
+		}
+
+		print_line("Exporting project to: " + basepath);
+
+#define CLEANUP_AND_RETURN(m_err)                                    \
+	{                                                                \
+		print_line("Deleting: " + basepath);                         \
+		OS::get_singleton()->move_to_trash(basepath);                \
+		print_line("Deleting: " + basepath + ".a");                  \
+		OS::get_singleton()->move_to_trash(basepath + ".a");         \
+		print_line("Deleting: " + basepath + ".pck");                \
+		OS::get_singleton()->move_to_trash(basepath + ".pck");       \
+		print_line("Deleting: " + buildpath);                        \
+		OS::get_singleton()->move_to_trash(buildpath);               \
+		print_line("Deleting: " + basepath + ".xcodeproj");          \
+		OS::get_singleton()->move_to_trash(basepath + ".xcodeproj"); \
+		return m_err;                                                \
+	}
+
+		Error err = export_project(p_preset, true, basepath + ".ipa", p_debug_flags | DEBUG_FLAG_IOS_NO_ARCHIVE);
+		if (err != OK) {
+			CLEANUP_AND_RETURN(err);
+		}
+
+		if (ep.step("Building project...", 2)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			print_line("Building project to: " + buildpath);
+
+			args.clear();
+			args.push_back("xcodebuild");
+			args.push_back("-configuration");
+			args.push_back("Debug");
+			args.push_back("-project");
+			args.push_back(basepath + ".xcodeproj");
+			args.push_back("-scheme");
+			args.push_back("tmp_ios_export");
+			args.push_back("-destination");
+			if (dev.simulator) {
+				args.push_back("platform=iOS Simulator,id=" + dev.id);
+			} else {
+				args.push_back("platform=iOS,id=" + dev.id);
+			}
+			args.push_back("-derivedDataPath");
+			args.push_back(buildpath);
+			args.push_back("-allowProvisioningUpdates");
+			args.push_back("SYMROOT=" + buildpath);
+			args.push_back("build");
+
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute(xcrun, args, true, NULL, &log, &ec);
+			if (err != OK) {
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				EditorNode::add_io_error(log);
+				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+			}
+		}
+
+		bool remove_prev = p_preset->get("one_click_deploy/clear_previous_install");
+		if (dev.simulator) {
+			print_line("Installing " + buildpath.plus_file("Debug-iphonesimulator").plus_file("tmp_ios_export.app") + " to simulator: " + dev.name);
+			// Deploy and run on simulator
+			if (remove_prev) {
+				if (ep.step("Uninstalling previous version...", 3)) {
+					CLEANUP_AND_RETURN(ERR_SKIP);
+				}
+
+				args.clear();
+				args.push_back("simctl");
+				args.push_back("uninstall");
+				args.push_back(dev.id);
+				args.push_back(identifier);
+
+				String log;
+				int ec;
+				err = OS::get_singleton()->execute(xcrun, args, true, NULL, &log, &ec);
+				if (err != OK) {
+					CLEANUP_AND_RETURN(err);
+				}
+				if (ec != 0) {
+					EditorNode::add_io_error(log);
+					CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+				}
+			}
+
+			if (ep.step("Installing to simulator...", 3)) {
+				CLEANUP_AND_RETURN(ERR_SKIP);
+			} else {
+				args.clear();
+				args.push_back("simctl");
+				args.push_back("install");
+				args.push_back(dev.id);
+				args.push_back(buildpath.plus_file("Debug-iphonesimulator").plus_file("tmp_ios_export.app"));
+
+				String log;
+				int ec;
+				err = OS::get_singleton()->execute(xcrun, args, true, NULL, &log, &ec);
+				if (err != OK) {
+					CLEANUP_AND_RETURN(err);
+				}
+				if (ec != 0) {
+					EditorNode::add_io_error(log);
+					CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+				}
+			}
+
+			if (ep.step("Running on simulator...", 4)) {
+				CLEANUP_AND_RETURN(ERR_SKIP);
+			} else {
+				args.clear();
+				args.push_back("simctl");
+				args.push_back("launch");
+				args.push_back(dev.id);
+				args.push_back(identifier);
+
+				String log;
+				int ec;
+				err = OS::get_singleton()->execute(xcrun, args, true, NULL, &log, &ec);
+				if (err != OK) {
+					CLEANUP_AND_RETURN(err);
+				}
+				if (ec != 0) {
+					EditorNode::add_io_error(log);
+					CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+				}
+			}
+		} else {
+			// Deploy and run on real device
+			if (ep.step("Running on device...", 4)) {
+				CLEANUP_AND_RETURN(ERR_SKIP);
+			} else {
+				print_line("Installing " + buildpath.plus_file("Debug-iphoneos").plus_file("tmp_ios_export.app") + " to device: " + dev.name);
+
+				args.clear();
+				args.push_back("--justlaunch");
+				args.push_back("--debug");
+				if (remove_prev) {
+					args.push_back("--uninstall");
+				}
+				args.push_back("--id");
+				args.push_back(dev.id);
+				args.push_back("--bundle");
+				args.push_back(buildpath.plus_file("Debug-iphoneos").plus_file("tmp_ios_export.app"));
+
+				String idepl = EditorSettings::get_singleton()->get("export/ios/iosdeploy");
+				String log;
+				int ec;
+				err = OS::get_singleton()->execute(idepl, args, true, NULL, &log, &ec);
+				if (err != OK) {
+					CLEANUP_AND_RETURN(err);
+				}
+				if (ec != 0) {
+					EditorNode::add_io_error(log);
+					CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+				}
+			}
+		}
+
+		CLEANUP_AND_RETURN(OK);
+#undef CLEANUP_AND_RETURN
+	}
+#endif
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 		List<String> list;
@@ -1091,41 +1477,45 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	memdelete(dylibs_dir);
 	ERR_FAIL_COND_V(err, err);
 
-	if (ep.step("Making .xcarchive", 3)) {
-		return ERR_SKIP;
-	}
-	String archive_path = p_path.get_basename() + ".xcarchive";
-	List<String> archive_args;
-	archive_args.push_back("-project");
-	archive_args.push_back(dest_dir + binary_name + ".xcodeproj");
-	archive_args.push_back("-scheme");
-	archive_args.push_back(binary_name);
-	archive_args.push_back("-sdk");
-	archive_args.push_back("iphoneos");
-	archive_args.push_back("-configuration");
-	archive_args.push_back(p_debug ? "Debug" : "Release");
-	archive_args.push_back("-destination");
-	archive_args.push_back("generic/platform=iOS");
-	archive_args.push_back("archive");
-	archive_args.push_back("-archivePath");
-	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
-	ERR_FAIL_COND_V(err, err);
+	if (p_flags & DEBUG_FLAG_IOS_NO_ARCHIVE) {
+		print_line("Skipping .xcarchive and .ipa creation...");
+	} else {
+		if (ep.step("Making .xcarchive", 3)) {
+			return ERR_SKIP;
+		}
+		String archive_path = p_path.get_basename() + ".xcarchive";
+		List<String> archive_args;
+		archive_args.push_back("-project");
+		archive_args.push_back(dest_dir + binary_name + ".xcodeproj");
+		archive_args.push_back("-scheme");
+		archive_args.push_back(binary_name);
+		archive_args.push_back("-sdk");
+		archive_args.push_back("iphoneos");
+		archive_args.push_back("-configuration");
+		archive_args.push_back(p_debug ? "Debug" : "Release");
+		archive_args.push_back("-destination");
+		archive_args.push_back("generic/platform=iOS");
+		archive_args.push_back("archive");
+		archive_args.push_back("-archivePath");
+		archive_args.push_back(archive_path);
+		err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
+		ERR_FAIL_COND_V(err, err);
 
-	if (ep.step("Making .ipa", 4)) {
-		return ERR_SKIP;
+		if (ep.step("Making .ipa", 4)) {
+			return ERR_SKIP;
+		}
+		List<String> export_args;
+		export_args.push_back("-exportArchive");
+		export_args.push_back("-archivePath");
+		export_args.push_back(archive_path);
+		export_args.push_back("-exportOptionsPlist");
+		export_args.push_back(dest_dir + binary_name + "/export_options.plist");
+		export_args.push_back("-allowProvisioningUpdates");
+		export_args.push_back("-exportPath");
+		export_args.push_back(dest_dir);
+		err = OS::get_singleton()->execute("xcodebuild", export_args, true);
+		ERR_FAIL_COND_V(err, err);
 	}
-	List<String> export_args;
-	export_args.push_back("-exportArchive");
-	export_args.push_back("-archivePath");
-	export_args.push_back(archive_path);
-	export_args.push_back("-exportOptionsPlist");
-	export_args.push_back(dest_dir + binary_name + "/export_options.plist");
-	export_args.push_back("-allowProvisioningUpdates");
-	export_args.push_back("-exportPath");
-	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("xcodebuild", export_args, true);
-	ERR_FAIL_COND_V(err, err);
 #else
 	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");
 #endif
@@ -1198,15 +1588,40 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
+
+	img = Ref<Image>(memnew(Image(_iphone_run_icon)));
+	run_icon.instance();
+	run_icon->create_from_image(img);
+
+#ifdef OSX_ENABLED
+	device_lock = Mutex::create();
+	devices_changed = true;
+	quit_request = false;
+	device_thread = Thread::create(_device_poll_thread, this);
+#endif
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifdef OSX_ENABLED
+	quit_request = true;
+	Thread::wait_to_finish(device_thread);
+	memdelete(device_lock);
+	memdelete(device_thread);
+#endif
 }
 
 void register_iphone_exporter() {
 
 	Ref<EditorExportPlatformIOS> platform;
 	platform.instance();
+
+#ifdef OSX_ENABLED
+	EDITOR_DEF("export/ios/iosdeploy", "/usr/local/bin/ios-deploy");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/ios/iosdeploy", PROPERTY_HINT_GLOBAL_FILE, ""));
+
+	EDITOR_DEF("export/ios/xcrun", "/usr/bin/xcrun");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/ios/xcrun", PROPERTY_HINT_GLOBAL_FILE, ""));
+#endif
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }
