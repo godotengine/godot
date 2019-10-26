@@ -133,6 +133,18 @@
 				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
+		<method name="push_bold">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="push_bold_italics">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="push_cell">
 			<return type="void">
 			</return>
@@ -167,6 +179,12 @@
 				Adds an [code][indent][/code] tag to the tag stack. Multiplies "level" by current tab_size to determine new margin length.
 			</description>
 		</method>
+		<method name="push_italics">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="push_list">
 			<return type="void">
 			</return>
@@ -183,6 +201,18 @@
 			</argument>
 			<description>
 				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+			</description>
+		</method>
+		<method name="push_mono">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="push_normal">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="push_strikethrough">

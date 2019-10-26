@@ -217,7 +217,7 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
-		<method name="get_granted_permissions">
+		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>

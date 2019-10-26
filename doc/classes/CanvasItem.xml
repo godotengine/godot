@@ -22,6 +22,28 @@
 				Called (if exists) to draw the canvas item.
 			</description>
 		</method>
+		<method name="draw_arc">
+			<return type="void">
+			</return>
+			<argument index="0" name="center" type="Vector2">
+			</argument>
+			<argument index="1" name="radius" type="float">
+			</argument>
+			<argument index="2" name="start_angle" type="float">
+			</argument>
+			<argument index="3" name="end_angle" type="float">
+			</argument>
+			<argument index="4" name="point_count" type="int">
+			</argument>
+			<argument index="5" name="color" type="Color">
+			</argument>
+			<argument index="6" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="7" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="draw_char">
 			<return type="float">
 			</return>
