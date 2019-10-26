@@ -131,7 +131,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &shadow_atlas->depth);
-			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, shadow_atlas->depth);
 			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
 
@@ -3769,6 +3769,10 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	if (storage->config.use_rgba_3d_shadows) {
+		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 	glDisable(GL_SCISSOR_TEST);
 
 	if (light->reverse_cull) {
