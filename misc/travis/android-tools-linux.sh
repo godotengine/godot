@@ -70,9 +70,10 @@ if [ ! -d $ANDROID_NDK_DIR ]; then
   echo
 fi
 
-echo "Installing: Android Tools ..."
 mkdir -p ~/.android && echo "count=0" > ~/.android/repositories.cfg
+echo "Installing: Accepting Licenses ..."
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager --licenses > /dev/null
+echo "Installing: Android Build and Platform Tools ..."
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'tools' > /dev/null
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'platform-tools' > /dev/null
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;28.0.3' > /dev/null
