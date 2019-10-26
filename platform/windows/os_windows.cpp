@@ -288,15 +288,16 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 	if (curr->get() == Vector2(p_x, p_y))
 		return;
 
-	curr->get() = Vector2(p_x, p_y);
-
 	Ref<InputEventScreenDrag> event;
 	event.instance();
 	event->set_index(idx);
 	event->set_position(Vector2(p_x, p_y));
+	event->set_relative(Vector2(p_x, p_y) - curr->get());
 
 	if (main_loop)
 		input->accumulate_input_event(event);
+
+	curr->get() = Vector2(p_x, p_y);
 };
 
 LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
