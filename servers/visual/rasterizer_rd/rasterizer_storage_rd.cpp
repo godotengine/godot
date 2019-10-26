@@ -3556,8 +3556,6 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
-	bool data_version_changed = false;
-
 	if (gi_probe->octree_buffer.is_valid()) {
 		RD::get_singleton()->free(gi_probe->octree_buffer);
 		RD::get_singleton()->free(gi_probe->data_buffer);

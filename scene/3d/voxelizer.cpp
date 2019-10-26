@@ -969,7 +969,7 @@ PoolVector<int> Voxelizer::get_giprobe_level_cell_count() const {
 	level_count.resize(cell_subdiv + 1); //remember, always x+1 levels for x subdivisions
 	{
 		PoolVector<int>::Write w = level_count.write();
-		for (int i = 0; i < cell_subdiv; i++) {
+		for (int i = 0; i < cell_subdiv + 1; i++) {
 			w[i] = 0;
 		}
 
