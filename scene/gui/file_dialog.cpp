@@ -178,8 +178,12 @@ void FileDialog::_post_popup() {
 	set_process_unhandled_input(true);
 
 	// For open dir mode, deselect all items on file dialog open.
-	if (mode == MODE_OPEN_DIR)
+	if (mode == MODE_OPEN_DIR) {
 		deselect_items();
+		file_box->set_visible(false);
+	} else {
+		file_box->set_visible(true);
+	}
 }
 
 void FileDialog::_action_pressed() {
@@ -894,6 +898,10 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", this, "_go_up");
 
+	drives = memnew(OptionButton);
+	hbc->add_child(drives);
+	drives->connect("item_selected", this, "_select_drive");
+
 	hbc->add_child(memnew(Label(RTR("Path:"))));
 	dir = memnew(LineEdit);
 	hbc->add_child(dir);
@@ -911,10 +919,6 @@ FileDialog::FileDialog() {
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	hbc->add_child(show_hidden);
 
-	drives = memnew(OptionButton);
-	hbc->add_child(drives);
-	drives->connect("item_selected", this, "_select_drive");
-
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", this, "_make_dir");
@@ -925,18 +929,18 @@ FileDialog::FileDialog() {
 	tree->set_hide_root(true);
 	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
 
-	hbc = memnew(HBoxContainer);
-	hbc->add_child(memnew(Label(RTR("File:"))));
+	file_box = memnew(HBoxContainer);
+	file_box->add_child(memnew(Label(RTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc->add_child(file);
+	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it
-	hbc->add_child(filter);
-	vbc->add_child(hbc);
+	file_box->add_child(filter);
+	vbc->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;
