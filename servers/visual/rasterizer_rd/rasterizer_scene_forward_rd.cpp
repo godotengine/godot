@@ -2258,14 +2258,10 @@ void RasterizerSceneForwardRD::_update_render_base_uniform_set() {
 				u.ids.resize(slot_count);
 			}
 
-			print_line("updating slots, probe count: " + itos(slot_count));
 			for (int i = 0; i < slot_count; i++) {
 
 				RID probe = gi_probe_get_slots()[i];
 
-				if (probe.is_valid()) {
-					print_line("probe valid: " + itos(i));
-				}
 				if (gi_probe_is_anisotropic()) {
 					if (probe.is_null()) {
 						RID empty_tex = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
