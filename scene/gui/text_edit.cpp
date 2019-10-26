@@ -958,6 +958,10 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+					if (minimap_line < 0 || minimap_line >= (int)text.size()) {
+						break;
+					}
+
 					Map<int, HighlighterInfo> color_map;
 					if (syntax_coloring) {
 						color_map = _get_line_syntax_highlighting(minimap_line);
