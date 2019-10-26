@@ -790,29 +790,29 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 
 		VisualServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Point2(-offset, 0),
+				p_rect.position + Size2(-offset, 0),
 				p_rect.position + Size2(p_rect.size.width + offset, 0),
 				p_color,
 				p_width,
 				p_antialiased);
 		VisualServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Point2(0, offset),
-				p_rect.position + Size2(0, p_rect.size.height - offset),
-				p_color,
-				p_width,
-				p_antialiased);
-		VisualServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				p_rect.position + Point2(-offset, p_rect.size.height),
-				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
-				p_color,
-				p_width,
-				p_antialiased);
-		VisualServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				p_rect.position + Point2(p_rect.size.width, offset),
+				p_rect.position + Size2(p_rect.size.width, offset),
 				p_rect.position + Size2(p_rect.size.width, p_rect.size.height - offset),
+				p_color,
+				p_width,
+				p_antialiased);
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
+				p_rect.position + Size2(-offset, p_rect.size.height),
+				p_color,
+				p_width,
+				p_antialiased);
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Size2(0, p_rect.size.height - offset),
+				p_rect.position + Size2(0, offset),
 				p_color,
 				p_width,
 				p_antialiased);
