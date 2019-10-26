@@ -1259,8 +1259,8 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		if (gi_probe->texture.is_valid()) {
 			RD::get_singleton()->free(gi_probe->texture);
 			if (gi_probe_use_anisotropy) {
-				RD::get_singleton()->free(gi_probe->anisotropy[0]);
-				RD::get_singleton()->free(gi_probe->anisotropy[1]);
+				RD::get_singleton()->free(gi_probe->anisotropy_r16[0]);
+				RD::get_singleton()->free(gi_probe->anisotropy_r16[1]);
 			}
 			RD::get_singleton()->free(gi_probe->write_buffer);
 			gi_probe->mipmaps.clear();
@@ -1279,9 +1279,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			//can create a 3D texture
 			PoolVector<int> levels = storage->gi_probe_get_level_counts(gi_probe->probe);
 
-			for (int i = 0; i < levels.size(); i++) {
-				print_line("level " + itos(i) + ": " + itos(levels[i]));
-			}
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			tf.width = octree_size.x;
@@ -1297,12 +1294,18 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
 
 			if (gi_probe_use_anisotropy) {
-				tf.format = RD::DATA_FORMAT_R5G6B5_UNORM_PACK16;
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R5G6B5_UNORM_PACK16);
+				tf.format = RD::DATA_FORMAT_R16_UINT;
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
+				tf.shareable_formats.push_back(RD::DATA_FORMAT_R5G6B5_UNORM_PACK16);
 
-				gi_probe->anisotropy[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-				gi_probe->anisotropy[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				//need to create R16 first, else driver does not like the storage bit for compute..
+				gi_probe->anisotropy_r16[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				gi_probe->anisotropy_r16[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+				RD::TextureView tv;
+				tv.format_override = RD::DATA_FORMAT_R5G6B5_UNORM_PACK16;
+				gi_probe->anisotropy[0] = RD::get_singleton()->texture_create_shared(tv, gi_probe->anisotropy_r16[0]);
+				gi_probe->anisotropy[1] = RD::get_singleton()->texture_create_shared(tv, gi_probe->anisotropy_r16[1]);
 
 				RD::get_singleton()->texture_clear(gi_probe->anisotropy[0], Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
 				RD::get_singleton()->texture_clear(gi_probe->anisotropy[1], Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
