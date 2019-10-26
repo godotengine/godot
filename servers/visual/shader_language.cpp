@@ -4610,19 +4610,34 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 	return OK;
 }
 
+String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) const {
+
+	// Return a list of shader types as an human-readable string
+	String valid_types;
+	for (const Set<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
+		if (valid_types != String()) {
+			valid_types += ", ";
+		}
+
+		valid_types += "'" + E->get() + "'";
+	}
+
+	return valid_types;
+}
+
 Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
 
 	Token tk = _get_token();
 
 	if (tk.type != TK_SHADER_TYPE) {
-		_set_error("Expected 'shader_type' at the beginning of shader.");
+		_set_error("Expected 'shader_type' at the beginning of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
 
 	tk = _get_token();
 
 	if (tk.type != TK_IDENTIFIER) {
-		_set_error("Expected identifier after 'shader_type', indicating type of shader.");
+		_set_error("Expected identifier after 'shader_type', indicating type of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
 
@@ -4631,15 +4646,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	shader_type_identifier = tk.text;
 
 	if (!p_shader_types.has(shader_type_identifier)) {
-
-		String valid;
-		for (Set<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
-			if (valid != String()) {
-				valid += ", ";
-			}
-			valid += "'" + E->get() + "'";
-		}
-		_set_error("Invalid shader type, valid types are: " + valid);
+		_set_error("Invalid shader type. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
 
