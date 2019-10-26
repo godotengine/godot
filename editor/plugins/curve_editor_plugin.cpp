@@ -736,6 +736,9 @@ void CurveEditor::_draw() {
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
 		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
+	} else if (curve.get_point_count() == 0) {
+		text_color.a *= 0.4;
+		draw_string(font, Vector2(50, font_height), TTR("Right click to add point"), text_color);
 	}
 }
 
