@@ -1942,7 +1942,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		prop_info.name = name;
 		PropertyInfo export_info = p_class->variables[i]._export;
 
-		if (export_info.type != Variant::NIL) {
+		if (export_info.type != Variant::NIL || export_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 			if (!minfo.data_type.has_type) {
 				prop_info.type = export_info.type;
 				prop_info.class_name = export_info.class_name;

@@ -469,7 +469,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		StringName n = E->get().name;
 		new_values.insert(n);
 
-		if (!values.has(n) || values[n].get_type() != E->get().type) {
+		if (!values.has(n) || (values[n].get_type() != E->get().type && !(E->get().usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}

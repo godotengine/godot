@@ -30,6 +30,7 @@
 
 #include "editor_properties.h"
 
+#include "core/io/marshalls.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
 #include "editor_node.h"
@@ -46,6 +47,101 @@ EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
 	label->set_text("[null]");
 	add_child(label);
+}
+
+///////////////////// GENERIC /////////////////////////
+
+void EditorPropertyGeneric::update_property() {
+	Object *object = get_edited_object();
+	StringName edited_prop = get_edited_property();
+	Variant value = object->get(edited_prop);
+	Variant::Type value_type = value.get_type();
+
+	// remove previous controls
+	while (hbox->get_child_count() > 0) {
+		Node *child = hbox->get_child(0);
+		child->queue_delete();
+		hbox->remove_child(child);
+	}
+
+	EditorProperty *prop = nullptr;
+	if (value_type == Variant::NIL) {
+		prop = memnew(EditorPropertyNil);
+	} else if (value_type == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(value)) {
+		EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+		editor->setup("Object");
+		prop = editor;
+	} else {
+		prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", PROPERTY_HINT_NONE, "", 0);
+	}
+
+	prop->set_object_and_property(object, edited_prop);
+	prop->set_name_split_ratio(0.0);
+	prop->set_selectable(false);
+	prop->connect("property_changed", callable_mp(this, &EditorPropertyGeneric::_property_changed));
+	prop->connect("object_id_selected", callable_mp(this, &EditorPropertyGeneric::_object_id_selected));
+	prop->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	hbox->add_child(prop);
+
+	Button *edit_button = memnew(Button);
+	edit_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
+	edit_button->connect("pressed", callable_mp(this, &EditorPropertyGeneric::_change_type), varray(edit_button));
+	hbox->add_child(edit_button);
+
+	prop->update_property();
+}
+
+void EditorPropertyGeneric::_property_changed(const String &p_prop, Variant p_value, const String &p_name, bool changing) {
+	emit_changed(get_edited_property(), p_value, p_name, changing);
+}
+
+void EditorPropertyGeneric::_object_id_selected(const String &p_property, ObjectID p_id) {
+	emit_signal("object_id_selected", p_property, p_id);
+}
+
+void EditorPropertyGeneric::_change_type(Object *p_button) {
+	Button *button = Object::cast_to<Button>(p_button);
+	Rect2 rect = button->get_global_rect();
+	change_type->set_as_minsize();
+	change_type->set_position(rect.position + rect.size - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->popup();
+}
+
+void EditorPropertyGeneric::_change_type_menu(int p_index) {
+	Object *object = get_edited_object();
+	StringName edited_prop = get_edited_property();
+	Variant value = object->get(edited_prop);
+	Variant::Type value_type = value.get_type();
+
+	Variant::Type new_value_type = Variant::Type(p_index);
+	if (new_value_type == value_type) {
+		return;
+	}
+
+	Callable::CallError ce;
+	Variant new_value = Variant::construct(new_value_type, nullptr, 0, ce);
+
+	emit_changed(edited_prop, new_value, "", true);
+	update_property();
+}
+
+EditorPropertyGeneric::EditorPropertyGeneric() {
+	hbox = memnew(HBoxContainer);
+	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(hbox);
+
+	change_type = memnew(PopupMenu);
+	add_child(change_type);
+	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyGeneric::_change_type_menu));
+
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		String type = Variant::get_type_name(Variant::Type(i));
+		change_type->add_item(type, i);
+	}
+}
+
+void EditorPropertyGeneric::_bind_methods() {
 }
 
 ///////////////////// TEXT /////////////////////////
@@ -3121,8 +3217,13 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 	switch (p_type) {
 		// atomic types
 		case Variant::NIL: {
-			EditorPropertyNil *editor = memnew(EditorPropertyNil);
-			add_property_editor(p_path, editor);
+			if (p_usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+				EditorPropertyGeneric *editor = memnew(EditorPropertyGeneric);
+				add_property_editor(p_path, editor);
+			} else {
+				EditorPropertyNil *editor = memnew(EditorPropertyNil);
+				add_property_editor(p_path, editor);
+			}
 		} break;
 		case Variant::BOOL: {
 			EditorPropertyCheck *editor = memnew(EditorPropertyCheck);

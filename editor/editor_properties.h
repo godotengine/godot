@@ -41,11 +41,28 @@
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
-	LineEdit *text;
 
 public:
 	virtual void update_property();
 	EditorPropertyNil();
+};
+
+class EditorPropertyGeneric : public EditorProperty {
+	GDCLASS(EditorPropertyGeneric, EditorProperty);
+	HBoxContainer *hbox;
+	PopupMenu *change_type;
+
+	void _property_changed(const String &p_prop, Variant p_value, const String &p_name = String(), bool changing = false);
+	void _object_id_selected(const String &p_property, ObjectID p_id);
+	void _change_type(Object *p_button);
+	void _change_type_menu(int p_index);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void update_property();
+	EditorPropertyGeneric();
 };
 
 class EditorPropertyText : public EditorProperty {

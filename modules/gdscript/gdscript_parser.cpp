@@ -4604,7 +4604,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								} break;
 							}
 						}
-
+					} else if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "Variant") {
+						current_export.type = Variant::Type::NIL;
+						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						current_export.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+						tokenizer->advance();
 					} else {
 						parenthesis++;
 						Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
@@ -4832,7 +4836,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				ClassNode::Member member;
 
 				bool autoexport = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_EXPORT;
-				if (current_export.type != Variant::NIL) {
+				if (current_export.type != Variant::NIL || current_export.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
 					member._export = current_export;
 					current_export = PropertyInfo();
 				}
