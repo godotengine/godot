@@ -181,6 +181,7 @@ private:
 		RID probe;
 		RID texture;
 		RID anisotropy[2]; //only if anisotropy is used
+		RID anisotropy_r16[2]; //only if anisotropy is used
 		RID write_buffer;
 
 		struct Mipmap {
