@@ -2084,10 +2084,9 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	lines.push_back(Vector3());
 	lines.push_back(raycast->get_cast_to());
 
-	const Ref<SpatialMaterial> material =
+	Ref<Material> material =
 			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
-
-	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_solid_box(material, Vector3(0.01f, raycast->get_cast_to().y, 0.01f), Vector3(raycast->get_cast_to().x, raycast->get_cast_to().y / 2, raycast->get_cast_to().z));
 	p_gizmo->add_collision_segments(lines);
 }
 
