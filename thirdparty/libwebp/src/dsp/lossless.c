@@ -270,14 +270,14 @@ void VP8LTransformColorInverse_C(const VP8LMultipliers* const m,
   int i;
   for (i = 0; i < num_pixels; ++i) {
     const uint32_t argb = src[i];
-    const uint32_t green = argb >> 8;
+    const int8_t green = (int8_t)(argb >> 8);
     const uint32_t red = argb >> 16;
     int new_red = red & 0xff;
     int new_blue = argb & 0xff;
     new_red += ColorTransformDelta(m->green_to_red_, green);
     new_red &= 0xff;
     new_blue += ColorTransformDelta(m->green_to_blue_, green);
-    new_blue += ColorTransformDelta(m->red_to_blue_, new_red);
+    new_blue += ColorTransformDelta(m->red_to_blue_, (int8_t)new_red);
     new_blue &= 0xff;
     dst[i] = (argb & 0xff00ff00u) | (new_red << 16) | (new_blue);
   }
