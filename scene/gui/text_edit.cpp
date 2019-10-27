@@ -269,6 +269,12 @@ void TextEdit::Text::clear_wrap_cache() {
 	}
 }
 
+void TextEdit::Text::clear_info_icons() {
+	for (int i = 0; i < text.size(); i++) {
+		text.write[i].has_info = false;
+	}
+}
+
 void TextEdit::Text::clear() {
 
 	text.clear();
@@ -303,6 +309,7 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	line.breakpoint = false;
 	line.bookmark = false;
 	line.hidden = false;
+	line.has_info = false;
 	line.width_cache = -1;
 	line.wrap_amount_cache = -1;
 	line.data = p_text;
@@ -5663,9 +5670,7 @@ void TextEdit::set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info
 }
 
 void TextEdit::clear_info_icons() {
-	for (int i = 0; i < text.size(); i++) {
-		text.set_info_icon(i, NULL, "");
-	}
+	text.clear_info_icons();
 	update();
 }
 

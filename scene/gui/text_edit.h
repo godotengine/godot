@@ -78,6 +78,7 @@ public:
 			bool bookmark : 1;
 			bool hidden : 1;
 			bool safe : 1;
+			bool has_info : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
 			Ref<Texture> info_icon;
@@ -115,10 +116,15 @@ public:
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+			if (p_icon.is_null()) {
+				text.write[p_line].has_info = false;
+				return;
+			}
 			text.write[p_line].info_icon = p_icon;
 			text.write[p_line].info = p_info;
+			text.write[p_line].has_info = true;
 		}
-		bool has_info_icon(int p_line) const { return text[p_line].info_icon.is_valid(); }
+		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
 		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
 		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
@@ -127,6 +133,7 @@ public:
 		void clear();
 		void clear_width_cache();
 		void clear_wrap_cache();
+		void clear_info_icons();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 		Text() { indent_size = 4; }
 	};
