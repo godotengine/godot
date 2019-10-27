@@ -1123,9 +1123,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 					NodePath cp(sname, Vector<StringName>(), false);
 
+					// Normalize script extension (gdc, gde)
+					String ext = GDScriptLanguage::get_singleton()->get_extension();
+					String path = p->path.get_basename() + "." + ext;
+
 					Dictionary d;
 					d["@subpath"] = cp;
-					d["@path"] = p->path;
+					d["@path"] = path;
 
 					p = base.ptr();
 
@@ -1176,21 +1180,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 				return;
 			}
+			// Normalize script extension (gdc, gde)
+			String ext = GDScriptLanguage::get_singleton()->get_extension();
+			String path = String(d["@path"]).get_basename() + "." + ext;
 
-			Ref<Script> scr = ResourceLoader::load(d["@path"]);
-			if (!scr.is_valid()) {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
-				return;
-			}
-
-			Ref<GDScript> gdscr = scr;
-
+			Ref<GDScript> gdscr = ResourceLoader::load(path);
 			if (!gdscr.is_valid()) {
-
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
