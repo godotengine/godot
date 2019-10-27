@@ -6360,8 +6360,9 @@ void TextEdit::_confirm_completion() {
 	String line = text[cursor.line];
 	CharType next_char = line[cursor.column];
 	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
+	CharType last_completion_char_display = completion_current.display[completion_current.display.length() - 1];
 
-	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
+	if ((last_completion_char == '"' || last_completion_char == '\'') && (last_completion_char == next_char || last_completion_char_display == next_char)) {
 		_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
