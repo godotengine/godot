@@ -583,14 +583,15 @@ bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsil
 
 bool Basis::operator==(const Basis &p_matrix) const {
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (elements[i][j] != p_matrix.elements[i][j])
-				return false;
-		}
-	}
-
-	return true;
+	return (elements[0][0] == p_matrix.elements[0][0]) &&
+		   (elements[0][1] == p_matrix.elements[0][1]) &&
+		   (elements[0][2] == p_matrix.elements[0][2]) &&
+		   (elements[1][0] == p_matrix.elements[1][0]) &&
+		   (elements[1][1] == p_matrix.elements[1][1]) &&
+		   (elements[1][2] == p_matrix.elements[1][2]) &&
+		   (elements[2][0] == p_matrix.elements[2][0]) &&
+		   (elements[2][1] == p_matrix.elements[2][1]) &&
+		   (elements[2][2] == p_matrix.elements[2][2]);
 }
 
 bool Basis::operator!=(const Basis &p_matrix) const {
