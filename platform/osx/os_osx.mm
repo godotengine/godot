@@ -1579,7 +1579,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	// setup our display link, this will inform us when a refresh is needed
 	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
 	CVDisplayLinkSetOutputCallback(displayLink, &DisplayLinkCallback, this);
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, context.CGLContextObj, pixelFormat.CGLPixelFormatObj);
+	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, static_cast<CGLContextObj>(context.CGLContextObj), static_cast<CGLPixelFormatObj>(pixelFormat.CGLPixelFormatObj));
 	CVDisplayLinkStart(displayLink);
 
 	// initialise a conditional lock object
