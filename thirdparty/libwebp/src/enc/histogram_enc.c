@@ -929,9 +929,8 @@ static int HistogramCombineStochastic(VP8LHistogramSet* const image_histo,
   }
 
   mappings = (int*) WebPSafeMalloc(*num_used, sizeof(*mappings));
-  if (mappings == NULL || !HistoQueueInit(&histo_queue, kHistoQueueSize)) {
-    goto End;
-  }
+  if (mappings == NULL) return 0;
+  if (!HistoQueueInit(&histo_queue, kHistoQueueSize)) goto End;
   // Fill the initial mapping.
   for (j = 0, iter = 0; iter < image_histo->size; ++iter) {
     if (histograms[iter] == NULL) continue;

@@ -217,8 +217,12 @@ static THREADFN ThreadLoop(void* ptr) {
       done = 1;
     }
     // signal to the main thread that we're done (for Sync())
-    pthread_cond_signal(&impl->condition_);
+    // Note the associated mutex does not need to be held when signaling the
+    // condition. Unlocking the mutex first may improve performance in some
+    // implementations, avoiding the case where the waiting thread can't
+    // reacquire the mutex when woken.
     pthread_mutex_unlock(&impl->mutex_);
+    pthread_cond_signal(&impl->condition_);
   }
   return THREAD_RETURN(NULL);    // Thread is finished
 }
@@ -240,7 +244,13 @@ static void ChangeState(WebPWorker* const worker, WebPWorkerStatus new_status) {
     // assign new status and release the working thread if needed
     if (new_status != OK) {
       worker->status_ = new_status;
+      // Note the associated mutex does not need to be held when signaling the
+      // condition. Unlocking the mutex first may improve performance in some
+      // implementations, avoiding the case where the waiting thread can't
+      // reacquire the mutex when woken.
+      pthread_mutex_unlock(&impl->mutex_);
       pthread_cond_signal(&impl->condition_);
+      return;
     }
   }
   pthread_mutex_unlock(&impl->mutex_);
