@@ -1817,7 +1817,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
 	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
-	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);

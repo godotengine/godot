@@ -399,7 +399,7 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause = true);
+	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause = false);
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
