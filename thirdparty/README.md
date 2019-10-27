@@ -213,7 +213,7 @@ Godot-made change marked with `// -- GODOT --` comments.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.2
+- Version: 1.0.3
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
