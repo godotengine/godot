@@ -413,6 +413,10 @@ void FileDialog::update_file_name() {
 void FileDialog::update_file_list() {
 
 	tree->clear();
+
+	// Scroll back to the top after opening a directory
+	tree->get_vscroll_bar()->set_value(0);
+
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
