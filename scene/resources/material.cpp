@@ -1754,6 +1754,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_roughness_texture_channel()
 
 void SpatialMaterial::set_ao_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	ao_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1764,6 +1765,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_ao_texture_channel() const 
 
 void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	refraction_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
 }

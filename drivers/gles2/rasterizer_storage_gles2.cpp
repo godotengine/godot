@@ -665,6 +665,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->data_size = img->get_data().size();
 	PoolVector<uint8_t>::Read read = img->get_data().read();
+	ERR_FAIL_COND(!read.ptr());
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -3236,12 +3237,14 @@ Color RasterizerStorageGLES2::multimesh_instance_get_custom_data(RID p_multimesh
 void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_COND(!multimesh->data.ptr());
 
 	int dsize = multimesh->data.size();
 
 	ERR_FAIL_COND(dsize != p_array.size());
 
 	PoolVector<float>::Read r = p_array.read();
+	ERR_FAIL_COND(!r.ptr());
 	copymem(multimesh->data.ptrw(), r.ptr(), dsize * sizeof(float));
 
 	multimesh->dirty_data = true;

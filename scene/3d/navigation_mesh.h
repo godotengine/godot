@@ -124,7 +124,7 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	void set_source_geometry_mode(int p_source_mode);
+	void set_source_geometry_mode(int p_geometry_mode);
 	int get_source_geometry_mode() const;
 
 	void set_source_group_name(StringName p_group_name);
