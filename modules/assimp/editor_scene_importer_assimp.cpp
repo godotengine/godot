@@ -460,7 +460,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			if (skeleton && skeleton->find_bone(bone_name) == -1) {
 				print_verbose("[Godot Glue] Imported bone" + bone_name);
 				int boneIdx = skeleton->get_bone_count();
-				
+
 				Transform pform = AssimpUtils::assimp_matrix_transform(bone->mNode->mTransformation);
 				skeleton->add_bone(bone_name);
 				skeleton->set_bone_rest(boneIdx, pform);
@@ -687,6 +687,7 @@ Node *EditorSceneImporterAssimp::get_node_by_name(ImportState &state, String nam
 
 /* Bone stack is a fifo handler for multiple armatures since armatures aren't a thing in assimp (yet) */
 void EditorSceneImporterAssimp::RegenerateBoneStack(ImportState &state) {
+
 	state.bone_stack.clear();
 	// build bone stack list
 	for (unsigned int mesh_id = 0; mesh_id < state.assimp_scene->mNumMeshes; ++mesh_id) {
@@ -695,8 +696,12 @@ void EditorSceneImporterAssimp::RegenerateBoneStack(ImportState &state) {
 		// iterate over all the bones on the mesh for this node only!
 		for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++) {
 			aiBone *bone = mesh->mBones[boneIndex];
-			//print_verbose("[assimp] bone stack added: " + String(bone->mName.C_Str()) );
-			state.bone_stack.push_back(bone);
+
+			// doubtful this is required right now but best to check
+			if (!state.bone_stack.find(bone)) {
+				//print_verbose("[assimp] bone stack added: " + String(bone->mName.C_Str()) );
+				state.bone_stack.push_back(bone);
+			}
 		}
 	}
 }
@@ -763,29 +768,29 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 		NodePath node_path;
 		aiBone *bone = NULL;
 
-		do {
+		// Import skeleton bone animation for this track
+		// Any bone will do, no point in processing more than just what is in the skeleton
+		{
 			bone = get_bone_from_stack(state, track->mNodeName);
 
-			if (!bone) {
-				break;
+			if (bone) {
+				// get skeleton by bone
+				skeleton = state.armature_skeletons[bone->mArmature];
+
+				if (skeleton) {
+					String path = state.root->get_path_to(skeleton);
+					path += ":" + node_name;
+					node_path = path;
+
+					if (node_path != NodePath()) {
+						_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton,
+								node_path, node_name, bone);
+					} else {
+						print_error("Failed to find valid node path for animation");
+					}
+				}
 			}
-
-			// get skeleton by bone
-			skeleton = state.armature_skeletons[bone->mArmature];
-
-			ERR_CONTINUE_MSG(!skeleton, "Failed to lookup skeleton for bone");
-
-			String path = state.root->get_path_to(skeleton);
-			path += ":" + node_name;
-			node_path = path;
-
-			if (node_path != NodePath()) {
-				_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton,
-						node_path, node_name, bone);
-			} else {
-				print_error("Failed to find valid node path for animation");
-			}
-		} while (bone);
+		}
 
 		// not a bone
 		// note this is flaky it uses node names which is unreliable
@@ -853,8 +858,8 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 // [debt needs looked into]
 Ref<Mesh>
 EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &state, const Vector<int> &p_surface_indices,
-                                                               const aiNode *assimp_node, Ref<Skin> &skin,
-                                                               Skeleton *&skeleton_assigned) {
+		const aiNode *assimp_node, Ref<Skin> &skin,
+		Skeleton *&skeleton_assigned) {
 
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
@@ -894,12 +899,11 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 					print_verbose("Assigned mesh skeleton during mesh creation");
 					skeleton_assigned = state.skeleton_bone_map[bone];
 
-					if(!skin.is_valid())
-                    {
-					    print_verbose("Configured new skin");
-					    skin.instance();
-                    } else{
-					    print_verbose("Reusing existing skin!");
+					if (!skin.is_valid()) {
+						print_verbose("Configured new skin");
+						skin.instance();
+					} else {
+						print_verbose("Reusing existing skin!");
 					}
 				}
 				//                skeleton_assigned =
@@ -1373,8 +1377,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 				aiBone *iterBone = ai_mesh->mBones[boneId];
 
 				// used to reparent mesh to the correct armature later on if assigned.
-				if(!armature)
-				{
+				if (!armature) {
 					print_verbose("Configured mesh armature, will reparent later to armature");
 					armature = iterBone->mArmature;
 				}
@@ -1384,14 +1387,13 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 					if (id != -1) {
 						print_verbose("Set bind bone: mesh: " + itos(mesh_index) + " bone index: " + itos(id));
 						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix);
-						
+
 						skin->add_bind(bind_count, t);
 						skin->set_bind_bone(bind_count, id);
 						bind_count++;
 					}
 				}
 			}
-
 		}
 
 		print_verbose("Finished configuring bind pose for skin mesh");
@@ -1399,26 +1401,22 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 
 	// this code parents all meshes with bones to the armature they are for
 	// GLTF2 specification relies on this and we are enforcing it for FBX.
-	if(armature && state.flat_node_map[armature])
-	{
-		Node* armature_parent = state.flat_node_map[armature];
-		print_verbose("Parented mesh " + node_name + " to armature " + armature_parent->get_name() );
+	if (armature && state.flat_node_map[armature]) {
+		Node *armature_parent = state.flat_node_map[armature];
+		print_verbose("Parented mesh " + node_name + " to armature " + armature_parent->get_name());
 		// static mesh handling
 		armature_parent->add_child(mesh_node);
 		// transform must be identity
 		mesh_node->set_global_transform(Transform());
 		mesh_node->set_name(node_name);
 		mesh_node->set_owner(state.root);
-	}
-	else
-	{		
+	} else {
 		// static mesh handling
 		active_node->add_child(mesh_node);
 		mesh_node->set_global_transform(node_transform);
 		mesh_node->set_name(node_name);
 		mesh_node->set_owner(state.root);
-	}	
-
+	}
 
 	if (skeleton) {
 		print_verbose("Attempted to set skeleton path!");
