@@ -476,7 +476,9 @@ void SpatialMaterial::_update_shader() {
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
-	code += "uniform sampler2D texture_albedo : hint_albedo;\n";
+	if (textures[TEXTURE_ALBEDO] != NULL) {
+		code += "uniform sampler2D texture_albedo : hint_albedo;\n";
+	}
 	code += "uniform float specular;\n";
 	code += "uniform float metallic;\n";
 	if (grow_enabled) {
@@ -496,10 +498,16 @@ void SpatialMaterial::_update_shader() {
 	}
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
-	code += "uniform sampler2D texture_metallic : hint_white;\n";
-	code += "uniform vec4 metallic_texture_channel;\n";
-	code += "uniform sampler2D texture_roughness : hint_white;\n";
-	code += "uniform vec4 roughness_texture_channel;\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		code += "uniform sampler2D texture_metallic : hint_white;\n";
+		code += "uniform vec4 metallic_texture_channel;\n";
+	}
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		code += "uniform sampler2D texture_roughness : hint_white;\n";
+		code += "uniform vec4 roughness_texture_channel;\n";
+	}
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -773,37 +781,51 @@ void SpatialMaterial::_update_shader() {
 		code += "\t}\n";
 	}
 
-	if (flags[FLAG_USE_POINT_SIZE]) {
-		code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
-	} else {
-		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
+	if (textures[TEXTURE_ALBEDO] != NULL) {
+		if (flags[FLAG_USE_POINT_SIZE]) {
+			code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
 		} else {
-			code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
+			} else {
+				code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+			}
 		}
-	}
 
-	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
-		code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
+		if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
+			code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
+		}
+	} else {
+		code += "\tvec4 albedo_tex = vec4(1.0, 1.0, 1.0, 1.0);\n";
 	}
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code += "\talbedo_tex *= COLOR;\n";
 	}
-
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+		} else {
+			code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		}
+		code += "\tMETALLIC = metallic_tex * metallic;\n";
 	} else {
-		code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		code += "\tMETALLIC = metallic;\n";
 	}
-	code += "\tMETALLIC = metallic_tex * metallic;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+		} else {
+			code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		}
+		code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	} else {
-		code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		code += "\tROUGHNESS = roughness;\n";
 	}
-	code += "\tROUGHNESS = roughness_tex * roughness;\n";
+
 	code += "\tSPECULAR = specular;\n";
 
 	if (features[FEATURE_NORMAL_MAPPING]) {

@@ -638,7 +638,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
-			ERR_PRINTS("Texture '" + texture->path + "' was required to be a power of 2 (because it uses either mipmaps or repeat), so it was decompressed. This will hurt performance and memory usage.");
+			ERR_PRINTS("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
 		}
 
 		if (img == p_image) {
@@ -659,7 +659,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 			img->resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
 		}
-	};
+	}
 
 	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_layer] : GL_TEXTURE_2D;
 
@@ -718,7 +718,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 		int size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
 
-		if (texture->compressed) {
+		if (compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 			int bw = w;
@@ -5733,7 +5733,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
-	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc");
+	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
 #endif
@@ -5799,7 +5799,7 @@ void RasterizerStorageGLES2::initialize() {
 #endif
 
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
-	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
+	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");
 
 	//determine formats for depth textures (or renderbuffers)
 	if (config.support_depth_texture) {
