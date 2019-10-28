@@ -2569,6 +2569,8 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 			res = Ref<Resource>(resp);
 			emit_changed(get_edited_property(), res);
+			bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+			get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 			update_property();
 
 		} break;
