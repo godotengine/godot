@@ -1843,6 +1843,18 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			ERR_FAIL_COND_MSG(reimport.size() == 0, "You need to select files to reimport them.");
 		} break;
 
+		case FILE_DOCUMENTATION: {
+			for (int i = 0; i < p_selected.size(); i++) {
+				if (!p_selected[i].ends_with("/")) {
+					String file_type = EditorFileSystem::get_singleton()->get_file_type(p_selected[i]);
+					if (ClassDB::class_exists(file_type)) {
+						ScriptEditor::get_singleton()->goto_help("class_name:" + file_type);
+					}
+				}
+			}
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+		} break;
+
 		case FILE_NEW_FOLDER: {
 			make_dir_dialog_text->set_text("new folder");
 			make_dir_dialog_text->select_all();
@@ -2364,6 +2376,22 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (p_paths.size() > 1 || p_paths[0] != "res://") {
 		p_popup->add_icon_item(get_theme_icon("MoveUp", "EditorIcons"), TTR("Move To..."), FILE_MOVE);
 		p_popup->add_icon_item(get_theme_icon("Remove", "EditorIcons"), TTR("Delete"), FILE_REMOVE);
+	}
+
+	if (p_paths.size() > 1 || p_paths[0] != "res://") {
+		if (!all_folders) {
+			bool has_built_in = false;
+			for (int i = 0; i < filenames.size(); i++) {
+				String file_type = EditorFileSystem::get_singleton()->get_file_type(filenames[i]);
+				if (ClassDB::class_exists(file_type)) {
+					has_built_in = true;
+				}
+			}
+			if (has_built_in) {
+				p_popup->add_separator();
+				p_popup->add_icon_item(get_theme_icon("Help", "EditorIcons"), TTR("Open Class Documentation"), FILE_DOCUMENTATION);
+			}
+		}
 	}
 
 	if (p_paths.size() == 1) {
