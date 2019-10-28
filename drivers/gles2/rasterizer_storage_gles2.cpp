@@ -4733,12 +4733,13 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-		glFramebufferTexture2DMultisample(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0, msaa);
+		glFramebufferTexture2DMultisample(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->multisample_color, 0, msaa);
 #endif
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			WARN_PRINT_ONCE("Cannot allocate back framebuffer for MSAA");
 			printf("err status: %x\n", status);
 			_render_target_clear(rt);
 			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
