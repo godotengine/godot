@@ -4143,6 +4143,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			if (!n)
 				return ERR_PARSE_ERROR;
 
+			if (n->get_datatype() != TYPE_BOOL) {
+				_set_error("Expected boolean expression");
+				return ERR_PARSE_ERROR;
+			}
+
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_CLOSE) {
 				_set_error("Expected ')' after expression");
