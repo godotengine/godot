@@ -969,7 +969,8 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					Map<int, HighlighterInfo> color_map;
+					Dictionary color_map;
+
 					if (syntax_coloring) {
 						color_map = _get_line_syntax_highlighting(minimap_line);
 					}
@@ -1011,7 +1012,7 @@ void TextEdit::_notification(int p_what) {
 						for (int j = 0; j < str.length(); j++) {
 							if (syntax_coloring) {
 								if (color_map.has(last_wrap_column + j)) {
-									current_color = color_map[last_wrap_column + j].color;
+									current_color = color_map[last_wrap_column + j];
 									if (readonly) {
 										current_color.a = cache.font_color_readonly.a;
 									}
@@ -1095,7 +1096,7 @@ void TextEdit::_notification(int p_what) {
 
 				const String &fullstr = text[line];
 
-				Map<int, HighlighterInfo> color_map;
+				Dictionary color_map;
 				if (syntax_coloring) {
 					color_map = _get_line_syntax_highlighting(line);
 				}
@@ -1288,7 +1289,7 @@ void TextEdit::_notification(int p_what) {
 
 						if (syntax_coloring) {
 							if (color_map.has(last_wrap_column + j)) {
-								current_color = color_map[last_wrap_column + j].color;
+								current_color = color_map[last_wrap_column + j];
 								if (readonly && current_color.a > cache.font_color_readonly.a) {
 									current_color.a = cache.font_color_readonly.a;
 								}
@@ -2124,7 +2125,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 	int x = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
-		if (cache.font != NULL) {
+		if (cache.font.is_valid()) {
 			x += cache.font->get_char_size(rows2[0].get(ix)).width;
 		}
 		ix++;
@@ -4138,6 +4139,10 @@ void TextEdit::_line_edited_from(int p_line) {
 			}
 		}
 	}
+
+	if (syntax_highlighter != NULL && syntax_highlighter.is_valid()) {
+		syntax_highlighter->call("_line_edited", p_line);
+	}
 }
 
 int TextEdit::get_char_count() {
@@ -5021,26 +5026,26 @@ void TextEdit::_update_caches() {
 	cache.executing_icon = get_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
 
-	if (syntax_highlighter) {
-		syntax_highlighter->_update_cache();
+	if (syntax_highlighter != NULL) {
+		syntax_highlighter->call("_update_cache");
 	}
 }
 
-SyntaxHighlighter *TextEdit::_get_syntax_highlighting() {
-	return syntax_highlighter;
+Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() {
+	return syntax_highlighter.ptr();
 }
 
-void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter) {
+void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter) {
 	syntax_highlighter = p_syntax_highlighter;
-	if (syntax_highlighter) {
+	if (syntax_highlighter != NULL) {
 		syntax_highlighter->set_text_editor(this);
-		syntax_highlighter->_update_cache();
+		syntax_highlighter->call("_update_cache");
 	}
 	syntax_highlighting_cache.clear();
 	update();
 }
 
-int TextEdit::_is_line_in_region(int p_line) {
+int TextEdit::is_line_in_region(int p_line) {
 
 	// Do we have in cache?
 	if (color_region_cache.has(p_line)) {
@@ -5127,7 +5132,6 @@ Color TextEdit::get_keyword_color(String p_keyword) const {
 }
 
 void TextEdit::add_color_region(const String &p_begin_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
-
 	color_regions.push_back(ColorRegion(p_begin_key, p_end_key, p_color, p_line_only));
 	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
@@ -7077,6 +7081,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
 	ClassDB::bind_method(D_METHOD("get_minimap_width"), &TextEdit::get_minimap_width);
 
+	ClassDB::bind_method(D_METHOD("is_line_in_region"), &TextEdit::is_line_in_region);
+	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
+	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
@@ -7138,7 +7146,7 @@ TextEdit::TextEdit() {
 	wrap_enabled = false;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
-	syntax_highlighter = NULL;
+	syntax_highlighter = Ref<SyntaxHighlighter>(NULL);
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
@@ -7267,18 +7275,18 @@ TextEdit::~TextEdit() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int p_line) {
+Dictionary TextEdit::_get_line_syntax_highlighting(int p_line) {
 	if (syntax_highlighting_cache.has(p_line)) {
 		return syntax_highlighting_cache[p_line];
 	}
 
 	if (syntax_highlighter != NULL) {
-		Map<int, HighlighterInfo> color_map = syntax_highlighter->_get_line_syntax_highlighting(p_line);
+		Dictionary color_map = syntax_highlighter->call("_get_line_syntax_highlighting", p_line);
 		syntax_highlighting_cache[p_line] = color_map;
 		return color_map;
 	}
 
-	Map<int, HighlighterInfo> color_map;
+	Dictionary color_map;
 
 	bool prev_is_char = false;
 	bool prev_is_number = false;
@@ -7290,14 +7298,14 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 	Color keyword_color;
 	Color color;
 
-	int in_region = _is_line_in_region(p_line);
+	int in_region = is_line_in_region(p_line);
 	int deregion = 0;
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text.get_color_region_info(p_line);
 	const String &str = text[p_line];
 	Color prev_color;
 	for (int j = 0; j < str.length(); j++) {
-		HighlighterInfo highlighter_info;
+		Color cur_color;
 
 		if (deregion > 0) {
 			deregion--;
@@ -7309,8 +7317,8 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 		if (deregion != 0) {
 			if (color != prev_color) {
 				prev_color = color;
-				highlighter_info.color = color;
-				color_map[j] = highlighter_info;
+				cur_color = color;
+				color_map[j] = cur_color;
 			}
 			continue;
 		}
@@ -7452,8 +7460,8 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 
 		if (color != prev_color) {
 			prev_color = color;
-			highlighter_info.color = color;
-			color_map[j] = highlighter_info;
+			cur_color = color;
+			color_map[j] = cur_color;
 		}
 	}
 
@@ -7467,4 +7475,33 @@ void SyntaxHighlighter::set_text_editor(TextEdit *p_text_editor) {
 
 TextEdit *SyntaxHighlighter::get_text_editor() {
 	return text_editor;
+}
+
+void SyntaxHighlighter::_update_cache() {
+}
+
+void SyntaxHighlighter::_line_edited(int p_line) {
+}
+
+Dictionary SyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+	return Dictionary();
+}
+
+Array SyntaxHighlighter::_get_supported_languages() {
+	return Array();
+}
+
+void SyntaxHighlighter::_bind_methods() {
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "p_line")));
+	ClassDB::bind_method(D_METHOD("_get_line_syntax_highlighting", "p_line"), &SyntaxHighlighter::_get_line_syntax_highlighting);
+	BIND_VMETHOD(MethodInfo("_update_cache"));
+	ClassDB::bind_method(D_METHOD("_update_cache"), &SyntaxHighlighter::_update_cache);
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_supported_languages"));
+	ClassDB::bind_method(D_METHOD("_get_supported_languages"), &SyntaxHighlighter::_get_supported_languages);
+	BIND_VMETHOD(MethodInfo("_line_edited", PropertyInfo(Variant::INT, "p_line")));
+	ClassDB::bind_method(D_METHOD("_line_edited"), &SyntaxHighlighter::_line_edited);
+	ClassDB::bind_method(D_METHOD("get_text_editor"), &SyntaxHighlighter::get_text_editor);
+}
+
+SyntaxHighlighter::SyntaxHighlighter() {
 }

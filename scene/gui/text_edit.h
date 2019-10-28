@@ -222,7 +222,7 @@ private:
 	} cache;
 
 	Map<int, int> color_region_cache;
-	Map<int, Map<int, HighlighterInfo> > syntax_highlighting_cache;
+	Map<int, Dictionary> syntax_highlighting_cache;
 
 	struct TextOperation {
 
@@ -254,11 +254,11 @@ private:
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
 
 	//syntax coloring
-	SyntaxHighlighter *syntax_highlighter;
+	Ref<SyntaxHighlighter> syntax_highlighter;
 	HashMap<String, Color> keywords;
 	HashMap<String, Color> member_keywords;
 
-	Map<int, HighlighterInfo> _get_line_syntax_highlighting(int p_line);
+	Dictionary _get_line_syntax_highlighting(int p_line);
 
 	Vector<ColorRegion> color_regions;
 
@@ -484,10 +484,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	SyntaxHighlighter *_get_syntax_highlighting();
-	void _set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter);
+	Ref<SyntaxHighlighter> get_syntax_highlighter();
+	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
 
-	int _is_line_in_region(int p_line);
+	int is_line_in_region(int p_line);
 	ColorRegion _get_color_region(int p_region) const;
 	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
 
@@ -769,20 +769,25 @@ public:
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 
-class SyntaxHighlighter {
+class SyntaxHighlighter : public Resource {
+	GDCLASS(SyntaxHighlighter, Resource);
+	OBJ_SAVE_TYPE(SyntaxHighlighter);
+
 protected:
+	static void _bind_methods();
 	TextEdit *text_editor;
 
 public:
 	virtual ~SyntaxHighlighter() {}
-	virtual void _update_cache() = 0;
-	virtual Map<int, TextEdit::HighlighterInfo> _get_line_syntax_highlighting(int p_line) = 0;
-
-	virtual String get_name() const = 0;
-	virtual List<String> get_supported_languages() = 0;
+	virtual void _update_cache();
+	virtual Dictionary _get_line_syntax_highlighting(int p_line);
+	virtual void _line_edited(int p_line);
+	virtual Array _get_supported_languages();
 
 	void set_text_editor(TextEdit *p_text_editor);
 	TextEdit *get_text_editor();
+
+	SyntaxHighlighter();
 };
 
 #endif // TEXT_EDIT_H

@@ -1371,9 +1371,9 @@ Variant CodeTextEditor::get_edit_state() {
 	state["bookmarks"] = text_editor->get_bookmarks_array();
 
 	state["syntax_highlighter"] = TTR("Standard");
-	SyntaxHighlighter *syntax_highlighter = text_editor->_get_syntax_highlighting();
-	if (syntax_highlighter) {
-		state["syntax_highlighter"] = syntax_highlighter->get_name();
+	Ref<SyntaxHighlighter> syntax_highlighter = text_editor->get_syntax_highlighter();
+	if (syntax_highlighter.is_valid()) {
+		state["syntax_highlighter"] = syntax_highlighter->call("get_name");
 	}
 
 	return state;

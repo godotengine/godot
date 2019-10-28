@@ -336,6 +336,7 @@ void register_scene_types() {
 	ClassDB::register_class<Tree>();
 
 	ClassDB::register_class<TextEdit>();
+	ClassDB::register_class<SyntaxHighlighter>();
 
 	ClassDB::register_virtual_class<TreeItem>();
 	ClassDB::register_class<OptionButton>();

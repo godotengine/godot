@@ -33,16 +33,16 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 
-void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
-	highlighters[p_highlighter->get_name()] = p_highlighter;
-	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
+void TextEditor::add_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
+	highlighters[p_highlighter->call("get_name")] = p_highlighter;
+	highlighter_menu->add_radio_check_item(p_highlighter->call("get_name"));
 }
 
-void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
+void TextEditor::set_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
-	te->_set_syntax_highlighting(p_highlighter);
+	te->set_syntax_highlighter(p_highlighter);
 	if (p_highlighter != NULL) {
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->call("get_name")), true);
 	} else {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
 	}
@@ -61,7 +61,7 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 }
 
 void TextEditor::_change_syntax_highlighter(int p_idx) {
-	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
+	Map<String, Ref<SyntaxHighlighter>>::Element *el = highlighters.front();
 	while (el != NULL) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
@@ -695,7 +695,7 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
 
-	highlighters["Standard"] = NULL;
+	highlighters["Standard"] = Ref<SyntaxHighlighter>(NULL);
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -727,11 +727,6 @@ TextEditor::TextEditor() {
 }
 
 TextEditor::~TextEditor() {
-	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
-		if (E->get() != NULL) {
-			memdelete(E->get());
-		}
-	}
 	highlighters.clear();
 }
 

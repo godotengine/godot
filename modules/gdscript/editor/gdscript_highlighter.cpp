@@ -60,8 +60,8 @@ static bool _is_bin_symbol(CharType c) {
 	return (c == '0' || c == '1');
 }
 
-Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
-	Map<int, TextEdit::HighlighterInfo> color_map;
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) {
+	Dictionary color_map;
 
 	Type next_type = NONE;
 	Type current_type = NONE;
@@ -85,15 +85,13 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	Color keyword_color;
 	Color color;
 
-	int in_region = text_editor->_is_line_in_region(p_line);
+	int in_region = text_editor->is_line_in_region(p_line);
 	int deregion = 0;
 
 	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text_editor->_get_line_color_region_info(p_line);
 	const String &str = text_editor->get_line(p_line);
 	Color prev_color;
 	for (int j = 0; j < str.length(); j++) {
-		TextEdit::HighlighterInfo highlighter_info;
-
 		if (deregion > 0) {
 			deregion--;
 			if (deregion == 0) {
@@ -104,8 +102,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		if (deregion != 0) {
 			if (color != prev_color) {
 				prev_color = color;
-				highlighter_info.color = color;
-				color_map[j] = highlighter_info;
+				color_map[j] = color;
 			}
 			continue;
 		}
@@ -340,19 +337,14 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 		if (color != prev_color) {
 			prev_color = color;
-			highlighter_info.color = color;
-			color_map[j] = highlighter_info;
+			color_map[j] = color;
 		}
 	}
 	return color_map;
 }
 
-String GDScriptSyntaxHighlighter::get_name() const {
-	return "GDScript";
-}
-
-List<String> GDScriptSyntaxHighlighter::get_supported_languages() {
-	List<String> languages;
+Array GDScriptSyntaxHighlighter::get_supported_languages() {
+	Array languages;
 	languages.push_back("GDScript");
 	return languages;
 }
@@ -394,5 +386,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 }
 
 SyntaxHighlighter *GDScriptSyntaxHighlighter::create() {
-	return memnew(GDScriptSyntaxHighlighter);
+	SyntaxHighlighter* highlighter = memnew(GDScriptSyntaxHighlighter);
+	highlighter->set_name("GDScript");
+	return highlighter;
 }
