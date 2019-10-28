@@ -805,6 +805,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->data_size = img->get_data().size();
 	PoolVector<uint8_t>::Read read = img->get_data().read();
+	ERR_FAIL_COND(!read.ptr());
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -4729,6 +4730,7 @@ void RasterizerStorageGLES3::multimesh_set_as_bulk_array(RID p_multimesh, const 
 
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_COND(!multimesh->data.ptr());
 
 	int dsize = multimesh->data.size();
 
@@ -4865,15 +4867,16 @@ RID RasterizerStorageGLES3::immediate_create() {
 	return immediate_owner.make_rid(im);
 }
 
-void RasterizerStorageGLES3::immediate_begin(RID p_immediate, VS::PrimitiveType p_rimitive, RID p_texture) {
+void RasterizerStorageGLES3::immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture) {
 
+	ERR_FAIL_INDEX(p_primitive, (int)VS::PRIMITIVE_MAX);
 	Immediate *im = immediate_owner.get(p_immediate);
 	ERR_FAIL_COND(!im);
 	ERR_FAIL_COND(im->building);
 
 	Immediate::Chunk ic;
 	ic.texture = p_texture;
-	ic.primitive = p_rimitive;
+	ic.primitive = p_primitive;
 	im->chunks.push_back(ic);
 	im->mask = 0;
 	im->building = true;

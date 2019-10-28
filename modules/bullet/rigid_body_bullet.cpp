@@ -126,16 +126,16 @@ void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
 	body->apply_torque(p_torque);
 }
 
-void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_j) {
-	body->apply_central_impulse(p_j);
+void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_impulse) {
+	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
-	body->apply_impulse(p_pos, p_j);
+void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
+	body->apply_impulse(p_pos, p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_j) {
-	body->apply_torque_impulse(p_j);
+void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_impulse) {
+	body->apply_torque_impulse(p_impulse);
 }
 
 void BulletPhysicsDirectBodyState::set_sleep_state(bool p_enable) {
@@ -920,7 +920,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 
 		currentArea = areasWhereIam[i];
 
-		if (PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
+		if (!currentArea || PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
 			continue;
 		}
 
