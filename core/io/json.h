@@ -49,23 +49,19 @@ class JSON {
 		TK_MAX
 	};
 
-	enum Expecting {
-
-		EXPECT_OBJECT,
-		EXPECT_OBJECT_KEY,
-		EXPECT_COLON,
-		EXPECT_OBJECT_VALUE,
-	};
-
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	static const char *tk_name[TK_MAX];
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys);
+	static bool _is_compatible_value(const Variant &p_var);
+
+	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_value(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_array(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
+	static String _print_object(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_at_key);
 
 	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
