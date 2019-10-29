@@ -645,6 +645,7 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		bool can_discard;
 	};
+	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
 private:
 	struct KeyWord {
