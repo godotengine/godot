@@ -19,12 +19,12 @@ namespace Godot
         private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
         private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
 
-        public static real_t Abs(real_t s)
+        public static int Abs(int s)
         {
             return Math.Abs(s);
         }
 
-        public static int Abs(int s)
+        public static real_t Abs(real_t s)
         {
             return Math.Abs(s);
         }
@@ -77,29 +77,6 @@ namespace Godot
         public static real_t Cosh(real_t s)
         {
             return (real_t)Math.Cosh(s);
-        }
-
-        public static int StepDecimals(real_t step)
-        {
-            double[] sd = new double[] {
-                0.9999,
-                0.09999,
-                0.009999,
-                0.0009999,
-                0.00009999,
-                0.000009999,
-                0.0000009999,
-                0.00000009999,
-                0.000000009999,
-            };
-            double abs = Mathf.Abs(step);
-            double decs = abs - (int)abs; // Strip away integer part
-            for (int i = 0; i < sd.Length; i++) {
-                if (decs >= sd[i]) {
-                    return i;
-                }
-            }
-            return 0;
         }
 
         public static real_t Deg2Rad(real_t deg)
@@ -159,12 +136,14 @@ namespace Godot
         public static bool IsEqualApprox(real_t a, real_t b)
         {
             // Check for exact equality first, required to handle "infinity" values.
-            if (a == b) {
+            if (a == b)
+            {
                 return true;
             }
             // Then check for approximate equality.
             real_t tolerance = Epsilon * Abs(a);
-            if (tolerance < Epsilon) {
+            if (tolerance < Epsilon)
+            {
                 tolerance = Epsilon;
             }
             return Abs(a - b) < tolerance;
@@ -190,7 +169,8 @@ namespace Godot
             return from + (to - from) * weight;
         }
 
-        public static real_t LerpAngle(real_t from, real_t to, real_t weight) {
+        public static real_t LerpAngle(real_t from, real_t to, real_t weight)
+        {
             real_t difference = (to - from) % Mathf.Tau;
             real_t distance = ((2 * difference) % Mathf.Tau) - difference;
             return from + distance * weight;
@@ -246,9 +226,9 @@ namespace Godot
         /// <summary>
         /// Performs a canonical Modulus operation, where the output is on the range [0, b).
         /// </summary>
-        public static real_t PosMod(real_t a, real_t b)
+        public static int PosMod(int a, int b)
         {
-            real_t c = a % b;
+            int c = a % b;
             if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
@@ -259,9 +239,9 @@ namespace Godot
         /// <summary>
         /// Performs a canonical Modulus operation, where the output is on the range [0, b).
         /// </summary>
-        public static int PosMod(int a, int b)
+        public static real_t PosMod(real_t a, real_t b)
         {
-            int c = a % b;
+            real_t c = a % b;
             if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
@@ -317,6 +297,31 @@ namespace Godot
         public static real_t Sqrt(real_t s)
         {
             return (real_t)Math.Sqrt(s);
+        }
+
+        public static int StepDecimals(real_t step)
+        {
+            double[] sd = new double[] {
+                0.9999,
+                0.09999,
+                0.009999,
+                0.0009999,
+                0.00009999,
+                0.000009999,
+                0.0000009999,
+                0.00000009999,
+                0.000000009999,
+            };
+            double abs = Mathf.Abs(step);
+            double decs = abs - (int)abs; // Strip away integer part
+            for (int i = 0; i < sd.Length; i++)
+            {
+                if (decs >= sd[i])
+                {
+                    return i;
+                }
+            }
+            return 0;
         }
 
         public static real_t Stepify(real_t s, real_t step)
