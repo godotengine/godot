@@ -349,6 +349,7 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Loo"
 
@@ -474,15 +475,6 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
 msgstr ""
-
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Vali Kõik"
-
-#: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Tühista Valik"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -618,7 +610,7 @@ msgid "Scale Ratio:"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
+msgid "Select Tracks to Copy"
 msgstr ""
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
@@ -629,6 +621,11 @@ msgstr ""
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopeeri"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select All/None"
+msgstr "Tühista Valik"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -946,7 +943,7 @@ msgid "Resource"
 msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp
 msgid "Path"
 msgstr ""
 
@@ -1401,7 +1398,8 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr ""
 
@@ -1455,7 +1453,7 @@ msgstr ""
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr ""
 
@@ -1841,6 +1839,7 @@ msgid "Class:"
 msgstr ""
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr ""
 
@@ -2832,7 +2831,7 @@ msgstr ""
 msgid "Expand Bottom Panel"
 msgstr ""
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr ""
 
@@ -3068,6 +3067,10 @@ msgstr ""
 msgid "New Script"
 msgstr ""
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+msgid "Extend Script"
+msgstr ""
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr ""
@@ -3092,13 +3095,6 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
-msgstr ""
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
@@ -3874,7 +3870,7 @@ msgstr ""
 msgid "Subfolder:"
 msgstr ""
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr ""
 
@@ -4004,6 +4000,12 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -4350,7 +4352,6 @@ msgstr ""
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr ""
 
@@ -4518,6 +4519,8 @@ msgid "Current:"
 msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr ""
 
@@ -4720,6 +4723,10 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No results for \"%s\"."
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5003,20 +5010,23 @@ msgid "Ruler Mode"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
+msgid "Toggle smart snapping."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
+msgid "Use Smart Snap"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Toggle grid snapping."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Grid Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to Grid"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5106,8 +5116,7 @@ msgid "View"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
+msgid "Always Show Grid"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5365,6 +5374,10 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Right click to add point"
 msgstr ""
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
@@ -5996,6 +6009,10 @@ msgid "Grid"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
 msgstr ""
 
@@ -6052,6 +6069,7 @@ msgstr ""
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr ""
 
@@ -6147,6 +6165,11 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6415,6 +6438,11 @@ msgstr ""
 msgid "Cut"
 msgstr ""
 
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Vali Kõik"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
 msgstr ""
@@ -6470,10 +6498,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -6796,6 +6820,10 @@ msgid "Freelook Speed Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Slow Modifier"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -6826,6 +6854,10 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7052,6 +7084,10 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Shrink (Pixels): "
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7819,11 +7855,7 @@ msgid "(GLES3 only)"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add input +"
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add output +"
+msgid "Add Output"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7836,6 +7868,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sampler"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8695,12 +8731,14 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9684,11 +9722,9 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -9762,6 +9798,14 @@ msgid "Clear Inheritance"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
 msgstr ""
 
@@ -9775,10 +9819,6 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Extend Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10008,23 +10048,15 @@ msgid "Will load an existing script file."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
+msgid "Class Name:"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Inherits"
+msgid "Template:"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Class Name"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Template"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Built-in Script"
+msgid "Built-in Script:"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
@@ -10659,11 +10691,31 @@ msgid "Add Function"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Delete input port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Input Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Output Port"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10707,7 +10759,17 @@ msgid "Add Preload Node"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10732,6 +10794,10 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Disconnect Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10767,6 +10833,27 @@ msgid "Paste VisualScript Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function with a function node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select atleast one node with sequence port."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create Function"
+msgstr "Loo"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr ""
 
@@ -10791,16 +10878,13 @@ msgid "Make Tool:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr ""
+#, fuzzy
+msgid "function_name"
+msgstr "Funktsioonid:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -10820,6 +10904,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Function"
+msgstr "Funktsioonid:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Refresh Graph"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -10914,6 +11007,10 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Select device from the list"
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11013,6 +11110,10 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -11551,10 +11652,6 @@ msgid ""
 "its contents directly to the screen, make it a child of a Control so it can "
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
-msgstr ""
-
-#: scene/resources/visual_shader.cpp
-msgid "Input"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp

@@ -411,6 +411,7 @@ msgstr "Создать %d новые дорожки и вставить ключ
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Создать"
 
@@ -553,15 +554,6 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Предупреждение: Редактирование импортированной анимации"
 
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Выбрать все"
-
-#: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Сбросить выделение"
-
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -697,7 +689,8 @@ msgid "Scale Ratio:"
 msgstr "Коэффициент масштабирования:"
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
+#, fuzzy
+msgid "Select Tracks to Copy"
 msgstr "Выбрать треки для копирования:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
@@ -708,6 +701,11 @@ msgstr "Выбрать треки для копирования:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select All/None"
+msgstr "Сбросить выделение"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -1037,7 +1035,7 @@ msgid "Resource"
 msgstr "Ресурс"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Путь"
 
@@ -1502,7 +1500,8 @@ msgstr "Добавить в автозагрузку"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Путь:"
 
@@ -1556,7 +1555,7 @@ msgstr "Создать папку"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Имя:"
 
@@ -1970,6 +1969,7 @@ msgid "Class:"
 msgstr "Класс:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Наследует:"
 
@@ -3052,7 +3052,7 @@ msgstr "Инспектор"
 msgid "Expand Bottom Panel"
 msgstr "Развернуть нижнюю панель"
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr "Вывод"
 
@@ -3313,6 +3313,10 @@ msgstr "Выберите Viewport"
 msgid "New Script"
 msgstr "Новый скрипт"
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+msgid "Extend Script"
+msgstr "Расширить скрипт"
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr "Новый %s"
@@ -3338,13 +3342,6 @@ msgstr "Вставить"
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
 msgstr "Преобразовать в %s"
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
-msgstr "Открыть редактор"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -4144,7 +4141,7 @@ msgstr "Имя Дополнения:"
 msgid "Subfolder:"
 msgstr "Подпапка:"
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr "Язык:"
 
@@ -4282,6 +4279,12 @@ msgstr "Включить привязку и отображение сетки."
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
 msgstr "Точка"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
+msgstr "Открыть редактор"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4635,7 +4638,6 @@ msgstr "Название анимации:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Ошибка!"
 
@@ -4808,6 +4810,8 @@ msgid "Current:"
 msgstr "Выбранный:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr "Добавить вход"
 
@@ -5015,6 +5019,10 @@ msgstr "Последняя"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
 msgstr "Все"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No results for \"%s\"."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5320,21 +5328,28 @@ msgid "Ruler Mode"
 msgstr "Режим запуска:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
+#, fuzzy
+msgid "Toggle smart snapping."
 msgstr "Переключить привязки."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
+#, fuzzy
+msgid "Use Smart Snap"
 msgstr "Использовать привязку"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle grid snapping."
+msgstr "Переключить привязки."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Grid Snap"
+msgstr "Привязка по сетке"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
 msgstr "Параметры Привязки"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to Grid"
-msgstr "Привязка к сетке"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
@@ -5427,8 +5442,8 @@ msgid "View"
 msgstr "Обзор"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
+#, fuzzy
+msgid "Always Show Grid"
 msgstr "Показать сетку"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5708,6 +5723,11 @@ msgstr "Переключить кривую линейный тангенс"
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
 msgstr "Удерживайте Shift, чтобы изменить касательные индивидуально"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Right click to add point"
+msgstr "ПКМ: Удалить точку"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -6350,6 +6370,10 @@ msgid "Grid"
 msgstr "Сетка"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Показать сетку"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
 msgstr "Настройки сетки:"
 
@@ -6406,6 +6430,7 @@ msgstr "Экземпляр:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr "Тип:"
 
@@ -6505,6 +6530,11 @@ msgstr "%s Справка по классу"
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "Найти следующее"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr "Найти предыдущее"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6782,6 +6812,11 @@ msgstr "Точки останова"
 msgid "Cut"
 msgstr "Вырезать"
 
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Выбрать все"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
 msgstr "Удалить строку"
@@ -6838,10 +6873,6 @@ msgstr "Преобразовать отступ в табуляцию"
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "Автоотступ"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr "Найти предыдущее"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -7172,6 +7203,11 @@ msgid "Freelook Speed Modifier"
 msgstr "Обзор модификатор скорости"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Slow Modifier"
+msgstr "Обзор модификатор скорости"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7212,6 +7248,10 @@ msgstr ""
 #, fuzzy
 msgid "Use Local Space"
 msgstr "Режим локального пространства (%s)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "Использовать привязку"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7447,6 +7487,11 @@ msgstr "Спрайт"
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
 msgstr "Упрощение: "
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Shrink (Pixels): "
+msgstr "Рост (пиксели): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8271,11 +8316,8 @@ msgid "(GLES3 only)"
 msgstr "(только GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add input +"
-msgstr "Добавить вход +"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add output +"
+#, fuzzy
+msgid "Add Output"
 msgstr "Добавить выход +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8289,6 +8331,11 @@ msgstr "Вектор"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
 msgstr "Логическое"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Sampler"
+msgstr "Сэмплы"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9257,15 +9304,19 @@ msgid "Resources to export:"
 msgstr "Ресурсы для экспорта:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Фильтр для экспорта не ресурсных файлов (через запятую, например: *.json, *."
 "txt)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr "Фильтр для исключения (через запятую, например: *.json, *.txt)"
 
 #: editor/project_export.cpp
@@ -10324,12 +10375,13 @@ msgstr ""
 "узла будут возвращены к значениям по умолчанию."
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr "Редактируемые потомки"
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
-msgstr "Загрузить как заполнитель"
+#, fuzzy
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
+msgstr ""
+"Отключение параметра \"editable_instance\" приведет к тому, что все свойства "
+"узла будут возвращены к значениям по умолчанию."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10406,6 +10458,14 @@ msgid "Clear Inheritance"
 msgstr "Очистить наследование"
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr "Редактируемые потомки"
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr "Загрузить как заполнитель"
+
+#: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
 msgstr "Открыть документацию"
 
@@ -10420,10 +10480,6 @@ msgstr "Развернуть/свернуть все"
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Изменить тип"
-
-#: editor/scene_tree_dock.cpp
-msgid "Extend Script"
-msgstr "Расширить скрипт"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10692,23 +10748,18 @@ msgid "Will load an existing script file."
 msgstr "Загрузить существующий скрипт"
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "Язык"
-
-#: editor/script_create_dialog.cpp
-msgid "Inherits"
-msgstr "Наследует"
-
-#: editor/script_create_dialog.cpp
-msgid "Class Name"
+#, fuzzy
+msgid "Class Name:"
 msgstr "Имя Класса"
 
 #: editor/script_create_dialog.cpp
-msgid "Template"
+#, fuzzy
+msgid "Template:"
 msgstr "Шаблон"
 
 #: editor/script_create_dialog.cpp
-msgid "Built-in Script"
+#, fuzzy
+msgid "Built-in Script:"
 msgstr "Встроенный Скрипт"
 
 #: editor/script_create_dialog.cpp
@@ -11366,12 +11417,37 @@ msgid "Add Function"
 msgstr "Добавить функцию"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete input port"
+msgstr "Удалить входной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr "Добавить переменную"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Добавить сигнал"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Input Port"
+msgstr "Добавить входной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Добавить выходной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Input Port"
+msgstr "Удалить входной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Output Port"
+msgstr "Удалить выходной порт"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11418,8 +11494,18 @@ msgid "Add Preload Node"
 msgstr "Добавить предзагрузочный узел"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "Добавить узел(узлы) из дерева"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11444,6 +11530,11 @@ msgstr "Удалить узел VisualScript"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
 msgstr "Присоединить узлы"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Disconnect Nodes"
+msgstr "Разъединить узлы графа"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11478,6 +11569,28 @@ msgid "Paste VisualScript Nodes"
 msgstr "Вставить узлы VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Can't create function with a function node."
+msgstr "Не удаётся скопировать узел функцию."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select atleast one node with sequence port."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create Function"
+msgstr "Переименовать функцию"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "Удалить функцию"
 
@@ -11503,16 +11616,13 @@ msgid "Make Tool:"
 msgstr "Сделать локальным"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr "Базовый тип:"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Свойства:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr "Доступные узлы:"
+#, fuzzy
+msgid "function_name"
+msgstr "Функция:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11534,6 +11644,16 @@ msgstr "Копировать узлы"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
 msgstr "Вырезать узлы"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Function"
+msgstr "Переименовать функцию"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Refresh Graph"
+msgstr "Обновить"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11631,6 +11751,10 @@ msgstr "Символ '%s' не может стоять первым в сегм�
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "Пакет должен иметь хотя бы один '.' разделитель."
+
+#: platform/android/export/export.cpp
+msgid "Select device from the list"
+msgstr "Выберите устройство из списка"
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
@@ -11749,6 +11873,10 @@ msgstr "Неверный идентификатор:"
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
 msgstr "Требуемый значок не указан в предустановке."
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -12436,10 +12564,6 @@ msgstr ""
 "сделайте её целью рендеринга и назначьте её внутреннюю текстуру какому-либо "
 "узлу для отображения."
 
-#: scene/resources/visual_shader.cpp
-msgid "Input"
-msgstr "Вход"
-
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Неверный источник для предпросмотра."
@@ -12467,6 +12591,27 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Snap to Grid"
+#~ msgstr "Привязка к сетке"
+
+#~ msgid "Add input +"
+#~ msgstr "Добавить вход +"
+
+#~ msgid "Language"
+#~ msgstr "Язык"
+
+#~ msgid "Inherits"
+#~ msgstr "Наследует"
+
+#~ msgid "Base Type:"
+#~ msgstr "Базовый тип:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Доступные узлы:"
+
+#~ msgid "Input"
+#~ msgstr "Вход"
 
 #~ msgid "Properties:"
 #~ msgstr "Свойства:"
@@ -12690,9 +12835,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Go to parent folder"
 #~ msgstr "Перейти к родительской папке"
-
-#~ msgid "Select device from the list"
-#~ msgstr "Выберите устройство из списка"
 
 #~ msgid "Open Scene(s)"
 #~ msgstr "Открыть сцену(ны)"
@@ -12931,9 +13073,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Warning"
 #~ msgstr "Предупреждение"
 
-#~ msgid "Function:"
-#~ msgstr "Функция:"
-
 #~ msgid "Variable"
 #~ msgstr "Переменная"
 
@@ -12999,9 +13138,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Connect Graph Nodes"
 #~ msgstr "Соединить узлы графа"
-
-#~ msgid "Disconnect Graph Nodes"
-#~ msgstr "Разъединить узлы графа"
 
 #~ msgid "Remove Shader Graph Node"
 #~ msgstr "Удалить узел графа шейдера"
@@ -14142,9 +14278,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Group"
 #~ msgstr "Группа"
-
-#~ msgid "Samples"
-#~ msgstr "Сэмплы"
 
 #~ msgid "Sample Conversion Mode: (.wav files):"
 #~ msgstr "Режим преобразования сэмплов (.wav файлы):"
