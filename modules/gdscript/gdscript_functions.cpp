@@ -589,7 +589,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					r_ret = wref;
 				}
 			} else if (p_args[0]->get_type() == Variant::NIL) {
-				r_ret = memnew(WeakRef);
+				Ref<WeakRef> wref = memnew(WeakRef);
+				r_ret = wref;
 			} else {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
