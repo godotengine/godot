@@ -31,6 +31,7 @@
 #include "json.h"
 
 #include "core/print_string.h"
+#include "core/variant_parser.h"
 
 const char *JSON::tk_name[TK_MAX] = {
 	"'{'",
@@ -106,7 +107,10 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
+				String key_str;
+				VariantWriter::write_to_string(E->get(), key_str);
+
+				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(key_str, p_indent, p_cur_indent + 1, p_sort_keys);
 				s += colon;
 				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
@@ -392,27 +396,24 @@ Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int p_
 Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str) {
 
 	bool at_key = true;
-	String key;
+	Variant key;
 	Token token;
 	bool need_comma = false;
 
 	while (index < p_len) {
 
 		if (at_key) {
-
 			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
 			if (err != OK)
 				return err;
 
 			if (token.type == TK_CURLY_BRACKET_CLOSE) {
-
 				return OK;
 			}
 
 			if (need_comma) {
 
 				if (token.type != TK_COMMA) {
-
 					r_err_str = "Expected '}' or ','";
 					return ERR_PARSE_ERROR;
 				} else {
@@ -422,23 +423,31 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 			}
 
 			if (token.type != TK_STRING) {
-
 				r_err_str = "Expected key";
 				return ERR_PARSE_ERROR;
 			}
 
-			key = token.value;
+			// The object key may contain a serialized variant, parse it
+			VariantParser::StreamString ss;
+			ss.s = token.value;
+
+			err = VariantParser::parse(&ss, key, r_err_str, line);
+			if (err != OK) {
+				ERR_FAIL_V_MSG(err, r_err_str);
+				return err;
+			}
+
 			err = _get_token(p_str, index, p_len, token, line, r_err_str);
 			if (err != OK)
 				return err;
-			if (token.type != TK_COLON) {
 
+			if (token.type != TK_COLON) {
 				r_err_str = "Expected ':'";
 				return ERR_PARSE_ERROR;
 			}
 			at_key = false;
-		} else {
 
+		} else { // value
 			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
 			if (err != OK)
 				return err;
