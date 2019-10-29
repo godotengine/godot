@@ -49,6 +49,14 @@ bool RefPtr::operator==(const RefPtr &p_other) const {
 	return *ref == *ref_other;
 }
 
+bool RefPtr::operator!=(const RefPtr &p_other) const {
+
+	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
+	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
+
+	return *ref != *ref_other;
+}
+
 RefPtr::RefPtr(const RefPtr &p_other) {
 
 	memnew_placement(&data[0], Ref<Reference>);
