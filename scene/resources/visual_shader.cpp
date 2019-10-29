@@ -1599,7 +1599,7 @@ String VisualShaderNodeInput::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeInput::get_caption() const {
-	return TTR("Input");
+	return "Input";
 }
 
 String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -1921,7 +1921,7 @@ bool VisualShaderNodeOutput::is_port_separator(int p_index) const {
 }
 
 String VisualShaderNodeOutput::get_caption() const {
-	return TTR("Output");
+	return "Output";
 }
 
 String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
