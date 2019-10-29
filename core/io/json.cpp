@@ -433,7 +433,6 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 
 			err = VariantParser::parse(&ss, key, r_err_str, line);
 			if (err != OK) {
-				ERR_FAIL_V_MSG(err, r_err_str);
 				return err;
 			}
 
