@@ -456,6 +456,15 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code] if the image is locked. Note that the [code]dst[/code] values must be integers. Example:
+				[codeblock]
+				var img = Image.new()
+				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
+				img.lock()
+				img.set_pixelv(Vector2(x, y), color) # Works
+				img.unlock()
+				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
+				[/codeblock]
 			</description>
 		</method>
 		<method name="shrink_x2">
