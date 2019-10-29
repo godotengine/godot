@@ -460,7 +460,9 @@ void SoftBody::update_physics_server() {
 	} else {
 
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", this, "_draw_soft_mesh")) {
+			VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
+		}
 	}
 }
 
