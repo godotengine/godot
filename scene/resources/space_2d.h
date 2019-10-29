@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,24 +27,23 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SPACE_2D_H
 #define SPACE_2D_H
 
+#include "core/resource.h"
 #include "servers/physics_2d_server.h"
-#include "resource.h"
-
 
 class Space2D : public Resource {
 
-	OBJ_TYPE(Space2D,Resource);
+	GDCLASS(Space2D, Resource);
 	bool active;
 	RID space;
+
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
 	void set_active(bool p_active);
 	bool is_active() const;
 

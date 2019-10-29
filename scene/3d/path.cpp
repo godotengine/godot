@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,145 +27,204 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "path.h"
+
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 void Path::_notification(int p_what) {
-#if 0
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_scene() && get_scene()->is_editor_hint()) {
-		//draw the curve!!
-
-		for(int i=0;i<curve->get_point_count();i++) {
-
-			Vector2 prev_p=curve->get_point_pos(i);
-
-			for(int j=1;j<=8;j++) {
-
-				real_t frac = j/8.0;
-				Vector2 p = curve->interpolate(i,frac);
-				draw_line(prev_p,p,Color(0.5,0.6,1.0,0.7),2);
-				prev_p=p;
-			}
-		}
-	}
-#endif
 }
 
 void Path::_curve_changed() {
 
-
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		update_gizmo();
-}
-
-
-void Path::set_curve(const Ref<Curve3D>& p_curve) {
-
-	if (curve.is_valid()) {
-		curve->disconnect("changed",this,"_curve_changed");
+	if (is_inside_tree()) {
+		emit_signal("curve_changed");
 	}
 
-	curve=p_curve;
+	// update the configuration warnings of all children of type PathFollow
+	// previously used for PathFollowOriented (now enforced orientation is done in PathFollow)
+	if (is_inside_tree()) {
+		for (int i = 0; i < get_child_count(); i++) {
+			PathFollow *child = Object::cast_to<PathFollow>(get_child(i));
+			if (child) {
+				child->update_configuration_warning();
+			}
+		}
+	}
+}
+
+void Path::set_curve(const Ref<Curve3D> &p_curve) {
 
 	if (curve.is_valid()) {
-		curve->connect("changed",this,"_curve_changed");
+		curve->disconnect("changed", this, "_curve_changed");
+	}
+
+	curve = p_curve;
+
+	if (curve.is_valid()) {
+		curve->connect("changed", this, "_curve_changed");
 	}
 	_curve_changed();
-
 }
 
-Ref<Curve3D> Path::get_curve() const{
+Ref<Curve3D> Path::get_curve() const {
 
 	return curve;
 }
 
 void Path::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_curve","curve:Curve3D"),&Path::set_curve);
-	ObjectTypeDB::bind_method(_MD("get_curve:Curve3D","curve"),&Path::get_curve);
-	ObjectTypeDB::bind_method(_MD("_curve_changed"),&Path::_curve_changed);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Path::get_curve);
+	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path::_curve_changed);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), _SCS("set_curve"),_SCS("get_curve"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
+
+	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
 Path::Path() {
 
-	set_curve(Ref<Curve3D>( memnew( Curve3D ))); //create one by default
+	set_curve(Ref<Curve3D>(memnew(Curve3D))); //create one by default
 }
-
 
 //////////////
 
-
 void PathFollow::_update_transform() {
-
 
 	if (!path)
 		return;
 
-	Ref<Curve3D> c =path->get_curve();
+	Ref<Curve3D> c = path->get_curve();
 	if (!c.is_valid())
 		return;
 
+	if (delta_offset == 0) {
+		return;
+	}
 
+	float bl = c->get_baked_length();
+	if (bl == 0.0) {
+		return;
+	}
+	float bi = c->get_bake_interval();
 	float o = offset;
-	if (loop)
-		o=Math::fposmod(o,c->get_baked_length());
+	float o_next = offset + bi;
 
-	Vector3 pos = c->interpolate_baked(o,cubic);
-	Transform t=get_transform();
+	if (loop) {
+		o = Math::fposmod(o, bl);
+		o_next = Math::fposmod(o_next, bl);
+	} else if (rotation_mode == ROTATION_ORIENTED && o_next >= bl) {
+		o = bl - bi;
+		o_next = bl;
+	}
 
+	Vector3 pos = c->interpolate_baked(o, cubic);
+	Transform t = get_transform();
+	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
+	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
-	if (rotation_mode!=ROTATION_NONE) {
+	if (rotation_mode == ROTATION_ORIENTED) {
 
-		Vector3 n = (c->interpolate_baked(o+lookahead,cubic)-pos).normalized();
+		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
 
-		if (rotation_mode==ROTATION_Y) {
+		if (forward.length_squared() < CMP_EPSILON2)
+			forward = Vector3(0, 0, 1);
+		else
+			forward.normalize();
 
-			n.y=0;
-			n.normalize();
+		Vector3 up = c->interpolate_baked_up_vector(o, true);
+
+		if (o_next < o) {
+			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
+			Vector3 axis = up.cross(up1);
+
+			if (axis.length_squared() < CMP_EPSILON2)
+				axis = forward;
+			else
+				axis.normalize();
+
+			up.rotate(axis, up.angle_to(up1) * 0.5f);
 		}
 
-		if (n.length()<CMP_EPSILON) {//nothing, use previous
-			n=-t.get_basis().get_axis(2).normalized();
-		}
+		Vector3 scale = t.basis.get_scale();
+		Vector3 sideways = up.cross(forward).normalized();
+		up = forward.cross(sideways).normalized();
 
+		t.basis.set(sideways, up, forward);
+		t.basis.scale_local(scale);
 
-		Vector3 up = Vector3(0,1,0);
+		t.origin = pos + sideways * h_offset + up * v_offset;
+	} else if (rotation_mode != ROTATION_NONE) {
+		// perform parallel transport
+		//
+		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
+		// for a discussion about why not Frenet frame.
 
-		if (rotation_mode==ROTATION_XYZ) {
+		t.origin = pos;
 
-			float tilt = c->interpolate_baked_tilt(o);
-			if (tilt!=0) {
+		Vector3 t_prev = (pos - c->interpolate_baked(o - delta_offset, cubic)).normalized();
+		Vector3 t_cur = (c->interpolate_baked(o + delta_offset, cubic) - pos).normalized();
 
-				Matrix3 rot(-n,tilt); //remember.. lookat will be znegative.. znegative!! we abide by opengl clan.
-				up=rot.xform(up);
+		Vector3 axis = t_prev.cross(t_cur);
+		float dot = t_prev.dot(t_cur);
+		float angle = Math::acos(CLAMP(dot, -1, 1));
+
+		if (likely(!Math::is_zero_approx(angle))) {
+			if (rotation_mode == ROTATION_Y) {
+				// assuming we're referring to global Y-axis. is this correct?
+				axis.x = 0;
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are allowed
+			}
+
+			if (likely(!Math::is_zero_approx(axis.length()))) {
+				t.rotate_basis(axis.normalized(), angle);
 			}
 		}
 
-		t.set_look_at(pos,pos+n,up);
+		// do the additional tilting
+		float tilt_angle = c->interpolate_baked_tilt(o);
+		Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
+		if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
+			if (rotation_mode == ROTATION_Y) {
+				tilt_axis.x = 0;
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are allowed
+			}
+
+			if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
+				t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+			}
+		}
+
+		t.translate(Vector3(h_offset, v_offset, 0));
 	} else {
-
-		t.origin=pos;
+		t.origin = pos + Vector3(h_offset, v_offset, 0);
 	}
 
-	t.origin+=t.basis.get_axis(0)*h_offset + t.basis.get_axis(1)*v_offset;
 	set_transform(t);
-
 }
 
 void PathFollow::_notification(int p_what) {
 
-
-	switch(p_what) {
+	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			Node *parent=get_parent();
+			Node *parent = get_parent();
 			if (parent) {
-
-				path=parent->cast_to<Path>();
+				path = Object::cast_to<Path>(parent);
 				if (path) {
 					_update_transform();
 				}
@@ -173,16 +233,14 @@ void PathFollow::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-
-			path=NULL;
+			path = NULL;
 		} break;
 	}
-
 }
 
 void PathFollow::set_cubic_interpolation(bool p_enable) {
 
-	cubic=p_enable;
+	cubic = p_enable;
 }
 
 bool PathFollow::get_cubic_interpolation() const {
@@ -190,117 +248,88 @@ bool PathFollow::get_cubic_interpolation() const {
 	return cubic;
 }
 
+void PathFollow::_validate_property(PropertyInfo &property) const {
 
-bool PathFollow::_set(const StringName& p_name, const Variant& p_value) {
+	if (property.name == "offset") {
 
-	if (p_name==SceneStringNames::get_singleton()->offset) {
-		set_offset(p_value);
-	} else if (p_name==SceneStringNames::get_singleton()->unit_offset) {
-		set_unit_offset(p_value);
-	} else if (p_name==SceneStringNames::get_singleton()->rotation_mode) {
-		set_rotation_mode(RotationMode(p_value.operator int()));
-	} else if (p_name==SceneStringNames::get_singleton()->v_offset) {
-		set_v_offset(p_value);
-	} else if (p_name==SceneStringNames::get_singleton()->h_offset) {
-		set_h_offset(p_value);
-	} else if (String(p_name)=="cubic_interp") {
-		set_cubic_interpolation(p_value);
-	} else if (String(p_name)=="loop") {
-		set_loop(p_value);
-	} else if (String(p_name)=="lookahead") {
-		set_lookahead(p_value);
-	} else
-		return false;
+		float max = 10000;
+		if (path && path->get_curve().is_valid())
+			max = path->get_curve()->get_baked_length();
 
-	return true;
+		property.hint_string = "0," + rtos(max) + ",0.01,or_greater";
+	}
 }
 
-bool PathFollow::_get(const StringName& p_name,Variant &r_ret) const{
+String PathFollow::get_configuration_warning() const {
 
-	if (p_name==SceneStringNames::get_singleton()->offset) {
-		r_ret=get_offset();
-	} else if (p_name==SceneStringNames::get_singleton()->unit_offset) {
-		r_ret=get_unit_offset();
-	} else if (p_name==SceneStringNames::get_singleton()->rotation_mode) {
-		r_ret=get_rotation_mode();
-	} else if (p_name==SceneStringNames::get_singleton()->v_offset) {
-		r_ret=get_v_offset();
-	} else if (p_name==SceneStringNames::get_singleton()->h_offset) {
-		r_ret=get_h_offset();
-	} else if (String(p_name)=="cubic_interp") {
-		r_ret=cubic;
-	} else if (String(p_name)=="loop") {
-		r_ret=loop;
-	} else if (String(p_name)=="lookahead") {
-		r_ret=lookahead;
-	} else
-		return false;
+	if (!is_visible_in_tree() || !is_inside_tree())
+		return String();
 
-	return true;
+	if (!Object::cast_to<Path>(get_parent())) {
+		return TTR("PathFollow only works when set as a child of a Path node.");
+	} else {
+		Path *path = Object::cast_to<Path>(get_parent());
+		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
+			return TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
+		}
+	}
 
+	return String();
 }
-void PathFollow::_get_property_list( List<PropertyInfo> *p_list) const{
-
-	float max=10000;
-	if (path && path->get_curve().is_valid())
-		max=path->get_curve()->get_baked_length();
-	p_list->push_back( PropertyInfo( Variant::REAL, "offset", PROPERTY_HINT_RANGE,"0,"+rtos(max)+",0.01"));
-	p_list->push_back( PropertyInfo( Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE,"0,1,0.0001",PROPERTY_USAGE_EDITOR));
-	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset") );
-	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset") );
-	p_list->push_back( PropertyInfo( Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM,"None,Y,XY,XYZ"));
-	p_list->push_back( PropertyInfo( Variant::BOOL, "cubic_interp"));
-	p_list->push_back( PropertyInfo( Variant::BOOL, "loop"));
-	p_list->push_back( PropertyInfo( Variant::REAL, "lookahead",PROPERTY_HINT_RANGE,"0.001,1024.0,0.001"));
-}
-
 
 void PathFollow::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&PathFollow::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&PathFollow::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &PathFollow::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &PathFollow::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_h_offset","h_offset"),&PathFollow::set_h_offset);
-	ObjectTypeDB::bind_method(_MD("get_h_offset"),&PathFollow::get_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow::set_h_offset);
+	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow::get_h_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_v_offset","v_offset"),&PathFollow::set_v_offset);
-	ObjectTypeDB::bind_method(_MD("get_v_offset"),&PathFollow::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow::set_v_offset);
+	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow::get_v_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_unit_offset","unit_offset"),&PathFollow::set_unit_offset);
-	ObjectTypeDB::bind_method(_MD("get_unit_offset"),&PathFollow::get_unit_offset);
+	ClassDB::bind_method(D_METHOD("set_unit_offset", "unit_offset"), &PathFollow::set_unit_offset);
+	ClassDB::bind_method(D_METHOD("get_unit_offset"), &PathFollow::get_unit_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotation_mode","rotation_mode"),&PathFollow::set_rotation_mode);
-	ObjectTypeDB::bind_method(_MD("get_rotation_mode"),&PathFollow::get_rotation_mode);
+	ClassDB::bind_method(D_METHOD("set_rotation_mode", "rotation_mode"), &PathFollow::set_rotation_mode);
+	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PathFollow::get_rotation_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_cubic_interpolation","enable"),&PathFollow::set_cubic_interpolation);
-	ObjectTypeDB::bind_method(_MD("get_cubic_interpolation"),&PathFollow::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow::set_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow::get_cubic_interpolation);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","loop"),&PathFollow::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&PathFollow::has_loop);
+	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow::has_loop);
 
-	BIND_CONSTANT( ROTATION_NONE );
-	BIND_CONSTANT( ROTATION_Y );
-	BIND_CONSTANT( ROTATION_XY );
-	BIND_CONSTANT( ROTATION_XYZ );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 
+	BIND_ENUM_CONSTANT(ROTATION_NONE);
+	BIND_ENUM_CONSTANT(ROTATION_Y);
+	BIND_ENUM_CONSTANT(ROTATION_XY);
+	BIND_ENUM_CONSTANT(ROTATION_XYZ);
+	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
 void PathFollow::set_offset(float p_offset) {
+	delta_offset = p_offset - offset;
+	offset = p_offset;
 
-	offset=p_offset;
 	if (path)
 		_update_transform();
 	_change_notify("offset");
 	_change_notify("unit_offset");
-
 }
 
 void PathFollow::set_h_offset(float p_h_offset) {
 
-	h_offset=p_h_offset;
+	h_offset = p_h_offset;
 	if (path)
 		_update_transform();
-
 }
 
 float PathFollow::get_h_offset() const {
@@ -310,10 +339,9 @@ float PathFollow::get_h_offset() const {
 
 void PathFollow::set_v_offset(float p_v_offset) {
 
-	v_offset=p_v_offset;
+	v_offset = p_v_offset;
 	if (path)
 		_update_transform();
-
 }
 
 float PathFollow::get_v_offset() const {
@@ -321,8 +349,7 @@ float PathFollow::get_v_offset() const {
 	return v_offset;
 }
 
-
-float PathFollow::get_offset() const{
+float PathFollow::get_offset() const {
 
 	return offset;
 }
@@ -330,32 +357,22 @@ float PathFollow::get_offset() const{
 void PathFollow::set_unit_offset(float p_unit_offset) {
 
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
-		set_offset(p_unit_offset*path->get_curve()->get_baked_length());
-
+		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
 }
 
-float PathFollow::get_unit_offset() const{
+float PathFollow::get_unit_offset() const {
 
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
-		return get_offset()/path->get_curve()->get_baked_length();
+		return get_offset() / path->get_curve()->get_baked_length();
 	else
 		return 0;
 }
 
-void PathFollow::set_lookahead(float p_lookahead) {
-
-	lookahead=p_lookahead;
-
-}
-
-float PathFollow::get_lookahead() const{
-
-	return lookahead;
-}
-
 void PathFollow::set_rotation_mode(RotationMode p_rotation_mode) {
 
-	rotation_mode=p_rotation_mode;
+	rotation_mode = p_rotation_mode;
+
+	update_configuration_warning();
 	_update_transform();
 }
 
@@ -366,23 +383,22 @@ PathFollow::RotationMode PathFollow::get_rotation_mode() const {
 
 void PathFollow::set_loop(bool p_loop) {
 
-	loop=p_loop;
+	loop = p_loop;
 }
 
-bool PathFollow::has_loop() const{
+bool PathFollow::has_loop() const {
 
 	return loop;
 }
 
-
 PathFollow::PathFollow() {
 
-	offset=0;
-	h_offset=0;
-	v_offset=0;
-	path=NULL;
-	rotation_mode=ROTATION_XYZ;
-	cubic=true;
-	loop=true;
-	lookahead=0.1;
+	offset = 0;
+	delta_offset = 0;
+	h_offset = 0;
+	v_offset = 0;
+	path = NULL;
+	rotation_mode = ROTATION_XYZ;
+	cubic = true;
+	loop = true;
 }

@@ -1,4 +1,0 @@
-Import('env')
-
-if env["tools"] == "yes":
-	env.add_source_files(env.tool_sources, "*.cpp")

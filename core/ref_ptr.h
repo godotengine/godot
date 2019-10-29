@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef REF_PTR_H
 #define REF_PTR_H
 /**
@@ -34,29 +36,26 @@
  * It's basically an opaque container of a Reference reference, so Variant can use it.
 */
 
-#include "rid.h"
-
+#include "core/rid.h"
 
 class RefPtr {
 
 	enum {
 
-		DATASIZE=sizeof(void*) //*4 -ref was shrunk
+		DATASIZE = sizeof(void *) //*4 -ref was shrunk
 	};
 
 	mutable char data[DATASIZE]; // too much probably, virtual class + pointer
 public:
-
 	bool is_null() const;
-	void operator=(const RefPtr& p_other);
-	bool operator==(const RefPtr& p_other) const;
+	void operator=(const RefPtr &p_other);
+	bool operator==(const RefPtr &p_other) const;
 	RID get_rid() const;
 	void unref();
 	_FORCE_INLINE_ void *get_data() const { return data; }
-	RefPtr(const RefPtr& p_other);
+	RefPtr(const RefPtr &p_other);
 	RefPtr();
 	~RefPtr();
-
 };
 
 #endif // REF_PTR_H

@@ -1,104 +1,54 @@
+#!/usr/bin/env python
+
 Import('env')
 
-env.drivers_sources=[]
-#env.add_source_files(env.drivers_sources,"*.cpp")
-env.Append(CPPPATH=["vorbis"])
-Export('env')
+env.drivers_sources = []
 
-SConscript('unix/SCsub');
-SConscript('alsa/SCsub');
-SConscript('pulseaudio/SCsub');
-SConscript('windows/SCsub');
-SConscript('gles2/SCsub');
-SConscript('gl_context/SCsub');
-SConscript('openssl/SCsub');
-SConscript('pnm/SCsub');
+# OS drivers
+SConscript('unix/SCsub')
+SConscript('windows/SCsub')
 
-if (env["png"]=="yes"):
-	SConscript("png/SCsub");
-if (env["jpg"]=="yes"):
-	#SConscript("jpg/SCsub");
-	SConscript("jpegd/SCsub");
-if (env["webp"]=="yes"):
-	SConscript("webp/SCsub");
-SConscript("dds/SCsub");
-SConscript("pvr/SCsub");
-SConscript("etc1/SCsub")
-if (env["builtin_zlib"]=="yes"):
-	SConscript("builtin_zlib/SCsub");
-if (env["openssl"]=="builtin"):
-	SConscript("builtin_openssl2/SCsub");
+# Sounds drivers
+SConscript('alsa/SCsub')
+SConscript('coreaudio/SCsub')
+SConscript('pulseaudio/SCsub')
+if (env["platform"] == "windows"):
+    SConscript("wasapi/SCsub")
+if env['xaudio2']:
+    SConscript("xaudio2/SCsub")
 
-SConscript("rtaudio/SCsub");
-SConscript("nedmalloc/SCsub");
-SConscript("nrex/SCsub");
-SConscript("chibi/SCsub");
-if (env["vorbis"]=="yes" or env["speex"]=="yes" or env["theoralib"]=="yes" or env["opus"]=="yes"):
-        SConscript("ogg/SCsub");
-if (env["vorbis"]=="yes"):
-        SConscript("vorbis/SCsub");
-if (env["opus"]=="yes"):
-		SConscript('opus/SCsub');
-if (env["tools"]=="yes"):
-	SConscript("convex_decomp/SCsub");
+# Midi drivers
+SConscript('alsamidi/SCsub')
+SConscript('coremidi/SCsub')
+SConscript('winmidi/SCsub')
 
-if (env["theoralib"]=="yes"):
-	SConscript("theora/SCsub");
-if (env['speex']=='yes'):
-	SConscript("speex/SCsub");
-if (env['musepack']=='yes'):
-	SConscript("mpc/SCsub");
-if (env["squish"]=="yes" and env["tools"]=="yes"):
-	SConscript("squish/SCsub");
-
-num = 0
-cur_base = ""
-total = len(env.drivers_sources)
-max_src = 64
-list = []
-lib_list = []
-
-import string
-
-if env['vsproj']=="yes":
-	env.AddToVSProject(env.drivers_sources)
-
-if (False): #split drivers, this used to be needed for windows until separate builders for windows were created
-
-	for f in env.drivers_sources:
-		fname = ""
-		if type(f) == type(""):
-			fname = env.File(f).path
-		else:
-			fname = env.File(f)[0].path
-		fname = fname.replace("\\", "/")
-		base = string.join(fname.split("/")[:2], "/")
-		if base != cur_base and len(list) > max_src:
-			if num > 0:
-				lib = env.Library("drivers"+str(num), list)
-				lib_list.append(lib)
-				list = []
-			num = num+1
-		cur_base = base
-		list.append(f)
-
-	lib = env.Library("drivers"+str(num), list)
-	lib_list.append(lib)
-
-	if len(lib_list) > 0:
-		import os, sys
-		if os.name=='posix' and sys.platform=='msys':
-			env.Replace(ARFLAGS=['rcsT'])
-
-			lib = env.Library("drivers_collated", lib_list)
-			lib_list = [lib]
-
-	drivers_base=[]
-	env.add_source_files(drivers_base,"*.cpp")
-	lib_list.insert(0, env.Library("drivers", drivers_base))
-
-	env.Prepend(LIBS=lib_list)
+# Graphics drivers
+if (env["platform"] != "server"):
+    SConscript('gles3/SCsub')
+    SConscript('gles2/SCsub')
+    SConscript('gl_context/SCsub')
 else:
-	env.add_source_files(env.drivers_sources,"*.cpp")
-	lib = env.Library("drivers",env.drivers_sources)
-	env.Prepend(LIBS=[lib])
+    SConscript('dummy/SCsub')
+
+# Core dependencies
+SConscript("png/SCsub")
+
+# Tools override
+# FIXME: Should likely be integrated in the tools/ codebase
+if env['tools']:
+    SConscript("convex_decomp/SCsub")
+
+if env['vsproj']:
+    import os
+    path = os.getcwd()
+    # Change directory so the path resolves correctly in the function call.
+    os.chdir("..")
+    env.AddToVSProject(env.drivers_sources)
+    os.chdir(path)
+
+if env.split_drivers:
+    env.split_lib("drivers")
+else:
+    env.add_source_files(env.drivers_sources, "*.cpp")
+    lib = env.add_library("drivers", env.drivers_sources)
+    env.Prepend(LIBS=[lib])

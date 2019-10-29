@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,34 +27,33 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef MUTEX_POSIX_H
 #define MUTEX_POSIX_H
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
+#include "core/os/mutex.h"
+
 #include <pthread.h>
-#include "os/mutex.h"
 
 class MutexPosix : public Mutex {
 
-	pthread_mutexattr_t attr;	
+	pthread_mutexattr_t attr;
 	pthread_mutex_t mutex;
-	
+
 	static Mutex *create_func_posix(bool p_recursive);
-	
+
 public:
-
-	virtual void lock(); 
+	virtual void lock();
 	virtual void unlock();
-	virtual Error try_lock(); 
-
+	virtual Error try_lock();
 
 	static void make_default();
 
 	MutexPosix(bool p_recursive);
-	
-	~MutexPosix();
 
+	~MutexPosix();
 };
 
 #endif

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef STOREKIT_ENABLED
 
 #ifndef IN_APP_STORE_H
@@ -35,27 +37,27 @@
 
 class InAppStore : public Object {
 
-	OBJ_TYPE(InAppStore, Object);
+	GDCLASS(InAppStore, Object);
 
-	static InAppStore* instance;
+	static InAppStore *instance;
 	static void _bind_methods();
 
 	List<Variant> pending_events;
 
 public:
-
 	Error request_product_info(Variant p_params);
+	Error restore_purchases();
 	Error purchase(Variant p_params);
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
 	void finish_transaction(String product_id);
-    void set_auto_finish_transaction(bool b);
+	void set_auto_finish_transaction(bool b);
 
 	void _post_event(Variant p_event);
 	void _record_purchase(String product_id);
 
-	static InAppStore* get_singleton();
+	static InAppStore *get_singleton();
 
 	InAppStore();
 	~InAppStore();
@@ -63,6 +65,4 @@ public:
 
 #endif
 
-
 #endif
-

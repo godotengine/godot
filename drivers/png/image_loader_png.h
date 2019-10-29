@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,30 +27,22 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef IMAGE_LOADER_PNG_H
 #define IMAGE_LOADER_PNG_H
 
-#include "io/image_loader.h"
-#include "drivers/png/png.h"
+#include "core/io/image_loader.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class ImageLoaderPNG : public ImageFormatLoader {
-
-	static void _read_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length);
-
-
+private:
+	static PoolVector<uint8_t> lossless_pack_png(const Ref<Image> &p_image);
+	static Ref<Image> lossless_unpack_png(const PoolVector<uint8_t> &p_data);
+	static Ref<Image> load_mem_png(const uint8_t *p_png, int p_size);
 
 public:
-
-
-	static Error _load_image(void *rf_up,png_rw_ptr p_func,Image *p_image);
-	virtual Error load_image(Image *p_image,FileAccess *f);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;	
+	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderPNG();
 };
-
-
 
 #endif

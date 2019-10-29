@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,37 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "box_shape.h"
 #include "servers/physics_server.h"
 
-
-Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
-
+Vector<Vector3> BoxShape::get_debug_mesh_lines() {
 
 	Vector<Vector3> lines;
 	AABB aabb;
-	aabb.pos=-get_extents();
-	aabb.size=aabb.pos*-2;
+	aabb.position = -get_extents();
+	aabb.size = aabb.position * -2;
 
-	for(int i=0;i<12;i++) {
-		Vector3 a,b;
-		aabb.get_edge(i,a,b);
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb.get_edge(i, a, b);
 		lines.push_back(a);
 		lines.push_back(b);
 	}
-
 
 	return lines;
 }
 
 void BoxShape::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(),extents);
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
+	Shape::_update_shape();
 }
 
-void BoxShape::set_extents(const Vector3& p_extents) {
+void BoxShape::set_extents(const Vector3 &p_extents) {
 
-	extents=p_extents;
+	extents = p_extents;
 	_update_shape();
 	notify_change_to_owners();
 	_change_notify("extents");
@@ -67,17 +67,16 @@ Vector3 BoxShape::get_extents() const {
 	return extents;
 }
 
-
 void BoxShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&BoxShape::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&BoxShape::get_extents);
+	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &BoxShape::set_extents);
+	ClassDB::bind_method(D_METHOD("get_extents"), &BoxShape::get_extents);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"extents"), _SCS("set_extents"), _SCS("get_extents")  );
-
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
 }
 
-BoxShape::BoxShape() : Shape( PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
+BoxShape::BoxShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
 
-	set_extents(Vector3(1,1,1));
+	set_extents(Vector3(1, 1, 1));
 }

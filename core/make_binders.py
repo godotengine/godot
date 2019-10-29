@@ -1,29 +1,40 @@
 # -*- coding: ibm850 -*-
 
-
-template_typed="""
+template_typed = """
 #ifdef TYPED_METHOD_BIND
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
 class MethodBind$argc$$ifret R$$ifconst C$ : public MethodBind {
 public:
-	
+
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 	Variant::Type _get_argument_type(int p_argument) const {
-		$ifret if (p_argument==-1) return Variant::get_type_for<R>();$
-		$arg if (p_argument==(@-1)) return Variant::get_type_for<P@>();
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
 		$
 		return Variant::NIL;
 	}
-#endif	
-	virtual String get_instance_type() const {
-		return T::get_type_static();
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
+		$
+		return PropertyInfo();
+	}
+#endif
+	virtual String get_instance_class() const {
+		return T::get_class_static();
 	}
 
 	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
-	
-		T *instance=p_object->cast_to<T>();
+
+		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -47,29 +58,37 @@ public:
 		$ifret return Variant(ret);$
 		$ifnoret return Variant();$
 	}
-	
 
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+
+		T *instance=Object::cast_to<T>(p_object);
+		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
+	}
+#endif
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
 		_generate_argument_types($argc$);
 #else
 		set_argument_count($argc$);
-#endif		
+#endif
+
+		$ifret _set_returns(true); $
 	};
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
 MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$) $ifconst const$ ) {
 
-	MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );	
+	MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (MethodBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );
 	a->method=p_method;
 	return a;
 }
 #endif
 """
 
-template="""
+template = """
 #ifndef TYPED_METHOD_BIND
 $iftempl template<$ $ifret class R$ $ifretargs ,$ $arg, class P@$ $iftempl >$
 class MethodBind$argc$$ifret R$$ifconst C$ : public MethodBind {
@@ -81,15 +100,29 @@ public:
 
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 
 	Variant::Type _get_argument_type(int p_argument) const {
-		$ifret if (p_argument==-1) return Variant::get_type_for<R>();$
-		$arg if (p_argument==(@-1)) return Variant::get_type_for<P@>();
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
 		$
 		return Variant::NIL;
 	}
-#endif	
-	virtual String get_instance_type() const {
+
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
+		$
+		return PropertyInfo();
+	}
+
+#endif
+	virtual String get_instance_class() const {
 		return type_name;
 	}
 
@@ -105,15 +138,15 @@ public:
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
-		} 
-		
+		}
+
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
-		
+
 		$arg CHECK_ARG(@);
 		$
 #endif
@@ -121,14 +154,22 @@ public:
 		$ifret return Variant(ret);$
 		$ifnoret return Variant();$
 	}
-
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+		__UnexistingClass *instance = (__UnexistingClass*)p_object;
+		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret) $ ;
+	}
+#endif
 	MethodBind$argc$$ifret R$$ifconst C$ () {
 #ifdef DEBUG_METHODS_ENABLED
 		_set_const($ifconst true$$ifnoconst false$);
 		_generate_argument_types($argc$);
 #else
 		set_argument_count($argc$);
-#endif		
+#endif
+		$ifret _set_returns(true); $
+
+
 	};
 };
 
@@ -143,110 +184,205 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$
 	} u;
 	u.sm=p_method;
 	a->method=u.dm;
-	a->type_name=T::get_type_static();
+	a->type_name=T::get_class_static();
 	return a;
 }
 #endif
 """
 
 
-def make_version(template,nargs,argmax,const,ret):
-	
-	intext=template
-	from_pos=0
-	outtext=""
-	
-	while(True): 
-		to_pos=intext.find("$",from_pos)
-		if (to_pos==-1):
-			outtext+=intext[from_pos:]
-			break
-		else:
-			outtext+=intext[from_pos:to_pos]
-		end=intext.find("$",to_pos+1)
-		if (end==-1):
-			break # ignore
-		macro=intext[to_pos+1:end]
-		cmd=""
-		data=""
-		
-		if (macro.find(" ")!=-1):
-			cmd=macro[0:macro.find(" ")]
-			data=macro[macro.find(" ")+1:]
-		else:
-			cmd=macro
-			
-		if (cmd=="argc"):
-			outtext+=str(nargs)
-		if (cmd=="ifret" and ret):
-			outtext+=data
-		if (cmd=="ifargs" and nargs):
-			outtext+=data
-		if (cmd=="ifretargs" and nargs and ret):
-			outtext+=data
-		if (cmd=="ifconst" and const):
-			outtext+=data
-		elif (cmd=="ifnoconst" and not const):
-			outtext+=data
-		elif (cmd=="ifnoret" and not ret):
-			outtext+=data
-		elif (cmd=="iftempl" and (nargs>0 or ret)):
-			outtext+=data
-		elif (cmd=="arg,"):
-			for i in range(1,nargs+1):
-				if (i>1):
-					outtext+=", "
-				outtext+=data.replace("@",str(i))
-		elif (cmd=="arg"):
-			for i in range(1,nargs+1):
-				outtext+=data.replace("@",str(i))
-		elif (cmd=="noarg"):
-			for i in range(nargs+1,argmax+1):
-				outtext+=data.replace("@",str(i))
-		elif (cmd=="noarg"):
-			for i in range(nargs+1,argmax+1):
-				outtext+=data.replace("@",str(i))
-		
-		from_pos=end+1
-	
-	return outtext
-		
+template_typed_free_func = """
+#ifdef TYPED_METHOD_BIND
+template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
+class FunctionBind$argc$$ifret R$$ifconst C$ : public MethodBind {
+public:
+
+	$ifret R$ $ifnoret void$ (*method) ($ifconst const$ T *$ifargs , $$arg, P@$);
+#ifdef DEBUG_METHODS_ENABLED
+	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
+	Variant::Type _get_argument_type(int p_argument) const {
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
+		$
+		return Variant::NIL;
+	}
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
+		$
+		return PropertyInfo();
+	}
+#endif
+	virtual String get_instance_class() const {
+		return T::get_class_static();
+	}
+
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+
+		T *instance=Object::cast_to<T>(p_object);
+		r_error.error=Variant::CallError::CALL_OK;
+#ifdef DEBUG_METHODS_ENABLED
+
+		ERR_FAIL_COND_V(!instance,Variant());
+		if (p_arg_count>get_argument_count()) {
+			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.argument=get_argument_count();
+			return Variant();
+
+		}
+		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
+
+			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.argument=get_argument_count()-get_default_argument_count();
+			return Variant();
+		}
+		$arg CHECK_ARG(@);
+		$
+#endif
+		$ifret Variant ret = $(method)(instance$ifargs , $$arg, _VC(@)$);
+		$ifret return Variant(ret);$
+		$ifnoret return Variant();$
+	}
+
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+
+		T *instance=Object::cast_to<T>(p_object);
+		$ifret PtrToArg<R>::encode( $ (method)(instance$ifargs , $$arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
+	}
+#endif
+	FunctionBind$argc$$ifret R$$ifconst C$ () {
+#ifdef DEBUG_METHODS_ENABLED
+		_set_const($ifconst true$$ifnoconst false$);
+		_generate_argument_types($argc$);
+#else
+		set_argument_count($argc$);
+#endif
+
+		$ifret _set_returns(true); $
+	};
+};
+
+template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
+MethodBind* create_method_bind($ifret R$ $ifnoret void$ (*p_method)($ifconst const$ T *$ifargs , $$arg, P@$) ) {
+
+	FunctionBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (FunctionBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );
+	a->method=p_method;
+	return a;
+}
+#endif
+"""
+
+
+
+def make_version(template, nargs, argmax, const, ret):
+
+    intext = template
+    from_pos = 0
+    outtext = ""
+
+    while(True):
+        to_pos = intext.find("$", from_pos)
+        if (to_pos == -1):
+            outtext += intext[from_pos:]
+            break
+        else:
+            outtext += intext[from_pos:to_pos]
+        end = intext.find("$", to_pos + 1)
+        if (end == -1):
+            break  # ignore
+        macro = intext[to_pos + 1:end]
+        cmd = ""
+        data = ""
+
+        if (macro.find(" ") != -1):
+            cmd = macro[0:macro.find(" ")]
+            data = macro[macro.find(" ") + 1:]
+        else:
+            cmd = macro
+
+        if (cmd == "argc"):
+            outtext += str(nargs)
+        if (cmd == "ifret" and ret):
+            outtext += data
+        if (cmd == "ifargs" and nargs):
+            outtext += data
+        if (cmd == "ifretargs" and nargs and ret):
+            outtext += data
+        if (cmd == "ifconst" and const):
+            outtext += data
+        elif (cmd == "ifnoconst" and not const):
+            outtext += data
+        elif (cmd == "ifnoret" and not ret):
+            outtext += data
+        elif (cmd == "iftempl" and (nargs > 0 or ret)):
+            outtext += data
+        elif (cmd == "arg,"):
+            for i in range(1, nargs + 1):
+                if (i > 1):
+                    outtext += ", "
+                outtext += data.replace("@", str(i))
+        elif (cmd == "arg"):
+            for i in range(1, nargs + 1):
+                outtext += data.replace("@", str(i))
+        elif (cmd == "noarg"):
+            for i in range(nargs + 1, argmax + 1):
+                outtext += data.replace("@", str(i))
+
+        from_pos = end + 1
+
+    return outtext
+
 
 def run(target, source, env):
 
-	versions=10
-	versions_ext=6
-	text=""
-	text_ext=""
+    versions = 13
+    versions_ext = 6
+    text = ""
+    text_ext = ""
+    text_free_func = "#ifndef METHOD_BIND_FREE_FUNC_H\n#define METHOD_BIND_FREE_FUNC_H\n"
+    text_free_func += "\n//including this header file allows method binding to use free functions\n"
+    text_free_func += "//note that the free function must have a pointer to an instance of the class as its first parameter\n"
 
-	for i in range(0,versions+1):
+    for i in range(0, versions + 1):
 
-		t=""
-		t+=make_version(template,i,versions,False,False)
-		t+=make_version(template_typed,i,versions,False,False)
-		t+=make_version(template,i,versions,False,True)
-		t+=make_version(template_typed,i,versions,False,True)
-		t+=make_version(template,i,versions,True,False)
-		t+=make_version(template_typed,i,versions,True,False)
-		t+=make_version(template,i,versions,True,True)
-		t+=make_version(template_typed,i,versions,True,True)
-		if (i>=versions_ext):
-			text_ext+=t
-		else:
-			text+=t
+        t = ""
+        t += make_version(template, i, versions, False, False)
+        t += make_version(template_typed, i, versions, False, False)
+        t += make_version(template, i, versions, False, True)
+        t += make_version(template_typed, i, versions, False, True)
+        t += make_version(template, i, versions, True, False)
+        t += make_version(template_typed, i, versions, True, False)
+        t += make_version(template, i, versions, True, True)
+        t += make_version(template_typed, i, versions, True, True)
+        if (i >= versions_ext):
+            text_ext += t
+        else:
+            text += t
+
+        text_free_func += make_version(template_typed_free_func, i, versions, False, False)
+        text_free_func += make_version(template_typed_free_func, i, versions, False, True)
+        text_free_func += make_version(template_typed_free_func, i, versions, True, False)
+        text_free_func += make_version(template_typed_free_func, i, versions, True, True)
+
+    text_free_func += "#endif"
+
+    with open(target[0], "w") as f:
+        f.write(text)
+
+    with open(target[1], "w") as f:
+        f.write(text_ext)
+
+    with open(target[2], "w") as f:
+        f.write(text_free_func)
 
 
-	f=open(target[0].path,"w")
-	f.write(text)
-	f.close()
-
-	f=open(target[1].path,"w")
-	f.write(text_ext)
-	f.close()
-
-		
-			
-		
-		
-		
-
+if __name__ == '__main__':
+    from platform_methods import subprocess_main
+    subprocess_main(globals())

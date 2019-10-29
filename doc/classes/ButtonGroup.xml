@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ButtonGroup" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+		Group of Buttons.
+	</brief_description>
+	<description>
+		Group of [Button]. All direct and indirect children buttons become radios. Only one allows being pressed.
+		[member BaseButton.toggle_mode] should be [code]true[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_buttons">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.group]).
+			</description>
+		</method>
+		<method name="get_pressed_button">
+			<return type="BaseButton">
+			</return>
+			<description>
+				Returns the current pressed button.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
+	</members>
+	<constants>
+	</constants>
+</class>

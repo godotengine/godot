@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,26 +27,21 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
 
-#include "os/memory.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
 
-#include <windows.h>
-#include <wchar.h>
 #include <stdio.h>
-#include "print_string.h"
-
-#ifdef WINRT_ENABLED
-#include <Synchapi.h>
-#include <collection.h>
-#include <ppltasks.h>
-#endif
+#include <wchar.h>
+#include <windows.h>
 
 /*
 
-[03:57] <reduz> yessopie, so i dont havemak to rely on unicows
+[03:57] <reduz> yessopie, so i don't havemak to rely on unicows
 [03:58] <yessopie> reduz- yeah, all of the functions fail, and then you can call GetLastError () which will return 120
 [03:58] <drumstick> CategoryApl, hehe, what? :)
 [03:59] <CategoryApl> didn't Verona lead to some trouble
@@ -65,38 +61,34 @@ struct DirAccessWindowsPrivate {
 
 // CreateFolderAsync
 
-bool DirAccessWindows::list_dir_begin() {
+Error DirAccessWindows::list_dir_begin() {
 
-	_cisdir=false;
-	_cishidden=false;
-	
+	_cisdir = false;
+	_cishidden = false;
+
 	list_dir_end();
-	p->h = FindFirstFileExW((current_dir+"\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
+	p->h = FindFirstFileExW((current_dir + "\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
 
-	return (p->h==INVALID_HANDLE_VALUE);
-
+	return (p->h == INVALID_HANDLE_VALUE) ? ERR_CANT_OPEN : OK;
 }
-
 
 String DirAccessWindows::get_next() {
 
-	if (p->h==INVALID_HANDLE_VALUE)
+	if (p->h == INVALID_HANDLE_VALUE)
 		return "";
 
-	
-	_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-	_cishidden=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
+	_cisdir = (p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+	_cishidden = (p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
 
-	String name=p->fu.cFileName;
+	String name = p->fu.cFileName;
 
 	if (FindNextFileW(p->h, &p->fu) == 0) {
 
 		FindClose(p->h);
-		p->h=INVALID_HANDLE_VALUE;
+		p->h = INVALID_HANDLE_VALUE;
 	}
 
 	return name;
-
 }
 
 bool DirAccessWindows::current_is_dir() const {
@@ -111,102 +103,80 @@ bool DirAccessWindows::current_is_hidden() const {
 
 void DirAccessWindows::list_dir_end() {
 
-	if (p->h!=INVALID_HANDLE_VALUE) {
+	if (p->h != INVALID_HANDLE_VALUE) {
 
 		FindClose(p->h);
-		p->h=INVALID_HANDLE_VALUE;
+		p->h = INVALID_HANDLE_VALUE;
 	}
-
 }
 int DirAccessWindows::get_drive_count() {
 
 	return drive_count;
-
 }
 String DirAccessWindows::get_drive(int p_drive) {
 
-	if (p_drive<0 || p_drive>=drive_count)
+	if (p_drive < 0 || p_drive >= drive_count)
 		return "";
 
-	return String::chr(drives[p_drive])+":";
+	return String::chr(drives[p_drive]) + ":";
 }
 
 Error DirAccessWindows::change_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-#ifdef WINRT_ENABLED
-
 	p_dir = fix_path(p_dir);
-	current_dir = normalize_path(p_dir);
-
-	return OK;
-#else
-
-
-	p_dir=fix_path(p_dir);
-
 
 	wchar_t real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048,real_current_dir_name);
-	String prev_dir=real_current_dir_name;
+	GetCurrentDirectoryW(2048, real_current_dir_name);
+	String prev_dir = real_current_dir_name;
 
 	SetCurrentDirectoryW(current_dir.c_str());
-	bool worked=(SetCurrentDirectoryW(p_dir.c_str())!=0);
+	bool worked = (SetCurrentDirectoryW(p_dir.c_str()) != 0);
 
 	String base = _get_root_path();
-	if (base!="") {
+	if (base != "") {
 
-		GetCurrentDirectoryW(2048,real_current_dir_name);
+		GetCurrentDirectoryW(2048, real_current_dir_name);
 		String new_dir;
-		new_dir = String(real_current_dir_name).replace("\\","/");
+		new_dir = String(real_current_dir_name).replace("\\", "/");
 		if (!new_dir.begins_with(base)) {
-			worked=false;
+			worked = false;
 		}
 	}
 
 	if (worked) {
 
-
-		GetCurrentDirectoryW(2048,real_current_dir_name);
-		current_dir=real_current_dir_name; // TODO, utf8 parser
-		current_dir=current_dir.replace("\\","/");
+		GetCurrentDirectoryW(2048, real_current_dir_name);
+		current_dir = real_current_dir_name; // TODO, utf8 parser
+		current_dir = current_dir.replace("\\", "/");
 
 	} //else {
 
-		SetCurrentDirectoryW(prev_dir.c_str());
+	SetCurrentDirectoryW(prev_dir.c_str());
 	//}
 
-	return worked?OK:ERR_INVALID_PARAMETER;
-#endif
+	return worked ? OK : ERR_INVALID_PARAMETER;
 }
 
 Error DirAccessWindows::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-#ifdef WINRT_ENABLED
+	p_dir = fix_path(p_dir);
+	if (p_dir.is_rel_path())
+		p_dir = current_dir.plus_file(p_dir);
 
-	return ERR_CANT_CREATE;
-
-#else
-
-	p_dir=fix_path(p_dir);
-	
-	//p_dir.replace("/","\\");
+	p_dir = p_dir.replace("/", "\\");
 
 	bool success;
 	int err;
 
-	wchar_t real_current_dir_name[2048];
-	GetCurrentDirectoryW(2048,real_current_dir_name);
+	p_dir = "\\\\?\\" + p_dir; //done according to
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
 
-	SetCurrentDirectoryW(current_dir.c_str());
-
-	success=CreateDirectoryW(p_dir.c_str(), NULL);
+	success = CreateDirectoryW(p_dir.c_str(), NULL);
 	err = GetLastError();
-
-	SetCurrentDirectoryW(real_current_dir_name);
 
 	if (success) {
 		return OK;
@@ -217,25 +187,20 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	};
 
 	return ERR_CANT_CREATE;
-
-#endif
 }
-
 
 String DirAccessWindows::get_current_dir() {
 
 	String base = _get_root_path();
-	if (base!="") {
+	if (base != "") {
 
-
-		String bd = current_dir.replace("\\","/").replace_first(base,"");
+		String bd = current_dir.replace("\\", "/").replace_first(base, "");
 		if (bd.begins_with("/"))
-			return _get_root_string()+bd.substr(1,bd.length());
+			return _get_root_string() + bd.substr(1, bd.length());
 		else
-			return _get_root_string()+bd;
+			return _get_root_string() + bd;
 
 	} else {
-
 	}
 
 	return current_dir;
@@ -246,10 +211,10 @@ bool DirAccessWindows::file_exists(String p_file) {
 	GLOBAL_LOCK_FUNCTION
 
 	if (!p_file.is_abs_path())
-		p_file=get_current_dir().plus_file(p_file);
+		p_file = get_current_dir().plus_file(p_file);
 
-	p_file=fix_path(p_file);
-	
+	p_file = fix_path(p_file);
+
 	//p_file.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
@@ -260,8 +225,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 	if (INVALID_FILE_ATTRIBUTES == fileAttr)
 		return false;
 
-	return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
-
+	return !(fileAttr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool DirAccessWindows::dir_exists(String p_dir) {
@@ -269,50 +233,68 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_rel_path())
-		p_dir=get_current_dir().plus_file(p_dir);
-	else
-		p_dir=fix_path(p_dir);
+		p_dir = get_current_dir().plus_file(p_dir);
+
+	p_dir = fix_path(p_dir);
 
 	//p_dir.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
-
 	DWORD fileAttr;
 
 	fileAttr = GetFileAttributesW(p_dir.c_str());
 	if (INVALID_FILE_ATTRIBUTES == fileAttr)
-		    return false;
-	return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
-
+		return false;
+	return (fileAttr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-Error DirAccessWindows::rename(String p_path,String p_new_path) {
+Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 	if (p_path.is_rel_path())
-		p_path=get_current_dir().plus_file(p_path);
-	else
-		p_path=fix_path(p_path);
+		p_path = get_current_dir().plus_file(p_path);
+
+	p_path = fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
-		p_new_path=get_current_dir().plus_file(p_new_path);
-	else
-		p_new_path=fix_path(p_new_path);
+		p_new_path = get_current_dir().plus_file(p_new_path);
 
-	if (file_exists(p_new_path)) {
-		if (remove(p_new_path) != OK) {
+	p_new_path = fix_path(p_new_path);
+
+	// If we're only changing file name case we need to do a little juggling
+	if (p_path.to_lower() == p_new_path.to_lower()) {
+		WCHAR tmpfile[MAX_PATH];
+
+		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), NULL, 0, tmpfile)) {
 			return FAILED;
-		};
-	};
+		}
 
-	return ::_wrename(p_path.c_str(),p_new_path.c_str())==0?OK:FAILED;
+		if (!::ReplaceFileW(tmpfile, p_path.c_str(), NULL, 0, NULL, NULL)) {
+			DeleteFileW(tmpfile);
+			return FAILED;
+		}
+
+		return ::_wrename(tmpfile, p_new_path.c_str()) == 0 ? OK : FAILED;
+
+	} else {
+		if (file_exists(p_new_path)) {
+			if (remove(p_new_path) != OK) {
+				return FAILED;
+			}
+		}
+
+		return ::_wrename(p_path.c_str(), p_new_path.c_str()) == 0 ? OK : FAILED;
+	}
 }
 
-Error DirAccessWindows::remove(String p_path)  {
+Error DirAccessWindows::remove(String p_path) {
 
-	p_path=fix_path(p_path);
-	
-	printf("erasing %s\n",p_path.utf8().get_data());
+	if (p_path.is_rel_path())
+		p_path = get_current_dir().plus_file(p_path);
+
+	p_path = fix_path(p_path);
+
+	printf("erasing %s\n", p_path.utf8().get_data());
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 	//DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);
 
@@ -320,11 +302,11 @@ Error DirAccessWindows::remove(String p_path)  {
 
 	fileAttr = GetFileAttributesW(p_path.c_str());
 	if (INVALID_FILE_ATTRIBUTES == fileAttr)
-		    return FAILED;
-	if ((fileAttr&FILE_ATTRIBUTE_DIRECTORY))
-		return ::_wrmdir(p_path.c_str())==0?OK:FAILED;
+		return FAILED;
+	if ((fileAttr & FILE_ATTRIBUTE_DIRECTORY))
+		return ::_wrmdir(p_path.c_str()) == 0 ? OK : FAILED;
 	else
-		return ::_wunlink(p_path.c_str())==0?OK:FAILED;
+		return ::_wunlink(p_path.c_str()) == 0 ? OK : FAILED;
 }
 /*
 
@@ -354,33 +336,65 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 	return (attr&FILE_ATTRIBUTE_DIRECTORY)?FILE_TYPE_
 }
 */
-size_t  DirAccessWindows::get_space_left() {
+size_t DirAccessWindows::get_space_left() {
 
-	return -1;
-};
+	uint64_t bytes = 0;
+	if (!GetDiskFreeSpaceEx(NULL, (PULARGE_INTEGER)&bytes, NULL, NULL))
+		return 0;
+
+	//this is either 0 or a value in bytes.
+	return (size_t)bytes;
+}
+
+String DirAccessWindows::get_filesystem_type() const {
+	String path = fix_path(const_cast<DirAccessWindows *>(this)->get_current_dir());
+
+	int unit_end = path.find(":");
+	ERR_FAIL_COND_V(unit_end == -1, String());
+	String unit = path.substr(0, unit_end + 1) + "\\";
+
+	WCHAR szVolumeName[100];
+	WCHAR szFileSystemName[10];
+	DWORD dwSerialNumber = 0;
+	DWORD dwMaxFileNameLength = 0;
+	DWORD dwFileSystemFlags = 0;
+
+	if (::GetVolumeInformationW(unit.c_str(),
+				szVolumeName,
+				sizeof(szVolumeName),
+				&dwSerialNumber,
+				&dwMaxFileNameLength,
+				&dwFileSystemFlags,
+				szFileSystemName,
+				sizeof(szFileSystemName)) == TRUE) {
+
+		return String(szFileSystemName);
+	}
+
+	ERR_FAIL_V("");
+}
 
 DirAccessWindows::DirAccessWindows() {
 
-	p = memnew( DirAccessWindowsPrivate );
-	p->h=INVALID_HANDLE_VALUE;
-	current_dir=".";
+	p = memnew(DirAccessWindowsPrivate);
+	p->h = INVALID_HANDLE_VALUE;
+	current_dir = ".";
 
-	drive_count=0;
+	drive_count = 0;
 
-#ifdef WINRT_ENABLED
-	Windows::Storage::StorageFolder ^install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
+#ifdef UWP_ENABLED
+	Windows::Storage::StorageFolder ^ install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
 	change_dir(install_folder->Path->Data());
 
 #else
 
+	DWORD mask = GetLogicalDrives();
 
-	DWORD mask=GetLogicalDrives();
+	for (int i = 0; i < MAX_DRIVES; i++) {
 
-	for (int i=0;i<MAX_DRIVES;i++) {
+		if (mask & (1 << i)) { //DRIVE EXISTS
 
-		if (mask&(1<<i)) { //DRIVE EXISTS
-
-			drives[drive_count]='a'+i;
+			drives[drive_count] = 'A' + i;
 			drive_count++;
 		}
 	}
@@ -389,10 +403,9 @@ DirAccessWindows::DirAccessWindows() {
 #endif
 }
 
-
 DirAccessWindows::~DirAccessWindows() {
 
-	memdelete( p );
+	memdelete(p);
 }
 
 #endif //windows DirAccess support

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SCROLL_CONTAINER_H
 #define SCROLL_CONTAINER_H
 
@@ -35,10 +37,10 @@
 
 class ScrollContainer : public Container {
 
-	OBJ_TYPE(ScrollContainer, Container);
+	GDCLASS(ScrollContainer, Container);
 
-	HScrollBar* h_scroll;
-	VScrollBar* v_scroll;
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
 
 	Size2 child_max_size;
 	Size2 scroll;
@@ -54,25 +56,27 @@ class ScrollContainer : public Container {
 	bool drag_touching;
 	bool drag_touching_deaccel;
 	bool click_handled;
+	bool beyond_deadzone;
 
 	bool scroll_h;
 	bool scroll_v;
+
+	int deadzone;
 
 	void _cancel_drag();
 
 protected:
 	Size2 get_minimum_size() const;
 
-
-	void _input_event(const InputEvent& p_input_event);
+	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
 	static void _bind_methods();
 
-	void _update_scrollbar_pos();
-public:
+	void _update_scrollbar_position();
 
+public:
 	int get_v_scroll() const;
 	void set_v_scroll(int p_pos);
 
@@ -85,7 +89,16 @@ public:
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
 
+	int get_deadzone() const;
+	void set_deadzone(int p_deadzone);
+
+	HScrollBar *get_h_scrollbar();
+	VScrollBar *get_v_scrollbar();
+
 	virtual bool clips_input() const;
+
+	virtual String get_configuration_warning() const;
+
 	ScrollContainer();
 };
 

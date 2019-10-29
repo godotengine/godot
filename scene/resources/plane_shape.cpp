@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,11 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "plane_shape.h"
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
+Vector<Vector3> PlaneShape::get_debug_mesh_lines() {
 
 	Plane p = get_plane();
 	Vector<Vector3> points;
@@ -38,11 +40,11 @@ Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
 	Vector3 n1 = p.get_any_perpendicular_normal();
 	Vector3 n2 = p.normal.cross(n1).normalized();
 
-	Vector3 pface[4]={
-		p.normal*p.d+n1*10.0+n2*10.0,
-		p.normal*p.d+n1*10.0+n2*-10.0,
-		p.normal*p.d+n1*-10.0+n2*-10.0,
-		p.normal*p.d+n1*-10.0+n2*10.0,
+	Vector3 pface[4] = {
+		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
 	};
 
 	points.push_back(pface[0]);
@@ -53,20 +55,21 @@ Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
 	points.push_back(pface[3]);
 	points.push_back(pface[3]);
 	points.push_back(pface[0]);
-	points.push_back(p.normal*p.d);
-	points.push_back(p.normal*p.d+p.normal*3);
+	points.push_back(p.normal * p.d);
+	points.push_back(p.normal * p.d + p.normal * 3);
 
 	return points;
 }
 
 void PlaneShape::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(),plane);
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
+	Shape::_update_shape();
 }
 
 void PlaneShape::set_plane(Plane p_plane) {
 
-	plane=p_plane;
+	plane = p_plane;
 	_update_shape();
 	notify_change_to_owners();
 	_change_notify("plane");
@@ -77,17 +80,16 @@ Plane PlaneShape::get_plane() const {
 	return plane;
 }
 
-
 void PlaneShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_plane","plane"),&PlaneShape::set_plane);
-	ObjectTypeDB::bind_method(_MD("get_plane"),&PlaneShape::get_plane);
+	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &PlaneShape::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"), &PlaneShape::get_plane);
 
-	ADD_PROPERTY( PropertyInfo(Variant::PLANE,"plane"), _SCS("set_plane"), _SCS("get_plane") );
-
+	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
 }
 
-PlaneShape::PlaneShape() : Shape( PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
+PlaneShape::PlaneShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
 
-	set_plane(Plane(0,1,0,0));
+	set_plane(Plane(0, 1, 0, 0));
 }

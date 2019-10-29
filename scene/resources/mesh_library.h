@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,47 +27,60 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GRID_THEME_H
 #define GRID_THEME_H
 
-#include "resource.h"
+#include "core/map.h"
+#include "core/resource.h"
 #include "mesh.h"
+#include "scene/3d/navigation_mesh.h"
 #include "shape.h"
-#include "map.h"
 
 class MeshLibrary : public Resource {
 
-	OBJ_TYPE(MeshLibrary,Resource);
-	RES_BASE_EXTENSION("gt");
+	GDCLASS(MeshLibrary, Resource);
+	RES_BASE_EXTENSION("meshlib");
 
+public:
+	struct ShapeData {
+		Ref<Shape> shape;
+		Transform local_transform;
+	};
 	struct Item {
-
 		String name;
 		Ref<Mesh> mesh;
-		Ref<Shape> shape;
+		Vector<ShapeData> shapes;
 		Ref<Texture> preview;
+		Transform navmesh_transform;
+		Ref<NavigationMesh> navmesh;
 	};
 
-	Map<int,Item> item_map;
+	Map<int, Item> item_map;
+
+	void _set_item_shapes(int p_item, const Array &p_shapes);
+	Array _get_item_shapes(int p_item) const;
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
-public:		
 
-
+public:
 	void create_item(int p_item);
-	void set_item_name(int p_item,const String& p_name);
-	void set_item_mesh(int p_item,const Ref<Mesh>& p_mesh);
-	void set_item_shape(int p_item,const Ref<Shape>& p_shape);
-	void set_item_preview(int p_item,const Ref<Texture>& p_preview);
+	void set_item_name(int p_item, const String &p_name);
+	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
+	void set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh);
+	void set_item_navmesh_transform(int p_item, const Transform &p_transform);
+	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
+	void set_item_preview(int p_item, const Ref<Texture> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
-	Ref<Shape> get_item_shape(int p_item) const;
+	Ref<NavigationMesh> get_item_navmesh(int p_item) const;
+	Transform get_item_navmesh_transform(int p_item) const;
+	Vector<ShapeData> get_item_shapes(int p_item) const;
 	Ref<Texture> get_item_preview(int p_item) const;
 
 	void remove_item(int p_item);
@@ -74,7 +88,7 @@ public:
 
 	void clear();
 
-	int find_item_name(const String& p_name) const;
+	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
 	int get_last_unused_item_id() const;

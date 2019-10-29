@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,20 +27,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef THREAD_POSIX_H
 #define THREAD_POSIX_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
-
-#include <sys/types.h>
-#include <pthread.h>
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include <jni.h>
+#include <pthread.h>
+#include <sys/types.h>
 
 class ThreadAndroid : public Thread {
+
+	static pthread_key_t thread_id_key;
+	static ID next_thread_id;
 
 	pthread_t pthread;
 	pthread_attr_t pthread_attr;
@@ -47,36 +47,28 @@ class ThreadAndroid : public Thread {
 	void *user;
 	ID id;
 
-	static Thread* create_thread_jandroid();
-
+	static Thread *create_thread_jandroid();
 
 	static void *thread_callback(void *userdata);
 
-	static Thread* create_func_jandroid(ThreadCreateCallback p_callback,void *,const Settings&);
-	static ID get_thread_ID_func_jandroid();
-	static void wait_to_finish_func_jandroid(Thread* p_thread);
+	static Thread *create_func_jandroid(ThreadCreateCallback p_callback, void *, const Settings &);
+	static ID get_thread_id_func_jandroid();
+	static void wait_to_finish_func_jandroid(Thread *p_thread);
 
-	static void _thread_destroyed(void* value);
+	static void _thread_destroyed(void *value);
 	ThreadAndroid();
 
 	static pthread_key_t jvm_key;
-	static JavaVM* java_vm;
+	static JavaVM *java_vm;
+
 public:
+	virtual ID get_id() const;
 
-
-
-
-	virtual ID get_ID() const;
-
-	static void make_default(JavaVM* p_java_vm);
+	static void make_default(JavaVM *p_java_vm);
 	static void setup_thread();
 	static JNIEnv *get_env();
 
-
 	~ThreadAndroid();
-
 };
-
-
 
 #endif

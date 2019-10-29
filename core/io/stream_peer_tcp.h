@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,20 +27,21 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef STREAM_PEER_TCP_H
 #define STREAM_PEER_TCP_H
 
-#include "stream_peer.h"
-
-#include "ip_address.h"
+#include "core/io/ip.h"
+#include "core/io/ip_address.h"
+#include "core/io/net_socket.h"
+#include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
 
-	OBJ_TYPE( StreamPeerTCP, StreamPeer );
+	GDCLASS(StreamPeerTCP, StreamPeer);
 	OBJ_CATEGORY("Networking");
 
 public:
-
 	enum Status {
 
 		STATUS_NONE,
@@ -49,30 +51,43 @@ public:
 	};
 
 protected:
+	Ref<NetSocket> _sock;
+	uint64_t timeout;
+	Status status;
+	IP_Address peer_host;
+	uint16_t peer_port;
 
-	static StreamPeerTCP* (*_create)();
+	Error _connect(const String &p_address, int p_port);
+	Error _poll_connection();
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
+
 	static void _bind_methods();
 
 public:
+	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port);
 
-	virtual Error connect(const IP_Address& p_host, uint16_t p_port)=0;
+	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
+	bool is_connected_to_host() const;
+	IP_Address get_connected_host() const;
+	uint16_t get_connected_port() const;
+	void disconnect_from_host();
 
-	//read/write from streampeer
+	int get_available_bytes() const;
+	Status get_status();
 
-	virtual bool is_connected() const=0;
-	virtual Status get_status() const=0;
-	virtual void disconnect()=0;
-	virtual IP_Address get_connected_host() const=0;
-	virtual uint16_t get_connected_port() const=0;
-	virtual void set_nodelay(bool p_enabled)=0;
+	void set_no_delay(bool p_enabled);
 
-	static Ref<StreamPeerTCP> create_ref();
-	static StreamPeerTCP* create();
+	// Read/Write from StreamPeer
+	Error put_data(const uint8_t *p_data, int p_bytes);
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	Error get_data(uint8_t *p_buffer, int p_bytes);
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	StreamPeerTCP();
 	~StreamPeerTCP();
 };
 
-VARIANT_ENUM_CAST( StreamPeerTCP::Status );
+VARIANT_ENUM_CAST(StreamPeerTCP::Status);
 
 #endif

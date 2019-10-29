@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,63 +27,84 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CANVAS_LAYER_H
 #define CANVAS_LAYER_H
 
 #include "scene/main/node.h"
 #include "scene/resources/world_2d.h"
 
-
 class Viewport;
 class CanvasLayer : public Node {
 
-	OBJ_TYPE( CanvasLayer, Node );
+	GDCLASS(CanvasLayer, Node);
 
 	bool locrotscale_dirty;
 	Vector2 ofs;
-	Vector2 scale;
+	Size2 scale;
 	real_t rot;
 	int layer;
-	Matrix32 transform;
-	Ref<World2D> canvas;
+	Transform2D transform;
+	RID canvas;
+
+	ObjectID custom_viewport_id; // to check validity
+	Viewport *custom_viewport;
+
 	RID viewport;
 	Viewport *vp;
 
+	int sort_index;
 
-	void _set_rotationd(real_t p_rotation);
-	real_t _get_rotationd() const;
+	bool follow_viewport;
+	float follow_viewport_scale;
 
 	void _update_xform();
 	void _update_locrotscale();
+	void _update_follow_viewport(bool p_force_exit = false);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_layer(int p_xform);
 	int get_layer() const;
 
-	void set_transform(const Matrix32& p_xform);
-	Matrix32 get_transform() const;
+	void set_transform(const Transform2D &p_xform);
+	Transform2D get_transform() const;
 
-	void set_offset(const Vector2& p_offset);
+	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
-	void set_rotation(real_t p_rotation);
+	void set_rotation(real_t p_radians);
 	real_t get_rotation() const;
 
-	void set_scale(const Vector2& p_scale);
-	Vector2 get_scale() const;
+	void set_rotation_degrees(real_t p_degrees);
+	real_t get_rotation_degrees() const;
 
-	Ref<World2D> get_world_2d() const;
+	void set_scale(const Size2 &p_scale);
+	Size2 get_scale() const;
 
 	Size2 get_viewport_size() const;
 
 	RID get_viewport() const;
 
+	void set_custom_viewport(Node *p_viewport);
+	Node *get_custom_viewport() const;
+
+	void reset_sort_index();
+	int get_sort_index();
+
+	void set_follow_viewport(bool p_enable);
+	bool is_following_viewport() const;
+
+	void set_follow_viewport_scale(float p_ratio);
+	float get_follow_viewport_scale() const;
+
+	RID get_canvas() const;
+
 	CanvasLayer();
+	~CanvasLayer();
 };
 
 #endif // CANVAS_LAYER_H

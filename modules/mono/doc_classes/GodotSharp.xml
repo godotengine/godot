@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotSharp" inherits="Object" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="attach_thread">
+			<return type="void">
+			</return>
+			<description>
+				Attaches the current thread to the mono runtime.
+			</description>
+		</method>
+		<method name="detach_thread">
+			<return type="void">
+			</return>
+			<description>
+				Detaches the current thread from the mono runtime.
+			</description>
+		</method>
+		<method name="get_domain_id">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scripts_domain_id">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_domain_finalizing_for_unload">
+			<return type="bool">
+			</return>
+			<argument index="0" name="domain_id" type="int">
+			</argument>
+			<description>
+				Returns whether the domain is being finalized.
+			</description>
+		</method>
+		<method name="is_runtime_initialized">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_runtime_shutting_down">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_scripts_domain_loaded">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the scripts domain is loaded.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,12 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CONSTRAINT_SW_H
 #define CONSTRAINT_SW_H
 
 #include "body_sw.h"
 
-class ConstraintSW {
+class ConstraintSW : public RID_Data {
 
 	BodySW **_body_ptr;
 	int _body_count;
@@ -39,36 +41,43 @@ class ConstraintSW {
 	ConstraintSW *island_next;
 	ConstraintSW *island_list_next;
 	int priority;
-
+	bool disabled_collisions_between_bodies;
 
 	RID self;
 
 protected:
-	ConstraintSW(BodySW **p_body_ptr=NULL,int p_body_count=0) { _body_ptr=p_body_ptr; _body_count=p_body_count; island_step=0; priority=1; }
-public:
+	ConstraintSW(BodySW **p_body_ptr = NULL, int p_body_count = 0) {
+		_body_ptr = p_body_ptr;
+		_body_count = p_body_count;
+		island_step = 0;
+		priority = 1;
+		disabled_collisions_between_bodies = true;
+	}
 
-	_FORCE_INLINE_ void set_self(const RID& p_self) { self=p_self; }
+public:
+	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
-	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step=p_step; }
+	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
+	_FORCE_INLINE_ ConstraintSW *get_island_next() const { return island_next; }
+	_FORCE_INLINE_ void set_island_next(ConstraintSW *p_next) { island_next = p_next; }
 
-	_FORCE_INLINE_ ConstraintSW* get_island_next() const { return island_next; }
-	_FORCE_INLINE_ void set_island_next(ConstraintSW* p_next) { island_next=p_next; }
-
-	_FORCE_INLINE_ ConstraintSW* get_island_list_next() const { return island_list_next; }
-	_FORCE_INLINE_ void set_island_list_next(ConstraintSW* p_next) { island_list_next=p_next; }
+	_FORCE_INLINE_ ConstraintSW *get_island_list_next() const { return island_list_next; }
+	_FORCE_INLINE_ void set_island_list_next(ConstraintSW *p_next) { island_list_next = p_next; }
 
 	_FORCE_INLINE_ BodySW **get_body_ptr() const { return _body_ptr; }
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
 
-	_FORCE_INLINE_ void set_priority(int p_priority) { priority=p_priority; }
+	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
+	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
+	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
 
-	virtual bool setup(float p_step)=0;
-	virtual void solve(float p_step)=0;
+	virtual bool setup(real_t p_step) = 0;
+	virtual void solve(real_t p_step) = 0;
 
 	virtual ~ConstraintSW() {}
 };

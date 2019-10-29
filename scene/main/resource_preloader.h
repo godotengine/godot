@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,37 +27,33 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef RESOURCE_PRELOADER_H
 #define RESOURCE_PRELOADER_H
-
 
 #include "scene/main/node.h"
 
 class ResourcePreloader : public Node {
 
-	OBJ_TYPE(ResourcePreloader,Node);
+	GDCLASS(ResourcePreloader, Node);
 
-	Map<StringName,RES > resources;
+	Map<StringName, RES> resources;
 
-
-	void _set_resources(const Array& p_data);
+	void _set_resources(const Array &p_data);
 	Array _get_resources() const;
-	DVector<String> _get_resource_list() const;
+	PoolVector<String> _get_resource_list() const;
 
 protected:
-
 	static void _bind_methods();
 
 public:
-
-	void add_resource(const StringName& p_name,const RES& p_resource);
-	void remove_resource(const StringName& p_name);
-	void rename_resource(const StringName& p_from_name,const StringName& p_to_name);
-	bool has_resource(const StringName& p_name) const;
-	RES get_resource(const StringName& p_name) const;
+	void add_resource(const StringName &p_name, const RES &p_resource);
+	void remove_resource(const StringName &p_name);
+	void rename_resource(const StringName &p_from_name, const StringName &p_to_name);
+	bool has_resource(const StringName &p_name) const;
+	RES get_resource(const StringName &p_name) const;
 
 	void get_resource_list(List<StringName> *p_list);
-
 
 	ResourcePreloader();
 };

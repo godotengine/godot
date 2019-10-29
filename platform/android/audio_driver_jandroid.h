@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,19 +27,18 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef AUDIO_DRIVER_ANDROID_H
 #define AUDIO_DRIVER_ANDROID_H
 
-#include "servers/audio/audio_server_sw.h"
-#ifndef ANDROID_NATIVE_ACTIVITY
+#include "servers/audio_server.h"
 
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 
-class AudioDriverAndroid : public AudioDriverSW {
-
+class AudioDriverAndroid : public AudioDriver {
 
 	static Mutex *mutex;
-	static AudioDriverAndroid* s_ad;
+	static AudioDriverAndroid *s_ad;
 	static jobject io;
 	static jmethodID _init_audio;
 	static jmethodID _write_buffer;
@@ -50,33 +50,30 @@ class AudioDriverAndroid : public AudioDriverSW {
 	static jclass cls;
 
 	static jobject audioBuffer;
-	static void* audioBufferPinned;
-	static int32_t* audioBuffer32;
+	static void *audioBufferPinned;
+	static int32_t *audioBuffer32;
 	static int audioBufferFrames;
 	static int mix_rate;
 
-
 public:
-
 	void set_singleton();
 
-	virtual const char* get_name() const;
+	virtual const char *get_name() const;
 
 	virtual Error init();
 	virtual void start();
-	virtual int get_mix_rate() const ;
-	virtual OutputFormat get_output_format() const;
+	virtual int get_mix_rate() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
 	virtual void set_pause(bool p_pause);
 
-	static void setup( jobject act);
+	static void setup(jobject p_io);
 	static void thread_func(JNIEnv *env);
 
 	AudioDriverAndroid();
 };
 
-#endif
 #endif // AUDIO_DRIVER_ANDROID_H

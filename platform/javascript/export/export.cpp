@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,395 +27,592 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
-#include "export.h"
-#include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
-#include "tools/editor/editor_node.h"
-#include "io/zip_io.h"
-#include "io/marshalls.h"
-#include "globals.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "platform/javascript/logo.h"
-#include "string.h"
-class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformJavaScript,EditorExportPlatform );
+#include "core/io/tcp_server.h"
+#include "core/io/zip_io.h"
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
+#include "main/splash.gen.h"
+#include "platform/javascript/logo.gen.h"
+#include "platform/javascript/run_icon.gen.h"
 
-	String custom_release_package;
-	String custom_debug_package;
+#define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
+#define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
 
-	enum PackMode {
-		PACK_SINGLE_FILE,
-		PACK_MULTIPLE_FILES
-	};
+class EditorHTTPServer : public Reference {
 
-	void _fix_html(Vector<uint8_t>& p_html, const String& p_name, bool p_debug);
+private:
+	Ref<TCP_Server> server;
+	Ref<StreamPeerTCP> connection;
+	uint64_t time;
+	uint8_t req_buf[4096];
+	int req_pos;
 
-	PackMode pack_mode;
-
-	bool show_run;
-
-	int max_memory;
-	int version_code;
-
-	String html_title;
-	String html_head_include;
-	String html_font_family;
-	String html_style_include;
-	bool html_controls_enabled;
-
-	Ref<ImageTexture> logo;
-
-protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	void _clear_client() {
+		connection = Ref<StreamPeerTCP>();
+		memset(req_buf, 0, sizeof(req_buf));
+		time = 0;
+		req_pos = 0;
+	}
 
 public:
+	EditorHTTPServer() {
+		server.instance();
+		stop();
+	}
 
-	virtual String get_name() const { return "HTML5"; }
-	virtual ImageCompression get_image_compression() const { return IMAGE_COMPRESSION_BC; }
-	virtual Ref<Texture> get_logo() const { return logo; }
+	void stop() {
+		server->stop();
+		_clear_client();
+	}
 
+	Error listen(int p_port, IP_Address p_address) {
+		return server->listen(p_port, p_address);
+	}
 
-	virtual bool poll_devices() { return show_run?true:false;}
-	virtual int get_device_count() const { return show_run?1:0; };
-	virtual String get_device_name(int p_device) const  { return "Run in Browser"; }
-	virtual String get_device_info(int p_device) const { return "Run exported HTML in the system's default browser."; }
-	virtual Error run(int p_device,int p_flags=0);
+	bool is_listening() const {
+		return server->is_listening();
+	}
 
-	virtual bool requieres_password(bool p_debug) const { return false; }
-	virtual String get_binary_extension() const { return "html"; }
-	virtual Error export_project(const String& p_path,bool p_debug,int p_flags=0);
+	void _send_response() {
+		Vector<String> psa = String((char *)req_buf).split("\r\n");
+		int len = psa.size();
+		ERR_FAIL_COND_MSG(len < 4, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
-	virtual bool can_export(String *r_error=NULL) const;
+		Vector<String> req = psa[0].split(" ", false);
+		ERR_FAIL_COND_MSG(req.size() < 2, "Invalid protocol or status code.");
+
+		// Wrong protocol
+		ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
+
+		String filepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
+		String basereq = "/tmp_js_export";
+		if (req[1] == basereq + ".html") {
+			filepath += ".html";
+		} else if (req[1] == basereq + ".js") {
+			filepath += ".js";
+		} else if (req[1] == basereq + ".pck") {
+			filepath += ".pck";
+		} else if (req[1] == basereq + ".png") {
+			filepath += ".png";
+		} else if (req[1] == basereq + ".wasm") {
+			filepath += ".wasm";
+		} else {
+			String s = "HTTP/1.1 404 Not Found\r\n";
+			s += "Connection: Close\r\n";
+			s += "\r\n";
+			CharString cs = s.utf8();
+			connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+			return;
+		}
+		FileAccess *f = FileAccess::open(filepath, FileAccess::READ);
+		ERR_FAIL_COND(!f);
+		String s = "HTTP/1.1 200 OK\r\n";
+		s += "Connection: Close\r\n";
+		s += "\r\n";
+		CharString cs = s.utf8();
+		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
+		ERR_FAIL_COND(err != OK);
+
+		while (true) {
+			uint8_t bytes[4096];
+			int read = f->get_buffer(bytes, 4096);
+			if (read < 1) {
+				break;
+			}
+			err = connection->put_data(bytes, read);
+			ERR_FAIL_COND(err != OK);
+		}
+	}
+
+	void poll() {
+		if (!server->is_listening())
+			return;
+		if (connection.is_null()) {
+			if (!server->is_connection_available())
+				return;
+			connection = server->take_connection();
+			time = OS::get_singleton()->get_ticks_usec();
+		}
+		if (OS::get_singleton()->get_ticks_usec() - time > 1000000) {
+			_clear_client();
+			return;
+		}
+		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED)
+			return;
+
+		while (true) {
+
+			char *r = (char *)req_buf;
+			int l = req_pos - 1;
+			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
+				_send_response();
+				_clear_client();
+				return;
+			}
+
+			int read = 0;
+			ERR_FAIL_COND(req_pos >= 4096);
+			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
+			if (err != OK) {
+				// Got an error
+				_clear_client();
+				return;
+			} else if (read != 1) {
+				// Busy, wait next poll
+				return;
+			}
+			req_pos += read;
+		}
+	}
+};
+
+class EditorExportPlatformJavaScript : public EditorExportPlatform {
+
+	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform);
+
+	Ref<ImageTexture> logo;
+	Ref<ImageTexture> run_icon;
+	Ref<ImageTexture> stop_icon;
+	int menu_options;
+
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug);
+
+private:
+	Ref<EditorHTTPServer> server;
+	bool server_quit;
+	Mutex *server_lock;
+	Thread *server_thread;
+
+	static void _server_thread_poll(void *data);
+
+public:
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
+
+	virtual void get_export_options(List<ExportOption> *r_options);
+
+	virtual String get_name() const;
+	virtual String get_os_name() const;
+	virtual Ref<Texture> get_logo() const;
+
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+
+	virtual bool poll_export();
+	virtual int get_options_count() const;
+	virtual String get_option_label(int p_index) const { return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser"); }
+	virtual String get_option_tooltip(int p_index) const { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags);
+	virtual Ref<Texture> get_run_icon() const;
+
+	virtual void get_platform_features(List<String> *r_features) {
+
+		r_features->push_back("web");
+		r_features->push_back(get_os_name());
+	}
+
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
 
 	EditorExportPlatformJavaScript();
 	~EditorExportPlatformJavaScript();
 };
 
-bool EditorExportPlatformJavaScript::_set(const StringName& p_name, const Variant& p_value) {
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug) {
 
-	String n=p_name;
+	String str_template = String::utf8(reinterpret_cast<const char *>(p_html.ptr()), p_html.size());
+	String str_export;
+	Vector<String> lines = str_template.split("\n");
 
-	if (n=="custom_package/debug")
-		custom_debug_package=p_value;
-	else if (n=="custom_package/release")
-		custom_release_package=p_value;
-	else if (n=="browser/enable_run")
-		show_run=p_value;
-	else if (n=="options/memory_size")
-		max_memory=p_value;
-	else if (n=="html/title")
-		html_title=p_value;
-	else if (n=="html/head_include")
-		html_head_include=p_value;
-	else if (n=="html/font_family")
-		html_font_family=p_value;
-	else if (n=="html/style_include")
-		html_style_include=p_value;
-	else if (n=="html/controls_enabled")
-		html_controls_enabled=p_value;
-	else
-		return false;
-
-	return true;
-}
-
-bool EditorExportPlatformJavaScript::_get(const StringName& p_name,Variant &r_ret) const{
-
-	String n=p_name;
-
-	if (n=="custom_package/debug")
-		r_ret=custom_debug_package;
-	else if (n=="custom_package/release")
-		r_ret=custom_release_package;
-	else if (n=="browser/enable_run")
-		r_ret=show_run;
-	else if (n=="options/memory_size")
-		r_ret=max_memory;
-	else if (n=="html/title")
-		r_ret=html_title;
-	else if (n=="html/head_include")
-		r_ret=html_head_include;
-	else if (n=="html/font_family")
-		r_ret=html_font_family;
-	else if (n=="html/style_include")
-		r_ret=html_style_include;
-	else if (n=="html/controls_enabled")
-		r_ret=html_controls_enabled;
-	else
-		return false;
-
-	return true;
-}
-void EditorExportPlatformJavaScript::_get_property_list( List<PropertyInfo> *p_list) const{
-
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE,"zip"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE,"zip"));
-	p_list->push_back( PropertyInfo( Variant::INT, "options/memory_size",PROPERTY_HINT_ENUM,"32mb,64mb,128mb,256mb,512mb,1024mb"));
-	p_list->push_back( PropertyInfo( Variant::BOOL, "browser/enable_run"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "html/title"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "html/head_include",PROPERTY_HINT_MULTILINE_TEXT));
-	p_list->push_back( PropertyInfo( Variant::STRING, "html/font_family"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "html/style_include",PROPERTY_HINT_MULTILINE_TEXT));
-	p_list->push_back( PropertyInfo( Variant::BOOL, "html/controls_enabled"));
-
-
-	//p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Copy,Single Exec.,Pack (.pck),Bundles (Optical)"));
-
-}
-
-
-void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const String& p_name, bool p_debug) {
-
-
-	String str;
-	String strnew;
-	str.parse_utf8((const char*)p_html.ptr(),p_html.size());
-	Vector<String> lines=str.split("\n");
-	for(int i=0;i<lines.size();i++) {
+	for (int i = 0; i < lines.size(); i++) {
 
 		String current_line = lines[i];
-		current_line = current_line.replace("$GODOT_TMEM",itos((1<<(max_memory+5))*1024*1024));
-		current_line = current_line.replace("$GODOT_FS",p_name+"fs.js");
-		current_line = current_line.replace("$GODOT_MEM",p_name+".mem");
-		current_line = current_line.replace("$GODOT_JS",p_name+".js");
-		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
-		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
-		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
-		current_line = current_line.replace("$GODOT_HEAD_INCLUDE",html_head_include);
-		current_line = current_line.replace("$GODOT_STYLE_FONT_FAMILY",html_font_family);
-		current_line = current_line.replace("$GODOT_STYLE_INCLUDE",html_style_include);
-		current_line = current_line.replace("$GODOT_CONTROLS_ENABLED",html_controls_enabled?"true":"false");
-		current_line = current_line.replace("$GODOT_DEBUG_ENABLED",p_debug?"true":"false");
-		strnew += current_line+"\n";
+		current_line = current_line.replace("$GODOT_BASENAME", p_name);
+		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
+		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
+		str_export += current_line + "\n";
 	}
 
-	CharString cs = strnew.utf8();
-	p_html.resize(cs.size());
-	for(int i=9;i<cs.size();i++) {
-		p_html[i]=cs[i];
+	CharString cs = str_export.utf8();
+	p_html.resize(cs.length());
+	for (int i = 0; i < cs.length(); i++) {
+		p_html.write[i] = cs[i];
 	}
 }
 
-static void _fix_files(Vector<uint8_t>& html,uint64_t p_data_size) {
+void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
+	if (p_preset->get("vram_texture_compression/for_desktop")) {
+		r_features->push_back("s3tc");
+	}
 
-	String str;
-	String strnew;
-	str.parse_utf8((const char*)html.ptr(),html.size());
-	Vector<String> lines=str.split("\n");
-	for(int i=0;i<lines.size();i++) {
-		if (lines[i].find("$DPLEN")!=-1) {
-			strnew+=lines[i].replace("$DPLEN",itos(p_data_size));
-		} else {
-			strnew+=lines[i]+"\n";
+	if (p_preset->get("vram_texture_compression/for_mobile")) {
+		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+		if (driver == "GLES2") {
+			r_features->push_back("etc");
+		} else if (driver == "GLES3") {
+			r_features->push_back("etc2");
+			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+				r_features->push_back("etc");
+			}
 		}
 	}
-
-	CharString cs = strnew.utf8();
-	html.resize(cs.length());
-	for(int i=9;i<cs.length();i++) {
-		html[i]=cs[i];
-	}
-
 }
 
-struct JSExportData {
+void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
 
-	EditorProgress *ep;
-	FileAccess *f;
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+}
 
-};
+String EditorExportPlatformJavaScript::get_name() const {
 
+	return "HTML5";
+}
 
+String EditorExportPlatformJavaScript::get_os_name() const {
 
-Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool p_debug, int p_flags) {
+	return "HTML5";
+}
 
+Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
 
-	String src_template;
+	return logo;
+}
 
-	EditorProgress ep("export","Exporting for javascript",104);
+bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	if (p_debug)
-		src_template=custom_debug_package;
-	else
-		src_template=custom_release_package;
+	bool valid = false;
+	String err;
 
-	if (src_template=="") {
-		String err;
-		if (p_debug) {
-			src_template=find_export_template("javascript_debug.zip", &err);
+	if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) != "")
+		valid = true;
+	else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) != "")
+		valid = true;
+
+	if (p_preset->get("custom_template/debug") != "") {
+		if (FileAccess::exists(p_preset->get("custom_template/debug"))) {
+			valid = true;
 		} else {
-			src_template=find_export_template("javascript_release.zip", &err);
-		}
-		if (src_template=="") {
-			EditorNode::add_io_error(err);
-			return ERR_FILE_NOT_FOUND;
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
-	FileAccess *src_f=NULL;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
-
-	ep.step("Exporting to HTML5",0);
-
-	ep.step("Finding Files..",1);
-
-	FileAccess *f=FileAccess::open(p_path.get_base_dir()+"/data.pck",FileAccess::WRITE);
-	if (!f) {
-		EditorNode::add_io_error("Could not create file for writing:\n"+p_path.basename()+"_files.js");
-		return ERR_FILE_CANT_WRITE;
+	if (p_preset->get("custom_template/release") != "") {
+		if (FileAccess::exists(p_preset->get("custom_template/release"))) {
+			valid = true;
+		} else {
+			err += TTR("Custom release template not found.") + "\n";
+		}
 	}
-	Error err = save_pack(f);
-	size_t len = f->get_len();
-	memdelete(f);
-	if (err)
-		return err;
 
+	r_missing_templates = !valid;
 
-	unzFile pkg = unzOpen2(src_template.utf8().get_data(), &io);
-	if (!pkg) {
+	if (p_preset->get("vram_texture_compression/for_mobile")) {
+		String etc_error = test_etc2();
+		if (etc_error != String()) {
+			valid = false;
+			err += etc_error;
+		}
+	}
 
-		EditorNode::add_io_error("Could not find template HTML5 to export:\n"+src_template);
+	if (!err.empty())
+		r_error = err;
+
+	return valid;
+}
+
+List<String> EditorExportPlatformJavaScript::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+
+	List<String> list;
+	list.push_back("html");
+	return list;
+}
+
+Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	String custom_debug = p_preset->get("custom_template/debug");
+	String custom_release = p_preset->get("custom_template/release");
+	String custom_html = p_preset->get("html/custom_html_shell");
+
+	String template_path = p_debug ? custom_debug : custom_release;
+
+	template_path = template_path.strip_edges();
+
+	if (template_path == String()) {
+
+		if (p_debug)
+			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
+		else
+			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+	}
+
+	if (!DirAccess::exists(p_path.get_base_dir())) {
+		return ERR_FILE_BAD_PATH;
+	}
+
+	if (template_path != String() && !FileAccess::exists(template_path)) {
+		EditorNode::get_singleton()->show_warning(TTR("Template file not found:") + "\n" + template_path);
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	ERR_FAIL_COND_V(!pkg, ERR_CANT_OPEN);
-	int ret = unzGoToFirstFile(pkg);
+	String pck_path = p_path.get_basename() + ".pck";
+	Error error = save_pack(p_preset, pck_path);
+	if (error != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
+		return error;
+	}
 
+	FileAccess *src_f = NULL;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	unzFile pkg = unzOpen2(template_path.utf8().get_data(), &io);
 
-	while(ret==UNZ_OK) {
+	if (!pkg) {
 
+		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:") + "\n" + template_path);
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	if (unzGoToFirstFile(pkg) != UNZ_OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Invalid export template:") + "\n" + template_path);
+		unzClose(pkg);
+		return ERR_FILE_CORRUPT;
+	}
+
+	do {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg,&info,fname,16384,NULL,0,NULL,0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file=fname;
+		String file = fname;
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
 		//read
 		unzOpenCurrentFile(pkg);
-		unzReadCurrentFile(pkg,data.ptr(),data.size());
+		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
 		//write
 
-		if (file=="godot.html") {
+		if (file == "godot.html") {
 
-			_fix_html(data,p_path.get_file().basename(), p_debug);
-			file=p_path.get_file();
-		}
-		if (file=="godotfs.js") {
+			if (!custom_html.empty()) {
+				continue;
+			}
+			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug);
+			file = p_path.get_file();
 
-			_fix_files(data,len);
-			file=p_path.get_file().basename()+"fs.js";
-		}
-		if (file=="godot.js") {
+		} else if (file == "godot.js") {
 
-			//_fix_godot(data);
-			file=p_path.get_file().basename()+".js";
-		}
+			file = p_path.get_file().get_basename() + ".js";
+		} else if (file == "godot.wasm") {
 
-		if (file=="godot.mem") {
-
-			//_fix_godot(data);
-			file=p_path.get_file().basename()+".mem";
+			file = p_path.get_file().get_basename() + ".wasm";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
-		FileAccess *f=FileAccess::open(dst,FileAccess::WRITE);
+		FileAccess *f = FileAccess::open(dst, FileAccess::WRITE);
 		if (!f) {
-			EditorNode::add_io_error("Could not create file for writing:\n"+dst);
+			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + dst);
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
-		f->store_buffer(data.ptr(),data.size());
+		f->store_buffer(data.ptr(), data.size());
 		memdelete(f);
 
+	} while (unzGoToNextFile(pkg) == UNZ_OK);
+	unzClose(pkg);
 
-		ret = unzGoToNextFile(pkg);
+	if (!custom_html.empty()) {
+
+		FileAccess *f = FileAccess::open(custom_html, FileAccess::READ);
+		if (!f) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
+			return ERR_FILE_CANT_READ;
+		}
+		Vector<uint8_t> buf;
+		buf.resize(f->get_len());
+		f->get_buffer(buf.ptrw(), buf.size());
+		memdelete(f);
+		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug);
+
+		f = FileAccess::open(p_path, FileAccess::WRITE);
+		if (!f) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
+			return ERR_FILE_CANT_WRITE;
+		}
+		f->store_buffer(buf.ptr(), buf.size());
+		memdelete(f);
 	}
 
-
-
+	Ref<Image> splash;
+	String splash_path = GLOBAL_GET("application/boot_splash/image");
+	splash_path = splash_path.strip_edges();
+	if (!splash_path.empty()) {
+		splash.instance();
+		Error err = splash->load(splash_path);
+		if (err) {
+			EditorNode::get_singleton()->show_warning(TTR("Could not read boot splash image file:") + "\n" + splash_path + "\n" + TTR("Using default boot splash image."));
+			splash.unref();
+		}
+	}
+	if (splash.is_null()) {
+		splash = Ref<Image>(memnew(Image(boot_splash_png)));
+	}
+	String png_path = p_path.get_base_dir().plus_file(p_path.get_file().get_basename() + ".png");
+	if (splash->save_png(png_path) != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + png_path);
+		return ERR_FILE_CANT_WRITE;
+	}
 	return OK;
-
 }
 
+bool EditorExportPlatformJavaScript::poll_export() {
 
-Error EditorExportPlatformJavaScript::run(int p_device, int p_flags) {
+	Ref<EditorExportPreset> preset;
 
-	String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp_export.html";
-	Error err = export_project(path,true,p_flags);
-	if (err)
+	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+
+		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+		if (ep->is_runnable() && ep->get_platform() == this) {
+			preset = ep;
+			break;
+		}
+	}
+
+	int prev = menu_options;
+	menu_options = preset.is_valid();
+	if (server->is_listening()) {
+		if (menu_options == 0) {
+			server_lock->lock();
+			server->stop();
+			server_lock->unlock();
+		} else {
+			menu_options += 1;
+		}
+	}
+	return menu_options != prev;
+}
+
+Ref<ImageTexture> EditorExportPlatformJavaScript::get_option_icon(int p_index) const {
+	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+}
+
+int EditorExportPlatformJavaScript::get_options_count() const {
+
+	return menu_options;
+}
+
+Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
+
+	if (p_option == 1) {
+		server_lock->lock();
+		server->stop();
+		server_lock->unlock();
+		return OK;
+	}
+
+	String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
+	String path = basepath + ".html";
+	Error err = export_project(p_preset, true, path, p_debug_flags);
+	if (err != OK) {
+		// Export generates several files, clean them up on failure.
+		DirAccess::remove_file_or_error(basepath + ".html");
+		DirAccess::remove_file_or_error(basepath + ".js");
+		DirAccess::remove_file_or_error(basepath + ".pck");
+		DirAccess::remove_file_or_error(basepath + ".png");
+		DirAccess::remove_file_or_error(basepath + ".wasm");
 		return err;
+	}
 
-	OS::get_singleton()->shell_open(path);
+	IP_Address bind_ip;
+	uint16_t bind_port = EDITOR_GET("export/web/http_port");
+	// Resolve host if needed.
+	String bind_host = EDITOR_GET("export/web/http_host");
+	if (bind_host.is_valid_ip_address()) {
+		bind_ip = bind_host;
+	} else {
+		bind_ip = IP::get_singleton()->resolve_hostname(bind_host);
+	}
+	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
 
+	// Restart server.
+	server_lock->lock();
+	server->stop();
+	err = server->listen(bind_port, bind_ip);
+	server_lock->unlock();
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Unable to start HTTP server.");
+
+	OS::get_singleton()->shell_open(String("http://" + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
+	// FIXME: Find out how to clean up export files after running the successfully
+	// exported game. Might not be trivial.
 	return OK;
 }
 
+Ref<Texture> EditorExportPlatformJavaScript::get_run_icon() const {
+
+	return run_icon;
+}
+
+void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
+	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
+	while (!ej->server_quit) {
+		OS::get_singleton()->delay_usec(1000);
+		ej->server_lock->lock();
+		ej->server->poll();
+		ej->server_lock->unlock();
+	}
+}
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
-	show_run=false;
-	Image img( _javascript_logo );
-	logo = Ref<ImageTexture>( memnew( ImageTexture ));
+	server.instance();
+	server_quit = false;
+	server_lock = Mutex::create();
+	server_thread = Thread::create(_server_thread_poll, this);
+
+	Ref<Image> img = memnew(Image(_javascript_logo));
+	logo.instance();
 	logo->create_from_image(img);
-	max_memory=3;
-	html_title="";
-	html_font_family="arial,sans-serif";
-	html_controls_enabled=true;
-	pack_mode=PACK_SINGLE_FILE;
+
+	img = Ref<Image>(memnew(Image(_javascript_run_icon)));
+	run_icon.instance();
+	run_icon->create_from_image(img);
+
+	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+	if (theme.is_valid())
+		stop_icon = theme->get_icon("Stop", "EditorIcons");
+	else
+		stop_icon.instance();
+
+	menu_options = 0;
 }
-
-bool EditorExportPlatformJavaScript::can_export(String *r_error) const {
-
-
-	bool valid=true;
-	String err;
-
-	if (!exists_export_template("javascript_debug.zip") || !exists_export_template("javascript_release.zip")) {
-		valid=false;
-		err+="No export templates found.\nDownload and install export templates.\n";
-	}
-
-	if (custom_debug_package!="" && !FileAccess::exists(custom_debug_package)) {
-		valid=false;
-		err+="Custom debug package not found.\n";
-	}
-
-	if (custom_release_package!="" && !FileAccess::exists(custom_release_package)) {
-		valid=false;
-		err+="Custom release package not found.\n";
-	}
-
-	if (r_error)
-		*r_error=err;
-
-	return valid;
-}
-
 
 EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
-
+	server->stop();
+	server_quit = true;
+	Thread::wait_to_finish(server_thread);
+	memdelete(server_lock);
+	memdelete(server_thread);
 }
-
 
 void register_javascript_exporter() {
 
+	EDITOR_DEF("export/web/http_host", "localhost");
+	EDITOR_DEF("export/web/http_port", 8060);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 
-	Ref<EditorExportPlatformJavaScript> exporter = Ref<EditorExportPlatformJavaScript>( memnew(EditorExportPlatformJavaScript) );
-	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
-
+	Ref<EditorExportPlatformJavaScript> platform;
+	platform.instance();
+	EditorExport::get_singleton()->add_export_platform(platform);
 }
-

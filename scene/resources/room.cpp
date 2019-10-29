@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,86 +27,44 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "room.h"
 
 #include "servers/visual_server.h"
 
-
-RID RoomBounds::get_rid() {
+// FIXME: Left for reference for reimplementation using Area
+#if 0
+RID RoomBounds::get_rid() const {
 
 	return area;
 }
 
-void RoomBounds::set_bounds( const BSP_Tree& p_bounds ) {
+void RoomBounds::set_geometry_hint(const PoolVector<Face3> &p_geometry_hint) {
 
-	VisualServer::get_singleton()->room_set_bounds(area,p_bounds);
-	emit_signal("changed");
+	geometry_hint = p_geometry_hint;
 }
 
-BSP_Tree RoomBounds::get_bounds() const {
-
-	return VisualServer::get_singleton()->room_get_bounds(area);
-}
-
-void RoomBounds::set_geometry_hint(const DVector<Face3>& p_geometry_hint) {
-	
-	geometry_hint=p_geometry_hint;
-}
-
-const DVector<Face3>& RoomBounds::get_geometry_hint() const {
+PoolVector<Face3> RoomBounds::get_geometry_hint() const {
 
 	return geometry_hint;
 }
 
-void RoomBounds::_regenerate_bsp_cubic() {
-
-	if (geometry_hint.size()) {
-
-		float err=0;
-		geometry_hint=  Geometry::wrap_geometry( geometry_hint, &err ); ///< create a "wrap" that encloses the given geometry
-
-		BSP_Tree new_bounds(geometry_hint,err);
-		set_bounds(new_bounds);
-	}
-
-}
-
-void RoomBounds::_regenerate_bsp() {
-
-	if (geometry_hint.size()) {
-
-		BSP_Tree new_bounds(geometry_hint,0);
-		set_bounds(new_bounds);
-	}
-}
-
 void RoomBounds::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_bounds","bsp_tree"),&RoomBounds::set_bounds);
-	ObjectTypeDB::bind_method(_MD("get_bounds"),&RoomBounds::get_bounds);
+	ClassDB::bind_method(D_METHOD("set_geometry_hint", "triangles"), &RoomBounds::set_geometry_hint);
+	ClassDB::bind_method(D_METHOD("get_geometry_hint"), &RoomBounds::get_geometry_hint);
 
-	ObjectTypeDB::bind_method(_MD("set_geometry_hint","triangles"),&RoomBounds::set_geometry_hint);
-	ObjectTypeDB::bind_method(_MD("get_geometry_hint"),&RoomBounds::get_geometry_hint);
-	ObjectTypeDB::bind_method(_MD("regenerate_bsp"),&RoomBounds::_regenerate_bsp);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("regenerate_bsp"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::bind_method(_MD("regenerate_bsp_cubic"),&RoomBounds::_regenerate_bsp_cubic);
-	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("regenerate_bsp_cubic"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-
-	ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "bounds"), _SCS("set_bounds"),_SCS("get_bounds") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "geometry_hint"),_SCS("set_geometry_hint"),_SCS("get_geometry_hint") );
-
+	//ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "bounds"), "set_bounds","get_bounds") ;
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "geometry_hint"), "set_geometry_hint", "get_geometry_hint");
 }
 
 RoomBounds::RoomBounds() {
 
-	area=VisualServer::get_singleton()->room_create();
+	area = VisualServer::get_singleton()->room_create();
 }
-
 
 RoomBounds::~RoomBounds() {
 
 	VisualServer::get_singleton()->free(area);
-
 }
-
-
+#endif

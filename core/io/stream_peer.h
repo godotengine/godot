@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,20 +27,22 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class StreamPeer : public Reference {
-	OBJ_TYPE( StreamPeer, Reference );
+	GDCLASS(StreamPeer, Reference);
 	OBJ_CATEGORY("Networking");
+
 protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Error _put_data(const DVector<uint8_t>& p_data);
-	Array _put_partial_data(const DVector<uint8_t>& p_data);
+	Error _put_data(const PoolVector<uint8_t> &p_data);
+	Array _put_partial_data(const PoolVector<uint8_t> &p_data);
 
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
@@ -47,14 +50,13 @@ protected:
 	bool big_endian;
 
 public:
+	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) = 0; ///< put as much data as possible, without blocking.
 
-	virtual Error put_data(const uint8_t* p_data,int p_bytes)=0; ///< put a whole chunk of data, blocking until it sent
-	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent)=0; ///< put as much data as possible, without blocking.
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) = 0; ///< read p_bytes of data, if p_bytes > available, it will block
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) = 0; ///< read as much data as p_bytes into buffer, if less was read, return in r_received
 
-	virtual Error get_data(uint8_t* p_buffer, int p_bytes)=0; ///< read p_bytes of data, if p_bytes > available, it will block
-	virtual Error get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received)=0; ///< read as much data as p_bytes into buffer, if less was read, return in r_received
-
-	virtual int get_available_bytes() const=0;
+	virtual int get_available_bytes() const = 0;
 
 	void set_big_endian(bool p_enable);
 	bool is_big_endian_enabled() const;
@@ -69,8 +71,9 @@ public:
 	void put_u64(uint64_t p_val);
 	void put_float(float p_val);
 	void put_double(double p_val);
-	void put_utf8_string(const String& p_string);
-	void put_var(const Variant& p_variant);
+	void put_string(const String &p_string);
+	void put_utf8_string(const String &p_string);
+	void put_var(const Variant &p_variant, bool p_full_objects = false);
 
 	uint8_t get_u8();
 	int8_t get_8();
@@ -81,14 +84,46 @@ public:
 	uint64_t get_u64();
 	int64_t get_64();
 	float get_float();
-	float get_double();
-	String get_string(int p_bytes);
-	String get_utf8_string(int p_bytes);
-	Variant get_var();
+	double get_double();
+	String get_string(int p_bytes = -1);
+	String get_utf8_string(int p_bytes = -1);
+	Variant get_var(bool p_allow_objects = false);
 
+	StreamPeer() { big_endian = false; }
+};
 
+class StreamPeerBuffer : public StreamPeer {
 
-	StreamPeer() { big_endian=false; }
+	GDCLASS(StreamPeerBuffer, StreamPeer);
+
+	PoolVector<uint8_t> data;
+	int pointer;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error put_data(const uint8_t *p_data, int p_bytes);
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+
+	Error get_data(uint8_t *p_buffer, int p_bytes);
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+
+	virtual int get_available_bytes() const;
+
+	void seek(int p_pos);
+	int get_size() const;
+	int get_position() const;
+	void resize(int p_size);
+
+	void set_data_array(const PoolVector<uint8_t> &p_data);
+	PoolVector<uint8_t> get_data_array() const;
+
+	void clear();
+
+	Ref<StreamPeerBuffer> duplicate() const;
+
+	StreamPeerBuffer();
 };
 
 #endif // STREAM_PEER_H

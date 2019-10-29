@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="int" category="Built-In Types" version="3.2">
+	<brief_description>
+		Integer built-in type.
+	</brief_description>
+	<description>
+		Signed 64-bit integer type.
+		It can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around.
+		[int] is a [Variant] type, and will thus be used when assigning an integer value to a [Variant]. It can also be enforced with the [code]: int[/code] type hint.
+		[codeblock]
+		var my_variant = 0    # int, value 0
+		my_variant += 4.2     # float, value 4.2
+		var my_int: int = 1   # int, value 1
+		my_int = 4.2          # int, value 4, the right value is implicitly cast to int
+		my_int = int("6.7")   # int, value 6, the String is explicitly cast with [method int]
+
+		var max_int = 9223372036854775807
+		print(max_int)        # 9223372036854775807, OK
+		max_int += 1
+		print(max_int)        # -9223372036854775808, we overflowed and wrapped around
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="int">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="bool">
+			</argument>
+			<description>
+				Cast a [bool] value to an integer value, [code]int(true)[/code] will be equals to 1 and [code]int(false)[/code] will be equals to 0.
+			</description>
+		</method>
+		<method name="int">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<description>
+				Cast a float value to an integer value, this method simply removes the number fractions, so for example [code]int(2.7)[/code] will be equals to 2, [code]int(.1)[/code] will be equals to 0 and [code]int(-2.7)[/code] will be equals to -2.
+			</description>
+		</method>
+		<method name="int">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Cast a [String] value to an integer value, this method is an integer parser from a string, so calling this method with an invalid integer string will return 0, a valid string will be something like [code]'1.7'[/code]. This method will ignore all non-number characters, so calling [code]int('1e3')[/code] will return 13.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

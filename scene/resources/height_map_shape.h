@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,13 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef HEIGHT_MAP_SHAPE_H
 #define HEIGHT_MAP_SHAPE_H
 
-class HeightMapShape
-{
+#include "scene/resources/shape.h"
+
+class HeightMapShape : public Shape {
+	GDCLASS(HeightMapShape, Shape);
+
+	int map_width;
+	int map_depth;
+	PoolRealArray map_data;
+	float min_height;
+	float max_height;
+
+protected:
+	static void _bind_methods();
+	virtual void _update_shape();
+
 public:
-    HeightMapShape();
+	void set_map_width(int p_new);
+	int get_map_width() const;
+	void set_map_depth(int p_new);
+	int get_map_depth() const;
+	void set_map_data(PoolRealArray p_new);
+	PoolRealArray get_map_data() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines();
+
+	HeightMapShape();
 };
 
-#endif // HEIGHT_MAP_SHAPE_H
+#endif /* !HEIGHT_MAP_SHAPE_H */

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COLLISION_OBJECT_H
 #define COLLISION_OBJECT_H
 
@@ -34,59 +36,71 @@
 
 class CollisionObject : public Spatial {
 
-	OBJ_TYPE( CollisionObject, Spatial );
+	GDCLASS(CollisionObject, Spatial);
 
 	bool area;
+
 	RID rid;
 
 	struct ShapeData {
+
+		Object *owner;
 		Transform xform;
-		Ref<Shape> shape;
-        bool trigger;
+		struct ShapeBase {
+			Ref<Shape> shape;
+			int index;
+		};
 
-        ShapeData() {
-            trigger=false;
-        }
+		Vector<ShapeBase> shapes;
+		bool disabled;
 
+		ShapeData() {
+			disabled = false;
+			owner = NULL;
+		}
 	};
+
+	int total_subshapes;
+
+	Map<uint32_t, ShapeData> shapes;
 
 	bool capture_input_on_drag;
 	bool ray_pickable;
-	Vector<ShapeData> shapes;
 
 	void _update_pickable();
-	void _update_shapes();
 
-friend class CollisionShape;
-friend class CollisionPolygon;
-	void _update_shapes_from_children();
 protected:
-
 	CollisionObject(RID p_rid, bool p_area);
 
 	void _notification(int p_what);
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
-friend class Viewport;
-	virtual void _input_event(Node* p_camera,const InputEvent& p_input_event,const Vector3& p_pos, const Vector3& p_normal, int p_shape);
+	friend class Viewport;
+	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
 public:
+	uint32_t create_shape_owner(Object *p_owner);
+	void remove_shape_owner(uint32_t owner);
+	void get_shape_owners(List<uint32_t> *r_owners);
+	Array _get_shape_owners();
 
+	void shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform);
+	Transform shape_owner_get_transform(uint32_t p_owner) const;
+	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
-	void add_shape(const Ref<Shape>& p_shape, const Transform& p_transform=Transform());
-	int get_shape_count() const;
-	void set_shape(int p_shape_idx, const Ref<Shape>& p_shape);
-	void set_shape_transform(int p_shape_idx, const Transform& p_transform);
-	Ref<Shape> get_shape(int p_shape_idx) const;
-	Transform get_shape_transform(int p_shape_idx) const;
-	void remove_shape(int p_shape_idx);
-	void clear_shapes();
-	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);
-	bool is_shape_set_as_trigger(int p_shape_idx) const;
+	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
+	bool is_shape_owner_disabled(uint32_t p_owner) const;
+
+	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &p_shape);
+	int shape_owner_get_shape_count(uint32_t p_owner) const;
+	Ref<Shape> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
+	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;
+
+	void shape_owner_remove_shape(uint32_t p_owner, int p_shape);
+	void shape_owner_clear_shapes(uint32_t p_owner);
+
+	uint32_t shape_find_owner(int p_shape_index) const;
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
@@ -94,8 +108,9 @@ public:
 	void set_capture_input_on_drag(bool p_capture);
 	bool get_capture_input_on_drag() const;
 
-
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
+
+	virtual String get_configuration_warning() const;
 
 	CollisionObject();
 	~CollisionObject();

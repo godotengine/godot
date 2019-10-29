@@ -1,0 +1,70 @@
+diff --git a/libgc/include/private/gcconfig.h b/libgc/include/private/gcconfig.h
+index e2bdf13ac3e..f962200ba4e 100644
+--- a/libgc/include/private/gcconfig.h
++++ b/libgc/include/private/gcconfig.h
+@@ -2255,6 +2255,14 @@
+ #   define GETPAGESIZE() getpagesize()
+ # endif
+ 
++#if defined(HOST_ANDROID) && !(__ANDROID_API__ >= 23) \
++    && ((defined(MIPS) && (CPP_WORDSZ == 32)) \
++        || defined(ARM32) || defined(I386) /* but not x32 */)
++  /* tkill() exists only on arm32/mips(32)/x86. */
++  /* NDK r11+ deprecates tkill() but keeps it for Mono clients. */
++# define USE_TKILL_ON_ANDROID
++#endif
++
+ # if defined(SUNOS5) || defined(DRSNX) || defined(UTS4)
+ 	    /* OS has SVR4 generic features.  Probably others also qualify.	*/
+ #   define SVR4
+diff --git a/libgc/pthread_stop_world.c b/libgc/pthread_stop_world.c
+index f93ce26b562..4a49a6d578c 100644
+--- a/libgc/pthread_stop_world.c
++++ b/libgc/pthread_stop_world.c
+@@ -336,7 +336,7 @@ void GC_push_all_stacks()
+ pthread_t GC_stopping_thread;
+ int GC_stopping_pid;
+ 
+-#ifdef HOST_ANDROID
++#ifdef USE_TKILL_ON_ANDROID
+ static
+ int android_thread_kill(pid_t tid, int sig)
+ {
+diff --git a/mono/metadata/threads.c b/mono/metadata/threads.c
+index ad9b8823f8f..3542b32b540 100644
+--- a/mono/metadata/threads.c
++++ b/mono/metadata/threads.c
+@@ -77,8 +77,12 @@ mono_native_thread_join_handle (HANDLE thread_handle, gboolean close_handle);
+ #include <zircon/syscalls.h>
+ #endif
+ 
+-#if defined(HOST_ANDROID) && !defined(TARGET_ARM64) && !defined(TARGET_AMD64)
+-#define USE_TKILL_ON_ANDROID 1
++#if defined(HOST_ANDROID) && !(__ANDROID_API__ >= 23) \
++    && ((defined(MIPS) && (CPP_WORDSZ == 32)) \
++        || defined(ARM32) || defined(I386) /* but not x32 */)
++  /* tkill() exists only on arm32/mips(32)/x86. */
++  /* NDK r11+ deprecates tkill() but keeps it for Mono clients. */
++# define USE_TKILL_ON_ANDROID
+ #endif
+ 
+ #ifdef HOST_ANDROID
+diff --git a/mono/utils/mono-threads-posix.c b/mono/utils/mono-threads-posix.c
+index 3e4bf93de5f..79c9f731fe7 100644
+--- a/mono/utils/mono-threads-posix.c
++++ b/mono/utils/mono-threads-posix.c
+@@ -31,8 +31,12 @@
+ 
+ #include <errno.h>
+ 
+-#if defined(HOST_ANDROID) && !defined(TARGET_ARM64) && !defined(TARGET_AMD64)
+-#define USE_TKILL_ON_ANDROID 1
++#if defined(HOST_ANDROID) && !(__ANDROID_API__ >= 23) \
++    && ((defined(MIPS) && (CPP_WORDSZ == 32)) \
++        || defined(ARM32) || defined(I386) /* but not x32 */)
++  /* tkill() exists only on arm32/mips(32)/x86. */
++  /* NDK r11+ deprecates tkill() but keeps it for Mono clients. */
++# define USE_TKILL_ON_ANDROID
+ #endif
+ 
+ #ifdef USE_TKILL_ON_ANDROID

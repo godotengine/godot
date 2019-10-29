@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,20 +27,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef IP_H
 #define IP_H
 
-
-#include "os/os.h"
-#include "io/ip_address.h"
+#include "core/io/ip_address.h"
+#include "core/os/os.h"
 
 struct _IP_ResolverPrivate;
 
 class IP : public Object {
-	OBJ_TYPE( IP, Object );
+	GDCLASS(IP, Object);
 	OBJ_CATEGORY("Networking");
-public:
 
+public:
 	enum ResolverStatus {
 
 		RESOLVER_STATUS_NONE,
@@ -48,47 +49,61 @@ public:
 		RESOLVER_STATUS_ERROR,
 	};
 
-	enum {
-		RESOLVER_MAX_QUERIES = 32,
-		RESOLVER_INVALID_ID=-1
+	enum Type {
+
+		TYPE_NONE = 0,
+		TYPE_IPV4 = 1,
+		TYPE_IPV6 = 2,
+		TYPE_ANY = 3,
 	};
 
+	enum {
+		RESOLVER_MAX_QUERIES = 32,
+		RESOLVER_INVALID_ID = -1
+	};
 
 	typedef int ResolverID;
 
-
 private:
-
 	_IP_ResolverPrivate *resolver;
-protected:
 
-	static IP*singleton;
+protected:
+	static IP *singleton;
 	static void _bind_methods();
 
-	virtual IP_Address _resolve_hostname(const String& p_hostname)=0;
+	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
 	Array _get_local_addresses() const;
+	Array _get_local_interfaces() const;
 
-	static IP* (*_create)();
+	static IP *(*_create)();
+
 public:
+	struct Interface_Info {
+		String name;
+		String name_friendly;
+		String index;
+		List<IP_Address> ip_addresses;
+	};
 
-
-
-	IP_Address resolve_hostname(const String& p_hostname);
+	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
-	ResolverID resolve_hostname_queue_item(const String& p_hostname);
+	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
 	IP_Address get_resolve_item_address(ResolverID p_id) const;
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const=0;
+	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
+	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 
-	static IP* get_singleton();
+	void clear_cache(const String &p_hostname = "");
 
-	static IP* create();
+	static IP *get_singleton();
+
+	static IP *create();
 
 	IP();
 	~IP();
-
-
 };
+
+VARIANT_ENUM_CAST(IP::Type);
 
 #endif // IP_H

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Theme" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+		Theme for controls.
+	</brief_description>
+	<description>
+		A theme for skinning controls. Controls can be skinned individually, but for complex applications, it's more practical to just create a global theme that defines everything. This theme can be applied to any [Control]; the Control and its children will automatically use it.
+		Theme resources can alternatively be loaded by writing them in a [code].theme[/code] file, see the documentation for more information.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/gui/gui_skinning.html</link>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Clears the [Color] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="clear_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Clears the constant at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="clear_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Clears the [Font] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="clear_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Clears the icon at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="clear_stylebox">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Clears [StyleBox] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="copy_default_theme">
+			<return type="void">
+			</return>
+			<description>
+				Sets the Theme's values to a copy of the default theme values.
+			</description>
+		</method>
+		<method name="copy_theme">
+			<return type="void">
+			</return>
+			<argument index="0" name="other" type="Theme">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns the [Color] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_color_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_constant" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns the constant at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_constant_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns the [Font] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_font_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns the icon [Texture] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_icon_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_stylebox" qualifiers="const">
+			<return type="StyleBox">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns the icon [StyleBox] at [code]name[/code] if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_stylebox_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the [StyleBox]s as a [PoolStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_stylebox_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns all the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="get_type_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns all the types in [code]type[/code] as a [PoolStringArray] for use in any of the get_* functions, if the Theme has [code]type[/code].
+			</description>
+		</method>
+		<method name="has_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="has_constant" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if constant with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="has_font" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="has_icon" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="has_stylebox" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+				Sets the Theme's [Color] to [code]color[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="set_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="constant" type="int">
+			</argument>
+			<description>
+				Sets the Theme's constant to [code]constant[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="set_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="font" type="Font">
+			</argument>
+			<description>
+				Sets the Theme's [Font] to [code]font[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="texture" type="Texture">
+			</argument>
+			<description>
+				Sets the Theme's icon [Texture] to [code]texture[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+		<method name="set_stylebox">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="texture" type="StyleBox">
+			</argument>
+			<description>
+				Sets Theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if the Theme does not have [code]type[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
+			The theme's default font.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,38 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef TRANSLATION_H
 #define TRANSLATION_H
 
-#include "resource.h"
-
+#include "core/resource.h"
 
 class Translation : public Resource {
 
-
-	OBJ_TYPE( Translation, Resource );
-	OBJ_SAVE_TYPE( Translation );
-	RES_BASE_EXTENSION("xl");
+	GDCLASS(Translation, Resource);
+	OBJ_SAVE_TYPE(Translation);
+	RES_BASE_EXTENSION("translation");
 
 	String locale;
 	Map<StringName, StringName> translation_map;
 
-	DVector<String> _get_message_list() const;
+	PoolVector<String> _get_message_list() const;
 
-	DVector<String> _get_messages() const;
-	void _set_messages(const DVector<String>& p_messages);
+	PoolVector<String> _get_messages() const;
+	void _set_messages(const PoolVector<String> &p_messages);
+
 protected:
 	static void _bind_methods();
 
 public:
-
-
-	void set_locale(const String& p_locale);
+	void set_locale(const String &p_locale);
 	_FORCE_INLINE_ String get_locale() const { return locale; }
 
-	void add_message( const StringName& p_src_text, const StringName& p_xlated_text );
-	virtual StringName get_message(const StringName& p_src_text) const; //overridable for other implementations
-	void erase_message(const StringName& p_src_text);
+	void add_message(const StringName &p_src_text, const StringName &p_xlated_text);
+	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
+	void erase_message(const StringName &p_src_text);
 
 	void get_message_list(List<StringName> *r_messages) const;
 	int get_message_count() const;
@@ -65,42 +64,50 @@ public:
 	Translation();
 };
 
-
 class TranslationServer : public Object {
 
-	OBJ_TYPE(TranslationServer, Object);
+	GDCLASS(TranslationServer, Object);
 
 	String locale;
 	String fallback;
 
+	Set<Ref<Translation> > translations;
+	Ref<Translation> tool_translation;
 
-	Set< Ref<Translation> > translations;
+	Map<String, String> locale_name_map;
 
 	bool enabled;
 
 	static TranslationServer *singleton;
-	bool _load_translations(const String& p_from);
+	bool _load_translations(const String &p_from);
 
 	static void _bind_methods();
-public:
 
+public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
-	//yes, portuguese is supported!
-
-	void set_enabled(bool p_enabled) { enabled=p_enabled; }
+	void set_enabled(bool p_enabled) { enabled = p_enabled; }
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
 
-	void set_locale(const String& p_locale);
+	void set_locale(const String &p_locale);
 	String get_locale() const;
+
+	String get_locale_name(const String &p_locale) const;
+
+	Array get_loaded_locales() const;
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);
 
-	StringName translate(const StringName& p_message) const;
+	StringName translate(const StringName &p_message) const;
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
+	static bool is_locale_valid(const String &p_locale);
+	static String standardize_locale(const String &p_locale);
+
+	void set_tool_translation(const Ref<Translation> &p_translation);
+	StringName tool_translate(const StringName &p_message) const;
 
 	void setup();
 

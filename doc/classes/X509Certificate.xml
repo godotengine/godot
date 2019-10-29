@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="X509Certificate" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+		An X509 certificate (e.g. for SSL).
+	</brief_description>
+	<description>
+		The X509Certificate class represents an X509 certificate. Certificates can be loaded and saved like any other [Resource].
+		They can be used as the server certificate in [method StreamPeerSSL.accept_stream] (along with the proper [CryptoKey]), and to specify the only certificate that should be accepted when connecting to an SSL server via [method StreamPeerSSL.connect_to_stream].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Loads a certificate from [code]path[/code] ("*.crt" file).
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Saves a certificate to the given [code]path[/code] (should be a "*.crt" file).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

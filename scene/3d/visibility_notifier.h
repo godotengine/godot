@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef VISIBILITY_NOTIFIER_H
 #define VISIBILITY_NOTIFIER_H
 
@@ -34,39 +36,36 @@
 class Camera;
 class VisibilityNotifier : public Spatial {
 
-	OBJ_TYPE(VisibilityNotifier,Spatial);
+	GDCLASS(VisibilityNotifier, Spatial);
 
-	Set<Camera*> cameras;
+	Set<Camera *> cameras;
 
 	AABB aabb;
 
 protected:
-
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
-friend class SpatialIndexer;
+	friend struct SpatialIndexer;
 
-	void _enter_camera(Camera* p_camera);
-	void _exit_camera(Camera* p_camera);
+	void _enter_camera(Camera *p_camera);
+	void _exit_camera(Camera *p_camera);
 
 public:
-
-	void set_aabb(const AABB& p_aabb);
+	void set_aabb(const AABB &p_aabb);
 	AABB get_aabb() const;
 	bool is_on_screen() const;
 
 	VisibilityNotifier();
 };
 
-
 class VisibilityEnabler : public VisibilityNotifier {
 
-	OBJ_TYPE(VisibilityEnabler,VisibilityNotifier);
-public:
+	GDCLASS(VisibilityEnabler, VisibilityNotifier);
 
+public:
 	enum Enabler {
 		ENABLER_PAUSE_ANIMATIONS,
 		ENABLER_FREEZE_BODIES,
@@ -74,33 +73,29 @@ public:
 	};
 
 protected:
-
 	virtual void _screen_enter();
 	virtual void _screen_exit();
 
 	bool visible;
 
-	void _find_nodes(Node* p_node);
+	void _find_nodes(Node *p_node);
 
-	Map<Node*,Variant> nodes;
-	void _node_removed(Node* p_node);
+	Map<Node *, Variant> nodes;
+	void _node_removed(Node *p_node);
 	bool enabler[ENABLER_MAX];
 
-	void _change_node_state(Node* p_node,bool p_enabled);
+	void _change_node_state(Node *p_node, bool p_enabled);
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void set_enabler(Enabler p_enabler,bool p_enable);
+	void set_enabler(Enabler p_enabler, bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
 
 	VisibilityEnabler();
-
 };
 
 VARIANT_ENUM_CAST(VisibilityEnabler::Enabler);
-
 
 #endif // VISIBILITY_NOTIFIER_H

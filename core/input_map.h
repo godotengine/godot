@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,52 +27,63 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
-
-#include "object.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
 
 class InputMap : public Object {
 
-	OBJ_TYPE( InputMap, Object );
-	static InputMap *singleton;
+	GDCLASS(InputMap, Object);
+
+public:
+	/**
+	* A special value used to signify that a given Action can be triggered by any device
+	*/
+	static int ALL_DEVICES;
 
 	struct Action {
 		int id;
-		List<InputEvent> inputs;
+		float deadzone;
+		List<Ref<InputEvent> > inputs;
 	};
+
+private:
+	static InputMap *singleton;
+
 	mutable Map<StringName, Action> input_map;
-	mutable Map<int,StringName> input_id_map;
 
-	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
+	List<Ref<InputEvent> >::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = NULL, float *p_strength = NULL) const;
 
-	Array _get_action_list(const StringName& p_action);
+	Array _get_action_list(const StringName &p_action);
+	Array _get_actions();
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
+	bool has_action(const StringName &p_action) const;
+	List<StringName> get_actions() const;
+	void add_action(const StringName &p_action, float p_deadzone = 0.5);
+	void erase_action(const StringName &p_action);
 
-	bool has_action(const StringName& p_action) const;
-	int get_action_id(const StringName& p_action) const;
-	StringName get_action_from_id(int p_id) const;
-	void add_action(const StringName& p_action);
-	void erase_action(const StringName& p_action);
+	void action_set_deadzone(const StringName &p_action, float p_deadzone);
+	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void action_erase_events(const StringName &p_action);
 
-	void action_add_event(const StringName& p_action,const InputEvent& p_event);
-	bool action_has_event(const StringName& p_action,const InputEvent& p_event);
-	void action_erase_event(const StringName& p_action,const InputEvent& p_event);
+	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
+	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
+	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed = NULL, float *p_strength = NULL) const;
 
-	const List<InputEvent> *get_action_list(const StringName& p_action);
-	bool event_is_action(const InputEvent& p_event, const StringName& p_action) const;
-	bool event_is_joy_motion_action_pressed(const InputEvent& p_event) const;
-
-
+	const Map<StringName, Action> &get_action_map() const;
 	void load_from_globals();
+	void load_default();
 
 	InputMap();
 };

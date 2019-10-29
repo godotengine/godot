@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,24 +27,29 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef RAY_SHAPE_H
 #define RAY_SHAPE_H
 #include "scene/resources/shape.h"
 
 class RayShape : public Shape {
 
-	OBJ_TYPE(RayShape,Shape);
+	GDCLASS(RayShape, Shape);
 	float length;
+	bool slips_on_slope;
 
 protected:
-
 	static void _bind_methods();
 	virtual void _update_shape();
-	virtual Vector<Vector3> _gen_debug_mesh_lines();
-public:
 
+public:
 	void set_length(float p_length);
 	float get_length() const;
+
+	void set_slips_on_slope(bool p_active);
+	bool get_slips_on_slope() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines();
 
 	RayShape();
 };

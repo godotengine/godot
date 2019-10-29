@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,42 +27,38 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef VIDEO_PLAYER_H
 #define VIDEO_PLAYER_H
 
-#include "scene/resources/video_stream.h"
 #include "scene/gui/control.h"
+#include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
+#include "servers/audio_server.h"
 
 class VideoPlayer : public Control {
 
-	OBJ_TYPE(VideoPlayer,Control);
+	GDCLASS(VideoPlayer, Control);
 
-	struct InternalStream : public AudioServer::AudioStream {
-		VideoPlayer *player;
-		virtual int get_channel_count() const;
-		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
-		virtual bool mix(int32_t *p_buffer,int p_frames);
-		virtual void update();
+	struct Output {
+
+		AudioFrame vol;
+		int bus_index;
+		Viewport *viewport; //pointer only used for reference to previous mix
 	};
-
-
-	InternalStream internal_stream;
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
 
 	int sp_get_channel_count() const;
-	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer,int p_frames);
-	void sp_update();
-
+	bool mix(AudioFrame *p_buffer, int p_frames);
 
 	RID stream_rid;
 
 	Ref<ImageTexture> texture;
-	Image last_frame;
 
 	AudioRBResampler resampler;
+	Vector<AudioFrame> mix_buffer;
+	int wait_resampler, wait_resampler_limit;
 
 	bool paused;
 	bool autoplay;
@@ -70,25 +67,26 @@ class VideoPlayer : public Control {
 	bool expand;
 	bool loops;
 	int buffering_ms;
-    int server_mix_rate;
-    int audio_track;
+	int audio_track;
+	int bus_index;
 
-	static int _audio_mix_callback(void* p_udata,const int16_t *p_data,int p_frames);
+	StringName bus;
 
+	void _mix_audio();
+	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
+	static void _mix_audios(void *p_self);
 
 protected:
-
 	static void _bind_methods();
 	void _notification(int p_notification);
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-
 	Size2 get_minimum_size() const;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
-
-	Ref<Texture> get_video_texture();
+	Ref<Texture> get_video_texture() const;
 
 	void set_stream(const Ref<VideoStream> &p_stream);
 	Ref<VideoStream> get_stream() const;
@@ -107,9 +105,10 @@ public:
 	float get_volume_db() const;
 
 	String get_stream_name() const;
-	float get_stream_pos() const;
+	float get_stream_position() const;
+	void set_stream_position(float p_position);
 
-	void set_autoplay(bool p_vol);
+	void set_autoplay(bool p_enable);
 	bool has_autoplay() const;
 
 	void set_audio_track(int p_track);
@@ -118,8 +117,11 @@ public:
 	void set_buffering_msec(int p_msec);
 	int get_buffering_msec() const;
 
+	void set_bus(const StringName &p_bus);
+	StringName get_bus() const;
+
 	VideoPlayer();
 	~VideoPlayer();
 };
 
-#endif
+#endif // VIDEO_PLAYER_H

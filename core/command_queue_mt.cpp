@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "command_queue_mt.h"
-#include "os/os.h"
+
+#include "core/os/os.h"
 
 void CommandQueueMT::lock() {
 
@@ -47,22 +50,24 @@ void CommandQueueMT::wait_for_flush() {
 	OS::get_singleton()->delay_usec(1000);
 }
 
-CommandQueueMT::SyncSemaphore* CommandQueueMT::_alloc_sync_sem() {
+CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
-	int idx=-1;
+	int idx = -1;
 
-	while(true) {
+	while (true) {
 
-		for(int i=0;i<SYNC_SEMAPHORES;i++) {
+		lock();
+		for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 			if (!sync_sems[i].in_use) {
-				sync_sems[i].in_use=true;
-				idx=i;
+				sync_sems[i].in_use = true;
+				idx = i;
 				break;
 			}
 		}
+		unlock();
 
-		if (idx==-1) {
+		if (idx == -1) {
 			wait_for_flush();
 		} else {
 			break;
@@ -72,36 +77,57 @@ CommandQueueMT::SyncSemaphore* CommandQueueMT::_alloc_sync_sem() {
 	return &sync_sems[idx];
 }
 
+bool CommandQueueMT::dealloc_one() {
+tryagain:
+	if (dealloc_ptr == write_ptr) {
+		// The queue is empty
+		return false;
+	}
 
-CommandQueueMT::CommandQueueMT(bool p_sync){
+	uint32_t size = *(uint32_t *)&command_mem[dealloc_ptr];
 
-	read_ptr=0;
-	write_ptr=0;	
+	if (size == 0) {
+		// End of command buffer wrap down
+		dealloc_ptr = 0;
+		goto tryagain;
+	}
+
+	if (size & 1) {
+		// Still used, nothing can be deallocated
+		return false;
+	}
+
+	dealloc_ptr += (size >> 1) + 8;
+	return true;
+}
+
+CommandQueueMT::CommandQueueMT(bool p_sync) {
+
+	read_ptr = 0;
+	write_ptr = 0;
+	dealloc_ptr = 0;
 	mutex = Mutex::create();
+	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
 
-	for(int i=0;i<SYNC_SEMAPHORES;i++) {
+	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
-		sync_sems[i].sem=Semaphore::create();
-		sync_sems[i].in_use=false;
-
-
+		sync_sems[i].sem = Semaphore::create();
+		sync_sems[i].in_use = false;
 	}
 	if (p_sync)
 		sync = Semaphore::create();
 	else
-		sync=NULL;
+		sync = NULL;
 }
-
 
 CommandQueueMT::~CommandQueueMT() {
 
 	if (sync)
 		memdelete(sync);
 	memdelete(mutex);
-	for(int i=0;i<SYNC_SEMAPHORES;i++) {
+	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 		memdelete(sync_sems[i].sem);
 	}
+	memfree(command_mem);
 }
-
-

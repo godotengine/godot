@@ -1,37 +1,31 @@
-#include "tools/editor/editor_import_export.h"
-
-class EditorExportPlatformWindows : public EditorExportPlatformPC {
-	OBJ_TYPE( EditorExportPlatformWindows,EditorExportPlatformPC );
-	
-private:
-	String icon_ico;
-	String icon_png;
-	bool icon16;
-	bool icon32;
-	bool icon48;
-	bool icon64;
-	bool icon128;
-	bool icon256;
-	String company_name;
-	String file_description;
-	String product_name;
-	String legal_copyright;
-	String version_text;
-	int version_major;
-	int version_minor;
-	bool set_godot_version;
-	void store_16(DVector<uint8_t>& vector, uint16_t value); ///< store 16 bits uint 
-	void store_32(DVector<uint8_t>& vector, uint32_t value); ///< store 32 bits uint 
-	
-protected:
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-	
-public:
-	Error export_project(const String& p_path, bool p_debug,int p_flags=0);
-	EditorExportPlatformWindows();
-};
+/*************************************************************************/
+/*  export.h                                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 void register_windows_exporter();
-

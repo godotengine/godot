@@ -1,0 +1,12 @@
+ext.versions = [
+        androidGradlePlugin : '3.4.2',
+        compileSdk : 28,
+        minSdk : 18,
+        targetSdk : 28,
+        buildTools : '28.0.3',
+
+]
+
+ext.libraries = [
+        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin"
+]

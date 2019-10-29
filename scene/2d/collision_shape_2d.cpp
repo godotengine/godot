@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,95 +27,81 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "collision_shape_2d.h"
+
 #include "collision_object_2d.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/shape_line_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
+#include "core/engine.h"
 #include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
-
-
-void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
-
-	if (unparenting)
-		return;
-
-	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
-	ERR_FAIL_COND(!co);
-	update_shape_index=co->get_shape_count();
-	co->add_shape(shape,get_transform());
-	if (trigger)
-		co->set_shape_as_trigger(co->get_shape_count()-1,true);
-
-
-}
+#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/line_shape_2d.h"
+#include "scene/resources/rectangle_shape_2d.h"
+#include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 
 	update();
-	_update_parent();
 }
 
-void CollisionShape2D::_update_parent() {
+void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 
-
-	Node *parent = get_parent();
-	if (!parent)
+	parent->shape_owner_set_transform(owner_id, get_transform());
+	if (p_xform_only)
 		return;
-	CollisionObject2D *co = parent->cast_to<CollisionObject2D>();
-	if (!co)
-		return;
-	co->_update_shapes_from_children();
+	parent->shape_owner_set_disabled(owner_id, disabled);
+	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
 void CollisionShape2D::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
-		case NOTIFICATION_ENTER_TREE: {
-			unparenting=false;
-			can_update_body=get_tree()->is_editor_hint();
-			if (!get_tree()->is_editor_hint()) {
+		case NOTIFICATION_PARENTED: {
+
+			parent = Object::cast_to<CollisionObject2D>(get_parent());
+			if (parent) {
+				owner_id = parent->create_shape_owner(this);
+				if (shape.is_valid()) {
+					parent->shape_owner_add_shape(owner_id, shape);
+				}
+				_update_in_shape_owner();
+			}
+
+			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
-				set_z(VS::CANVAS_ITEM_Z_MAX-1);
+				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
+			}*/
+
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+
+			if (parent) {
+				_update_in_shape_owner();
 			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
-			if (!is_inside_tree())
-				break;
-			if (can_update_body) {
-				_update_parent();
-			} else if (update_shape_index>=0){
-
-				CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
-				if (co) {
-					co->set_shape_transform(update_shape_index,get_transform());
-				}
-
+			if (parent) {
+				_update_in_shape_owner(true);
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			can_update_body=false;
+		case NOTIFICATION_UNPARENTED: {
+			if (parent) {
+				parent->remove_shape_owner(owner_id);
+			}
+			owner_id = 0;
+			parent = NULL;
 
 		} break;
-		/*
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-
-			if (!is_inside_scene())
-				break;
-			_update_parent();
-
-		} break;*/
 		case NOTIFICATION_DRAW: {
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -122,43 +109,60 @@ void CollisionShape2D::_notification(int p_what) {
 				break;
 			}
 
-			rect=Rect2();
+			rect = Rect2();
 
+			Color draw_col = get_tree()->get_debug_collisions_color();
+			if (disabled) {
+				float g = draw_col.get_v();
+				draw_col.r = g;
+				draw_col.g = g;
+				draw_col.b = g;
+			}
+			shape->draw(get_canvas_item(), draw_col);
 
+			rect = shape->get_rect();
+			rect = rect.grow(3);
 
-			Color draw_col=get_tree()->get_debug_collisions_color();
-			shape->draw(get_canvas_item(),draw_col);
+			if (one_way_collision) {
+				// Draw an arrow indicating the one-way collision direction
+				draw_col = get_tree()->get_debug_collisions_color().inverted();
+				if (disabled) {
+					draw_col = draw_col.darkened(0.25);
+				}
+				Vector2 line_to(0, 20);
+				draw_line(Vector2(), line_to, draw_col, 2, true);
+				Vector<Vector2> pts;
+				float tsize = 8;
+				pts.push_back(line_to + (Vector2(0, tsize)));
+				pts.push_back(line_to + (Vector2(0.707 * tsize, 0)));
+				pts.push_back(line_to + (Vector2(-0.707 * tsize, 0)));
+				Vector<Color> cols;
+				for (int i = 0; i < 3; i++)
+					cols.push_back(draw_col);
 
-
-			rect=shape->get_rect();
-			rect=rect.grow(3);
-
-		} break;
-		case NOTIFICATION_UNPARENTED: {
-			unparenting = true;
-			_update_parent();
+				draw_primitive(pts, cols, Vector<Vector2>());
+			}
 		} break;
 	}
-
 }
 
-void CollisionShape2D::set_shape(const Ref<Shape2D>& p_shape) {
+void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed",this,"_shape_changed");
-	shape=p_shape;
+		shape->disconnect("changed", this, "_shape_changed");
+	shape = p_shape;
 	update();
-	if (is_inside_tree() && can_update_body)
-		_update_parent();
-	if (is_inside_tree() && !can_update_body && update_shape_index>=0) {
-		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
-		if (co) {
-			co->set_shape(update_shape_index,p_shape);
+	if (parent) {
+		parent->shape_owner_clear_shapes(owner_id);
+		if (shape.is_valid()) {
+			parent->shape_owner_add_shape(owner_id, shape);
 		}
 	}
-	if (shape.is_valid())
-		shape->connect("changed",this,"_shape_changed");
 
+	if (shape.is_valid())
+		shape->connect("changed", this, "_shape_changed");
+
+	update_configuration_warning();
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
@@ -166,68 +170,88 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 	return shape;
 }
 
-Rect2 CollisionShape2D::get_item_rect() const {
+bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return rect;
+	if (!shape.is_valid())
+		return false;
+
+	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-void CollisionShape2D::set_trigger(bool p_trigger) {
+String CollisionShape2D::get_configuration_warning() const {
 
-	trigger=p_trigger;
-	if (can_update_body) {
-		_update_parent();
-	} else if (is_inside_tree() && update_shape_index>=0){
-		CollisionObject2D *co = get_parent()->cast_to<CollisionObject2D>();
-		if (co) {
-			co->set_shape_as_trigger(update_shape_index,p_trigger);
-		}
+	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
+		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+	}
+
+	if (!shape.is_valid()) {
+		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+	}
+
+	return String();
+}
+
+void CollisionShape2D::set_disabled(bool p_disabled) {
+	disabled = p_disabled;
+	update();
+	if (parent) {
+		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
 }
 
-bool CollisionShape2D::is_trigger() const{
-
-	return trigger;
+bool CollisionShape2D::is_disabled() const {
+	return disabled;
 }
 
-
-void CollisionShape2D::_set_update_shape_index(int p_index) {
-
-
-	update_shape_index=p_index;
+void CollisionShape2D::set_one_way_collision(bool p_enable) {
+	one_way_collision = p_enable;
+	update();
+	if (parent) {
+		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
+	}
 }
 
-int CollisionShape2D::_get_update_shape_index() const{
+bool CollisionShape2D::is_one_way_collision_enabled() const {
 
-	return update_shape_index;
+	return one_way_collision;
 }
 
+void CollisionShape2D::set_one_way_collision_margin(float p_margin) {
+	one_way_collision_margin = p_margin;
+	if (parent) {
+		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	}
+}
+
+float CollisionShape2D::get_one_way_collision_margin() const {
+	return one_way_collision_margin;
+}
 
 void CollisionShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_shape","shape"),&CollisionShape2D::set_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape"),&CollisionShape2D::get_shape);
-	ObjectTypeDB::bind_method(_MD("_shape_changed"),&CollisionShape2D::_shape_changed);
-	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape2D::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_trigger","enable"),&CollisionShape2D::set_trigger);
-	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape2D::is_trigger);
+	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
+	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionShape2D::set_disabled);
+	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);
+	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape2D::_shape_changed);
 
-	ObjectTypeDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
-	ObjectTypeDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
-
-	ObjectTypeDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
-
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
-
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 }
 
 CollisionShape2D::CollisionShape2D() {
 
-	rect=Rect2(-Point2(10,10),Point2(20,20));
+	rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	set_notify_local_transform(true);
-	trigger=false;
-	unparenting = false;
-	can_update_body = false;
-	update_shape_index=-1;
+	owner_id = 0;
+	parent = NULL;
+	disabled = false;
+	one_way_collision = false;
+	one_way_collision_margin = 1.0;
 }

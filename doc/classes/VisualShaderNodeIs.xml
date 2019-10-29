@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeIs" inherits="VisualShaderNode" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, 0.0 ]" />
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIs.Function" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_IS_INF" value="0" enum="Function">
+		</constant>
+		<constant name="FUNC_IS_NAN" value="1" enum="Function">
+		</constant>
+	</constants>
+</class>

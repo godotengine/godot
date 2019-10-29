@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,12 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef AREA_PAIR_SW_H
 #define AREA_PAIR_SW_H
 
-#include "constraint_sw.h"
-#include "body_sw.h"
 #include "area_sw.h"
+#include "body_sw.h"
+#include "constraint_sw.h"
 
 class AreaPairSW : public ConstraintSW {
 
@@ -40,15 +42,14 @@ class AreaPairSW : public ConstraintSW {
 	int body_shape;
 	int area_shape;
 	bool colliding;
+
 public:
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
-	bool setup(float p_step);
-	void solve(float p_step);
-
-	AreaPairSW(BodySW *p_body,int p_body_shape, AreaSW *p_area,int p_area_shape);
+	AreaPairSW(BodySW *p_body, int p_body_shape, AreaSW *p_area, int p_area_shape);
 	~AreaPairSW();
 };
-
 
 class Area2PairSW : public ConstraintSW {
 
@@ -57,15 +58,13 @@ class Area2PairSW : public ConstraintSW {
 	int shape_a;
 	int shape_b;
 	bool colliding;
+
 public:
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
-	bool setup(float p_step);
-	void solve(float p_step);
-
-	Area2PairSW(AreaSW *p_area_a,int p_shape_a, AreaSW *p_area_b,int p_shape_b);
+	Area2PairSW(AreaSW *p_area_a, int p_shape_a, AreaSW *p_area_b, int p_shape_b);
 	~Area2PairSW();
 };
 
-
 #endif // AREA_PAIR__SW_H
-

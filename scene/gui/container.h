@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
@@ -33,13 +35,13 @@
 
 class Container : public Control {
 
-	OBJ_TYPE(Container,Control);
+	GDCLASS(Container, Control);
 
 	bool pending_sort;
 	void _sort_children();
 	void _child_minsize_changed();
-protected:
 
+protected:
 	void queue_sort();
 	virtual void add_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
@@ -47,12 +49,15 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
 	enum {
-		NOTIFICATION_SORT_CHILDREN=50
+		NOTIFICATION_SORT_CHILDREN = 50
 	};
 
-	void fit_child_in_rect(Control *p_child,const Rect2& p_rect);
+	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+
+	virtual String get_configuration_warning() const;
 
 	Container();
 };

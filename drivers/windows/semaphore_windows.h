@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,36 +27,31 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SEMAPHORE_WINDOWS_H
 #define SEMAPHORE_WINDOWS_H
 
-
-
-#include "os/semaphore.h"
+#include "core/os/semaphore.h"
 
 #ifdef WINDOWS_ENABLED
 
 #include <windows.h>
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class SemaphoreWindows : public Semaphore {
 
-	mutable HANDLE semaphore; 
+	mutable HANDLE semaphore;
 
 	static Semaphore *create_semaphore_windows();
 
 public:
-
 	virtual Error wait();
-	virtual Error post(); 
+	virtual Error post();
 	virtual int get() const;
 
 	static void make_default();
 	SemaphoreWindows();
-	
-	~SemaphoreWindows();
 
+	~SemaphoreWindows();
 };
 
 #endif

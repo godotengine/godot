@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,37 +27,34 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "mutex.h"
-#include "error_macros.h"
+
+#include "core/error_macros.h"
+
 #include <stddef.h>
 
-
-
-Mutex* (*Mutex::create_func)(bool)=0;
+Mutex *(*Mutex::create_func)(bool) = 0;
 
 Mutex *Mutex::create(bool p_recursive) {
 
-	ERR_FAIL_COND_V( !create_func, 0 );
+	ERR_FAIL_COND_V(!create_func, 0);
 
 	return create_func(p_recursive);
 }
 
-
 Mutex::~Mutex() {
-
-
 }
 
-Mutex *_global_mutex=NULL;;
+Mutex *_global_mutex = NULL;
 
 void _global_lock() {
-	
+
 	if (_global_mutex)
 		_global_mutex->lock();
 }
 void _global_unlock() {
-	
-	if (_global_mutex)
-		_global_mutex->unlock();	
-}
 
+	if (_global_mutex)
+		_global_mutex->unlock();
+}

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,34 +27,40 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef MENU_BUTTON_H
 #define MENU_BUTTON_H
 
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "scene/gui/popup_menu.h"
+
 class MenuButton : public Button {
-	
-	OBJ_TYPE( MenuButton, Button );
+
+	GDCLASS(MenuButton, Button);
 
 	bool clicked;
+	bool switch_on_hover;
+	bool disable_shortcuts;
 	PopupMenu *popup;
-	virtual void pressed();	
 
-	void _unhandled_key_input(InputEvent p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 	Array _get_items() const;
-	void _set_items(const Array& p_items);
+	void _set_items(const Array &p_items);
 
-	void _input_event(InputEvent p_event);
-protected:	
-	
+	void _gui_input(Ref<InputEvent> p_event);
 
-	static void _bind_methods();		
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
 public:
-	
-	PopupMenu *get_popup();
+	virtual void pressed();
+
+	PopupMenu *get_popup() const;
+	void set_switch_on_hover(bool p_enabled);
+	bool is_switch_on_hover();
+	void set_disable_shortcuts(bool p_disabled);
+
 	MenuButton();
 	~MenuButton();
 };

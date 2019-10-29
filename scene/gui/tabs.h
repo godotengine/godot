@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef TABS_H
 #define TABS_H
 
@@ -33,14 +35,15 @@
 
 class Tabs : public Control {
 
-	OBJ_TYPE( Tabs, Control );
-public:
+	GDCLASS(Tabs, Control);
 
+public:
 	enum TabAlign {
 
 		ALIGN_LEFT,
 		ALIGN_CENTER,
-		ALIGN_RIGHT
+		ALIGN_RIGHT,
+		ALIGN_MAX
 	};
 
 	enum CloseButtonDisplayPolicy {
@@ -48,86 +51,125 @@ public:
 		CLOSE_BUTTON_SHOW_NEVER,
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
 		CLOSE_BUTTON_SHOW_ALWAYS,
+		CLOSE_BUTTON_MAX
 	};
+
 private:
-
-
 	struct Tab {
 
 		String text;
+		String xl_text;
 		Ref<Texture> icon;
 		int ofs_cache;
+		bool disabled;
 		int size_cache;
+		int size_text;
 		int x_cache;
 		int x_size_cache;
 
 		Ref<Texture> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
-
 	};
-
 
 	int offset;
 	int max_drawn_tab;
-	int hilite_arrow;
+	int highlight_arrow;
 	bool buttons_visible;
 	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
-	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
 	TabAlign tab_align;
 	int rb_hover;
 	bool rb_pressing;
 
+	bool select_with_rmb;
+
 	int cb_hover;
 	bool cb_pressing;
 	CloseButtonDisplayPolicy cb_displaypolicy;
 
-	int hover;	// hovered tab
+	int hover; // Hovered tab.
+	int min_width;
+	bool scrolling_enabled;
+	bool drag_to_rearrange_enabled;
+	int tabs_rearrange_group;
 
 	int get_tab_width(int p_idx) const;
+	void _ensure_no_over_offset();
+
+	void _update_hover();
+	void _update_cache();
+
+	void _on_mouse_exited();
 
 protected:
-
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	Variant get_drag_data(const Point2 &p_point);
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
+	void drop_data(const Point2 &p_point, const Variant &p_data);
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+
 public:
+	void add_tab(const String &p_str = "", const Ref<Texture> &p_icon = Ref<Texture>());
 
-	void add_tab(const String& p_str="",const Ref<Texture>& p_icon=Ref<Texture>());
-
-	void set_tab_title(int p_tab,const String& p_title);
+	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
+	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
-	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
+	void set_tab_disabled(int p_tab, bool p_disabled);
+	bool get_tab_disabled(int p_tab) const;
+
+	void set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
+	void move_tab(int from, int to);
+
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
+	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_hovered_tab() const;
+
+	int get_tab_offset() const;
+	bool get_offset_buttons_visible() const;
 
 	void remove_tab(int p_idx);
 
 	void clear_tabs();
 
-	void ensure_tab_visible(int p_idx);
+	void set_scrolling_enabled(bool p_enabled);
+	bool get_scrolling_enabled() const;
 
+	void set_drag_to_rearrange_enabled(bool p_enabled);
+	bool get_drag_to_rearrange_enabled() const;
+	void set_tabs_rearrange_group(int p_group_id);
+	int get_tabs_rearrange_group() const;
+
+	void set_select_with_rmb(bool p_enabled);
+	bool get_select_with_rmb() const;
+
+	void ensure_tab_visible(int p_idx);
+	void set_min_width(int p_width);
+
+	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const;
 
 	Tabs();
 };
 
 VARIANT_ENUM_CAST(Tabs::TabAlign);
+VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
 
 #endif // TABS_H

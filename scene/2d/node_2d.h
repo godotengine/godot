@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef NODE2D_H
 #define NODE2D_H
 
@@ -33,77 +35,85 @@
 
 class Node2D : public CanvasItem {
 
-	OBJ_TYPE(Node2D, CanvasItem );
+	GDCLASS(Node2D, CanvasItem);
 
 	Point2 pos;
 	float angle;
 	Size2 _scale;
-	int z;
+	int z_index;
 	bool z_relative;
 
-	Matrix32 _mat;
+	Transform2D _mat;
 
 	bool _xform_dirty;
 
 	void _update_transform();
 
-	void _set_rotd(float p_angle);
-	float _get_rotd() const;
-
 	void _update_xform_values();
 
 protected:
-
-
-	void _notification(int p_what);
-
 	static void _bind_methods();
+
 public:
+	virtual Dictionary _edit_get_state() const;
+	virtual void _edit_set_state(const Dictionary &p_state);
 
-	virtual Variant edit_get_state() const;
-	virtual void edit_set_state(const Variant& p_state);
-	virtual void edit_set_rect(const Rect2& p_edit_rect);
-	virtual void edit_rotate(float p_rot);
-	virtual void edit_set_pivot(const Point2& p_pivot);
-	virtual Point2 edit_get_pivot() const;
-	virtual bool edit_has_pivot() const;
+	virtual void _edit_set_position(const Point2 &p_position);
+	virtual Point2 _edit_get_position() const;
 
-	void set_pos(const Point2& p_pos);
-	void set_rot(float p_angle);
-	void set_scale(const Size2& p_scale);
+	virtual void _edit_set_scale(const Size2 &p_scale);
+	virtual Size2 _edit_get_scale() const;
+
+	virtual void _edit_set_rotation(float p_rotation);
+	virtual float _edit_get_rotation() const;
+	virtual bool _edit_use_rotation() const;
+
+	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
+
+	void set_position(const Point2 &p_pos);
+	void set_rotation(float p_radians);
+	void set_rotation_degrees(float p_degrees);
+	void set_scale(const Size2 &p_scale);
 
 	void rotate(float p_radians);
-	void move_x(float p_delta,bool p_scaled=false);
-	void move_y(float p_delta,bool p_scaled=false);
-	void translate(const Vector2& p_amount);
-	void global_translate(const Vector2& p_amount);
-	void scale(const Vector2& p_amount);
+	void move_x(float p_delta, bool p_scaled = false);
+	void move_y(float p_delta, bool p_scaled = false);
+	void translate(const Vector2 &p_amount);
+	void global_translate(const Vector2 &p_amount);
+	void apply_scale(const Size2 &p_amount);
 
-	Point2 get_pos() const;
-	float get_rot() const;
+	Point2 get_position() const;
+	float get_rotation() const;
+	float get_rotation_degrees() const;
 	Size2 get_scale() const;
 
-	Point2 get_global_pos() const;
-	virtual Rect2 get_item_rect() const;
+	Point2 get_global_position() const;
+	float get_global_rotation() const;
+	float get_global_rotation_degrees() const;
+	Size2 get_global_scale() const;
 
-	void set_transform(const Matrix32& p_transform);
-	void set_global_transform(const Matrix32& p_transform);
-	void set_global_pos(const Point2& p_pos);
+	void set_transform(const Transform2D &p_transform);
+	void set_global_transform(const Transform2D &p_transform);
+	void set_global_position(const Point2 &p_pos);
+	void set_global_rotation(float p_radians);
+	void set_global_rotation_degrees(float p_degrees);
+	void set_global_scale(const Size2 &p_scale);
 
-	void set_z(int p_z);
-	int get_z() const;
+	void set_z_index(int p_z);
+	int get_z_index() const;
 
-	void look_at(const Vector2& p_pos);
-	float get_angle_to(const Vector2& p_pos) const;
+	void look_at(const Vector2 &p_pos);
+	float get_angle_to(const Vector2 &p_pos) const;
+
+	Point2 to_local(Point2 p_global) const;
+	Point2 to_global(Point2 p_local) const;
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
-	Matrix32 get_relative_transform_to_parent(const Node *p_parent) const;
+	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
-
-
-	Matrix32 get_transform() const;
+	Transform2D get_transform() const;
 
 	Node2D();
 };

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef BOX_CONTAINER_H
 #define BOX_CONTAINER_H
 
@@ -33,10 +35,9 @@
 
 class BoxContainer : public Container {
 
-	OBJ_TYPE(BoxContainer,Container);
+	GDCLASS(BoxContainer, Container);
 
 public:
-
 	enum AlignMode {
 		ALIGN_BEGIN,
 		ALIGN_CENTER,
@@ -48,44 +49,42 @@ private:
 	AlignMode align;
 
 	void _resort();
-protected:
 
+protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-public:
 
-	void add_spacer(bool p_begin=false);
+public:
+	void add_spacer(bool p_begin = false);
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;
 
 	virtual Size2 get_minimum_size() const;
 
-	BoxContainer(bool p_vertical=false);
+	BoxContainer(bool p_vertical = false);
 };
-
 
 class HBoxContainer : public BoxContainer {
 
-	OBJ_TYPE(HBoxContainer,BoxContainer);
+	GDCLASS(HBoxContainer, BoxContainer);
 
 public:
-
-	HBoxContainer() : BoxContainer(false) {}
+	HBoxContainer() :
+			BoxContainer(false) {}
 };
-
 
 class MarginContainer;
 class VBoxContainer : public BoxContainer {
 
-	OBJ_TYPE(VBoxContainer,BoxContainer);
+	GDCLASS(VBoxContainer, BoxContainer);
 
 public:
+	MarginContainer *add_margin_child(const String &p_label, Control *p_control, bool p_expand = false);
 
-	MarginContainer* add_margin_child(const String& p_label,Control *p_control,bool p_expand=false);
-
-	VBoxContainer() : BoxContainer(true) {}
+	VBoxContainer() :
+			BoxContainer(true) {}
 };
 
 VARIANT_ENUM_CAST(BoxContainer::AlignMode);

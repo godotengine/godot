@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef GAME_CENTER_ENABLED
 
 #ifndef GAME_CENTER_H
@@ -35,19 +37,20 @@
 
 class GameCenter : public Object {
 
-	OBJ_TYPE(GameCenter, Object);
+	GDCLASS(GameCenter, Object);
 
-	static GameCenter* instance;
+	static GameCenter *instance;
 	static void _bind_methods();
 
 	List<Variant> pending_events;
 
-	bool connected;
+	bool authenticated;
+
+	void return_connect_error(const char *p_error_description);
 
 public:
-
-	Error connect();
-	bool is_connected();
+	void connect();
+	bool is_authenticated();
 
 	Error post_score(Variant p_score);
 	Error award_achievement(Variant p_params);
@@ -55,18 +58,18 @@ public:
 	void request_achievements();
 	void request_achievement_descriptions();
 	Error show_game_center(Variant p_params);
+	Error request_identity_verification_signature();
 
 	void game_center_closed();
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
 
-	static GameCenter* get_singleton();
+	static GameCenter *get_singleton();
 
 	GameCenter();
 	~GameCenter();
 };
-
 
 #endif
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,21 +27,23 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "thread_safe.h"
-#include "error_macros.h"
-#include "os/memory.h"
 
-ThreadSafe::ThreadSafe() { 
+#include "core/error_macros.h"
+#include "core/os/memory.h"
 
-	mutex = Mutex::create(); 
+ThreadSafe::ThreadSafe() {
+
+	mutex = Mutex::create();
 	if (!mutex) {
-		
+
 		WARN_PRINT("THREAD_SAFE defined, but no default mutex type");
 	}
 }
 
-ThreadSafe::~ThreadSafe() { 
-	
-	if (mutex) 
-		memdelete( mutex ); 
+ThreadSafe::~ThreadSafe() {
+
+	if (mutex)
+		memdelete(mutex);
 }

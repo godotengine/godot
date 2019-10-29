@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,191 +27,178 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef RID_H
 #define RID_H
 
-
-#include "safe_refcount.h"
-#include "typedefs.h"
-#include "os/memory.h"
-#include "hash_map.h"
-#include "list.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/list.h"
+#include "core/os/memory.h"
+#include "core/safe_refcount.h"
+#include "core/set.h"
+#include "core/typedefs.h"
 
 class RID_OwnerBase;
 
-typedef uint32_t ID;
+class RID_Data {
 
-class RID {	
-friend class RID_OwnerBase;	
-	ID _id;
-	RID_OwnerBase *owner;
+	friend class RID_OwnerBase;
+
+#ifndef DEBUG_ENABLED
+	RID_OwnerBase *_owner;
+#endif
+	uint32_t _id;
+
 public:
+	_FORCE_INLINE_ uint32_t get_id() const { return _id; }
 
-	_FORCE_INLINE_ ID get_id() const { return _id; }
-	bool operator==(const RID& p_rid) const {
-	
-		return _id==p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator<(const RID& p_rid) const {
-	
-		return _id < p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator<=(const RID& p_rid) const {
-
-		return _id <= p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator>(const RID& p_rid) const {
-	
-		return _id > p_rid._id;
-	}
-	bool operator!=(const RID& p_rid) const {
-	
-		return _id!=p_rid._id;
-	}
-	_FORCE_INLINE_ bool is_valid() const { return _id>0; }
-
-	operator const void*() const {
-		return is_valid() ? this : 0;
-	};
-
-	_FORCE_INLINE_ RID() {
-		_id = 0;
-		owner=0;
-	}
+	virtual ~RID_Data();
 };
 
+class RID {
+	friend class RID_OwnerBase;
+
+	mutable RID_Data *_data;
+
+public:
+	_FORCE_INLINE_ RID_Data *get_data() const { return _data; }
+
+	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
+
+		return _data == p_rid._data;
+	}
+	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
+
+		return _data < p_rid._data;
+	}
+	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
+
+		return _data <= p_rid._data;
+	}
+	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
+
+		return _data > p_rid._data;
+	}
+	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
+
+		return _data != p_rid._data;
+	}
+	_FORCE_INLINE_ bool is_valid() const { return _data != NULL; }
+
+	_FORCE_INLINE_ uint32_t get_id() const { return _data ? _data->get_id() : 0; }
+
+	_FORCE_INLINE_ RID() {
+		_data = NULL;
+	}
+};
 
 class RID_OwnerBase {
 protected:
-friend class RID;
-	void set_id(RID& p_rid, ID p_id) const { p_rid._id=p_id; }
-	void set_ownage(RID& p_rid) const { p_rid.owner=const_cast<RID_OwnerBase*>(this); }
-	ID new_ID();
+	static SafeRefCount refcount;
+	_FORCE_INLINE_ void _set_data(RID &p_rid, RID_Data *p_data) {
+		p_rid._data = p_data;
+		refcount.ref();
+		p_data->_id = refcount.get();
+#ifndef DEBUG_ENABLED
+		p_data->_owner = this;
+#endif
+	}
+
+#ifndef DEBUG_ENABLED
+
+	_FORCE_INLINE_ bool _is_owner(const RID &p_rid) const {
+
+		return this == p_rid._data->_owner;
+	}
+
+	_FORCE_INLINE_ void _remove_owner(RID &p_rid) {
+
+		p_rid._data->_owner = NULL;
+	}
+#endif
+
 public:
-		
-	virtual bool owns(const RID& p_rid) const=0;
-	virtual void get_owned_list(List<RID> *p_owned) const=0;
+	virtual void get_owned_list(List<RID> *p_owned) = 0;
 
 	static void init_rid();
-
 	virtual ~RID_OwnerBase() {}
 };
 
-template<class T,bool thread_safe=false>
+template <class T>
 class RID_Owner : public RID_OwnerBase {
 public:
-
-	typedef void (*ReleaseNotifyFunc)(void*user,T *p_data);
-private:	
-
-	Mutex *mutex;
-	mutable HashMap<ID,T*> id_map;
-		
+#ifdef DEBUG_ENABLED
+	mutable Set<RID_Data *> id_map;
+#endif
 public:
+	_FORCE_INLINE_ RID make_rid(T *p_data) {
 
-	RID make_rid(T * p_data) {
-		
-		if (thread_safe) {
-			mutex->lock();
-		}
-		
-		ID id = new_ID();
-		id_map[id]=p_data;
 		RID rid;
-		set_id(rid,id);
-		set_ownage(rid);
-		
-		if (thread_safe) {
-			mutex->unlock();
-		}
-		
+		_set_data(rid, p_data);
+
+#ifdef DEBUG_ENABLED
+		id_map.insert(p_data);
+#endif
+
 		return rid;
 	}
-	
-	_FORCE_INLINE_ T * get(const RID& p_rid) {
-	
-		if (thread_safe) {
-			mutex->lock();
-		}
-	
-		T**elem = id_map.getptr(p_rid.get_id());
-		
-		if (thread_safe) {
-			mutex->unlock();
-		}
 
-		ERR_FAIL_COND_V(!elem,NULL);
-		
-		return *elem;
+	_FORCE_INLINE_ T *get(const RID &p_rid) {
 
-	}
-	
-	virtual bool owns(const RID& p_rid) const {
-	
-		if (thread_safe) {
-			mutex->lock();
-		}
-	
-		T**elem = id_map.getptr(p_rid.get_id());
-		
-		if (thread_safe) {
-			mutex->lock();
-		}
-		
-		return elem!=NULL;
-	}
-	
-	virtual void free(RID p_rid) { 
-	
-		if (thread_safe) {
-			mutex->lock();
-		}
-		ERR_FAIL_COND(!owns(p_rid));
-		id_map.erase(p_rid.get_id());
-	}
-	virtual void get_owned_list(List<RID> *p_owned) const {
-	
-		if (thread_safe) {
-			mutex->lock();
-		}
-	
-		const ID*id=NULL;
-		while((id=id_map.next(id))) {
-		
-			RID rid;
-			set_id(rid,*id);
-			set_ownage(rid);
-			p_owned->push_back(rid);
-		
-		}
-	
-		if (thread_safe) {
-			mutex->lock();
-		}
+#ifdef DEBUG_ENABLED
 
+		ERR_FAIL_COND_V(!p_rid.is_valid(), NULL);
+		ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
+#endif
+		return static_cast<T *>(p_rid.get_data());
 	}
-	RID_Owner() {
-	
-		if (thread_safe) {
-		
-			mutex = Mutex::create();
+
+	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
+
+#ifdef DEBUG_ENABLED
+
+		if (p_rid.get_data()) {
+			ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
 		}
-		
+#endif
+		return static_cast<T *>(p_rid.get_data());
 	}
-	
-	
-	~RID_Owner() {
-	
-		if (thread_safe) {
-		
-			memdelete(mutex);
+
+	_FORCE_INLINE_ T *getptr(const RID &p_rid) {
+
+		return static_cast<T *>(p_rid.get_data());
+	}
+
+	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
+
+		if (p_rid.get_data() == NULL)
+			return false;
+#ifdef DEBUG_ENABLED
+		return id_map.has(p_rid.get_data());
+#else
+		return _is_owner(p_rid);
+#endif
+	}
+
+	void free(RID p_rid) {
+
+#ifdef DEBUG_ENABLED
+		id_map.erase(p_rid.get_data());
+#else
+		_remove_owner(p_rid);
+#endif
+	}
+
+	void get_owned_list(List<RID> *p_owned) {
+
+#ifdef DEBUG_ENABLED
+
+		for (typename Set<RID_Data *>::Element *E = id_map.front(); E; E = E->next()) {
+			RID r;
+			_set_data(r, static_cast<T *>(E->get()));
+			p_owned->push_back(r);
 		}
+#endif
 	}
 };
-
 
 #endif

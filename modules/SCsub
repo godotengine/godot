@@ -1,21 +1,24 @@
+#!/usr/bin/env python
+
 Import('env')
 
 env_modules = env.Clone()
 
 Export('env_modules')
 
-env.modules_sources=[
-	"register_module_types.cpp",
-]
-#env.add_source_files(env.modules_sources,"*.cpp")
-Export('env')
+env.modules_sources = []
+
+env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 
 for x in env.module_list:
-	if (x in env.disabled_modules):
-		continue
-	env_modules.Append(CPPFLAGS=["-DMODULE_"+x.upper()+"_ENABLED"])
-	SConscript(x+"/SCsub")
+    if (x in env.disabled_modules):
+        continue
+    env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
+    SConscript(x + "/SCsub")
 
-lib = env_modules.Library("modules",env.modules_sources)
+if env.split_modules:
+    env.split_lib("modules", env_lib = env_modules)
+else:
+    lib = env_modules.add_library("modules", env.modules_sources)
 
-env.Prepend(LIBS=[lib])
+    env.Prepend(LIBS=[lib])

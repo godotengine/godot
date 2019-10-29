@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerBuffer" inherits="StreamPeer" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="StreamPeerBuffer">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data_array" type="PoolByteArray" setter="set_data_array" getter="get_data_array" default="PoolByteArray(  )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

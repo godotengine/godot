@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,50 +27,40 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SEPARATOR_H
 #define SEPARATOR_H
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 #include "scene/gui/control.h"
 class Separator : public Control {
 
-	OBJ_TYPE( Separator, Control );
-
+	GDCLASS(Separator, Control);
 
 protected:
-
 	Orientation orientation;
 	void _notification(int p_what);
-public:
 
-	virtual Size2 get_minimum_size() const;;
+public:
+	virtual Size2 get_minimum_size() const;
 
 	Separator();
 	~Separator();
-
 };
 
 class VSeparator : public Separator {
 
-	OBJ_TYPE( VSeparator, Separator );
+	GDCLASS(VSeparator, Separator);
 
 public:
-
 	VSeparator();
-
 };
 
 class HSeparator : public Separator {
 
-	OBJ_TYPE( HSeparator, Separator );
+	GDCLASS(HSeparator, Separator);
 
 public:
-
 	HSeparator();
-
 };
 
 #endif

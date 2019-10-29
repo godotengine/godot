@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,23 +27,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "audio_driver_media_kit.h"
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "globals.h"
+#include "core/project_settings.h"
 
-int32_t* AudioDriverMediaKit::samples_in = NULL;
+int32_t *AudioDriverMediaKit::samples_in = NULL;
 
 Error AudioDriverMediaKit::init() {
 	active = false;
 
-	mix_rate = 44100;
-	output_format = OUTPUT_STEREO;
+	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
 	media_raw_audio_format format;
@@ -54,12 +56,11 @@ Error AudioDriverMediaKit::init() {
 	format.buffer_size = buffer_size * sizeof(int32_t) * channels;
 
 	player = new BSoundPlayer(
-		&format,
-		"godot_sound_server",
-		AudioDriverMediaKit::PlayBuffer,
-		NULL,
-		this
-	);
+			&format,
+			"godot_sound_server",
+			AudioDriverMediaKit::PlayBuffer,
+			NULL,
+			this);
 
 	if (player->InitCheck() != B_OK) {
 		fprintf(stderr, "MediaKit ERR: can not create a BSoundPlayer instance\n");
@@ -72,9 +73,9 @@ Error AudioDriverMediaKit::init() {
 	return OK;
 }
 
-void AudioDriverMediaKit::PlayBuffer(void* cookie, void* buffer, size_t size, const media_raw_audio_format& format) {
-	AudioDriverMediaKit* ad = (AudioDriverMediaKit*) cookie;
-	int32_t* buf = (int32_t*) buffer;
+void AudioDriverMediaKit::PlayBuffer(void *cookie, void *buffer, size_t size, const media_raw_audio_format &format) {
+	AudioDriverMediaKit *ad = (AudioDriverMediaKit *)cookie;
+	int32_t *buf = (int32_t *)buffer;
 
 	if (!ad->active) {
 		for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
@@ -99,8 +100,8 @@ int AudioDriverMediaKit::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::OutputFormat AudioDriverMediaKit::get_output_format() const {
-	return output_format;
+AudioDriverMediaKit::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
+	return speaker_mode;
 }
 
 void AudioDriverMediaKit::lock() {
@@ -136,7 +137,6 @@ AudioDriverMediaKit::AudioDriverMediaKit() {
 }
 
 AudioDriverMediaKit::~AudioDriverMediaKit() {
-
 }
 
 #endif

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,46 +27,48 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "os_iphone.h"
+
+#include "core/ustring.h"
 #include "main/main.h"
+#include "os_iphone.h"
 
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-static OSIPhone* os = NULL;
+static OSIPhone *os = NULL;
 
 extern "C" {
-int add_path(int p_argc, char** p_args);
-int add_cmdline(int p_argc, char** p_args);
+int add_path(int p_argc, char **p_args);
+int add_cmdline(int p_argc, char **p_args);
 };
 
-int iphone_main(int, int, int, char**);
+int iphone_main(int, int, int, char **, String);
 
-int iphone_main(int width, int height, int argc, char** argv) {
+int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 
-	int len = strlen(argv[0]);
+	size_t len = strlen(argv[0]);
 
-	while (len--){
+	while (len--) {
 		if (argv[0][len] == '/') break;
 	}
 
-	if (len>=0) {
-			char path[512];
-			memcpy(path, argv[0], len>sizeof(path)?sizeof(path):len);
-			path[len]=0;
-			printf("Path: %s\n", path);
-			chdir(path);
+	if (len >= 0) {
+		char path[512];
+		memcpy(path, argv[0], len > sizeof(path) ? sizeof(path) : len);
+		path[len] = 0;
+		printf("Path: %s\n", path);
+		chdir(path);
 	}
 
 	printf("godot_iphone %s\n", argv[0]);
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(width, height);
+	os = new OSIPhone(width, height, data_dir);
 
-	char* fargv[64];
-	for (int i=0; i<argc; i++) {
+	char *fargv[64];
+	for (int i = 0; i < argc; i++) {
 		fargv[i] = argv[i];
 	};
 	fargv[argc] = NULL;
@@ -73,14 +76,13 @@ int iphone_main(int width, int height, int argc, char** argv) {
 	argc = add_cmdline(argc, fargv);
 
 	printf("os created\n");
-	Error err  = Main::setup(fargv[0], argc - 1, &fargv[1], false);
+	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
-	if (err!=OK)
+	if (err != OK)
 		return 255;
 
 	return 0;
 };
-
 
 void iphone_finish() {
 

@@ -1,39 +1,31 @@
+#!/usr/bin/env python
+
 Import('env')
 
 iphone_lib = [
-
-	'os_iphone.cpp',
-	#'rasterizer_iphone.cpp',
-	'audio_driver_iphone.cpp',
-	'sem_iphone.cpp',
-	'gl_view.mm',
-	'main.m',
-	'app_delegate.mm',
-	'view_controller.mm',
-	'game_center.mm',
-	'in_app_store.mm',
-	'icloud.mm',
-	'Appirater.m',
+    'godot_iphone.cpp',
+    'os_iphone.cpp',
+    'semaphore_iphone.cpp',
+    'gl_view.mm',
+    'main.m',
+    'app_delegate.mm',
+    'view_controller.mm',
+    'game_center.mm',
+    'in_app_store.mm',
+    'icloud.mm',
+    'ios.mm',
+    'camera_ios.mm',
 ]
 
-#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
+env_ios = env.Clone()
+ios_lib = env_ios.add_library('iphone', iphone_lib)
 
-#iphone_lib = env.Library('iphone', iphone_lib)
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = '$IPHONEPATH/usr/bin/${ios_triple}libtool'
+    else:
+        libtool = "$IPHONEPATH/usr/bin/libtool"
+    env.Execute(libtool + ' -static -o "' + lib_path + '" ' + ' '.join([('"' + lib.srcnode().abspath + '"') for lib in source]))
 
-env_ios = env.Clone();
-
-
-if env['ios_gles22_override'] == "yes":
-	env_ios.Append(CPPFLAGS=['-DGLES2_OVERRIDE'])
-
-
-if env['ios_appirater'] == "yes":
-	env_ios.Append(CPPFLAGS=['-DAPPIRATER_ENABLED'])
-
-
-obj = env_ios.Object('godot_iphone.cpp')
-
-prog = None
-prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
-action = "$IPHONEPATH/usr/bin/dsymutil "+File(prog)[0].path+" -o " + File(prog)[0].path + ".dSYM"
-env.AddPostAction(prog, action)
+combine_command = env_ios.Command('#bin/libgodot' + env_ios['LIBSUFFIX'], [ios_lib] + env_ios['LIBS'], combine_libs)

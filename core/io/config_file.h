@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,36 +27,49 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
-#include "reference.h"
-
+#include "core/ordered_hash_map.h"
+#include "core/os/file_access.h"
+#include "core/reference.h"
 
 class ConfigFile : public Reference {
 
-	OBJ_TYPE(ConfigFile,Reference);
+	GDCLASS(ConfigFile, Reference);
 
-	Map< String, Map<String, Variant> > values;
+	OrderedHashMap<String, OrderedHashMap<String, Variant> > values;
 
-	StringArray _get_sections() const;
-	StringArray _get_section_keys(const String& p_section) const;
+	PoolStringArray _get_sections() const;
+	PoolStringArray _get_section_keys(const String &p_section) const;
+	Error _internal_load(const String &p_path, FileAccess *f);
+	Error _internal_save(FileAccess *file);
+
 protected:
-
 	static void _bind_methods();
+
 public:
+	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
+	Variant get_value(const String &p_section, const String &p_key, Variant p_default = Variant()) const;
 
-	void set_value(const String& p_section, const String& p_key, const Variant& p_value);
-	Variant get_value(const String& p_section, const String& p_key, Variant p_default=Variant()) const;
-
-	bool has_section(const String& p_section) const;
-	bool has_section_key(const String& p_section,const String& p_key) const;
+	bool has_section(const String &p_section) const;
+	bool has_section_key(const String &p_section, const String &p_key) const;
 
 	void get_sections(List<String> *r_sections) const;
-	void get_section_keys(const String& p_section,List<String> *r_keys) const;
+	void get_section_keys(const String &p_section, List<String> *r_keys) const;
 
-	Error save(const String& p_path);
-	Error load(const String& p_path);
+	void erase_section(const String &p_section);
+	void erase_section_key(const String &p_section, const String &p_key);
+
+	Error save(const String &p_path);
+	Error load(const String &p_path);
+
+	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
+	Error load_encrypted_pass(const String &p_path, const String &p_pass);
+
+	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
+	Error save_encrypted_pass(const String &p_path, const String &p_pass);
 
 	ConfigFile();
 };

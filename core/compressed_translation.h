@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,26 +27,25 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef COMPRESSED_TRANSLATION_H
 #define COMPRESSED_TRANSLATION_H
 
-#include "translation.h"
+#include "core/translation.h"
 
 class PHashTranslation : public Translation {
 
-	OBJ_TYPE(PHashTranslation,Translation);
-
+	GDCLASS(PHashTranslation, Translation);
 
 	//this translation uses a sort of modified perfect hash algorithm
-	//it requieres hashing strings twice and then does a binary search,
+	//it requires hashing strings twice and then does a binary search,
 	//so it's slower, but at the same time it has an extreemly high chance
 	//of catching untranslated strings
 
 	//load/store friendly types
-	DVector<int> hash_table;
-	DVector<int> bucket_table;
-	DVector<uint8_t> strings;
-
+	PoolVector<int> hash_table;
+	PoolVector<int> bucket_table;
+	PoolVector<uint8_t> strings;
 
 	struct Bucket {
 
@@ -63,11 +63,11 @@ class PHashTranslation : public Translation {
 		Elem elem[1];
 	};
 
-	_FORCE_INLINE_ uint32_t hash( uint32_t d, const char *p_str ) const {
+	_FORCE_INLINE_ uint32_t hash(uint32_t d, const char *p_str) const {
 
-		if (d==0)
-			d=0x1000193;
-		while(*p_str) {
+		if (d == 0)
+			d = 0x1000193;
+		while (*p_str) {
 
 			d = (d * 0x1000193) ^ uint32_t(*p_str);
 			p_str++;
@@ -75,16 +75,15 @@ class PHashTranslation : public Translation {
 
 		return d;
 	}
-protected:
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
-
-	virtual StringName get_message(const StringName& p_src_text) const; //overridable for other implementations
+	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
 	void generate(const Ref<Translation> &p_from);
 
 	PHashTranslation();

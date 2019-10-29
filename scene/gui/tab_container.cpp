@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,392 +27,478 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "tab_container.h"
- 
-#include "message_queue.h"
 
-
+#include "core/message_queue.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/texture_rect.h"
 
 int TabContainer::_get_top_margin() const {
 
+	if (!tabs_visible)
+		return 0;
+
+	// Respect the minimum tab height.
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
+
+	int tab_height = MAX(MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height), tab_disabled->get_minimum_size().height);
+
+	// Font height or higher icon wins.
 	Ref<Font> font = get_font("font");
+	int content_height = font->get_height();
 
-	int h = MAX( tab_bg->get_minimum_size().height,tab_fg->get_minimum_size().height);
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
 
-//	h+=MIN( get_constant("label_valign_fg"), get_constant("label_valign_bg") );
-
-	int ch = font->get_height();;
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
+		Control *c = tabs[i];
 		if (!c->has_meta("_tab_icon"))
 			continue;
 
 		Ref<Texture> tex = c->get_meta("_tab_icon");
 		if (!tex.is_valid())
 			continue;
-		ch = MAX( ch, tex->get_size().height );
+		content_height = MAX(content_height, tex->get_size().height);
 	}
 
-	h+=ch;
-
-	return h;
-
+	return tab_height + content_height;
 }
 
+void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
+	Ref<InputEventMouseButton> mb = p_event;
 
-void TabContainer::_input_event(const InputEvent& p_event) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-	if (p_event.type==InputEvent::MOUSE_BUTTON &&
-	    p_event.mouse_button.pressed &&
-	    p_event.mouse_button.button_index==BUTTON_LEFT) {
+		Point2 pos(mb->get_position().x, mb->get_position().y);
+		Size2 size = get_size();
 
-		// clicks
-		Point2 pos( p_event.mouse_button.x, p_event.mouse_button.y );
+		// Click must be on tabs in the tab header area.
+		if (pos.x < tabs_ofs_cache || pos.y > _get_top_margin())
+			return;
 
-		int top_margin = _get_top_margin();
-		if (pos.y>top_margin)
-			return; // no click (too far down)
-
-		if (pos.x<tabs_ofs_cache)
-			return; // no click (too far left)
-
-		Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-		Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-		Ref<Font> font = get_font("font");
-		Ref<Texture> incr = get_icon("increment");
-		Ref<Texture> decr = get_icon("decrement");
+		// Handle menu button.
 		Ref<Texture> menu = get_icon("menu");
-		Ref<Texture> menu_hl = get_icon("menu_hl");
-
-		if (popup && pos.x>get_size().width-menu->get_width()) {
-
-
+		if (popup && pos.x > size.width - menu->get_width()) {
 			emit_signal("pre_popup_pressed");
-			Vector2 pp_pos = get_global_pos();
-			pp_pos.x+=get_size().width;
-			pp_pos.x-=popup->get_size().width;
-			pp_pos.y+=menu->get_height();
 
-			popup->set_global_pos( pp_pos );
-			popup->popup();;
+			Vector2 popup_pos = get_global_position();
+			popup_pos.x += size.width * get_global_transform().get_scale().x - popup->get_size().width * popup->get_global_transform().get_scale().x;
+			popup_pos.y += menu->get_height() * get_global_transform().get_scale().y;
+
+			popup->set_global_position(popup_pos);
+			popup->popup();
 			return;
 		}
-		pos.x-=tabs_ofs_cache;
 
-		int idx=0;
-		int found=-1;
-		bool rightroom=false;
+		// Do not activate tabs when tabs is empty.
+		if (get_tab_count() == 0)
+			return;
 
-		for(int i=0;i<get_child_count();i++) {
+		Vector<Control *> tabs = _get_tabs();
 
-			Control *c = get_child(i)->cast_to<Control>();
-			if (!c)
-				continue;
-			if (c->is_set_as_toplevel())
-				continue;
-
-			if (idx<tab_display_ofs) {
-				idx++;
-				continue;
-			}
-
-			if (idx>last_tab_cache) {
-				rightroom=true;
-				break;
-			}
-
-			String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
-			int tab_width=font->get_string_size(s).width;
-
-			if (c->has_meta("_tab_icon")) {
-				Ref<Texture> icon = c->get_meta("_tab_icon");
-				if (icon.is_valid()) {
-					tab_width+=icon->get_width();
-					if (s!="")
-						tab_width+=get_constant("hseparation");
-
-				}
-			}
-
-			if (idx==current) {
-
-				tab_width+=tab_fg->get_minimum_size().width;
-			} else {
-				tab_width+=tab_bg->get_minimum_size().width;
-			}
-
-			if (pos.x < tab_width) {
-
-				found=idx;
-				break;
-			}
-
-			pos.x-=tab_width;
-			idx++;
-		}
-
+		// Handle navigation buttons.
 		if (buttons_visible_cache) {
+			int popup_ofs = 0;
+			if (popup) {
+				popup_ofs = menu->get_width();
+			}
 
-			if (p_event.mouse_button.x>get_size().width-incr->get_width()) {
-				if (rightroom) {
-					tab_display_ofs+=1;
+			Ref<Texture> increment = get_icon("increment");
+			Ref<Texture> decrement = get_icon("decrement");
+			if (pos.x > size.width - increment->get_width() - popup_ofs) {
+				if (last_tab_cache < tabs.size() - 1) {
+					first_tab_cache += 1;
 					update();
 				}
-			} else if (p_event.mouse_button.x>get_size().width-incr->get_width()-decr->get_width()) {
-
-				if (tab_display_ofs>0) {
-					tab_display_ofs-=1;
+				return;
+			} else if (pos.x > size.width - increment->get_width() - decrement->get_width() - popup_ofs) {
+				if (first_tab_cache > 0) {
+					first_tab_cache -= 1;
 					update();
 				}
-
+				return;
 			}
 		}
 
-
-		if (found!=-1) {
-
-			set_current_tab(found);
+		// Activate the clicked tab.
+		pos.x -= tabs_ofs_cache;
+		for (int i = first_tab_cache; i <= last_tab_cache; i++) {
+			if (get_tab_hidden(i)) {
+				continue;
+			}
+			int tab_width = _get_tab_width(i);
+			if (pos.x < tab_width) {
+				if (!get_tab_disabled(i)) {
+					set_current_tab(i);
+				}
+				break;
+			}
+			pos.x -= tab_width;
 		}
 	}
 
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		Point2 pos(mm->get_position().x, mm->get_position().y);
+		Size2 size = get_size();
+
+		// Mouse must be on tabs in the tab header area.
+		if (pos.x < tabs_ofs_cache || pos.y > _get_top_margin()) {
+
+			if (menu_hovered || highlight_arrow > -1) {
+				menu_hovered = false;
+				highlight_arrow = -1;
+				update();
+			}
+			return;
+		}
+
+		Ref<Texture> menu = get_icon("menu");
+		if (popup) {
+
+			if (pos.x >= size.width - menu->get_width()) {
+				if (!menu_hovered) {
+					menu_hovered = true;
+					highlight_arrow = -1;
+					update();
+					return;
+				}
+			} else if (menu_hovered) {
+				menu_hovered = false;
+				update();
+			}
+
+			if (menu_hovered) {
+				return;
+			}
+		}
+
+		// Do not activate tabs when tabs is empty.
+		if ((get_tab_count() == 0 || !buttons_visible_cache) && menu_hovered) {
+			highlight_arrow = -1;
+			update();
+			return;
+		}
+
+		int popup_ofs = 0;
+		if (popup) {
+			popup_ofs = menu->get_width();
+		}
+
+		Ref<Texture> increment = get_icon("increment");
+		Ref<Texture> decrement = get_icon("decrement");
+		if (pos.x >= size.width - increment->get_width() - popup_ofs) {
+
+			if (highlight_arrow != 1) {
+				highlight_arrow = 1;
+				update();
+			}
+		} else if (pos.x >= size.width - increment->get_width() - decrement->get_width() - popup_ofs) {
+
+			if (highlight_arrow != 0) {
+				highlight_arrow = 0;
+				update();
+			}
+		} else if (highlight_arrow > -1) {
+			highlight_arrow = -1;
+			update();
+		}
+	}
 }
 
 void TabContainer::_notification(int p_what) {
 
+	switch (p_what) {
 
-	switch(p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
 
+			minimum_size_changed();
+			update();
+		} break;
+		case NOTIFICATION_RESIZED: {
 
+			Vector<Control *> tabs = _get_tabs();
+			int side_margin = get_constant("side_margin");
+			Ref<Texture> menu = get_icon("menu");
+			Ref<Texture> increment = get_icon("increment");
+			Ref<Texture> decrement = get_icon("decrement");
+			int header_width = get_size().width - side_margin * 2;
+
+			// Find the width of the header area.
+			if (popup)
+				header_width -= menu->get_width();
+			if (buttons_visible_cache)
+				header_width -= increment->get_width() + decrement->get_width();
+			if (popup || buttons_visible_cache)
+				header_width += side_margin;
+
+			// Find the width of all tabs after first_tab_cache.
+			int all_tabs_width = 0;
+			for (int i = first_tab_cache; i < tabs.size(); i++) {
+				int tab_width = _get_tab_width(i);
+				all_tabs_width += tab_width;
+			}
+
+			// Check if tabs before first_tab_cache would fit into the header area.
+			for (int i = first_tab_cache - 1; i >= 0; i--) {
+				int tab_width = _get_tab_width(i);
+
+				if (all_tabs_width + tab_width > header_width)
+					break;
+
+				all_tabs_width += tab_width;
+				first_tab_cache--;
+			}
+		} break;
 		case NOTIFICATION_DRAW: {
 
-			RID ci = get_canvas_item();
-			Ref<StyleBox> panel = get_stylebox("panel");
+			RID canvas = get_canvas_item();
 			Size2 size = get_size();
 
+			// Draw only the tab area if the header is hidden.
+			Ref<StyleBox> panel = get_stylebox("panel");
 			if (!tabs_visible) {
-
-				panel->draw(ci, Rect2( 0, 0, size.width, size.height));
+				panel->draw(canvas, Rect2(0, 0, size.width, size.height));
 				return;
 			}
 
-
-
+			Vector<Control *> tabs = _get_tabs();
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-			Ref<Texture> incr = get_icon("increment");
-			Ref<Texture> incr_hl = get_icon("increment_hilite");
-			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> decr_hl = get_icon("decrement_hilite");			
+			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
+			Ref<Texture> increment = get_icon("increment");
+			Ref<Texture> increment_hl = get_icon("increment_highlight");
+			Ref<Texture> decrement = get_icon("decrement");
+			Ref<Texture> decrement_hl = get_icon("decrement_highlight");
 			Ref<Texture> menu = get_icon("menu");
-			Ref<Texture> menu_hl = get_icon("menu_hl");
+			Ref<Texture> menu_hl = get_icon("menu_highlight");
 			Ref<Font> font = get_font("font");
-			Color color_fg = get_color("font_color_fg");
-			Color color_bg = get_color("font_color_bg");
-
+			Color font_color_fg = get_color("font_color_fg");
+			Color font_color_bg = get_color("font_color_bg");
+			Color font_color_disabled = get_color("font_color_disabled");
 			int side_margin = get_constant("side_margin");
-			int top_margin = _get_top_margin();
+			int icon_text_distance = get_constant("hseparation");
 
-			int label_valign_fg = get_constant("label_valign_fg");
-			int label_valign_bg = get_constant("label_valign_bg");
+			// Find out start and width of the header area.
+			int header_x = side_margin;
+			int header_width = size.width - side_margin * 2;
+			int header_height = _get_top_margin();
+			if (popup)
+				header_width -= menu->get_width();
 
-
-			Size2 top_size = Size2( size.width, top_margin );
-
-
-
-			int w=0;
-			int idx=0;
-			Vector<int> offsets;
-			Vector<Control*> controls;
-			int from=0;
-			int limit=get_size().width;
-			if (popup) {
-				top_size.width-=menu->get_width();
-				limit-=menu->get_width();
-			}
-
-			bool notdone=false;
-			last_tab_cache=-1;
-
-			for(int i=0;i<get_child_count();i++) {
-
-				Control *c = get_child(i)->cast_to<Control>();
-				if (!c)
-					continue;
-				if (c->is_set_as_toplevel())
-					continue;
-				if (idx<tab_display_ofs) {
-					idx++;
-					from=idx;
+			// Check if all tabs would fit into the header area.
+			int all_tabs_width = 0;
+			for (int i = 0; i < tabs.size(); i++) {
+				if (get_tab_hidden(i)) {
 					continue;
 				}
+				int tab_width = _get_tab_width(i);
+				all_tabs_width += tab_width;
 
-				if (w>=get_size().width) {
-					buttons_visible_cache=true;
-					notdone=true;
+				if (all_tabs_width > header_width) {
+					// Not all tabs are visible at the same time - reserve space for navigation buttons.
+					buttons_visible_cache = true;
+					header_width -= decrement->get_width() + increment->get_width();
 					break;
-				}
-
-				offsets.push_back(w);
-				controls.push_back(c);
-
-				String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
-				w+=font->get_string_size(s).width;
-				if (c->has_meta("_tab_icon")) {
-					Ref<Texture> icon = c->get_meta("_tab_icon");
-					if (icon.is_valid()) {
-						w+=icon->get_width();
-						if (s!="")
-						     w+=get_constant("hseparation");
-
-					}
-				}
-
-				if (idx==current) {
-
-					w+=tab_fg->get_minimum_size().width;
 				} else {
-					w+=tab_bg->get_minimum_size().width;
+					buttons_visible_cache = false;
 				}
-
-				if (idx<tab_display_ofs) {
-
-				}
-				last_tab_cache=idx;
-
-				idx++;
+			}
+			// With buttons, a right side margin does not need to be respected.
+			if (popup || buttons_visible_cache) {
+				header_width += side_margin;
 			}
 
-
-			int ofs;
-
-			switch(align) {
-
-				case ALIGN_LEFT: ofs = side_margin; break;
-				case ALIGN_CENTER: ofs = (int(limit) - w)/2; break;
-				case ALIGN_RIGHT: ofs = int(limit) - w - side_margin; break;
-			};
-
-			tab_display_ofs=0;
-
-
-			tabs_ofs_cache=ofs;
-			idx=0;
-
-
-
-			for(int i=0;i<controls.size();i++) {
-
-				idx=i+from;
-				if (current>=from && current<from+controls.size()-1) {
-					//current is visible! draw it last.
-					if (i==controls.size()-1) {
-						idx=current;
-					} else if (idx>=current) {
-						idx+=1;
-					}
-				}
-
-				Control *c = controls[idx-from];
-
-				String s = c->has_meta("_tab_name")?String(c->get_meta("_tab_name")):String(c->get_name());
-				int w=font->get_string_size(s).width;
-				Ref<Texture> icon;
-				if (c->has_meta("_tab_icon")) {
-					icon = c->get_meta("_tab_icon");
-					if (icon.is_valid()) {
-
-						w+=icon->get_width();
-						if (s!="")
-							w+=get_constant("hseparation");
-
-					}
-				}
-
-
-				Ref<StyleBox> sb;
-				int va;
-				Color col;
-
-				if (idx==current) {
-
-					sb=tab_fg;
-					va=label_valign_fg;
-					col=color_fg;
-				} else {
-					sb=tab_bg;
-					va=label_valign_bg;
-					col=color_bg;
-				}
-
-				int lofs = ofs + offsets[idx-from];
-
-				Size2i sb_ms = sb->get_minimum_size();
-				Rect2 sb_rect = Rect2( lofs, 0, w+sb_ms.width, top_margin);
-
-
-				sb->draw(ci, sb_rect );
-
-				Point2i lpos = sb_rect.pos;
-				lpos.x+=sb->get_margin(MARGIN_LEFT);
-				if (icon.is_valid()) {
-
-					icon->draw(ci, Point2i( lpos.x, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-icon->get_height())/2 ) );
-					if (s!="")
-						lpos.x+=icon->get_width()+get_constant("hseparation");
-
-				}
-
-				font->draw(ci, Point2i( lpos.x, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), s, col );
-				//ofs+=sb_ms.x+w;
-
-				/*
-				int sb_mw = sb->get_minimum_size().width;
-				int font_ofs = sb_mw / 2;
-
-				Rect2i rect =Rect2( ofs, 0, w+sb_mw, top_margin);
-
-				rect.size
-				sb->draw(ci,rect);
-				rect.y+=va;
-				rect.height+=va;
-				int font_y = (rect.height - font->get_height())/2;
-
-				font->draw(ci, Point2( ofs+font_ofs, va+font_y ), s, col );
-
-*/
-				idx++;
+			if (!buttons_visible_cache) {
+				first_tab_cache = 0;
 			}
 
+			// Go through the visible tabs to find the width they occupy.
+			all_tabs_width = 0;
+			Vector<int> tab_widths;
+			for (int i = first_tab_cache; i < tabs.size(); i++) {
+				if (get_tab_hidden(i)) {
+					continue;
+				}
+				int tab_width = _get_tab_width(i);
+				if (all_tabs_width + tab_width > header_width && tab_widths.size() > 0)
+					break;
+				all_tabs_width += tab_width;
+				tab_widths.push_back(tab_width);
+			}
 
+			// Find the offset at which to draw tabs, according to the alignment.
+			switch (align) {
+				case ALIGN_LEFT:
+					tabs_ofs_cache = header_x;
+					break;
+				case ALIGN_CENTER:
+					tabs_ofs_cache = header_x + (header_width / 2) - (all_tabs_width / 2);
+					break;
+				case ALIGN_RIGHT:
+					tabs_ofs_cache = header_x + header_width - all_tabs_width;
+					break;
+			}
+
+			// Draw the tab area.
+			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+
+			// Draw all visible tabs.
+			int x = 0;
+			for (int i = 0; i < tab_widths.size(); i++) {
+				if (get_tab_hidden(i)) {
+					continue;
+				}
+				Ref<StyleBox> tab_style;
+				Color font_color;
+				if (get_tab_disabled(i + first_tab_cache)) {
+					tab_style = tab_disabled;
+					font_color = font_color_disabled;
+				} else if (i + first_tab_cache == current) {
+					tab_style = tab_fg;
+					font_color = font_color_fg;
+				} else {
+					tab_style = tab_bg;
+					font_color = font_color_bg;
+				}
+
+				// Draw the tab background.
+				int tab_width = tab_widths[i];
+				Rect2 tab_rect(tabs_ofs_cache + x, 0, tab_width, header_height);
+				tab_style->draw(canvas, tab_rect);
+
+				// Draw the tab contents.
+				Control *control = Object::cast_to<Control>(tabs[i + first_tab_cache]);
+				String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
+
+				int x_content = tab_rect.position.x + tab_style->get_margin(MARGIN_LEFT);
+				int top_margin = tab_style->get_margin(MARGIN_TOP);
+				int y_center = top_margin + (tab_rect.size.y - tab_style->get_minimum_size().y) / 2;
+
+				// Draw the tab icon.
+				if (control->has_meta("_tab_icon")) {
+					Ref<Texture> icon = control->get_meta("_tab_icon");
+					if (icon.is_valid()) {
+						int y = y_center - (icon->get_height() / 2);
+						icon->draw(canvas, Point2i(x_content, y));
+						if (text != "")
+							x_content += icon->get_width() + icon_text_distance;
+					}
+				}
+
+				// Draw the tab text.
+				Point2i text_pos(x_content, y_center - (font->get_height() / 2) + font->get_ascent());
+				font->draw(canvas, text_pos, text, font_color);
+
+				x += tab_width;
+				last_tab_cache = i + first_tab_cache;
+			}
+
+			// Draw the popup menu.
+			x = get_size().width;
+			if (popup) {
+				x -= menu->get_width();
+				if (menu_hovered)
+					menu_hl->draw(get_canvas_item(), Size2(x, (header_height - menu_hl->get_height()) / 2));
+				else
+					menu->draw(get_canvas_item(), Size2(x, (header_height - menu->get_height()) / 2));
+			}
+
+			// Draw the navigation buttons.
 			if (buttons_visible_cache) {
 
-				int vofs = (top_margin-incr->get_height())/2;
-				decr->draw(ci,Point2(limit,vofs),Color(1,1,1,tab_display_ofs==0?0.5:1.0));
-				incr->draw(ci,Point2(limit+incr->get_width(),vofs),Color(1,1,1,notdone?1.0:0.5));
+				x -= increment->get_width();
+				if (last_tab_cache < tabs.size() - 1) {
+					draw_texture(highlight_arrow == 1 ? increment_hl : increment, Point2(x, (header_height - increment->get_height()) / 2));
+				} else {
+					draw_texture(increment, Point2(x, (header_height - increment->get_height()) / 2), Color(1, 1, 1, 0.5));
+				}
+
+				x -= decrement->get_width();
+				if (first_tab_cache > 0) {
+					draw_texture(highlight_arrow == 0 ? decrement_hl : decrement, Point2(x, (header_height - decrement->get_height()) / 2));
+				} else {
+					draw_texture(decrement, Point2(x, (header_height - decrement->get_height()) / 2), Color(1, 1, 1, 0.5));
+				}
 			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
 
-			if (popup) {
-				int from = get_size().width-menu->get_width();
-
-				if (mouse_x_cache > from)
-					menu_hl->draw(get_canvas_item(),Size2(from,0));
-				else
-					menu->draw(get_canvas_item(),Size2(from,0));
-			}
-
-			panel->draw(ci, Rect2( 0, top_size.height, size.width, size.height-top_size.height));
-
+			minimum_size_changed();
+			call_deferred("_on_theme_changed"); // Wait until all changed theme.
 		} break;
 	}
+}
+
+void TabContainer::_on_theme_changed() {
+	if (get_tab_count() > 0) {
+		set_current_tab(get_current_tab());
+	}
+}
+
+void TabContainer::_on_mouse_exited() {
+	if (menu_hovered || highlight_arrow > -1) {
+		menu_hovered = false;
+		highlight_arrow = -1;
+		update();
+	}
+}
+
+int TabContainer::_get_tab_width(int p_index) const {
+
+	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
+	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
+	if (!control || control->is_set_as_toplevel() || get_tab_hidden(p_index))
+		return 0;
+
+	// Get the width of the text displayed on the tab.
+	Ref<Font> font = get_font("font");
+	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(control->get_name());
+	int width = font->get_string_size(text).width;
+
+	// Add space for a tab icon.
+	if (control->has_meta("_tab_icon")) {
+		Ref<Texture> icon = control->get_meta("_tab_icon");
+		if (icon.is_valid()) {
+			width += icon->get_width();
+			if (text != "")
+				width += get_constant("hseparation");
+		}
+	}
+
+	// Respect a minimum size.
+	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
+	if (get_tab_disabled(p_index)) {
+		width += tab_disabled->get_minimum_size().width;
+	} else if (p_index == current) {
+		width += tab_fg->get_minimum_size().width;
+	} else {
+		width += tab_bg->get_minimum_size().width;
+	}
+
+	return width;
+}
+
+Vector<Control *> TabContainer::_get_tabs() const {
+
+	Vector<Control *> controls;
+	for (int i = 0; i < get_child_count(); i++) {
+
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (!control || control->is_toplevel_control())
+			continue;
+
+		controls.push_back(control);
+	}
+	return controls;
 }
 
 void TabContainer::_child_renamed_callback() {
@@ -421,86 +508,81 @@ void TabContainer::_child_renamed_callback() {
 
 void TabContainer::add_child_notify(Node *p_child) {
 
+	Container::add_child_notify(p_child);
 
-	Control *c = p_child->cast_to<Control>();
+	Control *c = Object::cast_to<Control>(p_child);
 	if (!c)
 		return;
 	if (c->is_set_as_toplevel())
 		return;
 
-	bool first=false;
+	bool first = false;
 
-	if (get_tab_count()!=1)
+	if (get_tab_count() != 1)
 		c->hide();
 	else {
 		c->show();
 		//call_deferred("set_current_tab",0);
-		first=true;
-		current=0;
+		first = true;
+		current = 0;
+		previous = 0;
 	}
-	c->set_area_as_parent_rect();
+	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	if (tabs_visible)
-		c->set_margin(MARGIN_TOP,_get_top_margin());
+		c->set_margin(MARGIN_TOP, _get_top_margin());
 	Ref<StyleBox> sb = get_stylebox("panel");
-	for(int i=0;i<4;i++)
-		c->set_margin(Margin(i),c->get_margin(Margin(i))+sb->get_margin(Margin(i)));
-
+	c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+	c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+	c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+	c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
 
 	update();
-	p_child->connect("renamed", this,"_child_renamed_callback");
-	if(first)
-		emit_signal("tab_changed",current);
+	p_child->connect("renamed", this, "_child_renamed_callback");
+	if (first)
+		emit_signal("tab_changed", current);
 }
 
 int TabContainer::get_tab_count() const {
 
-	int count=0;
-
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		count++;
-	}
-
-	return count;
+	return _get_tabs().size();
 }
-
 
 void TabContainer::set_current_tab(int p_current) {
 
-	ERR_FAIL_INDEX( p_current, get_tab_count() );
+	ERR_FAIL_INDEX(p_current, get_tab_count());
 
-    //printf("DEBUG %p: set_current_tab to %i\n", this, p_current);
-	current=p_current;
+	int pending_previous = current;
+	current = p_current;
 
-	int idx=0;
+	Ref<StyleBox> sb = get_stylebox("panel");
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
 
-	Ref<StyleBox> sb=get_stylebox("panel");
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-		if (idx==current) {
+		Control *c = tabs[i];
+		if (i == current) {
 			c->show();
-			c->set_area_as_parent_rect();
+			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 			if (tabs_visible)
-				c->set_margin(MARGIN_TOP,_get_top_margin());
-			for(int i=0;i<4;i++)
-				c->set_margin(Margin(i),c->get_margin(Margin(i))+sb->get_margin(Margin(i)));
-
+				c->set_margin(MARGIN_TOP, _get_top_margin());
+			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
 
 		} else
 			c->hide();
-		idx++;
 	}
 
 	_change_notify("current_tab");
-	emit_signal("tab_changed",current);
+
+	if (pending_previous == current)
+		emit_signal("tab_selected", current);
+	else {
+		previous = pending_previous;
+		emit_signal("tab_selected", current);
+		emit_signal("tab_changed", current);
+	}
+
 	update();
 }
 
@@ -509,75 +591,195 @@ int TabContainer::get_current_tab() const {
 	return current;
 }
 
-Control* TabContainer::get_tab_control(int p_idx) const {
+int TabContainer::get_previous_tab() const {
 
-	int idx=0;
-
-
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-		if (idx==p_idx) {
-			return c;
-
-		}
-		idx++;
-	}
-
-	return NULL;
+	return previous;
 }
-Control* TabContainer::get_current_tab_control() const {
 
-	int idx=0;
+Control *TabContainer::get_tab_control(int p_idx) const {
 
+	Vector<Control *> tabs = _get_tabs();
+	if (p_idx >= 0 && p_idx < tabs.size())
+		return tabs[p_idx];
+	else
+		return NULL;
+}
 
-	for(int i=0;i<get_child_count();i++) {
+Control *TabContainer::get_current_tab_control() const {
 
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-		if (idx==current) {
-			return c;
-
-		}
-		idx++;
-	}
-
-	return NULL;
+	Vector<Control *> tabs = _get_tabs();
+	if (current >= 0 && current < tabs.size())
+		return tabs[current];
+	else
+		return NULL;
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
 
-	int tc = get_tab_count();
-//	bool set_curent=false;
-	if (current==tc-1) {
-		current--;
-		if (current<0)
-			current=0;
-		else {
-			call_deferred("set_current_tab",current);
-		}
-	}
+	Container::remove_child_notify(p_child);
 
-	p_child->disconnect("renamed", this,"_child_renamed_callback");
+	call_deferred("_update_current_tab");
+
+	p_child->disconnect("renamed", this, "_child_renamed_callback");
 
 	update();
+}
+
+void TabContainer::_update_current_tab() {
+
+	int tc = get_tab_count();
+	if (current >= tc)
+		current = tc - 1;
+	if (current < 0)
+		current = 0;
+	else
+		set_current_tab(current);
+}
+
+Variant TabContainer::get_drag_data(const Point2 &p_point) {
+
+	if (!drag_to_rearrange_enabled)
+		return Variant();
+
+	int tab_over = get_tab_idx_at_point(p_point);
+
+	if (tab_over < 0)
+		return Variant();
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+
+	Ref<Texture> icon = get_tab_icon(tab_over);
+	if (!icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(icon);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(get_tab_title(tab_over)));
+	drag_preview->add_child(label);
+	set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "tabc_element";
+	drag_data["tabc_element"] = tab_over;
+	drag_data["from_path"] = get_path();
+	return drag_data;
+}
+
+bool TabContainer::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+
+	if (!drag_to_rearrange_enabled)
+		return false;
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			return true;
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between other TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void TabContainer::drop_data(const Point2 &p_point, const Variant &p_data) {
+
+	if (!drag_to_rearrange_enabled)
+		return;
+
+	int hover_now = get_tab_idx_at_point(p_point);
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "tabc_element") {
+
+		int tab_from_id = d["tabc_element"];
+		NodePath from_path = d["from_path"];
+		NodePath to_path = get_path();
+		if (from_path == to_path) {
+			if (hover_now < 0)
+				hover_now = get_tab_count() - 1;
+			move_child(get_tab_control(tab_from_id), hover_now);
+			set_current_tab(hover_now);
+		} else if (get_tabs_rearrange_group() != -1) {
+			// drag and drop between TabContainers
+			Node *from_node = get_node(from_path);
+			TabContainer *from_tabc = Object::cast_to<TabContainer>(from_node);
+			if (from_tabc && from_tabc->get_tabs_rearrange_group() == get_tabs_rearrange_group()) {
+				Control *moving_tabc = from_tabc->get_tab_control(tab_from_id);
+				from_tabc->remove_child(moving_tabc);
+				add_child(moving_tabc);
+				if (hover_now < 0)
+					hover_now = get_tab_count() - 1;
+				move_child(moving_tabc, hover_now);
+				set_current_tab(hover_now);
+				emit_signal("tab_changed", hover_now);
+			}
+		}
+	}
+	update();
+}
+
+int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
+
+	if (get_tab_count() == 0)
+		return -1;
+
+	// must be on tabs in the tab header area.
+	if (p_point.x < tabs_ofs_cache || p_point.y > _get_top_margin())
+		return -1;
+
+	Size2 size = get_size();
+	int right_ofs = 0;
+
+	if (popup) {
+		Ref<Texture> menu = get_icon("menu");
+		right_ofs += menu->get_width();
+	}
+	if (buttons_visible_cache) {
+		Ref<Texture> increment = get_icon("increment");
+		Ref<Texture> decrement = get_icon("decrement");
+		right_ofs += increment->get_width() + decrement->get_width();
+	}
+	if (p_point.x > size.width - right_ofs) {
+		return -1;
+	}
+
+	// get the tab at the point
+	Vector<Control *> tabs = _get_tabs();
+	int px = p_point.x;
+	px -= tabs_ofs_cache;
+	for (int i = first_tab_cache; i <= last_tab_cache; i++) {
+		int tab_width = _get_tab_width(i);
+		if (px < tab_width) {
+			return i;
+		}
+		px -= tab_width;
+	}
+	return -1;
 }
 
 void TabContainer::set_tab_align(TabAlign p_align) {
 
-	ERR_FAIL_INDEX(p_align,3);
-	align=p_align;
+	ERR_FAIL_INDEX(p_align, 3);
+	align = p_align;
 	update();
 
 	_change_notify("tab_align");
 }
+
 TabContainer::TabAlign TabContainer::get_tab_align() const {
 
 	return align;
@@ -585,21 +787,19 @@ TabContainer::TabAlign TabContainer::get_tab_align() const {
 
 void TabContainer::set_tabs_visible(bool p_visibe) {
 
-	if (p_visibe==tabs_visible)
+	if (p_visibe == tabs_visible)
 		return;
 
-	tabs_visible=p_visibe;
+	tabs_visible = p_visibe;
 
-	for(int i=0;i<get_child_count();i++) {
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
+		Control *c = tabs[i];
 		if (p_visibe)
-			c->set_margin(MARGIN_TOP,_get_top_margin());
+			c->set_margin(MARGIN_TOP, _get_top_margin());
 		else
-			c->set_margin(MARGIN_TOP,0);
-
+			c->set_margin(MARGIN_TOP, 0);
 	}
 	update();
 }
@@ -607,170 +807,242 @@ void TabContainer::set_tabs_visible(bool p_visibe) {
 bool TabContainer::are_tabs_visible() const {
 
 	return tabs_visible;
-
 }
-
 
 Control *TabContainer::_get_tab(int p_idx) const {
 
-	int idx=0;
-
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-		if (idx==p_idx)
-			return c;
-		idx++;
-
-	}
-	return NULL;
-
+	return get_tab_control(p_idx);
 }
 
-void TabContainer::set_tab_title(int p_tab,const String& p_title) {
+void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
-	child->set_meta("_tab_name",p_title);
-
+	child->set_meta("_tab_name", p_title);
+	update();
 }
 
-String TabContainer::get_tab_title(int p_tab) const{
+String TabContainer::get_tab_title(int p_tab) const {
 
 	Control *child = _get_tab(p_tab);
-	ERR_FAIL_COND_V(!child,"");
+	ERR_FAIL_COND_V(!child, "");
 	if (child->has_meta("_tab_name"))
 		return child->get_meta("_tab_name");
 	else
 		return child->get_name();
-
 }
 
-void TabContainer::set_tab_icon(int p_tab,const Ref<Texture>& p_icon){
+void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
-	child->set_meta("_tab_icon",p_icon);
-
+	child->set_meta("_tab_icon", p_icon);
+	update();
 }
-Ref<Texture> TabContainer::get_tab_icon(int p_tab) const{
+Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 
 	Control *child = _get_tab(p_tab);
-	ERR_FAIL_COND_V(!child,Ref<Texture>());
+	ERR_FAIL_COND_V(!child, Ref<Texture>());
 	if (child->has_meta("_tab_icon"))
 		return child->get_meta("_tab_icon");
 	else
 		return Ref<Texture>();
 }
 
+void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND(!child);
+	child->set_meta("_tab_disabled", p_disabled);
+	update();
+}
+
+bool TabContainer::get_tab_disabled(int p_tab) const {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND_V(!child, false);
+	if (child->has_meta("_tab_disabled"))
+		return child->get_meta("_tab_disabled");
+	else
+		return false;
+}
+
+void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND(!child);
+	child->set_meta("_tab_hidden", p_hidden);
+	update();
+	for (int i = 0; i < get_tab_count(); i++) {
+		int try_tab = (p_tab + 1 + i) % get_tab_count();
+		if (get_tab_disabled(try_tab) || get_tab_hidden(try_tab)) {
+			continue;
+		}
+
+		set_current_tab(try_tab);
+		return;
+	}
+
+	//assumed no other tab can be switched to, just hide
+	child->hide();
+}
+
+bool TabContainer::get_tab_hidden(int p_tab) const {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND_V(!child, false);
+	if (child->has_meta("_tab_hidden"))
+		return child->get_meta("_tab_hidden");
+	else
+		return false;
+}
+
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
-	for(int i=0;i<get_child_count();i++) {
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
+		Control *c = tabs[i];
 
 		if (!c->has_meta("_tab_name"))
 			continue;
 
 		String name = c->get_meta("_tab_name");
 
-		if (name!="")
+		if (name != "")
 			p_strings->push_back(name);
 	}
 }
-
 
 Size2 TabContainer::get_minimum_size() const {
 
 	Size2 ms;
 
-	for(int i=0;i<get_child_count();i++) {
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
+		Control *c = tabs[i];
 
-		if (!c->has_meta("_tab_name"))
+		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size)
 			continue;
 
-		if (!c->is_visible())
-			continue;
-
-		Size2 cms = c->get_minimum_size();
-		ms.x=MAX(ms.x,cms.x);
-		ms.y=MAX(ms.y,cms.y);
+		Size2 cms = c->get_combined_minimum_size();
+		ms.x = MAX(ms.x, cms.x);
+		ms.y = MAX(ms.y, cms.y);
 	}
 
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
-	ms.y+=MAX(tab_bg->get_minimum_size().y,tab_fg->get_minimum_size().y);
-	ms.y+=font->get_height();
+	ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
+	ms.y += font->get_height();
+
+	Ref<StyleBox> sb = get_stylebox("panel");
+	ms += sb->get_minimum_size();
 
 	return ms;
 }
 
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
-	popup=p_popup->cast_to<Popup>();
+	popup = Object::cast_to<Popup>(p_popup);
 	update();
 }
 
-Popup* TabContainer::get_popup() const {
+Popup *TabContainer::get_popup() const {
 	return popup;
 }
 
+void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
+	drag_to_rearrange_enabled = p_enabled;
+}
+
+bool TabContainer::get_drag_to_rearrange_enabled() const {
+	return drag_to_rearrange_enabled;
+}
+void TabContainer::set_tabs_rearrange_group(int p_group_id) {
+	tabs_rearrange_group = p_group_id;
+}
+
+int TabContainer::get_tabs_rearrange_group() const {
+	return tabs_rearrange_group;
+}
+
+void TabContainer::set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs) {
+	use_hidden_tabs_for_min_size = p_use_hidden_tabs;
+}
+
+bool TabContainer::get_use_hidden_tabs_for_min_size() const {
+	return use_hidden_tabs_for_min_size;
+}
 
 void TabContainer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
-	ObjectTypeDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
-	ObjectTypeDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
-	ObjectTypeDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
-	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
-	ObjectTypeDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
-	ObjectTypeDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("are_tabs_visible"),&TabContainer::are_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("set_tab_title","tab_idx","title"),&TabContainer::set_tab_title);
-	ObjectTypeDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
-	ObjectTypeDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
-	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
-	ObjectTypeDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
-	ObjectTypeDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
+	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
+	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
+	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
+	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
+	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
+	ClassDB::bind_method(D_METHOD("get_tab_control", "idx"), &TabContainer::get_tab_control);
+	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
+	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
+	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
+	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
+	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
+	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabContainer::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
+	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
+	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
+	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabContainer::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
+	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
 
-	ObjectTypeDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
+	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
-	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
+	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
+	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &TabContainer::_on_mouse_exited);
+	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
+
+	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM,"Left,Center,Right"), _SCS("set_tab_align"), _SCS("get_tab_align") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "tabs_visible"), _SCS("set_tabs_visible"), _SCS("are_tabs_visible") );
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
+	BIND_ENUM_CONSTANT(ALIGN_LEFT);
+	BIND_ENUM_CONSTANT(ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 }
 
 TabContainer::TabContainer() {
 
-	tab_display_ofs=0;
-	buttons_visible_cache=false;
-	tabs_ofs_cache=0;
-	current=0;
-	mouse_x_cache=0;
-	align=ALIGN_CENTER;
-	tabs_visible=true;
-	popup=NULL;
+	first_tab_cache = 0;
+	last_tab_cache = 0;
+	buttons_visible_cache = false;
+	menu_hovered = false;
+	highlight_arrow = -1;
+	tabs_ofs_cache = 0;
+	current = 0;
+	previous = 0;
+	align = ALIGN_CENTER;
+	tabs_visible = true;
+	popup = NULL;
+	drag_to_rearrange_enabled = false;
+	tabs_rearrange_group = -1;
+	use_hidden_tabs_for_min_size = false;
 
+	connect("mouse_exited", this, "_on_mouse_exited");
 }

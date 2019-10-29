@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShader" inherits="Shader" category="Core" version="3.2">
+	<brief_description>
+		A custom shader program with a visual editor.
+	</brief_description>
+	<description>
+		This class allows you to define a custom shader program that can be used for various materials to render objects.
+		The visual shader editor creates the shader.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="node" type="VisualShaderNode">
+			</argument>
+			<argument index="2" name="position" type="Vector2">
+			</argument>
+			<argument index="3" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_connect_nodes" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="connect_nodes">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="connect_nodes_forced">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="disconnect_nodes">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node" qualifiers="const">
+			<return type="VisualShaderNode">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_connections" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_list" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_valid_node_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_node_connection" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Shader.Mode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_node_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<argument index="2" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code" override="true" default="&quot;shader_type spatial;void vertex() {// Output:0}void fragment() {// Output:0}void light() {// Output:0}&quot;" />
+		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_VERTEX" value="0" enum="Type">
+		</constant>
+		<constant name="TYPE_FRAGMENT" value="1" enum="Type">
+		</constant>
+		<constant name="TYPE_LIGHT" value="2" enum="Type">
+		</constant>
+		<constant name="TYPE_MAX" value="3" enum="Type">
+			Represents the size of the [enum Type] enum.
+		</constant>
+		<constant name="NODE_ID_INVALID" value="-1">
+		</constant>
+		<constant name="NODE_ID_OUTPUT" value="0">
+		</constant>
+	</constants>
+</class>

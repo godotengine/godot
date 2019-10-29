@@ -1,0 +1,400 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
+
+## [3.1] - 2019-03-13
+
+### Added
+
+- OpenGL ES 2.0 renderer.
+- [Visual shader editor.](https://godotengine.org/article/visual-shader-editor-back)
+  - New PBR output nodes.
+  - Conversion between Vector3 and scalar types is now automatic.
+  - Ability to create custom nodes via scripting.
+  - Ports can now be previewed.
+- [3D soft body physics.](https://godotengine.org/article/soft-body)
+- [3D ragdoll system.](https://godotengine.org/article/godot-ragdoll-system)
+- [Constructive solid geometry in 3D.](https://godotengine.org/article/godot-gets-csg-support)
+- [2D meshes and skeletal deformation.](https://godotengine.org/article/godot-gets-2d-skeletal-deform)
+- [Various improvements to KinematicBody2D.](https://godotengine.org/article/godot-31-will-get-many-improvements-kinematicbody)
+  - Support for snapping the body to the floor.
+  - Support for RayCast shapes in kinematic bodies.
+  - Support for synchronizing kinematic movement to physics, avoiding an one-frame delay.
+- WebSockets support using [libwebsockets](https://libwebsockets.org/).
+- UPnP support using [MiniUPnP](http://miniupnp.free.fr).
+- [Revamped inspector.](https://godotengine.org/article/godot-gets-new-inspector)
+  - Improved visualization and editing of numeric properties.
+  - Vector and matrix types can now be edited directly (no pop-ups).
+  - Subresources can now be edited directly within the same inspector.
+  - Layer names can now be displayed in the inspector.
+  - Proper editing of arrays and dictionaries.
+  - Ability to reset any property to its default value.
+- [Improved animation editor.](https://godotengine.org/article/godot-gets-brand-new-animation-editor-cinematic-support)
+  - Simpler, less cluttered layout.
+  - New Bezier, Audio and Animation tracks.
+  - Several key types can be previewed directly in the track editor.
+  - Tracks can now be grouped and filtered on a per-node basis.
+  - Copying and pasting tracks between animations is now possible.
+  - New Capture mode to blend from a node's current value to the first key in a track.
+- [Improved animation tree and new state machine.](https://godotengine.org/article/godot-gets-new-animation-tree-state-machine)
+  - More visual feedback in the blend tree editor.
+  - 1D and 2D blend spaces are now supported.
+  - Ability to write custom blending logic.
+  - Support for root motion.
+- [New FileSystem dock.](https://godotengine.org/article/godot-gets-new-filesystem-dock-3-1)
+  - Unified view of folders and files in the same panel.
+  - Files can now be marked as favorites, not only folders.
+  - Files now have icons representing their type, or thumbnail previews when relevant.
+  - New search field to filter entries in the tree.
+- [OpenSimplexNoise and NoiseTexture resources.](https://godotengine.org/article/simplex-noise-lands-godot-31)
+- [Optional static typing in GDScript.](https://godotengine.org/article/optional-typing-gdscript)
+  - Does not currently improve performance, but helps write more robust code.
+- Warning system in GDScript.
+  - Reports potential code issues such as:
+    - unused variables,
+    - standalone expressions,
+    - discarded return values from functions,
+    - unreachable code after a `return` statement,
+    - …
+  - Warnings can be disabled in the Project Settings or by writing special comments.
+- [GDScript keyword `class_name` to register scripts as classes.](http://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting_continued.html#register-scripts-as-classes)
+- Simple expression language independent from GDScript, used by inspector boxes that accept numeric values.
+  - Can also be used in projects.
+- C# projects can now be exported for Windows, Linux, and macOS targets.
+- The `server` platform is back as it was in Godot 2.1.
+  - It is now again possible to run a headless Godot instance on Linux.
+- Support for BPTC texture compression on desktop platforms.
+- New properties for SpatialMaterial.
+  - Dithering-based distance fade, for fading materials without making them transparent.
+  - Disable ambient light on a per-material basis.
+- Option to link Mono statically on Windows.
+- Unified class and reference search in the editor.
+- Revamped TileSet editor with support for undo/redo operations.
+- Various quality-of-life improvements to the Polygon2D and TextureRegion editors.
+- RandomNumberGenerator class that allows for multiple instances at once.
+- Array methods `min()` and `max()` to return the smallest and largest value respectively.
+- Dictionary method `get(key[, default])` where `default` is returned if the key does not exist.
+- Node method `print_tree_pretty()` to print a graphical view of the scene tree.
+- String methods `trim_prefix()`, `trim_suffix()`, `lstrip()`, `rstrip()`.
+- OS methods:
+  - `get_system_time_msecs()`: Return the system time with milliseconds.
+  - `get_audio_driver_name()` and `get_audio_driver_count()` to query audio driver information.
+  - `get_video_driver_count()` and `get_video_driver_name()` to query renderer information.
+  - `center_window()`: Center the window on the screen.
+  - `move_window_to_foreground()`: Move the window to the foreground.
+- StreamPeerTCP method `set_no_delay()` to enable the `TCP_NODELAY` option.
+- EditorPlugin method `remove_control_from_container()`.
+- Ability to set Godot windows as "always on top".
+- Ability to create windows with per-pixel transparency.
+- New GLSL built-in functions in the shader language:
+  - `radians()`
+  - `degrees()`
+  - `asinh()`
+  - `acosh()`
+  - `atanh()`
+  - `exp2()`
+  - `log2()`
+  - `roundEven()`
+- New command-line options:
+  - `--build-solutions`: Build C# solutions without starting the editor.
+  - `--print-fps`: Display frames per second to standard output.
+  - `--quit`: Quit the engine after the first main loop iteration.
+- Debugger button to copy error messages.
+- Support for `.escn` scenes has been added for use with the new Blender exporter.
+- It is now possible to scale an OBJ mesh when importing.
+- `popup_closed` signal for `ColorPickerButton`.
+- Methods that are deprecated can now print warnings.
+- Input actions can now provide an analog value.
+- Input actions can now be mapped to either a specific device or all devices.
+- DNS resolution for high-level networking.
+- Servers can now kick/disconnect peers in high-level networking.
+- Servers can now access IP and port information of peers in high-level networking.
+- High-level multiplayer API decoupled from SceneTree (see `SceneTree.multiplayer_api`/`SceneTree.custom_multiplayer_api`), can now be extended.
+- `Input.set_default_cursor_shape()` to change the default shape in the viewport.
+- Custom cursors can now be as large as 256×256 (needed to be exactly 32×32 before).
+- Support for radio-looking items with icon in `PopupMenu`s.
+- Drag and drop to rearrange Editor docks.
+- TileSet's `TileMode` is now exposed to GDScript.
+- `OS.get_ticks_usec()` is now exposed to GDScript.
+- Normals can now be flipped when generated via `SurfaceTool`.
+- TextureProgress bars can now be bilinear (extending in both directions).
+- The character used for masking secrets in LineEdit can now be changed.
+- Improved DynamicFont:
+  - DynamicFonts can now use high-quality outlines generated by FreeType.
+  - DynamicFonts can now have their anti-aliasing disabled.
+  - DynamicFonts can now have their hinting tweaked ("Normal", "Light" or "None").
+  - Colored glyphs such as emoji are now supported.
+- Universal translation of touch input to mouse input.
+- AudioStreamPlayer, AudioStreamPlayer2D, and AudioStreamPlayer3D now have a pitch scale property.
+- Support for MIDI input.
+- Support for audio capture from microphones.
+- `GROW_DIRECTION_BOTH` for Controls.
+- Selected tiles can be moved in the tile map editor.
+- The editor can now be configured to display the project window on the previous or next monitor (relative to the editor).
+  - If either end is reached, then the project will start on the last or first monitor (respectively).
+- Signal in VideoPlayer to notify when the video finished playing.
+- `Image.bumpmap_to_normalmap()` to convert bump maps to normal maps.
+- `File.get_path()` and `File.get_path_absolute()`.
+- Unselected tabs in the editor now have a subtle background for easier identification.
+- The depth fog's end distance is now configurable independently of the far plane distance.
+- The alpha component of the fog color can now be used to control fog density.
+- The 3D editor's information panel now displays the camera's coordinates.
+- New options to hide the origin and viewport in the 2D editor.
+- Improved 3D editor grid:
+  - The grid size and number of subdivisions can now be configured.
+  - Its primary and secondary colors can now also be changed.
+- <kbd>Ctrl</kbd> now toggles snapping in the 3D viewport.
+- Find & replace in files (<kbd>Ctrl + Shift + F</kbd> by default).
+- Batch node renaming tool (<kbd>Ctrl + F2</kbd> by default).
+- More editor scaling options to support HiDPI displays.
+- Type icons can now be enabled in the editor again.
+- Buttons in the editor to open common directories in the OS file manager:
+  - project data directory,
+  - user data directory,
+  - user settings directory.
+- Projects can now be sorted by name or modification date in the project manager.
+- Projects can now be imported from ZIP archives in the project manager.
+- Improved autocompletion.
+  - Keywords are now present in autocompletion results.
+- `editor` and `standalone` feature tags to check whether the project is running from an editor or non-editor binary.
+- `android_add_asset_dir("...")` method to Android module Gradle build configuration.
+- **iOS:** Support for exporting to the iPhone X.
+- **iOS:** Readded support for in-app purchases.
+
+### Changed
+
+- [Built-in vector types now use copy-on-write mode as originally intended](https://godotengine.org/article/why-we-broke-your-pr), resulting in increased engine performance.
+- The [mbedtls](https://tls.mbed.org/) library is now used instead of OpenSSL.
+- [Renamed several core files](https://github.com/godotengine/godot/pull/25821).
+  - Third-party modules may have to be updated to reflect this.
+- SSL certificates are now bundled in exported projects unless a custom bundle is specified.
+- Improved buffer writing performance on Windows and Linux.
+- Removed many debugging prints in the console.
+- Export templates now display an error dialog if no project was found when starting.
+- DynamicFont oversampling is now enabled by default.
+- Nodes' internal logic now consistently use internal physics processing.
+- Allow attaching and clearing scripts on multiple nodes at once.
+- Default values are no longer saved in scene and resource files.
+- The selection rectangle of 2D nodes is now hidden when not pertinent (no more rectangle for collision shapes).
+- SSE2 is now enabled in libsquish, resulting in improved S3TC encoding performance.
+- Tangent and binormal coordinates are now more consistent across mesh types (primitive/imported), resulting in more predictable normal map and depth map appearance.
+- Better defaults for 3D scenes.
+  - The default procedural sky now has a more neutral blue tone.
+  - The default SpatialMaterial now has a roughness value of 1 and metallic value of 0.
+  - The fallback material now uses the same values as the default SpatialMaterial.
+- Text editor themes are now sorted alphabetically in the selection dropdown.
+- The 3D manipulator gizmo now has a smoother, more detailed appearance.
+- The 3D viewport menu button now has a background to make it easier to read.
+- QuadMeshes are now built using two triangles (6 vertices) instead of one quad (4 vertices).
+  - This was done because quads are deprecated in OpenGL.
+- Controls inside containers are no longer movable or resizable but can still be selected.
+- The `is` GDScript keyword can now be used to compare a value against built-in types.
+- Exported variables with type hints are now always initialized.
+  - For example, `export(int) var a` will be initialized to `0`.
+- Named enums in GDScript no longer create script constants.
+  - This means `enum Name { VALUE }` must now be accessed with `Name.VALUE` instead of `VALUE`.
+- Cyclic references to other scripts with `preload()` are no longer allowed.
+  - `load()` should be used in at least one of the scripts instead.
+- `switch`, `case` and `do` are no longer reserved identifiers in GDScript.
+- Shadowing variables from parent scopes is no longer allowed in GDScript.
+- Function parameters' default values can no longer depend on other parameters in GDScript.
+- Indentation guides are now displayed in a more subtle way in the script editor.
+  - Indentation guides are now displayed when indenting using spaces.
+- Multi-line strings are now highlighted as strings rather than as comments in the script editor.
+  - This is because GDScript does not officially support multiline comments.
+- Increased the script editor's line spacing (4 pixels → 6 pixels).
+- Increased the caret width in the script editor (1 pixel → 2 pixels).
+- The project manager window is now resized to match the editor scale.
+- The asset library now makes use of threading, making loading more responsive.
+- Line spacing in the script editor, underlines and caret widths are now resized to match the editor scale.
+- Replaced editor icons for checkboxes and radio buttons with simpler designs.
+- Tweaked the editor's success, error, and warning text colors for better readability and consistency.
+- **Android:** Custom permissions are now stored in an array and their amount is no longer limited to 20.
+  - Custom permissions will have to be redefined in projects imported from older versions.
+- **Android:** Provide error details when an in-app purchase fails.
+- **Linux:** `OS.alert()` now uses Zenity or KDialog if available instead of xmessage.
+- **Mono:** Display stack traces for inner exceptions.
+- **Mono:** Bundle `mscorlib.dll` with Godot to improve portability.
+
+### Removed
+
+- Removed the RtAudio backend on Windows in favor of WASAPI, which is the default since 3.0.
+- **macOS:** Support for 32-bit and fat binaries.
+
+### Fixed
+
+- [`move_and_slide()` now behaves differently at low velocities](https://github.com/godotengine/godot/issues/21683), which makes it function as originally intended.
+- AnimatedSprite2D's `animation_finished` signal is now triggered at the end of the animation, instead of as soon as the last frame displays.
+- Audio buses can now be removed in the editor while they are used by AudioStreamPlayer2D/3D nodes.
+- Do not show the project manager unless no project was found at all.
+- The animation editor time offset indicator no longer "walks" when resizing the editor.
+- Allow creation of a built-in GDScript file even if the filename suggested already exists.
+- Show tooltips in the editor when physics object picking is disabled.
+- Button shortcuts can now be triggered by gamepad buttons.
+- Fix a serialization bug that could cause TSCN files to grow very large.
+- Gizmos are now properly hidden on scene load if the object they control is hidden.
+- Camera gizmos in the 3D viewport no longer look twice as wide as they actually are.
+- Copy/pasting from the editor on X11 will now work more reliably.
+- `libgcc_s` and `libstdc++` are now linked statically for better Linux binary portability.
+- The FPS cap set by `force_fps` in the Project Settings is no longer applied to the editor.
+  - Low FPS caps no longer cause the editor to feel sluggish.
+- hiDPI is now detected and used if needed in the project manager.
+- The Visual Studio Code external editor option now recognizes more binary names such as `code-oss`, making detection more reliable.
+- The `-ffast-math` flag is no longer used when compiling Godot, resulting in increased floating-point determinism.
+- Fix spelling of `apply_torque_impulse()` and deprecate the misspelled method.
+- Escape sequences like `\n` and `\t` are now recognized in CSV translation files.
+- Remove spurious errors when using a PanoramaSky without textures.
+- The lightmap baker will now use all available cores on Windows.
+- Bullet physics now correctly calculates effective gravity on KinematicBodies.
+- Setting the color `v` member now correctly sets the `s` member.
+- RichTextLabels now correctly determine the baseline for all fonts.
+- SpinBoxes now correctly calculate their initial size.
+- OGG streams now correctly signal the end of playback.
+- Android exporter no longer writes unnecessary permissions to the exported APK.
+- Debugger "focus stealing" now works more reliably.
+- Subresources are now always saved when saving a scene.
+- Many fixes related to importers (glTF, Collada, audio), physics (Bullet), Mono/C#, GDNative, Android/iOS.
+- **Mono:** Many fixes and improvements to C# support (including a `[Signal]` attribute).
+- **WebAssembly:** Supply proper CORS headers.
+
+### Security
+
+- Fixed a security issue relating to deserializing Variants.
+
+## [3.0] - 2018-01-29
+
+### Added
+
+- Physically-based renderer using OpenGL ES 3.0.
+  - Uses the Disney PBR model, with clearcoat, sheen and anisotropy parameters available.
+  - Uses a forward renderer, supporting multi-sample anti-aliasing (MSAA).
+  - Parallax occlusion mapping.
+  - Reflection probes.
+  - Screen-space reflections.
+  - Real-time global illumination using voxel cone tracing (GIProbe).
+  - Proximity fade and distance fade (useful for creating soft particles and various effects).
+  - [Lightmapper](https://godotengine.org/article/introducing-new-last-minute-lightmapper) for lower-end desktop and mobile platforms, as an alternative to GIProbe.
+- New SpatialMaterial resource, replacing FixedMaterial.
+  - Multiple passes can now be specified (with an optional "grow" property), allowing for effects such as cel shading.
+- Brand new 3D post-processing system.
+  - Depth of field (near and far).
+  - Fog, supporting light transmittance, sun-oriented fog, depth fog and height fog.
+  - Tonemapping and Auto-exposure.
+  - Screen-space ambient occlusion.
+  - Multi-stage glow and bloom, supporting optional bicubic upscaling for better quality.
+  - Color grading and various adjustments.
+- Rewritten audio engine from scratch.
+  - Supports audio routing with arbitrary number of channels, including Area-based audio redirection ([video](https://youtu.be/K2XOBaJ5OQ0)).
+  - More than a dozen of audio effects included.
+- Rewritten 3D physics using [Bullet](http://bulletphysics.org/).
+- UDP-based high-level networking API using [ENet](http://enet.bespin.org/).
+- IPv6 support for all of the engine's networking APIs.
+- Visual scripting.
+- Rewritten import system.
+  - Assets are now referenced with their source files, then imported in a transparent manner by the engine.
+  - Imported assets are now cached in a `.import` directory, making distribution and versioning easier.
+  - Support for ETC2 compression.
+  - Support for uncompressed Targa (.tga) textures, allowing for faster importing.
+- Rewritten export system.
+  - GPU-based texture compression can now be tweaked per-target.
+  - Support for exporting resource packs to build DLC / content addons.
+- Improved GDScript.
+  - Pattern matching using the `match` keyword.
+  - `$` shorthand for `get_node()`.
+  - Setters and getters for node properties.
+  - Underscores in number literals are now allowed for improved readability (for example,`1_000_000`).
+  - Improved performance (+20% to +40%, based on various benchmarks).
+- [Feature tags](http://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html) in the Project Settings, for custom per-platform settings.
+- Full support for the [glTF 2.0](https://www.khronos.org/gltf/) 3D interchange format.
+- Freelook and fly navigation to the 3D editor.
+- Built-in editor logging (logging standard output to a file), disabled by default.
+- Improved, more intuitive file chooser in the editor.
+- Smoothed out 3D editor zooming, panning and movement.
+- Toggleable rendering information box in the 3D editor viewport.
+  - FPS display can also be enabled in the editor viewport.
+- Ability to render the 3D editor viewport at half resolution to achieve better performance.
+- GDNative for binding languages like C++ to Godot as dynamic libraries.
+  - Community bindings for [D](https://github.com/GodotNativeTools/godot-d), [Nim](https://github.com/pragmagic/godot-nim) and [Python](https://github.com/touilleMan/godot-python) are available.
+- Editor settings and export templates are now versioned, making it easier to use several Godot versions on the same system.
+- Optional soft shadows for 2D rendering.
+- HDR sky support.
+- Ability to toggle V-Sync while the project is running.
+- Panorama sky support (sphere maps).
+- Support for WebM videos (VP8/VP9 with Vorbis/Opus).
+- Exporting to HTML5 using WebAssembly.
+- C# support using Mono.
+  - The Mono module is disabled by default, and needs to be compiled in at build-time.
+  - The latest Mono version (5.4) can be used, fully supporting C# 7.0.
+- Support for rasterizing SVG to images on-the-fly, using the nanosvg library.
+  - Editor icons are now in SVG format, making them better-looking at non-integer scales.
+  - Due to the library used, only simpler SVGs are well-supported, more complex SVGs may not render correctly.
+- Support for oversampling DynamicFonts, keeping them sharp when scaled to high resolutions.
+- Improved StyleBoxFlat.
+  - Border widths can now be set per-corner.
+  - Support for anti-aliased rounded and beveled corners.
+  - Support for soft drop shadows.
+- VeryLoDPI (75%) and MiDPI (150%) scaling modes for the editor.
+- Improved internationalization support for projects.
+  - Language changes are now effective without reloading the current scene.
+- Implemented missing features in the HTML5 platform.
+  - Cursor style changes.
+  - Cursor capturing and hiding.
+- Improved styling and presentation of HTML5 exports.
+  - A spinner is now displayed during loading.
+- Rewritten the 2D and 3D particle systems.
+  - Particles are now GPU-based, allowing their use in much higher quantities than before.
+  - Meshes can now be used as particles.
+  - Particles can now be emitted from a mesh's shape.
+  - Properties can now be modified over time using an editable curve.
+  - Custom particle shaders can now be used.
+- New editor theme, with customizable base color, highlight color and contrast.
+  - A light editor theme option is now available, with icons suited to light backgrounds.
+  - Alternative dark gray and Arc colors are available out of the box.
+- New adaptive text editor theme, adjusting automatically based on the editor colors.
+- Support for macOS trackpad gestures in the editor.
+- Exporting to macOS now creates a `.dmg` disk image if exporting from an editor running on macOS.
+  - Signing the macOS export now is possible if running macOS (requires a valid code signing certificate).
+- Exporting to Windows now changes the exported project's icon using `rcedit` (requires WINE if exporting from Linux or macOS).
+- Improved build system.
+  - Support for compiling using Visual Studio 2017.
+  - [SCons](http://scons.org/) 3.0 and Python 3 are now supported (SCons 2.5 and Python 2.7 still work).
+  - Link-time optimization can now be enabled by passing `use_lto=yes` to the SCons command line.
+    - Produces faster and sometimes smaller binaries.
+    - Currently only supported with GCC and MSVC.
+  - Added a progress percentage when compiling Godot.
+  - `.zip` archives are automatically created when compiling HTML5 export templates.
+- Easier and more powerful way to create editor plugins with EditorPlugin and related APIs.
+
+### Changed
+
+- Increased the default low-processor-usage mode FPS limit (60 → 125).
+  - This makes the editor smoother and more responsive.
+- Increased the default 3D editor camera's field of view (55 → 70).
+- Increased the default 3D Camera node's field of view (65 → 70).
+- Changed the default editor font (Droid Sans → [Noto Sans](https://www.google.com/get/noto/)).
+- Changed the default script editor font (Source Code Pro → [Hack](http://sourcefoundry.org/hack/))
+- Renamed `engine.cfg` to `project.godot`.
+  - This allows users to open a project by double-clicking the file if Godot is associated to `.godot` files.
+- Some methods from the `OS` singleton were moved to the new `Engine` singleton.
+- Switched from [GLEW](http://glew.sourceforge.net/) to [GLAD](http://glad.dav1d.de/) for OpenGL wrapping.
+- Changed the SCons build flag for simple logs (`colored=yes` → `verbose=no`).
+- The HTML5 platform now uses WebGL 2.0 (instead of 1.0).
+- Redesigned the Godot logo to be more legible at small sizes.
+
+### Deprecated
+
+- `opacity` and `self_opacity` are replaced by `modulate` and `self_modulate` in all 2D nodes, allowing for full color changes in addition to opacity changes.
+
+### Removed
+
+- Skybox support.
+  - Replaced with panorama skies, which are easier to import.
+- Opus audio codec support.
+  - This is due to the way the new audio engine is designed.
+- HTML5 export using asm.js.
+  - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
+
+[Unreleased]: https://github.com/godotengine/godot/compare/3.0-stable...HEAD
+[3.0]: https://github.com/godotengine/godot/compare/2.1-stable...3.0-stable

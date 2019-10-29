@@ -1,7 +1,37 @@
+/*************************************************************************/
+/*  key_mapping_haiku.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include <InterfaceDefs.h>
 
+#include "core/os/keyboard.h"
 #include "key_mapping_haiku.h"
-#include "os/keyboard.h"
 
 struct _HaikuTranslatePair {
 	unsigned int keysym;
@@ -54,7 +84,7 @@ static _HaikuTranslatePair _fn_to_keycode[] = {
 static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_BACKSPACE, B_BACKSPACE },
 	{ KEY_TAB, B_TAB },
-	{ KEY_RETURN, B_RETURN },
+	{ KEY_ENTER, B_RETURN },
 	{ KEY_CAPSLOCK, B_CAPS_LOCK },
 	{ KEY_ESCAPE, B_ESCAPE },
 	{ KEY_SPACE, B_SPACE },
@@ -70,7 +100,7 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_INSERT, B_INSERT },
 	{ KEY_DELETE, B_DELETE },
 	// { KEY_HELP, ??? },
-	
+
 	{ KEY_0, (0x30) },
 	{ KEY_1, (0x31) },
 	{ KEY_2, (0x32) },
@@ -108,7 +138,7 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_Y, (0x79) },
 	{ KEY_Z, (0x7A) },
 
-/*
+	/*
 { KEY_PLAY, VK_PLAY},// (0xFA)
 { KEY_STANDBY,VK_SLEEP },//(0x5F)
 { KEY_BACK,VK_BROWSER_BACK},// (0xA6)
@@ -149,22 +179,48 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 };
 
 unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
-	if (raw_char == B_INSERT && key == 0x64) { return KEY_KP_0; }
-	if (raw_char == B_END && key == 0x58) { return KEY_KP_1; }
-	if (raw_char == B_DOWN_ARROW && key == 0x59) { return KEY_KP_2; }
-	if (raw_char == B_PAGE_DOWN && key == 0x5A) { return KEY_KP_3; }
-	if (raw_char == B_LEFT_ARROW && key == 0x48) { return KEY_KP_4; }
-	if (raw_char == 0x35 && key == 0x49) { return KEY_KP_5; }
-	if (raw_char == B_RIGHT_ARROW && key == 0x4A) { return KEY_KP_6; }
-	if (raw_char == B_HOME && key == 0x37) { return KEY_KP_7; }
-	if (raw_char == B_UP_ARROW && key == 0x38) { return KEY_KP_8; }
-	if (raw_char == B_PAGE_UP && key == 0x39) { return KEY_KP_9; }
-	if (raw_char == 0x2F && key == 0x23) { return KEY_KP_DIVIDE; }
-	if (raw_char == 0x2D && key == 0x25) { return KEY_KP_SUBSTRACT; }
-	if (raw_char == B_DELETE && key == 0x65) { return KEY_KP_PERIOD; }
+	if (raw_char == B_INSERT && key == 0x64) {
+		return KEY_KP_0;
+	}
+	if (raw_char == B_END && key == 0x58) {
+		return KEY_KP_1;
+	}
+	if (raw_char == B_DOWN_ARROW && key == 0x59) {
+		return KEY_KP_2;
+	}
+	if (raw_char == B_PAGE_DOWN && key == 0x5A) {
+		return KEY_KP_3;
+	}
+	if (raw_char == B_LEFT_ARROW && key == 0x48) {
+		return KEY_KP_4;
+	}
+	if (raw_char == 0x35 && key == 0x49) {
+		return KEY_KP_5;
+	}
+	if (raw_char == B_RIGHT_ARROW && key == 0x4A) {
+		return KEY_KP_6;
+	}
+	if (raw_char == B_HOME && key == 0x37) {
+		return KEY_KP_7;
+	}
+	if (raw_char == B_UP_ARROW && key == 0x38) {
+		return KEY_KP_8;
+	}
+	if (raw_char == B_PAGE_UP && key == 0x39) {
+		return KEY_KP_9;
+	}
+	if (raw_char == 0x2F && key == 0x23) {
+		return KEY_KP_DIVIDE;
+	}
+	if (raw_char == 0x2D && key == 0x25) {
+		return KEY_KP_SUBTRACT;
+	}
+	if (raw_char == B_DELETE && key == 0x65) {
+		return KEY_KP_PERIOD;
+	}
 
 	if (raw_char == 0x10) {
-		for(int i = 0; _fn_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+		for (int i = 0; _fn_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 			if (_fn_to_keycode[i].keycode == key) {
 				return _fn_to_keycode[i].keysym;
 			}
@@ -173,7 +229,7 @@ unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
 		return KEY_UNKNOWN;
 	}
 
-	for(int i = 0; _hb_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+	for (int i = 0; _hb_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 		if (_hb_to_keycode[i].keycode == raw_char) {
 			return _hb_to_keycode[i].keysym;
 		}
@@ -183,7 +239,7 @@ unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
 }
 
 unsigned int KeyMappingHaiku::get_modifier_keysym(int32 key) {
-	for(int i = 0; _mod_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+	for (int i = 0; _mod_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 		if ((_mod_to_keycode[i].keycode & key) != 0) {
 			return _mod_to_keycode[i].keysym;
 		}

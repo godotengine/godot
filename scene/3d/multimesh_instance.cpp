@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,29 +27,23 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "multimesh_instance.h"
-
-
-
-
 
 void MultiMeshInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_multimesh","multimesh"),&MultiMeshInstance::set_multimesh);
-	ObjectTypeDB::bind_method(_MD("get_multimesh"),&MultiMeshInstance::get_multimesh);
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"multimesh",PROPERTY_HINT_RESOURCE_TYPE,"MultiMesh"), _SCS("set_multimesh"), _SCS("get_multimesh"));
-
-
+	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance::set_multimesh);
+	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance::get_multimesh);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
 }
 
-void MultiMeshInstance::set_multimesh(const Ref<MultiMesh>& p_multimesh) {
+void MultiMeshInstance::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 
-	multimesh=p_multimesh;
+	multimesh = p_multimesh;
 	if (multimesh.is_valid())
 		set_base(multimesh->get_rid());
 	else
 		set_base(RID());
-
 }
 
 Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
@@ -56,11 +51,9 @@ Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
 	return multimesh;
 }
 
+PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
 
-
-DVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
-
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 AABB MultiMeshInstance::get_aabb() const {
@@ -72,10 +65,7 @@ AABB MultiMeshInstance::get_aabb() const {
 }
 
 MultiMeshInstance::MultiMeshInstance() {
-
 }
 
 MultiMeshInstance::~MultiMeshInstance() {
-
-
 }

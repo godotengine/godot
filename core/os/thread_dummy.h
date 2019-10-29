@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,31 +27,32 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef THREAD_DUMMY_H
 #define THREAD_DUMMY_H
 
-#include "thread.h"
-#include "mutex.h"
-#include "semaphore.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class ThreadDummy : public Thread {
 
-	static Thread* create(ThreadCreateCallback p_callback,void * p_user,const Settings& p_settings=Settings());
+	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
-	virtual ID get_ID() const { return 0; };
+	virtual ID get_id() const { return 0; };
 
 	static void make_default();
 };
 
 class MutexDummy : public Mutex {
 
-	static Mutex* create(bool p_recursive);
+	static Mutex *create(bool p_recursive);
 
 public:
-
-	virtual void lock() {};
-	virtual void unlock() {};
+	virtual void lock(){};
+	virtual void unlock(){};
 	virtual Error try_lock() { return OK; };
 
 	static void make_default();
@@ -58,7 +60,7 @@ public:
 
 class SemaphoreDummy : public Semaphore {
 
-	static Semaphore* create();
+	static Semaphore *create();
 
 public:
 	virtual Error wait() { return OK; };
@@ -66,7 +68,22 @@ public:
 	virtual int get() const { return 0; }; ///< get semaphore value
 
 	static void make_default();
+};
 
+class RWLockDummy : public RWLock {
+
+	static RWLock *create();
+
+public:
+	virtual void read_lock() {}
+	virtual void read_unlock() {}
+	virtual Error read_try_lock() { return OK; }
+
+	virtual void write_lock() {}
+	virtual void write_unlock() {}
+	virtual Error write_try_lock() { return OK; }
+
+	static void make_default();
 };
 
 #endif

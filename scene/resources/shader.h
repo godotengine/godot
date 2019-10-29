@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,70 +27,65 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "resource.h"
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
+
 class Shader : public Resource {
 
-	OBJ_TYPE(Shader,Resource);
-	OBJ_SAVE_TYPE( Shader );
-	RES_BASE_EXTENSION("shd");
+	GDCLASS(Shader, Resource);
+	OBJ_SAVE_TYPE(Shader);
 
 public:
 	enum Mode {
 
-		MODE_MATERIAL,
+		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
-		MODE_POST_PROCESS,
+		MODE_PARTICLES,
 		MODE_MAX
 	};
+
 private:
 	RID shader;
 	Mode mode;
-	Dictionary _get_code();
-	void _set_code(const Dictionary& p_string);
-
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> VisualServer name translations, to make
-	// convertion fast and save memory.
+	// conversion fast and save memory.
 	mutable bool params_cache_dirty;
-	mutable Map<StringName,StringName> params_cache; //map a shader param to a material param..
-	Map<StringName,Ref<Texture> > default_textures;
+	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
+	Map<StringName, Ref<Texture> > default_textures;
 
-
-
+	virtual void _update_shader() const; //used for visual shader
 protected:
-
-
-
 	static void _bind_methods();
+
 public:
-
-
 	//void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	virtual Mode get_mode() const;
 
-	void set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs=0,int p_light_ofs=0);
-	String get_vertex_code() const;
-	String get_fragment_code() const;
-	String get_light_code() const;
+	void set_code(const String &p_code);
+	String get_code() const;
 
 	void get_param_list(List<PropertyInfo> *p_params) const;
-	bool has_param(const StringName& p_param) const;
+	bool has_param(const StringName &p_param) const;
 
-	void set_default_texture_param(const StringName& p_param, const Ref<Texture> &p_texture);
-	Ref<Texture> get_default_texture_param(const StringName& p_param) const;
-	void get_default_texture_param_list(List<StringName>* r_textures) const;
+	void set_default_texture_param(const StringName &p_param, const Ref<Texture> &p_texture);
+	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
+	void get_default_texture_param_list(List<StringName> *r_textures) const;
 
-	_FORCE_INLINE_ StringName remap_param(const StringName& p_param) const {
+	virtual bool is_text_shader() const;
+
+	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)
 			get_param_list(NULL);
 
-		const Map<StringName,StringName>::Element *E=params_cache.find(p_param);
+		const Map<StringName, StringName>::Element *E = params_cache.find(p_param);
 		if (E)
 			return E->get();
 		return StringName();
@@ -97,41 +93,25 @@ public:
 
 	virtual RID get_rid() const;
 
-	Shader(Mode p_mode);
+	Shader();
 	~Shader();
-
 };
 
-VARIANT_ENUM_CAST( Shader::Mode );
-
-class MaterialShader : public Shader {
-
-	OBJ_TYPE(MaterialShader,Shader);
-
-public:
-
-	MaterialShader() : Shader(MODE_MATERIAL) {};
-};
-
-class CanvasItemShader : public Shader {
-
-	OBJ_TYPE(CanvasItemShader,Shader);
-
-public:
-
-	CanvasItemShader() : Shader(MODE_CANVAS_ITEM) {};
-};
-
-
+VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-
+class ResourceFormatSaverShader : public ResourceFormatSaver {
+public:
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
+	virtual bool recognize(const RES &p_resource) const;
+};
 
 #endif // SHADER_H

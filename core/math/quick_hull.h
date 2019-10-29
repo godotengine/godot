@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,19 +27,18 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "aabb.h"
-#include "set.h"
-#include "list.h"
-#include "geometry.h"
+#include "core/list.h"
+#include "core/math/aabb.h"
+#include "core/math/geometry.h"
+#include "core/set.h"
 
 class QuickHull {
 
 public:
-
-
 	struct Edge {
 
 		union {
@@ -46,50 +46,52 @@ public:
 			uint64_t id;
 		};
 
-
-		bool operator<(const Edge& p_edge) const {
+		bool operator<(const Edge &p_edge) const {
 			return id < p_edge.id;
 		}
 
-		Edge(int p_vtx_a=0,int p_vtx_b=0) {
+		Edge(int p_vtx_a = 0, int p_vtx_b = 0) {
 
-			if (p_vtx_a>p_vtx_b) {
-				SWAP(p_vtx_a,p_vtx_b);
+			if (p_vtx_a > p_vtx_b) {
+				SWAP(p_vtx_a, p_vtx_b);
 			}
 
-			vertices[0]=p_vtx_a;
-			vertices[1]=p_vtx_b;
+			vertices[0] = p_vtx_a;
+			vertices[1] = p_vtx_b;
 		}
 	};
 
 	struct Face {
 
 		Plane plane;
-		int vertices[3];
+		uint32_t vertices[3];
 		Vector<int> points_over;
 
-		bool operator<(const Face& p_face) const {
+		bool operator<(const Face &p_face) const {
 
 			return points_over.size() < p_face.points_over.size();
 		}
-
 	};
-private:
 
+private:
 	struct FaceConnect {
-		List<Face>::Element *left,*right;
-		FaceConnect() { left=NULL; right=NULL; }
+		List<Face>::Element *left, *right;
+		FaceConnect() {
+			left = NULL;
+			right = NULL;
+		}
 	};
 	struct RetFaceConnect {
-		List<Geometry::MeshData::Face>::Element *left,*right;
-		RetFaceConnect() { left=NULL; right=NULL; }
+		List<Geometry::MeshData::Face>::Element *left, *right;
+		RetFaceConnect() {
+			left = NULL;
+			right = NULL;
+		}
 	};
 
 public:
-
 	static uint32_t debug_stop_after;
-	static Error build(const Vector<Vector3>& p_points,Geometry::MeshData& r_mesh);
-
+	static Error build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
 };
 
 #endif // QUICK_HULL_H

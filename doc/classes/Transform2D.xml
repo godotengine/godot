@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Transform2D" category="Built-In Types" version="3.2">
+	<brief_description>
+		2D transformation (3×2 matrix).
+	</brief_description>
+	<description>
+		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of two [member x] and [member y] [Vector2]s and an [member origin]. It is similar to a 3×2 matrix.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="Transform2D">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<description>
+				Constructs the transform from a 3D [Transform].
+			</description>
+		</method>
+		<method name="Transform2D">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="x_axis" type="Vector2">
+			</argument>
+			<argument index="1" name="y_axis" type="Vector2">
+			</argument>
+			<argument index="2" name="origin" type="Vector2">
+			</argument>
+			<description>
+				Constructs the transform from 3 [Vector2]s representing x, y, and origin.
+			</description>
+		</method>
+		<method name="Transform2D">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="rotation" type="float">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Constructs the transform from a given angle (in radians) and position.
+			</description>
+		</method>
+		<method name="affine_inverse">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Returns the inverse of the matrix.
+			</description>
+		</method>
+		<method name="basis_xform">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="v" type="Vector2">
+			</argument>
+			<description>
+				Transforms the given vector by this transform's basis (no translation).
+			</description>
+		</method>
+		<method name="basis_xform_inv">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="v" type="Vector2">
+			</argument>
+			<description>
+				Inverse-transforms the given vector by this transform's basis (no translation).
+			</description>
+		</method>
+		<method name="get_origin">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the transform's origin (translation).
+			</description>
+		</method>
+		<method name="get_rotation">
+			<return type="float">
+			</return>
+			<description>
+				Returns the transform's rotation (in radians).
+			</description>
+		</method>
+		<method name="get_scale">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the scale.
+			</description>
+		</method>
+		<method name="interpolate_with">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<argument index="1" name="weight" type="float">
+			</argument>
+			<description>
+				Returns a transform interpolated between this transform and another by a given weight (0-1).
+			</description>
+		</method>
+		<method name="inverse">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+			</description>
+		</method>
+		<method name="orthonormalized">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+			</description>
+		</method>
+		<method name="rotated">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="phi" type="float">
+			</argument>
+			<description>
+				Rotates the transform by the given angle (in radians).
+			</description>
+		</method>
+		<method name="scaled">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Scales the transform by the given factor.
+			</description>
+		</method>
+		<method name="translated">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+				Translates the transform by the given offset.
+			</description>
+		</method>
+		<method name="xform">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="v" type="Variant">
+			</argument>
+			<description>
+				Transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
+			</description>
+		</method>
+		<method name="xform_inv">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="v" type="Variant">
+			</argument>
+			<description>
+				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="origin" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
+			The transform's translation offset.
+		</member>
+		<member name="x" type="Vector2" setter="" getter="" default="Vector2( 1, 0 )">
+			The X axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+		</member>
+		<member name="y" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+			The Y axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+		</member>
+	</members>
+	<constants>
+		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+		</constant>
+		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the X axis.
+		</constant>
+		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the Y axis.
+		</constant>
+	</constants>
+</class>

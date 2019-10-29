@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,94 +27,106 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-
-#include "main/input_default.h"
+#include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/visual_server.h"
+#include "main/input_default.h"
+#ifdef __APPLE__
+#include "platform/osx/crash_handler_osx.h"
+#include "platform/osx/power_osx.h"
+#include "platform/osx/semaphore_osx.h"
+#else
+#include "platform/x11/crash_handler_x11.h"
+#include "platform/x11/power_x11.h"
+#endif
+#include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
-#include "servers/audio/audio_driver_dummy.h"
-#include "servers/physics_server.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/visual_server.h"
 
-//bitch
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_Server : public OS_Unix {
 
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;	
+	MainLoop *main_loop;
 
-	AudioDriverDummy driver_dummy;
 	bool grab;
-	
-	PhysicsServer *physics_server;
-	Physics2DServer *physics_2d_server;
 
 	virtual void delete_main_loop();
 	IP_Unix *ip_unix;
-
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	bool force_quit;
 
 	InputDefault *input;
 
+#ifdef __APPLE__
+	PowerOSX *power_manager;
+#else
+	PowerX11 *power_manager;
+#endif
 
+	CrashHandler crash_handler;
+	CameraServer *camera_server;
+
+	int video_driver_index;
+
+	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
 
 protected:
-
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;	
-	virtual VideoMode get_default_video_mode() const;
-	
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
+	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual void initialize_core();
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );    
+	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-
-	virtual String get_name();
-
-	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual String get_name() const;
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
-	virtual Point2 get_mouse_pos() const;
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
 	virtual MainLoop *get_main_loop() const;
-	
+
 	virtual bool can_draw() const;
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual Size2 get_window_size() const;
 
 	virtual void move_window_to_foreground();
 
 	void run();
+
+	virtual OS::PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
+
+	virtual String get_system_dir(SystemDir p_dir) const;
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
 
 	OS_Server();
 };

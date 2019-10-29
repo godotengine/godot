@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraServer" inherits="Object" category="Core" version="3.2">
+	<brief_description>
+		The CameraServer keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_feed">
+			<return type="void">
+			</return>
+			<argument index="0" name="feed" type="CameraFeed">
+			</argument>
+			<description>
+				Adds a camera feed to the camera server.
+			</description>
+		</method>
+		<method name="feeds">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of [CameraFeed]s.
+			</description>
+		</method>
+		<method name="get_feed">
+			<return type="CameraFeed">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the [CameraFeed] with this id.
+			</description>
+		</method>
+		<method name="get_feed_count">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of [CameraFeed]s registered.
+			</description>
+		</method>
+		<method name="remove_feed">
+			<return type="void">
+			</return>
+			<argument index="0" name="feed" type="CameraFeed">
+			</argument>
+			<description>
+				Removes a [CameraFeed].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="camera_feed_added">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Emitted when a [CameraFeed] is added (webcam is plugged in).
+			</description>
+		</signal>
+		<signal name="camera_feed_removed">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Emitted when a [CameraFeed] is removed (webcam is removed).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FEED_RGBA_IMAGE" value="0" enum="FeedImage">
+			The RGBA camera image.
+		</constant>
+		<constant name="FEED_YCBCR_IMAGE" value="0" enum="FeedImage">
+			The YCbCr camera image.
+		</constant>
+		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
+			The Y component camera image.
+		</constant>
+		<constant name="FEED_CBCR_IMAGE" value="1" enum="FeedImage">
+			The CbCr component camera image.
+		</constant>
+	</constants>
+</class>

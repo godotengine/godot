@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,84 +27,80 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "panel_container.h"
 
+#include "panel_container.h"
 
 Size2 PanelContainer::get_minimum_size() const {
 
-	Ref<StyleBox> style=get_stylebox("panel");
+	Ref<StyleBox> style;
 
+	if (has_stylebox("panel"))
+		style = get_stylebox("panel");
+	else
+		style = get_stylebox("panel", "PanelContainer");
 
 	Size2 ms;
-	for(int i=0;i<get_child_count();i++) {
+	for (int i = 0; i < get_child_count(); i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
-		ms.width = MAX(ms.width , minsize.width);
-		ms.height = MAX(ms.height , minsize.height);
-
-
+		ms.width = MAX(ms.width, minsize.width);
+		ms.height = MAX(ms.height, minsize.height);
 	}
 
 	if (style.is_valid())
-		ms+=style->get_minimum_size();
+		ms += style->get_minimum_size();
 	return ms;
-
 }
 
 void PanelContainer::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_DRAW) {
 
 		RID ci = get_canvas_item();
 		Ref<StyleBox> style;
 
 		if (has_stylebox("panel"))
-			style=get_stylebox("panel");
+			style = get_stylebox("panel");
 		else
-			style=get_stylebox("panel","PanelContainer");
+			style = get_stylebox("panel", "PanelContainer");
 
-		style->draw( ci, Rect2( Point2(), get_size() ) );
-
+		style->draw(ci, Rect2(Point2(), get_size()));
 	}
 
-	if (p_what==NOTIFICATION_SORT_CHILDREN) {
+	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 
 		Ref<StyleBox> style;
 
 		if (has_stylebox("panel"))
-			style=get_stylebox("panel");
+			style = get_stylebox("panel");
 		else
-			style=get_stylebox("panel","PanelContainer");
+			style = get_stylebox("panel", "PanelContainer");
 
 		Size2 size = get_size();
 		Point2 ofs;
 		if (style.is_valid()) {
-			size-=style->get_minimum_size();
-			ofs+=style->get_offset();
+			size -= style->get_minimum_size();
+			ofs += style->get_offset();
 		}
 
+		for (int i = 0; i < get_child_count(); i++) {
 
-
-		for(int i=0;i<get_child_count();i++) {
-
-			Control *c = get_child(i)->cast_to<Control>();
-			if (!c || !c->is_visible())
+			Control *c = Object::cast_to<Control>(get_child(i));
+			if (!c || !c->is_visible_in_tree())
 				continue;
 			if (c->is_set_as_toplevel())
 				continue;
 
-			fit_child_in_rect(c,Rect2(ofs,size));
-
+			fit_child_in_rect(c, Rect2(ofs, size));
 		}
 	}
 }
 
-PanelContainer::PanelContainer()
-{
+PanelContainer::PanelContainer() {
 }

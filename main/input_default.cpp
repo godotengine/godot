@@ -1,117 +1,144 @@
-#include "input_default.h"
-#include "servers/visual_server.h"
-#include "os/os.h"
-#include "input_map.h"
+/*************************************************************************/
+/*  input_default.cpp                                                    */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
-void InputDefault::SpeedTrack::update(const Vector2& p_delta_p) {
+#include "input_default.h"
+
+#include "core/input_map.h"
+#include "core/os/os.h"
+#include "main/default_controller_mappings.h"
+#include "scene/resources/texture.h"
+#include "servers/visual_server.h"
+
+void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
 
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
-	uint32_t tdiff = tick-last_tick;
+	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
-	last_tick=tick;
+	last_tick = tick;
 
+	accum += p_delta_p;
+	accum_t += delta_t;
 
-	accum+=p_delta_p;
-	accum_t+=delta_t;
+	if (accum_t > max_ref_frame * 10)
+		accum_t = max_ref_frame * 10;
 
-	if (accum_t>max_ref_frame*10)
-		accum_t=max_ref_frame*10;
-
-	while( accum_t>=min_ref_frame ) {
+	while (accum_t >= min_ref_frame) {
 
 		float slice_t = min_ref_frame / accum_t;
-		Vector2 slice = accum*slice_t;
-		accum=accum-slice;
-		accum_t-=min_ref_frame;
+		Vector2 slice = accum * slice_t;
+		accum = accum - slice;
+		accum_t -= min_ref_frame;
 
-		speed=(slice/min_ref_frame).linear_interpolate(speed,min_ref_frame/max_ref_frame);
+		speed = (slice / min_ref_frame).linear_interpolate(speed, min_ref_frame / max_ref_frame);
 	}
-
 }
 
 void InputDefault::SpeedTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
-	speed=Vector2();
-	accum_t=0;
+	speed = Vector2();
+	accum_t = 0;
 }
 
 InputDefault::SpeedTrack::SpeedTrack() {
 
-	 min_ref_frame=0.1;
-	 max_ref_frame=0.3;
-	 reset();
+	min_ref_frame = 0.1;
+	max_ref_frame = 0.3;
+	reset();
 }
 
-bool InputDefault::is_key_pressed(int p_scancode) {
+bool InputDefault::is_key_pressed(int p_scancode) const {
 
 	_THREAD_SAFE_METHOD_
 	return keys_pressed.has(p_scancode);
 }
 
-bool InputDefault::is_mouse_button_pressed(int p_button) {
+bool InputDefault::is_mouse_button_pressed(int p_button) const {
 
 	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask&(1<<p_button))!=0;
+	return (mouse_button_mask & (1 << (p_button - 1))) != 0;
 }
 
+static int _combine_device(int p_value, int p_device) {
 
-static int _combine_device(int p_value,int p_device) {
-
-	return p_value|(p_device<<20);
+	return p_value | (p_device << 20);
 }
 
-bool InputDefault::is_joy_button_pressed(int p_device, int p_button) {
+bool InputDefault::is_joy_button_pressed(int p_device, int p_button) const {
 
 	_THREAD_SAFE_METHOD_
-	return joy_buttons_pressed.has(_combine_device(p_button,p_device));
+	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
-bool InputDefault::is_action_pressed(const StringName& p_action) {
+bool InputDefault::is_action_pressed(const StringName &p_action) const {
 
-	if (custom_action_press.has(p_action))
-		return true; //simpler
+	return action_state.has(p_action) && action_state[p_action].pressed;
+}
 
-	const List<InputEvent> *alist = InputMap::get_singleton()->get_action_list(p_action);
-	if (!alist)
-		return NULL;
+bool InputDefault::is_action_just_pressed(const StringName &p_action) const {
 
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E)
+		return false;
 
-	for (const List<InputEvent>::Element *E=alist->front();E;E=E->next()) {
-
-
-		int device=E->get().device;
-
-		switch(E->get().type) {
-
-			case InputEvent::KEY: {
-
-				const InputEventKey &iek=E->get().key;
-				if ((keys_pressed.has(iek.scancode)))
-					return true;
-			} break;
-			case InputEvent::MOUSE_BUTTON: {
-
-				const InputEventMouseButton &iemb=E->get().mouse_button;
-				 if(mouse_button_mask&(1<<iemb.button_index))
-					 return true;
-			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
-
-				const InputEventJoystickButton &iejb=E->get().joy_button;
-				int c = _combine_device(iejb.button_index,device);
-				if (joy_buttons_pressed.has(c))
-					return true;
-			} break;
-		}
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
 	}
-
-	return false;
 }
 
-float InputDefault::get_joy_axis(int p_device,int p_axis) {
+bool InputDefault::is_action_just_released(const StringName &p_action) const {
+
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E)
+		return false;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return !E->get().pressed && E->get().idle_frame == Engine::get_singleton()->get_idle_frames();
+	}
+}
+
+float InputDefault::get_action_strength(const StringName &p_action) const {
+	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	if (!E)
+		return 0.0f;
+
+	return E->get().strength;
+}
+
+float InputDefault::get_joy_axis(int p_device, int p_axis) const {
 
 	_THREAD_SAFE_METHOD_
-	int c = _combine_device(p_axis,p_device);
+	int c = _combine_device(p_axis, p_device);
 	if (_joy_axis.has(c)) {
 		return _joy_axis[c];
 	} else {
@@ -125,13 +152,37 @@ String InputDefault::get_joy_name(int p_idx) {
 	return joy_names[p_idx].name;
 };
 
+Vector2 InputDefault::get_joy_vibration_strength(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return Vector2(joy_vibration[p_device].weak_magnitude, joy_vibration[p_device].strong_magnitude);
+	} else {
+		return Vector2(0, 0);
+	}
+}
+
+uint64_t InputDefault::get_joy_vibration_timestamp(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return joy_vibration[p_device].timestamp;
+	} else {
+		return 0;
+	}
+}
+
+float InputDefault::get_joy_vibration_duration(int p_device) {
+	if (joy_vibration.has(p_device)) {
+		return joy_vibration[p_device].duration;
+	} else {
+		return 0.f;
+	}
+}
+
 static String _hex_str(uint8_t p_byte) {
 
-	static const char* dict = "0123456789abcdef";
+	static const char *dict = "0123456789abcdef";
 	char ret[3];
 	ret[2] = 0;
 
-	ret[0] = dict[p_byte>>4];
+	ret[0] = dict[p_byte >> 4];
 	ret[1] = dict[p_byte & 0xf];
 
 	return ret;
@@ -140,359 +191,523 @@ static String _hex_str(uint8_t p_byte) {
 void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
 
 	_THREAD_SAFE_METHOD_
-			Joystick js;
+	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
-	js.mapping = -1;
-	js.hat_current = 0;
 
 	if (p_connected) {
 
 		String uidname = p_guid;
 		if (p_guid == "") {
 			int uidlen = MIN(p_name.length(), 16);
-			for (int i=0; i<uidlen; i++) {
+			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
 			};
 		};
 		js.uid = uidname;
-		//printf("looking for mappings for guid %ls\n", uidname.c_str());
-		int mapping = -1;
-		for (int i=0; i < map_db.size(); i++) {
+		js.connected = true;
+		int mapping = fallback_mapping;
+		for (int i = 0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
-				//printf("found mapping\n");
+				js.name = map_db[i].name;
 			};
 		};
 		js.mapping = mapping;
+	} else {
+		js.connected = false;
+		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+
+			if (i < JOY_AXIS_MAX)
+				set_joy_axis(p_idx, i, 0.0f);
+
+			int c = _combine_device(i, p_idx);
+			joy_buttons_pressed.erase(c);
+		};
 	};
 	joy_names[p_idx] = js;
 
 	emit_signal("joy_connection_changed", p_idx, p_connected);
 };
 
-Vector3 InputDefault::get_accelerometer() {
+Vector3 InputDefault::get_gravity() const {
+
+	_THREAD_SAFE_METHOD_
+	return gravity;
+}
+
+Vector3 InputDefault::get_accelerometer() const {
 
 	_THREAD_SAFE_METHOD_
 	return accelerometer;
 }
 
-void InputDefault::parse_input_event(const InputEvent& p_event) {
+Vector3 InputDefault::get_magnetometer() const {
 
 	_THREAD_SAFE_METHOD_
-	switch(p_event.type) {
+	return magnetometer;
+}
 
-		case InputEvent::KEY: {
+Vector3 InputDefault::get_gyroscope() const {
 
-			if (p_event.key.echo)
-				break;
-			if (p_event.key.scancode==0)
-				break;
+	_THREAD_SAFE_METHOD_
+	return gyroscope;
+}
 
-		//	print_line(p_event);
+void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
-			if (p_event.key.pressed)
-				keys_pressed.insert(p_event.key.scancode);
-			else
-				keys_pressed.erase(p_event.key.scancode);
-		} break;
-		case InputEvent::MOUSE_BUTTON: {
+	_parse_input_event_impl(p_event, false);
+}
 
-			if (p_event.mouse_button.doubleclick)
-				break;
+void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 
-			if (p_event.mouse_button.pressed)
-				mouse_button_mask|=(1<<p_event.mouse_button.button_index);
-			else
-				mouse_button_mask&=~(1<<p_event.mouse_button.button_index);
+	// Notes on mouse-touch emulation:
+	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
+	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
+	//   emulated back to touch events in an endless loop.
+	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
+	//   require additional handling by this class.
 
-			if (main_loop && emulate_touch && p_event.mouse_button.button_index==1) {
-				InputEventScreenTouch touch_event;
-				touch_event.index=0;
-				touch_event.pressed=p_event.mouse_button.pressed;
-				touch_event.x=p_event.mouse_button.x;
-				touch_event.y=p_event.mouse_button.y;
-				InputEvent ev;
-				ev.type=InputEvent::SCREEN_TOUCH;
-				ev.screen_touch=touch_event;
-				main_loop->input_event(ev);
+	_THREAD_SAFE_METHOD_
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
+		if (k->is_pressed())
+			keys_pressed.insert(k->get_scancode());
+		else
+			keys_pressed.erase(k->get_scancode());
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid()) {
+
+		if (mb->is_pressed()) {
+			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
+		} else {
+			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
+		}
+
+		Point2 pos = mb->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == 1) {
+			Ref<InputEventScreenTouch> touch_event;
+			touch_event.instance();
+			touch_event->set_pressed(mb->is_pressed());
+			touch_event->set_position(mb->get_position());
+			main_loop->input_event(touch_event);
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+
+		Point2 pos = mm->get_global_position();
+		if (mouse_pos != pos) {
+			set_mouse_position(pos);
+		}
+
+		if (main_loop && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask() & 1) {
+			Ref<InputEventScreenDrag> drag_event;
+			drag_event.instance();
+
+			drag_event->set_position(mm->get_position());
+			drag_event->set_relative(mm->get_relative());
+			drag_event->set_speed(mm->get_speed());
+
+			main_loop->input_event(drag_event);
+		}
+	}
+
+	Ref<InputEventScreenTouch> st = p_event;
+
+	if (st.is_valid()) {
+
+		if (st->is_pressed()) {
+			SpeedTrack &track = touch_speed_track[st->get_index()];
+			track.reset();
+		} else {
+			// Since a pointer index may not occur again (OSs may or may not reuse them),
+			// imperatively remove it from the map to keep no fossil entries in it
+			touch_speed_track.erase(st->get_index());
+		}
+
+		if (emulate_mouse_from_touch) {
+
+			bool translate = false;
+			if (st->is_pressed()) {
+				if (mouse_from_touch_index == -1) {
+					translate = true;
+					mouse_from_touch_index = st->get_index();
+				}
+			} else {
+				if (st->get_index() == mouse_from_touch_index) {
+					translate = true;
+					mouse_from_touch_index = -1;
+				}
 			}
-		} break;
-		case InputEvent::MOUSE_MOTION: {
 
-			if (main_loop && emulate_touch && p_event.mouse_motion.button_mask&1) {
-				InputEventScreenDrag drag_event;
-				drag_event.index=0;
-				drag_event.x=p_event.mouse_motion.x;
-				drag_event.y=p_event.mouse_motion.y;
-				drag_event.relative_x=p_event.mouse_motion.relative_x;
-				drag_event.relative_y=p_event.mouse_motion.relative_y;
-				drag_event.speed_x=p_event.mouse_motion.speed_x;
-				drag_event.speed_y=p_event.mouse_motion.speed_y;
+			if (translate) {
+				Ref<InputEventMouseButton> button_event;
+				button_event.instance();
 
-				InputEvent ev;
-				ev.type=InputEvent::SCREEN_DRAG;
-				ev.screen_drag=drag_event;
+				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+				button_event->set_position(st->get_position());
+				button_event->set_global_position(st->get_position());
+				button_event->set_pressed(st->is_pressed());
+				button_event->set_button_index(BUTTON_LEFT);
+				if (st->is_pressed()) {
+					button_event->set_button_mask(mouse_button_mask | (1 << (BUTTON_LEFT - 1)));
+				} else {
+					button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
+				}
 
-				main_loop->input_event(ev);
+				_parse_input_event_impl(button_event, true);
 			}
+		}
+	}
 
-		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
+	Ref<InputEventScreenDrag> sd = p_event;
 
-			int c = _combine_device(p_event.joy_button.button_index,p_event.device);
+	if (sd.is_valid()) {
 
-			if (p_event.joy_button.pressed)
-				joy_buttons_pressed.insert(c);
-			else
-				joy_buttons_pressed.erase(c);
-		} break;
-		case InputEvent::JOYSTICK_MOTION: {
-			set_joy_axis(p_event.device, p_event.joy_motion.axis, p_event.joy_motion.axis_value);
-		} break;
+		SpeedTrack &track = touch_speed_track[sd->get_index()];
+		track.update(sd->get_relative());
+		sd->set_speed(track.speed);
 
+		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
+
+			Ref<InputEventMouseMotion> motion_event;
+			motion_event.instance();
+
+			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_position(sd->get_position());
+			motion_event->set_global_position(sd->get_position());
+			motion_event->set_relative(sd->get_relative());
+			motion_event->set_speed(sd->get_speed());
+			motion_event->set_button_mask(mouse_button_mask);
+
+			_parse_input_event_impl(motion_event, true);
+		}
+	}
+
+	Ref<InputEventJoypadButton> jb = p_event;
+
+	if (jb.is_valid()) {
+
+		int c = _combine_device(jb->get_button_index(), jb->get_device());
+
+		if (jb->is_pressed())
+			joy_buttons_pressed.insert(c);
+		else
+			joy_buttons_pressed.erase(c);
+	}
+
+	Ref<InputEventJoypadMotion> jm = p_event;
+
+	if (jm.is_valid()) {
+		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
+	}
+
+	Ref<InputEventGesture> ge = p_event;
+
+	if (ge.is_valid()) {
+
+		if (main_loop) {
+			main_loop->input_event(ge);
+		}
+	}
+
+	for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
+		if (InputMap::get_singleton()->event_is_action(p_event, E->key())) {
+
+			// Save the action's state
+			if (!p_event->is_echo() && is_action_pressed(E->key()) != p_event->is_action_pressed(E->key())) {
+				Action action;
+				action.physics_frame = Engine::get_singleton()->get_physics_frames();
+				action.idle_frame = Engine::get_singleton()->get_idle_frames();
+				action.pressed = p_event->is_action_pressed(E->key());
+				action.strength = 0.f;
+				action_state[E->key()] = action;
+			}
+			action_state[E->key()].strength = p_event->get_action_strength(E->key());
+		}
 	}
 
 	if (main_loop)
 		main_loop->input_event(p_event);
-
 }
 
-void InputDefault::set_joy_axis(int p_device,int p_axis,float p_value) {
+void InputDefault::set_joy_axis(int p_device, int p_axis, float p_value) {
 
 	_THREAD_SAFE_METHOD_
-	int c = _combine_device(p_axis,p_device);
-	_joy_axis[c]=p_value;
+	int c = _combine_device(p_axis, p_device);
+	_joy_axis[c] = p_value;
 }
 
-void InputDefault::set_accelerometer(const Vector3& p_accel) {
+void InputDefault::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
+	_THREAD_SAFE_METHOD_
+	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
+		return;
+	}
+	VibrationInfo vibration;
+	vibration.weak_magnitude = p_weak_magnitude;
+	vibration.strong_magnitude = p_strong_magnitude;
+	vibration.duration = p_duration;
+	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
+	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::stop_joy_vibration(int p_device) {
+	_THREAD_SAFE_METHOD_
+	VibrationInfo vibration;
+	vibration.weak_magnitude = 0;
+	vibration.strong_magnitude = 0;
+	vibration.duration = 0;
+	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
+	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::vibrate_handheld(int p_duration_ms) {
+	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+}
+
+void InputDefault::set_gravity(const Vector3 &p_gravity) {
 
 	_THREAD_SAFE_METHOD_
 
-	accelerometer=p_accel;
+	gravity = p_gravity;
+}
 
+void InputDefault::set_accelerometer(const Vector3 &p_accel) {
+
+	_THREAD_SAFE_METHOD_
+
+	accelerometer = p_accel;
+}
+
+void InputDefault::set_magnetometer(const Vector3 &p_magnetometer) {
+
+	_THREAD_SAFE_METHOD_
+
+	magnetometer = p_magnetometer;
+}
+
+void InputDefault::set_gyroscope(const Vector3 &p_gyroscope) {
+
+	_THREAD_SAFE_METHOD_
+
+	gyroscope = p_gyroscope;
 }
 
 void InputDefault::set_main_loop(MainLoop *p_main_loop) {
-	main_loop=p_main_loop;
-
+	main_loop = p_main_loop;
 }
 
-void InputDefault::set_mouse_pos(const Point2& p_posf) {
+void InputDefault::set_mouse_position(const Point2 &p_posf) {
 
-	mouse_speed_track.update(p_posf-mouse_pos);
-	mouse_pos=p_posf;
-	if (custom_cursor.is_valid()) {
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
-	}
+	mouse_speed_track.update(p_posf - mouse_pos);
+	mouse_pos = p_posf;
 }
 
-Point2 InputDefault::get_mouse_pos() const {
+Point2 InputDefault::get_mouse_position() const {
 
 	return mouse_pos;
 }
-Point2 InputDefault::get_mouse_speed() const {
+Point2 InputDefault::get_last_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }
 
 int InputDefault::get_mouse_button_mask() const {
 
-	return OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
-void InputDefault::warp_mouse_pos(const Vector2& p_to) {
+void InputDefault::warp_mouse_position(const Vector2 &p_to) {
 
-	OS::get_singleton()->warp_mouse_pos(p_to);
+	OS::get_singleton()->warp_mouse_position(p_to);
 }
 
+Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
+
+	// The relative distance reported for the next event after a warp is in the boundaries of the
+	// size of the rect on that axis, but it may be greater, in which case there's not problem as fmod()
+	// will warp it, but if the pointer has moved in the opposite direction between the pointer relocation
+	// and the subsequent event, the reported relative distance will be less than the size of the rect
+	// and thus fmod() will be disabled for handling the situation.
+	// And due to this mouse warping mechanism being stateless, we need to apply some heuristics to
+	// detect the warp: if the relative distance is greater than the half of the size of the relevant rect
+	// (checked per each axis), it will be considered as the consequence of a former pointer warp.
+
+	const Point2i rel_sgn(p_motion->get_relative().x >= 0.0f ? 1 : -1, p_motion->get_relative().y >= 0.0 ? 1 : -1);
+	const Size2i warp_margin = p_rect.size * 0.5f;
+	const Point2i rel_warped(
+			Math::fmod(p_motion->get_relative().x + rel_sgn.x * warp_margin.x, p_rect.size.x) - rel_sgn.x * warp_margin.x,
+			Math::fmod(p_motion->get_relative().y + rel_sgn.y * warp_margin.y, p_rect.size.y) - rel_sgn.y * warp_margin.y);
+
+	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
+	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
+	if (pos_warped != pos_local) {
+		OS::get_singleton()->warp_mouse_position(pos_warped + p_rect.position);
+	}
+
+	return rel_warped;
+}
 
 void InputDefault::iteration(float p_step) {
-
-
 }
 
-void InputDefault::action_press(const StringName& p_action) {
+void InputDefault::action_press(const StringName &p_action, float p_strength) {
 
-	if (custom_action_press.has(p_action)) {
+	Action action;
 
-		custom_action_press[p_action]++;
-	} else {
-		custom_action_press[p_action]=1;
+	action.physics_frame = Engine::get_singleton()->get_physics_frames();
+	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.pressed = true;
+	action.strength = p_strength;
+
+	action_state[p_action] = action;
+}
+
+void InputDefault::action_release(const StringName &p_action) {
+
+	Action action;
+
+	action.physics_frame = Engine::get_singleton()->get_physics_frames();
+	action.idle_frame = Engine::get_singleton()->get_idle_frames();
+	action.pressed = false;
+	action.strength = 0.f;
+
+	action_state[p_action] = action;
+}
+
+void InputDefault::set_emulate_touch_from_mouse(bool p_emulate) {
+
+	emulate_touch_from_mouse = p_emulate;
+}
+
+bool InputDefault::is_emulating_touch_from_mouse() const {
+
+	return emulate_touch_from_mouse;
+}
+
+// Calling this whenever the game window is focused helps unstucking the "touch mouse"
+// if the OS or its abstraction class hasn't properly reported that touch pointers raised
+void InputDefault::ensure_touch_mouse_raised() {
+
+	if (mouse_from_touch_index != -1) {
+		mouse_from_touch_index = -1;
+
+		Ref<InputEventMouseButton> button_event;
+		button_event.instance();
+
+		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+		button_event->set_position(mouse_pos);
+		button_event->set_global_position(mouse_pos);
+		button_event->set_pressed(false);
+		button_event->set_button_index(BUTTON_LEFT);
+		button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
+
+		_parse_input_event_impl(button_event, true);
 	}
 }
 
-void InputDefault::action_release(const StringName& p_action){
+void InputDefault::set_emulate_mouse_from_touch(bool p_emulate) {
 
-	ERR_FAIL_COND(!custom_action_press.has(p_action));
-	custom_action_press[p_action]--;
-	if (custom_action_press[p_action]==0) {
-		custom_action_press.erase(p_action);
-	}
+	emulate_mouse_from_touch = p_emulate;
 }
 
-void InputDefault::set_emulate_touch(bool p_emulate) {
+bool InputDefault::is_emulating_mouse_from_touch() const {
 
-	emulate_touch=p_emulate;
+	return emulate_mouse_from_touch;
 }
 
-bool InputDefault::is_emulating_touchscreen() const {
+Input::CursorShape InputDefault::get_default_cursor_shape() const {
 
-	return emulate_touch;
+	return default_shape;
 }
 
-void InputDefault::set_custom_mouse_cursor(const RES& p_cursor,const Vector2& p_hotspot) {
-	if (custom_cursor==p_cursor)
+void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+
+	if (default_shape == p_shape)
 		return;
 
-	custom_cursor=p_cursor;
+	default_shape = p_shape;
+	// The default shape is set in Viewport::_gui_input_event. To instantly
+	// see the shape in the viewport we need to trigger a mouse motion event.
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	mm->set_position(mouse_pos);
+	mm->set_global_position(mouse_pos);
+	parse_input_event(mm);
+}
 
-	if (p_cursor.is_null()) {
-		set_mouse_mode(MOUSE_MODE_VISIBLE);
-		VisualServer::get_singleton()->cursor_set_visible(false);
-	} else {
-		set_mouse_mode(MOUSE_MODE_HIDDEN);
-		VisualServer::get_singleton()->cursor_set_visible(true);
-		VisualServer::get_singleton()->cursor_set_texture(custom_cursor->get_rid(),p_hotspot);
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
+Input::CursorShape InputDefault::get_current_cursor_shape() const {
+
+	return (Input::CursorShape)OS::get_singleton()->get_cursor_shape();
+}
+
+void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
+	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
+}
+
+void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!use_accumulated_input) {
+		parse_input_event(p_event);
+		return;
+	}
+	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+		return; //event was accumulated, exit
+	}
+
+	accumulated_events.push_back(p_event);
+}
+void InputDefault::flush_accumulated_events() {
+
+	while (accumulated_events.front()) {
+		parse_input_event(accumulated_events.front()->get());
+		accumulated_events.pop_front();
 	}
 }
 
-void InputDefault::set_mouse_in_window(bool p_in_window) {
+void InputDefault::set_use_accumulated_input(bool p_enable) {
 
-	if (custom_cursor.is_valid()) {
-
-		if (p_in_window) {
-			set_mouse_mode(MOUSE_MODE_HIDDEN);
-			VisualServer::get_singleton()->cursor_set_visible(true);
-		} else {
-			set_mouse_mode(MOUSE_MODE_VISIBLE);
-			VisualServer::get_singleton()->cursor_set_visible(false);
-		}
-
-	}
+	use_accumulated_input = p_enable;
 }
 
-// from github.com/gabomdq/SDL_GameControllerDB
-static const char *s_ControllerMappings [] =
-{
-	#ifdef WINDOWS_ENABLED
-	"8f0e1200000000000000504944564944,Acme,platform:Windows,x:b2,a:b0,b:b1,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b5,rightshoulder:b6,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a3,righty:a2,",
-	"341a3608000000000000504944564944,Afterglow PS3 Controller,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,platform:Windows,",
-	"ffff0000000000000000504944564944,GameStop Gamepad,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,platform:Windows,",
-	"6d0416c2000000000000504944564944,Generic DirectInput Controller,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,platform:Windows,",
-	"6d0419c2000000000000504944564944,Logitech F710 Gamepad,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,platform:Windows,",
-	"88880803000000000000504944564944,PS3 Controller,a:b2,b:b1,back:b8,dpdown:h0.8,dpleft:h0.4,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b9,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:b7,rightx:a3,righty:a4,start:b11,x:b0,y:b3,platform:Windows,",
-	"4c056802000000000000504944564944,PS3 Controller,a:b14,b:b13,back:b0,dpdown:b6,dpleft:b7,dpright:b5,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b1,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b11,rightstick:b2,righttrigger:b9,rightx:a2,righty:a3,start:b3,x:b15,y:b12,platform:Windows,",
-	"25090500000000000000504944564944,PS3 DualShock,a:b2,b:b1,back:b9,dpdown:h0.8,dpleft:h0.4,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b6,leftstick:b10,lefttrigger:b4,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b11,righttrigger:b5,rightx:a2,righty:a3,start:b8,x:b0,y:b3,platform:Windows,",
-	"4c05c405000000000000504944564944,PS4 Controller,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a4,rightx:a2,righty:a5,start:b9,x:b0,y:b3,platform:Windows,",
-	"6d0418c2000000000000504944564944,Logitech RumblePad 2 USB,platform:Windows,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"36280100000000000000504944564944,OUYA Controller,platform:Windows,a:b0,b:b3,y:b2,x:b1,start:b14,guide:b15,leftstick:b6,rightstick:b7,leftshoulder:b4,rightshoulder:b5,dpup:b8,dpleft:b10,dpdown:b9,dpright:b11,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:b12,righttrigger:b13,",
-	"4f0400b3000000000000504944564944,Thrustmaster Firestorm Dual Power,a:b0,b:b2,y:b3,x:b1,start:b10,guide:b8,back:b9,leftstick:b11,rightstick:b12,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,platform:Windows,",
-	"00f00300000000000000504944564944,RetroUSB.com RetroPad,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,platform:Windows,",
-	"00f0f100000000000000504944564944,RetroUSB.com Super RetroPort,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,platform:Windows,",
-	"28040140000000000000504944564944,GamePad Pro USB,platform:Windows,a:b1,b:b2,x:b0,y:b3,back:b8,start:b9,leftshoulder:b4,rightshoulder:b5,leftx:a0,lefty:a1,lefttrigger:b6,righttrigger:b7,",
-	"ff113133000000000000504944564944,SVEN X-PAD,platform:Windows,a:b2,b:b3,y:b1,x:b0,start:b5,back:b4,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a4,lefttrigger:b8,righttrigger:b9,",
-	"8f0e0300000000000000504944564944,Piranha xtreme,platform:Windows,x:b3,a:b2,b:b1,y:b0,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b6,lefttrigger:b4,rightshoulder:b7,righttrigger:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a3,righty:a2,",
-	"8f0e0d31000000000000504944564944,Multilaser JS071 USB,platform:Windows,a:b1,b:b2,y:b3,x:b0,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,",
-	"10080300000000000000504944564944,PS2 USB,platform:Windows,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a4,righty:a2,lefttrigger:b4,righttrigger:b5,",
-	"79000600000000000000504944564944,G-Shark GS-GP702,a:b2,b:b1,x:b3,y:b0,back:b8,start:b9,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a4,lefttrigger:b6,righttrigger:b7,platform:Windows,",
-	"4b12014d000000000000504944564944,NYKO AIRFLO,a:b0,b:b1,x:b2,y:b3,back:b8,guide:b10,start:b9,leftstick:a0,rightstick:a2,leftshoulder:a3,rightshoulder:b5,dpup:h0.1,dpdown:h0.0,dpleft:h0.8,dpright:h0.2,leftx:h0.6,lefty:h0.12,rightx:h0.9,righty:h0.4,lefttrigger:b6,righttrigger:b7,platform:Windows,",
-	"d6206dca000000000000504944564944,PowerA Pro Ex,a:b1,b:b2,x:b0,y:b3,back:b8,guide:b12,start:b9,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.0,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,platform:Windows,",
-	"a3060cff000000000000504944564944,Saitek P2500,a:b2,b:b3,y:b1,x:b0,start:b4,guide:b10,back:b5,leftstick:b8,rightstick:b9,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,platform:Windows,",
-	"8f0e0300000000000000504944564944,Trust GTX 28,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,platform:Windows,",
-	"4f0415b3000000000000504944564944,Thrustmaster Dual Analog 3.2,platform:Windows,x:b1,a:b0,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b5,rightshoulder:b6,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"6f0e1e01000000000000504944564944,Rock Candy Gamepad for PS3,platform:Windows,a:b1,b:b2,x:b0,y:b3,back:b8,start:b9,guide:b12,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,",
-	"83056020000000000000504944564944,iBuffalo USB 2-axis 8-button Gamepad,a:b1,b:b0,y:b2,x:b3,start:b7,back:b6,leftshoulder:b4,rightshoulder:b5,leftx:a0,lefty:a1,platform:Windows,",
-	"c911f055000000000000504944564944,GAMEPAD,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
-	"79000600000000000000504944564944,Generic Speedlink,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a4,lefttrigger:b6,righttrigger:b7,",
-	"__XINPUT_DEVICE__,XInput Gamepad,a:b12,b:b13,x:b14,y:b15,start:b4,back:b5,leftstick:b6,rightstick:b7,leftshoulder:b8,rightshoulder:b9,dpup:b0,dpdown:b1,dpleft:b2,dpright:b3,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
+void InputDefault::release_pressed_events() {
 
-	#endif
-	#ifdef OSX_ENABLED
-	"0500000047532047616d657061640000,GameStop Gamepad,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
-	"6d0400000000000016c2000000000000,Logitech F310 Gamepad (DInput),a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,", /* Guide button doesn't seem to be sent in DInput mode. */
-	"6d0400000000000018c2000000000000,Logitech F510 Gamepad (DInput),a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,",
-	"6d040000000000001fc2000000000000,Logitech F710 Gamepad (XInput),a:b0,b:b1,back:b9,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b10,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,start:b8,x:b2,y:b3,",
-	"6d0400000000000019c2000000000000,Logitech Wireless Gamepad (DInput),a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,", /* This includes F710 in DInput mode and the "Logitech Cordless RumblePad 2", at the very least. */
-	"4c050000000000006802000000000000,PS3 Controller,a:b14,b:b13,back:b0,dpdown:b6,dpleft:b7,dpright:b5,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b1,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b11,rightstick:b2,righttrigger:b9,rightx:a2,righty:a3,start:b3,x:b15,y:b12,",
-	"4c05000000000000c405000000000000,PS4 Controller,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a4,rightx:a2,righty:a5,start:b9,x:b0,y:b3,",
-	"5e040000000000008e02000000000000,X360 Controller,a:b0,b:b1,back:b9,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b10,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,start:b8,x:b2,y:b3,",
-	#endif
-	#if X11_ENABLED
-	"0500000047532047616d657061640000,GameStop Gamepad,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
-	"03000000ba2200002010000001010000,Jess Technology USB Game Controller,a:b2,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:b7,rightx:a3,righty:a2,start:b9,x:b3,y:b0,",
-	"030000006d04000019c2000010010000,Logitech Cordless RumblePad 2,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,",
-	"030000006d0400001dc2000014400000,Logitech F310 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000006d0400001ec2000020200000,Logitech F510 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000006d04000019c2000011010000,Logitech F710 Gamepad (DInput),a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b0,y:b3,",
-	"030000006d0400001fc2000005030000,Logitech F710 Gamepad (XInput),a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000004c0500006802000011010000,PS3 Controller,a:b14,b:b13,back:b0,dpdown:b6,dpleft:b7,dpright:b5,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b1,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b11,rightstick:b2,righttrigger:b9,rightx:a2,righty:a3,start:b3,x:b15,y:b12,",
-	"030000004c050000c405000011010000,Sony DualShock 4,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:b6,righttrigger:b7,",
-	"03000000de280000ff11000001000000,Valve Streaming Gamepad,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000005e0400008e02000014010000,X360 Controller,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000005e0400008e02000010010000,X360 Controller,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"030000005e0400001907000000010000,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-	"03000000100800000100000010010000,Twin USB PS2 Adapter,a:b2,b:b1,y:b0,x:b3,start:b9,guide:,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a2,lefttrigger:b4,righttrigger:b5,",
-	"03000000a306000023f6000011010000,Saitek Cyborg V.1 Game Pad,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a4,lefttrigger:b6,righttrigger:b7,",
-	"030000004f04000020b3000010010000,Thrustmaster 2 in 1 DT,a:b0,b:b2,y:b3,x:b1,start:b9,guide:,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,",
-	"030000004f04000023b3000000010000,Thrustmaster Dual Trigger 3-in-1,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a5,",
-	"030000008f0e00000300000010010000,GreenAsia Inc. USB Joystick,x:b3,a:b2,b:b1,y:b0,back:b8,start:b9,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b6,lefttrigger:b4,rightshoulder:b7,righttrigger:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a3,righty:a2,",
-	"030000008f0e00001200000010010000,GreenAsia Inc. USB Joystick,x:b2,a:b0,b:b1,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b5,rightshoulder:b6,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a3,righty:a2,",
-	"030000005e0400009102000007010000,X360 Wireless Controller,a:b0,b:b1,y:b3,x:b2,start:b7,guide:b8,back:b6,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:b13,dpleft:b11,dpdown:b14,dpright:b12,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,",
-	"030000006d04000016c2000010010000,Logitech Logitech Dual Action,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"03000000260900008888000000010000,GameCube {WiseGroup USB box},a:b0,b:b2,y:b3,x:b1,start:b7,leftshoulder:,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,rightstick:,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,",
-	"030000006d04000011c2000010010000,Logitech WingMan Cordless RumblePad,a:b0,b:b1,y:b4,x:b3,start:b8,guide:b5,back:b2,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:b9,righttrigger:b10,",
-	"030000006d04000018c2000010010000,Logitech Logitech RumblePad 2 USB,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"05000000d6200000ad0d000001000000,Moga Pro,a:b0,b:b1,y:b3,x:b2,start:b6,leftstick:b7,rightstick:b8,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a5,righttrigger:a4,",
-	"030000004f04000009d0000000010000,Thrustmaster Run N Drive Wireless PS3,a:b1,b:b2,x:b0,y:b3,start:b9,guide:b12,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,",
-	"030000004f04000008d0000000010000,Thrustmaster Run N Drive  Wireless,a:b1,b:b2,x:b0,y:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:b6,righttrigger:b7,",
-	"0300000000f000000300000000010000,RetroUSB.com RetroPad,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
-	"0300000000f00000f100000000010000,RetroUSB.com Super RetroPort,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
-	"030000006f0e00001f01000000010000,Generic X-Box pad,x:b2,a:b0,b:b1,y:b3,back:b6,guide:b8,start:b7,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:a2,rightshoulder:b5,righttrigger:a5,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
-	"03000000280400000140000000010000,Gravis GamePad Pro USB ,x:b0,a:b1,b:b2,y:b3,back:b8,start:b9,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftx:a0,lefty:a1,",
-	"030000005e0400008902000021010000,Microsoft X-Box pad v2 (US),x:b3,a:b0,b:b1,y:b4,back:b6,start:b7,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b5,lefttrigger:a2,rightshoulder:b2,righttrigger:a5,leftstick:b8,rightstick:b9,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
-	"030000006f0e00001e01000011010000,Rock Candy Gamepad for PS3,a:b1,b:b2,x:b0,y:b3,back:b8,start:b9,guide:b12,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,",
-	"03000000250900000500000000010000,Sony PS2 pad with SmartJoy adapter,a:b2,b:b1,y:b0,x:b3,start:b8,back:b9,leftstick:b10,rightstick:b11,leftshoulder:b6,rightshoulder:b7,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b4,righttrigger:b5,",
-	"030000008916000000fd000024010000,Razer Onza Tournament,a:b0,b:b1,y:b3,x:b2,start:b7,guide:b8,back:b6,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:b13,dpleft:b11,dpdown:b14,dpright:b12,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,",
-	"030000004f04000000b3000010010000,Thrustmaster Firestorm Dual Power,a:b0,b:b2,y:b3,x:b1,start:b10,guide:b8,back:b9,leftstick:b11,rightstick:b12,leftshoulder:b4,rightshoulder:b6,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b5,righttrigger:b7,",
-	"03000000ad1b000001f5000033050000,Hori Pad EX Turbo 2,a:b0,b:b1,y:b3,x:b2,start:b7,guide:b8,back:b6,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,",
-	"050000004c050000c405000000010000,PS4 Controller (Bluetooth),a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a4,rightx:a2,righty:a5,start:b9,x:b0,y:b3,",
-	"060000004c0500006802000000010000,PS3 Controller (Bluetooth),a:b14,b:b13,y:b12,x:b15,start:b3,guide:b16,back:b0,leftstick:b1,rightstick:b2,leftshoulder:b10,rightshoulder:b11,dpup:b4,dpleft:b7,dpdown:b6,dpright:b5,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b8,righttrigger:b9,",
-	"03000000790000000600000010010000,DragonRise Inc. Generic USB Joystick,x:b3,a:b2,b:b1,y:b0,back:b8,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
-	"03000000666600000488000000010000,Super Joy Box 5 Pro,a:b2,b:b1,x:b3,y:b0,back:b9,start:b8,leftshoulder:b6,rightshoulder:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b4,righttrigger:b5,dpup:b12,dpleft:b15,dpdown:b14,dpright:b13,",
-	"05000000362800000100000002010000,OUYA Game Controller,a:b0,b:b3,dpdown:b9,dpleft:b10,dpright:b11,dpup:b8,guide:b14,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,x:b1,y:b2,",
-	"05000000362800000100000003010000,OUYA Game Controller,a:b0,b:b3,dpdown:b9,dpleft:b10,dpright:b11,dpup:b8,guide:b14,leftshoulder:b4,leftstick:b6,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,x:b1,y:b2,",
-	"030000008916000001fd000024010000,Razer Onza Classic Edition,x:b2,a:b0,b:b1,y:b3,back:b6,guide:b8,start:b7,dpleft:b11,dpdown:b14,dpright:b12,dpup:b13,leftshoulder:b4,lefttrigger:a2,rightshoulder:b5,righttrigger:a5,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
-	"030000005e040000d102000001010000,Microsoft X-Box One pad,x:b2,a:b0,b:b1,y:b3,back:b6,guide:b8,start:b7,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b4,lefttrigger:a2,rightshoulder:b5,righttrigger:a5,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a3,righty:a4,",
-	"03000000790000001100000010010000,RetroLink Saturn Classic Controller,platform:Linux,x:b3,a:b0,b:b1,y:b4,back:b5,guide:b2,start:b8,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
-	"050000007e0500003003000001000000,Nintendo Wii U Pro Controller,platform:Linux,a:b0,b:b1,x:b3,y:b2,back:b8,start:b9,guide:b10,leftshoulder:b4,rightshoulder:b5,leftstick:b11,rightstick:b12,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,dpup:b13,dpleft:b15,dpdown:b14,dpright:b16,",
-	"030000005e0400008e02000004010000,Microsoft X-Box 360 pad,platform:Linux,a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,guide:b8,leftshoulder:b4,rightshoulder:b5,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,",
-	"030000000d0f00002200000011010000,HORI CO.,LTD. REAL ARCADE Pro.V3,platform:Linux,x:b0,a:b1,b:b2,y:b3,back:b8,guide:b12,start:b9,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,",
-	"030000000d0f00001000000011010000,HORI CO.,LTD. FIGHTING STICK 3,platform:Linux,x:b0,a:b1,b:b2,y:b3,back:b8,guide:b12,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7",
-	"03000000f0250000c183000010010000,Goodbetterbest Ltd USB Controller,platform:Linux,x:b0,a:b1,b:b2,y:b3,back:b8,guide:b12,start:b9,dpleft:h0.8,dpdown:h0.0,dpdown:h0.4,dpright:h0.0,dpright:h0.2,dpup:h0.0,dpup:h0.1,leftshoulder:h0.0,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"0000000058626f782047616d65706100,Xbox Gamepad (userspace driver),platform:Linux,a:b0,b:b1,x:b2,y:b3,start:b7,back:b6,guide:b8,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,lefttrigger:a5,righttrigger:a4,leftstick:b9,rightstick:b10,leftx:a0,lefty:a1,rightx:a2,righty:a3,",
-	"03000000ff1100003133000010010000,PC Game Controller,a:b2,b:b1,y:b0,x:b3,start:b9,back:b8,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7,platform:Linux,",
-	#endif
+	flush_accumulated_events(); // this is needed to release actions strengths
 
-	#if defined(__ANDROID__)
-	"4e564944494120436f72706f72617469,NVIDIA Controller,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
-	#endif
+	keys_pressed.clear();
+	joy_buttons_pressed.clear();
+	_joy_axis.clear();
 
-	#ifdef JAVASCRIPT_ENABLED
-	"Default HTML5 Gamepad, Default Mapping,leftx:a0,lefty:a1,dpdown:b13,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a3,dpleft:b14,lefttrigger:a6,x:b2,dpup:b12,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b0,dpright:b15,righttrigger:a7,b:b1,",
-	"303534632d303236382d536f6e792050,PS3 Controller USB,leftx:a0,lefty:a1,dpdown:b6,rightstick:b2,rightshoulder:b11,rightx:a2,start:b3,righty:a3,dpleft:b7,lefttrigger:b8,x:b15,dpup:b4,back:b0,leftstick:b1,leftshoulder:b10,y:b12,a:b14,dpright:b5,righttrigger:b9,b:b13,",
-	"303534632d303563342d536f6e792043,PS4 Controller USB,leftx:a0,lefty:a1,dpdown:a7,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a5,dpleft:a6,lefttrigger:a3,x:b0,dpup:a7,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:a6,righttrigger:a4,b:b2,",
-	"303435652d303238652d4d6963726f73,Nacon X360 Clone(XInput),leftx:a0,lefty:a1,dpdown:a7,rightstick:b10,rightshoulder:b5,rightx:a3,start:b7,righty:a4,dpleft:a6,lefttrigger:a2,x:b2,dpup:a7,back:b6,leftstick:b9,leftshoulder:b4,y:b3,a:b0,dpright:a6,righttrigger:a5,b:b1,",
-	#endif
-	NULL
-};
+	for (Map<StringName, InputDefault::Action>::Element *E = action_state.front(); E; E = E->next()) {
+		if (E->get().pressed)
+			action_release(E->key());
+	}
+}
 
 InputDefault::InputDefault() {
 
-	mouse_button_mask=0;
-	emulate_touch=false;
-	main_loop=NULL;
+	use_accumulated_input = true;
+	mouse_button_mask = 0;
+	emulate_touch_from_mouse = false;
+	emulate_mouse_from_touch = false;
+	mouse_from_touch_index = -1;
+	main_loop = NULL;
+	default_shape = CURSOR_ARROW;
 
 	hat_map_default[HAT_UP].type = TYPE_BUTTON;
 	hat_map_default[HAT_UP].index = JOY_DPAD_UP;
@@ -510,45 +725,46 @@ InputDefault::InputDefault() {
 	hat_map_default[HAT_LEFT].index = JOY_DPAD_LEFT;
 	hat_map_default[HAT_LEFT].value = 0;
 
+	fallback_mapping = -1;
+
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
 
 		Vector<String> entries = env_mapping.split("\n");
-		for (int i=0; i < entries.size(); i++) {
+		for (int i = 0; i < entries.size(); i++) {
 			if (entries[i] == "")
 				continue;
 			parse_mapping(entries[i]);
-		};
-	};
+		}
+	}
 
 	int i = 0;
-	while (s_ControllerMappings[i]) {
+	while (DefaultControllerMappings::mappings[i]) {
 
-		parse_mapping(s_ControllerMappings[i++]);
-	};
+		parse_mapping(DefaultControllerMappings::mappings[i++]);
+	}
 }
 
-
-uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed) {
+void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
-	Joystick& joy = joy_names[p_device];
+	Joypad &joy = joy_names[p_device];
 	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
 	if (joy.last_buttons[p_button] == p_pressed) {
-		return p_last_id;
-		//printf("same button value\n");
+		return;
 	}
 	joy.last_buttons[p_button] = p_pressed;
 	if (joy.mapping == -1) {
-		return _button_event(p_last_id, p_device, p_button, p_pressed);
-	};
+		_button_event(p_device, p_button, p_pressed);
+		return;
+	}
 
-	Map<int,JoyEvent>::Element* el = map_db[joy.mapping].buttons.find(p_button);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
 		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
 		//return _button_event(p_last_id, p_device, p_button, p_pressed);
-		return p_last_id;
-	};
+		return;
+	}
 
 	JoyEvent map = el->get();
 	if (map.type == TYPE_BUTTON) {
@@ -556,54 +772,68 @@ uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_pressed ? 1.0f : 0.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			p_last_id = _axis_event(p_last_id, p_device, axis, value);
+			_axis_event(p_device, axis, value);
 		}
-		return _button_event(p_last_id, p_device, map.index, p_pressed);
-	};
+		_button_event(p_device, map.index, p_pressed);
+		return;
+	}
 
 	if (map.type == TYPE_AXIS) {
-		return _axis_event(p_last_id, p_device, map.index, p_pressed ? 1.0 : 0.0);
-	};
+		_axis_event(p_device, map.index, p_pressed ? 1.0 : 0.0);
+	}
+	// no event?
+}
 
-	return p_last_id; // no event?
-};
-
-uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, const JoyAxis& p_value) {
+void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	_THREAD_SAFE_METHOD_;
 
-	Joystick& joy = joy_names[p_device];
+	ERR_FAIL_INDEX(p_axis, JOY_AXIS_MAX);
+
+	Joypad &joy = joy_names[p_device];
 
 	if (joy.last_axis[p_axis] == p_value.value) {
-		return p_last_id;
+		return;
 	}
 
 	if (p_value.value > joy.last_axis[p_axis]) {
 
-		if (p_value.value < joy.last_axis[p_axis] + joy.filter ) {
+		if (p_value.value < joy.last_axis[p_axis] + joy.filter) {
 
-			return p_last_id;
+			return;
 		}
-	}
-	else if (p_value.value > joy.last_axis[p_axis] - joy.filter) {
+	} else if (p_value.value > joy.last_axis[p_axis] - joy.filter) {
 
-		return p_last_id;
+		return;
 	}
 
+	//when changing direction quickly, insert fake event to release pending inputmap actions
+	float last = joy.last_axis[p_axis];
+	if (p_value.min == 0 && (last < 0.25 || last > 0.75) && (last - 0.5) * (p_value.value - 0.5) < 0) {
+		JoyAxis jx;
+		jx.min = p_value.min;
+		jx.value = p_value.value < 0.5 ? 0.6 : 0.4;
+		joy_axis(p_device, p_axis, jx);
+	} else if (ABS(last) > 0.5 && last * p_value.value < 0) {
+		JoyAxis jx;
+		jx.min = p_value.min;
+		jx.value = p_value.value < 0 ? 0.1 : -0.1;
+		joy_axis(p_device, p_axis, jx);
+	}
 
 	joy.last_axis[p_axis] = p_value.value;
 	float val = p_value.min == 0 ? -1.0f + 2.0f * p_value.value : p_value.value;
 
 	if (joy.mapping == -1) {
-		return _axis_event(p_last_id, p_device, p_axis, val);
+		_axis_event(p_device, p_axis, val);
+		return;
 	};
 
-	Map<int,JoyEvent>::Element* el = map_db[joy.mapping].axis.find(p_axis);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
 		//return _axis_event(p_last_id, p_device, p_axis, p_value);
-		return p_last_id;
+		return;
 	};
-
 
 	JoyEvent map = el->get();
 
@@ -612,7 +842,7 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			p_last_id = _axis_event(p_last_id, p_device, axis, value);
+			_axis_event(p_device, axis, value);
 		}
 
 		if (map.index == JOY_DPAD_UP || map.index == JOY_DPAD_DOWN) {
@@ -621,16 +851,17 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 			if (!pressed) {
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_UP, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_UP, false);
+					_button_event(p_device, JOY_DPAD_UP, false);
 				}
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_DOWN, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_DOWN, false);
+					_button_event(p_device, JOY_DPAD_DOWN, false);
 				}
 			}
-			if ( pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return p_last_id;
+			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
+				return;
 			}
-			return _button_event(p_last_id, p_device, button, true);
+			_button_event(p_device, button, true);
+			return;
 		}
 		if (map.index == JOY_DPAD_LEFT || map.index == JOY_DPAD_RIGHT) {
 			bool pressed = p_value.value != 0.0f;
@@ -638,40 +869,42 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 			if (!pressed) {
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_LEFT, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_LEFT, false);
+					_button_event(p_device, JOY_DPAD_LEFT, false);
 				}
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_RIGHT, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_RIGHT, false);
+					_button_event(p_device, JOY_DPAD_RIGHT, false);
 				}
 			}
-			if ( pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return p_last_id;
+			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
+				return;
 			}
-			return _button_event(p_last_id, p_device, button, true);
+			_button_event(p_device, button, true);
+			return;
 		}
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
-		bool pressed = p_value.value > deadzone ? true : false;
-		if (pressed == joy_buttons_pressed.has(_combine_device(map.index,p_device))) {
+		bool pressed = p_value.value > deadzone;
+		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
 			// button already pressed or released, this is an axis bounce value
-			return p_last_id;
-		};
-		return _button_event(p_last_id, p_device, map.index, pressed);
-	};
+			return;
+		}
+		_button_event(p_device, map.index, pressed);
+		return;
+	}
 
 	if (map.type == TYPE_AXIS) {
 
-		return _axis_event(p_last_id, p_device, map.index, val );
-	};
+		_axis_event(p_device, map.index, val);
+		return;
+	}
 	//printf("invalid mapping\n");
-	return p_last_id;
-};
+}
 
-uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
+void InputDefault::joy_hat(int p_device, int p_val) {
 
 	_THREAD_SAFE_METHOD_;
-	const Joystick& joy = joy_names[p_device];
+	const Joypad &joy = joy_names[p_device];
 
-	JoyEvent* map;
+	const JoyEvent *map;
 
 	if (joy.mapping == -1) {
 		map = hat_map_default;
@@ -681,68 +914,60 @@ uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 
 	int cur_val = joy_names[p_device].hat_current;
 
-	if ( (p_val & HAT_MASK_UP) != (cur_val & HAT_MASK_UP) ) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
-	};
+	if ((p_val & HAT_MASK_UP) != (cur_val & HAT_MASK_UP)) {
+		_button_event(p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
+	}
 
-	if ( (p_val & HAT_MASK_RIGHT) != (cur_val & HAT_MASK_RIGHT) ) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
-	};
-	if ( (p_val & HAT_MASK_DOWN) != (cur_val & HAT_MASK_DOWN) ) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
-	};
-	if ( (p_val & HAT_MASK_LEFT) != (cur_val & HAT_MASK_LEFT) ) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
-	};
+	if ((p_val & HAT_MASK_RIGHT) != (cur_val & HAT_MASK_RIGHT)) {
+		_button_event(p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
+	}
+	if ((p_val & HAT_MASK_DOWN) != (cur_val & HAT_MASK_DOWN)) {
+		_button_event(p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
+	}
+	if ((p_val & HAT_MASK_LEFT) != (cur_val & HAT_MASK_LEFT)) {
+		_button_event(p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
+	}
 
 	joy_names[p_device].hat_current = p_val;
+}
 
-	return p_last_id;
-};
+void InputDefault::_button_event(int p_device, int p_index, bool p_pressed) {
 
-uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed) {
-
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_BUTTON;
-	ievent.device = p_device;
-	ievent.ID = ++p_last_id;
-	ievent.joy_button.button_index = p_index;
-	ievent.joy_button.pressed = p_pressed;
+	Ref<InputEventJoypadButton> ievent;
+	ievent.instance();
+	ievent->set_device(p_device);
+	ievent->set_button_index(p_index);
+	ievent->set_pressed(p_pressed);
 
 	parse_input_event(ievent);
+}
 
-	return p_last_id;
-};
+void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
 
-uint32_t InputDefault::_axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value) {
+	Ref<InputEventJoypadMotion> ievent;
+	ievent.instance();
+	ievent->set_device(p_device);
+	ievent->set_axis(p_axis);
+	ievent->set_axis_value(p_value);
 
-	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_MOTION;
-	ievent.device = p_device;
-	ievent.ID = ++p_last_id;
-	ievent.joy_motion.axis = p_axis;
-	ievent.joy_motion.axis_value = p_value;
-
-	parse_input_event( ievent );
-
-	return p_last_id;
+	parse_input_event(ievent);
 };
 
 InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
 	// string names of the SDL buttons in the same order as input_event.h godot buttons
-	static const char* buttons[] = {"a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", NULL };
+	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", NULL };
 
-	static const char* axis[] = {"leftx", "lefty", "rightx", "righty", NULL };
+	static const char *axis[] = { "leftx", "lefty", "rightx", "righty", NULL };
 
 	JoyEvent ret;
 	ret.type = -1;
+	ret.index = 0;
 
-	int i=0;
+	int i = 0;
 	while (buttons[i]) {
 
 		if (p_to == buttons[i]) {
-			//printf("mapping button %s\n", buttons[i]);
 			ret.type = TYPE_BUTTON;
 			ret.index = i;
 			ret.value = 0;
@@ -770,12 +995,19 @@ void InputDefault::parse_mapping(String p_mapping) {
 
 	_THREAD_SAFE_METHOD_;
 	JoyDeviceMapping mapping;
+	for (int i = 0; i < HAT_MAX; ++i)
+		mapping.hat[i].index = 1024 + i;
 
 	Vector<String> entry = p_mapping.split(",");
+	if (entry.size() < 2) {
+		return;
+	}
+
 	CharString uid;
 	uid.resize(17);
 
 	mapping.uid = entry[0];
+	mapping.name = entry[1];
 
 	int idx = 1;
 	while (++idx < entry.size()) {
@@ -783,8 +1015,8 @@ void InputDefault::parse_mapping(String p_mapping) {
 		if (entry[idx] == "")
 			continue;
 
-		String from = entry[idx].get_slice(":", 1);
-		String to = entry[idx].get_slice(":", 0);
+		String from = entry[idx].get_slice(":", 1).replace(" ", "");
+		String to = entry[idx].get_slice(":", 0).replace(" ", "");
 
 		JoyEvent to_event = _find_to_event(to);
 		if (to_event.type == -1)
@@ -793,30 +1025,30 @@ void InputDefault::parse_mapping(String p_mapping) {
 		String etype = from.substr(0, 1);
 		if (etype == "a") {
 
-			int aid = from.substr(1, from.length()-1).to_int();
+			int aid = from.substr(1, from.length() - 1).to_int();
 			mapping.axis[aid] = to_event;
 
 		} else if (etype == "b") {
 
-			int bid = from.substr(1, from.length()-1).to_int();
+			int bid = from.substr(1, from.length() - 1).to_int();
 			mapping.buttons[bid] = to_event;
 
 		} else if (etype == "h") {
 
 			int hat_value = from.get_slice(".", 1).to_int();
 			switch (hat_value) {
-			case 1:
-				mapping.hat[HAT_UP] = to_event;
-				break;
-			case 2:
-				mapping.hat[HAT_RIGHT] = to_event;
-				break;
-			case 4:
-				mapping.hat[HAT_DOWN] = to_event;
-				break;
-			case 8:
-				mapping.hat[HAT_LEFT] = to_event;
-				break;
+				case 1:
+					mapping.hat[HAT_UP] = to_event;
+					break;
+				case 2:
+					mapping.hat[HAT_RIGHT] = to_event;
+					break;
+				case 4:
+					mapping.hat[HAT_DOWN] = to_event;
+					break;
+				case 8:
+					mapping.hat[HAT_LEFT] = to_event;
+					break;
 			};
 		};
 	};
@@ -829,23 +1061,33 @@ void InputDefault::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
 		String uid = entry[0];
-		for (int i=0; i<joy_names.size(); i++) {
+		for (int i = 0; i < joy_names.size(); i++) {
 			if (uid == joy_names[i].uid) {
-				joy_names[i].mapping = map_db.size() -1;
+				joy_names[i].mapping = map_db.size() - 1;
 			}
 		}
 	}
 }
 
 void InputDefault::remove_joy_mapping(String p_guid) {
-	for (int i=map_db.size()-1; i >= 0;i--) {
+	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove(i);
 		}
 	}
-	for (int i=0; i<joy_names.size(); i++) {
+	for (int i = 0; i < joy_names.size(); i++) {
 		if (joy_names[i].uid == p_guid) {
 			joy_names[i].mapping = -1;
+		}
+	}
+}
+
+void InputDefault::set_fallback_mapping(String p_guid) {
+
+	for (int i = 0; i < map_db.size(); i++) {
+		if (map_db[i].uid == p_guid) {
+			fallback_mapping = i;
+			return;
 		}
 	}
 }
@@ -862,10 +1104,92 @@ String InputDefault::get_joy_guid(int p_device) const {
 
 //platforms that use the remapping system can override and call to these ones
 bool InputDefault::is_joy_mapped(int p_device) {
-	return joy_names[p_device].mapping != -1 ? true : false;
+	int mapping = joy_names[p_device].mapping;
+	return mapping != -1 ? (mapping != fallback_mapping) : false;
 }
 
 String InputDefault::get_joy_guid_remapped(int p_device) const {
+	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
 	return joy_names[p_device].uid;
 }
 
+Array InputDefault::get_connected_joypads() {
+	Array ret;
+	Map<int, Joypad>::Element *elem = joy_names.front();
+	while (elem) {
+		if (elem->get().connected) {
+			ret.push_back(elem->key());
+		}
+		elem = elem->next();
+	}
+	return ret;
+}
+
+static const char *_buttons[JOY_BUTTON_MAX] = {
+	"Face Button Bottom",
+	"Face Button Right",
+	"Face Button Left",
+	"Face Button Top",
+	"L",
+	"R",
+	"L2",
+	"R2",
+	"L3",
+	"R3",
+	"Select",
+	"Start",
+	"DPAD Up",
+	"DPAD Down",
+	"DPAD Left",
+	"DPAD Right"
+};
+
+static const char *_axes[JOY_AXIS_MAX] = {
+	"Left Stick X",
+	"Left Stick Y",
+	"Right Stick X",
+	"Right Stick Y",
+	"",
+	"",
+	"L2",
+	"R2",
+	"",
+	""
+};
+
+String InputDefault::get_joy_button_string(int p_button) {
+	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX, "");
+	return _buttons[p_button];
+}
+
+int InputDefault::get_joy_button_index_from_string(String p_button) {
+	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
+		if (p_button == _buttons[i]) {
+			return i;
+		}
+	}
+	ERR_FAIL_V(-1);
+}
+
+int InputDefault::get_unused_joy_id() {
+	for (int i = 0; i < JOYPADS_MAX; i++) {
+		if (!joy_names.has(i) || !joy_names[i].connected) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+String InputDefault::get_joy_axis_string(int p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "");
+	return _axes[p_axis];
+}
+
+int InputDefault::get_joy_axis_index_from_string(String p_axis) {
+	for (int i = 0; i < JOY_AXIS_MAX; i++) {
+		if (p_axis == _axes[i]) {
+			return i;
+		}
+	}
+	ERR_FAIL_V(-1);
+}

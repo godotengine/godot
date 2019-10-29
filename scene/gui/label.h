@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,18 +27,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef LABEL_H
 #define LABEL_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Label : public Control {
 
-	OBJ_TYPE( Label, Control );
-public:
+	GDCLASS(Label, Control);
 
+public:
 	enum Align {
 
 		ALIGN_LEFT,
@@ -58,6 +58,7 @@ private:
 	Align align;
 	VAlign valign;
 	String text;
+	String xl_text;
 	bool autowrap;
 	bool clip;
 	Size2 minsize;
@@ -69,15 +70,21 @@ private:
 	struct WordCache {
 
 		enum {
-			CHAR_NEWLINE=-1,
-			CHAR_WRAPLINE=-2
+			CHAR_NEWLINE = -1,
+			CHAR_WRAPLINE = -2
 		};
 		int char_pos; // if -1, then newline
 		int word_len;
 		int pixel_width;
 		int space_count;
 		WordCache *next;
-		WordCache() { char_pos=0; word_len=0; pixel_width=0; next=0; space_count=0;}
+		WordCache() {
+			char_pos = 0;
+			word_len = 0;
+			pixel_width = 0;
+			next = 0;
+			space_count = 0;
+		}
 	};
 
 	bool word_cache_dirty;
@@ -90,13 +97,13 @@ private:
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 	// bind helpers
 public:
-
 	virtual Size2 get_minimum_size() const;
 
 	void set_align(Align p_align);
@@ -105,7 +112,7 @@ public:
 	void set_valign(VAlign p_align);
 	VAlign get_valign() const;
 
-	void set_text(const String& p_string);
+	void set_text(const String &p_string);
 	String get_text() const;
 
 	void set_autowrap(bool p_autowrap);
@@ -132,14 +139,13 @@ public:
 
 	int get_line_height() const;
 	int get_line_count() const;
+	int get_visible_line_count() const;
 
-	Label(const String& p_text=String());
+	Label(const String &p_text = String());
 	~Label();
-
 };
 
-
-VARIANT_ENUM_CAST( Label::Align );
-VARIANT_ENUM_CAST( Label::VAlign );
+VARIANT_ENUM_CAST(Label::Align);
+VARIANT_ENUM_CAST(Label::VAlign);
 
 #endif

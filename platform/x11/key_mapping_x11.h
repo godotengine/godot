@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,30 +27,27 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef KEY_MAPPING_X11_H
 #define KEY_MAPPING_X11_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-#include <X11/Xlib.h>
 #include <X11/XF86keysym.h>
+#include <X11/Xlib.h>
 #define XK_MISCELLANY
 #define XK_LATIN1
 #define XK_XKB_KEYS
 #include <X11/keysymdef.h>
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 class KeyMappingX11 {
-	KeyMappingX11() {};
+	KeyMappingX11(){};
+
 public:
 	static unsigned int get_keycode(KeySym p_keysym);
 	static KeySym get_keysym(unsigned int p_code);
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
-	
 };
-
 
 #endif

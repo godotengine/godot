@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,140 +27,107 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VISUALINSTANCEPARTICLES_H
-#define VISUALINSTANCEPARTICLES_H
 
+#ifndef PARTICLES_H
+#define PARTICLES_H
+
+#include "core/rid.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/material.h"
-#include "scene/main/timer.h"
-#include "rid.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Particles : public GeometryInstance {
-public:
+private:
+	GDCLASS(Particles, GeometryInstance);
 
-	enum Variable {
-		VAR_LIFETIME=VS::PARTICLE_LIFETIME,
-		VAR_SPREAD=VS::PARTICLE_SPREAD,
-		VAR_GRAVITY=VS::PARTICLE_GRAVITY,
-		VAR_LINEAR_VELOCITY=VS::PARTICLE_LINEAR_VELOCITY,
-		VAR_ANGULAR_VELOCITY=VS::PARTICLE_ANGULAR_VELOCITY,
-		VAR_LINEAR_ACCELERATION=VS::PARTICLE_LINEAR_ACCELERATION,
-		VAR_DRAG=VS::PARTICLE_RADIAL_ACCELERATION,
-		VAR_TANGENTIAL_ACCELERATION=VS::PARTICLE_TANGENTIAL_ACCELERATION,
-		VAR_DAMPING=VS::PARTICLE_DAMPING,
-		VAR_INITIAL_SIZE=VS::PARTICLE_INITIAL_SIZE,
-		VAR_FINAL_SIZE=VS::PARTICLE_FINAL_SIZE,
-		VAR_INITIAL_ANGLE=VS::PARTICLE_INITIAL_ANGLE,
-		VAR_HEIGHT=VS::PARTICLE_HEIGHT,
-		VAR_HEIGHT_SPEED_SCALE=VS::PARTICLE_HEIGHT_SPEED_SCALE,
-		VAR_MAX=VS::PARTICLE_VAR_MAX
+public:
+	enum DrawOrder {
+		DRAW_ORDER_INDEX,
+		DRAW_ORDER_LIFETIME,
+		DRAW_ORDER_VIEW_DEPTH,
+	};
+
+	enum {
+		MAX_DRAW_PASSES = 4
 	};
 
 private:
-	OBJ_TYPE( Particles, GeometryInstance );
-
 	RID particles;
-	
+
+	bool one_shot;
 	int amount;
-	bool emitting;
-	float emit_timeout;
+	float lifetime;
+	float pre_process_time;
+	float explosiveness_ratio;
+	float randomness_ratio;
+	float speed_scale;
 	AABB visibility_aabb;
-	Vector3 gravity_normal;
-	Vector3 emission_half_extents;
-	bool using_points;
-	float var[VAR_MAX];	
-	float var_random[VAR_MAX];	
-	bool height_from_velocity;
-	Vector3 emission_base_velocity;
-	bool local_coordinates;
-	
-	struct ColorPhase {
-	
-		Color color;
-		float pos;
-	};
+	bool local_coords;
+	int fixed_fps;
+	bool fractional_delta;
 
-	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
+	Ref<Material> process_material;
 
-	int color_phase_count;
-	
-	ColorPhase color_phase[4];
-	
-	Ref<Material> material;
+	DrawOrder draw_order;
 
-	Timer* timer;
-	void setup_timer();
+	Vector<Ref<Mesh> > draw_passes;
 
-protected:	
-		
+protected:
 	static void _bind_methods();
-	
+	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo &property) const;
+
 public:
-
-
 	AABB get_aabb() const;
-	DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	void set_amount(int p_amount);
-	int get_amount() const;
-		
 	void set_emitting(bool p_emitting);
+	void set_amount(int p_amount);
+	void set_lifetime(float p_lifetime);
+	void set_one_shot(bool p_one_shot);
+	void set_pre_process_time(float p_time);
+	void set_explosiveness_ratio(float p_ratio);
+	void set_randomness_ratio(float p_ratio);
+	void set_visibility_aabb(const AABB &p_aabb);
+	void set_use_local_coordinates(bool p_enable);
+	void set_process_material(const Ref<Material> &p_material);
+	void set_speed_scale(float p_scale);
+
 	bool is_emitting() const;
-		
-	void set_visibility_aabb(const AABB& p_aabb);
+	int get_amount() const;
+	float get_lifetime() const;
+	bool get_one_shot() const;
+	float get_pre_process_time() const;
+	float get_explosiveness_ratio() const;
+	float get_randomness_ratio() const;
 	AABB get_visibility_aabb() const;
-		
-	void set_emission_half_extents(const Vector3& p_half_extents);
-	Vector3 get_emission_half_extents() const;
+	bool get_use_local_coordinates() const;
+	Ref<Material> get_process_material() const;
+	float get_speed_scale() const;
 
-	void set_emission_base_velocity(const Vector3& p_base_velocity);
-	Vector3 get_emission_base_velocity() const;
+	void set_fixed_fps(int p_count);
+	int get_fixed_fps() const;
 
-	void set_emission_points(const DVector<Vector3>& p_points);
-	DVector<Vector3> get_emission_points() const;
+	void set_fractional_delta(bool p_enable);
+	bool get_fractional_delta() const;
 
-	void set_gravity_normal(const Vector3& p_normal);
-	Vector3 get_gravity_normal() const;
-		
-	void set_variable(Variable p_variable,float p_value);
-	float get_variable(Variable p_variable) const;
-	
-	void set_randomness(Variable p_variable,float p_randomness);
-	float get_randomness(Variable p_variable) const;
+	void set_draw_order(DrawOrder p_order);
+	DrawOrder get_draw_order() const;
 
-	void set_color_phases(int p_phases);
-	int get_color_phases() const;
-	
-	void set_color_phase_pos(int p_phase, float p_pos);
-	float get_color_phase_pos(int p_phase) const;
-	
-	void set_color_phase_color(int p_phase, const Color& p_color);
-	Color get_color_phase_color(int p_phase) const;
+	void set_draw_passes(int p_count);
+	int get_draw_passes() const;
 
-	void set_height_from_velocity(bool p_enable);
-	bool has_height_from_velocity() const;
-	
-	void set_material(const Ref<Material>& p_material);
-	Ref<Material> get_material() const;
+	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
-	void set_emit_timeout(float p_timeout);
-	float get_emit_timeout() const;
+	virtual String get_configuration_warning() const;
 
-	void set_use_local_coordinates(bool p_use);
-	bool is_using_local_coordinates() const;
+	void restart();
 
-	void start_emitting(float p_time);
-
-
-	Particles();	
+	AABB capture_aabb() const;
+	Particles();
 	~Particles();
-
 };
 
-VARIANT_ENUM_CAST( Particles::Variable );
-#endif
+VARIANT_ENUM_CAST(Particles::DrawOrder)
+
+#endif // PARTICLES_H

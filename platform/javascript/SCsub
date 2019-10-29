@@ -1,26 +1,44 @@
+#!/usr/bin/env python
+
 Import('env')
 
 javascript_files = [
-	"os_javascript.cpp",
-	"audio_driver_javascript.cpp",
-	"javascript_main.cpp",
-	"audio_server_javascript.cpp"
+    'audio_driver_javascript.cpp',
+    'http_client_javascript.cpp',
+    'javascript_eval.cpp',
+    'javascript_main.cpp',
+    'os_javascript.cpp',
 ]
 
-#obj = env.SharedObject('godot_javascript.cpp')
+build = env.add_program(['#bin/godot${PROGSUFFIX}.js', '#bin/godot${PROGSUFFIX}.wasm'], javascript_files);
+js, wasm = build
 
-env_javascript = env.Clone()
-if env['target'] == "profile":
-	env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+js_libraries = [
+    'http_request.js',
+]
+for lib in js_libraries:
+    env.Append(LINKFLAGS=['--js-library', env.File(lib).path])
+env.Depends(build, js_libraries)
 
-javascript_objects=[]
-for x in javascript_files:
-	javascript_objects.append( env_javascript.Object( x ) )
+js_modules = [
+    'id_handler.js',
+]
+for module in js_modules:
+    env.Append(LINKFLAGS=['--pre-js', env.File(module).path])
+env.Depends(build, js_modules)
 
-env.Append(LINKFLAGS=["-s","EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
+wrapper_start = env.File('pre.js')
+wrapper_end = env.File('engine.js')
+js_wrapped = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX='${PROGSUFFIX}.wrapped.js')
 
-prog = None
-
-#env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
-
-env.Program('#bin/godot',javascript_objects,PROGSUFFIX=env["PROGSUFFIX"]+".html")
+zip_dir = env.Dir('#bin/.javascript_zip')
+zip_files = env.InstallAs([
+    zip_dir.File('godot.js'),
+    zip_dir.File('godot.wasm'),
+    zip_dir.File('godot.html')
+], [
+    js_wrapped,
+    wasm,
+    '#misc/dist/html/full-size.html'
+])
+env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')

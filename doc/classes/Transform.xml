@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Transform" category="Built-In Types" version="3.2">
+	<brief_description>
+		3D transformation (3×4 matrix).
+	</brief_description>
+	<description>
+		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [member basis] and an [member origin]. It is similar to a 3×4 matrix.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+	</tutorials>
+	<methods>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="x_axis" type="Vector3">
+			</argument>
+			<argument index="1" name="y_axis" type="Vector3">
+			</argument>
+			<argument index="2" name="z_axis" type="Vector3">
+			</argument>
+			<argument index="3" name="origin" type="Vector3">
+			</argument>
+			<description>
+				Constructs the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="basis" type="Basis">
+			</argument>
+			<argument index="1" name="origin" type="Vector3">
+			</argument>
+			<description>
+				Constructs the Transform from a [Basis] and [Vector3].
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<description>
+				Constructs the Transform from a [Transform2D].
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+				Constructs the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="from" type="Basis">
+			</argument>
+			<description>
+				Constructs the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
+			</description>
+		</method>
+		<method name="affine_inverse">
+			<return type="Transform">
+			</return>
+			<description>
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
+			</description>
+		</method>
+		<method name="interpolate_with">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="transform" type="Transform">
+			</argument>
+			<argument index="1" name="weight" type="float">
+			</argument>
+			<description>
+				Interpolates the transform to other Transform by weight amount (0-1).
+			</description>
+		</method>
+		<method name="inverse">
+			<return type="Transform">
+			</return>
+			<description>
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+			</description>
+		</method>
+		<method name="looking_at">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="target" type="Vector3">
+			</argument>
+			<argument index="1" name="up" type="Vector3">
+			</argument>
+			<description>
+				Returns a copy of the transform rotated such that its -Z axis points towards the [code]target[/code] position.
+				The transform will first be rotated around the given [code]up[/code] vector, and then fully aligned to the target by a further rotation around an axis perpendicular to both the [code]target[/code] and [code]up[/code] vectors.
+				Operations take place in global space.
+			</description>
+		</method>
+		<method name="orthonormalized">
+			<return type="Transform">
+			</return>
+			<description>
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+			</description>
+		</method>
+		<method name="rotated">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Rotates the transform around given axis by phi. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="scaled">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+				Scales the transform by the specified 3D scaling factors.
+			</description>
+		</method>
+		<method name="translated">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="ofs" type="Vector3">
+			</argument>
+			<description>
+				Translates the transform by the specified offset.
+			</description>
+		</method>
+		<method name="xform">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="v" type="Variant">
+			</argument>
+			<description>
+				Transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+			</description>
+		</method>
+		<method name="xform_inv">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="v" type="Variant">
+			</argument>
+			<description>
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="basis" type="Basis" setter="" getter="" default="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+		</member>
+		<member name="origin" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+			The translation offset of the transform.
+		</member>
+	</members>
+	<constants>
+		<constant name="IDENTITY" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+		</constant>
+		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the YZ plane.
+		</constant>
+		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XZ plane.
+		</constant>
+		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XY plane.
+		</constant>
+	</constants>
+</class>
