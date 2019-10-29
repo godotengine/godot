@@ -50,8 +50,6 @@
 #include <assimp/LogStream.hpp>
 #include <assimp/Logger.hpp>
 
-
-
 namespace AssimpImporter {
 /** Import state is for global scene import data
 	 * This makes the code simpler and contains useful lookups.
@@ -77,24 +75,24 @@ struct ImportState {
 	List<const aiNode *> nodes;
 	Map<const aiNode *, Spatial *> flat_node_map;
 	AnimationPlayer *animation_player;
-//
-//	// Generation 3 - deterministic armatures
-//	// list of armature nodes - flat and simple to parse
-//	// assimp node, node in godot
-//	Map<const aiNode *, Skeleton *> armature_map;
-//	//
-	List<aiNode*> armature_nodes;
-	Map<const aiNode*, Skeleton*> armature_skeletons;
-	Map<aiBone*, Skeleton*> skeleton_bone_map;
-//
-//	// Generation 3 - deterministic bone handling
-//	// bones from the stack are popped when found
-//	// this means we can detect
-//	// what bones are for other armatures
+	//
+	//	// Generation 3 - deterministic armatures
+	//	// list of armature nodes - flat and simple to parse
+	//	// assimp node, node in godot
+	//	Map<const aiNode *, Skeleton *> armature_map;
+	//	//
+	List<aiNode *> armature_nodes;
+	Map<const aiNode *, Skeleton *> armature_skeletons;
+	Map<aiBone *, Skeleton *> skeleton_bone_map;
+	//
+	//	// Generation 3 - deterministic bone handling
+	//	// bones from the stack are popped when found
+	//	// this means we can detect
+	//	// what bones are for other armatures
 	List<aiBone *> bone_stack;
-//
-//	// Generation 4 - lookup bugs
-//	std::map<aiBone*, Skeleton*> bone_skeleton_lookup;
+	//
+	//	// Generation 4 - lookup bugs
+	//	std::map<aiBone*, Skeleton*> bone_skeleton_lookup;
 };
 
 struct AssimpImageData {

@@ -76,9 +76,9 @@ namespace Assimp {
 
         using namespace Util;
 
-#define MAGIC_NODE_TAG "_$AssimpFbx$"
+#define MAGIC_NODE_TAG "_pivot_"
 
-#define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000L
+#define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
         FBXConverter::FBXConverter(aiScene* out, const Document& doc, bool removeEmptyBones )
         : defaultMaterialIndex()
@@ -885,7 +885,21 @@ namespace Assimp {
 
         std::string FBXConverter::NameTransformationChainNode(const std::string& name, TransformationComp comp)
         {
-            return name + std::string(MAGIC_NODE_TAG) + "_" + NameTransformationComp(comp);
+            return name + std::string(MAGIC_NODE_TAG) + NameTransformationComp(comp);
+        }
+
+        void FBXConverter::MagicPivotAlgorithm( aiMatrix4x4[TransformationComp_MAXIMUM] chain, aiMatrix4x4 &result )
+        {
+            aiMatrix4x4 T = chain[TransformationComp_Translation];
+            aiMatrix4x4 Roff = chain[TransformationComp_RotationOffset];
+            aiMatrix4x4 Rp = chain[TransformationComp_RotationPivot];
+            aiMatrix4x4 Rpre = chain[TransformationComp_PreRotation];
+            aiMatrix4x4 R = chain[TransformationComp_Rotation];
+            aiMatrix4x4 Rpost = chain[TransformationComp_PostRotation];
+            aiMatrix4x4 Soff = chain[TransformationComp_ScalingOffset];
+            aiMatrix4x4 Sp = chain[TransformationComp_ScalingPivot];
+            aiMatrix4x4 S = chain[TransformationComp_Scaling];
+            result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
         }
 
         bool FBXConverter::GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes,
@@ -1011,66 +1025,18 @@ namespace Assimp {
                 aiMatrix4x4::Translation(GeometricTranslation, chain[TransformationComp_GeometricTranslation]);
                 aiMatrix4x4::Translation(-GeometricTranslation, chain[TransformationComp_GeometricTranslationInverse]);
             }
-
-            // is_complex needs to be consistent with NeedsComplexTransformationChain()
-            // or the interplay between this code and the animation converter would
-            // not be guaranteed.
-            //ai_assert(NeedsComplexTransformationChain(model) == ((chainBits & chainMaskComplex) != 0));
-
-            // now, if we have more than just Translation, Scaling and Rotation,
-            // we need to generate a full node chain to accommodate for assimp's
-            // lack to express pivots and offsets.
-            if ((chainBits & chainMaskComplex) && doc.Settings().preservePivots) {
-                FBXImporter::LogInfo("generating full transformation chain for node: " + name);
-
-                // query the anim_chain_bits dictionary to find out which chain elements
-                // have associated node animation channels. These can not be dropped
-                // even if they have identity transform in bind pose.
-                NodeAnimBitMap::const_iterator it = node_anim_chain_bits.find(name);
-                const unsigned int anim_chain_bitmask = (it == node_anim_chain_bits.end() ? 0 : (*it).second);
-
-                unsigned int bit = 0x1;
-                for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i, bit <<= 1) {
-                    const TransformationComp comp = static_cast<TransformationComp>(i);
-
-                    if ((chainBits & bit) == 0 && (anim_chain_bitmask & bit) == 0) {
-                        continue;
-                    }
-
-                    if (comp == TransformationComp_PostRotation) {
-                        chain[i] = chain[i].Inverse();
-                    }
-
-                    aiNode* nd = new aiNode();
-                    nd->mName.Set(NameTransformationChainNode(name, comp));
-                    nd->mTransformation = chain[i];
-
-                    // geometric inverses go in a post-node chain
-                    if (comp == TransformationComp_GeometricScalingInverse ||
-                        comp == TransformationComp_GeometricRotationInverse ||
-                        comp == TransformationComp_GeometricTranslationInverse
-                        ) {
-                        post_output_nodes.push_back(nd);
-                    }
-                    else {
-                        output_nodes.push_back(nd);
-                    }
-                }
-
-                ai_assert(output_nodes.size());
-                return true;
-            }
+        
 
             // else, we can just multiply the matrices together
             aiNode* nd = new aiNode();
             output_nodes.push_back(nd);
 
+            // Horrible 'gruesome code was here but now simple'
+            MagicPivotAlgorithm(chain, nd->mTransformation);
+
             // name passed to the method is already unique
             nd->mName.Set(name);
 
-            for (const auto &transform : chain) {
-                nd->mTransformation = nd->mTransformation * transform;
-            }
             return false;
         }
 
@@ -2801,6 +2767,12 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                     anim->mNumChannels = static_cast<unsigned int>(node_anims.size());
                     std::swap_ranges(node_anims.begin(), node_anims.end(), anim->mChannels);
                 }
+                else
+                {
+                    anim->mNumChannels = 0;
+                    anim->mChannels = nullptr;
+                }
+                
                 if (morphAnimDatas.size()) {
                     unsigned int numMorphMeshChannels = static_cast<unsigned int>(morphAnimDatas.size());
                     anim->mMorphMeshChannels = new aiMeshMorphAnim*[numMorphMeshChannels];
@@ -2829,6 +2801,11 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                         }
                         anim->mMorphMeshChannels[i++] = meshMorphAnim;
                     }
+                }
+                else
+                {
+                    anim->mNumMorphMeshChannels = 0;
+                    anim->mMorphMeshChannels = nullptr;
                 }
             }
             else {
@@ -3055,7 +3032,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 return;
             }
 
-            // otherwise, things get gruesome and we need separate animation channels
+            // We need separate animation channels
             // for each part of the transformation chain. Remember which channels
             // we generated and pass this information to the node conversion
             // code to avoid nodes that have identity transform, but non-identity
@@ -3300,6 +3277,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& min_time,
             bool inverse) {
             std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
+            std::cout << "node name: " << name << std::endl;
             na->mNodeName.Set(name);
 
             ConvertTranslationKeys(na.get(), curves, layer_map, start, stop, max_time, min_time);
@@ -3733,6 +3711,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& minTime)
         {
             ai_assert(nodes.size());
+            ai_assert(na);
 
             // XXX for now, assume scale should be blended geometrically (i.e. two
             // layers should be multiplied with each other). There is a FBX
@@ -3755,7 +3734,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& minTime)
         {
             ai_assert(nodes.size());
-
+            ai_assert(na);
             // XXX see notes in ConvertScaleKeys()
             const KeyFrameListList& inputs = GetKeyframeList(nodes, start, stop);
             const KeyTimeList& keys = GetKeyTimeList(inputs);
@@ -3774,6 +3753,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             Model::RotOrder order)
         {
             ai_assert(nodes.size());
+            ai_assert(na);
 
             // XXX see notes in ConvertScaleKeys()
             const std::vector< KeyFrameList >& inputs = GetKeyframeList(nodes, start, stop);

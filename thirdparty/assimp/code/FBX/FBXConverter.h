@@ -121,6 +121,9 @@ private:
     // find scene root and trigger recursive scene conversion
     void ConvertRootNode();
 
+
+    void MagicPivotAlgorithm( aiMatrix4x4[TransformationComp_MAXIMUM] chain, aiMatrix4x4 &result );
+
     // ------------------------------------------------------------------------------------------------
     // collect and assign child nodes
     void ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node);
