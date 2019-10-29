@@ -6,12 +6,14 @@
 # Suryansh5545 <suryanshpathak5545@gmail.com>, 2018.
 # Vikram1323 <vikram1323@gmail.com>, 2018.
 # vkubre <v@kubre.in>, 2019.
+# Abhay Patel <abhay111patel@gmail.com>, 2019.
+# Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-04 13:48+0000\n"
-"Last-Translator: vkubre <v@kubre.in>\n"
+"PO-Revision-Date: 2019-10-17 04:52+0000\n"
+"Last-Translator: Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -19,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.9\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -62,31 +64,32 @@ msgstr "'%s ' को कॉल करने पर:"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
+#, fuzzy
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -102,7 +105,7 @@ msgstr "प्रतिमा"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "समय"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
@@ -1181,9 +1184,8 @@ msgid "Donors"
 msgstr "दाताओं"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "License"
-msgstr "License"
+msgstr "लाइसेंस"
 
 #: editor/editor_about.cpp
 #, fuzzy

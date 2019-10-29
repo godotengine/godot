@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:52+0000\n"
+"PO-Revision-Date: 2019-10-04 03:16+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -71,32 +71,31 @@ msgstr "Em chamada para '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Combinar"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -108,7 +107,7 @@ msgstr "Equilibrado"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Espelhar"
+msgstr "Espelho"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -515,10 +514,8 @@ msgid "Select None"
 msgstr "Selecionar Nenhum"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"Caminho para um nó AnimationPlayer contendo animações não está definido."
+msgstr "Selecione um nó AnimationPlayer para criar e editar animações."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -1256,9 +1253,8 @@ msgid "Delete Bus Effect"
 msgstr "Apagar Efeito de Barramento"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "Barramento de áudio, arrastar e largar para reorganizar."
+msgstr "Arrastar e largar para reorganizar."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1908,9 +1904,8 @@ msgid "Inherited by:"
 msgstr "Herdado por:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Brief Description"
-msgstr "Breve Descrição:"
+msgstr "Breve Descrição"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1941,9 +1936,8 @@ msgid "Class Description"
 msgstr "Descrição da Classe"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials"
-msgstr "Tutoriais Online:"
+msgstr "Tutoriais Online"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2066,16 +2060,15 @@ msgstr "Início"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
-#, fuzzy
 msgid "Down"
-msgstr "Download"
+msgstr "Para baixo"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
-msgstr ""
+msgstr "Para cima"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
@@ -2083,19 +2076,19 @@ msgstr "Nó"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "RPC recebido"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "RSET recebido"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "RPC enviado"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "RSET enviado"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2360,7 +2353,7 @@ msgstr "Esta operação não pode ser efetuada sem um Nó raiz."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "Exportar conjunto de tiles"
+msgstr "Exportar conjunto de Tiles"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
@@ -2685,17 +2678,16 @@ msgid "Project Settings..."
 msgstr "Configurações de Projeto..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Versão:"
+msgstr "Controle de Versões"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Organizar Controle de Versões"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Desativar Controle de Versões"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -2994,17 +2986,25 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
+"O projeto será preparado para compilações personalizadas Android com a "
+"instalação do modelo fonte em \"res://android/build\".\n"
+"Poderá depois aplicar modificações e compilar o seu APK personalizado a "
+"exportar (com adição de módulos, alterando AndroidManifest.xml, etc.).\n"
+"Repare que de forma a criar compilações personalizadas em vez de usar APKs "
+"pré-compilados, a opção \"Usar Compilação Personalizada\" deve ser ativada "
+"na predefinição da exportação Android."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"O modelo de compilação Android está instalado e não será substituído.\n"
-"Remova manualmente a diretoria \"build\" antes de repetir esta operação."
+"O modelo de compilação Android já está instalado neste projeto e não será "
+"substituído.\n"
+"Remova manualmente a diretoria \"res://android/build\" antes de repetir esta "
+"operação."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3067,9 +3067,8 @@ msgid "Open the previous Editor"
 msgstr "Abrir o Editor anterior"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "Fonte de superfície não especificada."
+msgstr "Sub-recurso não encontrado."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3080,9 +3079,8 @@ msgid "Thumbnail..."
 msgstr "Miniatura..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "Abrir Script:"
+msgstr "Script principal:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3911,7 +3909,6 @@ msgid "Import As:"
 msgstr "Importar Como:"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Preset"
 msgstr "Predefinições"
 
@@ -5192,9 +5189,8 @@ msgid "Pan Mode"
 msgstr "Modo deslocamento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Ruler Mode"
-msgstr "Modo Execução:"
+msgstr "Modo Régua"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -7318,9 +7314,8 @@ msgid "(empty)"
 msgstr "(vazio)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move Frame"
-msgstr "Colar Frame"
+msgstr "Mover Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
@@ -7637,13 +7632,12 @@ msgid "Enable Priority"
 msgstr "Ativar Prioridade"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter tiles"
-msgstr "Filtrar Ficheiro..."
+msgstr "Filtrar Tiles"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
-msgstr ""
+msgstr "Dê um recurso TileSet a este TileMap para usar os seus Tiles."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -7775,17 +7769,19 @@ msgstr "Ativar o snap and show grid (configurável através do Inspector)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
-msgstr "Exibir nome dos tiles (segure tecla Alt)"
+msgstr "Exibir nome dos Tiles (segure tecla Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
+"Adicione ou selecione uma textura no painel esquerdo para editar os Tiles "
+"vinculados."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr ""
-"Remover textura selecionada? Todos os tiles que a usam serão removidos."
+"Remover textura selecionada? Todos os Tiles que a usam serão removidos."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -7793,7 +7789,7 @@ msgstr "Não selecionou uma textura para remover."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Criar a partir de cena? Irá substituir todos os tiles atuais."
+msgstr "Criar a partir de cena? Irá substituir todos os Tiles atuais."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -7954,92 +7950,80 @@ msgid "TileSet"
 msgstr "TileSet"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No VCS addons are available."
-msgstr "Nome do parente do Nó, se disponível"
+msgstr "Não existem addons VCS disponíveis."
 
 #: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Error"
 msgstr "Erro"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided"
-msgstr "Nenhum nome foi fornecido"
+msgstr "Nenhuma mensagem de gravação foi fornecida"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
-msgstr ""
+msgstr "Nenhum ficheiro adicionado ao palco"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit"
-msgstr "Comunidade"
+msgstr "Gravar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
-msgstr ""
+msgstr "Addon VCS não foi inicializado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
-msgstr ""
+msgstr "Sistema de Controlo de Versões"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Initialize"
-msgstr "Capitalizar"
+msgstr "Inicializar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
-msgstr ""
+msgstr "Área de Palco"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Detect new changes"
-msgstr "Criar novo retângulo."
+msgstr "Detetar novas alterações"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Changes"
-msgstr "Mudar"
+msgstr "Alterações"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
-msgstr ""
+msgstr "Modificado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Renamed"
-msgstr "Renomear"
+msgstr "Renomeado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Deleted"
-msgstr "Apagar"
+msgstr "Apagado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "Mudar"
+msgstr "Mudança de tipo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage Selected"
-msgstr "Apagar Selecionados"
+msgstr "Palco Selecionado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage All"
-msgstr "Guardar tudo"
+msgstr "Tudo no Palco"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Add a commit message"
-msgstr ""
+msgstr "Adicionar mensagem de gravação"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Changes"
-msgstr "Sincronizar Alterações de Script"
+msgstr "Gravar Alterações"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
@@ -8048,15 +8032,15 @@ msgstr "Status"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "View file diffs before committing them to the latest version"
-msgstr ""
+msgstr "Ver diffs dos ficheiros antes de atualizá-los para a última versão"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No file diff is active"
-msgstr ""
+msgstr "Nenhum ficheiro diff está ativo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect changes in file diff"
-msgstr ""
+msgstr "Detetar alterações em ficheiro diff"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -8296,11 +8280,10 @@ msgstr ""
 "falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
-"Devolve um vetor associado se o valor lógico fornecido for verdadeiro ou "
+"Devolve um escalar associado se o valor lógico fornecido for verdadeiro ou "
 "falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9615,9 +9598,8 @@ msgid "Settings saved OK."
 msgstr "Configuração guardada."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Moved Input Action Event"
-msgstr "Adicionar evento ação de entrada"
+msgstr "Evento Ação de Entrada movido"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
@@ -9984,9 +9966,8 @@ msgid "Instance Scene(s)"
 msgstr "Cena(s) da Instância"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Replace with Branch Scene"
-msgstr "Guardar ramo como Cena"
+msgstr "Substituir com Cena-Ramo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -10029,23 +10010,20 @@ msgid "Make node as Root"
 msgstr "Tornar Nó Raiz"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "Apagar Nós"
+msgstr "Apagar %d Nós?"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete the root node \"%s\"?"
-msgstr "Apagar Nó(s) Gráfico(s) Shader"
+msgstr "Apagar Nó raiz \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr ""
+msgstr "Apagar Nó \"%s\" e filhos?"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "Apagar Nós"
+msgstr "Apagar Nó \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10440,38 +10418,32 @@ msgid "Bytes:"
 msgstr "Bytes:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Warning:"
-msgstr "Avisos:"
+msgstr "Aviso:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Error:"
 msgstr "Erro:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Error"
-msgstr "Copiar Erro"
+msgstr "Erro C++"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Error:"
-msgstr "Erro:"
+msgstr "Erro C++:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source"
-msgstr "Fonte"
+msgstr "Código-fonte C++"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Source:"
-msgstr "Fonte"
+msgstr "Código-fonte:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source:"
-msgstr "Fonte"
+msgstr "Código-fonte C++:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace"
@@ -10482,18 +10454,16 @@ msgid "Errors"
 msgstr "Erros"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Child process connected."
-msgstr "Processo filho conectado"
+msgstr "Processo filho conectado."
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
 msgstr "Copiar Erro"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Skip Breakpoints"
-msgstr "Pontos de paragem"
+msgstr "Saltar Pontos de Paragem"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10512,9 +10482,8 @@ msgid "Profiler"
 msgstr "Profiler"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "Exportar Perfil"
+msgstr "Traçador de Rede"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -10738,7 +10707,7 @@ msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Esperado um string de comprimento 1 (um caráter)."
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -10895,13 +10864,12 @@ msgid "Pick Distance:"
 msgstr "Distância de escolha:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter meshes"
-msgstr "Métodos de filtro"
+msgstr "Meshes de filtro"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr ""
+msgstr "Dá um recurso MeshLibrary a este GridMap para usar os seus meshes."
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11208,9 +11176,8 @@ msgid "Editing Signal:"
 msgstr "A editar Sinal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Tool:"
-msgstr "Tornar Local"
+msgstr "Ferramenta Fazer:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -11363,16 +11330,17 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr "Caminho inválido para Android SDK no Editor de Configurações."
+msgstr ""
+"Caminho inválido de Android SDK para compilação personalizada no Editor de "
+"Configurações."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
-"Projeto Android não está instalado para compilação. Instale-o no menu do "
-"Editor."
+"Modelo de compilação Android não está instalado neste projeto. Instale-o no "
+"menu Projeto."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."

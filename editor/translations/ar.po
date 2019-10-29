@@ -34,7 +34,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:51+0000\n"
+"PO-Revision-Date: 2019-10-04 03:15+0000\n"
 "Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -49,7 +49,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "نوع برهان خاطئ خاص بconvert()، إستخدم ثوابت TYPE_*."
+msgstr "نوع معامل خاطئ للدالة convert()، إستخدم ثوابت TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -59,72 +59,71 @@ msgstr "لا يوجد ما يكفي من البايتات من أجل فك ال�
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "إدخال خاطيء i% (لم يتم تمريره) في التصريح"
+msgstr "مدخلات خاطئة i% (لم يتم تمريره) في التعبير"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "لا يمكن استخدام الحالة لأن لحظة التشغيل عدم (لم بتم ارسالها)"
+msgstr "لا يمكن إستخدامه نفسه لأن الحالة فارغة (لم يُمرر)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "معاملات غير صالحة للتشغل s,%s% و s%."
+msgstr "معاملات غير صالحة للمشغل s،%s% و s%."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "الرمز غير متاح للنوع %s للنوع %s"
+msgstr "فهرس غير صحيح للنوع %s التابع للنوع الأساسي %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "أسم غير صحيح للفهرس '%s' للنوع الأساسي %s"
+msgstr "أسم فهرس غير صحيح '%s' للنوع الأساسي %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "نقاش غير صالحة للبناء '%s'"
+msgstr "معامل غير صالح للإنشاء '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "عند الأستدعاء إلى '%s':"
+msgstr "عند استدعاء '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "بايت"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "كيلوبايت"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "خلط"
+msgstr "ميجابايت"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "جيجابايت"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "تيرابايت"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "بيتابايت"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "إكسابايت"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "مجاني/فارغ"
+msgstr "فارغ"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "متوازن / متعادل"
+msgstr "متعادل"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "عكس / الإنعكاس"
+msgstr "انعكاس"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -136,23 +135,23 @@ msgstr "القيمة:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "أدخل الرمز هنا"
+msgstr "أدخل المفتاح هنا"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "تكرار المفاتيح المحدد(ة)"
+msgstr "استنساخ المفاتيح المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "إمسح الزموز المحدد(ة)"
+msgstr "إمسح المفاتيح المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "إضافة نقطة Bezier"
+msgstr "إضافة نقطة بيزية"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "تحريك نقطة الBezier"
+msgstr "تحريك نقاط بيزية"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -168,7 +167,7 @@ msgstr "تغيير وقت الإطار الرئيسي للحركة"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "تغيير المقطع الإنتقالي"
+msgstr "تغيير إنتقالية التحريك"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -5675,7 +5674,7 @@ msgstr "التقط من البيكسل"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "الوان الانبعاث"
+msgstr "الوان الإنبعاث"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #, fuzzy
@@ -6184,9 +6183,8 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp editor/plugins/theme_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_export.cpp
-#, fuzzy
 msgid "Options"
-msgstr "الخيارات"
+msgstr "الإعدادات"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -7769,7 +7767,6 @@ msgid "Disabled Button"
 msgstr "معطّل"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Item"
 msgstr "عنصر"
 
@@ -7779,24 +7776,20 @@ msgid "Disabled Item"
 msgstr "معطّل"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Check Item"
-msgstr "اختار العنصر"
+msgstr "فَعل العنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Item"
-msgstr "عنصر مَضْبُوط"
+msgstr "عنصر مُفعل"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "عنصر انتقاء"
+msgstr "عنصر خِيار"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Radio Item"
-msgstr "عنصر انتقاء مَضْبُوط"
+msgstr "عنصر مُفعل اختياري"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."

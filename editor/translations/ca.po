@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-11 03:10+0000\n"
+"PO-Revision-Date: 2019-10-04 03:15+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -63,12 +63,13 @@ msgid "On call to '%s':"
 msgstr "En la crida a '%s':"
 
 #: core/ustring.cpp
+#, fuzzy
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 #, fuzzy
@@ -77,19 +78,19 @@ msgstr "Mesclar"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -2072,7 +2073,7 @@ msgstr "Inicia"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
 #, fuzzy
@@ -2081,27 +2082,31 @@ msgstr "Baixa"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
-msgstr ""
+msgstr "Amunt"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
 msgstr "Node"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Incoming RPC"
-msgstr ""
+msgstr "RPC Entrant"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Incoming RSET"
-msgstr ""
+msgstr "RSET Entrant"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "RPC Sortint"
 
 #: editor/editor_network_profiler.cpp
+#, fuzzy
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "RSET Sortint"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2701,12 +2706,14 @@ msgid "Version Control"
 msgstr "Versió:"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Configurar Control de Versions"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Desactivar el control de versions"
 
 #: editor/editor_node.cpp
 #, fuzzy

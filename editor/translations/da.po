@@ -13,12 +13,13 @@
 # Peter G. Laursen <GhostReven@gmail.com>, 2018.
 # Rémi Verschelde <akien@godotengine.org>, 2019.
 # Mads K. Bredager <mbredager@gmail.com>, 2019.
+# Kristoffer Andersen <kjaa@google.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:51+0000\n"
-"Last-Translator: Mads K. Bredager <mbredager@gmail.com>\n"
+"PO-Revision-Date: 2019-10-04 09:55+0000\n"
+"Last-Translator: Kristoffer Andersen <kjaa@google.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -49,7 +50,7 @@ msgstr "self kan ikke bruges fordi instansen er null (mislykket)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Ugyldigt operandere til operator %s, %s og %s."
+msgstr "Ugyldige operander til operator %s, %s og %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -69,35 +70,35 @@ msgstr "Ved kald til '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Gratis"
+msgstr "Fri"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"

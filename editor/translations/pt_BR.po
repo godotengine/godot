@@ -69,12 +69,14 @@
 # Fupi Brazil <fupicat@gmail.com>, 2019.
 # Julio Pinto Coelho <juliopcrj@gmail.com>, 2019.
 # Perrottacooking <perrottacooking@gmail.com>, 2019.
+# Wow Bitch <hahaj@itmailr.com>, 2019.
+# Alan Tavares <alan1tavares@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-09-26 11:50+0000\n"
-"Last-Translator: Perrottacooking <perrottacooking@gmail.com>\n"
+"PO-Revision-Date: 2019-10-11 15:07+0000\n"
+"Last-Translator: Alan Tavares <alan1tavares@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -101,7 +103,7 @@ msgstr "Entrada inválida %i (não passou) na expressão"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self não pode ser usado porque a instancia é nul0o (não passou)"
+msgstr "self não pode ser usado porque a instancia é nula (não passou)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -125,32 +127,31 @@ msgstr "Na chamada para '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Misturar"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -570,10 +571,8 @@ msgid "Select None"
 msgstr "Remover Seleção"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"O caminho para um nó do AnimationPlayer contendo animações não está definido."
+msgstr "Selecione um nó do tipo AnimationPlayer para criar e editar animações."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -1312,9 +1311,8 @@ msgid "Delete Bus Effect"
 msgstr "Excluir Efeito de Canal"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "Pista de Áudio, arraste e solte para reorganizar."
+msgstr "Arrastar e soltar para reorganizar."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1962,9 +1960,8 @@ msgid "Inherited by:"
 msgstr "Herdado por:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Brief Description"
-msgstr "Descrição breve:"
+msgstr "Breve Descrição"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1995,9 +1992,8 @@ msgid "Class Description"
 msgstr "Descrição da Classe"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials"
-msgstr "Tutoriais Online:"
+msgstr "Tutoriais Online"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2120,7 +2116,7 @@ msgstr "Iniciar"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
@@ -2136,7 +2132,7 @@ msgstr "Nó"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "Incoming RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
@@ -2739,17 +2735,16 @@ msgid "Project Settings..."
 msgstr "Configurações do Projeto..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Versão:"
+msgstr "Controle de Versão"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Configurar Controle de Versão"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Desativar Controle de Versão"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -11548,7 +11543,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Construindo Projeto Android (gradle)"
 
 #: platform/android/export/export.cpp
 msgid ""

@@ -57,11 +57,12 @@
 # Morge Tolbert <pygyme@gmail.com>, 2019.
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
+# silentbird <silentbird520@outlook.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-09-26 11:51+0000\n"
+"PO-Revision-Date: 2019-10-22 02:53+0000\n"
 "Last-Translator: idleman <1524328475@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -113,32 +114,31 @@ msgstr "对'%s'的调用 :"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "混合"
+msgstr "MB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -548,9 +548,8 @@ msgid "Select None"
 msgstr "取消选择"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "包含动画的 AnimationPlayer 节点没有设置路径。"
+msgstr "选择一个AnimationPlayer节点以创建和编辑动画。"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -574,7 +573,7 @@ msgstr "秒"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr "帧数"
+msgstr ":abbr:`FPS(Frames Per Second，每秒传输帧数)`"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -1277,9 +1276,8 @@ msgid "Delete Bus Effect"
 msgstr "删除音频总线效果"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "音频总线，拖放重新排列。"
+msgstr "拖放以重新排列。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1918,9 +1916,8 @@ msgid "Inherited by:"
 msgstr "派生类:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Brief Description"
-msgstr "简介:"
+msgstr "简述"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1951,9 +1948,8 @@ msgid "Class Description"
 msgstr "类说明"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials"
-msgstr "在线教程:"
+msgstr "在线教程"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2075,7 +2071,7 @@ msgstr "开始"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
@@ -2091,19 +2087,19 @@ msgstr "节点"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "传入RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "传入RSET"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "传出RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "传出RSET"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2666,17 +2662,16 @@ msgid "Project Settings..."
 msgstr "项目设置..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "版本:"
+msgstr "版本控制"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "设置版本控制"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "关闭版本控制"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -2965,17 +2960,20 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
+"通过将源模板安装到“ res：// android / build”，将为自定义Android构建设置项"
+"目。 然后，您可以应用修改并在导出时构建自己的自定义APK（添加模块，更改"
+"AndroidManifest.xml等）。 请注意，为了进行自定义构建而不是使用预先构建的APK，"
+"应在Android导出预设中启用“使用自定义构建”选项。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"Android 构建模板已经安装且不会被覆盖。\n"
-"请先移除“build”目录再重新尝试此操作。"
+"Android构建模板已安装在此项目中，并且不会被覆盖。 再次尝试执行此操作之前，请"
+"手动删除“ res：// android / build”目录。"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3038,9 +3036,8 @@ msgid "Open the previous Editor"
 msgstr "打开上一个编辑器"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "没有指定的表面源。"
+msgstr "找不到子资源。"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3051,9 +3048,8 @@ msgid "Thumbnail..."
 msgstr "缩略图..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "打开脚本："
+msgstr "主脚本："
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3747,7 +3743,7 @@ msgstr "删除分组"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr "分组"
+msgstr "编组"
 
 #: editor/groups_editor.cpp
 msgid "Nodes Not in Group"
@@ -3868,9 +3864,8 @@ msgid "Import As:"
 msgstr "导入为:"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Preset"
-msgstr "预设"
+msgstr "预置"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -5127,9 +5122,8 @@ msgid "Pan Mode"
 msgstr "平移模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Ruler Mode"
-msgstr "运行模式:"
+msgstr "标尺模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -5138,60 +5132,60 @@ msgstr "开关吸附。"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "使用对齐"
+msgstr "使用吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr "对齐选项"
+msgstr "吸附选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Grid"
-msgstr "对齐网格"
+msgstr "吸附到网格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr "使用旋转对齐"
+msgstr "使用旋转吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr "相对对齐"
+msgstr "相对吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr "使用像素对齐"
+msgstr "使用像素吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr "智能对齐"
+msgstr "智能吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "设置对齐..."
+msgstr "设置吸附..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr "对齐到父级"
+msgstr "吸附到父级"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
-msgstr "对齐到节点锚点"
+msgstr "吸附到节点锚点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Sides"
-msgstr "对齐到节点侧"
+msgstr "吸附到节点侧"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Center"
-msgstr "对齐到节点中心位置"
+msgstr "吸附到节点中心位置"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Other Nodes"
-msgstr "对齐到其他node节点"
+msgstr "吸附到其他node节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
-msgstr "对齐到参考线"
+msgstr "吸附到参考线"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5596,7 +5590,7 @@ msgstr "创建轮廓(outlines)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "网 格"
+msgstr "网络"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -7021,7 +7015,7 @@ msgstr "变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "将对象对齐到地板"
+msgstr "将对象吸附到地板"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7074,7 +7068,7 @@ msgstr "吸附设置"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "移动吸附:"
+msgstr "转化吸附:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
@@ -7245,9 +7239,8 @@ msgid "(empty)"
 msgstr "（空）"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move Frame"
-msgstr "粘贴帧"
+msgstr "移动帧"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
@@ -7564,13 +7557,12 @@ msgid "Enable Priority"
 msgstr "启用优先级"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter tiles"
-msgstr "筛选文件..."
+msgstr "过滤tiles"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
-msgstr ""
+msgstr "为此tilemap提供tileset资源以使用其tile。"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -7709,7 +7701,7 @@ msgstr "显示磁贴的名字（按住 Alt 键）"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Add or select a texture on the left panel to edit the tiles bound to it."
-msgstr ""
+msgstr "在左侧面板上添加或选择纹理以编辑与其绑定的图块。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
@@ -7881,92 +7873,80 @@ msgid "TileSet"
 msgstr "砖块集"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No VCS addons are available."
-msgstr "父节点的名称，如果有的话"
+msgstr "没有可用的VCS插件。"
 
 #: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Error"
 msgstr "错误"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No commit message was provided"
-msgstr "未提供名称"
+msgstr "没有提供提交消息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
-msgstr ""
+msgstr "没有文件添加到舞台"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit"
-msgstr "社区"
+msgstr "提交"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
-msgstr ""
+msgstr "VCS插件未初始化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
-msgstr ""
+msgstr "版本控制系统"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Initialize"
-msgstr "首字母大写"
+msgstr "初始化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
-msgstr ""
+msgstr "暂存区域"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Detect new changes"
-msgstr "新建一个四边形。"
+msgstr "检测新变化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Changes"
-msgstr "更改"
+msgstr "修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
-msgstr ""
+msgstr "已修改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Renamed"
-msgstr "重命名"
+msgstr "更名"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Deleted"
-msgstr "删除"
+msgstr "已删除"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "更改"
+msgstr "类型更改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage Selected"
-msgstr "删除已选中"
+msgstr "舞台选定"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage All"
-msgstr "全部保存"
+msgstr "所有舞台"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Add a commit message"
-msgstr ""
+msgstr "添加提交消息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Changes"
-msgstr "同步脚本变更"
+msgstr "提交变更"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
@@ -7975,16 +7955,15 @@ msgstr "状态"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "View file diffs before committing them to the latest version"
-msgstr ""
+msgstr "在提交到最新版本之前查看文件差异"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "No file diff is active"
-msgstr "没有选中任何文件！"
+msgstr "没有文件差异处于活动状态"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect changes in file diff"
-msgstr ""
+msgstr "检测文件差异的变化"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -8004,7 +7983,7 @@ msgstr "标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
-msgstr "向量"
+msgstr "Vector"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -8219,7 +8198,6 @@ msgid ""
 msgstr "如果提供的布尔值是true或false，则返回关联的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns an associated scalar if the provided boolean value is true or false."
 msgstr "如果提供的布尔值是true或false，则返回关联的向量。"
@@ -8736,7 +8714,7 @@ msgstr "向量常数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector uniform."
-msgstr "向量一致"
+msgstr "向量一致。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9473,9 +9451,8 @@ msgid "Settings saved OK."
 msgstr "保存设置成功。"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Moved Input Action Event"
-msgstr "添加输入事件"
+msgstr "输入动作事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
@@ -9543,7 +9520,7 @@ msgstr "动作:"
 
 #: editor/project_settings_editor.cpp
 msgid "Action"
-msgstr "动作"
+msgstr "动作（``Action``）"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
@@ -9575,7 +9552,7 @@ msgstr "重定向"
 
 #: editor/project_settings_editor.cpp
 msgid "Resources:"
-msgstr "资源:"
+msgstr "资源："
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
@@ -9607,7 +9584,7 @@ msgstr "区域:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "自动加载(AutoLoad)"
+msgstr "自动加载"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
@@ -9840,9 +9817,8 @@ msgid "Instance Scene(s)"
 msgstr "实例化场景"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Replace with Branch Scene"
-msgstr "将分支保存为场景"
+msgstr "替换为分支场景"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -9885,23 +9861,20 @@ msgid "Make node as Root"
 msgstr "将节点设置为根节点"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "删除节点"
+msgstr "删除％d个节点？"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete the root node \"%s\"?"
-msgstr "删除Graph Node节点"
+msgstr "删除根节点“％s”？"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr ""
+msgstr "删除节点“％s”及其子节点？"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "删除节点"
+msgstr "删除节点“％s”？"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10284,7 +10257,6 @@ msgid "Bytes:"
 msgstr "字节:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Warning:"
 msgstr "警告："
 
@@ -10293,29 +10265,24 @@ msgid "Error:"
 msgstr "错误:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Error"
-msgstr "复制错误信息"
+msgstr "C ++错误"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Error:"
-msgstr "错误:"
+msgstr "C++错误："
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source"
-msgstr "源"
+msgstr "C++源程序"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Source:"
-msgstr "源"
+msgstr "源文件:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source:"
-msgstr "源"
+msgstr "C++源程序："
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace"
@@ -10326,18 +10293,16 @@ msgid "Errors"
 msgstr "错误"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Child process connected."
-msgstr "子进程已连接"
+msgstr "子进程已连接。"
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
 msgstr "复制错误信息"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Skip Breakpoints"
-msgstr "断点"
+msgstr "跳过断点"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10356,9 +10321,8 @@ msgid "Profiler"
 msgstr "性能分析"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "导出配置文件"
+msgstr "网络配置"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -10582,7 +10546,7 @@ msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "预期为长度为1的字符串（一个字符）。"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -10737,13 +10701,12 @@ msgid "Pick Distance:"
 msgstr "拾取距离:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter meshes"
-msgstr "过滤方式"
+msgstr "过滤网格"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr ""
+msgstr "向此GridMap提供MeshLibrary资源以使用其网格。"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11041,9 +11004,8 @@ msgid "Editing Signal:"
 msgstr "编辑信号:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Tool:"
-msgstr "使用本地"
+msgstr "制作工具："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -11192,11 +11154,10 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr "用于“编辑器设置”中自定义构建的Android SDK路径是无效的。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
-msgstr "未安装Android项目进行编译。从编辑器菜单安装。"
+msgstr "未在项目中安装Android构建模板。从项目菜单安装它。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."

@@ -11,12 +11,13 @@
 # TyTYct Hihi <tytyct@gmail.com>, 2019.
 # Steve Dang <itsnguu@outlook.com>, 2019.
 # Peter Anh <peteranh3105@gmail.com>, 2019.
+# Dũng Đinh <dqdthanhthanh@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:51+0000\n"
-"Last-Translator: Peter Anh <peteranh3105@gmail.com>\n"
+"PO-Revision-Date: 2019-10-04 03:15+0000\n"
+"Last-Translator: Dũng Đinh <dqdthanhthanh@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -885,7 +886,7 @@ msgstr "Bạn muốn xoá tất cả kết nối từ tín hiệu \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Tín hiệu"
+msgstr "Tín hiệu (Signal)"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -2771,7 +2772,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr "Trình biên tập"
+msgstr "Editor (trình biên tập)"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3742,7 +3743,7 @@ msgstr "Xoá bố cục"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr "Nhóm"
+msgstr "Nhóm (Groups)"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -9482,7 +9483,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr ""
+msgstr "Button (nút, phím)"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -11917,9 +11918,8 @@ msgid "Input"
 msgstr "Nhập"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "nguồn vô hiệu cho shader."
+msgstr "nguồn vô hiệu cho xem trước"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."

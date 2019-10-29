@@ -7,12 +7,13 @@
 # Nitroretro <nitroretro@protonmail.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
+# Boby Ilea <boby.ilea@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: Nitroretro <nitroretro@protonmail.com>\n"
+"PO-Revision-Date: 2019-10-26 03:53+0000\n"
+"Last-Translator: Boby Ilea <boby.ilea@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -32,72 +33,71 @@ msgstr ""
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Bytes insuficienti pentru decodare bytes, sau format invalid"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Intrare invalida %i in expresie"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "self nu poate fi folosit deoarece instanța este nulă (nefurnizat)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Operanzi invalizi la operatorii %s, %s și %s"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Indice invalid de tip %s pentru tipul de bază %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Indice numit '%s' invalid pentru tipul de bază %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Argumente invalide pentru a construi '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "În apelarea lui '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Amestecare"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Gratuit"
+msgstr "Gratis"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Echilibrat"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -108,9 +108,8 @@ msgid "Time:"
 msgstr "Timp:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Nume nou:"
+msgstr "Valoare:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -125,14 +124,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Ştergeți Cheile Selectate"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Adaugă punct"
+msgstr "Adaugă Punct Bezier"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Deplasare punct"
+msgstr "Mută Punct Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"

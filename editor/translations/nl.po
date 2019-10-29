@@ -36,12 +36,13 @@
 # Bastiaan van der Plaat <bastiaan.v.d.plaat@gmail.com>, 2019.
 # Hector Peeters <hector.peeters@gmail.com>, 2019.
 # Shawn Gyina <gyina.shawn@gmail.com>, 2019.
+# ebbe <ebbesteenhoudt@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-04 14:23+0000\n"
-"Last-Translator: Shawn Gyina <gyina.shawn@gmail.com>\n"
+"PO-Revision-Date: 2019-10-18 18:02+0000\n"
+"Last-Translator: ebbe <ebbesteenhoudt@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -93,32 +94,31 @@ msgstr "Tijdens invocatie van '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Mengen"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -867,9 +867,8 @@ msgid "Disconnects the signal after its first emission."
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Verbind met Signaal: "
+msgstr "Kan signaal niet verbinden"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -891,9 +890,8 @@ msgid "Connect"
 msgstr "Verbinden"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Signalen:"
+msgstr "Signaal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -917,9 +915,8 @@ msgid "Disconnect"
 msgstr "Losmaken"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "Verbind met Signaal: "
+msgstr "Verbind een Signaal met een Methode"
 
 #: editor/connections_dialog.cpp
 #, fuzzy

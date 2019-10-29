@@ -9,12 +9,14 @@
 # Yahara Octanis <yaharao55@gmail.com>, 2018.
 # Tine Jozelj <tine@tjo.space>, 2018.
 # Andrej Poženel <andrej.pozenel@outlook.com>, 2019.
+# Arnold Marko <arnold.marko@gmail.com>, 2019.
+# Alex <alexrixhardson@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-29 13:35+0000\n"
-"Last-Translator: Andrej Poženel <andrej.pozenel@outlook.com>\n"
+"PO-Revision-Date: 2019-10-26 03:53+0000\n"
+"Last-Translator: Alex <alexrixhardson@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -23,7 +25,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -34,8 +36,7 @@ msgstr "Neveljavna vrsta argumenta za convert(), uporabite TYPE_* konstanto."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
-"Ni dovolj pomnilnika za dekodiranje bajtov, ali pa je neveljaven format."
+msgstr "Ni dovolj bajtov za dekodiranje, ali pa format ni ustrezen."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -50,13 +51,12 @@ msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Neveljaven operand za operator %s, %s ter %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "Neveljaven indeks lastnosti imena '%s' v vozlišču %s."
+msgstr "Neveljaven indeks tipa '%s' za temeljni tip %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Napačno poimenovan indeks '%s' za temeljni tip %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -68,32 +68,31 @@ msgstr "Na klic '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Mešaj"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -316,7 +315,7 @@ msgstr "Prihodnost"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Najbližji"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -429,6 +428,10 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Zvočne steze lahko kažejo le na vozlišča tipa:\n"
+"- AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
@@ -453,7 +456,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Steza ni tipa Prostorska, zato ne morem vstaviti ključa"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -12336,7 +12339,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Konstante ni možno spreminjati."
 
 #, fuzzy
 #~ msgid "Methods:"
