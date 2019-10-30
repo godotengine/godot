@@ -325,7 +325,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		NativePlatformConfig platform_sailfish;
 		platform_sailfish.name = "SailfishOS";
 		platform_sailfish.entries.push_back("armeabi-v7a");
-		platform_sailfish.entries.push_back("arm64-v8a");
+		// platform_sailfish.entries.push_back("arm64-v8a");
 		platform_sailfish.entries.push_back("x86");
 		//platform_sailfish.entries.push_back("x86_64");
 		platform_sailfish.library_extension = "*.so";
