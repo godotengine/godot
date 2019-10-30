@@ -392,7 +392,6 @@ namespace Assimp {
             nodes.reserve(conns.size());
 
             std::vector<aiNode*> nodes_chain;
-            std::vector<aiNode*> post_nodes_chain;
 
             try {
                 for (const Connection* con : conns) {
@@ -416,13 +415,9 @@ namespace Assimp {
 
                     if (nullptr != model) {
                         nodes_chain.clear();
-                        post_nodes_chain.clear();
 
                         aiMatrix4x4 new_abs_transform = parent->mTransformation;
                         std::string node_name = FixNodeName(model->Name());
-
-                        //setup metadata on newest node
-                        SetupNodeMetadata(*model, *nodes_chain.back());
 
                         // Calculate the current node 'full transformation matrix'
                         aiNode* last_parent = parent;
@@ -441,11 +436,14 @@ namespace Assimp {
                             new_abs_transform *= child->mTransformation;
                         }
 
+                        //setup metadata on newest node
+                        SetupNodeMetadata(*model, last_parent);
+
                         // Handle FBX pivot data (explicitly must be done all the time)
                         new_abs_transform = GeneratePivotTransform(*model, new_abs_transform, node_name);
 
                         // attach geometry
-                        ConvertModel(*model, nodes_chain.back(), root_node, new_abs_transform);
+                        ConvertModel(*model, last_parent, root_node, new_abs_transform);
 
                         // check if there will be any child nodes
                         const std::vector<const Connection*>& child_conns
@@ -462,8 +460,7 @@ namespace Assimp {
                             ConvertCameras(*model, node_name);
                         }
 
-                        nodes.push_back(nodes_chain.front());
-                        nodes_chain.clear();
+                        nodes.push_back(last_parent);
                     }
                 }
 
@@ -478,7 +475,6 @@ namespace Assimp {
                 Util::delete_fun<aiNode> deleter;
                 std::for_each(nodes.begin(), nodes.end(), deleter);
                 std::for_each(nodes_chain.begin(), nodes_chain.end(), deleter);
-                std::for_each(post_nodes_chain.begin(), post_nodes_chain.end(), deleter);
             }
         }
 
@@ -950,7 +946,7 @@ namespace Assimp {
             return transform;
         }
 
-        void FBXConverter::SetupNodeMetadata(const Model& model, aiNode& nd)
+        void FBXConverter::SetupNodeMetadata(const Model& model, aiNode* nd)
         {
             const PropertyTable& props = model.Props();
             DirectPropertyMap unparsedProperties = props.GetUnparsedProperties();
@@ -958,7 +954,7 @@ namespace Assimp {
             // create metadata on node
             const std::size_t numStaticMetaData = 2;
             aiMetadata* data = aiMetadata::Alloc(static_cast<unsigned int>(unparsedProperties.size() + numStaticMetaData));
-            nd.mMetaData = data;
+            nd->mMetaData = data;
             int index = 0;
 
             // find user defined properties (3ds Max)

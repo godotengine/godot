@@ -182,7 +182,7 @@ private:
         aiMatrix4x4 &result );
 
     // ------------------------------------------------------------------------------------------------
-    void SetupNodeMetadata(const Model& model, aiNode& nd);
+    void SetupNodeMetadata(const Model& model, aiNode* nd);
 
     // ------------------------------------------------------------------------------------------------
     void ConvertModel(const Model &model, aiNode *parent, aiNode *root_node,
