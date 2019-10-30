@@ -389,8 +389,6 @@ namespace Assimp {
             std::vector<aiNode*> nodes;
             nodes.reserve(conns.size());
 
-            std::vector<aiNode*> nodes_chain;
-
             try {
                 for (const Connection* con : conns) {
                     // ignore object-property links
@@ -412,43 +410,30 @@ namespace Assimp {
                     const Model* const model = dynamic_cast<const Model*>(object);
 
                     if (nullptr != model) {
-                        nodes_chain.clear();
-
                         aiMatrix4x4 new_abs_transform = parent->mTransformation;
                         std::string node_name = FixNodeName(model->Name());
 
-                        // Calculate the current node 'full transformation matrix'
-                        aiNode* last_parent = parent;
-                        for (aiNode* child : nodes_chain) {
-                            ai_assert(child);
-
-                            if (last_parent != parent) {
-                                last_parent->mNumChildren = 1;
-                                last_parent->mChildren = new aiNode*[1];
-                                last_parent->mChildren[0] = child;
-                            }
-
-                            child->mParent = last_parent;
-                            last_parent = child;
-
-                            new_abs_transform *= child->mTransformation;
-                        }
+                        aiNode * node = new aiNode();
+                        ai_assert(node); 
+                        node->mName.Set(node_name);
+                        node->mParent = parent;
 
                         //setup metadata on newest node
-                        SetupNodeMetadata(*model, last_parent);
+                        SetupNodeMetadata(*model, node);
 
                         // Handle FBX pivot data (explicitly must be done all the time)
                         new_abs_transform = GeneratePivotTransform(*model, new_abs_transform, node_name);
 
+                        node->mTransformation = new_abs_transform;
                         // attach geometry
-                        ConvertModel(*model, last_parent, root_node, new_abs_transform);
+                        ConvertModel(*model, node, root_node, new_abs_transform);
 
                         // check if there will be any child nodes
                         const std::vector<const Connection*>& child_conns
                             = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
 
                         // recursion call - child nodes
-                        ConvertNodes(model->ID(), last_parent, root_node);
+                        ConvertNodes(model->ID(), node, root_node);
 
                         if (doc.Settings().readLights) {
                             ConvertLights(*model, node_name);
@@ -458,7 +443,7 @@ namespace Assimp {
                             ConvertCameras(*model, node_name);
                         }
 
-                        nodes.push_back(last_parent);
+                        nodes.push_back(node);
                     }
                 }
 
@@ -472,7 +457,6 @@ namespace Assimp {
             catch (std::exception&) {
                 Util::delete_fun<aiNode> deleter;
                 std::for_each(nodes.begin(), nodes.end(), deleter);
-                std::for_each(nodes_chain.begin(), nodes_chain.end(), deleter);
             }
         }
 
