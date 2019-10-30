@@ -70,6 +70,10 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define WM_TOUCH 576
 #endif
 
+#ifndef WM_POINTERUPDATE
+#define WM_POINTERUPDATE 0x0245
+#endif
+
 typedef struct {
 	int count;
 	int screen;
@@ -191,6 +195,9 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 			return FALSE;
 	}
 }
+
+GetPointerTypePtr OS_Windows::win8p_GetPointerType = NULL;
+GetPointerPenInfoPtr OS_Windows::win8p_GetPointerPenInfo = NULL;
 
 void OS_Windows::initialize_debugging() {
 
@@ -480,6 +487,113 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					input->accumulate_input_event(mm);
 			}
 			delete[] lpb;
+		} break;
+		case WM_POINTERUPDATE: {
+			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+				break;
+			}
+
+			if (!win8p_GetPointerType || !win8p_GetPointerPenInfo) {
+				break;
+			}
+
+			uint32_t pointer_id = LOWORD(wParam);
+			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+				break;
+			}
+
+			if (pointer_type != PT_PEN) {
+				break;
+			}
+
+			POINTER_PEN_INFO pen_info;
+			if (!win8p_GetPointerPenInfo(pointer_id, &pen_info)) {
+				break;
+			}
+
+			if (input->is_emulating_mouse_from_touch()) {
+				// Universal translation enabled; ignore OS translation
+				LPARAM extra = GetMessageExtraInfo();
+				if (IsTouchEvent(extra)) {
+					break;
+				}
+			}
+
+			if (outside) {
+				//mouse enter
+
+				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
+					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
+
+				CursorShape c = cursor_shape;
+				cursor_shape = CURSOR_MAX;
+				set_cursor_shape(c);
+				outside = false;
+
+				//Once-Off notification, must call again....
+				TRACKMOUSEEVENT tme;
+				tme.cbSize = sizeof(TRACKMOUSEEVENT);
+				tme.dwFlags = TME_LEAVE;
+				tme.hwndTrack = hWnd;
+				tme.dwHoverTime = HOVER_DEFAULT;
+				TrackMouseEvent(&tme);
+			}
+
+			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+			if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
+				break;
+
+			Ref<InputEventMouseMotion> mm;
+			mm.instance();
+
+			mm->set_pressure(pen_info.pressure ? (float)pen_info.pressure / 1024 : 0);
+			mm->set_tilt(Vector2(pen_info.tiltX ? (float)pen_info.tiltX / 90 : 0, pen_info.tiltY ? (float)pen_info.tiltY / 90 : 0));
+
+			mm->set_control((wParam & MK_CONTROL) != 0);
+			mm->set_shift((wParam & MK_SHIFT) != 0);
+			mm->set_alt(alt_mem);
+
+			mm->set_button_mask(last_button_state);
+
+			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+
+				Point2i c(video_mode.width / 2, video_mode.height / 2);
+				old_x = c.x;
+				old_y = c.y;
+
+				if (mm->get_position() == c) {
+					center = c;
+					return 0;
+				}
+
+				Point2i ncenter = mm->get_position();
+				center = ncenter;
+				POINT pos = { (int)c.x, (int)c.y };
+				ClientToScreen(hWnd, &pos);
+				SetCursorPos(pos.x, pos.y);
+			}
+
+			input->set_mouse_position(mm->get_position());
+			mm->set_speed(input->get_last_mouse_speed());
+
+			if (old_invalid) {
+
+				old_x = mm->get_position().x;
+				old_y = mm->get_position().y;
+				old_invalid = false;
+			}
+
+			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			old_x = mm->get_position().x;
+			old_y = mm->get_position().y;
+			if (window_has_focus && main_loop)
+				input->parse_input_event(mm);
+
+			return 0; //Pointer event handled return 0 to avoid duplicate WM_MOUSEMOVE event
 		} break;
 		case WM_MOUSEMOVE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -3255,6 +3369,13 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	minimized = false;
 	was_maximized = false;
 	console_visible = IsWindowVisible(GetConsoleWindow());
+
+	//Note: Functions for pen input, available on Windows 8+
+	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
+	if (user32_lib) {
+		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
+		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+	}
 
 	hInstance = _hInstance;
 	pressrc = 0;
