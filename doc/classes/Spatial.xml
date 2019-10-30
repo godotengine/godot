@@ -48,6 +48,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
+				Scales the global (world) transformation by the given [Vector3] scale factors.
 			</description>
 		</method>
 		<method name="global_translate">
@@ -77,6 +78,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
 			</description>
 		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
@@ -206,6 +208,7 @@
 			<argument index="0" name="disable" type="bool">
 			</argument>
 			<description>
+				Sets whether the node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale. Changes to the local transformation scale are preserved.
 			</description>
 		</method>
 		<method name="set_identity">
