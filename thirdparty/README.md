@@ -153,12 +153,12 @@ Files extracted from upstream source:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: 1.3.3
+- Version: git (c8fca6b, 2019)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*.c`
+- `src/*.{c,h}`
 - `include/ogg/*.h` in ogg/
 - COPYING
 
