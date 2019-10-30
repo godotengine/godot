@@ -888,7 +888,7 @@ namespace Assimp {
             return name + std::string(MAGIC_NODE_TAG) + NameTransformationComp(comp);
         }
 
-        void FBXConverter::MagicPivotAlgorithm( aiMatrix4x4[TransformationComp_MAXIMUM] chain, aiMatrix4x4 &result )
+        void FBXConverter::MagicPivotAlgorithm( aiMatrix4x4 chain[TransformationComp_MAXIMUM], aiMatrix4x4 &result )
         {
             aiMatrix4x4 T = chain[TransformationComp_Translation];
             aiMatrix4x4 Roff = chain[TransformationComp_RotationOffset];
@@ -902,7 +902,7 @@ namespace Assimp {
             result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
         }
 
-        bool FBXConverter::GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes,
+        void FBXConverter::GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes,
             std::vector<aiNode*>& post_output_nodes) {
             const PropertyTable& props = model.Props();
             const Model::RotOrder rot = model.RotationOrder();
@@ -912,122 +912,73 @@ namespace Assimp {
             aiMatrix4x4 chain[TransformationComp_MAXIMUM];
 
             ai_assert(TransformationComp_MAXIMUM < 32);
-            std::uint32_t chainBits = 0;
-            // A node won't need a node chain if it only has these.
-            const std::uint32_t chainMaskSimple = (1 << TransformationComp_Translation) + (1 << TransformationComp_Scaling) + (1 << TransformationComp_Rotation);
-            // A node will need a node chain if it has any of these.
-            const std::uint32_t chainMaskComplex = ((1 << (TransformationComp_MAXIMUM)) - 1) - chainMaskSimple;
 
             std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
 
             // generate transformation matrices for all the different transformation components
             const float zero_epsilon = Math::getEpsilon<float>();
-            const aiVector3D all_ones(1.0f, 1.0f, 1.0f);
 
             const aiVector3D& PreRotation = PropertyGet<aiVector3D>(props, "PreRotation", ok);
-            if (ok && PreRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_PreRotation);
-
+            if (ok) {
                 GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PreRotation, chain[TransformationComp_PreRotation]);
             }
 
             const aiVector3D& PostRotation = PropertyGet<aiVector3D>(props, "PostRotation", ok);
-            if (ok && PostRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_PostRotation);
-
+            if (ok) {
                 GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PostRotation, chain[TransformationComp_PostRotation]);
             }
 
             const aiVector3D& RotationPivot = PropertyGet<aiVector3D>(props, "RotationPivot", ok);
-            if (ok && RotationPivot.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_RotationPivot) | (1 << TransformationComp_RotationPivotInverse);
-
+            if (ok) {
                 aiMatrix4x4::Translation(RotationPivot, chain[TransformationComp_RotationPivot]);
-                aiMatrix4x4::Translation(-RotationPivot, chain[TransformationComp_RotationPivotInverse]);
             }
 
             const aiVector3D& RotationOffset = PropertyGet<aiVector3D>(props, "RotationOffset", ok);
-            if (ok && RotationOffset.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_RotationOffset);
-
+            if (ok) {
                 aiMatrix4x4::Translation(RotationOffset, chain[TransformationComp_RotationOffset]);
             }
 
             const aiVector3D& ScalingOffset = PropertyGet<aiVector3D>(props, "ScalingOffset", ok);
-            if (ok && ScalingOffset.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_ScalingOffset);
-
+            if (ok) {
                 aiMatrix4x4::Translation(ScalingOffset, chain[TransformationComp_ScalingOffset]);
             }
 
             const aiVector3D& ScalingPivot = PropertyGet<aiVector3D>(props, "ScalingPivot", ok);
-            if (ok && ScalingPivot.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_ScalingPivot) | (1 << TransformationComp_ScalingPivotInverse);
-
+            if (ok) {
                 aiMatrix4x4::Translation(ScalingPivot, chain[TransformationComp_ScalingPivot]);
-                aiMatrix4x4::Translation(-ScalingPivot, chain[TransformationComp_ScalingPivotInverse]);
             }
 
             const aiVector3D& Translation = PropertyGet<aiVector3D>(props, "Lcl Translation", ok);
-            if (ok && Translation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Translation);
-
+            if (ok) {
                 aiMatrix4x4::Translation(Translation, chain[TransformationComp_Translation]);
             }
 
             const aiVector3D& Scaling = PropertyGet<aiVector3D>(props, "Lcl Scaling", ok);
-            if (ok && (Scaling - all_ones).SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Scaling);
-
+            if (ok) {
                 aiMatrix4x4::Scaling(Scaling, chain[TransformationComp_Scaling]);
             }
 
             const aiVector3D& Rotation = PropertyGet<aiVector3D>(props, "Lcl Rotation", ok);
-            if (ok && Rotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Rotation);
-
+            if (ok) {
                 GetRotationMatrix(rot, Rotation, chain[TransformationComp_Rotation]);
             }
 
             const aiVector3D& GeometricScaling = PropertyGet<aiVector3D>(props, "GeometricScaling", ok);
-            if (ok && (GeometricScaling - all_ones).SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricScaling);
+            if (ok) {
                 aiMatrix4x4::Scaling(GeometricScaling, chain[TransformationComp_GeometricScaling]);
-                aiVector3D GeometricScalingInverse = GeometricScaling;
-                bool canscale = true;
-                for (unsigned int i = 0; i < 3; ++i) {
-                    if (std::fabs(GeometricScalingInverse[i]) > zero_epsilon) {
-                        GeometricScalingInverse[i] = 1.0f / GeometricScaling[i];
-                    }
-                    else {
-                        FBXImporter::LogError("cannot invert geometric scaling matrix with a 0.0 scale component");
-                        canscale = false;
-                        break;
-                    }
-                }
-                if (canscale) {
-                    chainBits = chainBits | (1 << TransformationComp_GeometricScalingInverse);
-                    aiMatrix4x4::Scaling(GeometricScalingInverse, chain[TransformationComp_GeometricScalingInverse]);
-                }
             }
 
             const aiVector3D& GeometricRotation = PropertyGet<aiVector3D>(props, "GeometricRotation", ok);
-            if (ok && GeometricRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricRotation) | (1 << TransformationComp_GeometricRotationInverse);
+            if (ok) {
                 GetRotationMatrix(rot, GeometricRotation, chain[TransformationComp_GeometricRotation]);
-                GetRotationMatrix(rot, GeometricRotation, chain[TransformationComp_GeometricRotationInverse]);
-                chain[TransformationComp_GeometricRotationInverse].Inverse();
             }
 
             const aiVector3D& GeometricTranslation = PropertyGet<aiVector3D>(props, "GeometricTranslation", ok);
-            if (ok && GeometricTranslation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricTranslation) | (1 << TransformationComp_GeometricTranslationInverse);
+            if (ok) {
                 aiMatrix4x4::Translation(GeometricTranslation, chain[TransformationComp_GeometricTranslation]);
-                aiMatrix4x4::Translation(-GeometricTranslation, chain[TransformationComp_GeometricTranslationInverse]);
-            }
-        
+            }        
 
-            // else, we can just multiply the matrices together
+
             aiNode* nd = new aiNode();
             output_nodes.push_back(nd);
 
@@ -1036,8 +987,6 @@ namespace Assimp {
 
             // name passed to the method is already unique
             nd->mName.Set(name);
-
-            return false;
         }
 
         void FBXConverter::SetupNodeMetadata(const Model& model, aiNode& nd)

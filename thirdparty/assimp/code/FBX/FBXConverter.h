@@ -122,7 +122,7 @@ private:
     void ConvertRootNode();
 
 
-    void MagicPivotAlgorithm( aiMatrix4x4[TransformationComp_MAXIMUM] chain, aiMatrix4x4 &result );
+    void MagicPivotAlgorithm( aiMatrix4x4 chain[TransformationComp_MAXIMUM], aiMatrix4x4 &result );
 
     // ------------------------------------------------------------------------------------------------
     // collect and assign child nodes
@@ -176,7 +176,7 @@ private:
     /**
     *  note: memory for output_nodes will be managed by the caller
     */
-    bool GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes, std::vector<aiNode*>& post_output_nodes);
+    void GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes, std::vector<aiNode*>& post_output_nodes);
 
     // ------------------------------------------------------------------------------------------------
     void SetupNodeMetadata(const Model& model, aiNode& nd);
