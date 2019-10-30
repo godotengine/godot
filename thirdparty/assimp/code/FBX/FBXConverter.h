@@ -121,9 +121,6 @@ private:
     // find scene root and trigger recursive scene conversion
     void ConvertRootNode();
 
-
-    void MagicPivotAlgorithm( aiMatrix4x4 chain[TransformationComp_MAXIMUM], aiMatrix4x4 &result );
-
     // ------------------------------------------------------------------------------------------------
     // collect and assign child nodes
     void ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node);
@@ -172,11 +169,17 @@ private:
     // note: name must be a FixNodeName() result
     std::string NameTransformationChainNode(const std::string& name, TransformationComp comp);
 
-    // ------------------------------------------------------------------------------------------------
-    /**
-    *  note: memory for output_nodes will be managed by the caller
-    */
-    void GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes, std::vector<aiNode*>& post_output_nodes);
+    const aiMatrix4x4& GeneratePivotTransform(
+            const Model& model, 
+            const aiMatrix4x4& model_transform,
+            const std::string& name
+        );
+
+
+    void MagicPivotAlgorithm( 
+        const aiMatrix4x4 &global_transform, 
+        aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
+        aiMatrix4x4 &result );
 
     // ------------------------------------------------------------------------------------------------
     void SetupNodeMetadata(const Model& model, aiNode& nd);

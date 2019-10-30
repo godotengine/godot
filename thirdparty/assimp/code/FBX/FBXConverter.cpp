@@ -420,27 +420,11 @@ namespace Assimp {
 
                         aiMatrix4x4 new_abs_transform = parent->mTransformation;
                         std::string node_name = FixNodeName(model->Name());
-                        // even though there is only a single input node, the design of
-                        // assimp (or rather: the complicated transformation chain that
-                        // is employed by fbx) means that we may need multiple aiNode's
-                        // to represent a fbx node's transformation.
-
-
-                        // generate node transforms - this includes pivot data
-                        // if need_additional_node is true then you t
-                        const bool need_additional_node = GenerateTransformationNodeChain(*model, node_name, nodes_chain, post_nodes_chain);
-
-                        // assert that for the current node we must have at least a single transform
-                        ai_assert(nodes_chain.size());
-
-                        if (need_additional_node) {
-                            nodes_chain.push_back(new aiNode(node_name));
-                        }
 
                         //setup metadata on newest node
                         SetupNodeMetadata(*model, *nodes_chain.back());
 
-                        // link all nodes in a row
+                        // Calculate the current node 'full transformation matrix'
                         aiNode* last_parent = parent;
                         for (aiNode* child : nodes_chain) {
                             ai_assert(child);
@@ -457,40 +441,15 @@ namespace Assimp {
                             new_abs_transform *= child->mTransformation;
                         }
 
+                        // Handle FBX pivot data (explicitly must be done all the time)
+                        new_abs_transform = GeneratePivotTransform(*model, new_abs_transform, node_name);
+
                         // attach geometry
                         ConvertModel(*model, nodes_chain.back(), root_node, new_abs_transform);
 
                         // check if there will be any child nodes
                         const std::vector<const Connection*>& child_conns
                             = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
-
-                        // if so, link the geometric transform inverse nodes
-                        // before we attach any child nodes
-                        if (child_conns.size()) {
-                            for (aiNode* postnode : post_nodes_chain) {
-                                ai_assert(postnode);
-
-                                if (last_parent != parent) {
-                                    last_parent->mNumChildren = 1;
-                                    last_parent->mChildren = new aiNode*[1];
-                                    last_parent->mChildren[0] = postnode;
-                                }
-
-                                postnode->mParent = last_parent;
-                                last_parent = postnode;
-
-                                new_abs_transform *= postnode->mTransformation;
-                            }
-                        }
-                        else {
-                            // free the nodes we allocated as we don't need them
-                            Util::delete_fun<aiNode> deleter;
-                            std::for_each(
-                                post_nodes_chain.begin(),
-                                post_nodes_chain.end(),
-                                deleter
-                            );
-                        }
 
                         // recursion call - child nodes
                         ConvertNodes(model->ID(), last_parent, root_node);
@@ -888,7 +847,10 @@ namespace Assimp {
             return name + std::string(MAGIC_NODE_TAG) + NameTransformationComp(comp);
         }
 
-        void FBXConverter::MagicPivotAlgorithm( aiMatrix4x4 chain[TransformationComp_MAXIMUM], aiMatrix4x4 &result )
+        void FBXConverter::MagicPivotAlgorithm( 
+            const aiMatrix4x4 &global_transform, 
+            aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
+            aiMatrix4x4 &result )
         {
             aiMatrix4x4 T = chain[TransformationComp_Translation];
             aiMatrix4x4 Roff = chain[TransformationComp_RotationOffset];
@@ -899,15 +861,18 @@ namespace Assimp {
             aiMatrix4x4 Soff = chain[TransformationComp_ScalingOffset];
             aiMatrix4x4 Sp = chain[TransformationComp_ScalingPivot];
             aiMatrix4x4 S = chain[TransformationComp_Scaling];
-            result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
+            result = global_transform * T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
         }
 
-        void FBXConverter::GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes,
-            std::vector<aiNode*>& post_output_nodes) {
+        const aiMatrix4x4& FBXConverter::GeneratePivotTransform(
+            const Model& model, 
+            const aiMatrix4x4& model_transform,
+            const std::string& name
+        ) {
             const PropertyTable& props = model.Props();
             const Model::RotOrder rot = model.RotationOrder();
 
-            bool ok;
+            bool ok = false;
 
             aiMatrix4x4 chain[TransformationComp_MAXIMUM];
 
@@ -976,17 +941,13 @@ namespace Assimp {
             const aiVector3D& GeometricTranslation = PropertyGet<aiVector3D>(props, "GeometricTranslation", ok);
             if (ok) {
                 aiMatrix4x4::Translation(GeometricTranslation, chain[TransformationComp_GeometricTranslation]);
-            }        
+            }
 
+            aiMatrix4x4 transform;
 
-            aiNode* nd = new aiNode();
-            output_nodes.push_back(nd);
+            MagicPivotAlgorithm(model_transform, chain, transform);
 
-            // Horrible 'gruesome code was here but now simple'
-            MagicPivotAlgorithm(chain, nd->mTransformation);
-
-            // name passed to the method is already unique
-            nd->mName.Set(name);
+            return transform;
         }
 
         void FBXConverter::SetupNodeMetadata(const Model& model, aiNode& nd)
