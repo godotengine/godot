@@ -72,12 +72,22 @@ matrix:
       env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
+      addons:
+        homebrew:
+          packages:
+          - python3
+          - scons
 
     - name: iOS export template (debug, Clang)
       stage: build
       env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
+      addons:
+        homebrew:
+          packages:
+          - python3
+          - scons
 
     - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
       stage: build
@@ -110,9 +120,9 @@ before_install:
       sudo ln -s /usr/bin/python3 /usr/bin/python;
       sudo apt-get update;
       sudo apt-get install -y python3 python3-pip python3-setuptools;
+      sudo python3 -m pip install --user scons;
+      export PATH="$HOME/.local/bin:$PATH";
     fi
-  - python3 -m pip install --user scons
-  - export PATH="$HOME/.local/bin:$PATH"
   - scons --version
   - eval "${MATRIX_EVAL}"
   - if [ "$STATIC_CHECKS" = "yes" ]; then
