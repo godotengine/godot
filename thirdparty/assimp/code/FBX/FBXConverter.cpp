@@ -3054,76 +3054,75 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             const PropertyTable& props = target.Props();
 
 
-                aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
-                aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
-                aiVector3D def_rot = PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
+            aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
+            aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
+            aiVector3D def_rot = PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
 
-                KeyFrameListList scaling;
-                KeyFrameListList translation;
-                KeyFrameListList rotation;
-                KeyFrameListList magic;
+            // some arguments to be removed 
+            // input transform unimportant and string is old code
+            aiMatrix4x4 abs_transform = GeneratePivotTransform(target, aiMatrix4x4(), "");
 
-                if (chain[TransformationComp_Scaling] != iter_end) {
-                    scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
-                }
+            // todo basically lets just use abs_transform in
+            // ConvertTransformOrder_TRStoSRT() 
+            // and we should have keyframes with pivot data precompiled out
 
-                if (chain[TransformationComp_Translation] != iter_end) {
-                    translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
-                }
-
-                if (chain[TransformationComp_Rotation] != iter_end) {
-                    rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
-                }
-
-                // magic node test
-                if (chain[TransformationComp_RotationPivot] != iter_end) {
-                    magic = GetKeyframeList((*chain[TransformationComp_RotationPivot]).second, start, stop);
-                }
-
-                if(magic.size() > 0)
-                {
-                    std::cout << "magic pivot has keyframes" << std::endl;
-                }
+            // todo additionally would like to treble check that no models 
+            // have keyframes for pivot transforms
 
 
+            KeyFrameListList scaling;
+            KeyFrameListList translation;
+            KeyFrameListList rotation;
 
-                KeyFrameListList joined;
-                joined.insert(joined.end(), scaling.begin(), scaling.end());
-                joined.insert(joined.end(), translation.begin(), translation.end());
-                joined.insert(joined.end(), rotation.begin(), rotation.end());
-
-                const KeyTimeList& times = GetKeyTimeList(joined);
-
-                aiQuatKey* out_quat = new aiQuatKey[times.size()];
-                aiVectorKey* out_scale = new aiVectorKey[times.size()];
-                aiVectorKey* out_translation = new aiVectorKey[times.size()];
-
-                if (times.size())
-                {
-                    ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
-                        scaling,
-                        translation,
-                        rotation,
-                        times,
-                        max_time,
-                        min_time,
-                        target.RotationOrder(),
-                        def_scale,
-                        def_translate,
-                        def_rot);
-                }
-
-                // XXX remove duplicates / redundant keys which this operation did
-                // likely produce if not all three channels were equally dense.
-
-                na->mNumScalingKeys = static_cast<unsigned int>(times.size());
-                na->mNumRotationKeys = na->mNumScalingKeys;
-                na->mNumPositionKeys = na->mNumScalingKeys;
-
-                na->mScalingKeys = out_scale;
-                na->mRotationKeys = out_quat;
-                na->mPositionKeys = out_translation;
+            if (chain[TransformationComp_Scaling] != iter_end) {
+                scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
             }
+
+            if (chain[TransformationComp_Translation] != iter_end) {
+                translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
+            }
+
+            if (chain[TransformationComp_Rotation] != iter_end) {
+                rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
+            }
+
+            KeyFrameListList joined;
+            joined.insert(joined.end(), scaling.begin(), scaling.end());
+            joined.insert(joined.end(), translation.begin(), translation.end());
+            joined.insert(joined.end(), rotation.begin(), rotation.end());
+
+            const KeyTimeList& times = GetKeyTimeList(joined);
+
+            aiQuatKey* out_quat = new aiQuatKey[times.size()];
+            aiVectorKey* out_scale = new aiVectorKey[times.size()];
+            aiVectorKey* out_translation = new aiVectorKey[times.size()];
+
+            if (times.size())
+            {
+                ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
+                    scaling,
+                    translation,
+                    rotation,
+                    times,
+                    max_time,
+                    min_time,
+                    target.RotationOrder(),
+                    def_scale,
+                    def_translate,
+                    def_rot);
+            }
+
+            // XXX remove duplicates / redundant keys which this operation did
+            // likely produce if not all three channels were equally dense.
+
+            na->mNumScalingKeys = static_cast<unsigned int>(times.size());
+            na->mNumRotationKeys = na->mNumScalingKeys;
+            na->mNumPositionKeys = na->mNumScalingKeys;
+
+            na->mScalingKeys = out_scale;
+            na->mRotationKeys = out_quat;
+            na->mPositionKeys = out_translation;
+            
             
             return na.release();
         }
@@ -3339,6 +3338,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             const aiVector3D& def_translate,
             const aiVector3D& def_rotation)
         {
+            // todo refactor to use matrix transform and extract scale from caller :)
             if (rotation.size()) {
                 InterpolateKeys(out_quat, times, rotation, def_rotation, maxTime, minTime, order);
             }
