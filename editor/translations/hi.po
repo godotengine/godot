@@ -570,7 +570,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Delete Selection"
-msgstr "डुप्लिकेट चयन"
+msgstr "चयन हटाना"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
@@ -11650,7 +11650,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
@@ -11666,7 +11666,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
-msgstr ""
+msgstr "फिनिशिंग प्लॉट"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Lighting Meshes: "
@@ -11688,7 +11688,7 @@ msgstr ""
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr ""
+msgstr "एक खाली टकराव बहुभुज टक्कर पर कोई प्रभाव नहीं है।"
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -11731,7 +11731,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "90 डिग्री से अधिक के कोण वाले प्रकाश बिंदु छाया नहीं डाल सकते हैं।"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11826,11 +11826,11 @@ msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr ""
+msgstr "ब्लेंडट्री नोड '% s' पर, एनीमेशन नहीं मिला: '% s'"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Animation not found: '%s'"
-msgstr ""
+msgstr "एनीमेशन नहीं मिला: '% s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
@@ -11839,7 +11839,7 @@ msgstr ""
 #: scene/animation/animation_tree.cpp
 #, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "गलत फॉण्ट का आकार |"
+msgstr "अमान्य एनीमेशन: '% s'।"
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -11860,31 +11860,31 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr ""
+msgstr "एनिमेशनप्लेयर रूट आसंधिय एक वैध आसंधिय नहीं है।"
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "इस आसंधिय को हटा दिया गया है। इसके बजाय एनिमेशनट्री का उपयोग करें।"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "स्क्रीन से एक रंग चुनें।"
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "एचएसवी"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw"
-msgstr ""
+msgstr "कच्चा"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "हेक्साडेसिमल और कोड मानों के बीच बदलें करें।"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset."
-msgstr ""
+msgstr "एक पूर्व निर्धारित के रूप में वर्तमान रंग जोड़ें।"
 
 #: scene/gui/container.cpp
 msgid ""
@@ -11901,11 +11901,11 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "चेतावनी!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "कृपया पुष्टि करें..."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -11927,7 +11927,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(अन्य)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -11946,17 +11946,17 @@ msgstr ""
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
-msgstr "गलत फॉण्ट का आकार |"
+msgstr "पूर्वावलोकन के लिए अमान्य स्रोत।"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for shader."
-msgstr "गलत फॉण्ट का आकार |"
+msgstr "शेडर के लिए अमान्य स्रोत।"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "गलत फॉण्ट का आकार |"
+msgstr "उस प्रकार के लिए अमान्य तुलना फ़ंक्शन।"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
@@ -11968,30 +11968,30 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
-msgstr ""
+msgstr "वेरिएंट केवल वर्टेक्स फ़ंक्शन में नियुक्त किया जा सकता है।"
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "स्थिरांक को संशोधित नहीं किया जा सकता है।"
 
 #, fuzzy
 #~ msgid "Class Description:"
-#~ msgstr "विवरण:"
+#~ msgstr "वर्ग विवरण:"
 
 #, fuzzy
 #~ msgid "Property Descriptions:"
-#~ msgstr "विवरण:"
+#~ msgstr "गुणस्वभाव विवरण:"
 
 #, fuzzy
 #~ msgid "Method Descriptions:"
-#~ msgstr "विवरण:"
+#~ msgstr " विधि विवरण:"
 
 #~ msgid "Invalid font size."
 #~ msgstr "गलत फॉण्ट का आकार |"
 
 #, fuzzy
 #~ msgid "Create C# solution"
-#~ msgstr "सदस्यता बनाएं"
+#~ msgstr "C# सदस्यता बनाएं"
 
 #~ msgid "Line:"
 #~ msgstr "रेखा:"
@@ -12001,19 +12001,19 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "Zoom out"
-#~ msgstr "छोटा करो"
+#~ msgstr "छोटा करेॅ"
 
 #, fuzzy
 #~ msgid "Zoom in"
-#~ msgstr "बड़ा करो"
+#~ msgstr "बड़ा करेॅं"
 
 #, fuzzy
 #~ msgid "Zoom:"
-#~ msgstr "बड़ा करो"
+#~ msgstr "बड़ा करेॅं"
 
 #, fuzzy
 #~ msgid "Match case"
-#~ msgstr "एक जैसा:"
+#~ msgstr "एक जैसा"
 
 #~ msgid "Thanks!"
 #~ msgstr "धन्यवाद!"
