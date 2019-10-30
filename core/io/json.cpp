@@ -107,12 +107,17 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
+				Variant key = E->get();
 				String key_str;
-				VariantWriter::write_to_string(E->get(), key_str);
 
+				if (key.get_type() != Variant::STRING) {
+					VariantWriter::write_to_string(key, key_str);
+				} else {
+					key_str = key;
+				}
 				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(key_str, p_indent, p_cur_indent + 1, p_sort_keys);
 				s += colon;
-				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
+				s += _print_var(d[key], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
@@ -427,13 +432,19 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 				return ERR_PARSE_ERROR;
 			}
 
-			// The object key may contain a serialized variant, parse it
-			VariantParser::StreamString ss;
-			ss.s = token.value;
+			// The object key may contain a serialized variant, try to parse it
+			{
+				VariantParser::StreamString ss;
+				ss.s = token.value;
+				String v_parse_err;
+				int v_err_line;
+				Error v_err;
 
-			err = VariantParser::parse(&ss, key, r_err_str, line);
-			if (err != OK) {
-				return err;
+				v_err = VariantParser::parse(&ss, key, v_parse_err, v_err_line);
+				if (v_err == ERR_PARSE_ERROR) {
+					// Read the whole token value as a string instead
+					key = token.value;
+				}
 			}
 
 			err = _get_token(p_str, index, p_len, token, line, r_err_str);
