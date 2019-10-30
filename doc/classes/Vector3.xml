@@ -55,6 +55,15 @@
 				Returns a new vector with all components rounded up.
 			</description>
 		</method>
+		<method name="clamped">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+				Returns the vector with a maximum length.
+			</description>
+		</method>
 		<method name="cross">
 			<return type="Vector3">
 			</return>

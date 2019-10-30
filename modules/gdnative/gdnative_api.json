@@ -621,6 +621,27 @@
         ]
       },
       {
+        "name": "godot_vector2_inverse",
+        "return_type": "godot_vector2",
+        "arguments": [
+          ["const godot_vector2 *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_vector2_min_axis",
+        "return_type": "godot_int",
+        "arguments": [
+          ["const godot_vector2 *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_vector2_max_axis",
+        "return_type": "godot_int",
+        "arguments": [
+          ["const godot_vector2 *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_vector2_distance_to",
         "return_type": "godot_real",
         "arguments": [
@@ -1372,6 +1393,14 @@
         "return_type": "godot_vector3",
         "arguments": [
           ["const godot_vector3 *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_vector3_clamped",
+        "return_type": "godot_vector3",
+        "arguments": [
+          ["const godot_vector3 *", "p_self"],
+          ["const godot_real", "p_length"]
         ]
       },
       {

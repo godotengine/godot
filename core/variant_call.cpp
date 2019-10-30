@@ -354,7 +354,10 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector2, normalized);
 	VCALL_LOCALMEM0R(Vector2, length);
 	VCALL_LOCALMEM0R(Vector2, length_squared);
+	VCALL_LOCALMEM0R(Vector2, min_axis);
+	VCALL_LOCALMEM0R(Vector2, max_axis);
 	VCALL_LOCALMEM0R(Vector2, is_normalized);
+	VCALL_LOCALMEM0R(Vector2, inverse);
 	VCALL_LOCALMEM1R(Vector2, distance_to);
 	VCALL_LOCALMEM1R(Vector2, distance_squared_to);
 	VCALL_LOCALMEM1R(Vector2, posmod);
@@ -414,6 +417,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector3, cross);
 	VCALL_LOCALMEM1R(Vector3, outer);
 	VCALL_LOCALMEM0R(Vector3, to_diagonal_matrix);
+	VCALL_LOCALMEM1R(Vector3, clamped);
 	VCALL_LOCALMEM0R(Vector3, abs);
 	VCALL_LOCALMEM0R(Vector3, floor);
 	VCALL_LOCALMEM0R(Vector3, ceil);
@@ -1611,7 +1615,10 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR2, REAL, Vector2, length, varray());
 	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
 	ADDFUNC0R(VECTOR2, REAL, Vector2, length_squared, varray());
+	ADDFUNC0R(VECTOR2, INT, Vector2, min_axis, varray());
+	ADDFUNC0R(VECTOR2, INT, Vector2, max_axis, varray());
 	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_normalized, varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, inverse, varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, direction_to, VECTOR2, "b", varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_to, VECTOR2, "to", varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_squared_to, VECTOR2, "to", varray());
@@ -1671,6 +1678,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, BASIS, Vector3, outer, VECTOR3, "b", varray());
 	ADDFUNC0R(VECTOR3, BASIS, Vector3, to_diagonal_matrix, varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, clamped, REAL, "length", varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, abs, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, floor, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, ceil, varray());
