@@ -105,6 +105,7 @@ protected:
 
 	SourceGeometryMode source_geometry_mode;
 	StringName source_group_name;
+	bool use_walkable_markers;
 
 	bool filter_low_hanging_obstacles;
 	bool filter_ledge_spans;
@@ -129,6 +130,9 @@ public:
 
 	void set_source_group_name(StringName p_group_name);
 	StringName get_source_group_name() const;
+
+	void set_use_walkable_markers(bool p_use_markers);
+	bool get_use_walkable_markers() const;
 
 	void set_cell_size(float p_value);
 	float get_cell_size() const;
@@ -187,10 +191,15 @@ public:
 	int get_polygon_count() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+	void prune_unreachable_spans(const Vector<Vector3> &p_sources);
 
 	Ref<Mesh> get_debug_mesh();
 
 	NavigationMesh();
+};
+
+class NavigationWalkableMarker : public Spatial {
+	GDCLASS(NavigationWalkableMarker, Spatial);
 };
 
 class Navigation;

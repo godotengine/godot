@@ -131,7 +131,7 @@ void EditorNavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, 
 	}
 }
 
-void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, Vector<Vector3> &r_walkable_markers, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 
 	if (Object::cast_to<MeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 
@@ -140,6 +140,11 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 		if (mesh.is_valid()) {
 			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_verticies, p_indices);
 		}
+	}
+
+	if (Object::cast_to<NavigationWalkableMarker>(p_node)) {
+		NavigationWalkableMarker *marker = Object::cast_to<NavigationWalkableMarker>(p_node);
+		r_walkable_markers.push_back(p_accumulated_transform.xform(marker->get_translation()));
 	}
 
 #ifdef MODULE_CSG_ENABLED
@@ -265,7 +270,7 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, r_walkable_markers, p_generate_from, p_collision_mask, p_recurse_children);
 		}
 	}
 }
@@ -440,6 +445,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 
 	Vector<float> vertices;
 	Vector<int> indices;
+	Vector<Vector3> walkable_markers;
 
 	List<Node *> parse_nodes;
 
@@ -454,7 +460,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
 		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
-		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, collision_mask, recurse_children);
+		_parse_geometry(navmesh_xform, E->get(), vertices, indices, walkable_markers, geometry_type, collision_mask, recurse_children);
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
@@ -481,6 +487,10 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 
 		rcFreePolyMeshDetail(detail_mesh);
 		detail_mesh = 0;
+
+		if (p_nav_mesh->get_use_walkable_markers()) {
+			p_nav_mesh->prune_unreachable_spans(walkable_markers);
+		}
 	}
 	ep.step(TTR("Done!"), 11);
 }

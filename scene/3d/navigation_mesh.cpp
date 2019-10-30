@@ -126,6 +126,14 @@ StringName NavigationMesh::get_source_group_name() const {
 	return source_group_name;
 }
 
+void NavigationMesh::set_use_walkable_markers(bool p_use_markers) {
+	use_walkable_markers = p_use_markers;
+}
+
+bool NavigationMesh::get_use_walkable_markers() const {
+	return use_walkable_markers;
+}
+
 void NavigationMesh::set_cell_size(float p_value) {
 	cell_size = p_value;
 }
@@ -306,6 +314,39 @@ void NavigationMesh::clear_polygons() {
 	polygons.clear();
 }
 
+void NavigationMesh::prune_unreachable_spans(const Vector<Vector3> &p_sources) {
+	Navigation nav;
+	nav.navmesh_add(this, Transform());
+
+	for (int i = polygons.size() - 1; i >= 0; --i) {
+		Vector3 centroid;
+		int size = polygons[i].indices.size();
+
+		for (int j = 0; j < size; ++j) {
+			centroid += vertices[polygons[i].indices[j]];
+		}
+		centroid /= size;
+
+		bool found = false;
+		for (int j = 0; j < p_sources.size(); ++j) {
+			Vector3 source = p_sources[j];
+			if (nav.get_closest_point(source).distance_squared_to(source) > 1.0) {
+				break;
+			}
+
+			Vector<Vector3> path = nav.get_simple_path(source, centroid, false);
+			if (!path.empty()) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			polygons.remove(i);
+		}
+	}
+}
+
 Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 	if (debug_mesh.is_valid())
@@ -411,6 +452,9 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_source_group_name", "mask"), &NavigationMesh::set_source_group_name);
 	ClassDB::bind_method(D_METHOD("get_source_group_name"), &NavigationMesh::get_source_group_name);
 
+	ClassDB::bind_method(D_METHOD("set_use_walkable_markers", "use_markers"), &NavigationMesh::set_use_walkable_markers);
+	ClassDB::bind_method(D_METHOD("get_use_walkable_markers"), &NavigationMesh::get_use_walkable_markers);
+
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &NavigationMesh::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &NavigationMesh::get_cell_size);
 
@@ -466,6 +510,7 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_polygon_count"), &NavigationMesh::get_polygon_count);
 	ClassDB::bind_method(D_METHOD("get_polygon", "idx"), &NavigationMesh::get_polygon);
 	ClassDB::bind_method(D_METHOD("clear_polygons"), &NavigationMesh::clear_polygons);
+	ClassDB::bind_method(D_METHOD("prune_unreachable_spans", "sources"), &NavigationMesh::prune_unreachable_spans);
 
 	ClassDB::bind_method(D_METHOD("create_from_mesh", "mesh"), &NavigationMesh::create_from_mesh);
 
@@ -488,6 +533,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry/source_group_name"), "set_source_group_name", "get_source_group_name");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "geometry/use_walkable_markers"), "set_use_walkable_markers", "get_use_walkable_markers");
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/size", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "cell/height", PROPERTY_HINT_RANGE, "0.1,1.0,0.01,or_greater"), "set_cell_height", "get_cell_height");
@@ -544,6 +590,7 @@ NavigationMesh::NavigationMesh() {
 	collision_mask = 0xFFFFFFFF;
 	source_geometry_mode = SOURCE_GEOMETRY_NAVMESH_CHILDREN;
 	source_group_name = "navmesh";
+	use_walkable_markers = false;
 	filter_low_hanging_obstacles = false;
 	filter_ledge_spans = false;
 	filter_walkable_low_height_spans = false;

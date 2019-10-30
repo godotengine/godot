@@ -405,6 +405,7 @@ void register_scene_types() {
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
+	ClassDB::register_class<NavigationWalkableMarker>();
 	ClassDB::register_class<Navigation>();
 
 	ClassDB::register_class<RootMotionView>();

@@ -3922,6 +3922,29 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 //////
 
+NavigationWalkableMarkerSpatialGizmoPlugin::NavigationWalkableMarkerSpatialGizmoPlugin() {
+	create_icon_material("source_point_icon", SpatialEditor::get_singleton()->get_icon("GizmoNavigationWalkableMarker", "EditorIcons"));
+}
+
+bool NavigationWalkableMarkerSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<NavigationWalkableMarker>(p_spatial) != NULL;
+}
+
+String NavigationWalkableMarkerSpatialGizmoPlugin::get_name() const {
+	return "NavigationWalkableMarker";
+}
+
+int NavigationWalkableMarkerSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void NavigationWalkableMarkerSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	p_gizmo->clear();
+	p_gizmo->add_unscaled_billboard(get_material("source_point_icon", p_gizmo), 0.05);
+}
+
+//////
+
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
 

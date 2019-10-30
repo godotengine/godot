@@ -384,6 +384,19 @@ public:
 	NavigationMeshSpatialGizmoPlugin();
 };
 
+class NavigationWalkableMarkerSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+
+	GDCLASS(NavigationWalkableMarkerSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	NavigationWalkableMarkerSpatialGizmoPlugin();
+};
+
 class JointGizmosDrawer {
 public:
 	static Basis look_body(const Transform &p_joint_transform, const Transform &p_body_transform);
