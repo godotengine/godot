@@ -91,24 +91,18 @@ public:
     *  The different parts that make up the final local transformation of a fbx-node
     */
     enum TransformationComp {
-        TransformationComp_GeometricScalingInverse = 0,
-        TransformationComp_GeometricRotationInverse,
-        TransformationComp_GeometricTranslationInverse,
         TransformationComp_Translation,
         TransformationComp_RotationOffset,
         TransformationComp_RotationPivot,
         TransformationComp_PreRotation,
         TransformationComp_Rotation,
         TransformationComp_PostRotation,
-        TransformationComp_RotationPivotInverse,
         TransformationComp_ScalingOffset,
         TransformationComp_ScalingPivot,
         TransformationComp_Scaling,
-        TransformationComp_ScalingPivotInverse,
         TransformationComp_GeometricTranslation,
         TransformationComp_GeometricRotation,
         TransformationComp_GeometricScaling,
-
         TransformationComp_MAXIMUM
     };
 
@@ -165,18 +159,20 @@ private:
     */
     bool NeedsComplexTransformationChain(const Model& model);
 
-    // ------------------------------------------------------------------------------------------------
-    // note: name must be a FixNodeName() result
-    std::string NameTransformationChainNode(const std::string& name, TransformationComp comp);
+    const aiMatrix4x4& GeneratePivotTransform(
+            const Model& model, 
+            const aiMatrix4x4& model_transform,
+            const std::string& name
+        );
+
+
+    void MagicPivotAlgorithm( 
+        const aiMatrix4x4 &global_transform, 
+        aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
+        aiMatrix4x4 &result );
 
     // ------------------------------------------------------------------------------------------------
-    /**
-    *  note: memory for output_nodes will be managed by the caller
-    */
-    bool GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes, std::vector<aiNode*>& post_output_nodes);
-
-    // ------------------------------------------------------------------------------------------------
-    void SetupNodeMetadata(const Model& model, aiNode& nd);
+    void SetupNodeMetadata(const Model& model, aiNode* nd);
 
     // ------------------------------------------------------------------------------------------------
     void ConvertModel(const Model &model, aiNode *parent, aiNode *root_node,

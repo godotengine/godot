@@ -76,9 +76,7 @@ namespace Assimp {
 
         using namespace Util;
 
-#define MAGIC_NODE_TAG "_$AssimpFbx$"
-
-#define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
+        #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
         FBXConverter::FBXConverter(aiScene* out, const Document& doc, bool removeEmptyBones )
         : defaultMaterialIndex()
@@ -198,9 +196,6 @@ namespace Assimp {
             std::vector<aiNode*> nodes;
             nodes.reserve(conns.size());
 
-            std::vector<aiNode*> nodes_chain;
-            std::vector<aiNode*> post_nodes_chain;
-
             try {
                 for (const Connection* con : conns) {
                     // ignore object-property links
@@ -222,85 +217,30 @@ namespace Assimp {
                     const Model* const model = dynamic_cast<const Model*>(object);
 
                     if (nullptr != model) {
-                        nodes_chain.clear();
-                        post_nodes_chain.clear();
-
                         aiMatrix4x4 new_abs_transform = parent->mTransformation;
                         std::string node_name = FixNodeName(model->Name());
-                        // even though there is only a single input node, the design of
-                        // assimp (or rather: the complicated transformation chain that
-                        // is employed by fbx) means that we may need multiple aiNode's
-                        // to represent a fbx node's transformation.
 
-
-                        // generate node transforms - this includes pivot data
-                        // if need_additional_node is true then you t
-                        const bool need_additional_node = GenerateTransformationNodeChain(*model, node_name, nodes_chain, post_nodes_chain);
-
-                        // assert that for the current node we must have at least a single transform
-                        ai_assert(nodes_chain.size());
-
-                        if (need_additional_node) {
-                            nodes_chain.push_back(new aiNode(node_name));
-                        }
+                        aiNode * node = new aiNode();
+                        ai_assert(node); 
+                        node->mName.Set(node_name);
+                        node->mParent = parent;
 
                         //setup metadata on newest node
-                        SetupNodeMetadata(*model, *nodes_chain.back());
+                        SetupNodeMetadata(*model, node);
 
-                        // link all nodes in a row
-                        aiNode* last_parent = parent;
-                        for (aiNode* child : nodes_chain) {
-                            ai_assert(child);
+                        // Handle FBX pivot data (explicitly must be done all the time)
+                        new_abs_transform = GeneratePivotTransform(*model, new_abs_transform, node_name);
 
-                            if (last_parent != parent) {
-                                last_parent->mNumChildren = 1;
-                                last_parent->mChildren = new aiNode*[1];
-                                last_parent->mChildren[0] = child;
-                            }
-
-                            child->mParent = last_parent;
-                            last_parent = child;
-
-                            new_abs_transform *= child->mTransformation;
-                        }
-
+                        node->mTransformation = new_abs_transform;
                         // attach geometry
-                        ConvertModel(*model, nodes_chain.back(), root_node, new_abs_transform);
+                        ConvertModel(*model, node, root_node, new_abs_transform);
 
                         // check if there will be any child nodes
                         const std::vector<const Connection*>& child_conns
                             = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
 
-                        // if so, link the geometric transform inverse nodes
-                        // before we attach any child nodes
-                        if (child_conns.size()) {
-                            for (aiNode* postnode : post_nodes_chain) {
-                                ai_assert(postnode);
-
-                                if (last_parent != parent) {
-                                    last_parent->mNumChildren = 1;
-                                    last_parent->mChildren = new aiNode*[1];
-                                    last_parent->mChildren[0] = postnode;
-                                }
-
-                                postnode->mParent = last_parent;
-                                last_parent = postnode;
-
-                                new_abs_transform *= postnode->mTransformation;
-                            }
-                        }
-                        else {
-                            // free the nodes we allocated as we don't need them
-                            Util::delete_fun<aiNode> deleter;
-                            std::for_each(
-                                post_nodes_chain.begin(),
-                                post_nodes_chain.end(),
-                                deleter
-                            );
-                        }
-
                         // recursion call - child nodes
-                        ConvertNodes(model->ID(), last_parent, root_node);
+                        ConvertNodes(model->ID(), node, root_node);
 
                         if (doc.Settings().readLights) {
                             ConvertLights(*model, node_name);
@@ -310,8 +250,7 @@ namespace Assimp {
                             ConvertCameras(*model, node_name);
                         }
 
-                        nodes.push_back(nodes_chain.front());
-                        nodes_chain.clear();
+                        nodes.push_back(node);
                     }
                 }
 
@@ -331,8 +270,6 @@ namespace Assimp {
             catch (std::exception&) {
                 Util::delete_fun<aiNode> deleter;
                 std::for_each(nodes.begin(), nodes.end(), deleter);
-                std::for_each(nodes_chain.begin(), nodes_chain.end(), deleter);
-                std::for_each(post_nodes_chain.begin(), post_nodes_chain.end(), deleter);
             }
         }
 
@@ -487,28 +424,18 @@ namespace Assimp {
                 return "Rotation";
             case TransformationComp_PostRotation:
                 return "PostRotation";
-            case TransformationComp_RotationPivotInverse:
-                return "RotationPivotInverse";
             case TransformationComp_ScalingOffset:
                 return "ScalingOffset";
             case TransformationComp_ScalingPivot:
                 return "ScalingPivot";
             case TransformationComp_Scaling:
                 return "Scaling";
-            case TransformationComp_ScalingPivotInverse:
-                return "ScalingPivotInverse";
             case TransformationComp_GeometricScaling:
                 return "GeometricScaling";
             case TransformationComp_GeometricRotation:
                 return "GeometricRotation";
             case TransformationComp_GeometricTranslation:
                 return "GeometricTranslation";
-            case TransformationComp_GeometricScalingInverse:
-                return "GeometricScalingInverse";
-            case TransformationComp_GeometricRotationInverse:
-                return "GeometricRotationInverse";
-            case TransformationComp_GeometricTranslationInverse:
-                return "GeometricTranslationInverse";
             case TransformationComp_MAXIMUM: // this is to silence compiler warnings
             default:
                 break;
@@ -533,28 +460,18 @@ namespace Assimp {
                 return "Lcl Rotation";
             case TransformationComp_PostRotation:
                 return "PostRotation";
-            case TransformationComp_RotationPivotInverse:
-                return "RotationPivotInverse";
             case TransformationComp_ScalingOffset:
                 return "ScalingOffset";
             case TransformationComp_ScalingPivot:
                 return "ScalingPivot";
             case TransformationComp_Scaling:
                 return "Lcl Scaling";
-            case TransformationComp_ScalingPivotInverse:
-                return "ScalingPivotInverse";
             case TransformationComp_GeometricScaling:
                 return "GeometricScaling";
             case TransformationComp_GeometricRotation:
                 return "GeometricRotation";
             case TransformationComp_GeometricTranslation:
                 return "GeometricTranslation";
-            case TransformationComp_GeometricScalingInverse:
-                return "GeometricScalingInverse";
-            case TransformationComp_GeometricRotationInverse:
-                return "GeometricRotationInverse";
-            case TransformationComp_GeometricTranslationInverse:
-                return "GeometricTranslationInverse";
             case TransformationComp_MAXIMUM: // this is to silence compiler warnings
                 break;
             }
@@ -696,198 +613,127 @@ namespace Assimp {
             return false;
         }
 
-        std::string FBXConverter::NameTransformationChainNode(const std::string& name, TransformationComp comp)
+        void FBXConverter::MagicPivotAlgorithm( 
+            const aiMatrix4x4 &global_transform, 
+            aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
+            aiMatrix4x4 &result )
         {
-            return name + std::string(MAGIC_NODE_TAG) + "_" + NameTransformationComp(comp);
+            aiMatrix4x4 T = chain[TransformationComp_Translation];
+            aiMatrix4x4 Roff = chain[TransformationComp_RotationOffset];
+            aiMatrix4x4 Rp = chain[TransformationComp_RotationPivot];
+            aiMatrix4x4 Rpre = chain[TransformationComp_PreRotation];
+            aiMatrix4x4 R = chain[TransformationComp_Rotation];
+            aiMatrix4x4 Rpost = chain[TransformationComp_PostRotation];
+            aiMatrix4x4 Soff = chain[TransformationComp_ScalingOffset];
+            aiMatrix4x4 Sp = chain[TransformationComp_ScalingPivot];
+            aiMatrix4x4 S = chain[TransformationComp_Scaling];
+            result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
         }
 
-        bool FBXConverter::GenerateTransformationNodeChain(const Model& model, const std::string& name, std::vector<aiNode*>& output_nodes,
-            std::vector<aiNode*>& post_output_nodes) {
+        const aiMatrix4x4& FBXConverter::GeneratePivotTransform(
+            const Model& model, 
+            const aiMatrix4x4& model_transform,
+            const std::string& name
+        ) {
             const PropertyTable& props = model.Props();
             const Model::RotOrder rot = model.RotationOrder();
 
-            bool ok;
+            bool ok = false;
 
             aiMatrix4x4 chain[TransformationComp_MAXIMUM];
 
+            // Identity everything
+            for(int x = 0; x < TransformationComp_MAXIMUM; x++)
+            {
+                chain[x] = aiMatrix4x4();
+            }
+
+
             ai_assert(TransformationComp_MAXIMUM < 32);
-            std::uint32_t chainBits = 0;
-            // A node won't need a node chain if it only has these.
-            const std::uint32_t chainMaskSimple = (1 << TransformationComp_Translation) + (1 << TransformationComp_Scaling) + (1 << TransformationComp_Rotation);
-            // A node will need a node chain if it has any of these.
-            const std::uint32_t chainMaskComplex = ((1 << (TransformationComp_MAXIMUM)) - 1) - chainMaskSimple;
 
             std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
 
             // generate transformation matrices for all the different transformation components
             const float zero_epsilon = Math::getEpsilon<float>();
-            const aiVector3D all_ones(1.0f, 1.0f, 1.0f);
 
             const aiVector3D& PreRotation = PropertyGet<aiVector3D>(props, "PreRotation", ok);
-            if (ok && PreRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_PreRotation);
-
+            if (ok) {
                 GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PreRotation, chain[TransformationComp_PreRotation]);
             }
 
             const aiVector3D& PostRotation = PropertyGet<aiVector3D>(props, "PostRotation", ok);
-            if (ok && PostRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_PostRotation);
-
+            if (ok) {
                 GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PostRotation, chain[TransformationComp_PostRotation]);
             }
 
             const aiVector3D& RotationPivot = PropertyGet<aiVector3D>(props, "RotationPivot", ok);
-            if (ok && RotationPivot.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_RotationPivot) | (1 << TransformationComp_RotationPivotInverse);
-
+            if (ok) {
                 aiMatrix4x4::Translation(RotationPivot, chain[TransformationComp_RotationPivot]);
-                aiMatrix4x4::Translation(-RotationPivot, chain[TransformationComp_RotationPivotInverse]);
             }
 
             const aiVector3D& RotationOffset = PropertyGet<aiVector3D>(props, "RotationOffset", ok);
-            if (ok && RotationOffset.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_RotationOffset);
-
+            if (ok) {
                 aiMatrix4x4::Translation(RotationOffset, chain[TransformationComp_RotationOffset]);
             }
 
             const aiVector3D& ScalingOffset = PropertyGet<aiVector3D>(props, "ScalingOffset", ok);
-            if (ok && ScalingOffset.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_ScalingOffset);
-
+            if (ok) {
                 aiMatrix4x4::Translation(ScalingOffset, chain[TransformationComp_ScalingOffset]);
             }
 
             const aiVector3D& ScalingPivot = PropertyGet<aiVector3D>(props, "ScalingPivot", ok);
-            if (ok && ScalingPivot.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_ScalingPivot) | (1 << TransformationComp_ScalingPivotInverse);
-
+            if (ok) {
                 aiMatrix4x4::Translation(ScalingPivot, chain[TransformationComp_ScalingPivot]);
-                aiMatrix4x4::Translation(-ScalingPivot, chain[TransformationComp_ScalingPivotInverse]);
             }
 
             const aiVector3D& Translation = PropertyGet<aiVector3D>(props, "Lcl Translation", ok);
-            if (ok && Translation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Translation);
-
+            if (ok) {
                 aiMatrix4x4::Translation(Translation, chain[TransformationComp_Translation]);
             }
 
             const aiVector3D& Scaling = PropertyGet<aiVector3D>(props, "Lcl Scaling", ok);
-            if (ok && (Scaling - all_ones).SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Scaling);
-
+            if (ok) {
                 aiMatrix4x4::Scaling(Scaling, chain[TransformationComp_Scaling]);
             }
+            else
+            {
+                aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_Scaling]);
+            }
+            
 
             const aiVector3D& Rotation = PropertyGet<aiVector3D>(props, "Lcl Rotation", ok);
-            if (ok && Rotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_Rotation);
-
+            if (ok) {
                 GetRotationMatrix(rot, Rotation, chain[TransformationComp_Rotation]);
             }
 
             const aiVector3D& GeometricScaling = PropertyGet<aiVector3D>(props, "GeometricScaling", ok);
-            if (ok && (GeometricScaling - all_ones).SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricScaling);
+            if (ok) {
                 aiMatrix4x4::Scaling(GeometricScaling, chain[TransformationComp_GeometricScaling]);
-                aiVector3D GeometricScalingInverse = GeometricScaling;
-                bool canscale = true;
-                for (unsigned int i = 0; i < 3; ++i) {
-                    if (std::fabs(GeometricScalingInverse[i]) > zero_epsilon) {
-                        GeometricScalingInverse[i] = 1.0f / GeometricScaling[i];
-                    }
-                    else {
-                        FBXImporter::LogError("cannot invert geometric scaling matrix with a 0.0 scale component");
-                        canscale = false;
-                        break;
-                    }
-                }
-                if (canscale) {
-                    chainBits = chainBits | (1 << TransformationComp_GeometricScalingInverse);
-                    aiMatrix4x4::Scaling(GeometricScalingInverse, chain[TransformationComp_GeometricScalingInverse]);
-                }
             }
+            else
+            {
+                aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_GeometricScaling]);
+            }
+            
 
             const aiVector3D& GeometricRotation = PropertyGet<aiVector3D>(props, "GeometricRotation", ok);
-            if (ok && GeometricRotation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricRotation) | (1 << TransformationComp_GeometricRotationInverse);
+            if (ok) {
                 GetRotationMatrix(rot, GeometricRotation, chain[TransformationComp_GeometricRotation]);
-                GetRotationMatrix(rot, GeometricRotation, chain[TransformationComp_GeometricRotationInverse]);
-                chain[TransformationComp_GeometricRotationInverse].Inverse();
             }
 
             const aiVector3D& GeometricTranslation = PropertyGet<aiVector3D>(props, "GeometricTranslation", ok);
-            if (ok && GeometricTranslation.SquareLength() > zero_epsilon) {
-                chainBits = chainBits | (1 << TransformationComp_GeometricTranslation) | (1 << TransformationComp_GeometricTranslationInverse);
+            if (ok) {
                 aiMatrix4x4::Translation(GeometricTranslation, chain[TransformationComp_GeometricTranslation]);
-                aiMatrix4x4::Translation(-GeometricTranslation, chain[TransformationComp_GeometricTranslationInverse]);
             }
 
-            // is_complex needs to be consistent with NeedsComplexTransformationChain()
-            // or the interplay between this code and the animation converter would
-            // not be guaranteed.
-            //ai_assert(NeedsComplexTransformationChain(model) == ((chainBits & chainMaskComplex) != 0));
+            aiMatrix4x4 transform;
 
-            // now, if we have more than just Translation, Scaling and Rotation,
-            // we need to generate a full node chain to accommodate for assimp's
-            // lack to express pivots and offsets.
-            if ((chainBits & chainMaskComplex) && doc.Settings().preservePivots) {
-                FBXImporter::LogInfo("generating full transformation chain for node: " + name);
+            MagicPivotAlgorithm(model_transform, chain, transform);
 
-                // query the anim_chain_bits dictionary to find out which chain elements
-                // have associated node animation channels. These can not be dropped
-                // even if they have identity transform in bind pose.
-                NodeAnimBitMap::const_iterator it = node_anim_chain_bits.find(name);
-                const unsigned int anim_chain_bitmask = (it == node_anim_chain_bits.end() ? 0 : (*it).second);
-
-                unsigned int bit = 0x1;
-                for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i, bit <<= 1) {
-                    const TransformationComp comp = static_cast<TransformationComp>(i);
-
-                    if ((chainBits & bit) == 0 && (anim_chain_bitmask & bit) == 0) {
-                        continue;
-                    }
-
-                    if (comp == TransformationComp_PostRotation) {
-                        chain[i] = chain[i].Inverse();
-                    }
-
-                    aiNode* nd = new aiNode();
-                    nd->mName.Set(NameTransformationChainNode(name, comp));
-                    nd->mTransformation = chain[i];
-
-                    // geometric inverses go in a post-node chain
-                    if (comp == TransformationComp_GeometricScalingInverse ||
-                        comp == TransformationComp_GeometricRotationInverse ||
-                        comp == TransformationComp_GeometricTranslationInverse
-                        ) {
-                        post_output_nodes.push_back(nd);
-                    }
-                    else {
-                        output_nodes.push_back(nd);
-                    }
-                }
-
-                ai_assert(output_nodes.size());
-                return true;
-            }
-
-            // else, we can just multiply the matrices together
-            aiNode* nd = new aiNode();
-            output_nodes.push_back(nd);
-
-            // name passed to the method is already unique
-            nd->mName.Set(name);
-
-            for (const auto &transform : chain) {
-                nd->mTransformation = nd->mTransformation * transform;
-            }
-            return false;
+            return transform;
         }
 
-        void FBXConverter::SetupNodeMetadata(const Model& model, aiNode& nd)
+        void FBXConverter::SetupNodeMetadata(const Model& model, aiNode* nd)
         {
             const PropertyTable& props = model.Props();
             DirectPropertyMap unparsedProperties = props.GetUnparsedProperties();
@@ -895,7 +741,7 @@ namespace Assimp {
             // create metadata on node
             const std::size_t numStaticMetaData = 2;
             aiMetadata* data = aiMetadata::Alloc(static_cast<unsigned int>(unparsedProperties.size() + numStaticMetaData));
-            nd.mMetaData = data;
+            nd->mMetaData = data;
             int index = 0;
 
             // find user defined properties (3ds Max)
@@ -2614,6 +2460,12 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                     anim->mNumChannels = static_cast<unsigned int>(node_anims.size());
                     std::swap_ranges(node_anims.begin(), node_anims.end(), anim->mChannels);
                 }
+                else
+                {
+                    anim->mNumChannels = 0;
+                    anim->mChannels = nullptr;
+                }
+                
                 if (morphAnimDatas.size()) {
                     unsigned int numMorphMeshChannels = static_cast<unsigned int>(morphAnimDatas.size());
                     anim->mMorphMeshChannels = new aiMeshMorphAnim*[numMorphMeshChannels];
@@ -2642,6 +2494,11 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                         }
                         anim->mMorphMeshChannels[i++] = meshMorphAnim;
                     }
+                }
+                else
+                {
+                    anim->mNumMorphMeshChannels = 0;
+                    anim->mMorphMeshChannels = nullptr;
                 }
             }
             else {
@@ -2811,12 +2668,6 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i) {
                 const TransformationComp comp = static_cast<TransformationComp>(i);
 
-                // inverse pivots don't exist in the input, we just generate them
-                if (comp == TransformationComp_RotationPivotInverse || comp == TransformationComp_ScalingPivotInverse) {
-                    chain[i] = node_property_map.end();
-                    continue;
-                }
-
                 chain[i] = node_property_map.find(NameTransformationCompProperty(comp));
                 if (chain[i] != node_property_map.end()) {
 
@@ -2830,11 +2681,6 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                     }
 
                     has_any = true;
-
-                    if (comp != TransformationComp_Rotation && comp != TransformationComp_Scaling && comp != TransformationComp_Translation)
-                    {
-                        has_complex = true;
-                    }
                 }
             }
 
@@ -2843,159 +2689,22 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 return;
             }
 
-            // this needs to play nicely with GenerateTransformationNodeChain() which will
-            // be invoked _later_ (animations come first). If this node has only rotation,
-            // scaling and translation _and_ there are no animated other components either,
-            // we can use a single node and also a single node animation channel.
-            if (!has_complex && !NeedsComplexTransformationChain(target)) {
+            aiNodeAnim* const nd = GenerateSimpleNodeAnim(fixed_name, target, chain,
+                node_property_map.end(),
+                layer_map,
+                start, stop,
+                max_time,
+                min_time,
+                true // input is TRS order, assimp is SRT
+            );
 
-                aiNodeAnim* const nd = GenerateSimpleNodeAnim(fixed_name, target, chain,
-                    node_property_map.end(),
-                    layer_map,
-                    start, stop,
-                    max_time,
-                    min_time,
-                    true // input is TRS order, assimp is SRT
-                );
-
-                ai_assert(nd);
-                if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
-                    delete nd;
-                }
-                else {
-                    node_anims.push_back(nd);
-                }
-                return;
+            ai_assert(nd);
+            if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
+                delete nd;
             }
-
-            // otherwise, things get gruesome and we need separate animation channels
-            // for each part of the transformation chain. Remember which channels
-            // we generated and pass this information to the node conversion
-            // code to avoid nodes that have identity transform, but non-identity
-            // animations, being dropped.
-            unsigned int flags = 0, bit = 0x1;
-            for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i, bit <<= 1) {
-                const TransformationComp comp = static_cast<TransformationComp>(i);
-
-                if (chain[i] != node_property_map.end()) {
-                    flags |= bit;
-
-                    ai_assert(comp != TransformationComp_RotationPivotInverse);
-                    ai_assert(comp != TransformationComp_ScalingPivotInverse);
-
-                    const std::string& chain_name = NameTransformationChainNode(fixed_name, comp);
-
-                    aiNodeAnim* na = nullptr;
-                    switch (comp)
-                    {
-                    case TransformationComp_Rotation:
-                    case TransformationComp_PreRotation:
-                    case TransformationComp_PostRotation:
-                    case TransformationComp_GeometricRotation:
-                        na = GenerateRotationNodeAnim(chain_name,
-                            target,
-                            (*chain[i]).second,
-                            layer_map,
-                            start, stop,
-                            max_time,
-                            min_time);
-
-                        break;
-
-                    case TransformationComp_RotationOffset:
-                    case TransformationComp_RotationPivot:
-                    case TransformationComp_ScalingOffset:
-                    case TransformationComp_ScalingPivot:
-                    case TransformationComp_Translation:
-                    case TransformationComp_GeometricTranslation:
-                        na = GenerateTranslationNodeAnim(chain_name,
-                            target,
-                            (*chain[i]).second,
-                            layer_map,
-                            start, stop,
-                            max_time,
-                            min_time);
-
-                        // pivoting requires us to generate an implicit inverse channel to undo the pivot translation
-                        if (comp == TransformationComp_RotationPivot) {
-                            const std::string& invName = NameTransformationChainNode(fixed_name,
-                                TransformationComp_RotationPivotInverse);
-
-                            aiNodeAnim* const inv = GenerateTranslationNodeAnim(invName,
-                                target,
-                                (*chain[i]).second,
-                                layer_map,
-                                start, stop,
-                                max_time,
-                                min_time,
-                                true);
-
-                            ai_assert(inv);
-                            if (inv->mNumPositionKeys == 0 && inv->mNumRotationKeys == 0 && inv->mNumScalingKeys == 0) {
-                                delete inv;
-                            }
-                            else {
-                                node_anims.push_back(inv);
-                            }
-
-                            ai_assert(TransformationComp_RotationPivotInverse > i);
-                            flags |= bit << (TransformationComp_RotationPivotInverse - i);
-                        }
-                        else if (comp == TransformationComp_ScalingPivot) {
-                            const std::string& invName = NameTransformationChainNode(fixed_name,
-                                TransformationComp_ScalingPivotInverse);
-
-                            aiNodeAnim* const inv = GenerateTranslationNodeAnim(invName,
-                                target,
-                                (*chain[i]).second,
-                                layer_map,
-                                start, stop,
-                                max_time,
-                                min_time,
-                                true);
-
-                            ai_assert(inv);
-                            if (inv->mNumPositionKeys == 0 && inv->mNumRotationKeys == 0 && inv->mNumScalingKeys == 0) {
-                                delete inv;
-                            }
-                            else {
-                                node_anims.push_back(inv);
-                            }
-
-                            ai_assert(TransformationComp_RotationPivotInverse > i);
-                            flags |= bit << (TransformationComp_RotationPivotInverse - i);
-                        }
-
-                        break;
-
-                    case TransformationComp_Scaling:
-                    case TransformationComp_GeometricScaling:
-                        na = GenerateScalingNodeAnim(chain_name,
-                            target,
-                            (*chain[i]).second,
-                            layer_map,
-                            start, stop,
-                            max_time,
-                            min_time);
-
-                        break;
-
-                    default:
-                        ai_assert(false);
-                    }
-
-                    ai_assert(na);
-                    if (na->mNumPositionKeys == 0 && na->mNumRotationKeys == 0 && na->mNumScalingKeys == 0) {
-                        delete na;
-                    }
-                    else {
-                        node_anims.push_back(na);
-                    }
-                    continue;
-                }
+            else {
+                node_anims.push_back(nd);
             }
-
-            node_anim_chain_bits[fixed_name] = flags;
         }
 
 
@@ -3113,6 +2822,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& min_time,
             bool inverse) {
             std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
+            std::cout << "node name: " << name << std::endl;
             na->mNodeName.Set(name);
 
             ConvertTranslationKeys(na.get(), curves, layer_map, start, stop, max_time, min_time);
@@ -3156,123 +2866,77 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
 
             const PropertyTable& props = target.Props();
 
-            // need to convert from TRS order to SRT?
-            if (reverse_order) {
 
-                aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
-                aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
-                aiVector3D def_rot = PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
+            aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
+            aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
+            aiVector3D def_rot = PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
 
-                KeyFrameListList scaling;
-                KeyFrameListList translation;
-                KeyFrameListList rotation;
+            // some arguments to be removed 
+            // input transform unimportant and string is old code
+            aiMatrix4x4 abs_transform = GeneratePivotTransform(target, aiMatrix4x4(), "");
 
-                if (chain[TransformationComp_Scaling] != iter_end) {
-                    scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
-                }
+            // todo basically lets just use abs_transform in
+            // ConvertTransformOrder_TRStoSRT() 
+            // and we should have keyframes with pivot data precompiled out
 
-                if (chain[TransformationComp_Translation] != iter_end) {
-                    translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
-                }
+            // todo additionally would like to treble check that no models 
+            // have keyframes for pivot transforms
 
-                if (chain[TransformationComp_Rotation] != iter_end) {
-                    rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
-                }
 
-                KeyFrameListList joined;
-                joined.insert(joined.end(), scaling.begin(), scaling.end());
-                joined.insert(joined.end(), translation.begin(), translation.end());
-                joined.insert(joined.end(), rotation.begin(), rotation.end());
+            KeyFrameListList scaling;
+            KeyFrameListList translation;
+            KeyFrameListList rotation;
 
-                const KeyTimeList& times = GetKeyTimeList(joined);
-
-                aiQuatKey* out_quat = new aiQuatKey[times.size()];
-                aiVectorKey* out_scale = new aiVectorKey[times.size()];
-                aiVectorKey* out_translation = new aiVectorKey[times.size()];
-
-                if (times.size())
-                {
-                    ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
-                        scaling,
-                        translation,
-                        rotation,
-                        times,
-                        max_time,
-                        min_time,
-                        target.RotationOrder(),
-                        def_scale,
-                        def_translate,
-                        def_rot);
-                }
-
-                // XXX remove duplicates / redundant keys which this operation did
-                // likely produce if not all three channels were equally dense.
-
-                na->mNumScalingKeys = static_cast<unsigned int>(times.size());
-                na->mNumRotationKeys = na->mNumScalingKeys;
-                na->mNumPositionKeys = na->mNumScalingKeys;
-
-                na->mScalingKeys = out_scale;
-                na->mRotationKeys = out_quat;
-                na->mPositionKeys = out_translation;
+            if (chain[TransformationComp_Scaling] != iter_end) {
+                scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
             }
-            else {
 
-                // if a particular transformation is not given, grab it from
-                // the corresponding node to meet the semantics of aiNodeAnim,
-                // which requires all of rotation, scaling and translation
-                // to be set.
-                if (chain[TransformationComp_Scaling] != iter_end) {
-                    ConvertScaleKeys(na.get(), (*chain[TransformationComp_Scaling]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time);
-                }
-                else {
-                    na->mScalingKeys = new aiVectorKey[1];
-                    na->mNumScalingKeys = 1;
-
-                    na->mScalingKeys[0].mTime = 0.;
-                    na->mScalingKeys[0].mValue = PropertyGet(props, "Lcl Scaling",
-                        aiVector3D(1.f, 1.f, 1.f));
-                }
-
-                if (chain[TransformationComp_Rotation] != iter_end) {
-                    ConvertRotationKeys(na.get(), (*chain[TransformationComp_Rotation]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time,
-                        target.RotationOrder());
-                }
-                else {
-                    na->mRotationKeys = new aiQuatKey[1];
-                    na->mNumRotationKeys = 1;
-
-                    na->mRotationKeys[0].mTime = 0.;
-                    na->mRotationKeys[0].mValue = EulerToQuaternion(
-                        PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f)),
-                        target.RotationOrder());
-                }
-
-                if (chain[TransformationComp_Translation] != iter_end) {
-                    ConvertTranslationKeys(na.get(), (*chain[TransformationComp_Translation]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time);
-                }
-                else {
-                    na->mPositionKeys = new aiVectorKey[1];
-                    na->mNumPositionKeys = 1;
-
-                    na->mPositionKeys[0].mTime = 0.;
-                    na->mPositionKeys[0].mValue = PropertyGet(props, "Lcl Translation",
-                        aiVector3D(0.f, 0.f, 0.f));
-                }
-
+            if (chain[TransformationComp_Translation] != iter_end) {
+                translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
             }
+
+            if (chain[TransformationComp_Rotation] != iter_end) {
+                rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
+            }
+
+            KeyFrameListList joined;
+            joined.insert(joined.end(), scaling.begin(), scaling.end());
+            joined.insert(joined.end(), translation.begin(), translation.end());
+            joined.insert(joined.end(), rotation.begin(), rotation.end());
+
+            const KeyTimeList& times = GetKeyTimeList(joined);
+
+            aiQuatKey* out_quat = new aiQuatKey[times.size()];
+            aiVectorKey* out_scale = new aiVectorKey[times.size()];
+            aiVectorKey* out_translation = new aiVectorKey[times.size()];
+
+            if (times.size())
+            {
+                ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
+                    scaling,
+                    translation,
+                    rotation,
+                    times,
+                    max_time,
+                    min_time,
+                    target.RotationOrder(),
+                    def_scale,
+                    def_translate,
+                    def_rot);
+            }
+
+            // XXX remove duplicates / redundant keys which this operation did
+            // likely produce if not all three channels were equally dense.
+
+            na->mNumScalingKeys = static_cast<unsigned int>(times.size());
+            na->mNumRotationKeys = na->mNumScalingKeys;
+            na->mNumPositionKeys = na->mNumScalingKeys;
+
+            na->mScalingKeys = out_scale;
+            na->mRotationKeys = out_quat;
+            na->mPositionKeys = out_translation;
+            
+            
             return na.release();
         }
 
@@ -3487,6 +3151,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             const aiVector3D& def_translate,
             const aiVector3D& def_rotation)
         {
+            // todo refactor to use matrix transform and extract scale from caller :)
             if (rotation.size()) {
                 InterpolateKeys(out_quat, times, rotation, def_rotation, maxTime, minTime, order);
             }
@@ -3546,6 +3211,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& minTime)
         {
             ai_assert(nodes.size());
+            ai_assert(na);
 
             // XXX for now, assume scale should be blended geometrically (i.e. two
             // layers should be multiplied with each other). There is a FBX
@@ -3568,7 +3234,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& minTime)
         {
             ai_assert(nodes.size());
-
+            ai_assert(na);
             // XXX see notes in ConvertScaleKeys()
             const KeyFrameListList& inputs = GetKeyframeList(nodes, start, stop);
             const KeyTimeList& keys = GetKeyTimeList(inputs);
@@ -3587,6 +3253,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             Model::RotOrder order)
         {
             ai_assert(nodes.size());
+            ai_assert(na);
 
             // XXX see notes in ConvertScaleKeys()
             const std::vector< KeyFrameList >& inputs = GetKeyframeList(nodes, start, stop);

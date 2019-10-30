@@ -124,6 +124,14 @@ public:
      *  Note that vec*vec yields the dot product.
      *  @param o Second factor */
     const aiVector3t SymMul(const aiVector3t& o);
+    
+    static aiVector3t<TReal> NORMAL() {
+        return aiVector3t<TReal>(1,1,1);
+    }
+
+    static aiVector3t<TReal> ZERO() {
+        return aiVector3t<TReal>(0,0,0);
+    }
 
     TReal x, y, z;
 };
