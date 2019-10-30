@@ -91,24 +91,18 @@ public:
     *  The different parts that make up the final local transformation of a fbx-node
     */
     enum TransformationComp {
-        TransformationComp_GeometricScalingInverse = 0,
-        TransformationComp_GeometricRotationInverse,
-        TransformationComp_GeometricTranslationInverse,
         TransformationComp_Translation,
         TransformationComp_RotationOffset,
         TransformationComp_RotationPivot,
         TransformationComp_PreRotation,
         TransformationComp_Rotation,
         TransformationComp_PostRotation,
-        TransformationComp_RotationPivotInverse,
         TransformationComp_ScalingOffset,
         TransformationComp_ScalingPivot,
         TransformationComp_Scaling,
-        TransformationComp_ScalingPivotInverse,
         TransformationComp_GeometricTranslation,
         TransformationComp_GeometricRotation,
         TransformationComp_GeometricScaling,
-
         TransformationComp_MAXIMUM
     };
 

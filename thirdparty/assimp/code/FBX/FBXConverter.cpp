@@ -611,28 +611,18 @@ namespace Assimp {
                 return "Rotation";
             case TransformationComp_PostRotation:
                 return "PostRotation";
-            case TransformationComp_RotationPivotInverse:
-                return "RotationPivotInverse";
             case TransformationComp_ScalingOffset:
                 return "ScalingOffset";
             case TransformationComp_ScalingPivot:
                 return "ScalingPivot";
             case TransformationComp_Scaling:
                 return "Scaling";
-            case TransformationComp_ScalingPivotInverse:
-                return "ScalingPivotInverse";
             case TransformationComp_GeometricScaling:
                 return "GeometricScaling";
             case TransformationComp_GeometricRotation:
                 return "GeometricRotation";
             case TransformationComp_GeometricTranslation:
                 return "GeometricTranslation";
-            case TransformationComp_GeometricScalingInverse:
-                return "GeometricScalingInverse";
-            case TransformationComp_GeometricRotationInverse:
-                return "GeometricRotationInverse";
-            case TransformationComp_GeometricTranslationInverse:
-                return "GeometricTranslationInverse";
             case TransformationComp_MAXIMUM: // this is to silence compiler warnings
             default:
                 break;
@@ -657,28 +647,18 @@ namespace Assimp {
                 return "Lcl Rotation";
             case TransformationComp_PostRotation:
                 return "PostRotation";
-            case TransformationComp_RotationPivotInverse:
-                return "RotationPivotInverse";
             case TransformationComp_ScalingOffset:
                 return "ScalingOffset";
             case TransformationComp_ScalingPivot:
                 return "ScalingPivot";
             case TransformationComp_Scaling:
                 return "Lcl Scaling";
-            case TransformationComp_ScalingPivotInverse:
-                return "ScalingPivotInverse";
             case TransformationComp_GeometricScaling:
                 return "GeometricScaling";
             case TransformationComp_GeometricRotation:
                 return "GeometricRotation";
             case TransformationComp_GeometricTranslation:
                 return "GeometricTranslation";
-            case TransformationComp_GeometricScalingInverse:
-                return "GeometricScalingInverse";
-            case TransformationComp_GeometricRotationInverse:
-                return "GeometricRotationInverse";
-            case TransformationComp_GeometricTranslationInverse:
-                return "GeometricTranslationInverse";
             case TransformationComp_MAXIMUM: // this is to silence compiler warnings
                 break;
             }
@@ -834,7 +814,7 @@ namespace Assimp {
             aiMatrix4x4 Soff = chain[TransformationComp_ScalingOffset];
             aiMatrix4x4 Sp = chain[TransformationComp_ScalingPivot];
             aiMatrix4x4 S = chain[TransformationComp_Scaling];
-            result = global_transform * T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
+            result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
         }
 
         const aiMatrix4x4& FBXConverter::GeneratePivotTransform(
@@ -895,6 +875,11 @@ namespace Assimp {
             if (ok) {
                 aiMatrix4x4::Scaling(Scaling, chain[TransformationComp_Scaling]);
             }
+            else
+            {
+                aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_Scaling]);
+            }
+            
 
             const aiVector3D& Rotation = PropertyGet<aiVector3D>(props, "Lcl Rotation", ok);
             if (ok) {
@@ -905,6 +890,11 @@ namespace Assimp {
             if (ok) {
                 aiMatrix4x4::Scaling(GeometricScaling, chain[TransformationComp_GeometricScaling]);
             }
+            else
+            {
+                aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_GeometricScaling]);
+            }
+            
 
             const aiVector3D& GeometricRotation = PropertyGet<aiVector3D>(props, "GeometricRotation", ok);
             if (ok) {
@@ -920,7 +910,7 @@ namespace Assimp {
 
             MagicPivotAlgorithm(model_transform, chain, transform);
 
-            return transform;
+            return model_transform * transform;
         }
 
         void FBXConverter::SetupNodeMetadata(const Model& model, aiNode* nd)
@@ -2857,12 +2847,6 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
 
             for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i) {
                 const TransformationComp comp = static_cast<TransformationComp>(i);
-
-                // inverse pivots don't exist in the input, we just generate them
-                if (comp == TransformationComp_RotationPivotInverse || comp == TransformationComp_ScalingPivotInverse) {
-                    chain[i] = node_property_map.end();
-                    continue;
-                }
 
                 chain[i] = node_property_map.find(NameTransformationCompProperty(comp));
                 if (chain[i] != node_property_map.end()) {
