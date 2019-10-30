@@ -165,10 +165,6 @@ private:
     */
     bool NeedsComplexTransformationChain(const Model& model);
 
-    // ------------------------------------------------------------------------------------------------
-    // note: name must be a FixNodeName() result
-    std::string NameTransformationChainNode(const std::string& name, TransformationComp comp);
-
     const aiMatrix4x4& GeneratePivotTransform(
             const Model& model, 
             const aiMatrix4x4& model_transform,
