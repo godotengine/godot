@@ -4742,16 +4742,33 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			// Delete allocated resources and default to no MSAA
 			WARN_PRINT_ONCE("Cannot allocate back framebuffer for MSAA");
 			printf("err status: %x\n", status);
-			_render_target_clear(rt);
-			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+			config.multisample_supported = false;
+			rt->multisample_active = false;
+
+			glDeleteFramebuffers(1, &rt->multisample_fbo);
+			rt->multisample_fbo = 0;
+
+			glDeleteRenderbuffers(1, &rt->multisample_depth);
+			rt->multisample_depth = 0;
+#ifdef ANDROID_ENABLED
+			glDeleteTextures(1, &rt->multisample_color);
+#else
+			glDeleteRenderbuffers(1, &rt->multisample_color);
+#endif
+			rt->multisample_color = 0;
 		}
 
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef ANDROID_ENABLED
+		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
 	} else
-#endif
+#endif // JAVASCRIPT_ENABLED
 	{
 		rt->multisample_active = false;
 	}
@@ -4987,10 +5004,10 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 
 		glDeleteRenderbuffers(1, &rt->multisample_depth);
 		rt->multisample_depth = 0;
-#ifdef GLES_OVER_GL
-		glDeleteRenderbuffers(1, &rt->multisample_color);
-#else
+#ifdef ANDROID_ENABLED
 		glDeleteTextures(1, &rt->multisample_color);
+#else
+		glDeleteRenderbuffers(1, &rt->multisample_color);
 #endif
 		rt->multisample_color = 0;
 	}
