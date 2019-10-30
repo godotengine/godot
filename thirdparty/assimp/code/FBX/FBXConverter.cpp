@@ -829,6 +829,13 @@ namespace Assimp {
 
             aiMatrix4x4 chain[TransformationComp_MAXIMUM];
 
+            // Identity everything
+            for(int x = 0; x < TransformationComp_MAXIMUM; x++)
+            {
+                chain[x] = aiMatrix4x4();
+            }
+
+
             ai_assert(TransformationComp_MAXIMUM < 32);
 
             std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
@@ -910,7 +917,7 @@ namespace Assimp {
 
             MagicPivotAlgorithm(model_transform, chain, transform);
 
-            return model_transform * transform;
+            return transform;
         }
 
         void FBXConverter::SetupNodeMetadata(const Model& model, aiNode* nd)
@@ -3046,8 +3053,6 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
 
             const PropertyTable& props = target.Props();
 
-            // need to convert from TRS order to SRT?
-            if (reverse_order) {
 
                 aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
                 aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
@@ -3056,6 +3061,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 KeyFrameListList scaling;
                 KeyFrameListList translation;
                 KeyFrameListList rotation;
+                KeyFrameListList magic;
 
                 if (chain[TransformationComp_Scaling] != iter_end) {
                     scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
@@ -3068,6 +3074,18 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 if (chain[TransformationComp_Rotation] != iter_end) {
                     rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
                 }
+
+                // magic node test
+                if (chain[TransformationComp_RotationPivot] != iter_end) {
+                    magic = GetKeyframeList((*chain[TransformationComp_RotationPivot]).second, start, stop);
+                }
+
+                if(magic.size() > 0)
+                {
+                    std::cout << "magic pivot has keyframes" << std::endl;
+                }
+
+
 
                 KeyFrameListList joined;
                 joined.insert(joined.end(), scaling.begin(), scaling.end());
@@ -3106,63 +3124,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 na->mRotationKeys = out_quat;
                 na->mPositionKeys = out_translation;
             }
-            else {
-
-                // if a particular transformation is not given, grab it from
-                // the corresponding node to meet the semantics of aiNodeAnim,
-                // which requires all of rotation, scaling and translation
-                // to be set.
-                if (chain[TransformationComp_Scaling] != iter_end) {
-                    ConvertScaleKeys(na.get(), (*chain[TransformationComp_Scaling]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time);
-                }
-                else {
-                    na->mScalingKeys = new aiVectorKey[1];
-                    na->mNumScalingKeys = 1;
-
-                    na->mScalingKeys[0].mTime = 0.;
-                    na->mScalingKeys[0].mValue = PropertyGet(props, "Lcl Scaling",
-                        aiVector3D(1.f, 1.f, 1.f));
-                }
-
-                if (chain[TransformationComp_Rotation] != iter_end) {
-                    ConvertRotationKeys(na.get(), (*chain[TransformationComp_Rotation]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time,
-                        target.RotationOrder());
-                }
-                else {
-                    na->mRotationKeys = new aiQuatKey[1];
-                    na->mNumRotationKeys = 1;
-
-                    na->mRotationKeys[0].mTime = 0.;
-                    na->mRotationKeys[0].mValue = EulerToQuaternion(
-                        PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f)),
-                        target.RotationOrder());
-                }
-
-                if (chain[TransformationComp_Translation] != iter_end) {
-                    ConvertTranslationKeys(na.get(), (*chain[TransformationComp_Translation]).second,
-                        layer_map,
-                        start, stop,
-                        max_time,
-                        min_time);
-                }
-                else {
-                    na->mPositionKeys = new aiVectorKey[1];
-                    na->mNumPositionKeys = 1;
-
-                    na->mPositionKeys[0].mTime = 0.;
-                    na->mPositionKeys[0].mValue = PropertyGet(props, "Lcl Translation",
-                        aiVector3D(0.f, 0.f, 0.f));
-                }
-
-            }
+            
             return na.release();
         }
 
