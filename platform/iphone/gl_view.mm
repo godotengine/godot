@@ -467,7 +467,7 @@ static void clear_touches() {
 		[displayLink setPaused:YES];
 
 		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, TRUE) == kCFRunLoopRunHandledSource)
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
 			;
 
 		// We are good to go, resume the CADisplayLink
