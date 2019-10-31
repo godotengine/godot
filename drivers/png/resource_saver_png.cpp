@@ -71,6 +71,14 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	return OK;
 }
 
+PoolVector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_img) {
+
+	PoolVector<uint8_t> buffer;
+	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
+	ERR_FAIL_COND_V_MSG(err, PoolVector<uint8_t>(), "Can't convert image to PNG.");
+	return buffer;
+}
+
 bool ResourceSaverPNG::recognize(const RES &p_resource) const {
 
 	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
@@ -86,4 +94,5 @@ void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<Str
 ResourceSaverPNG::ResourceSaverPNG() {
 
 	Image::save_png_func = &save_image;
+	Image::save_png_buffer_func = &save_image_to_buffer;
 };

@@ -266,7 +266,7 @@ VERTEX_SHADER_CODE
 #else
 
 	float z_ofs = scene_data.z_offset;
-	z_ofs += (1.0 - abs(normal_interp.z)) * scene_data.z_slope_scale;
+	z_ofs += max(0.0,1.0 - abs(normalize(normal_interp).z)) * scene_data.z_slope_scale;
 	vertex_interp.z -= z_ofs;
 
 #endif
