@@ -145,6 +145,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
 		<method name="set_order">
@@ -166,6 +167,11 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the value of a setting.
+				[b]Example:[/b]
+				[codeblock]
+				ProjectSettings.set_setting("application/config/name", "Example")
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
