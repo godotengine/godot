@@ -866,8 +866,8 @@ void TextureRegionEditor::_edit_region() {
 
 Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	if (snap_mode == SNAP_GRID) {
-		p_target.x = Math::snap_scalar_seperation(snap_offset.x, snap_step.x, p_target.x, snap_separation.x);
-		p_target.y = Math::snap_scalar_seperation(snap_offset.y, snap_step.y, p_target.y, snap_separation.y);
+		p_target.x = Math::snap_scalar_separation(snap_offset.x, snap_step.x, p_target.x, snap_separation.x);
+		p_target.y = Math::snap_scalar_separation(snap_offset.y, snap_step.y, p_target.y, snap_separation.y);
 	}
 
 	return p_target;
