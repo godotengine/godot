@@ -690,6 +690,30 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 				} break;
 
+				case GDScriptParser::OperatorNode::OP_AWAIT: {
+
+					ERR_FAIL_COND_V(on->arguments.size() && on->arguments.size() != 1, -1);
+
+					int slevel = p_stack_level;
+
+					int ret = _parse_expression(codegen, on->arguments[0], slevel);
+					if (ret < 0) {
+						printf("Entered if 1\n");
+						return ret;
+					}
+					if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
+						slevel++;
+						codegen.alloc_stack(slevel);
+						printf("Entered if 2\n");
+					}
+
+					//push call bytecode
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_AWAIT);
+					codegen.opcodes.push_back(ret);
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_YIELD_RESUME);
+					//next will be where to place the result. It will be skipped if the argument does not resolve to a FunctionState
+				} break;
+
 				//indexing operator
 				case GDScriptParser::OperatorNode::OP_INDEX:
 				case GDScriptParser::OperatorNode::OP_INDEX_NAMED: {

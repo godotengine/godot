@@ -221,6 +221,7 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 		&&OPCODE_YIELD,                       \
 		&&OPCODE_YIELD_SIGNAL,                \
 		&&OPCODE_YIELD_RESUME,                \
+		&&OPCODE_AWAIT,                       \
 		&&OPCODE_JUMP,                        \
 		&&OPCODE_JUMP_IF,                     \
 		&&OPCODE_JUMP_IF_NOT,                 \
@@ -1244,14 +1245,93 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_YIELD)
-			OPCODE(OPCODE_YIELD_SIGNAL) {
+			OPCODE(OPCODE_YIELD_SIGNAL)
+			OPCODE(OPCODE_AWAIT) {
+				int ipofs = 0;
+				switch (_code_ptr[ip]) {
+					case OPCODE_YIELD_SIGNAL: {
+						CHECK_SPACE(4);
+						ipofs = 3;
+						break;
+					}
+					case OPCODE_YIELD: {
+						CHECK_SPACE(2);
+						ipofs = 1;
+						break;
+					}
+					case OPCODE_AWAIT: {
+						CHECK_SPACE(3);
+						ipofs = 2;
+						break;
+					}
+				}
 
-				int ipofs = 1;
+				Object *obj = NULL;
+
+				if ((_code_ptr[ip] != OPCODE_YIELD_SIGNAL) || (_code_ptr[ip] != OPCODE_AWAIT)) {
+					GET_VARIANT_PTR(argobj, 1);
+#ifdef DEBUG_ENABLED
+					if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL && argobj->get_type() != Variant::OBJECT) {
+						err_text = "First argument of yield() not of type object.";
+						OPCODE_BREAK;
+					}
+#endif
+					obj = argobj->operator Object *();
+
+#ifdef DEBUG_ENABLED
+
+					if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
+						if (!obj) {
+							err_text = "First argument of yield() is null.";
+							OPCODE_BREAK;
+						}
+						if (ScriptDebugger::get_singleton()) {
+							if (!ObjectDB::instance_validate(obj)) {
+								err_text = "First argument of yield() is a previously freed instance.";
+								OPCODE_BREAK;
+							}
+						}
+					}
+#endif
+					if (_code_ptr[ip] == OPCODE_AWAIT) {
+						if (obj != NULL && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+							// Object is a FunctionState; same behavior as yield(_,"completed")
+						} else {
+							// Return argobj immediately.
+							retvalue = argobj;
+#ifdef DEBUG_ENABLED
+							exit_ok = true;
+#endif
+							// Jump to after YIELD_RETURN
+							ip += 4;
+							DISPATCH_OPCODE;
+						}
+					}
+				}
+
+				// Parse second argument
+
+				String signal;
+
 				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
-					CHECK_SPACE(4);
-					ipofs += 2;
-				} else {
-					CHECK_SPACE(2);
+					GET_VARIANT_PTR(argname, 2);
+#ifdef DEBUG_ENABLED
+					if (argname->get_type() != Variant::STRING) {
+						err_text = "Second argument of yield() not a string (for signal name)";
+						OPCODE_BREAK;
+					}
+#endif
+					signal = argname->operator String();
+
+#ifdef DEBUG_ENABLED
+					if (signal.length() == 0) {
+						err_text = "Second argument of yield() is an empty string (for signal name)";
+						OPCODE_BREAK;
+					}
+#endif
+
+				} else if (_code_ptr[ip] == OPCODE_AWAIT) {
+					signal = String("completed");
 				}
 
 				Ref<GDScriptFunctionState> gdfs = memnew(GDScriptFunctionState);
@@ -1276,42 +1356,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				retvalue = gdfs;
 
-				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
-					//do the oneshot connect
-					GET_VARIANT_PTR(argobj, 1);
-					GET_VARIANT_PTR(argname, 2);
+				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL || _code_ptr[ip] == OPCODE_AWAIT) {
+					//do the oneshot connect=
 
 #ifdef DEBUG_ENABLED
-					if (argobj->get_type() != Variant::OBJECT) {
-						err_text = "First argument of yield() not of type object.";
-						OPCODE_BREAK;
-					}
-					if (argname->get_type() != Variant::STRING) {
-						err_text = "Second argument of yield() not a string (for signal name).";
-						OPCODE_BREAK;
-					}
-#endif
-
-					Object *obj = argobj->operator Object *();
-					String signal = argname->operator String();
-
-#ifdef DEBUG_ENABLED
-					if (!obj) {
-						err_text = "First argument of yield() is null.";
-						OPCODE_BREAK;
-					}
-					if (ScriptDebugger::get_singleton()) {
-						if (!ObjectDB::instance_validate(obj)) {
-							err_text = "First argument of yield() is a previously freed instance.";
-							OPCODE_BREAK;
-						}
-					}
-					if (signal.length() == 0) {
-
-						err_text = "Second argument of yield() is an empty string (for signal name).";
-						OPCODE_BREAK;
-					}
-
 					Error err = obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";

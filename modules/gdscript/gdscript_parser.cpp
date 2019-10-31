@@ -605,7 +605,51 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				expr = yield;
 			}
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_AWAIT) {
+			if (!current_function) {
+				_set_error("await() can only be used inside function blocks.");
+				return NULL;
+			}
 
+			current_function->has_yield = true;
+
+			tokenizer->advance();
+			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after 'await'");
+				return NULL;
+			}
+
+			tokenizer->advance();
+
+			OperatorNode *await = alloc_node<OperatorNode>();
+			await->op = OperatorNode::OP_AWAIT;
+
+			while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+
+			if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected exactly one argument for 'await'");
+				return NULL;
+			}
+
+			Node *object = _parse_and_reduce_expression(p_parent, p_static);
+			if (!object)
+				return NULL;
+
+			printf("%d\n", object->type);
+			await->arguments.push_back(object);
+
+			// tokenizer->advance();
+
+			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected ')' after first argument of 'await'");
+				return NULL;
+			}
+
+			tokenizer->advance();
+
+			expr = await;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_SELF) {
 
 			if (p_static) {
@@ -1799,7 +1843,8 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 			} else if (op->op == OperatorNode::OP_YIELD) {
 				return op;
-
+			} else if (op->op == OperatorNode::OP_AWAIT) {
+				return op;
 			} else if (op->op == OperatorNode::OP_INDEX) {
 				//can reduce indices into constant arrays or dictionaries
 
@@ -6350,6 +6395,9 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					// yield can return anything
 					node_type.has_type = false;
 				} break;
+				case OperatorNode::OP_AWAIT: {
+					node_type.has_type = false;
+				} break;
 				case OperatorNode::OP_IS:
 				case OperatorNode::OP_IS_BUILTIN: {
 
@@ -8237,6 +8285,10 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						if (error_set) return;
 					} break;
 					case OperatorNode::OP_YIELD: {
+						_mark_line_as_safe(op->line);
+						_reduce_node_type(op);
+					} break;
+					case OperatorNode::OP_AWAIT: {
 						_mark_line_as_safe(op->line);
 						_reduce_node_type(op);
 					} break;
