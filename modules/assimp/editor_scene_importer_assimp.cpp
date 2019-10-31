@@ -457,7 +457,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 
 			// todo: this is where skin support goes
 			if (skeleton && skeleton->find_bone(bone_name) == -1) {
-				print_verbose("[Godot Glue] Imported bone" + bone_name);
+				//print_verbose("[Godot Glue] Imported bone" + bone_name);
 				int boneIdx = skeleton->get_bone_count();
 
 				Transform pform = AssimpUtils::assimp_matrix_transform(bone->mNode->mTransformation);
@@ -823,7 +823,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 				Node *iter = allocated_node;
 				unsigned int id = 0;
 				while (iter) {
-					print_verbose("[" + itos(i) + "] Recursing to parent: " + iter->get_name());
+					//print_verbose("[" + itos(i) + "] Recursing to parent: " + iter->get_name());
 					if (iter != state.root) {
 						iter->set_owner(state.root);
 					}
@@ -1421,7 +1421,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 				if (skeleton) {
 					int id = skeleton->find_bone(AssimpUtils::get_assimp_string(iterBone->mName));
 					if (id != -1) {
-						print_verbose("Set bind bone: mesh: " + itos(mesh_index) + " bone index: " + itos(id));
+						//print_verbose("Set bind bone: mesh: " + itos(mesh_index) + " bone index: " + itos(id));
 						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix);
 
 						skin->add_bind(bind_count, t);

@@ -206,6 +206,12 @@ const Object* LazyObject::Get(bool dieOnError)
         else if (!strncmp(obtype,"AnimationCurveNode",length)) {
             object.reset(new AnimationCurveNode(id,element,name,doc));
         }
+        else
+        {
+            //dumpObjectClassInfo( objtype, classtag );
+            ASSIMP_LOG_WARN_F("Unsupported node from fbx: type: ", obtype, " tag: ", classtag, "name: ", name );
+        }
+        
     }
     catch(std::exception& ex) {
         flags &= ~BEING_CONSTRUCTED;
