@@ -618,6 +618,8 @@ namespace Assimp {
             aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
             aiMatrix4x4 &result )
         {
+
+            // Maya pivots
             aiMatrix4x4 T = chain[TransformationComp_Translation];
             aiMatrix4x4 Roff = chain[TransformationComp_RotationOffset];
             aiMatrix4x4 Rp = chain[TransformationComp_RotationPivot];
@@ -627,7 +629,15 @@ namespace Assimp {
             aiMatrix4x4 Soff = chain[TransformationComp_ScalingOffset];
             aiMatrix4x4 Sp = chain[TransformationComp_ScalingPivot];
             aiMatrix4x4 S = chain[TransformationComp_Scaling];
-            result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * Sp.Inverse();
+
+            // 3DS Max Pivots
+            aiMatrix4x4 OT = chain[TransformationComp_GeometricTranslation];
+            aiMatrix4x4 OR = chain[TransformationComp_GeometricRotation];
+            aiMatrix4x4 OS = chain[TransformationComp_GeometricScaling];
+
+            // Let's just compute maya max pivots together? :)
+            //result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * S * Sp.Inverse() * OT * OR * OS;
+            result = OS * OR * OT * Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
         }
 
         const aiMatrix4x4& FBXConverter::GeneratePivotTransform(
@@ -654,16 +664,15 @@ namespace Assimp {
             std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
 
             // generate transformation matrices for all the different transformation components
-            const float zero_epsilon = Math::getEpsilon<float>();
 
             const aiVector3D& PreRotation = PropertyGet<aiVector3D>(props, "PreRotation", ok);
             if (ok) {
-                GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PreRotation, chain[TransformationComp_PreRotation]);
+                GetRotationMatrix(rot, PreRotation, chain[TransformationComp_PreRotation]);
             }
 
             const aiVector3D& PostRotation = PropertyGet<aiVector3D>(props, "PostRotation", ok);
             if (ok) {
-                GetRotationMatrix(Model::RotOrder::RotOrder_EulerXYZ, PostRotation, chain[TransformationComp_PostRotation]);
+                GetRotationMatrix(rot, PostRotation, chain[TransformationComp_PostRotation]);
             }
 
             const aiVector3D& RotationPivot = PropertyGet<aiVector3D>(props, "RotationPivot", ok);
@@ -2860,20 +2869,24 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             double& min_time,
             bool reverse_order)
 
-        {
+        { 
             std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
             na->mNodeName.Set(name);
 
             const PropertyTable& props = target.Props();
 
 
-            aiVector3D def_scale = PropertyGet(props, "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
-            aiVector3D def_translate = PropertyGet(props, "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
-            aiVector3D def_rot = PropertyGet(props, "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
+            aiVector3D def_scale;
+            aiVector3D def_translate;
+            aiVector3D def_rot;
 
             // some arguments to be removed 
             // input transform unimportant and string is old code
             aiMatrix4x4 abs_transform = GeneratePivotTransform(target, aiMatrix4x4(), "");
+
+            // no really this is the right way
+            abs_transform.Decompose(def_scale, def_rot, def_translate);
+
 
             // todo basically lets just use abs_transform in
             // ConvertTransformOrder_TRStoSRT() 
