@@ -36,6 +36,8 @@
 #include "drivers/vulkan/vulkan_context.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
+//#define FORCE_FULL_BARRIER
+
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 
 	if (!dependency_map.has(p_depends_on)) {
@@ -1497,6 +1499,42 @@ void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mas
 	mem_barrier.dstAccessMask = p_dst_sccess;
 
 	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 1, &mem_barrier, 0, NULL, 0, NULL);
+}
+
+void RenderingDeviceVulkan::_full_barrier(bool p_sync_with_draw) {
+	//used for debug
+	_memory_barrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+					VK_ACCESS_INDEX_READ_BIT |
+					VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+					VK_ACCESS_UNIFORM_READ_BIT |
+					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+					VK_ACCESS_SHADER_READ_BIT |
+					VK_ACCESS_SHADER_WRITE_BIT |
+					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+					VK_ACCESS_TRANSFER_READ_BIT |
+					VK_ACCESS_TRANSFER_WRITE_BIT |
+					VK_ACCESS_HOST_READ_BIT |
+					VK_ACCESS_HOST_WRITE_BIT,
+			VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+					VK_ACCESS_INDEX_READ_BIT |
+					VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+					VK_ACCESS_UNIFORM_READ_BIT |
+					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+					VK_ACCESS_SHADER_READ_BIT |
+					VK_ACCESS_SHADER_WRITE_BIT |
+					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+					VK_ACCESS_TRANSFER_READ_BIT |
+					VK_ACCESS_TRANSFER_WRITE_BIT |
+					VK_ACCESS_HOST_READ_BIT |
+					VK_ACCESS_HOST_WRITE_BIT,
+			p_sync_with_draw);
 }
 
 void RenderingDeviceVulkan::_buffer_memory_barrier(VkBuffer buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw) {
@@ -4643,7 +4681,11 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	}
 
 	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
-
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(p_sync_with_draw);
+#else
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+#endif
 	return err;
 }
 
@@ -6038,7 +6080,12 @@ void RenderingDeviceVulkan::draw_list_end() {
 	// To ensure proper synchronization, we must make sure rendering is done before:
 	//  * Some buffer is copied
 	//  * Another render pass happens (since we may be done
+
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
+#else
 	_memory_barrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, true);
+#endif
 }
 
 /***********************/
@@ -6298,7 +6345,11 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 }
 
 void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
+#else
 	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, true);
+#endif
 }
 
 void RenderingDeviceVulkan::compute_list_end() {
@@ -6330,8 +6381,11 @@ void RenderingDeviceVulkan::compute_list_end() {
 
 	memdelete(compute_list);
 	compute_list = NULL;
-
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
+#else
 	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT, true);
+#endif
 }
 
 #if 0

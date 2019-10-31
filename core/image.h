@@ -47,6 +47,7 @@
 class Image;
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef PoolVector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
@@ -57,10 +58,12 @@ class Image : public Resource {
 public:
 	static SavePNGFunc save_png_func;
 	static SaveEXRFunc save_exr_func;
+	static SavePNGBufferFunc save_png_buffer_func;
 
 	enum {
-		MAX_WIDTH = 16384, // force a limit somehow
-		MAX_HEIGHT = 16384 // force a limit somehow
+		MAX_WIDTH = (1 << 24), // force a limit somehow
+		MAX_HEIGHT = (1 << 24), // force a limit somehow
+		MAX_PIXELS = 268435456
 	};
 
 	enum Format {
@@ -265,6 +268,7 @@ public:
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
+	PoolVector<uint8_t> save_png_to_buffer() const;
 	Error save_exr(const String &p_path, bool p_grayscale) const;
 
 	/**
