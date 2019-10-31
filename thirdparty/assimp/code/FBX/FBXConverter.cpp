@@ -135,7 +135,7 @@ namespace Assimp {
             {
                 aiBone *bone = kvp.first;
                 aiNode *bone_node = kvp.second;
-                std::cout << "active node lookup: " << bone->mName.C_Str() << std::endl;
+                //std::cout << "active node lookup: " << bone->mName.C_Str() << std::endl;
                 // lcl transform grab - done in generate_nodes :)
 
                 //bone->mOffsetMatrix = bone_node->mTransformation;
@@ -188,7 +188,7 @@ namespace Assimp {
             {
                 if(!IsBoneNode(bone_node->mName, bone_list))
                 {
-                    std::cout << "Found valid armature: " << bone_node->mName.C_Str() << std::endl;
+                    //std::cout << "Found valid armature: " << bone_node->mName.C_Str() << std::endl;
                     return bone_node;
                 }
 
@@ -322,7 +322,7 @@ namespace Assimp {
                 {
                     node_stack.clear();
                     BuildNodeList(out->mRootNode, node_stack );
-                    std::cout << "Resetting bone stack: null element " << bone->mName.C_Str() << std::endl;
+                    //std::cout << "Resetting bone stack: null element " << bone->mName.C_Str() << std::endl;
 
                     node = GetNodeFromStack(bone->mName, node_stack);
 
@@ -332,7 +332,7 @@ namespace Assimp {
                     }
                 }
 
-                std::cout << "Successfully added bone to stack and have valid armature: " << bone->mName.C_Str() << std::endl;
+                //std::cout << "Successfully added bone to stack and have valid armature: " << bone->mName.C_Str() << std::endl;
 
                 bone_stack.insert(std::pair<aiBone*, aiNode*>(bone, node));
             }
@@ -422,7 +422,7 @@ namespace Assimp {
                         SetupNodeMetadata(*model, node);
 
                         // Handle FBX pivot data (explicitly must be done all the time)
-                        new_abs_transform = GeneratePivotTransform(*model, new_abs_transform, node_name);
+                        new_abs_transform = GeneratePivotTransform(*model);
 
                         node->mTransformation = new_abs_transform;
                         // attach geometry
@@ -801,7 +801,6 @@ namespace Assimp {
         }
 
         void FBXConverter::MagicPivotAlgorithm( 
-            const aiMatrix4x4 &global_transform, 
             aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
             aiMatrix4x4 &result )
         {
@@ -824,13 +823,11 @@ namespace Assimp {
 
             // Let's just compute maya max pivots together? :)
             //result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * S * Sp.Inverse() * OT * OR * OS;
-            result = OS * OR * OT * Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
+            result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
         }
 
         const aiMatrix4x4& FBXConverter::GeneratePivotTransform(
-            const Model& model, 
-            const aiMatrix4x4& model_transform,
-            const std::string& name
+            const Model& model
         ) {
             const PropertyTable& props = model.Props();
             const Model::RotOrder rot = model.RotationOrder();
@@ -896,7 +893,6 @@ namespace Assimp {
                 aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_Scaling]);
             }
             
-
             const aiVector3D& Rotation = PropertyGet<aiVector3D>(props, "Lcl Rotation", ok);
             if (ok) {
                 GetRotationMatrix(rot, Rotation, chain[TransformationComp_Rotation]);
@@ -911,7 +907,6 @@ namespace Assimp {
                 aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_GeometricScaling]);
             }
             
-
             const aiVector3D& GeometricRotation = PropertyGet<aiVector3D>(props, "GeometricRotation", ok);
             if (ok) {
                 GetRotationMatrix(rot, GeometricRotation, chain[TransformationComp_GeometricRotation]);
@@ -924,7 +919,7 @@ namespace Assimp {
 
             aiMatrix4x4 transform;
 
-            MagicPivotAlgorithm(model_transform, chain, transform);
+            MagicPivotAlgorithm(chain, transform);
 
             return transform;
         }
@@ -1598,7 +1593,7 @@ namespace Assimp {
                     // if we found at least one, generate the output bones
                     // XXX this could be heavily simplified by collecting the bone
                     // data in a single step.
-                    ConvertCluster(bones, cluster, out_indices, index_out_indices,
+                    ConvertCluster(model, bones, cluster, out_indices, index_out_indices,
                                    count_out_indices, absolute_transform, parent, root_node);
                 }
 
@@ -1628,7 +1623,7 @@ namespace Assimp {
             return iter;
         }
 
-        void FBXConverter::ConvertCluster(std::vector<aiBone *> &local_mesh_bones, const Cluster *cl,
+        void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &local_mesh_bones, const Cluster *cl,
                                           std::vector<size_t> &out_indices, std::vector<size_t> &index_out_indices,
                                           std::vector<size_t> &count_out_indices, const aiMatrix4x4 &absolute_transform,
                                           aiNode *parent, aiNode *root_node) {
@@ -1639,11 +1634,11 @@ namespace Assimp {
             aiBone *bone = NULL;
 
             if (bone_map.count(deformer_name)) {
-                std::cout << "retrieved bone from lookup " << bone_name.C_Str() << ". Deformer: " << deformer_name
-                          << std::endl;
+                //std::cout << "retrieved bone from lookup " << bone_name.C_Str() << ". Deformer: " << deformer_name
+                //          << std::endl;
                 bone = bone_map[deformer_name];
             } else {
-                std::cout << "created new bone " << bone_name.C_Str() << ". Deformer: " << deformer_name << std::endl;
+                //std::cout << "created new bone " << bone_name.C_Str() << ". Deformer: " << deformer_name << std::endl;
                 bone = new aiBone();
                 bone->mName = bone_name;
 
@@ -1690,7 +1685,7 @@ namespace Assimp {
                 bone_map.insert(std::pair<const std::string, aiBone *>(deformer_name, bone));
             }
 
-            std::cout << "bone research: Indicies size: " << out_indices.size() << std::endl;
+        //    std::cout << "bone research: Indicies size: " << out_indices.size() << std::endl;
 
             // lookup must be populated in case something goes wrong
             // this also allocates bones to mesh instance outside
@@ -2842,10 +2837,13 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 }
 
                 curve_node = node;
-                if (node->Curves().empty()) {
-                    FBXImporter::LogWarn("no animation curves assigned to AnimationCurveNode: " + node->Name());
-                    continue;
-                }
+                
+                // pivot animations have no curves so don't ignore them, thanks...
+                // if (node->Curves().empty()) {
+                //     //FBXImporter::LogWarn("no animation curves assigned to AnimationCurveNode: " + node->Name());
+                //     //continue;
+                // }
+
 
                 node_property_map[node->TargetProperty()].push_back(node);
             }
@@ -2890,8 +2888,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 layer_map,
                 start, stop,
                 max_time,
-                min_time,
-                true // input is TRS order, assimp is SRT
+                min_time
             );
 
             ai_assert(nd);
@@ -3053,9 +3050,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             const LayerMap& layer_map,
             int64_t start, int64_t stop,
             double& max_time,
-            double& min_time,
-            bool reverse_order)
-
+            double& min_time)
         { 
             std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
             na->mNodeName.Set(name);
@@ -3069,9 +3064,8 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
 
             // some arguments to be removed 
             // input transform unimportant and string is old code
-            aiMatrix4x4 abs_transform = GeneratePivotTransform(target, aiMatrix4x4(), "");
+            aiMatrix4x4 abs_transform = GeneratePivotTransform(target);
 
-            // no really this is the right way
             abs_transform.Decompose(def_scale, def_rot, def_translate);
 
 
