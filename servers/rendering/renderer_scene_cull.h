@@ -89,7 +89,7 @@ public:
 			fov = 75;
 			type = PERSPECTIVE;
 			znear = 0.05;
-			zfar = 100;
+			zfar = 4000;
 			size = 1.0;
 			offset = Vector2();
 			vaspect = false;
