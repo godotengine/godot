@@ -106,6 +106,12 @@ public:
         TransformationComp_MAXIMUM
     };
 
+    enum PivotStatus {
+        PivotStatus_Active = 0, // this means that the pivot has to be used for animation sampling and basic transform data
+        PivotStatus_Reference = 1, // For lamens this means that the value exists
+                                   // but should not be used in computation for animations or nodes.
+    };
+
 public:
     FBXConverter(aiScene* out, const Document& doc, bool removeEmptyBones);
     ~FBXConverter();
@@ -160,14 +166,11 @@ private:
     bool NeedsComplexTransformationChain(const Model& model);
 
     const aiMatrix4x4& GeneratePivotTransform(
-            const Model& model, 
-            const aiMatrix4x4& model_transform,
-            const std::string& name
+            const Model& model
         );
 
 
-    void MagicPivotAlgorithm( 
-        const aiMatrix4x4 &global_transform, 
+    void MagicPivotAlgorithm(
         aiMatrix4x4 chain[TransformationComp_MAXIMUM], 
         aiMatrix4x4 &result );
 
@@ -223,7 +226,7 @@ private:
     // lookup
     static const aiNode* GetNodeByName( const aiString& name, aiNode *current_node );
     // ------------------------------------------------------------------------------------------------
-    void ConvertCluster(std::vector<aiBone *> &local_mesh_bones, const Cluster *cl,
+    void ConvertCluster(const Model &model, std::vector<aiBone *> &local_mesh_bones, const Cluster *cl,
                         std::vector<size_t> &out_indices, std::vector<size_t> &index_out_indices,
                         std::vector<size_t> &count_out_indices, const aiMatrix4x4 &absolute_transform,
                         aiNode *parent, aiNode *root_node);
@@ -352,8 +355,7 @@ private:
         const LayerMap& layer_map,
         int64_t start, int64_t stop,
         double& max_time,
-        double& min_time,
-        bool reverse_order = false);
+        double& min_time);
 
     // key (time), value, mapto (component index)
     typedef std::tuple<std::shared_ptr<KeyTimeList>, std::shared_ptr<KeyValueList>, unsigned int > KeyFrameList;
