@@ -133,8 +133,12 @@ public:
 		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
 
+		child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+
 		label = memnew(Label);
-		label->set_text(TTR("Primary Line Every"));
+		label->set_text(TTR("Primary Line Every:"));
 		label->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(label);
 
@@ -143,16 +147,14 @@ public:
 		primary_grid_steps->set_step(1);
 		primary_grid_steps->set_max(100);
 		primary_grid_steps->set_allow_greater(true);
+		primary_grid_steps->set_suffix(TTR("steps"));
 		primary_grid_steps->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(primary_grid_steps);
 
-		label = memnew(Label);
-		label->set_text(TTR("steps"));
-		label->set_h_size_flags(SIZE_EXPAND_FILL);
-		child_container->add_child(label);
-
 		container->add_child(memnew(HSeparator));
 
+		// We need to create another GridContainer with the same column count,
+		// so we can put an HSeparator above
 		child_container = memnew(GridContainer);
 		child_container->set_columns(2);
 		container->add_child(child_container);
