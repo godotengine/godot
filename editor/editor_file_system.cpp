@@ -322,13 +322,14 @@ void EditorFileSystem::_save_filesystem_cache() {
 
 	FileAccess *f = FileAccess::open(fscache, FileAccess::WRITE);
 	if (f == NULL) {
-		ERR_PRINTS("Error writing fscache: " + fscache);
-	} else {
-		f->store_line(filesystem_settings_version_for_import);
-		_save_filesystem_cache(filesystem, f);
-		f->close();
-		memdelete(f);
+		ERR_EXPLAIN("Cannot create file '" + fscache + "'. Check user write permissions.");
+		ERR_FAIL();
 	}
+
+	f->store_line(filesystem_settings_version_for_import);
+	_save_filesystem_cache(filesystem, f);
+	f->close();
+	memdelete(f);
 }
 
 void EditorFileSystem::_thread_func(void *_userdata) {
@@ -1370,6 +1371,10 @@ void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
+	if (!f) {
+		ERR_EXPLAIN("Cannot create file '" + fscache + "'. Check user write permissions.");
+		ERR_FAIL();
+	}
 	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
 		f->store_line(E->get());
 	}
