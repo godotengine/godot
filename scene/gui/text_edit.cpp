@@ -5443,11 +5443,11 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 PoolVector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
 
 	int col, line;
-	if (search(p_key, p_search_flags, p_from_line, p_from_column, col, line)) {
+	if (search(p_key, p_search_flags, p_from_line, p_from_column, line, col)) {
 		PoolVector<int> result;
 		result.resize(2);
-		result.set(0, line);
-		result.set(1, col);
+		result.set(SEARCH_RESULT_COLUMN, col);
+		result.set(SEARCH_RESULT_LINE, line);
 		return result;
 
 	} else {
@@ -6959,6 +6959,9 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
+
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_COLUMN);
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_LINE);
 
 	/*
 	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);

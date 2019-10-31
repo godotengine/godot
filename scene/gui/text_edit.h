@@ -504,10 +504,14 @@ public:
 	};
 
 	enum SearchFlags {
-
 		SEARCH_MATCH_CASE = 1,
 		SEARCH_WHOLE_WORDS = 2,
 		SEARCH_BACKWARDS = 4
+	};
+
+	enum SearchResult {
+		SEARCH_RESULT_COLUMN,
+		SEARCH_RESULT_LINE,
 	};
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
@@ -768,6 +772,7 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
+VARIANT_ENUM_CAST(TextEdit::SearchResult);
 
 class SyntaxHighlighter {
 protected:
