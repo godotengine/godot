@@ -549,9 +549,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/grid_xy_plane", false);
 	_initial_set("editors/3d/grid_yz_plane", false);
 
+	// Use a lower default FOV for the 3D camera compared to the
+	// Camera3D node as the 3D viewport doesn't span the whole screen.
+	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
 	_initial_set("editors/3d/default_fov", 70.0);
+	hints["editors/3d/default_fov"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_fov", PROPERTY_HINT_RANGE, "1,179,0.1");
 	_initial_set("editors/3d/default_z_near", 0.05);
-	_initial_set("editors/3d/default_z_far", 500.0);
+	hints["editors/3d/default_z_near"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_near", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater");
+	_initial_set("editors/3d/default_z_far", 4000.0);
+	hints["editors/3d/default_z_far"] = PropertyInfo(Variant::FLOAT, "editors/3d/default_z_far", PROPERTY_HINT_RANGE, "0.1,4000,0.1,or_greater");
 
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);

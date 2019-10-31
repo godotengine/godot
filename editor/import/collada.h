@@ -96,8 +96,8 @@ public:
 		};
 
 		float aspect = 1;
-		float z_near = 0.1;
-		float z_far = 100;
+		float z_near = 0.05;
+		float z_far = 4000;
 
 		CameraData() {}
 	};

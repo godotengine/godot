@@ -205,9 +205,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	struct GLTFCamera {
 		bool perspective = true;
-		float fov_size = 64;
-		float zfar = 500;
-		float znear = 0.1;
+		float fov_size = 75;
+		float zfar = 4000;
+		float znear = 0.05;
 	};
 
 	struct GLTFLight {
