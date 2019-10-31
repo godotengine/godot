@@ -851,7 +851,7 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	ERR_FAIL_COND(((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK));
+	//ERR_FAIL_COND(((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK));
 
 	switch (p_flags) {
 
@@ -2526,6 +2526,9 @@ void VisualServerScene::render_probes() {
 		for (List<InstanceGIProbeData::PairInfo>::Element *E = probe->dynamic_geometries.front(); E; E = E->next()) {
 			if (instance_cull_count < MAX_INSTANCE_CULL) {
 				Instance *ins = E->get().geometry;
+				if (!ins->visible) {
+					continue;
+				}
 				InstanceGeometryData *geom = (InstanceGeometryData *)ins->base_data;
 
 				if (geom->gi_probes_dirty) {

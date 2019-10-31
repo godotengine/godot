@@ -183,7 +183,7 @@ bool Vector3i::operator==(const Vector3i &p_v) const {
 
 bool Vector3i::operator!=(const Vector3i &p_v) const {
 
-	return (x != p_v.x || y == p_v.y || z == p_v.z);
+	return (x != p_v.x || y != p_v.y || z != p_v.z);
 }
 
 bool Vector3i::operator<(const Vector3i &p_v) const {
