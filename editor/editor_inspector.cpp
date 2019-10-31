@@ -1959,11 +1959,11 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 	if (changing)
 		return;
 
-	if (p_property == String())
-		update_tree_pending = true;
-	else {
+	if (p_property != String()) {
 		pending.insert(p_property);
 	}
+
+	update_tree_pending = true;
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
