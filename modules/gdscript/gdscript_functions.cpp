@@ -1274,6 +1274,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			if (err != OK) {
 				r_ret = Variant();
+				ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", errl, errs));
 			}
 
 		} break;
