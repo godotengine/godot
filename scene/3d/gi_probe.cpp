@@ -41,7 +41,7 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("octree_size"));
 	ERR_FAIL_COND(!p_data.has("octree_cells"));
 	ERR_FAIL_COND(!p_data.has("octree_data"));
-	ERR_FAIL_COND(!p_data.has("octree_df"));
+	ERR_FAIL_COND(!p_data.has("octree_df") && !p_data.has("octree_df_png"));
 	ERR_FAIL_COND(!p_data.has("level_counts"));
 	ERR_FAIL_COND(!p_data.has("to_cell_xform"));
 
@@ -49,7 +49,19 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 	Vector3 octree_size = p_data["octree_size"];
 	PoolVector<uint8_t> octree_cells = p_data["octree_cells"];
 	PoolVector<uint8_t> octree_data = p_data["octree_data"];
-	PoolVector<uint8_t> octree_df = p_data["octree_df"];
+
+	PoolVector<uint8_t> octree_df;
+	if (p_data.has("octree_df")) {
+		octree_df = p_data["octree_df"];
+	} else if (p_data.has("octree_df_png")) {
+		PoolVector<uint8_t> octree_df_png = p_data["octree_df_png"];
+		Ref<Image> img;
+		img.instance();
+		Error err = img->load_png_from_buffer(octree_df_png);
+		ERR_FAIL_COND(err != OK);
+		ERR_FAIL_COND(img->get_format() != Image::FORMAT_L8);
+		octree_df = img->get_data();
+	}
 	PoolVector<int> octree_levels = p_data["level_counts"];
 	Transform to_cell_xform = p_data["to_cell_xform"];
 
@@ -59,10 +71,21 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 Dictionary GIProbeData::_get_data() const {
 	Dictionary d;
 	d["bounds"] = get_bounds();
-	d["octree_size"] = get_octree_size();
+	Vector3i otsize = get_octree_size();
+	d["octree_size"] = Vector3(otsize);
 	d["octree_cells"] = get_octree_cells();
 	d["octree_data"] = get_data_cells();
-	d["octree_df"] = get_distance_field();
+	if (otsize != Vector3i()) {
+		Ref<Image> img;
+		img.instance();
+		img->create(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
+		PoolVector<uint8_t> df_png = img->save_png_to_buffer();
+		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
+		d["octree_df_png"] = df_png;
+	} else {
+		d["octree_df"] = PoolVector<uint8_t>();
+	}
+
 	d["level_counts"] = get_level_counts();
 	d["to_cell_xform"] = get_to_cell_xform();
 	return d;
@@ -388,6 +411,32 @@ GIProbe::BakeBeginFunc GIProbe::bake_begin_function = NULL;
 GIProbe::BakeStepFunc GIProbe::bake_step_function = NULL;
 GIProbe::BakeEndFunc GIProbe::bake_end_function = NULL;
 
+Vector3i GIProbe::get_estimated_cell_size() const {
+	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
+	int cell_subdiv = subdiv_value[subdiv];
+	int axis_cell_size[3];
+	AABB bounds = AABB(-extents, extents * 2.0);
+	int longest_axis = bounds.get_longest_axis_index();
+	axis_cell_size[longest_axis] = 1 << cell_subdiv;
+
+
+	for (int i = 0; i < 3; i++) {
+
+		if (i == longest_axis)
+			continue;
+
+		axis_cell_size[i] = axis_cell_size[longest_axis];
+		float axis_size = bounds.size[longest_axis];
+
+		//shrink until fit subdiv
+		while (axis_size / 2.0 >= bounds.size[i]) {
+			axis_size /= 2.0;
+			axis_cell_size[i] >>= 1;
+		}
+	}
+
+	return Vector3i(axis_cell_size[0],axis_cell_size[1],axis_cell_size[2]);
+}
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
@@ -462,6 +511,8 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	if (bake_end_function) {
 		bake_end_function();
 	}
+
+	_change_notify(); //bake property may have changed
 }
 
 void GIProbe::_debug_bake() {

@@ -2361,11 +2361,14 @@ void RasterizerSceneForwardRD::_setup_render_pass_uniform_set(RID p_depth_buffer
 		RD::Uniform u;
 		u.binding = 6;
 		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture;
 		if (p_shadow_atlas.is_valid()) {
-			u.ids.push_back(shadow_atlas_get_texture(p_shadow_atlas));
-		} else {
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			texture = shadow_atlas_get_texture(p_shadow_atlas);
 		}
+		if (!texture.is_valid()) {
+			texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		}
+		u.ids.push_back(texture);
 		uniforms.push_back(u);
 	}
 

@@ -87,6 +87,8 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 SavePNGFunc Image::save_png_func = NULL;
 SaveEXRFunc Image::save_exr_func = NULL;
 
+SavePNGBufferFunc Image::save_png_buffer_func = NULL;
+
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
@@ -899,6 +901,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height cannot be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	if (p_width == width && p_height == height)
 		return;
@@ -1588,6 +1591,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1607,6 +1611,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1903,6 +1908,14 @@ Error Image::save_png(const String &p_path) const {
 		return ERR_UNAVAILABLE;
 
 	return save_png_func(p_path, Ref<Image>((Image *)this));
+}
+
+PoolVector<uint8_t> Image::save_png_to_buffer() const {
+	if (save_png_buffer_func == NULL) {
+		return PoolVector<uint8_t>();
+	}
+
+	return save_png_buffer_func(Ref<Image>((Image *)this));
 }
 
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {

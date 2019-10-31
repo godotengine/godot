@@ -159,6 +159,7 @@ public:
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
+	Vector3i get_estimated_cell_size() const;
 
 	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
 
