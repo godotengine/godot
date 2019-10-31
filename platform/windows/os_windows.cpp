@@ -2674,14 +2674,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	if (p_blocking && r_pipe) {
 
 		String argss;
-		argss = "\"\"" + p_path + "\"";
+		argss = p_path;
 
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 
-			argss += " \"" + E->get() + "\"";
+			argss += " " + E->get();
 		}
-
-		argss += "\"";
 
 		if (read_stderr) {
 			argss += " 2>&1"; // Read stderr too
