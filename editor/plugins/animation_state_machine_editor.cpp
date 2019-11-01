@@ -1117,14 +1117,16 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
+	name_edit->hide();
 	updating = false;
 
 	state_machine_draw->update();
-
-	name_edit->hide();
 }
 
 void AnimationNodeStateMachineEditor::_name_edited_focus_out() {
+
+	if (updating)
+		return;
 
 	_name_edited(name_edit->get_text());
 }
