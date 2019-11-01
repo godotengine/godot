@@ -202,12 +202,15 @@ float raymarch(float distance,float distance_adv,vec3 from,vec3 direction) {
 
 
 	vec3 cell_size = 1.0 / vec3(params.limits);
-
-	while (distance > 0.0) { //use this to avoid precision errors
+	float occlusion = 1.0;
+	while (distance > 0.5) { //use this to avoid precision errors
 		float advance = texture(sampler3D(texture_sdf,texture_sampler),from * cell_size).r * 255.0 - 1.0;
 		if (advance<0.0) {
+			occlusion = 0.0;
 			break;
 		}
+
+		occlusion=min(advance,occlusion);
 
 		advance = max(distance_adv, advance - mod(advance, distance_adv)); //should always advance in multiples of distance_adv
 
@@ -215,7 +218,7 @@ float raymarch(float distance,float distance_adv,vec3 from,vec3 direction) {
 		distance -= advance;
 	}
 
-	return max(0.0,distance);
+	return occlusion;//max(0.0,distance);
 
 }
 
@@ -320,7 +323,11 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 
 
 		vec3 to = pos;
-		to-= sign(light_dir)*0.45; //go near the edge towards the light direction to avoid self occlusion
+		if (length(normal) > 0.2) {
+			to += normal * distance_adv * 0.51;
+		} else {
+			to -= sign(light_dir)*0.45; //go near the edge towards the light direction to avoid self occlusion
+		}
 
 		//clip
 		clip_segment(mix(vec4(-1.0,0.0,0.0,0.0),vec4(1.0,0.0,0.0,float(params.limits.x-1)),bvec4(light_dir.x < 0.0)),to,light_pos);
@@ -337,12 +344,23 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 		light_pos = to - light_dir * distance;
 
 		//from -= sign(light_dir)*0.45; //go near the edge towards the light direction to avoid self occlusion
-		float dist = raymarch(distance,distance_adv,light_pos,light_dir);
+
+		/*float dist = raymarch(distance,distance_adv,light_pos,light_dir);
 
 		if (dist > distance_adv) {
 			return false;
 		}
 
+		attenuation *= 1.0 - smoothstep(0.1*distance_adv,distance_adv,dist);
+		*/
+
+		float occlusion = raymarch(distance,distance_adv,light_pos,light_dir);
+
+		if (occlusion==0.0) {
+			return false;
+		}
+
+		attenuation *= occlusion;//1.0 - smoothstep(0.1*distance_adv,distance_adv,dist);
 
 	}
 
