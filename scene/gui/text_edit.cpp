@@ -6535,6 +6535,7 @@ void TextEdit::_update_completion_candidates() {
 		if (inquote && restore_quotes == 1 && !option.display.is_quoted()) {
 			String quote = single_quote ? "'" : "\"";
 			option.display = option.display.quote(quote);
+			option.insert_text = option.insert_text.quote(quote);
 		}
 
 		if (option.display.begins_with(s)) {
