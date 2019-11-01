@@ -162,7 +162,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- `src/*.c`
+- `src/*.{c,h}`
 - `include/ogg/*.h` in ogg/
 - COPYING
 
