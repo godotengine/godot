@@ -199,7 +199,7 @@ StringName GDScript::get_instance_base_type() const {
 
 	if (native.is_valid())
 		return native->get_name();
-	if (base.is_valid())
+	if (base.is_valid() && base->is_valid())
 		return base->get_instance_base_type();
 	return StringName();
 }
@@ -486,7 +486,7 @@ bool GDScript::_update_exports() {
 
 	placeholder_fallback_enabled = false;
 
-	if (base_cache.is_valid()) {
+	if (base_cache.is_valid() && base_cache->is_valid()) {
 		if (base_cache->_update_exports()) {
 			changed = true;
 		}
