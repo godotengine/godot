@@ -204,6 +204,7 @@
 			</argument>
 			<description>
 				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
+				For mobile platforms, see [method set_quit_on_go_back].
 			</description>
 		</method>
 		<method name="set_group">
@@ -248,6 +249,7 @@
 			</argument>
 			<description>
 				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
+				To handle 'Go Back' button when this option is disabled, use [constant MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST]. 
 			</description>
 		</method>
 		<method name="set_screen_stretch">
