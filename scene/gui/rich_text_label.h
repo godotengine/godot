@@ -401,6 +401,8 @@ private:
 
 	int fixed_width;
 
+	bool fit_content_height;
+
 protected:
 	void _notification(int p_what);
 
@@ -454,13 +456,16 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_fit_content_height(bool p_enabled);
+	bool is_fit_content_height_enabled() const;
+
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	int get_content_height();
+	int get_content_height() const;
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 
