@@ -4221,7 +4221,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				if (nd.is_valid() && nd->has_input_sequence_port())
 					start_node = nodes.front()->key();
 				else {
-					EditorNode::get_singleton()->show_warning(TTR("Select atleast one node with sequence port."));
+					EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
 					return;
 				}
 			} else {
@@ -4252,7 +4252,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					if (nd.is_valid() && nd->has_input_sequence_port())
 						start_node = top_nd;
 					else {
-						EditorNode::get_singleton()->show_warning(TTR("Select atleast one node with sequence port."));
+						EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
 						return;
 					}
 				} else {
