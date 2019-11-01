@@ -56,6 +56,19 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
+    - name: Linux editor (release_debug, GCC 9)
+      stage: build
+      env: PLATFORM=x11 TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9-release-debug MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes"
+      os: linux
+      compiler: gcc-9
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - &gcc9_deps [gcc-9, g++-9]
+            - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+
     - name: Linux export template (release, Clang)
       stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
