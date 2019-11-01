@@ -369,6 +369,7 @@ String operator+(const char *p_chr, const String &p_str);
 String operator+(CharType p_chr, const String &p_str);
 
 String itos(int64_t p_val);
+String uitos(uint64_t p_val);
 String rtos(double p_val);
 String rtoss(double p_val); //scientific version
 

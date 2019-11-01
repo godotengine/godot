@@ -4058,6 +4058,11 @@ String itos(int64_t p_val) {
 	return String::num_int64(p_val);
 }
 
+String uitos(uint64_t p_val) {
+
+	return String::num_uint64(p_val);
+}
+
 String rtos(double p_val) {
 
 	return String::num(p_val);
