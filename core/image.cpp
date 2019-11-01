@@ -1284,8 +1284,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 		Component *dst_ptr = &p_dst[i * dst_w * CC];
 		uint32_t count = dst_w;
 
-		while (count--) {
-
+		while (count) {
+			count--;
 			for (int j = 0; j < CC; j++) {
 				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + right_step], rdown_ptr[j], rdown_ptr[j + right_step]);
 			}
@@ -1375,6 +1375,7 @@ void Image::shrink_x2() {
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
 		ERR_FAIL_COND(new_img.size() == 0);
+		ERR_FAIL_COND(data.size() == 0);
 
 		{
 			PoolVector<uint8_t>::Write w = new_img.write();
