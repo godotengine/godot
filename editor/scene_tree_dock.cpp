@@ -340,8 +340,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!profile_allow_editing) {
 				break;
 			}
-			Tree *tree = scene_tree->get_scene_tree();
-			if (tree->is_anything_selected()) {
+			if (editor_selection->get_selected_node_list().size() > 1) {
 				rename_dialog->popup_centered();
 			}
 		} break;
