@@ -59,6 +59,10 @@ class WindowDialog : public Popup {
 	Point2 drag_offset_far;
 	bool resizable;
 
+#ifdef TOOLS_ENABLED
+	bool was_editor_dimmed;
+#endif
+
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _closed();
 	int _drag_hit_test(const Point2 &pos) const;
@@ -106,7 +110,6 @@ class AcceptDialog : public WindowDialog {
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
-	//Button *cancel; no more cancel (there is X on that titlebar)
 	bool hide_on_ok;
 
 	void _custom_action(const String &p_action);

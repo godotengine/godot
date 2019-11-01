@@ -239,13 +239,15 @@ void WindowDialog::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_POST_POPUP: {
-			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton()) {
+				was_editor_dimmed = EditorNode::get_singleton()->is_editor_dimmed();
 				EditorNode::get_singleton()->dim_editor(true);
+			}
 		} break;
 
 		case NOTIFICATION_POPUP_HIDE: {
-			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !get_viewport()->gui_has_modal_stack())
-				EditorNode::get_singleton()->dim_editor(false);
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+				EditorNode::get_singleton()->dim_editor(was_editor_dimmed);
 		} break;
 #endif
 	}
@@ -345,6 +347,10 @@ WindowDialog::WindowDialog() {
 	close_button = memnew(TextureButton);
 	add_child(close_button);
 	close_button->connect("pressed", this, "_closed");
+
+#ifdef TOOLS_ENABLED
+	was_editor_dimmed = false;
+#endif
 }
 
 WindowDialog::~WindowDialog() {
