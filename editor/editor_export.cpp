@@ -1733,5 +1733,5 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 
 EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
 
-	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", false);
+	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", true);
 }
