@@ -109,11 +109,12 @@ void VisualShaderEditor::clear_custom_types() {
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
 			add_options.remove(i);
+			i--;
 		}
 	}
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category) {
+void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory) {
 
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	ERR_FAIL_COND(!p_script.is_valid());
@@ -131,9 +132,25 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 	ao.return_type = p_return_icon_type;
 	ao.description = p_description;
 	ao.category = p_category;
-	ao.sub_category = p_sub_category;
+	ao.sub_category = p_subcategory;
 	ao.is_custom = true;
 
+	bool begin = false;
+
+	for (int i = 0; i < add_options.size(); i++) {
+		if (add_options[i].is_custom) {
+			if (add_options[i].category == p_category) {
+				if (!begin) {
+					begin = true;
+				}
+			} else {
+				if (begin) {
+					add_options.insert(i, ao);
+					return;
+				}
+			}
+		}
+	}
 	add_options.push_back(ao);
 }
 
@@ -184,6 +201,7 @@ void VisualShaderEditor::update_custom_nodes() {
 	clear_custom_types();
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
+	Dictionary added;
 	for (int i = 0; i < class_list.size(); i++) {
 		if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
 
@@ -222,14 +240,44 @@ void VisualShaderEditor::update_custom_nodes() {
 				category = "Custom";
 			}
 
-			String sub_category = "";
+			String subcategory = "";
 			if (ref->has_method("_get_subcategory")) {
-				sub_category = (String)ref->call("_get_subcategory");
+				subcategory = (String)ref->call("_get_subcategory");
 			}
 
-			add_custom_type(name, script, description, return_icon_type, category, sub_category);
+			Dictionary dict;
+			dict["name"] = name;
+			dict["script"] = script;
+			dict["description"] = description;
+			dict["return_icon_type"] = return_icon_type;
+			dict["category"] = category;
+			dict["subcategory"] = subcategory;
+
+			String key;
+			key = category;
+			key += "/";
+			if (subcategory != "") {
+				key += subcategory;
+				key += "/";
+			}
+			key += name;
+
+			added[key] = dict;
 		}
 	}
+
+	Array keys = added.keys();
+	keys.sort();
+
+	for (int i = 0; i < keys.size(); i++) {
+
+		const Variant &key = keys.get(i);
+
+		const Dictionary &value = (Dictionary)added[key];
+
+		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["subcategory"]);
+	}
+
 	_update_options_menu();
 }
 
