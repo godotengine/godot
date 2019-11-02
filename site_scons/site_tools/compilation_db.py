@@ -36,7 +36,7 @@ _CSuffixes = ['.c']
 if not SCons.Util.case_sensitive_suffixes('.c', '.C'):
     _CSuffixes.append('.C')
 
-_CXXSuffixes = ['.cpp', '.cc', '.cxx', '.c++', '.C++']
+_CXXSuffixes = ['.cpp', '.cc', '.cxx', '.c++', '.C++', '.mm']
 if SCons.Util.case_sensitive_suffixes('.c', '.C'):
     _CXXSuffixes.append('.C')
 

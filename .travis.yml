@@ -113,16 +113,15 @@ matrix:
             - *linux_deps
 
 before_install:
-  # note: python3 specifiers only work when language is set to python so this workaround is required
-  # prevent build failures on osx by only using workaround on xenial / ubuntu linux
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo rm -rf /usr/bin/python;
-      sudo ln -s /usr/bin/python3 /usr/bin/python;
       sudo apt-get update;
-      sudo apt-get install -y python3 python3-pip python3-setuptools;
-      sudo python3 -m pip install --user scons;
-      export PATH="$HOME/.local/bin:$PATH";
+      sudo apt-get install -y python3 python3-venv python3-pip python3-setuptools;      
     fi
+  - python3 -m pip install --user virtualenv
+  - python3 -m venv buildenv
+  - source buildenv/bin/activate
+  - python3 -m pip install --upgrade pip
+  - pip install scons
   - scons --version
   - eval "${MATRIX_EVAL}"
   - if [ "$STATIC_CHECKS" = "yes" ]; then
