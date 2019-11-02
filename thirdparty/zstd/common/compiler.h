@@ -23,7 +23,7 @@
 #  define INLINE_KEYWORD
 #endif
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__ICCARM__)
 #  define FORCE_INLINE_ATTR __attribute__((always_inline))
 #elif defined(_MSC_VER)
 #  define FORCE_INLINE_ATTR __forceinline
@@ -65,7 +65,7 @@
 #ifdef _MSC_VER
 #  define FORCE_NOINLINE static __declspec(noinline)
 #else
-#  ifdef __GNUC__
+#  if defined(__GNUC__) || defined(__ICCARM__)
 #    define FORCE_NOINLINE static __attribute__((__noinline__))
 #  else
 #    define FORCE_NOINLINE static
@@ -76,7 +76,7 @@
 #ifndef __has_attribute
   #define __has_attribute(x) 0  /* Compatibility with non-clang compilers. */
 #endif
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__ICCARM__)
 #  define TARGET_ATTRIBUTE(target) __attribute__((__target__(target)))
 #else
 #  define TARGET_ATTRIBUTE(target)

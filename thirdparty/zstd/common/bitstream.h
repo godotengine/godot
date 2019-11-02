@@ -57,6 +57,8 @@ extern "C" {
 =========================================*/
 #if defined(__BMI__) && defined(__GNUC__)
 #  include <immintrin.h>   /* support for bextr (experimental) */
+#elif defined(__ICCARM__)
+#  include <intrinsics.h>
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
@@ -163,6 +165,8 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
         return (unsigned) r;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
         return 31 - __builtin_clz (val);
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return 31 - __CLZ(val);
 #   else   /* Software version */
         static const unsigned DeBruijnClz[32] = { 0,  9,  1, 10, 13, 21,  2, 29,
                                                  11, 14, 16, 18, 22, 25,  3, 30,
