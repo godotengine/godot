@@ -30,17 +30,6 @@ import itertools
 # communicate more gracefully?
 __COMPILATION_DB_ENTRIES = []
 
-# Cribbed from Tool/cc.py and Tool/c++.py. It would be better if
-# we could obtain this from SCons.
-_CSuffixes = ['.c']
-if not SCons.Util.case_sensitive_suffixes('.c', '.C'):
-    _CSuffixes.append('.C')
-
-_CXXSuffixes = ['.cpp', '.cc', '.cxx', '.c++', '.C++', '.mm']
-if SCons.Util.case_sensitive_suffixes('.c', '.C'):
-    _CXXSuffixes.append('.C')
-
-
 # We make no effort to avoid rebuilding the entries. Someday, perhaps we could and even
 # integrate with the cache, but there doesn't seem to be much call for it.
 class __CompilationDbNode(SCons.Node.Python.Value):
@@ -143,11 +132,7 @@ def generate(env, **kwargs):
                                              'Building compilation database $TARGET')
 
     components_by_suffix = itertools.chain(
-        itertools.product(_CSuffixes, [
-            (static_obj, SCons.Defaults.StaticObjectEmitter, '$CCCOM'),
-            (shared_obj, SCons.Defaults.SharedObjectEmitter, '$SHCCCOM'),
-        ]),
-        itertools.product(_CXXSuffixes, [
+        itertools.product(env['CPPSUFFIXES'], [
             (static_obj, SCons.Defaults.StaticObjectEmitter, '$CXXCOM'),
             (shared_obj, SCons.Defaults.SharedObjectEmitter, '$SHCXXCOM'),
         ]),
@@ -157,12 +142,14 @@ def generate(env, **kwargs):
         suffix = entry[0]
         builder, base_emitter, command = entry[1]
 
-        # Assumes a dictionary emitter
-        emitter = builder.emitter[suffix]
-        builder.emitter[suffix] = SCons.Builder.ListEmitter([
-            emitter,
-            makeEmitCompilationDbEntry(command),
-        ])
+        # Ensure we have a valid entry
+        # used to auto ignore header files
+        if suffix in builder.emitter:
+            emitter = builder.emitter[suffix]
+            builder.emitter[suffix] = SCons.Builder.ListEmitter([
+                emitter,
+                makeEmitCompilationDbEntry(command),
+            ])
 
     env['BUILDERS']['__COMPILATIONDB_Entry'] = SCons.Builder.Builder(
         action=SCons.Action.Action(CompilationDbEntryAction, None), )
