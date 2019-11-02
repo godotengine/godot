@@ -174,6 +174,8 @@ private:
 		uint32_t flip_y;
 		float dynamic_range;
 		uint32_t on_mipmap;
+		float propagation;
+		float pad[3];
 	};
 
 	struct GIProbeInstance {

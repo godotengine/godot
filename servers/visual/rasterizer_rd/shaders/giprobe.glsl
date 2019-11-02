@@ -149,7 +149,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	bool flip_y;
 	float dynamic_range;
 	bool on_mipmap;
-
+	float propagation;
+	float pad[3];
 } params;
 
 #ifdef MODE_DYNAMIC_LIGHTING
@@ -753,7 +754,12 @@ void main() {
 		}
 
 
-		accum/=params.on_mipmap ? 8.0 : 4.0;
+		if (params.on_mipmap) {
+			accum.rgb /= mix(8.0,count,params.propagation);
+			accum.a /= 8.0;
+		} else {
+			accum/=4.0;
+		}
 
 		if (count==0.0) {
 			accum_z=0.0; //avoid nan
