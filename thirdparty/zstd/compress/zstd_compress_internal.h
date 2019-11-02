@@ -134,9 +134,15 @@ typedef struct {
 typedef struct ZSTD_matchState_t ZSTD_matchState_t;
 struct ZSTD_matchState_t {
     ZSTD_window_t window;   /* State for window round buffer management */
-    U32 loadedDictEnd;      /* index of end of dictionary, within context's referential. When dict referential is copied into active context (i.e. not attached), effectively same value as dictSize, since referential starts from zero */
+    U32 loadedDictEnd;      /* index of end of dictionary, within context's referential.
+                             * When loadedDictEnd != 0, a dictionary is in use, and still valid.
+                             * This relies on a mechanism to set loadedDictEnd=0 when dictionary is no longer within distance.
+                             * Such mechanism is provided within ZSTD_window_enforceMaxDist() and ZSTD_checkDictValidity().
+                             * When dict referential is copied into active context (i.e. not attached),
+                             * loadedDictEnd == dictSize, since referential starts from zero.
+                             */
     U32 nextToUpdate;       /* index from which to continue table update */
-    U32 hashLog3;           /* dispatch table : larger == faster, more memory */
+    U32 hashLog3;           /* dispatch table for matches of len==3 : larger == faster, more memory */
     U32* hashTable;
     U32* hashTable3;
     U32* chainTable;
@@ -307,6 +313,30 @@ MEM_STATIC U32 ZSTD_MLcode(U32 mlBase)
     return (mlBase > 127) ? ZSTD_highbit32(mlBase) + ML_deltaCode : ML_Code[mlBase];
 }
 
+/* ZSTD_cParam_withinBounds:
+ * @return 1 if value is within cParam bounds,
+ * 0 otherwise */
+MEM_STATIC int ZSTD_cParam_withinBounds(ZSTD_cParameter cParam, int value)
+{
+    ZSTD_bounds const bounds = ZSTD_cParam_getBounds(cParam);
+    if (ZSTD_isError(bounds.error)) return 0;
+    if (value < bounds.lowerBound) return 0;
+    if (value > bounds.upperBound) return 0;
+    return 1;
+}
+
+/* ZSTD_minGain() :
+ * minimum compression required
+ * to generate a compress block or a compressed literals section.
+ * note : use same formula for both situations */
+MEM_STATIC size_t ZSTD_minGain(size_t srcSize, ZSTD_strategy strat)
+{
+    U32 const minlog = (strat>=ZSTD_btultra) ? (U32)(strat) - 1 : 6;
+    ZSTD_STATIC_ASSERT(ZSTD_btultra == 8);
+    assert(ZSTD_cParam_withinBounds(ZSTD_c_strategy, strat));
+    return (srcSize >> minlog) + 2;
+}
+
 /*! ZSTD_storeSeq() :
  *  Store a sequence (literal length, literals, offset code and match length code) into seqStore_t.
  *  `offsetCode` : distance to match + 3 (values 1-3 are repCodes).
@@ -326,7 +356,7 @@ MEM_STATIC void ZSTD_storeSeq(seqStore_t* seqStorePtr, size_t litLength, const v
     /* copy Literals */
     assert(seqStorePtr->maxNbLit <= 128 KB);
     assert(seqStorePtr->lit + litLength <= seqStorePtr->litStart + seqStorePtr->maxNbLit);
-    ZSTD_wildcopy(seqStorePtr->lit, literals, litLength, ZSTD_no_overlap);
+    ZSTD_wildcopy(seqStorePtr->lit, literals, (ptrdiff_t)litLength, ZSTD_no_overlap);
     seqStorePtr->lit += litLength;
 
     /* literal Length */
@@ -739,24 +769,37 @@ ZSTD_window_enforceMaxDist(ZSTD_window_t* window,
 
 /* Similar to ZSTD_window_enforceMaxDist(),
  * but only invalidates dictionary
- * when input progresses beyond window size. */
+ * when input progresses beyond window size.
+ * assumption : loadedDictEndPtr and dictMatchStatePtr are valid (non NULL)
+ *              loadedDictEnd uses same referential as window->base
+ *              maxDist is the window size */
 MEM_STATIC void
-ZSTD_checkDictValidity(ZSTD_window_t* window,
+ZSTD_checkDictValidity(const ZSTD_window_t* window,
                        const void* blockEnd,
                              U32   maxDist,
                              U32*  loadedDictEndPtr,
                        const ZSTD_matchState_t** dictMatchStatePtr)
 {
-    U32 const blockEndIdx = (U32)((BYTE const*)blockEnd - window->base);
-    U32 const loadedDictEnd = (loadedDictEndPtr != NULL) ? *loadedDictEndPtr : 0;
-    DEBUGLOG(5, "ZSTD_checkDictValidity: blockEndIdx=%u, maxDist=%u, loadedDictEnd=%u",
-                (unsigned)blockEndIdx, (unsigned)maxDist, (unsigned)loadedDictEnd);
+    assert(loadedDictEndPtr != NULL);
+    assert(dictMatchStatePtr != NULL);
+    {   U32 const blockEndIdx = (U32)((BYTE const*)blockEnd - window->base);
+        U32 const loadedDictEnd = *loadedDictEndPtr;
+        DEBUGLOG(5, "ZSTD_checkDictValidity: blockEndIdx=%u, maxDist=%u, loadedDictEnd=%u",
+                    (unsigned)blockEndIdx, (unsigned)maxDist, (unsigned)loadedDictEnd);
+        assert(blockEndIdx >= loadedDictEnd);
 
-    if (loadedDictEnd && (blockEndIdx > maxDist + loadedDictEnd)) {
-        /* On reaching window size, dictionaries are invalidated */
-        if (loadedDictEndPtr) *loadedDictEndPtr = 0;
-        if (dictMatchStatePtr) *dictMatchStatePtr = NULL;
-    }
+        if (blockEndIdx > loadedDictEnd + maxDist) {
+            /* On reaching window size, dictionaries are invalidated.
+             * For simplification, if window size is reached anywhere within next block,
+             * the dictionary is invalidated for the full block.
+             */
+            DEBUGLOG(6, "invalidating dictionary for current block (distance > windowSize)");
+            *loadedDictEndPtr = 0;
+            *dictMatchStatePtr = NULL;
+        } else {
+            if (*loadedDictEndPtr != 0) {
+                DEBUGLOG(6, "dictionary considered valid for current block");
+    }   }   }
 }
 
 /**
@@ -797,6 +840,17 @@ MEM_STATIC U32 ZSTD_window_update(ZSTD_window_t* window,
     }
     return contiguous;
 }
+
+MEM_STATIC U32 ZSTD_getLowestMatchIndex(const ZSTD_matchState_t* ms, U32 current, unsigned windowLog)
+{
+    U32    const maxDistance = 1U << windowLog;
+    U32    const lowestValid = ms->window.lowLimit;
+    U32    const withinWindow = (current - lowestValid > maxDistance) ? current - maxDistance : lowestValid;
+    U32    const isDictionary = (ms->loadedDictEnd != 0);
+    U32    const matchLowest = isDictionary ? lowestValid : withinWindow;
+    return matchLowest;
+}
+
 
 
 /* debug functions */
