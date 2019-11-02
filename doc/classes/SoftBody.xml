@@ -78,7 +78,7 @@
 	</methods>
 	<members>
 		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="false">
-			If true, the [SoftBody] will respond to [RayCast]s.
+			If [code]true[/code], the [SoftBody] will respond to [RayCast]s.
 		</member>
 		<member name="areaAngular_stiffness" type="float" setter="set_areaAngular_stiffness" getter="get_areaAngular_stiffness" default="0.5">
 		</member>
