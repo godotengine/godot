@@ -38,20 +38,6 @@ extern "C"
 {
 #endif
 
-/* Piece-wise linear mapping from bitrate in kbps to coding quality in dB SNR */
-const opus_int32 silk_TargetRate_table_NB[ TARGET_RATE_TAB_SZ ] = {
-    0,      8000,   9400,   11500,  13500,  17500,  25000,  MAX_TARGET_RATE_BPS
-};
-const opus_int32 silk_TargetRate_table_MB[ TARGET_RATE_TAB_SZ ] = {
-    0,      9000,   12000,  14500,  18500,  24500,  35500,  MAX_TARGET_RATE_BPS
-};
-const opus_int32 silk_TargetRate_table_WB[ TARGET_RATE_TAB_SZ ] = {
-    0,      10500,  14000,  17000,  21500,  28500,  42000,  MAX_TARGET_RATE_BPS
-};
-const opus_int16 silk_SNR_table_Q1[ TARGET_RATE_TAB_SZ ] = {
-    18,     29,     38,     40,     46,     52,     62,     84
-};
-
 /* Tables for stereo predictor coding */
 const opus_int16 silk_stereo_pred_quant_Q13[ STEREO_QUANT_TAB_SIZE ] = {
     -13732, -10050, -8266, -7526, -6500, -5000, -2950,  -820,

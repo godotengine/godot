@@ -31,17 +31,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "main_FIX.h"
 
-#define QC  10
-#define QS  14
-
 #if defined(MIPSr1_ASM)
 #include "mips/warped_autocorrelation_FIX_mipsr1.h"
 #endif
 
 
-#ifndef OVERRIDE_silk_warped_autocorrelation_FIX
 /* Autocorrelations for a warped frequency axis */
-void silk_warped_autocorrelation_FIX(
+#ifndef OVERRIDE_silk_warped_autocorrelation_FIX_c
+void silk_warped_autocorrelation_FIX_c(
           opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
           opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
     const opus_int16                *input,                                 /* I    Input data to correlate                                                     */
@@ -56,7 +53,7 @@ void silk_warped_autocorrelation_FIX(
     opus_int64 corr_QC[  MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
 
     /* Order must be even */
-    silk_assert( ( order & 1 ) == 0 );
+    celt_assert( ( order & 1 ) == 0 );
     silk_assert( 2 * QS - QC >= 0 );
 
     /* Loop over samples */
@@ -92,4 +89,4 @@ void silk_warped_autocorrelation_FIX(
     }
     silk_assert( corr_QC[ 0 ] >= 0 ); /* If breaking, decrease QC*/
 }
-#endif /* OVERRIDE_silk_warped_autocorrelation_FIX */
+#endif /* OVERRIDE_silk_warped_autocorrelation_FIX_c */

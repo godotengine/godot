@@ -85,7 +85,7 @@ int ec_dec_icdf(ec_dec *_this,const unsigned char *_icdf,unsigned _ftb);
   The bits must have been encoded with ec_enc_uint().
   No call to ec_dec_update() is necessary after this call.
   _ft: The number of integers that can be decoded (one more than the max).
-       This must be at least one, and no more than 2**32-1.
+       This must be at least 2, and no more than 2**32-1.
   Return: The decoded bits.*/
 opus_uint32 ec_dec_uint(ec_dec *_this,opus_uint32 _ft);
 

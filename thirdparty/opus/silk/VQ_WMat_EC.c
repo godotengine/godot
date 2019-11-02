@@ -34,84 +34,95 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
 void silk_VQ_WMat_EC_c(
     opus_int8                   *ind,                           /* O    index of best codebook vector               */
-    opus_int32                  *rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
+    opus_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
+    opus_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
     opus_int                    *gain_Q7,                       /* O    sum of absolute LTP coefficients            */
-    const opus_int16            *in_Q14,                        /* I    input vector to be quantized                */
-    const opus_int32            *W_Q18,                         /* I    weighting matrix                            */
+    const opus_int32            *XX_Q17,                        /* I    correlation matrix                          */
+    const opus_int32            *xX_Q17,                        /* I    correlation vector                          */
     const opus_int8             *cb_Q7,                         /* I    codebook                                    */
     const opus_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
     const opus_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
-    const opus_int              mu_Q9,                          /* I    tradeoff betw. weighted error and rate      */
+    const opus_int              subfr_len,                      /* I    number of samples per subframe              */
     const opus_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-    opus_int                    L                               /* I    number of vectors in codebook               */
+    const opus_int              L                               /* I    number of vectors in codebook               */
 )
 {
     opus_int   k, gain_tmp_Q7;
     const opus_int8 *cb_row_Q7;
-    opus_int16 diff_Q14[ 5 ];
-    opus_int32 sum1_Q14, sum2_Q16;
+    opus_int32 neg_xX_Q24[ 5 ];
+    opus_int32 sum1_Q15, sum2_Q24;
+    opus_int32 bits_res_Q8, bits_tot_Q8;
+
+    /* Negate and convert to new Q domain */
+    neg_xX_Q24[ 0 ] = -silk_LSHIFT32( xX_Q17[ 0 ], 7 );
+    neg_xX_Q24[ 1 ] = -silk_LSHIFT32( xX_Q17[ 1 ], 7 );
+    neg_xX_Q24[ 2 ] = -silk_LSHIFT32( xX_Q17[ 2 ], 7 );
+    neg_xX_Q24[ 3 ] = -silk_LSHIFT32( xX_Q17[ 3 ], 7 );
+    neg_xX_Q24[ 4 ] = -silk_LSHIFT32( xX_Q17[ 4 ], 7 );
 
     /* Loop over codebook */
-    *rate_dist_Q14 = silk_int32_MAX;
+    *rate_dist_Q8 = silk_int32_MAX;
+    *res_nrg_Q15 = silk_int32_MAX;
     cb_row_Q7 = cb_Q7;
+    /* In things go really bad, at least *ind is set to something safe. */
+    *ind = 0;
     for( k = 0; k < L; k++ ) {
+        opus_int32 penalty;
         gain_tmp_Q7 = cb_gain_Q7[k];
-
-        diff_Q14[ 0 ] = in_Q14[ 0 ] - silk_LSHIFT( cb_row_Q7[ 0 ], 7 );
-        diff_Q14[ 1 ] = in_Q14[ 1 ] - silk_LSHIFT( cb_row_Q7[ 1 ], 7 );
-        diff_Q14[ 2 ] = in_Q14[ 2 ] - silk_LSHIFT( cb_row_Q7[ 2 ], 7 );
-        diff_Q14[ 3 ] = in_Q14[ 3 ] - silk_LSHIFT( cb_row_Q7[ 3 ], 7 );
-        diff_Q14[ 4 ] = in_Q14[ 4 ] - silk_LSHIFT( cb_row_Q7[ 4 ], 7 );
-
         /* Weighted rate */
-        sum1_Q14 = silk_SMULBB( mu_Q9, cl_Q5[ k ] );
+        /* Quantization error: 1 - 2 * xX * cb + cb' * XX * cb */
+        sum1_Q15 = SILK_FIX_CONST( 1.001, 15 );
 
         /* Penalty for too large gain */
-        sum1_Q14 = silk_ADD_LSHIFT32( sum1_Q14, silk_max( silk_SUB32( gain_tmp_Q7, max_gain_Q7 ), 0 ), 10 );
+        penalty = silk_LSHIFT32( silk_max( silk_SUB32( gain_tmp_Q7, max_gain_Q7 ), 0 ), 11 );
 
-        silk_assert( sum1_Q14 >= 0 );
+        /* first row of XX_Q17 */
+        sum2_Q24 = silk_MLA( neg_xX_Q24[ 0 ], XX_Q17[  1 ], cb_row_Q7[ 1 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  2 ], cb_row_Q7[ 2 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  3 ], cb_row_Q7[ 3 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  4 ], cb_row_Q7[ 4 ] );
+        sum2_Q24 = silk_LSHIFT32( sum2_Q24, 1 );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  0 ], cb_row_Q7[ 0 ] );
+        sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 0 ] );
 
-        /* first row of W_Q18 */
-        sum2_Q16 = silk_SMULWB(           W_Q18[  1 ], diff_Q14[ 1 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  2 ], diff_Q14[ 2 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  3 ], diff_Q14[ 3 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  4 ], diff_Q14[ 4 ] );
-        sum2_Q16 = silk_LSHIFT( sum2_Q16, 1 );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  0 ], diff_Q14[ 0 ] );
-        sum1_Q14 = silk_SMLAWB( sum1_Q14, sum2_Q16,    diff_Q14[ 0 ] );
+        /* second row of XX_Q17 */
+        sum2_Q24 = silk_MLA( neg_xX_Q24[ 1 ], XX_Q17[  7 ], cb_row_Q7[ 2 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  8 ], cb_row_Q7[ 3 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  9 ], cb_row_Q7[ 4 ] );
+        sum2_Q24 = silk_LSHIFT32( sum2_Q24, 1 );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[  6 ], cb_row_Q7[ 1 ] );
+        sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 1 ] );
 
-        /* second row of W_Q18 */
-        sum2_Q16 = silk_SMULWB(           W_Q18[  7 ], diff_Q14[ 2 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  8 ], diff_Q14[ 3 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  9 ], diff_Q14[ 4 ] );
-        sum2_Q16 = silk_LSHIFT( sum2_Q16, 1 );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[  6 ], diff_Q14[ 1 ] );
-        sum1_Q14 = silk_SMLAWB( sum1_Q14, sum2_Q16,    diff_Q14[ 1 ] );
+        /* third row of XX_Q17 */
+        sum2_Q24 = silk_MLA( neg_xX_Q24[ 2 ], XX_Q17[ 13 ], cb_row_Q7[ 3 ] );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[ 14 ], cb_row_Q7[ 4 ] );
+        sum2_Q24 = silk_LSHIFT32( sum2_Q24, 1 );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[ 12 ], cb_row_Q7[ 2 ] );
+        sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 2 ] );
 
-        /* third row of W_Q18 */
-        sum2_Q16 = silk_SMULWB(           W_Q18[ 13 ], diff_Q14[ 3 ] );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[ 14 ], diff_Q14[ 4 ] );
-        sum2_Q16 = silk_LSHIFT( sum2_Q16, 1 );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[ 12 ], diff_Q14[ 2 ] );
-        sum1_Q14 = silk_SMLAWB( sum1_Q14, sum2_Q16,    diff_Q14[ 2 ] );
+        /* fourth row of XX_Q17 */
+        sum2_Q24 = silk_MLA( neg_xX_Q24[ 3 ], XX_Q17[ 19 ], cb_row_Q7[ 4 ] );
+        sum2_Q24 = silk_LSHIFT32( sum2_Q24, 1 );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[ 18 ], cb_row_Q7[ 3 ] );
+        sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 3 ] );
 
-        /* fourth row of W_Q18 */
-        sum2_Q16 = silk_SMULWB(           W_Q18[ 19 ], diff_Q14[ 4 ] );
-        sum2_Q16 = silk_LSHIFT( sum2_Q16, 1 );
-        sum2_Q16 = silk_SMLAWB( sum2_Q16, W_Q18[ 18 ], diff_Q14[ 3 ] );
-        sum1_Q14 = silk_SMLAWB( sum1_Q14, sum2_Q16,    diff_Q14[ 3 ] );
-
-        /* last row of W_Q18 */
-        sum2_Q16 = silk_SMULWB(           W_Q18[ 24 ], diff_Q14[ 4 ] );
-        sum1_Q14 = silk_SMLAWB( sum1_Q14, sum2_Q16,    diff_Q14[ 4 ] );
-
-        silk_assert( sum1_Q14 >= 0 );
+        /* last row of XX_Q17 */
+        sum2_Q24 = silk_LSHIFT32( neg_xX_Q24[ 4 ], 1 );
+        sum2_Q24 = silk_MLA( sum2_Q24,        XX_Q17[ 24 ], cb_row_Q7[ 4 ] );
+        sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 4 ] );
 
         /* find best */
-        if( sum1_Q14 < *rate_dist_Q14 ) {
-            *rate_dist_Q14 = sum1_Q14;
-            *ind = (opus_int8)k;
-            *gain_Q7 = gain_tmp_Q7;
+        if( sum1_Q15 >= 0 ) {
+            /* Translate residual energy to bits using high-rate assumption (6 dB ==> 1 bit/sample) */
+            bits_res_Q8 = silk_SMULBB( subfr_len, silk_lin2log( sum1_Q15 + penalty) - (15 << 7) );
+            /* In the following line we reduce the codelength component by half ("-1"); seems to slghtly improve quality */
+            bits_tot_Q8 = silk_ADD_LSHIFT32( bits_res_Q8, cl_Q5[ k ], 3-1 );
+            if( bits_tot_Q8 <= *rate_dist_Q8 ) {
+                *rate_dist_Q8 = bits_tot_Q8;
+                *res_nrg_Q15 = sum1_Q15 + penalty;
+                *ind = (opus_int8)k;
+                *gain_Q7 = gain_tmp_Q7;
+            }
         }
 
         /* Go to next cbk vector */

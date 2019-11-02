@@ -1,6 +1,6 @@
-/* Copyright (c) 2008-2011 Xiph.Org Foundation, Mozilla Corporation
-   Written by Jean-Marc Valin and Timothy B. Terriberry */
-/*
+/* Copyright (c) 2014, Cisco Systems, INC
+   Written by XiangMingZhu WeiZhou MinPeng YanWang
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
@@ -29,65 +29,61 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "laplace.h"
-#define CELT_C
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
+#include "celt_lpc.h"
 #include "stack_alloc.h"
+#include "mathops.h"
+#include "pitch.h"
+#include "x86cpu.h"
 
-#include "entenc.c"
-#include "entdec.c"
-#include "entcode.c"
-#include "laplace.c"
+#if defined(FIXED_POINT)
 
-#define DATA_SIZE 40000
-
-int ec_laplace_get_start_freq(int decay)
+void celt_fir_sse4_1(const opus_val16 *x,
+         const opus_val16 *num,
+         opus_val16 *y,
+         int N,
+         int ord,
+         int arch)
 {
-   opus_uint32 ft = 32768 - LAPLACE_MINP*(2*LAPLACE_NMIN+1);
-   int fs = (ft*(16384-decay))/(16384+decay);
-   return fs+LAPLACE_MINP;
-}
+    int i,j;
+    VARDECL(opus_val16, rnum);
 
-int main(void)
-{
-   int i;
-   int ret = 0;
-   ec_enc enc;
-   ec_dec dec;
-   unsigned char *ptr;
-   int val[10000], decay[10000];
-   ALLOC_STACK;
-   ptr = (unsigned char *)malloc(DATA_SIZE);
-   ec_enc_init(&enc,ptr,DATA_SIZE);
+    __m128i vecNoA;
+    opus_int32 noA ;
+    SAVE_STACK;
 
-   val[0] = 3; decay[0] = 6000;
-   val[1] = 0; decay[1] = 5800;
-   val[2] = -1; decay[2] = 5600;
-   for (i=3;i<10000;i++)
+   ALLOC(rnum, ord, opus_val16);
+   for(i=0;i<ord;i++)
+      rnum[i] = num[ord-i-1];
+   noA = EXTEND32(1) << SIG_SHIFT >> 1;
+   vecNoA = _mm_set_epi32(noA, noA, noA, noA);
+
+   for (i=0;i<N-3;i+=4)
    {
-      val[i] = rand()%15-7;
-      decay[i] = rand()%11000+5000;
+      opus_val32 sums[4] = {0};
+      __m128i vecSum, vecX;
+
+      xcorr_kernel(rnum, x+i-ord, sums, ord, arch);
+
+      vecSum = _mm_loadu_si128((__m128i *)sums);
+      vecSum = _mm_add_epi32(vecSum, vecNoA);
+      vecSum = _mm_srai_epi32(vecSum, SIG_SHIFT);
+      vecX = OP_CVTEPI16_EPI32_M64(x + i);
+      vecSum = _mm_add_epi32(vecSum, vecX);
+      vecSum = _mm_packs_epi32(vecSum, vecSum);
+      _mm_storel_epi64((__m128i *)(y + i), vecSum);
    }
-   for (i=0;i<10000;i++)
-      ec_laplace_encode(&enc, &val[i],
-            ec_laplace_get_start_freq(decay[i]), decay[i]);
-
-   ec_enc_done(&enc);
-
-   ec_dec_init(&dec,ec_get_buffer(&enc),ec_range_bytes(&enc));
-
-   for (i=0;i<10000;i++)
+   for (;i<N;i++)
    {
-      int d = ec_laplace_decode(&dec,
-            ec_laplace_get_start_freq(decay[i]), decay[i]);
-      if (d != val[i])
-      {
-         fprintf (stderr, "Got %d instead of %d\n", d, val[i]);
-         ret = 1;
-      }
+      opus_val32 sum = 0;
+      for (j=0;j<ord;j++)
+         sum = MAC16_16(sum, rnum[j], x[i+j-ord]);
+      y[i] = SATURATE16(ADD32(EXTEND32(x[i]), PSHR32(sum, SIG_SHIFT)));
    }
 
-   free(ptr);
-   return ret;
+   RESTORE_STACK;
 }
+
+#endif

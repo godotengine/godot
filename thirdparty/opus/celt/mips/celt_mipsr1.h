@@ -53,6 +53,7 @@
 #include "celt_lpc.h"
 #include "vq.h"
 
+#define OVERRIDE_COMB_FILTER_CONST
 #define OVERRIDE_comb_filter
 void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
       opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,

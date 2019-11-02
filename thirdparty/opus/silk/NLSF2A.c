@@ -66,7 +66,8 @@ static OPUS_INLINE void silk_NLSF2A_find_poly(
 void silk_NLSF2A(
     opus_int16                  *a_Q12,             /* O    monic whitening filter coefficients in Q12,  [ d ]          */
     const opus_int16            *NLSF,              /* I    normalized line spectral frequencies in Q15, [ d ]          */
-    const opus_int              d                   /* I    filter order (should be even)                               */
+    const opus_int              d,                  /* I    filter order (should be even)                               */
+    int                         arch                /* I    Run-time architecture                                       */
 )
 {
     /* This ordering was found to maximize quality. It improves numerical accuracy of
@@ -83,15 +84,14 @@ void silk_NLSF2A(
     opus_int32 P[ SILK_MAX_ORDER_LPC / 2 + 1 ], Q[ SILK_MAX_ORDER_LPC / 2 + 1 ];
     opus_int32 Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
     opus_int32 a32_QA1[ SILK_MAX_ORDER_LPC ];
-    opus_int32 maxabs, absval, idx=0, sc_Q16;
 
     silk_assert( LSF_COS_TAB_SZ_FIX == 128 );
-    silk_assert( d==10||d==16 );
+    celt_assert( d==10 || d==16 );
 
     /* convert LSFs to 2*cos(LSF), using piecewise linear curve from table */
     ordering = d == 16 ? ordering16 : ordering10;
     for( k = 0; k < d; k++ ) {
-        silk_assert(NLSF[k] >= 0 );
+        silk_assert( NLSF[k] >= 0 );
 
         /* f_int on a scale 0-127 (rounded down) */
         f_int = silk_RSHIFT( NLSF[k], 15 - 7 );
@@ -126,52 +126,15 @@ void silk_NLSF2A(
         a32_QA1[ d-k-1 ] =  Qtmp - Ptmp;        /* QA+1 */
     }
 
-    /* Limit the maximum absolute value of the prediction coefficients, so that they'll fit in int16 */
-    for( i = 0; i < 10; i++ ) {
-        /* Find maximum absolute value and its index */
-        maxabs = 0;
-        for( k = 0; k < d; k++ ) {
-            absval = silk_abs( a32_QA1[k] );
-            if( absval > maxabs ) {
-                maxabs = absval;
-                idx    = k;
-            }
-        }
-        maxabs = silk_RSHIFT_ROUND( maxabs, QA + 1 - 12 );                                          /* QA+1 -> Q12 */
+    /* Convert int32 coefficients to Q12 int16 coefs */
+    silk_LPC_fit( a_Q12, a32_QA1, 12, QA + 1, d );
 
-        if( maxabs > silk_int16_MAX ) {
-            /* Reduce magnitude of prediction coefficients */
-            maxabs = silk_min( maxabs, 163838 );  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-            sc_Q16 = SILK_FIX_CONST( 0.999, 16 ) - silk_DIV32( silk_LSHIFT( maxabs - silk_int16_MAX, 14 ),
-                                        silk_RSHIFT32( silk_MUL( maxabs, idx + 1), 2 ) );
-            silk_bwexpander_32( a32_QA1, d, sc_Q16 );
-        } else {
-            break;
-        }
-    }
-
-    if( i == 10 ) {
-        /* Reached the last iteration, clip the coefficients */
+    for( i = 0; silk_LPC_inverse_pred_gain( a_Q12, d, arch ) == 0 && i < MAX_LPC_STABILIZE_ITERATIONS; i++ ) {
+        /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
+        /* on the unscaled coefficients, convert to Q12 and measure again                   */
+        silk_bwexpander_32( a32_QA1, d, 65536 - silk_LSHIFT( 2, i ) );
         for( k = 0; k < d; k++ ) {
-            a_Q12[ k ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 ) );  /* QA+1 -> Q12 */
-            a32_QA1[ k ] = silk_LSHIFT( (opus_int32)a_Q12[ k ], QA + 1 - 12 );
-        }
-    } else {
-        for( k = 0; k < d; k++ ) {
-            a_Q12[ k ] = (opus_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );                /* QA+1 -> Q12 */
-        }
-    }
-
-    for( i = 0; i < MAX_LPC_STABILIZE_ITERATIONS; i++ ) {
-        if( silk_LPC_inverse_pred_gain( a_Q12, d ) < SILK_FIX_CONST( 1.0 / MAX_PREDICTION_POWER_GAIN, 30 ) ) {
-            /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
-            /* on the unscaled coefficients, convert to Q12 and measure again                   */
-            silk_bwexpander_32( a32_QA1, d, 65536 - silk_LSHIFT( 2, i ) );
-            for( k = 0; k < d; k++ ) {
-                a_Q12[ k ] = (opus_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );            /* QA+1 -> Q12 */
-            }
-        } else {
-            break;
+            a_Q12[ k ] = (opus_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );            /* QA+1 -> Q12 */
         }
     }
 }

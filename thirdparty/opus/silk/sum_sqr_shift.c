@@ -41,43 +41,40 @@ void silk_sum_sqr_shift(
 )
 {
     opus_int   i, shft;
-    opus_int32 nrg_tmp, nrg;
+    opus_uint32 nrg_tmp;
+    opus_int32 nrg;
 
-    nrg  = 0;
-    shft = 0;
-    len--;
-    for( i = 0; i < len; i += 2 ) {
-        nrg = silk_SMLABB_ovflw( nrg, x[ i ], x[ i ] );
-        nrg = silk_SMLABB_ovflw( nrg, x[ i + 1 ], x[ i + 1 ] );
-        if( nrg < 0 ) {
-            /* Scale down */
-            nrg = (opus_int32)silk_RSHIFT_uint( (opus_uint32)nrg, 2 );
-            shft = 2;
-            i+=2;
-            break;
-        }
-    }
-    for( ; i < len; i += 2 ) {
+    /* Do a first run with the maximum shift we could have. */
+    shft = 31-silk_CLZ32(len);
+    /* Let's be conservative with rounding and start with nrg=len. */
+    nrg  = len;
+    for( i = 0; i < len - 1; i += 2 ) {
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
         nrg_tmp = silk_SMLABB_ovflw( nrg_tmp, x[ i + 1 ], x[ i + 1 ] );
-        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, (opus_uint32)nrg_tmp, shft );
-        if( nrg < 0 ) {
-            /* Scale down */
-            nrg = (opus_int32)silk_RSHIFT_uint( (opus_uint32)nrg, 2 );
-            shft += 2;
-        }
+        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
-    if( i == len ) {
+    if( i < len ) {
+        /* One sample left to process */
+        nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
+        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+    }
+    silk_assert( nrg >= 0 );
+    /* Make sure the result will fit in a 32-bit signed integer with two bits
+       of headroom. */
+    shft = silk_max_32(0, shft+3 - silk_CLZ32(nrg));
+    nrg = 0;
+    for( i = 0 ; i < len - 1; i += 2 ) {
+        nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
+        nrg_tmp = silk_SMLABB_ovflw( nrg_tmp, x[ i + 1 ], x[ i + 1 ] );
+        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+    }
+    if( i < len ) {
         /* One sample left to process */
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
         nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
 
-    /* Make sure to have at least one extra leading zero (two leading zeros in total) */
-    if( nrg & 0xC0000000 ) {
-        nrg = silk_RSHIFT_uint( (opus_uint32)nrg, 2 );
-        shft += 2;
-    }
+    silk_assert( nrg >= 0 );
 
     /* Output arguments */
     *shift  = shft;

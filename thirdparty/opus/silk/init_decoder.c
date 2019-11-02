@@ -44,6 +44,7 @@ opus_int silk_init_decoder(
     /* Used to deactivate LSF interpolation */
     psDec->first_frame_after_reset = 1;
     psDec->prev_gain_Q16 = 65536;
+    psDec->arch = opus_select_arch();
 
     /* Reset CNG state */
     silk_CNG_Reset( psDec );

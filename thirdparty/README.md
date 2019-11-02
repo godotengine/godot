@@ -395,17 +395,19 @@ Files extracted from the upstream source:
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.5 (opus) and 0.8 (opusfile)
+- Version: 1.3.1 (opus) and 0.11 (opusfile)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
+- Run `opus/configure` and copy/sync changes to `config.h`
+  (note that this file may have Godot-specific options enabled)
 - all .c and .h files in src/ (both opus and opusfile)
 - all .h files in include/ (both opus and opusfile) as opus/
 - remove unused `opus_demo.c`,
 - remove `http.c`, `wincerts.c` and `winerrno.h` (part of
   unused libopusurl)
-- celt/ and silk/ subfolders
+- celt/ and silk/ subfolders (minus tests folders)
 - COPYING
 
 

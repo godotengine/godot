@@ -165,8 +165,13 @@ extern "C" {
 #define OPUS_GET_EXPERT_FRAME_DURATION_REQUEST 4041
 #define OPUS_SET_PREDICTION_DISABLED_REQUEST 4042
 #define OPUS_GET_PREDICTION_DISABLED_REQUEST 4043
-
 /* Don't use 4045, it's already taken by OPUS_GET_GAIN_REQUEST */
+#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
+#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
+#define OPUS_GET_IN_DTX_REQUEST              4049
+
+/** Defines for the presence of extended APIs. */
+#define OPUS_HAVE_OPUS_PROJECTION_H
 
 /* Macros to trigger compilation errors when the wrong types are provided to a CTL */
 #define __opus_check_int(x) (((void)((x) == (opus_int32)0)), (opus_int32)(x))
@@ -208,6 +213,9 @@ extern "C" {
 #define OPUS_FRAMESIZE_20_MS                 5004 /**< Use 20 ms frames */
 #define OPUS_FRAMESIZE_40_MS                 5005 /**< Use 40 ms frames */
 #define OPUS_FRAMESIZE_60_MS                 5006 /**< Use 60 ms frames */
+#define OPUS_FRAMESIZE_80_MS                 5007 /**< Use 80 ms frames */
+#define OPUS_FRAMESIZE_100_MS                5008 /**< Use 100 ms frames */
+#define OPUS_FRAMESIZE_120_MS                5009 /**< Use 120 ms frames */
 
 /**@}*/
 
@@ -566,7 +574,9 @@ extern "C" {
   * <dt>OPUS_FRAMESIZE_20_MS</dt><dd>Use 20 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_40_MS</dt><dd>Use 40 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_60_MS</dt><dd>Use 60 ms frames.</dd>
-  * <dt>OPUS_FRAMESIZE_VARIABLE</dt><dd>Optimize the frame size dynamically.</dd>
+  * <dt>OPUS_FRAMESIZE_80_MS</dt><dd>Use 80 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_100_MS</dt><dd>Use 100 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_120_MS</dt><dd>Use 120 ms frames.</dd>
   * </dl>
   * @hideinitializer */
 #define OPUS_SET_EXPERT_FRAME_DURATION(x) OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, __opus_check_int(x)
@@ -581,7 +591,9 @@ extern "C" {
   * <dt>OPUS_FRAMESIZE_20_MS</dt><dd>Use 20 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_40_MS</dt><dd>Use 40 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_60_MS</dt><dd>Use 60 ms frames.</dd>
-  * <dt>OPUS_FRAMESIZE_VARIABLE</dt><dd>Optimize the frame size dynamically.</dd>
+  * <dt>OPUS_FRAMESIZE_80_MS</dt><dd>Use 80 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_100_MS</dt><dd>Use 100 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_120_MS</dt><dd>Use 120 ms frames.</dd>
   * </dl>
   * @hideinitializer */
 #define OPUS_GET_EXPERT_FRAME_DURATION(x) OPUS_GET_EXPERT_FRAME_DURATION_REQUEST, __opus_check_int_ptr(x)
@@ -680,6 +692,40 @@ extern "C" {
   * @hideinitializer
   */
 #define OPUS_GET_SAMPLE_RATE(x) OPUS_GET_SAMPLE_RATE_REQUEST, __opus_check_int_ptr(x)
+
+/** If set to 1, disables the use of phase inversion for intensity stereo,
+  * improving the quality of mono downmixes, but slightly reducing normal
+  * stereo quality. Disabling phase inversion in the decoder does not comply
+  * with RFC 6716, although it does not cause any interoperability issue and
+  * is expected to become part of the Opus standard once RFC 6716 is updated
+  * by draft-ietf-codec-opus-update.
+  * @see OPUS_GET_PHASE_INVERSION_DISABLED
+  * @param[in] x <tt>opus_int32</tt>: Allowed values:
+  * <dl>
+  * <dt>0</dt><dd>Enable phase inversion (default).</dd>
+  * <dt>1</dt><dd>Disable phase inversion.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_SET_PHASE_INVERSION_DISABLED(x) OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST, __opus_check_int(x)
+/** Gets the encoder's configured phase inversion status.
+  * @see OPUS_SET_PHASE_INVERSION_DISABLED
+  * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
+  * <dl>
+  * <dt>0</dt><dd>Stereo phase inversion enabled (default).</dd>
+  * <dt>1</dt><dd>Stereo phase inversion disabled.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_GET_PHASE_INVERSION_DISABLED(x) OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, __opus_check_int_ptr(x)
+/** Gets the DTX state of the encoder.
+  * Returns whether the last encoded frame was either a comfort noise update
+  * during DTX or not encoded because of DTX.
+  * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
+  * <dl>
+  * <dt>0</dt><dd>The encoder is not in DTX.</dd>
+  * <dt>1</dt><dd>The encoder is in DTX.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_GET_IN_DTX(x) OPUS_GET_IN_DTX_REQUEST, __opus_check_int_ptr(x)
 
 /**@}*/
 

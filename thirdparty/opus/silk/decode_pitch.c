@@ -51,7 +51,7 @@ void silk_decode_pitch(
             Lag_CB_ptr = &silk_CB_lags_stage2[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE2_EXT;
         } else {
-            silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1 );
+            celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1 );
             Lag_CB_ptr = &silk_CB_lags_stage2_10_ms[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE2_10MS;
         }
@@ -60,7 +60,7 @@ void silk_decode_pitch(
             Lag_CB_ptr = &silk_CB_lags_stage3[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE3_MAX;
         } else {
-            silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1 );
+            celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1 );
             Lag_CB_ptr = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE3_10MS;
         }

@@ -77,6 +77,9 @@ typedef struct {
     /* I:   Flag to enable in-band Forward Error Correction (FEC); 0/1                      */
     opus_int useInBandFEC;
 
+    /* I:   Flag to actually code in-band Forward Error Correction (FEC) in the current packet; 0/1 */
+    opus_int LBRR_coded;
+
     /* I:   Flag to enable discontinuous transmission (DTX); 0/1                            */
     opus_int useDTX;
 
@@ -110,6 +113,11 @@ typedef struct {
     /* O:   Tells the Opus encoder we're ready to switch                                    */
     opus_int switchReady;
 
+    /* O: SILK Signal type */
+    opus_int signalType;
+
+    /* O: SILK offset (dithering) */
+    opus_int offset;
 } silk_EncControlStruct;
 
 /**************************************************************************/

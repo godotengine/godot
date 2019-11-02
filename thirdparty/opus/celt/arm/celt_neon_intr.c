@@ -191,121 +191,21 @@ static void xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
    vst1q_f32(sum, SUMM);
 }
 
-/*
- * Function: xcorr_kernel_neon_float_process1
- * ---------------------------------
- * Computes single correlation values and stores in *sum
- */
-static void xcorr_kernel_neon_float_process1(const float32_t *x,
-      const float32_t *y, float32_t *sum, int len) {
-   float32x4_t XX[4];
-   float32x4_t YY[4];
-   float32x2_t XX_2;
-   float32x2_t YY_2;
-   float32x4_t SUMM;
-   float32x2_t SUMM_2[2];
-   const float32_t *xi = x;
-   const float32_t *yi = y;
-
-   SUMM = vdupq_n_f32(0);
-
-   /* Work on 16 values per iteration */
-   while (len >= 16) {
-      XX[0] = vld1q_f32(xi);
-      xi += 4;
-      XX[1] = vld1q_f32(xi);
-      xi += 4;
-      XX[2] = vld1q_f32(xi);
-      xi += 4;
-      XX[3] = vld1q_f32(xi);
-      xi += 4;
-
-      YY[0] = vld1q_f32(yi);
-      yi += 4;
-      YY[1] = vld1q_f32(yi);
-      yi += 4;
-      YY[2] = vld1q_f32(yi);
-      yi += 4;
-      YY[3] = vld1q_f32(yi);
-      yi += 4;
-
-      SUMM = vmlaq_f32(SUMM, YY[0], XX[0]);
-      SUMM = vmlaq_f32(SUMM, YY[1], XX[1]);
-      SUMM = vmlaq_f32(SUMM, YY[2], XX[2]);
-      SUMM = vmlaq_f32(SUMM, YY[3], XX[3]);
-      len -= 16;
-   }
-
-   /* Work on 8 values */
-   if (len >= 8) {
-      XX[0] = vld1q_f32(xi);
-      xi += 4;
-      XX[1] = vld1q_f32(xi);
-      xi += 4;
-
-      YY[0] = vld1q_f32(yi);
-      yi += 4;
-      YY[1] = vld1q_f32(yi);
-      yi += 4;
-
-      SUMM = vmlaq_f32(SUMM, YY[0], XX[0]);
-      SUMM = vmlaq_f32(SUMM, YY[1], XX[1]);
-      len -= 8;
-   }
-
-   /* Work on 4 values */
-   if (len >= 4) {
-      XX[0] = vld1q_f32(xi);
-      xi += 4;
-      YY[0] = vld1q_f32(yi);
-      yi += 4;
-      SUMM = vmlaq_f32(SUMM, YY[0], XX[0]);
-      len -= 4;
-   }
-
-   /* Start accumulating results */
-   SUMM_2[0] = vget_low_f32(SUMM);
-   if (len >= 2) {
-      /* While at it, consume 2 more values if available */
-      XX_2 = vld1_f32(xi);
-      xi += 2;
-      YY_2 = vld1_f32(yi);
-      yi += 2;
-      SUMM_2[0] = vmla_f32(SUMM_2[0], YY_2, XX_2);
-      len -= 2;
-   }
-   SUMM_2[1] = vget_high_f32(SUMM);
-   SUMM_2[0] = vadd_f32(SUMM_2[0], SUMM_2[1]);
-   SUMM_2[0] = vpadd_f32(SUMM_2[0], SUMM_2[0]);
-   /* Ok, now we have result accumulated in SUMM_2[0].0 */
-
-   if (len > 0) {
-      /* Case when you have one value left */
-      XX_2 = vld1_dup_f32(xi);
-      YY_2 = vld1_dup_f32(yi);
-      SUMM_2[0] = vmla_f32(SUMM_2[0], XX_2, YY_2);
-   }
-
-   vst1_lane_f32(sum, SUMM_2[0], 0);
-}
-
 void celt_pitch_xcorr_float_neon(const opus_val16 *_x, const opus_val16 *_y,
-                        opus_val32 *xcorr, int len, int max_pitch) {
+                        opus_val32 *xcorr, int len, int max_pitch, int arch) {
    int i;
+   (void)arch;
    celt_assert(max_pitch > 0);
-   celt_assert((((unsigned char *)_x-(unsigned char *)NULL)&3)==0);
+   celt_sig_assert((((unsigned char *)_x-(unsigned char *)NULL)&3)==0);
 
    for (i = 0; i < (max_pitch-3); i += 4) {
       xcorr_kernel_neon_float((const float32_t *)_x, (const float32_t *)_y+i,
             (float32_t *)xcorr+i, len);
    }
 
-   /* In case max_pitch isn't multiple of 4
-    * compute single correlation value per iteration
-    */
+   /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
    for (; i < max_pitch; i++) {
-      xcorr_kernel_neon_float_process1((const float32_t *)_x,
-            (const float32_t *)_y+i, (float32_t *)xcorr+i, len);
+      xcorr[i] = celt_inner_prod_neon(_x, _y+i, len);
    }
 }
 #endif

@@ -111,26 +111,31 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
       t = MAC16_32_Q16(x[i], g10, x2);
       t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
       t = MAC16_32_Q16(t, g12, ADD32(x0,x4));
+      t = SATURATE(t, SIG_SAT);
       y[i] = t;
       x4=SHL32(x[i-T+3],1);
       t = MAC16_32_Q16(x[i+1], g10, x1);
       t = MAC16_32_Q16(t, g11, ADD32(x0,x2));
       t = MAC16_32_Q16(t, g12, ADD32(x4,x3));
+      t = SATURATE(t, SIG_SAT);
       y[i+1] = t;
       x3=SHL32(x[i-T+4],1);
       t = MAC16_32_Q16(x[i+2], g10, x0);
       t = MAC16_32_Q16(t, g11, ADD32(x4,x1));
       t = MAC16_32_Q16(t, g12, ADD32(x3,x2));
+      t = SATURATE(t, SIG_SAT);
       y[i+2] = t;
       x2=SHL32(x[i-T+5],1);
       t = MAC16_32_Q16(x[i+3], g10, x4);
       t = MAC16_32_Q16(t, g11, ADD32(x3,x0));
       t = MAC16_32_Q16(t, g12, ADD32(x2,x1));
+      t = SATURATE(t, SIG_SAT);
       y[i+3] = t;
       x1=SHL32(x[i-T+6],1);
       t = MAC16_32_Q16(x[i+4], g10, x3);
       t = MAC16_32_Q16(t, g11, ADD32(x2,x4));
       t = MAC16_32_Q16(t, g12, ADD32(x1,x0));
+      t = SATURATE(t, SIG_SAT);
       y[i+4] = t;
    }
 #ifdef CUSTOM_MODES
@@ -141,6 +146,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
       t = MAC16_32_Q16(x[i], g10, x2);
       t = MAC16_32_Q16(t, g11, ADD32(x1,x3));
       t = MAC16_32_Q16(t, g12, ADD32(x0,x4));
+      t = SATURATE(t, SIG_SAT);
       y[i] = t;
       x4=x3;
       x3=x2;
@@ -169,6 +175,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
                + MULT16_32_Q15(g10,x2)
                + MULT16_32_Q15(g11,ADD32(x1,x3))
                + MULT16_32_Q15(g12,ADD32(x0,x4));
+      y[i] = SATURATE(y[i], SIG_SAT);
       x4=x3;
       x3=x2;
       x2=x1;
@@ -200,6 +207,10 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
          OPUS_MOVE(y, x, N);
       return;
    }
+   /* When the gain is zero, T0 and/or T1 is set to zero. We need
+      to have then be at least 2 to avoid processing garbage data. */
+   T0 = IMAX(T0, COMBFILTER_MINPERIOD);
+   T1 = IMAX(T1, COMBFILTER_MINPERIOD);
    g00 = MULT16_16_P15(g0, gains[tapset0][0]);
    g01 = MULT16_16_P15(g0, gains[tapset0][1]);
    g02 = MULT16_16_P15(g0, gains[tapset0][2]);
@@ -225,6 +236,7 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
                + MULT16_32_Q15(MULT16_16_Q15(f,g10),x2)
                + MULT16_32_Q15(MULT16_16_Q15(f,g11),ADD32(x1,x3))
                + MULT16_32_Q15(MULT16_16_Q15(f,g12),ADD32(x0,x4));
+      y[i] = SATURATE(y[i], SIG_SAT);
       x4=x3;
       x3=x2;
       x2=x1;
@@ -244,11 +256,16 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
 }
 #endif /* OVERRIDE_comb_filter */
 
+/* TF change table. Positive values mean better frequency resolution (longer
+   effective window), whereas negative values mean better time resolution
+   (shorter effective window). The second index is computed as:
+   4*isTransient + 2*tf_select + per_band_flag */
 const signed char tf_select_table[4][8] = {
-      {0, -1, 0, -1,    0,-1, 0,-1},
-      {0, -1, 0, -2,    1, 0, 1,-1},
-      {0, -2, 0, -3,    2, 0, 1,-1},
-      {0, -2, 0, -3,    3, 0, 1,-1},
+    /*isTransient=0     isTransient=1 */
+      {0, -1, 0, -1,    0,-1, 0,-1}, /* 2.5 ms */
+      {0, -1, 0, -2,    1, 0, 1,-1}, /* 5 ms */
+      {0, -2, 0, -3,    2, 0, 1,-1}, /* 10 ms */
+      {0, -2, 0, -3,    3, 0, 1,-1}, /* 20 ms */
 };
 
 

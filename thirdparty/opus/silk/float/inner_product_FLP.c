@@ -38,13 +38,12 @@ double silk_inner_product_FLP(
     opus_int            dataSize
 )
 {
-    opus_int  i, dataSize4;
+    opus_int i;
     double   result;
 
     /* 4x unrolled loop */
     result = 0.0;
-    dataSize4 = dataSize & 0xFFFC;
-    for( i = 0; i < dataSize4; i += 4 ) {
+    for( i = 0; i < dataSize - 3; i += 4 ) {
         result += data1[ i + 0 ] * (double)data2[ i + 0 ] +
                   data1[ i + 1 ] * (double)data2[ i + 1 ] +
                   data1[ i + 2 ] * (double)data2[ i + 2 ] +

@@ -35,12 +35,29 @@
 
 #if defined(OPUS_HAVE_RTCD)
 
+# if defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
+opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const opus_val16 *y, int N) = {
+  celt_inner_prod_c,   /* ARMv4 */
+  celt_inner_prod_c,   /* EDSP */
+  celt_inner_prod_c,   /* Media */
+  celt_inner_prod_neon /* NEON */
+};
+
+void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
+      int N, opus_val32 *xy1, opus_val32 *xy2) = {
+  dual_inner_prod_c,   /* ARMv4 */
+  dual_inner_prod_c,   /* EDSP */
+  dual_inner_prod_c,   /* Media */
+  dual_inner_prod_neon /* NEON */
+};
+# endif
+
 # if defined(FIXED_POINT)
 #  if ((defined(OPUS_ARM_MAY_HAVE_NEON) && !defined(OPUS_ARM_PRESUME_NEON)) || \
     (defined(OPUS_ARM_MAY_HAVE_MEDIA) && !defined(OPUS_ARM_PRESUME_MEDIA)) || \
     (defined(OPUS_ARM_MAY_HAVE_EDSP) && !defined(OPUS_ARM_PRESUME_EDSP)))
 opus_val32 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-    const opus_val16 *, opus_val32 *, int , int) = {
+    const opus_val16 *, opus_val32 *, int, int, int) = {
   celt_pitch_xcorr_c,               /* ARMv4 */
   MAY_HAVE_EDSP(celt_pitch_xcorr),  /* EDSP */
   MAY_HAVE_MEDIA(celt_pitch_xcorr), /* Media */
@@ -51,7 +68,7 @@ opus_val32 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
 # else /* !FIXED_POINT */
 #  if defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
 void (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-    const opus_val16 *, opus_val32 *, int, int) = {
+    const opus_val16 *, opus_val32 *, int, int, int) = {
   celt_pitch_xcorr_c,              /* ARMv4 */
   celt_pitch_xcorr_c,              /* EDSP */
   celt_pitch_xcorr_c,              /* Media */

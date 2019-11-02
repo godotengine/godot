@@ -59,7 +59,7 @@ static OPUS_INLINE opus_val32 MULT16_32_Q15_armv5e(opus_val16 a, opus_val32 b)
       : "=r"(res)
       : "r"(b), "r"(a)
   );
-  return res<<1;
+  return SHL32(res,1);
 }
 #define MULT16_32_Q15(a, b) (MULT16_32_Q15_armv5e(a, b))
 
@@ -76,7 +76,7 @@ static OPUS_INLINE opus_val32 MAC16_32_Q15_armv5e(opus_val32 c, opus_val16 a,
       "#MAC16_32_Q15\n\t"
       "smlawb %0, %1, %2, %3;\n"
       : "=r"(res)
-      : "r"(b<<1), "r"(a), "r"(c)
+      : "r"(SHL32(b,1)), "r"(a), "r"(c)
   );
   return res;
 }

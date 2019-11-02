@@ -28,30 +28,31 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_NSQ_NEON_H
 
 #include "cpu_support.h"
+#include "SigProc_FIX.h"
 
 #undef silk_short_prediction_create_arch_coef
 /* For vectorized calc, reverse a_Q12 coefs, convert to 32-bit, and shift for vqdmulhq_s32. */
 static OPUS_INLINE void silk_short_prediction_create_arch_coef_neon(opus_int32 *out, const opus_int16 *in, opus_int order)
 {
-    out[15] = in[0] << 15;
-    out[14] = in[1] << 15;
-    out[13] = in[2] << 15;
-    out[12] = in[3] << 15;
-    out[11] = in[4] << 15;
-    out[10] = in[5] << 15;
-    out[9]  = in[6] << 15;
-    out[8]  = in[7] << 15;
-    out[7]  = in[8] << 15;
-    out[6]  = in[9] << 15;
+    out[15] = silk_LSHIFT32(in[0], 15);
+    out[14] = silk_LSHIFT32(in[1], 15);
+    out[13] = silk_LSHIFT32(in[2], 15);
+    out[12] = silk_LSHIFT32(in[3], 15);
+    out[11] = silk_LSHIFT32(in[4], 15);
+    out[10] = silk_LSHIFT32(in[5], 15);
+    out[9]  = silk_LSHIFT32(in[6], 15);
+    out[8]  = silk_LSHIFT32(in[7], 15);
+    out[7]  = silk_LSHIFT32(in[8], 15);
+    out[6]  = silk_LSHIFT32(in[9], 15);
 
     if (order == 16)
     {
-        out[5] = in[10] << 15;
-        out[4] = in[11] << 15;
-        out[3] = in[12] << 15;
-        out[2] = in[13] << 15;
-        out[1] = in[14] << 15;
-        out[0] = in[15] << 15;
+        out[5] = silk_LSHIFT32(in[10], 15);
+        out[4] = silk_LSHIFT32(in[11], 15);
+        out[3] = silk_LSHIFT32(in[12], 15);
+        out[2] = silk_LSHIFT32(in[13], 15);
+        out[1] = silk_LSHIFT32(in[14], 15);
+        out[0] = silk_LSHIFT32(in[15], 15);
     }
     else
     {

@@ -67,7 +67,7 @@ void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb);
 /*Encodes a raw unsigned integer in the stream.
   _fl: The integer to encode.
   _ft: The number of integers that can be encoded (one more than the max).
-       This must be at least one, and no more than 2**32-1.*/
+       This must be at least 2, and no more than 2**32-1.*/
 void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft);
 
 /*Encodes a sequence of raw bits in the stream.

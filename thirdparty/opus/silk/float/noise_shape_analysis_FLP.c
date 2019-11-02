@@ -55,25 +55,21 @@ static OPUS_INLINE silk_float warped_gain(
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
 /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
 static OPUS_INLINE void warped_true2monic_coefs(
-    silk_float           *coefs_syn,
-    silk_float           *coefs_ana,
+    silk_float           *coefs,
     silk_float           lambda,
     silk_float           limit,
     opus_int             order
 ) {
     opus_int   i, iter, ind = 0;
-    silk_float tmp, maxabs, chirp, gain_syn, gain_ana;
+    silk_float tmp, maxabs, chirp, gain;
 
     /* Convert to monic coefficients */
     for( i = order - 1; i > 0; i-- ) {
-        coefs_syn[ i - 1 ] -= lambda * coefs_syn[ i ];
-        coefs_ana[ i - 1 ] -= lambda * coefs_ana[ i ];
+        coefs[ i - 1 ] -= lambda * coefs[ i ];
     }
-    gain_syn = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs_syn[ 0 ] );
-    gain_ana = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs_ana[ 0 ] );
+    gain = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs[ 0 ] );
     for( i = 0; i < order; i++ ) {
-        coefs_syn[ i ] *= gain_syn;
-        coefs_ana[ i ] *= gain_ana;
+        coefs[ i ] *= gain;
     }
 
     /* Limit */
@@ -81,7 +77,7 @@ static OPUS_INLINE void warped_true2monic_coefs(
         /* Find maximum absolute value */
         maxabs = -1.0f;
         for( i = 0; i < order; i++ ) {
-            tmp = silk_max( silk_abs_float( coefs_syn[ i ] ), silk_abs_float( coefs_ana[ i ] ) );
+            tmp = silk_abs_float( coefs[ i ] );
             if( tmp > maxabs ) {
                 maxabs = tmp;
                 ind = i;
@@ -94,32 +90,55 @@ static OPUS_INLINE void warped_true2monic_coefs(
 
         /* Convert back to true warped coefficients */
         for( i = 1; i < order; i++ ) {
-            coefs_syn[ i - 1 ] += lambda * coefs_syn[ i ];
-            coefs_ana[ i - 1 ] += lambda * coefs_ana[ i ];
+            coefs[ i - 1 ] += lambda * coefs[ i ];
         }
-        gain_syn = 1.0f / gain_syn;
-        gain_ana = 1.0f / gain_ana;
+        gain = 1.0f / gain;
         for( i = 0; i < order; i++ ) {
-            coefs_syn[ i ] *= gain_syn;
-            coefs_ana[ i ] *= gain_ana;
+            coefs[ i ] *= gain;
         }
 
         /* Apply bandwidth expansion */
         chirp = 0.99f - ( 0.8f + 0.1f * iter ) * ( maxabs - limit ) / ( maxabs * ( ind + 1 ) );
-        silk_bwexpander_FLP( coefs_syn, order, chirp );
-        silk_bwexpander_FLP( coefs_ana, order, chirp );
+        silk_bwexpander_FLP( coefs, order, chirp );
 
         /* Convert to monic warped coefficients */
         for( i = order - 1; i > 0; i-- ) {
-            coefs_syn[ i - 1 ] -= lambda * coefs_syn[ i ];
-            coefs_ana[ i - 1 ] -= lambda * coefs_ana[ i ];
+            coefs[ i - 1 ] -= lambda * coefs[ i ];
         }
-        gain_syn = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs_syn[ 0 ] );
-        gain_ana = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs_ana[ 0 ] );
+        gain = ( 1.0f - lambda * lambda ) / ( 1.0f + lambda * coefs[ 0 ] );
         for( i = 0; i < order; i++ ) {
-            coefs_syn[ i ] *= gain_syn;
-            coefs_ana[ i ] *= gain_ana;
+            coefs[ i ] *= gain;
         }
+    }
+    silk_assert( 0 );
+}
+
+static OPUS_INLINE void limit_coefs(
+    silk_float           *coefs,
+    silk_float           limit,
+    opus_int             order
+) {
+    opus_int   i, iter, ind = 0;
+    silk_float tmp, maxabs, chirp;
+
+    for( iter = 0; iter < 10; iter++ ) {
+        /* Find maximum absolute value */
+        maxabs = -1.0f;
+        for( i = 0; i < order; i++ ) {
+            tmp = silk_abs_float( coefs[ i ] );
+            if( tmp > maxabs ) {
+                maxabs = tmp;
+                ind = i;
+            }
+        }
+        if( maxabs <= limit ) {
+            /* Coefficients are within range - done */
+            return;
+        }
+
+        /* Apply bandwidth expansion */
+        chirp = 0.99f - ( 0.8f + 0.1f * iter ) * ( maxabs - limit ) / ( maxabs * ( ind + 1 ) );
+        silk_bwexpander_FLP( coefs, order, chirp );
     }
     silk_assert( 0 );
 }
@@ -133,12 +152,13 @@ void silk_noise_shape_analysis_FLP(
 )
 {
     silk_shape_state_FLP *psShapeSt = &psEnc->sShape;
-    opus_int     k, nSamples;
-    silk_float   SNR_adj_dB, HarmBoost, HarmShapeGain, Tilt;
-    silk_float   nrg, pre_nrg, log_energy, log_energy_prev, energy_variation;
-    silk_float   delta, BWExp1, BWExp2, gain_mult, gain_add, strength, b, warping;
+    opus_int     k, nSamples, nSegs;
+    silk_float   SNR_adj_dB, HarmShapeGain, Tilt;
+    silk_float   nrg, log_energy, log_energy_prev, energy_variation;
+    silk_float   BWExp, gain_mult, gain_add, strength, b, warping;
     silk_float   x_windowed[ SHAPE_LPC_WIN_MAX ];
     silk_float   auto_corr[ MAX_SHAPE_LPC_ORDER + 1 ];
+    silk_float   rc[ MAX_SHAPE_LPC_ORDER + 1 ];
     const silk_float *x_ptr, *pitch_res_ptr;
 
     /* Point to start of first LPC analysis block */
@@ -176,14 +196,14 @@ void silk_noise_shape_analysis_FLP(
     if( psEnc->sCmn.indices.signalType == TYPE_VOICED ) {
         /* Initially set to 0; may be overruled in process_gains(..) */
         psEnc->sCmn.indices.quantOffsetType = 0;
-        psEncCtrl->sparseness = 0.0f;
     } else {
         /* Sparseness measure, based on relative fluctuations of energy per 2 milliseconds */
         nSamples = 2 * psEnc->sCmn.fs_kHz;
         energy_variation = 0.0f;
         log_energy_prev  = 0.0f;
         pitch_res_ptr = pitch_res;
-        for( k = 0; k < silk_SMULBB( SUB_FRAME_LENGTH_MS, psEnc->sCmn.nb_subfr ) / 2; k++ ) {
+        nSegs = silk_SMULBB( SUB_FRAME_LENGTH_MS, psEnc->sCmn.nb_subfr ) / 2;
+        for( k = 0; k < nSegs; k++ ) {
             nrg = ( silk_float )nSamples + ( silk_float )silk_energy_FLP( pitch_res_ptr, nSamples );
             log_energy = silk_log2( nrg );
             if( k > 0 ) {
@@ -192,17 +212,13 @@ void silk_noise_shape_analysis_FLP(
             log_energy_prev = log_energy;
             pitch_res_ptr += nSamples;
         }
-        psEncCtrl->sparseness = silk_sigmoid( 0.4f * ( energy_variation - 5.0f ) );
 
         /* Set quantization offset depending on sparseness measure */
-        if( psEncCtrl->sparseness > SPARSENESS_THRESHOLD_QNT_OFFSET ) {
+        if( energy_variation > ENERGY_VARIATION_THRESHOLD_QNT_OFFSET * (nSegs-1) ) {
             psEnc->sCmn.indices.quantOffsetType = 0;
         } else {
             psEnc->sCmn.indices.quantOffsetType = 1;
         }
-
-        /* Increase coding SNR for sparse signals */
-        SNR_adj_dB += SPARSE_SNR_INCR_dB * ( psEncCtrl->sparseness - 0.5f );
     }
 
     /*******************************/
@@ -210,19 +226,10 @@ void silk_noise_shape_analysis_FLP(
     /*******************************/
     /* More BWE for signals with high prediction gain */
     strength = FIND_PITCH_WHITE_NOISE_FRACTION * psEncCtrl->predGain;           /* between 0.0 and 1.0 */
-    BWExp1 = BWExp2 = BANDWIDTH_EXPANSION / ( 1.0f + strength * strength );
-    delta  = LOW_RATE_BANDWIDTH_EXPANSION_DELTA * ( 1.0f - 0.75f * psEncCtrl->coding_quality );
-    BWExp1 -= delta;
-    BWExp2 += delta;
-    /* BWExp1 will be applied after BWExp2, so make it relative */
-    BWExp1 /= BWExp2;
+    BWExp = BANDWIDTH_EXPANSION / ( 1.0f + strength * strength );
 
-    if( psEnc->sCmn.warping_Q16 > 0 ) {
-        /* Slightly more warping in analysis will move quantization noise up in frequency, where it's better masked */
-        warping = (silk_float)psEnc->sCmn.warping_Q16 / 65536.0f + 0.01f * psEncCtrl->coding_quality;
-    } else {
-        warping = 0.0f;
-    }
+    /* Slightly more warping in analysis will move quantization noise up in frequency, where it's better masked */
+    warping = (silk_float)psEnc->sCmn.warping_Q16 / 65536.0f + 0.01f * psEncCtrl->coding_quality;
 
     /********************************************/
     /* Compute noise shaping AR coefs and gains */
@@ -252,37 +259,28 @@ void silk_noise_shape_analysis_FLP(
         }
 
         /* Add white noise, as a fraction of energy */
-        auto_corr[ 0 ] += auto_corr[ 0 ] * SHAPE_WHITE_NOISE_FRACTION;
+        auto_corr[ 0 ] += auto_corr[ 0 ] * SHAPE_WHITE_NOISE_FRACTION + 1.0f;
 
         /* Convert correlations to prediction coefficients, and compute residual energy */
-        nrg = silk_levinsondurbin_FLP( &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ], auto_corr, psEnc->sCmn.shapingLPCOrder );
+        nrg = silk_schur_FLP( rc, auto_corr, psEnc->sCmn.shapingLPCOrder );
+        silk_k2a_FLP( &psEncCtrl->AR[ k * MAX_SHAPE_LPC_ORDER ], rc, psEnc->sCmn.shapingLPCOrder );
         psEncCtrl->Gains[ k ] = ( silk_float )sqrt( nrg );
 
         if( psEnc->sCmn.warping_Q16 > 0 ) {
             /* Adjust gain for warping */
-            psEncCtrl->Gains[ k ] *= warped_gain( &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ], warping, psEnc->sCmn.shapingLPCOrder );
+            psEncCtrl->Gains[ k ] *= warped_gain( &psEncCtrl->AR[ k * MAX_SHAPE_LPC_ORDER ], warping, psEnc->sCmn.shapingLPCOrder );
         }
 
         /* Bandwidth expansion for synthesis filter shaping */
-        silk_bwexpander_FLP( &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder, BWExp2 );
+        silk_bwexpander_FLP( &psEncCtrl->AR[ k * MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder, BWExp );
 
-        /* Compute noise shaping filter coefficients */
-        silk_memcpy(
-            &psEncCtrl->AR1[ k * MAX_SHAPE_LPC_ORDER ],
-            &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ],
-            psEnc->sCmn.shapingLPCOrder * sizeof( silk_float ) );
-
-        /* Bandwidth expansion for analysis filter shaping */
-        silk_bwexpander_FLP( &psEncCtrl->AR1[ k * MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder, BWExp1 );
-
-        /* Ratio of prediction gains, in energy domain */
-        pre_nrg = silk_LPC_inverse_pred_gain_FLP( &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder );
-        nrg     = silk_LPC_inverse_pred_gain_FLP( &psEncCtrl->AR1[ k * MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder );
-        psEncCtrl->GainsPre[ k ] = 1.0f - 0.7f * ( 1.0f - pre_nrg / nrg );
-
-        /* Convert to monic warped prediction coefficients and limit absolute values */
-        warped_true2monic_coefs( &psEncCtrl->AR2[ k * MAX_SHAPE_LPC_ORDER ], &psEncCtrl->AR1[ k * MAX_SHAPE_LPC_ORDER ],
-            warping, 3.999f, psEnc->sCmn.shapingLPCOrder );
+        if( psEnc->sCmn.warping_Q16 > 0 ) {
+            /* Convert to monic warped prediction coefficients and limit absolute values */
+            warped_true2monic_coefs( &psEncCtrl->AR[ k * MAX_SHAPE_LPC_ORDER ], warping, 3.999f, psEnc->sCmn.shapingLPCOrder );
+        } else {
+            /* Limit absolute values */
+            limit_coefs( &psEncCtrl->AR[ k * MAX_SHAPE_LPC_ORDER ], 3.999f, psEnc->sCmn.shapingLPCOrder );
+        }
     }
 
     /*****************/
@@ -294,11 +292,6 @@ void silk_noise_shape_analysis_FLP(
     for( k = 0; k < psEnc->sCmn.nb_subfr; k++ ) {
         psEncCtrl->Gains[ k ] *= gain_mult;
         psEncCtrl->Gains[ k ] += gain_add;
-    }
-
-    gain_mult = 1.0f + INPUT_TILT + psEncCtrl->coding_quality * HIGH_RATE_INPUT_TILT;
-    for( k = 0; k < psEnc->sCmn.nb_subfr; k++ ) {
-        psEncCtrl->GainsPre[ k ] *= gain_mult;
     }
 
     /************************************************/
@@ -331,12 +324,6 @@ void silk_noise_shape_analysis_FLP(
     /****************************/
     /* HARMONIC SHAPING CONTROL */
     /****************************/
-    /* Control boosting of harmonic frequencies */
-    HarmBoost = LOW_RATE_HARMONIC_BOOST * ( 1.0f - psEncCtrl->coding_quality ) * psEnc->LTPCorr;
-
-    /* More harmonic boost for noisy input signals */
-    HarmBoost += LOW_INPUT_QUALITY_HARMONIC_BOOST * ( 1.0f - psEncCtrl->input_quality );
-
     if( USE_HARM_SHAPING && psEnc->sCmn.indices.signalType == TYPE_VOICED ) {
         /* Harmonic noise shaping */
         HarmShapeGain = HARMONIC_SHAPING;
@@ -355,8 +342,6 @@ void silk_noise_shape_analysis_FLP(
     /* Smooth over subframes */
     /*************************/
     for( k = 0; k < psEnc->sCmn.nb_subfr; k++ ) {
-        psShapeSt->HarmBoost_smth     += SUBFR_SMTH_COEF * ( HarmBoost - psShapeSt->HarmBoost_smth );
-        psEncCtrl->HarmBoost[ k ]      = psShapeSt->HarmBoost_smth;
         psShapeSt->HarmShapeGain_smth += SUBFR_SMTH_COEF * ( HarmShapeGain - psShapeSt->HarmShapeGain_smth );
         psEncCtrl->HarmShapeGain[ k ]  = psShapeSt->HarmShapeGain_smth;
         psShapeSt->Tilt_smth          += SUBFR_SMTH_COEF * ( Tilt - psShapeSt->Tilt_smth );

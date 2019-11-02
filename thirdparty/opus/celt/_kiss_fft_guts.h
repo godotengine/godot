@@ -58,12 +58,12 @@
 #   define S_MUL(a,b) MULT16_32_Q15(b, a)
 
 #   define C_MUL(m,a,b) \
-      do{ (m).r = SUB32(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
-          (m).i = ADD32(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
+      do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
+          (m).i = ADD32_ovflw(S_MUL((a).r,(b).i) , S_MUL((a).i,(b).r)); }while(0)
 
 #   define C_MULC(m,a,b) \
-      do{ (m).r = ADD32(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
-          (m).i = SUB32(S_MUL((a).i,(b).r) , S_MUL((a).r,(b).i)); }while(0)
+      do{ (m).r = ADD32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \
+          (m).i = SUB32_ovflw(S_MUL((a).i,(b).r) , S_MUL((a).r,(b).i)); }while(0)
 
 #   define C_MULBYSCALAR( c, s ) \
       do{ (c).r =  S_MUL( (c).r , s ) ;\
@@ -77,17 +77,17 @@
                 DIVSCALAR( (c).i  , div); }while (0)
 
 #define  C_ADD( res, a,b)\
-    do {(res).r=ADD32((a).r,(b).r);  (res).i=ADD32((a).i,(b).i); \
+    do {(res).r=ADD32_ovflw((a).r,(b).r);  (res).i=ADD32_ovflw((a).i,(b).i); \
     }while(0)
 #define  C_SUB( res, a,b)\
-    do {(res).r=SUB32((a).r,(b).r);  (res).i=SUB32((a).i,(b).i); \
+    do {(res).r=SUB32_ovflw((a).r,(b).r);  (res).i=SUB32_ovflw((a).i,(b).i); \
     }while(0)
 #define C_ADDTO( res , a)\
-    do {(res).r = ADD32((res).r, (a).r);  (res).i = ADD32((res).i,(a).i);\
+    do {(res).r = ADD32_ovflw((res).r, (a).r);  (res).i = ADD32_ovflw((res).i,(a).i);\
     }while(0)
 
 #define C_SUBFROM( res , a)\
-    do {(res).r = ADD32((res).r,(a).r);  (res).i = SUB32((res).i,(a).i); \
+    do {(res).r = ADD32_ovflw((res).r,(a).r);  (res).i = SUB32_ovflw((res).i,(a).i); \
     }while(0)
 
 #if defined(OPUS_ARM_INLINE_ASM)

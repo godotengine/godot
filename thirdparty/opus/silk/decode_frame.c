@@ -55,7 +55,7 @@ opus_int silk_decode_frame(
     psDecCtrl->LTP_scale_Q14 = 0;
 
     /* Safety checks */
-    silk_assert( L > 0 && L <= MAX_FRAME_LENGTH );
+    celt_assert( L > 0 && L <= MAX_FRAME_LENGTH );
 
     if(   lostFlag == FLAG_DECODE_NORMAL ||
         ( lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1 ) )
@@ -91,19 +91,20 @@ opus_int silk_decode_frame(
 
         psDec->lossCnt = 0;
         psDec->prevSignalType = psDec->indices.signalType;
-        silk_assert( psDec->prevSignalType >= 0 && psDec->prevSignalType <= 2 );
+        celt_assert( psDec->prevSignalType >= 0 && psDec->prevSignalType <= 2 );
 
         /* A frame has been decoded without errors */
         psDec->first_frame_after_reset = 0;
     } else {
         /* Handle packet loss by extrapolation */
+        psDec->indices.signalType = psDec->prevSignalType;
         silk_PLC( psDec, psDecCtrl, pOut, 1, arch );
     }
 
     /*************************/
     /* Update output buffer. */
     /*************************/
-    silk_assert( psDec->ltp_mem_length >= psDec->frame_length );
+    celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
     mv_len = psDec->ltp_mem_length - psDec->frame_length;
     silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
     silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );

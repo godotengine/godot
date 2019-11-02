@@ -51,8 +51,6 @@ static const opus_uint8 silk_LTP_gain_iCDF_2[32] = {
         24,     20,     16,     12,      9,      5,      2,      0
 };
 
-const opus_int16 silk_LTP_gain_middle_avg_RD_Q14 = 12304;
-
 static const opus_uint8 silk_LTP_gain_BITS_Q5_0[8] = {
         15,    131,    138,    138,    155,    155,    173,    173
 };

@@ -36,11 +36,6 @@
 #include "mathops.h"
 #include "arch.h"
 
-static unsigned extract_collapse_mask(int *iy, int N, int B);
-static void normalise_residual(int * OPUS_RESTRICT iy, celt_norm * OPUS_RESTRICT X, int N, opus_val32 Ryy, opus_val16 gain);
-static void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
-static void renormalise_vector_mips(celt_norm *X, int N, opus_val16 gain, int arch);
-
 #define OVERRIDE_vq_exp_rotation1
 static void exp_rotation1(celt_norm *X, int len, int stride, opus_val16 c, opus_val16 s)
 {
@@ -69,11 +64,7 @@ static void exp_rotation1(celt_norm *X, int len, int stride, opus_val16 c, opus_
 }
 
 #define OVERRIDE_renormalise_vector
-
-#define renormalise_vector(X, N, gain, arch) \
- (renormalise_vector_mips(X, N, gain, arch))
-
-void renormalise_vector_mips(celt_norm *X, int N, opus_val16 gain, int arch)
+void renormalise_vector(celt_norm *X, int N, opus_val16 gain, int arch)
 {
    int i;
 #ifdef FIXED_POINT

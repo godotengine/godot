@@ -37,10 +37,18 @@
 #include "entdec.h"
 #include "modes.h"
 
-#if defined(MIPSr1_ASM)
-#include "mips/vq_mipsr1.h"
+#if (defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT))
+#include "x86/vq_sse.h"
 #endif
 
+void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
+
+opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
+
+#if !defined(OVERRIDE_OP_PVQ_SEARCH)
+#define op_pvq_search(x, iy, K, N, arch) \
+    (op_pvq_search_c(x, iy, K, N, arch))
+#endif
 
 /** Algebraic pulse-vector quantiser. The signal x is replaced by the sum of
   * the pitch and a combination of pulses such that its norm is still equal
@@ -51,12 +59,8 @@
  * @param enc Entropy encoder state
  * @ret A mask indicating which blocks in the band received pulses
 */
-unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B,
-      ec_enc *enc
-#ifdef RESYNTH
-      , opus_val16 gain
-#endif
-      );
+unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
+      opus_val16 gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
  * @param X Decoded normalised spectrum (returned)

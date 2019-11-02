@@ -363,6 +363,9 @@ int main(int _argc,const char **_argv){
     Ef*=Ef;
     err+=Ef*Ef;
   }
+  free(xb);
+  free(X);
+  free(Y);
   err=pow(err/nframes,1.0/16);
   Q=100*(1-0.5*log(1+err)/log(1.13));
   if(Q<0){

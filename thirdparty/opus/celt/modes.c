@@ -427,7 +427,7 @@ void opus_custom_mode_destroy(CELTMode *mode)
    }
 #endif /* CUSTOM_MODES_ONLY */
    opus_free((opus_int16*)mode->eBands);
-   opus_free((opus_int16*)mode->allocVectors);
+   opus_free((unsigned char*)mode->allocVectors);
 
    opus_free((opus_val16*)mode->window);
    opus_free((opus_int16*)mode->logN);

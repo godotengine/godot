@@ -130,6 +130,6 @@ void silk_LP_variable_cutoff(
 
         /* ARMA low-pass filtering */
         silk_assert( TRANSITION_NB == 3 && TRANSITION_NA == 2 );
-        silk_biquad_alt( frame, B_Q28, A_Q28, psLP->In_LP_State, frame, frame_length, 1);
+        silk_biquad_alt_stride1( frame, B_Q28, A_Q28, psLP->In_LP_State, frame, frame_length);
     }
 }
