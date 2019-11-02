@@ -3928,7 +3928,9 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	if (shift_first_line) {
 		text.set_breakpoint(p_line + 1, text.is_breakpoint(p_line));
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
-		text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		if (text.has_info_icon(p_line)) {
+			text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		}
 
 		text.set_breakpoint(p_line, false);
 		text.set_hidden(p_line, false);
