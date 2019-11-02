@@ -444,7 +444,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets the type of the item at the specified index [code]idx[/code] to radio button. If false, sets the type of the item to plain text.
+				Sets the type of the item at the specified index [code]idx[/code] to radio button. If [code]false[/code], sets the type of the item to plain text.
 			</description>
 		</method>
 		<method name="set_item_as_separator">
