@@ -1949,6 +1949,10 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 				push_constant.prev_rect_size[0] = 0;
 				push_constant.prev_rect_size[1] = 0;
 				push_constant.on_mipmap = false;
+				push_constant.propagation = storage->gi_probe_get_propagation(gi_probe->probe);
+				push_constant.pad[0]=0;
+				push_constant.pad[1]=0;
+				push_constant.pad[2]=0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
