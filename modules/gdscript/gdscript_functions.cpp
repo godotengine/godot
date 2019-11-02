@@ -1126,7 +1126,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 					Dictionary d;
 					d["@subpath"] = cp;
-					d["@path"] = p->path;
+					d["@path"] = p->get_path();
 
 					p = base.ptr();
 
