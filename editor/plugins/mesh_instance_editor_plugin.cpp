@@ -180,6 +180,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 				CollisionShape *cshape = memnew(CollisionShape);
 				cshape->set_shape(shapes[i]);
+				cshape->set_transform(node->get_transform());
 
 				Node *owner = node->get_owner();
 
