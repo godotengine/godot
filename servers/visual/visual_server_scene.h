@@ -40,6 +40,8 @@
 #include "core/self_list.h"
 #include "servers/arvr/arvr_interface.h"
 
+class VisualServerLightCuller;
+
 class VisualServerScene {
 public:
 	enum {
@@ -445,6 +447,7 @@ public:
 	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
 	int light_cull_count;
 	int directional_light_count;
+	VisualServerLightCuller *light_culler;
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
 	int reflection_probe_cull_count;
 

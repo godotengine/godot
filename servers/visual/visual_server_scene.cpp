@@ -31,6 +31,7 @@
 #include "visual_server_scene.h"
 #include "core/os/os.h"
 #include "visual_server_globals.h"
+#include "visual_server_light_culler.h"
 #include "visual_server_raster.h"
 #include <new>
 /* CAMERA API */
@@ -1313,6 +1314,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 		case VS::LIGHT_DIRECTIONAL: {
 
+			// note that this returns false if the entire light can be culled
+			light_culler->prepare_light(*p_instance);
+
 			float max_distance = p_cam_projection.get_z_far();
 			float shadow_max = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
@@ -1563,11 +1567,18 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					VSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, 0, distances[i + 1], i, bias_scale);
 				}
 
+				// do a secondary cull to remove casters that don't intersect with the camera frustum
+				// note this could possibly be done in a more efficient place?
+				cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+
 				VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 			}
 
 		} break;
 		case VS::LIGHT_OMNI: {
+
+			// note that this returns false if the entire light can be culled
+			light_culler->prepare_light(*p_instance);
 
 			VS::LightOmniShadowMode shadow_mode = VSG::storage->light_omni_get_shadow_mode(p_instance->base);
 
@@ -1589,6 +1600,10 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+
+					// do a secondary cull to remove casters that don't intersect with the camera frustum
+					cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+
 					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 					for (int j = 0; j < cull_count; j++) {
@@ -1644,6 +1659,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
+					// do a secondary cull to remove casters that don't intersect with the camera frustum
+					cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
 
@@ -1680,6 +1698,10 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+
+			// do a secondary cull to remove casters that don't intersect with the camera frustum
+			light_culler->prepare_light(*p_instance);
+			cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -1843,6 +1865,9 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 };
 
 void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+	// prepare the light - camera volume culling system
+	light_culler->prepare_camera(p_cam_transform, p_cam_projection);
+
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -3518,6 +3543,8 @@ VisualServerScene::VisualServerScene() {
 	probe_bake_thread_exit = false;
 #endif
 
+	light_culler = memnew(VisualServerLightCuller);
+
 	render_pass = 1;
 	singleton = this;
 }
@@ -3533,4 +3560,9 @@ VisualServerScene::~VisualServerScene() {
 	memdelete(probe_bake_mutex);
 
 #endif
+
+	if (light_culler) {
+		memdelete(light_culler);
+		light_culler = 0;
+	}
 }
