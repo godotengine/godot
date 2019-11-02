@@ -1948,7 +1948,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 				push_constant.prev_rect_ofs[1] = 0;
 				push_constant.prev_rect_size[0] = 0;
 				push_constant.prev_rect_size[1] = 0;
-				push_constant.keep_downsample_color = true;
+				push_constant.on_mipmap = false;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -2005,7 +2005,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					push_constant.prev_rect_size[1] = push_constant.rect_size[1];
 					push_constant.rect_size[0] = rect.size[0];
 					push_constant.rect_size[1] = rect.size[1];
-					push_constant.keep_downsample_color = gi_probe->dynamic_maps[k].mipmap <= 0;
+					push_constant.on_mipmap = gi_probe->dynamic_maps[k].mipmap > 0;
 
 					RD::get_singleton()->compute_list_add_barrier(compute_list);
 

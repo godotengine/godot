@@ -173,7 +173,7 @@ private:
 		uint32_t flip_x;
 		uint32_t flip_y;
 		float dynamic_range;
-		uint32_t keep_downsample_color;
+		uint32_t on_mipmap;
 	};
 
 	struct GIProbeInstance {
