@@ -4176,6 +4176,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				_set_tkpos(pos); //rollback
 			}
 		} else if (tk.type == TK_CF_SWITCH) {
+
+			if (VisualServer::get_singleton()->is_low_end()) {
+				_set_error("\"switch\" operator is supported only on high-end platform!");
+				return ERR_PARSE_ERROR;
+			}
+
 			// switch() {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
