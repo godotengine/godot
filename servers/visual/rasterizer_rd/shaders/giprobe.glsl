@@ -134,7 +134,7 @@ layout (r16ui,set=0,binding=7) uniform restrict writeonly uimage3D aniso_neg_tex
 layout(push_constant, binding = 0, std430) uniform Params {
 
 	ivec3 limits;
-	uint light_count;
+	uint light_count; //when not lighting
 	ivec3 x_dir;
 	float z_base;
 	ivec3 y_dir;
@@ -148,7 +148,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	bool flip_x;
 	bool flip_y;
 	float dynamic_range;
-	bool keep_downsample_color;
+	bool on_mipmap;
 
 } params;
 
@@ -753,7 +753,7 @@ void main() {
 		}
 
 
-		accum/=4.0;
+		accum/=params.on_mipmap ? 8.0 : 4.0;
 
 		if (count==0.0) {
 			accum_z=0.0; //avoid nan
