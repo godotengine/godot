@@ -1194,17 +1194,6 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 				return;
 			}
 
-			_animation_paste(anim2);
-		} break;
-		case TOOL_PASTE_DUP_ANIM: {
-
-			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (!anim2.is_valid()) {
-				error_dialog->set_text(TTR("No animation resource on clipboard!"));
-				error_dialog->popup_centered_minsize();
-				return;
-			}
-
 			Ref<Animation> new_anim = memnew(Animation);
 			List<PropertyInfo> plist;
 			anim2->get_property_list(&plist);
@@ -1218,6 +1207,17 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			new_anim->set_path("");
 
 			_animation_paste(new_anim);
+		} break;
+		case TOOL_PASTE_ANIM_REF: {
+
+			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (!anim2.is_valid()) {
+				error_dialog->set_text(TTR("No animation resource on clipboard!"));
+				error_dialog->popup_centered_minsize();
+				return;
+			}
+
+			_animation_paste(anim2);
 		} break;
 		case TOOL_EDIT_RESOURCE: {
 
@@ -1674,7 +1674,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_duplicate", TTR("Paste As Duplicate")), TOOL_PASTE_DUP_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();

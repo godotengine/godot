@@ -61,7 +61,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_REMOVE_ANIM,
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
-		TOOL_PASTE_DUP_ANIM,
+		TOOL_PASTE_ANIM_REF,
 		TOOL_EDIT_RESOURCE
 	};
 
