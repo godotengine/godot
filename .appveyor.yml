@@ -20,7 +20,9 @@ cache:
 
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - pip install scons==3.1.2
+  - pip install -U wheel  # needed for pip install scons to work, otherwise a flag is missing
+  - pip install scons # use stable scons
+  - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
 
 before_build:
   - echo %GD_PLATFORM%

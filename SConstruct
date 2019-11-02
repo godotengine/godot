@@ -258,6 +258,15 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
+    # Custom tools are loaded automatically by SCons from site_scons/site_tools,
+    # but we want to use a different folder, so we register it manually.
+    from SCons.Script.Main import _load_site_scons_dir
+
+    _load_site_scons_dir(".", "misc/scons")
+
+    env.Tool("compilation_db")
+    env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+
     if env['dev']:
         env['verbose'] = True
         env['warnings'] = "extra"
