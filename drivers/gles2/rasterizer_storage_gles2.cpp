@@ -5748,14 +5748,20 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_npot_repeat_mipmap = true;
 	config.depth_internalformat = GL_DEPTH_COMPONENT;
 	config.depth_type = GL_UNSIGNED_INT;
-
 #else
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
 	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
-
+	// on mobile check for 24 bit depth support
+	if (config.extensions.has("GL_OES_depth24")) {
+		config.depth_internalformat = _DEPTH_COMPONENT24_OES;
+		config.depth_type = GL_UNSIGNED_INT;
+	} else {
+		config.depth_internalformat = GL_DEPTH_COMPONENT16;
+		config.depth_type = GL_UNSIGNED_SHORT;
+	}
 #endif
 
 #ifndef GLES_OVER_GL
@@ -5832,7 +5838,7 @@ void RasterizerStorageGLES2::initialize() {
 		GLuint depth;
 		glGenTextures(1, &depth);
 		glBindTexture(GL_TEXTURE_2D, depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, config.depth_internalformat, config.depth_type, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -5848,10 +5854,7 @@ void RasterizerStorageGLES2::initialize() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &depth);
 
-		if (status == GL_FRAMEBUFFER_COMPLETE) {
-			config.depth_internalformat = GL_DEPTH_COMPONENT;
-			config.depth_type = GL_UNSIGNED_INT;
-		} else {
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			// If it fails, test to see if it supports a framebuffer texture using UNSIGNED_SHORT
 			// This is needed because many OSX devices don't support either UNSIGNED_INT or UNSIGNED_SHORT
 
@@ -5883,15 +5886,6 @@ void RasterizerStorageGLES2::initialize() {
 			glDeleteFramebuffers(1, &fbo);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glDeleteTextures(1, &depth);
-		}
-	} else {
-		// Will use renderbuffer for depth, on mobile check for 24 bit depth support
-		if (config.extensions.has("GL_OES_depth24")) {
-			config.depth_internalformat = _DEPTH_COMPONENT24_OES;
-			config.depth_type = GL_UNSIGNED_INT;
-		} else {
-			config.depth_internalformat = GL_DEPTH_COMPONENT16;
-			config.depth_type = GL_UNSIGNED_SHORT;
 		}
 	}
 
