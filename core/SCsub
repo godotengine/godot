@@ -120,6 +120,8 @@ if env['builtin_zstd']:
         "compress/zstd_ldm.c",
         "compress/zstd_opt.c",
         "compress/zstdmt_compress.c",
+        "compress/zstd_compress_literals.c",
+        "compress/zstd_compress_sequences.c",
         "decompress/huf_decompress.c",
         "decompress/zstd_ddict.c",
         "decompress/zstd_decompress_block.c",
