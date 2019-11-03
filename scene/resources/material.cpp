@@ -476,9 +476,7 @@ void SpatialMaterial::_update_shader() {
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
-	if (textures[TEXTURE_ALBEDO] != NULL) {
-		code += "uniform sampler2D texture_albedo : hint_albedo;\n";
-	}
+	code += "uniform sampler2D texture_albedo : hint_albedo;\n";
 	code += "uniform float specular;\n";
 	code += "uniform float metallic;\n";
 	if (grow_enabled) {
@@ -781,22 +779,18 @@ void SpatialMaterial::_update_shader() {
 		code += "\t}\n";
 	}
 
-	if (textures[TEXTURE_ALBEDO] != NULL) {
-		if (flags[FLAG_USE_POINT_SIZE]) {
-			code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
-		} else {
-			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-				code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
-			} else {
-				code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
-			}
-		}
-
-		if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
-			code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
-		}
+	if (flags[FLAG_USE_POINT_SIZE]) {
+		code += "\tvec4 albedo_tex = texture(texture_albedo,POINT_COORD);\n";
 	} else {
-		code += "\tvec4 albedo_tex = vec4(1.0, 1.0, 1.0, 1.0);\n";
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);\n";
+		} else {
+			code += "\tvec4 albedo_tex = texture(texture_albedo,base_uv);\n";
+		}
+	}
+
+	if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
+		code += "\talbedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
@@ -1411,6 +1405,8 @@ void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_te
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+	_queue_shader_change();
+	_change_notify();
 }
 
 Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
