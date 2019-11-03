@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBoxEmpty" inherits="StyleBox" category="Core" version="3.2">
+	<brief_description>
+		Empty stylebox (does not display anything).
+	</brief_description>
+	<description>
+		Empty stylebox (really does not display anything).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

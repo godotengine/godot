@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Engine" inherits="Object" category="Core" version="3.2">
+	<brief_description>
+		Access to basic engine properties.
+	</brief_description>
+	<description>
+		The [Engine] class allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_author_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns engine author information in a Dictionary.
+				[code]lead_developers[/code]    - Array of Strings, lead developer names
+				[code]founders[/code]           - Array of Strings, founder names
+				[code]project_managers[/code]   - Array of Strings, project manager names
+				[code]developers[/code]         - Array of Strings, developer names
+			</description>
+		</method>
+		<method name="get_copyright_info" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an Array of copyright information Dictionaries.
+				[code]name[/code]    - String, component name
+				[code]parts[/code]   - Array of Dictionaries {[code]files[/code], [code]copyright[/code], [code]license[/code]} describing subsections of the component
+			</description>
+		</method>
+		<method name="get_donor_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a Dictionary of Arrays of donor names.
+				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
+			</description>
+		</method>
+		<method name="get_frames_drawn">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames drawn.
+			</description>
+		</method>
+		<method name="get_frames_per_second" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the frames per second of the running game.
+			</description>
+		</method>
+		<method name="get_license_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns Dictionary of licenses used by Godot and included third party components.
+			</description>
+		</method>
+		<method name="get_license_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns Godot license text.
+			</description>
+		</method>
+		<method name="get_main_loop" qualifiers="const">
+			<return type="MainLoop">
+			</return>
+			<description>
+				Returns the main loop object (see [MainLoop] and [SceneTree]).
+			</description>
+		</method>
+		<method name="get_physics_interpolation_fraction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
+			</description>
+		</method>
+		<method name="get_singleton" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_version_info" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns the current engine version information in a Dictionary.
+				[code]major[/code]    - Holds the major version number as an int
+				[code]minor[/code]    - Holds the minor version number as an int
+				[code]patch[/code]    - Holds the patch version number as an int
+				[code]hex[/code]      - Holds the full version number encoded as a hexadecimal int with one byte (2 places) per number (see example below)
+				[code]status[/code]   - Holds the status (e.g. "beta", "rc1", "rc2", ... "stable") as a String
+				[code]build[/code]    - Holds the build name (e.g. "custom_build") as a String
+				[code]hash[/code]     - Holds the full Git commit hash as a String
+				[code]year[/code]     - Holds the year the version was released in as an int
+				[code]string[/code]   - [code]major[/code] + [code]minor[/code] + [code]patch[/code] + [code]status[/code] + [code]build[/code] in a single String
+				The [code]hex[/code] value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code]. [b]Note:[/b] It's still an int internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for easy version comparisons from code:
+				[codeblock]
+				if Engine.get_version_info().hex &gt;= 0x030200:
+				    # Do things specific to version 3.2 or later
+				else:
+				    # Do things specific to versions before 3.2
+				[/codeblock]
+			</description>
+		</method>
+		<method name="has_singleton" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_in_physics_frame" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the game is inside the fixed process and physics phase of the game loop.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint" default="true">
+			If [code]true[/code], it is running inside the editor. Useful for tool scripts.
+		</member>
+		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
+			The number of fixed iterations per second (for fixed process and physics).
+		</member>
+		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
+		</member>
+		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
+			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.
+		</member>
+		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
+			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

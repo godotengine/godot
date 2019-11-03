@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_enet = env_modules.Clone()
+
+# Thirdparty source files
+
+if env['builtin_enet']:
+    thirdparty_dir = "#thirdparty/enet/"
+    thirdparty_sources = [
+        "godot.cpp",
+        "callbacks.c",
+        "compress.c",
+        "host.c",
+        "list.c",
+        "packet.c",
+        "peer.c",
+        "protocol.c",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_enet.Prepend(CPPPATH=[thirdparty_dir])
+    env_enet.Append(CPPDEFINES=["GODOT_ENET"])
+
+    env_thirdparty = env_enet.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+env_enet.add_source_files(env.modules_sources, "*.cpp")

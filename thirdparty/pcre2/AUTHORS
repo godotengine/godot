@@ -1,0 +1,36 @@
+THE MAIN PCRE2 LIBRARY CODE
+---------------------------
+
+Written by:       Philip Hazel
+Email local part: ph10
+Email domain:     cam.ac.uk
+
+University of Cambridge Computing Service,
+Cambridge, England.
+
+Copyright (c) 1997-2019 University of Cambridge
+All rights reserved
+
+
+PCRE2 JUST-IN-TIME COMPILATION SUPPORT
+--------------------------------------
+
+Written by:       Zoltan Herczeg
+Email local part: hzmester
+Emain domain:     freemail.hu
+
+Copyright(c) 2010-2019 Zoltan Herczeg
+All rights reserved.
+
+
+STACK-LESS JUST-IN-TIME COMPILER
+--------------------------------
+
+Written by:       Zoltan Herczeg
+Email local part: hzmester
+Emain domain:     freemail.hu
+
+Copyright(c) 2009-2019 Zoltan Herczeg
+All rights reserved.
+
+####

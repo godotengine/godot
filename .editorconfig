@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = tab
+insert_final_newline = true
+
+[*.{cpp,hpp,c,h,mm}]
+trim_trailing_whitespace = true
+
+[{*.{py,cs},SConstruct,SCsub}]
+indent_style = space
+indent_size = 4
+
+[.travis.yml]
+indent_style = space
+indent_size = 2

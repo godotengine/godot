@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+Import('env')
+
+if env['disable_3d']:
+    env.add_source_files(env.scene_sources, "spatial.cpp")
+    env.add_source_files(env.scene_sources, "skeleton.cpp")
+    env.add_source_files(env.scene_sources, "particles.cpp")
+    env.add_source_files(env.scene_sources, "visual_instance.cpp")
+    env.add_source_files(env.scene_sources, "world_environment.cpp")
+else:
+    env.add_source_files(env.scene_sources, "*.cpp")

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptInputAction" inherits="VisualScriptNode" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="action" type="String" setter="set_action_name" getter="get_action_name" default="&quot;&quot;">
+		</member>
+		<member name="mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="VisualScriptInputAction.Mode" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_PRESSED" value="0" enum="Mode">
+		</constant>
+		<constant name="MODE_RELEASED" value="1" enum="Mode">
+		</constant>
+		<constant name="MODE_JUST_PRESSED" value="2" enum="Mode">
+		</constant>
+		<constant name="MODE_JUST_RELEASED" value="3" enum="Mode">
+		</constant>
+	</constants>
+</class>

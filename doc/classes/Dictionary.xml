@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Dictionary" category="Built-In Types" version="3.2">
+	<brief_description>
+		Dictionary type.
+	</brief_description>
+	<description>
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
+		Erasing elements while iterating over them [b]is not supported[/b].
+		Creating a dictionary:
+		[codeblock]
+		var d = {4: 5, "A key": "A value", 28: [1, 2, 3]}
+		[/codeblock]
+		To add a key to an existing dictionary, access it like an existing key and assign to it:
+		[codeblock]
+		d[4] = "hello"  # Add integer 4 as a key and assign the String "hello" as its value.
+		d["Godot"] = 3.01  # Add String "Godot" as a key and assign the value 3.01 to it.
+		[/codeblock]
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<description>
+				Clear the dictionary, removing all key/value pairs.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="deep" type="bool" default="False">
+			</argument>
+			<description>
+				Creates a copy of the dictionary, and returns it.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the dictionary is empty.
+			</description>
+		</method>
+		<method name="erase">
+			<return type="bool">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<description>
+				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
+			</description>
+		</method>
+		<method name="get">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<argument index="1" name="default" type="Variant" default="Null">
+			</argument>
+			<description>
+				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the dictionary has a given key.
+			</description>
+		</method>
+		<method name="has_all">
+			<return type="bool">
+			</return>
+			<argument index="0" name="keys" type="Array">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the dictionary has all of the keys in the given array.
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<description>
+				Returns a hashed integer value representing the dictionary contents.
+			</description>
+		</method>
+		<method name="keys">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the list of keys in the [Dictionary].
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Returns the size of the dictionary (in pairs).
+			</description>
+		</method>
+		<method name="values">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the list of values in the [Dictionary].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

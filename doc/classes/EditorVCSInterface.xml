@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorVCSInterface" inherits="Object" category="Core" version="3.2">
+	<brief_description>
+		Version Control System (VCS) interface which reads and writes to the local VCS in use.
+	</brief_description>
+	<description>
+		Used by the editor to display VCS extracted information in the editor. The implementation of this API is included in VCS addons, which are essentially GDNative plugins that need to be put into the project folder. These VCS addons are scripts which are attached (on demand) to the object instance of [code]EditorVCSInterface[/code]. All the functions listed below, instead of performing the task themselves, they call the internally defined functions in the VCS addons to provide a plug-n-play experience.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="commit">
+			<return type="void">
+			</return>
+			<argument index="0" name="msg" type="String">
+			</argument>
+			<description>
+				Creates a version commit if the addon is initialized, else returns without doing anything. Uses the files which have been staged previously, with the commit message set to a value as provided as in the argument.
+			</description>
+		</method>
+		<method name="get_file_diff">
+			<return type="Array">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Returns an [Array] of [Dictionary] objects containing the diff output from the VCS in use, if a VCS addon is initialized, else returns an empty [Array] object. The diff contents also consist of some contextual lines which provide context to the observed line change in the file.
+				Each [Dictionary] object has the line diff contents under the keys:
+				- [code]"content"[/code] to store a [String] containing the line contents
+				- [code]"status"[/code] to store a [String] which contains [code]"+"[/code] in case the content is a line addition but it stores a [code]"-"[/code] in case of deletion and an empty string in the case the line content is neither an addition nor a deletion.
+				- [code]"new_line_number"[/code] to store an integer containing the new line number of the line content.
+				- [code]"line_count"[/code] to store an integer containing the number of lines in the line content.
+				- [code]"old_line_number"[/code] to store an integer containing the old line number of the line content.
+				- [code]"offset"[/code] to store the offset of the line change since the first contextual line content.
+			</description>
+		</method>
+		<method name="get_is_vcs_intialized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="get_modified_files_data">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a [Dictionary] containing the path of the detected file change mapped to an integer signifying what kind of a change the corresponding file has experienced.
+				The following integer values are being used to signify that the detected file is:
+				- [code]0[/code]: New to the VCS working directory
+				- [code]1[/code]: Modified
+				- [code]2[/code]: Renamed
+				- [code]3[/code]: Deleted
+				- [code]4[/code]: Typechanged
+			</description>
+		</method>
+		<method name="get_project_name">
+			<return type="String">
+			</return>
+			<description>
+				Return the project name of the VCS working directory
+			</description>
+		</method>
+		<method name="get_vcs_name">
+			<return type="String">
+			</return>
+			<description>
+				Return the name of the VCS if the VCS has been initialized, else return an empty string.
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="bool">
+			</return>
+			<argument index="0" name="project_root_path" type="String">
+			</argument>
+			<description>
+				Initialize the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_addon_ready">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="shut_down">
+			<return type="bool">
+			</return>
+			<description>
+				Shuts down the VCS addon to allow cleanup code to run on call. Returns [code]true[/code] is no failure occurs, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="stage_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Stage the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+			</description>
+		</method>
+		<method name="unstage_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file_path" type="String">
+			</argument>
+			<description>
+				Unstage the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

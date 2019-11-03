@@ -1,0 +1,27 @@
+diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
+index f25ab6464..6043d34ce 100644
+--- a/thirdparty/minizip/ioapi.h
++++ b/thirdparty/minizip/ioapi.h
+@@ -44,6 +44,22 @@
+ #include <stdlib.h>
+ #include "zlib.h"
+ 
++/* GODOT start */
++/* Mighty Gentoo saves the day by breaking the API of their zlib.h,
++ * removing this definition of OF(args) for no practical reason
++ * worth breaking compatibility with all projects that embed minizip
++ * while trying not to diverge too much from upstream zlib.
++ * Cf. https://github.com/godotengine/godot/issues/10539
++ *
++ *   "By and large, this is good open source behaviour, and fits with
++ *    the gentoo _don't fuck with upstream's releases_ philosophy"
++ *                                     -- Gentoo philosopher
++ */
++#ifndef OF /* function prototypes */
++ #define OF(args)  args
++#endif
++/* GODOT end */
++
+ #if defined(USE_FILE32API)
+ #define fopen64 fopen
+ #define ftello64 ftell

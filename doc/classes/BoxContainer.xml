@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoxContainer" inherits="Container" category="Core" version="3.2">
+	<brief_description>
+		Base class for box containers.
+	</brief_description>
+	<description>
+		Arranges child controls vertically or horizontally, and rearranges the controls automatically when their minimum size changes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_spacer">
+			<return type="void">
+			</return>
+			<argument index="0" name="begin" type="bool">
+			</argument>
+			<description>
+				Adds a control to the box as a spacer. If [code]true[/code], [code]begin[/code] will insert the spacer control in front of other children.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode" default="0">
+			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
+	</members>
+	<constants>
+		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">
+			Aligns children with the beginning of the container.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1" enum="AlignMode">
+			Aligns children with the center of the container.
+		</constant>
+		<constant name="ALIGN_END" value="2" enum="AlignMode">
+			Aligns children with the end of the container.
+		</constant>
+	</constants>
+</class>
