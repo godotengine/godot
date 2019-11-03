@@ -2804,7 +2804,7 @@ bool Tree::edit_selected() {
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 
 		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
-		Point2i textedpos = get_global_position() + rect.position - ofs;
+		Point2i textedpos = get_global_position() + Vector2(0, rect.position.y) - ofs;
 		cache.text_editor_position = textedpos;
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
