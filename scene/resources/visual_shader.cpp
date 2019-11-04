@@ -1064,16 +1064,13 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			String src_var = "n_out" + itos(from_node) + "p" + itos(from_port);
 
 			if (in_type == VisualShaderNode::PORT_TYPE_SAMPLER && out_type == VisualShaderNode::PORT_TYPE_SAMPLER) {
-				VisualShaderNodeInput *input = (VisualShaderNodeInput *)graph[type].nodes[from_node].node.ptr();
-				if (input) {
-					inputs[i] = input->get_input_real_name();
+				VisualShaderNode *ptr = const_cast<VisualShaderNode *>(graph[type].nodes[from_node].node.ptr());
+				if (ptr->has_method("get_input_real_name")) {
+					inputs[i] = ptr->call("get_input_real_name");
+				} else if (ptr->has_method("get_uniform_name")) {
+					inputs[i] = ptr->call("get_uniform_name");
 				} else {
-					VisualShaderNodeUniform *uniform = (VisualShaderNodeUniform *)graph[type].nodes[from_node].node.ptr();
-					if (uniform) {
-						inputs[i] = uniform->get_uniform_name();
-					} else {
-						inputs[i] = "";
-					}
+					inputs[i] = "";
 				}
 			} else if (in_type == out_type) {
 				inputs[i] = src_var;
@@ -1796,6 +1793,7 @@ void VisualShaderNodeInput::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_input_name", "name"), &VisualShaderNodeInput::set_input_name);
 	ClassDB::bind_method(D_METHOD("get_input_name"), &VisualShaderNodeInput::get_input_name);
+	ClassDB::bind_method(D_METHOD("get_input_real_name"), &VisualShaderNodeInput::get_input_real_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
 	ADD_SIGNAL(MethodInfo("input_type_changed"));
