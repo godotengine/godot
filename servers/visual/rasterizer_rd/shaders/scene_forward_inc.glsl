@@ -208,7 +208,7 @@ struct GIProbeData {
 
 	float anisotropy_strength;
 	float ambient_occlusion;
-	float ambient_occlusion_strength;
+	float ambient_occlusion_size;
 	uint pad2;
 };
 

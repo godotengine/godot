@@ -263,7 +263,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 		float anisotropy_strength;
 		float ao;
-		float ao_strength;
+		float ao_size;
 		uint32_t pad[1];
 	};
 
