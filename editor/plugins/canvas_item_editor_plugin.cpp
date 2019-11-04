@@ -1227,8 +1227,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 
 		if (panning) {
-			if (!b->is_pressed()) {
-				// Stop panning the viewport (for any mouse button press)
+			if (!b->is_pressed() && (pan_on_scroll || (b->get_button_index() != BUTTON_WHEEL_DOWN && b->get_button_index() != BUTTON_WHEEL_UP))) {
+				// Stop panning the viewport (for any mouse button press except zooming)
 				panning = false;
 			}
 		}
