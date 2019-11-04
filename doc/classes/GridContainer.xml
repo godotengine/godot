@@ -15,6 +15,9 @@
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its children to accommodate the new layout.
 		</member>
+		<member name="dynamic_column_width" type="int" setter="set_dynamic_column_width" getter="get_dynamic_column_width" default="0">
+			If set to any value greater than 0, it will make the number of [member columns] be changed dynamically to the number of times the value fits horizontally (e.g. If the value is set to 100 in a [GridContainer] with a width of 250, the number of [member columns] will be changed to 2).
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
 	</members>
 	<constants>

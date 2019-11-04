@@ -43,6 +43,16 @@ void GridContainer::_notification(int p_what) {
 
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
+
+			if (dynamic_column_width > 0) {
+				// Compute how many columns fit the container horizontally.
+				columns = MAX(1, (get_size().x - hsep) / dynamic_column_width);
+				if (columns > 1) {
+					// Repeat the above, but this time take into account the space between the columns.
+					columns = MAX(1, (get_size().x - columns * hsep) / dynamic_column_width);
+				}
+				_change_notify("columns");
+			}
 			int max_col = MIN(get_child_count(), columns);
 			int max_row = ceil((float)get_child_count() / (float)columns);
 
@@ -177,6 +187,10 @@ void GridContainer::_notification(int p_what) {
 void GridContainer::set_columns(int p_columns) {
 
 	ERR_FAIL_COND(p_columns < 1);
+	if (dynamic_column_width > 0) {
+		return;
+	}
+
 	columns = p_columns;
 	queue_sort();
 	minimum_size_changed();
@@ -187,12 +201,28 @@ int GridContainer::get_columns() const {
 	return columns;
 }
 
+void GridContainer::set_dynamic_column_width(int p_width) {
+
+	ERR_FAIL_COND(p_width < 0);
+	dynamic_column_width = p_width;
+	queue_sort();
+	minimum_size_changed();
+}
+
+int GridContainer::get_dynamic_column_width() {
+
+	return dynamic_column_width;
+}
+
 void GridContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
+	ClassDB::bind_method(D_METHOD("set_dynamic_column_width", "dynamic_column_width"), &GridContainer::set_dynamic_column_width);
+	ClassDB::bind_method(D_METHOD("get_dynamic_column_width"), &GridContainer::get_dynamic_column_width);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1"), "set_columns", "get_columns");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_column_width", PROPERTY_HINT_RANGE, "0,0,1,or_greater"), "set_dynamic_column_width", "get_dynamic_column_width");
 }
 
 Size2 GridContainer::get_minimum_size() const {
@@ -250,4 +280,5 @@ GridContainer::GridContainer() {
 
 	set_mouse_filter(MOUSE_FILTER_PASS);
 	columns = 1;
+	dynamic_column_width = 0;
 }

@@ -38,6 +38,7 @@ class GridContainer : public Container {
 	GDCLASS(GridContainer, Container);
 
 	int columns;
+	int dynamic_column_width;
 
 protected:
 	void _notification(int p_what);
@@ -46,6 +47,10 @@ protected:
 public:
 	void set_columns(int p_columns);
 	int get_columns() const;
+
+	void set_dynamic_column_width(int p_width);
+	int get_dynamic_column_width();
+
 	virtual Size2 get_minimum_size() const;
 
 	GridContainer();
