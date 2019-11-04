@@ -2424,6 +2424,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		info_message->set_valign(Label::VALIGN_CENTER);
 		info_message->set_align(Label::ALIGN_CENTER);
 		info_message->set_autowrap(true);
+		info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 		perf_draw->add_child(info_message);
 	}
