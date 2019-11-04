@@ -1680,9 +1680,13 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 
 	// UDPDATE TIME
 
-	if (gi_probe->has_dynamic_object_data) {
+	if (gi_probe->has_dynamic_object_data) {		
 		//if it has dynamic object data, it needs to be cleared
 		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
+		if (gi_probe_is_anisotropic()) {
+			RD::get_singleton()->texture_clear(gi_probe->anisotropy[0], Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
+			RD::get_singleton()->texture_clear(gi_probe->anisotropy[1], Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
+		}
 	}
 
 	uint32_t light_count = 0;

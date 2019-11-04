@@ -54,7 +54,7 @@ class GIProbeData : public Resource {
 	float propagation;
 	float anisotropy_strength;
 	float ao;
-	float ao_strength;
+	float ao_size;
 	bool interior;
 	bool use_two_bounces;
 
@@ -84,8 +84,8 @@ public:
 	void set_ao(float p_ao);
 	float get_ao() const;
 
-	void set_ao_strength(float p_ao_strength);
-	float get_ao_strength() const;
+	void set_ao_size(float p_ao_size);
+	float get_ao_size() const;
 
 	void set_energy(float p_energy);
 	float get_energy() const;

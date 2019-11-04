@@ -1164,14 +1164,26 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 
 	light *= gi_probes.data[index].dynamic_range;
 
-	if (gi_probes.data[index].ambient_occlusion > 0.01) {
-		float ao = 0.0;
+	if (gi_probes.data[index].ambient_occlusion > 0.001) {
 
-		for (int i=0;i<5;i++) {
-			vec3 ofs = (position + normal * float(1<<i) * 1.5) * cell_size;
-			ao += textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]),ofs,float(i) ).a;
-			light *= mix(max(0.0,1.0-(ao * gi_probes.data[index].ambient_occlusion )),1.0,gi_probes.data[index].ambient_occlusion_strength);
+		float size = 1.0+gi_probes.data[index].ambient_occlusion_size*7.0;
+
+		float taps,blend;
+		blend = modf(size, taps);
+		float ao = 0.0;
+		for(float i=1.0;i<=taps;i++) {
+			vec3 ofs = (position + normal * (i*0.5+1.0)) * cell_size;
+			ao+=textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]),ofs,i-1.0).a*i;
 		}
+
+		if (blend>0.001) {
+			vec3 ofs = (position + normal * ((taps+1.0)*0.5+1.0)) * cell_size;
+			ao+=textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]),ofs,taps).a*(taps+1.0)*blend;
+		}
+
+		ao = 1.0 - min(1.0,ao);
+
+		light *= mix(1.0,ao,gi_probes.data[index].ambient_occlusion);
 	}
 
 	out_diff += vec4(light * blend, blend);

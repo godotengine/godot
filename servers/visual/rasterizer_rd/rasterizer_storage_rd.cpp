@@ -3781,18 +3781,18 @@ float RasterizerStorageRD::gi_probe_get_ao(RID p_gi_probe) const {
 	return gi_probe->ao;
 }
 
-void RasterizerStorageRD::gi_probe_set_ao_strength(RID p_gi_probe, float p_strength) {
+void RasterizerStorageRD::gi_probe_set_ao_size(RID p_gi_probe, float p_strength) {
 
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
-	gi_probe->ao_strength = p_strength;
+	gi_probe->ao_size = p_strength;
 }
 
-float RasterizerStorageRD::gi_probe_get_ao_strength(RID p_gi_probe) const {
+float RasterizerStorageRD::gi_probe_get_ao_size(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, 0);
-	return gi_probe->ao_strength;
+	return gi_probe->ao_size;
 }
 
 void RasterizerStorageRD::gi_probe_set_bias(RID p_gi_probe, float p_bias) {
