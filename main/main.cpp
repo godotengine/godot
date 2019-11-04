@@ -1423,8 +1423,6 @@ bool Main::start() {
 		}
 	}
 
-	GLOBAL_DEF("editor/active", editor);
-
 	String main_loop_type;
 #ifdef TOOLS_ENABLED
 	if (doc_tool != "") {
