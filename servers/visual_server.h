@@ -487,8 +487,8 @@ public:
 	virtual void gi_probe_set_ao(RID p_gi_probe, float p_ao) = 0;
 	virtual float gi_probe_get_ao(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_ao_strength(RID p_gi_probe, float p_strength) = 0;
-	virtual float gi_probe_get_ao_strength(RID p_gi_probe) const = 0;
+	virtual void gi_probe_set_ao_size(RID p_gi_probe, float p_strength) = 0;
+	virtual float gi_probe_get_ao_size(RID p_gi_probe) const = 0;
 
 	virtual void gi_probe_set_bias(RID p_gi_probe, float p_bias) = 0;
 	virtual float gi_probe_get_bias(RID p_gi_probe) const = 0;

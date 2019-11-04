@@ -366,8 +366,8 @@ public:
 	BIND2(gi_probe_set_ao, RID, float)
 	BIND1RC(float, gi_probe_get_ao, RID)
 
-	BIND2(gi_probe_set_ao_strength, RID, float)
-	BIND1RC(float, gi_probe_get_ao_strength, RID)
+	BIND2(gi_probe_set_ao_size, RID, float)
+	BIND1RC(float, gi_probe_get_ao_size, RID)
 
 	BIND2(gi_probe_set_bias, RID, float)
 	BIND1RC(float, gi_probe_get_bias, RID)
