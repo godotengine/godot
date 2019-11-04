@@ -69,7 +69,7 @@ void Node::_notification(int p_notification) {
 
 			set_time_scale_inherit(is_time_scale_inheriting());
 			set_time_scale_value(get_time_scale_value());
-		}
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
