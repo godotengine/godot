@@ -120,6 +120,7 @@ private:
 
 		float time_scale_value;
 		bool time_scale_inherit;
+		float time_scale_inherit_value;
 
 		int network_master;
 		Vector<NetData> rpc_methods;
@@ -348,6 +349,7 @@ public:
 	bool is_physics_processing() const;
 
 	void set_time_scale_value(float p_time_scale);
+	float get_time_scale_calculated_value() const;
 	float get_time_scale_value() const;
 	void set_time_scale_inherit(bool p_time_scale_inherit);
 	bool is_time_scale_inheriting() const;
