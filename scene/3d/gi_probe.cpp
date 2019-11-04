@@ -166,13 +166,13 @@ float GIProbeData::get_ao() const {
 	return ao;
 }
 
-void GIProbeData::set_ao_strength(float p_ao_strength) {
-	VS::get_singleton()->gi_probe_set_ao_strength(probe, p_ao_strength);
-	ao_strength = p_ao_strength;
+void GIProbeData::set_ao_size(float p_ao_size) {
+	VS::get_singleton()->gi_probe_set_ao_size(probe, p_ao_size);
+	ao_size = p_ao_size;
 }
 
-float GIProbeData::get_ao_strength() const {
-	return ao_strength;
+float GIProbeData::get_ao_size() const {
+	return ao_size;
 }
 
 void GIProbeData::set_bias(float p_bias) {
@@ -257,8 +257,8 @@ void GIProbeData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ao", "ao"), &GIProbeData::set_ao);
 	ClassDB::bind_method(D_METHOD("get_ao"), &GIProbeData::get_ao);
 
-	ClassDB::bind_method(D_METHOD("set_ao_strength", "strength"), &GIProbeData::set_ao_strength);
-	ClassDB::bind_method(D_METHOD("get_ao_strength"), &GIProbeData::get_ao_strength);
+	ClassDB::bind_method(D_METHOD("set_ao_size", "strength"), &GIProbeData::set_ao_size);
+	ClassDB::bind_method(D_METHOD("get_ao_size"), &GIProbeData::get_ao_size);
 
 	ClassDB::bind_method(D_METHOD("set_interior", "interior"), &GIProbeData::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &GIProbeData::is_interior);
@@ -278,7 +278,7 @@ void GIProbeData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "propagation", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_propagation", "get_propagation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "anisotropy_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_anisotropy_strength", "get_anisotropy_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao", "get_ao");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_strength", "get_ao_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_size", "get_ao_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_two_bounces"), "set_use_two_bounces", "is_using_two_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 }
@@ -286,7 +286,7 @@ void GIProbeData::_bind_methods() {
 GIProbeData::GIProbeData() {
 
 	ao = 0.0;
-	ao_strength = 0.5;
+	ao_size = 0.5;
 	dynamic_range = 4;
 	energy = 1.0;
 	bias = 1.5;
