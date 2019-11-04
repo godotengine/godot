@@ -557,10 +557,31 @@ InputEventMouseButton::InputEventMouseButton() {
 
 ////////////////////////////////////////////
 
+void InputEventMouseMotion::set_tilt(const Vector2 &p_tilt) {
+
+	tilt = p_tilt;
+}
+
+Vector2 InputEventMouseMotion::get_tilt() const {
+
+	return tilt;
+}
+
+void InputEventMouseMotion::set_pressure(float p_pressure) {
+
+	pressure = p_pressure;
+}
+
+float InputEventMouseMotion::get_pressure() const {
+
+	return pressure;
+}
+
 void InputEventMouseMotion::set_relative(const Vector2 &p_relative) {
 
 	relative = p_relative;
 }
+
 Vector2 InputEventMouseMotion::get_relative() const {
 
 	return relative;
@@ -570,6 +591,7 @@ void InputEventMouseMotion::set_speed(const Vector2 &p_speed) {
 
 	speed = p_speed;
 }
+
 Vector2 InputEventMouseMotion::get_speed() const {
 
 	return speed;
@@ -590,6 +612,8 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm->set_modifiers_from_event(this);
 
 	mm->set_position(l);
+	mm->set_pressure(get_pressure());
+	mm->set_tilt(get_tilt());
 	mm->set_global_position(g);
 
 	mm->set_button_mask(get_button_mask());
@@ -665,17 +689,27 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 
 void InputEventMouseMotion::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_tilt", "tilt"), &InputEventMouseMotion::set_tilt);
+	ClassDB::bind_method(D_METHOD("get_tilt"), &InputEventMouseMotion::get_tilt);
+
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMouseMotion::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMouseMotion::get_pressure);
+
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
 	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventMouseMotion::set_speed);
 	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventMouseMotion::get_speed);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }
 
 InputEventMouseMotion::InputEventMouseMotion() {
+
+	pressure = 0;
 }
 
 ////////////////////////////////////////

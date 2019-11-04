@@ -7,6 +7,7 @@
 		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">

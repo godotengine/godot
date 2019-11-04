@@ -645,6 +645,7 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		bool can_discard;
 	};
+	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
 private:
 	struct KeyWord {
@@ -714,7 +715,7 @@ private:
 
 	enum SubClassTag {
 		TAG_GLOBAL,
-		TAG_ARRAY
+		TAG_ARRAY,
 	};
 
 	struct BuiltinFuncDef {
@@ -723,6 +724,7 @@ private:
 		DataType rettype;
 		const DataType args[MAX_ARGS];
 		SubClassTag tag;
+		bool high_end;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -741,6 +743,8 @@ private:
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
+
+	Error _validate_datatype(DataType p_type);
 
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);

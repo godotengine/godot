@@ -1224,10 +1224,17 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Ref<Font> doc_font = p_rt->get_font("doc", "EditorFonts");
 	Ref<Font> doc_bold_font = p_rt->get_font("doc_bold", "EditorFonts");
 	Ref<Font> doc_code_font = p_rt->get_font("doc_source", "EditorFonts");
+
 	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
-	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
+	Color accent_color = p_rt->get_color("accent_color", "Editor");
+	Color link_color = accent_color.linear_interpolate(font_color_hl, 0.8);
+	Color code_color = accent_color.linear_interpolate(font_color_hl, 0.6);
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
+
+	// remove extra new lines around code blocks
+	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
+	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
 
 	List<String> tag_stack;
 	bool code_tag = false;
@@ -1276,9 +1283,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			tag_stack.pop_front();
 			pos = brk_end + 1;
-			code_tag = false;
-			if (tag != "/img")
+			if (tag != "/img") {
 				p_rt->pop();
+				if (code_tag) {
+					p_rt->pop();
+				}
+			}
+			code_tag = false;
+
 		} else if (code_tag) {
 
 			p_rt->add_text("[");
@@ -1323,6 +1335,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			//use monospace font
 			p_rt->push_font(doc_code_font);
+			p_rt->push_color(code_color);
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);

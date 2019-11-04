@@ -21,7 +21,7 @@
 			<argument index="3" name="a8" type="int" default="255">
 			</argument>
 			<description>
-				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
+				Returns a color constructed from integer red, green, blue, and alpha channels. Each channel should have 8 bits of information ranging from 0 to 255.
 				[code]r8[/code] red channel
 				[code]g8[/code] green channel
 				[code]b8[/code] blue channel

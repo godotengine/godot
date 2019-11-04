@@ -584,6 +584,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	empty_message->set_valign(Label::VALIGN_CENTER);
 	empty_message->set_align(Label::ALIGN_CENTER);
 	empty_message->set_autowrap(true);
+	empty_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	empty_message->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vb->add_child(empty_message);
 
@@ -3038,8 +3039,8 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 	}
 
 	if (tools[TOOL_GRID_SNAP]->is_pressed()) {
-		p.x = Math::snap_scalar_seperation(snap_offset.x, snap_step.x, p.x, snap_separation.x);
-		p.y = Math::snap_scalar_seperation(snap_offset.y, snap_step.y, p.y, snap_separation.y);
+		p.x = Math::snap_scalar_separation(snap_offset.x, snap_step.x, p.x, snap_separation.x);
+		p.y = Math::snap_scalar_separation(snap_offset.y, snap_step.y, p.y, snap_separation.y);
 	}
 	if (tools[SHAPE_KEEP_INSIDE_TILE]->is_pressed()) {
 		if (p.x < region.position.x)

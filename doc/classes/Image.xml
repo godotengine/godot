@@ -415,7 +415,7 @@
 			<argument index="1" name="grayscale" type="bool" default="false">
 			</argument>
 			<description>
-				Saves the image as an EXR file to [code]path[/code]. If grayscale is true and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE]  if Godot was compiled without the TinyEXR module.
+				Saves the image as an EXR file to [code]path[/code]. If grayscale is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
@@ -456,6 +456,15 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code] if the image is locked. Note that the [code]dst[/code] values must be integers. Example:
+				[codeblock]
+				var img = Image.new()
+				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
+				img.lock()
+				img.set_pixelv(Vector2(x, y), color) # Works
+				img.unlock()
+				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
+				[/codeblock]
 			</description>
 		</method>
 		<method name="shrink_x2">

@@ -106,10 +106,11 @@ private:
 	TextureRect *preview;
 	VBoxContainer *preview_vb;
 	HSplitContainer *list_hb;
+	HBoxContainer *file_box;
 	LineEdit *file;
+	OptionButton *filter;
 	AcceptDialog *mkdirerr;
 	AcceptDialog *exterr;
-	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;

@@ -108,6 +108,7 @@ private:
 		SNAP_USE_GRID,
 		SNAP_USE_GUIDES,
 		SNAP_USE_ROTATION,
+		SNAP_USE_SCALE,
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
@@ -255,10 +256,12 @@ private:
 
 	Point2 grid_offset;
 	Point2 grid_step;
+	int primary_grid_steps;
 	int grid_step_multiplier;
 
 	float snap_rotation_step;
 	float snap_rotation_offset;
+	float snap_scale_step;
 	bool smart_snap_active;
 	bool grid_snap_active;
 
@@ -269,6 +272,7 @@ private:
 	bool snap_other_nodes;
 	bool snap_guides;
 	bool snap_rotation;
+	bool snap_scale;
 	bool snap_relative;
 	bool snap_pixel;
 	bool skeleton_show_bones;

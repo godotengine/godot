@@ -442,15 +442,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
 
 		last_wait_for_key = p_event;
-		String str = keycode_get_string(k->get_scancode()).capitalize();
-		if (k->get_metakey())
-			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-		if (k->get_shift())
-			str = TTR("Shift+") + str;
-		if (k->get_alt())
-			str = TTR("Alt+") + str;
-		if (k->get_control())
-			str = TTR("Control+") + str;
+		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
 		press_a_key->accept_event();
@@ -740,15 +732,7 @@ void ProjectSettingsEditor::_update_actions() {
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 
-				String str = keycode_get_string(k->get_scancode()).capitalize();
-				if (k->get_metakey())
-					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-				if (k->get_shift())
-					str = TTR("Shift+") + str;
-				if (k->get_alt())
-					str = TTR("Alt+") + str;
-				if (k->get_control())
-					str = TTR("Control+") + str;
+				const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));

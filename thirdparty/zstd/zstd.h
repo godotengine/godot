@@ -71,7 +71,7 @@ extern "C" {
 /*------   Version   ------*/
 #define ZSTD_VERSION_MAJOR    1
 #define ZSTD_VERSION_MINOR    4
-#define ZSTD_VERSION_RELEASE  1
+#define ZSTD_VERSION_RELEASE  3
 
 #define ZSTD_VERSION_NUMBER  (ZSTD_VERSION_MAJOR *100*100 + ZSTD_VERSION_MINOR *100 + ZSTD_VERSION_RELEASE)
 ZSTDLIB_API unsigned ZSTD_versionNumber(void);   /**< to check runtime library version */
@@ -1909,7 +1909,7 @@ ZSTDLIB_API ZSTD_nextInputType_e ZSTD_nextInputType(ZSTD_DCtx* dctx);
 /*!
     Block functions produce and decode raw zstd blocks, without frame metadata.
     Frame metadata cost is typically ~18 bytes, which can be non-negligible for very small blocks (< 100 bytes).
-    User will have to take in charge required information to regenerate data, such as compressed and content sizes.
+    But users will have to take in charge needed metadata to regenerate data, such as compressed and content sizes.
 
     A few rules to respect :
     - Compressing and decompressing require a context structure
@@ -1920,12 +1920,14 @@ ZSTDLIB_API ZSTD_nextInputType_e ZSTD_nextInputType(ZSTD_DCtx* dctx);
       + copyCCtx() and copyDCtx() can be used too
     - Block size is limited, it must be <= ZSTD_getBlockSize() <= ZSTD_BLOCKSIZE_MAX == 128 KB
       + If input is larger than a block size, it's necessary to split input data into multiple blocks
-      + For inputs larger than a single block, really consider using regular ZSTD_compress() instead.
-        Frame metadata is not that costly, and quickly becomes negligible as source size grows larger.
-    - When a block is considered not compressible enough, ZSTD_compressBlock() result will be zero.
-      In which case, nothing is produced into `dst` !
-      + User must test for such outcome and deal directly with uncompressed data
-      + ZSTD_decompressBlock() doesn't accept uncompressed data as input !!!
+      + For inputs larger than a single block, consider using regular ZSTD_compress() instead.
+        Frame metadata is not that costly, and quickly becomes negligible as source size grows larger than a block.
+    - When a block is considered not compressible enough, ZSTD_compressBlock() result will be 0 (zero) !
+      ===> In which case, nothing is produced into `dst` !
+      + User __must__ test for such outcome and deal directly with uncompressed data
+      + A block cannot be declared incompressible if ZSTD_compressBlock() return value was != 0.
+        Doing so would mess up with statistics history, leading to potential data corruption.
+      + ZSTD_decompressBlock() _doesn't accept uncompressed data as input_ !!
       + In case of multiple successive blocks, should some of them be uncompressed,
         decoder must be informed of their existence in order to follow proper history.
         Use ZSTD_insertBlock() for such a case.

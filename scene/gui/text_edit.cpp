@@ -3928,7 +3928,9 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	if (shift_first_line) {
 		text.set_breakpoint(p_line + 1, text.is_breakpoint(p_line));
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
-		text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		if (text.has_info_icon(p_line)) {
+			text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		}
 
 		text.set_breakpoint(p_line, false);
 		text.set_hidden(p_line, false);
@@ -5443,11 +5445,11 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 PoolVector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
 
 	int col, line;
-	if (search(p_key, p_search_flags, p_from_line, p_from_column, col, line)) {
+	if (search(p_key, p_search_flags, p_from_line, p_from_column, line, col)) {
 		PoolVector<int> result;
 		result.resize(2);
-		result.set(0, line);
-		result.set(1, col);
+		result.set(SEARCH_RESULT_COLUMN, col);
+		result.set(SEARCH_RESULT_LINE, line);
 		return result;
 
 	} else {
@@ -6535,6 +6537,7 @@ void TextEdit::_update_completion_candidates() {
 		if (inquote && restore_quotes == 1 && !option.display.is_quoted()) {
 			String quote = single_quote ? "'" : "\"";
 			option.display = option.display.quote(quote);
+			option.insert_text = option.insert_text.quote(quote);
 		}
 
 		if (option.display.begins_with(s)) {
@@ -6959,6 +6962,9 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
+
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_COLUMN);
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_LINE);
 
 	/*
 	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
