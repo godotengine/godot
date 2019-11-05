@@ -41,6 +41,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 /** @file  MathFunctions.h
 *  @brief Implementation of math utility functions.
  *

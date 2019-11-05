@@ -102,6 +102,8 @@ void ExportSceneX3D(const char*, IOSystem*, const aiScene*, const ExportProperti
 void ExportSceneFBX(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneFBXA(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportScene3MF( const char*, IOSystem*, const aiScene*, const ExportProperties* );
+void ExportSceneM3D(const char*, IOSystem*, const aiScene*, const ExportProperties*);
+void ExportSceneA3D(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportAssimp2Json(const char* , IOSystem*, const aiScene* , const Assimp::ExportProperties*);
 
 // ------------------------------------------------------------------------------------------------
@@ -177,6 +179,11 @@ Exporter::ExportFormatEntry gExporters[] =
 #ifndef ASSIMP_BUILD_NO_FBX_EXPORTER
     Exporter::ExportFormatEntry( "fbx", "Autodesk FBX (binary)", "fbx", &ExportSceneFBX, 0 ),
     Exporter::ExportFormatEntry( "fbxa", "Autodesk FBX (ascii)", "fbx", &ExportSceneFBXA, 0 ),
+#endif
+
+#ifndef ASSIMP_BUILD_NO_M3D_EXPORTER
+    Exporter::ExportFormatEntry( "m3d", "Model 3D (binary)", "m3d", &ExportSceneM3D, 0 ),
+    Exporter::ExportFormatEntry( "a3d", "Model 3D (ascii)",  "m3d", &ExportSceneA3D, 0 ),
 #endif
 
 #ifndef ASSIMP_BUILD_NO_3MF_EXPORTER

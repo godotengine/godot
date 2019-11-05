@@ -427,6 +427,10 @@ private:
     // copy generated meshes, animations, lights, cameras and textures to the output scene
     void TransferDataToScene();
 
+    // ------------------------------------------------------------------------------------------------
+    // FBX file could have embedded textures not connected to anything
+    void ConvertOrphantEmbeddedTextures();
+
 private:
     // 0: not assigned yet, others: index is value - 1
     unsigned int defaultMaterialIndex;
@@ -438,21 +442,21 @@ private:
     std::vector<aiCamera*> cameras;
     std::vector<aiTexture*> textures;
 
-    using MaterialMap = std::map<const Material*, unsigned int>;
+    using MaterialMap = std::fbx_unordered_map<const Material*, unsigned int>;
     MaterialMap materials_converted;
 
-    using VideoMap = std::map<const Video*, unsigned int>;
+    using VideoMap = std::fbx_unordered_map<const Video, unsigned int>;
     VideoMap textures_converted;
 
-    using MeshMap = std::map<const Geometry*, std::vector<unsigned int> >;
+    using MeshMap = std::fbx_unordered_map<const Geometry*, std::vector<unsigned int> >;
     MeshMap meshes_converted;
 
     // fixed node name -> which trafo chain components have animations?
-    using NodeAnimBitMap = std::map<std::string, unsigned int> ;
+    using NodeAnimBitMap = std::fbx_unordered_map<std::string, unsigned int> ;
     NodeAnimBitMap node_anim_chain_bits;
 
     // number of nodes with the same name
-    using NodeNameCache = std::unordered_map<std::string, unsigned int>;
+    using NodeNameCache = std::fbx_unordered_map<std::string, unsigned int>;
     NodeNameCache mNodeNames;
 
     // Deformer name is not the same as a bone name - it does contain the bone name though :)

@@ -45,7 +45,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_SUBDISIVION_H_INC
 #define AI_SUBDISIVION_H_INC
 
-#include <cstddef>
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/types.h>
 
 struct aiMesh;

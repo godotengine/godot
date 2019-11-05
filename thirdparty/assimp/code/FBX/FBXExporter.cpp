@@ -1289,7 +1289,7 @@ void FBXExporter::WriteObjects ()
 
         for(unsigned int lr = 1; lr < m->GetNumUVChannels(); ++ lr)
         {
-            FBX::Node layerExtra("Layer", int32_t(1));
+            FBX::Node layerExtra("Layer", int32_t(lr));
             layerExtra.AddChild("Version", int32_t(100));
             FBX::Node leExtra("LayerElement");
             leExtra.AddChild("Type", "LayerElementUV");

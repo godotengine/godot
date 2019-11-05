@@ -76,12 +76,6 @@ void EditorSceneImporterAssimp::get_extensions(List<String> *r_extensions) const
 		ImportFormat import = { exts, true };
 		import_format.insert("fbx", import);
 	}
-	{
-		Vector<String> exts;
-		exts.push_back("pmx");
-		ImportFormat import = { exts, true };
-		import_format.insert("mmd", import);
-	}
 	for (Map<String, ImportFormat>::Element *E = import_format.front(); E; E = E->next()) {
 		_register_project_setting_import(E->key(), import_setting_string, E->get().extensions, r_extensions,
 				E->get().is_default);
@@ -145,8 +139,9 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 aiProcess_TransformUVCoords |
 								 aiProcess_FindInstances |
 								 //aiProcess_FixInfacingNormals |
-								 aiProcess_ValidateDataStructure |
+								 //aiProcess_ValidateDataStructure |
 								 aiProcess_OptimizeMeshes |
+								 aiProcess_PopulateArmatureData |
 								 //aiProcess_OptimizeGraph |
 								 //aiProcess_Debone |
 								 // aiProcess_EmbedTextures |

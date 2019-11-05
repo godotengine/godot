@@ -78,7 +78,7 @@ namespace Assimp {
 
 #define MAGIC_NODE_TAG "_$AssimpFbx$"
 
-#define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000L
+#define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
         FBXConverter::FBXConverter(aiScene* out, const Document& doc, bool removeEmptyBones )
         : defaultMaterialIndex()
@@ -97,6 +97,14 @@ namespace Assimp {
             // populate the node_anim_chain_bits map, which is needed
             // to determine which nodes need to be generated.
             ConvertAnimations();
+            // Embedded textures in FBX could be connected to nothing but to itself,
+            // for instance Texture -> Video connection only but not to the main graph,
+            // The idea here is to traverse all objects to find these Textures and convert them,
+            // so later during material conversion it will find converted texture in the textures_converted array.
+            if (doc.Settings().readTextures)
+            {
+                ConvertOrphantEmbeddedTextures();
+            }
             ConvertRootNode();
 
             if (doc.Settings().readAllMaterials) {
@@ -121,46 +129,6 @@ namespace Assimp {
             ConvertGlobalSettings();
             TransferDataToScene();
 
-            // Now convert all bone positions to the correct mOffsetMatrix
-            std::vector<aiBone*> bones;
-            std::vector<aiNode*> nodes;
-            std::map<aiBone*, aiNode*> bone_stack;
-            BuildBoneList(out->mRootNode, out->mRootNode, out, bones);
-            BuildNodeList(out->mRootNode, nodes );
-
-
-            BuildBoneStack(out->mRootNode, out->mRootNode, out, bones, bone_stack, nodes);
-
-            std::cout << "Bone stack size: " << bone_stack.size() << std::endl;
-
-            for( std::pair<aiBone*, aiNode*> kvp : bone_stack )
-            {
-                aiBone *bone = kvp.first;
-                aiNode *bone_node = kvp.second;
-                std::cout << "active node lookup: " << bone->mName.C_Str() << std::endl;
-                // lcl transform grab - done in generate_nodes :)
-
-                //bone->mOffsetMatrix = bone_node->mTransformation;
-                aiNode * armature = GetArmatureRoot(bone_node, bones);
-
-                ai_assert(armature);
-
-                // set up bone armature id
-                bone->mArmature = armature;
-
-                // set this bone node to be referenced properly
-                ai_assert(bone_node);
-                bone->mNode = bone_node;
-
-                // apply full hierarchy to transform for basic offset
-                while( bone_node->mParent )
-                {
-                    bone->mRestMatrix = bone_node->mTransformation * bone->mRestMatrix;
-                    bone_node = bone_node->mParent;
-                }
-            }
-
-
             // if we didn't read any meshes set the AI_SCENE_FLAGS_INCOMPLETE
             // to make sure the scene passes assimp's validation. FBX files
             // need not contain geometry (i.e. camera animations, raw armatures).
@@ -177,167 +145,6 @@ namespace Assimp {
             std::for_each(lights.begin(), lights.end(), Util::delete_fun<aiLight>());
             std::for_each(cameras.begin(), cameras.end(), Util::delete_fun<aiCamera>());
             std::for_each(textures.begin(), textures.end(), Util::delete_fun<aiTexture>());
-        }
-
-        /* Returns the armature root node */
-        /* This is required to be detected for a bone initially, it will recurse up until it cannot find another
-         * bone and return the node
-         * No known failure points. (yet)
-         */
-        aiNode * FBXConverter::GetArmatureRoot(aiNode *bone_node, std::vector<aiBone*> &bone_list)
-        {
-            while(bone_node)
-            {
-                if(!IsBoneNode(bone_node->mName, bone_list))
-                {
-                    std::cout << "Found valid armature: " << bone_node->mName.C_Str() << std::endl;
-                    return bone_node;
-                }
-
-                bone_node = bone_node->mParent;
-            }
-
-            std::cout << "can't find armature! node: " << bone_node << std::endl;
-
-            return NULL;
-        }
-
-        /* Simple IsBoneNode check if this could be a bone */
-        bool FBXConverter::IsBoneNode(const aiString &bone_name, std::vector<aiBone*>& bones )
-        {
-            for( aiBone *bone : bones)
-            {
-                if(bone->mName == bone_name)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
-        /* Pop this node by name from the stack if found */
-        /* Used in multiple armature situations with duplicate node / bone names */
-        /* Known flaw: cannot have nodes with bone names, will be fixed in later release */
-        /* (serious to be fixed) Known flaw: nodes which have more than one bone could be prematurely dropped from stack */
-        aiNode* FBXConverter::GetNodeFromStack(const aiString &node_name, std::vector<aiNode*> &nodes)
-        {
-            std::vector<aiNode*>::iterator iter;
-            aiNode *found = NULL;
-            for( iter = nodes.begin(); iter < nodes.end(); ++iter )
-            {
-                aiNode *element = *iter;
-                ai_assert(element);
-                // node valid and node name matches
-                if(element->mName == node_name)
-                {
-                    found = element;
-                    break;
-                }
-            }
-
-            if(found != NULL) {
-                // now pop the element from the node list
-                nodes.erase(iter);
-
-                return found;
-            }
-            return NULL;
-        }
-
-        /* Prepare flat node list which can be used for non recursive lookups later */
-        void FBXConverter::BuildNodeList(aiNode *current_node, std::vector<aiNode *> &nodes)
-        {
-            assert(current_node);
-
-            for( unsigned int nodeId = 0; nodeId < current_node->mNumChildren; ++nodeId)
-            {
-                aiNode *child = current_node->mChildren[nodeId];
-                assert(child);
-
-                nodes.push_back(child);
-
-                BuildNodeList(child, nodes);
-            }
-        }
-
-        /* Reprocess all nodes to calculate bone transforms properly based on the REAL mOffsetMatrix not the local. */
-        /* Before this would use mesh transforms which is wrong for bone transforms */
-        /* Before this would work for simple character skeletons but not complex meshes with multiple origins */
-        /* Source: sketch fab log cutter fbx */
-        void FBXConverter::BuildBoneList(aiNode *current_node, const aiNode * root_node, const aiScene *scene, std::vector<aiBone*> &bones )
-        {
-            assert(scene);
-            for( unsigned int nodeId = 0; nodeId < current_node->mNumChildren; ++nodeId)
-            {
-                aiNode *child = current_node->mChildren[nodeId];
-                assert(child);
-
-                // check for bones
-                for( unsigned int meshId = 0; meshId < child->mNumMeshes; ++meshId)
-                {
-                    assert(child->mMeshes);
-                    unsigned int mesh_index = child->mMeshes[meshId];
-                    aiMesh *mesh = scene->mMeshes[ mesh_index ];
-                    assert(mesh);
-
-                    for( unsigned int boneId = 0; boneId < mesh->mNumBones; ++boneId)
-                    {
-                        aiBone *bone = mesh->mBones[boneId];
-                        ai_assert(bone);
-
-                        // duplicate meshes exist with the same bones sometimes :)
-                        // so this must be detected
-                        if( std::find(bones.begin(), bones.end(), bone) == bones.end() )
-                        {
-                            // add the element once
-                            bones.push_back(bone);
-                        }
-                    }
-
-                    // find mesh and get bones
-                    // then do recursive lookup for bones in root node hierarchy
-                }
-
-                BuildBoneList(child, root_node, scene, bones);
-            }
-        }
-
-        /* A bone stack allows us to have multiple armatures, with the same bone names
-         * A bone stack allows us also to retrieve bones true transform even with duplicate names :)
-         */
-        void FBXConverter::BuildBoneStack(aiNode *current_node, const aiNode *root_node, const aiScene *scene,
-                                          const std::vector<aiBone *> &bones,
-                                          std::map<aiBone *, aiNode *> &bone_stack,
-                                          std::vector<aiNode*> &node_stack )
-        {
-            ai_assert(scene);
-            ai_assert(root_node);
-            ai_assert(!node_stack.empty());
-
-            for( aiBone * bone : bones)
-            {
-                ai_assert(bone);
-                aiNode* node = GetNodeFromStack(bone->mName, node_stack);
-                if(node == NULL)
-                {
-                    node_stack.clear();
-                    BuildNodeList(out->mRootNode, node_stack );
-                    std::cout << "Resetting bone stack: null element " << bone->mName.C_Str() << std::endl;
-
-                    node = GetNodeFromStack(bone->mName, node_stack);
-
-                    if(!node) {
-                        std::cout << "serious import issue armature failed to be detected?" << std::endl;
-                        continue;
-                    }
-                }
-
-                std::cout << "Successfully added bone to stack and have valid armature: " << bone->mName.C_Str() << std::endl;
-
-                bone_stack.insert(std::pair<aiBone*, aiNode*>(bone, node));
-            }
         }
 
         void FBXConverter::ConvertRootNode() {
@@ -514,6 +321,12 @@ namespace Assimp {
 
                     std::swap_ranges(nodes.begin(), nodes.end(), parent->mChildren);
                 }
+                else
+                {
+                    parent->mNumChildren = 0;
+                    parent->mChildren = nullptr;
+                }
+                
             }
             catch (std::exception&) {
                 Util::delete_fun<aiNode> deleter;
@@ -1329,7 +1142,7 @@ namespace Assimp {
                         binormals = &tempBinormals;
                     }
                     else {
-                        binormals = NULL;
+                        binormals = nullptr;
                     }
                 }
 
@@ -1379,7 +1192,7 @@ namespace Assimp {
                 ConvertMaterialForMesh(out_mesh, model, mesh, mindices[0]);
             }
 
-            if (doc.Settings().readWeights && mesh.DeformerSkin() != NULL) {
+            if (doc.Settings().readWeights && mesh.DeformerSkin() != nullptr) {
                 ConvertWeights(out_mesh, model, mesh, absolute_transform, parent, root_node, NO_MATERIAL_SEPARATION,
                                nullptr);
             }
@@ -1459,7 +1272,7 @@ namespace Assimp {
             const std::vector<aiVector3D>& vertices = mesh.GetVertices();
             const std::vector<unsigned int>& faces = mesh.GetFaceIndexCounts();
 
-            const bool process_weights = doc.Settings().readWeights && mesh.DeformerSkin() != NULL;
+            const bool process_weights = doc.Settings().readWeights && mesh.DeformerSkin() != nullptr;
 
             unsigned int count_faces = 0;
             unsigned int count_vertices = 0;
@@ -1519,7 +1332,7 @@ namespace Assimp {
                         binormals = &tempBinormals;
                     }
                     else {
-                        binormals = NULL;
+                        binormals = nullptr;
                     }
                 }
 
@@ -1708,9 +1521,9 @@ namespace Assimp {
 
                         unsigned int count = 0;
                         const unsigned int* const out_idx = geo.ToOutputVertexIndex(index, count);
-                        // ToOutputVertexIndex only returns NULL if index is out of bounds
+                        // ToOutputVertexIndex only returns nullptr if index is out of bounds
                         // which should never happen
-                        ai_assert(out_idx != NULL);
+                        ai_assert(out_idx != nullptr);
 
                         index_out_indices.push_back(no_index_sentinel);
                         count_out_indices.push_back(0);
@@ -1777,11 +1590,11 @@ namespace Assimp {
                                           std::vector<size_t> &out_indices, std::vector<size_t> &index_out_indices,
                                           std::vector<size_t> &count_out_indices, const aiMatrix4x4 &absolute_transform,
                                           aiNode *parent, aiNode *root_node) {
-            assert(cl); // make sure cluster valid
+            ai_assert(cl); // make sure cluster valid
             std::string deformer_name = cl->TargetNode()->Name();
             aiString bone_name = aiString(FixNodeName(deformer_name));
 
-            aiBone *bone = NULL;
+            aiBone *bone = nullptr;
 
             if (bone_map.count(deformer_name)) {
                 std::cout << "retrieved bone from lookup " << bone_name.C_Str() << ". Deformer: " << deformer_name
@@ -1969,7 +1782,7 @@ namespace Assimp {
                 bool textureReady = false; //tells if our texture is ready (if it was loaded or if it was found)
                 unsigned int index;
 
-                VideoMap::const_iterator it = textures_converted.find(media);
+                VideoMap::const_iterator it = textures_converted.find(*media);
                 if (it != textures_converted.end()) {
                     index = (*it).second;
                     textureReady = true;
@@ -1977,7 +1790,7 @@ namespace Assimp {
                 else {
                     if (media->ContentLength() > 0) {
                         index = ConvertVideo(*media);
-                        textures_converted[media] = index;
+                        textures_converted[*media] = index;
                         textureReady = true;
                     }
                 }
@@ -2501,13 +2314,13 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             if (media != nullptr && media->ContentLength() > 0) {
                 unsigned int index;
 
-                VideoMap::const_iterator it = textures_converted.find(media);
+                VideoMap::const_iterator it = textures_converted.find(*media);
                 if (it != textures_converted.end()) {
                     index = (*it).second;
                 }
                 else {
                     index = ConvertVideo(*media);
-                    textures_converted[media] = index;
+                    textures_converted[*media] = index;
                 }
 
                 // setup texture reference string (copied from ColladaLoader::FindFilenameForEffectTexture)
@@ -2935,7 +2748,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
         // sanity check whether the input is ok
         static void validateAnimCurveNodes(const std::vector<const AnimationCurveNode*>& curves,
             bool strictMode) {
-            const Object* target(NULL);
+            const Object* target(nullptr);
             for (const AnimationCurveNode* node : curves) {
                 if (!target) {
                     target = node->Target();
@@ -2966,7 +2779,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
 #ifdef ASSIMP_BUILD_DEBUG
             validateAnimCurveNodes(curves, doc.Settings().strictMode);
 #endif
-            const AnimationCurveNode* curve_node = NULL;
+            const AnimationCurveNode* curve_node = nullptr;
             for (const AnimationCurveNode* node : curves) {
                 ai_assert(node);
 
@@ -3814,7 +3627,7 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
             ai_assert(!out->mMeshes);
             ai_assert(!out->mNumMeshes);
 
-            // note: the trailing () ensures initialization with NULL - not
+            // note: the trailing () ensures initialization with nullptr - not
             // many C++ users seem to know this, so pointing it out to avoid
             // confusion why this code works.
 
@@ -3858,6 +3671,47 @@ void FBXConverter::SetShadingPropertiesRaw(aiMaterial* out_mat, const PropertyTa
                 out->mNumTextures = static_cast<unsigned int>(textures.size());
 
                 std::swap_ranges(textures.begin(), textures.end(), out->mTextures);
+            }
+        }
+
+        void FBXConverter::ConvertOrphantEmbeddedTextures()
+        {
+            // in C++14 it could be:
+            // for (auto&& [id, object] : objects)
+            for (auto&& id_and_object : doc.Objects())
+            {
+                auto&& id = std::get<0>(id_and_object);
+                auto&& object = std::get<1>(id_and_object);
+                // If an object doesn't have parent
+                if (doc.ConnectionsBySource().count(id) == 0)
+                {
+                    const Texture* realTexture = nullptr;
+                    try
+                    {
+                        const auto& element = object->GetElement();
+                        const Token& key = element.KeyToken();
+                        const char* obtype = key.begin();
+                        const size_t length = static_cast<size_t>(key.end() - key.begin());
+                        if (strncmp(obtype, "Texture", length) == 0)
+                        {
+                            const Texture* texture = static_cast<const Texture*>(object->Get());
+                            if (texture->Media() && texture->Media()->ContentLength() > 0)
+                            {
+                                realTexture = texture;
+                            }
+                        }
+                    }
+                    catch (...)
+                    {
+                        // do nothing
+                    }
+                    if (realTexture)
+                    {
+                        const Video* media = realTexture->Media();
+                        unsigned int index = ConvertVideo(*media);
+                        textures_converted[*media] = index;
+                    }
+                }
             }
         }
 
