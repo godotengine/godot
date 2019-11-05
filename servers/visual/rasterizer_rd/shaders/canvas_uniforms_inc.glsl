@@ -1,10 +1,7 @@
-
-
-
 #define M_PI 3.14159265359
 
 #define FLAGS_INSTANCING_STRIDE_MASK 0xF
-#define FLAGS_INSTANCING_ENABLED (1<<4)
+#define FLAGS_INSTANCING_ENABLED (1 << 4)
 #define FLAGS_INSTANCING_HAS_COLORS (1 << 5)
 #define FLAGS_INSTANCING_COLOR_8BIT (1 << 6)
 #define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 7)
@@ -53,7 +50,6 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 #endif
 	vec2 color_texture_pixel_size;
 	uint lights[4];
-
 } draw_data;
 
 // The values passed per draw primitives are cached within it
@@ -67,7 +63,6 @@ layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
 
 /* SET1: Is reserved for the material */
 
-
 #ifdef USE_MATERIAL_SAMPLERS
 
 layout(set = 1, binding = 0) uniform sampler material_samplers[12];
@@ -75,7 +70,6 @@ layout(set = 1, binding = 0) uniform sampler material_samplers[12];
 #endif
 
 /* SET2: Canvas Item State (including lighting) */
-
 
 layout(set = 2, binding = 0, std140) uniform CanvasData {
 	mat4 canvas_transform;
@@ -95,21 +89,19 @@ layout(set = 2, binding = 2, std140) uniform SkeletonData {
 	mat4 skeleton_transform_inverse;
 } skeleton_data;
 
-
 #ifdef USE_LIGHTING
 
-#define LIGHT_FLAGS_BLEND_MASK (3<<16)
-#define LIGHT_FLAGS_BLEND_MODE_ADD (0<<16)
-#define LIGHT_FLAGS_BLEND_MODE_SUB (1<<16)
-#define LIGHT_FLAGS_BLEND_MODE_MIX (2<<16)
-#define LIGHT_FLAGS_BLEND_MODE_MASK (3<<16)
-#define LIGHT_FLAGS_HAS_SHADOW (1<<20)
+#define LIGHT_FLAGS_BLEND_MASK (3 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_ADD (0 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_SUB (1 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_MIX (2 << 16)
+#define LIGHT_FLAGS_BLEND_MODE_MASK (3 << 16)
+#define LIGHT_FLAGS_HAS_SHADOW (1 << 20)
 #define LIGHT_FLAGS_FILTER_SHIFT 22
-#define LIGHT_FLAGS_FILTER_MASK (3<<22)
-#define LIGHT_FLAGS_SHADOW_NEAREST (0<<22)
-#define LIGHT_FLAGS_SHADOW_PCF5 (1<<22)
-#define LIGHT_FLAGS_SHADOW_PCF13 (2<<22)
-
+#define LIGHT_FLAGS_FILTER_MASK (3 << 22)
+#define LIGHT_FLAGS_SHADOW_NEAREST (0 << 22)
+#define LIGHT_FLAGS_SHADOW_PCF5 (1 << 22)
+#define LIGHT_FLAGS_SHADOW_PCF13 (2 << 22)
 
 struct Light {
 	mat2x4 matrix; //light to texture coordinate matrix (transposed)

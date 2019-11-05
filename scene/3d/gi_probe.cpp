@@ -419,7 +419,6 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 	int longest_axis = bounds.get_longest_axis_index();
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
 
-
 	for (int i = 0; i < 3; i++) {
 
 		if (i == longest_axis)
@@ -435,7 +434,7 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 		}
 	}
 
-	return Vector3i(axis_cell_size[0],axis_cell_size[1],axis_cell_size[2]);
+	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 

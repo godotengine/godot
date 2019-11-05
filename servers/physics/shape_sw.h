@@ -48,7 +48,7 @@ SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_creat
 
 class ShapeSW;
 
-class ShapeOwnerSW  {
+class ShapeOwnerSW {
 public:
 	virtual void _shape_changed() = 0;
 	virtual void remove_shape(ShapeSW *p_shape) = 0;
@@ -56,7 +56,7 @@ public:
 	virtual ~ShapeOwnerSW() {}
 };
 
-class ShapeSW  {
+class ShapeSW {
 
 	RID self;
 	AABB aabb;

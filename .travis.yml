@@ -4,7 +4,6 @@ language: cpp
 dist: xenial
 
 stages:
-  - check
   - build
 
 env:
@@ -21,7 +20,7 @@ cache:
 matrix:
   include:
     - name: Static checks (clang-format)
-      stage: check
+      stage: build
       env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc

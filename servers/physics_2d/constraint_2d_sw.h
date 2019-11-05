@@ -33,7 +33,7 @@
 
 #include "body_2d_sw.h"
 
-class Constraint2DSW  {
+class Constraint2DSW {
 
 	Body2DSW **_body_ptr;
 	int _body_count;
