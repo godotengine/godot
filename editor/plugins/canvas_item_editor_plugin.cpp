@@ -1315,6 +1315,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 			// Start dragging if we still have nodes
 			if (drag_selection.size() > 0) {
+				_save_canvas_item_state(drag_selection);
 				drag_from = transform.affine_inverse().xform((b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position());
 				Vector2 new_pos;
 				if (drag_selection.size() == 1) {
@@ -1328,7 +1329,6 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 				}
 
 				drag_type = DRAG_PIVOT;
-				_save_canvas_item_state(drag_selection);
 			}
 			return true;
 		}
