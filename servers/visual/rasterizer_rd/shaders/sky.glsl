@@ -1,14 +1,12 @@
 /* clang-format off */
 [vertex]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
-layout(location =0) out vec2 uv_interp;
+layout(location = 0) out vec2 uv_interp;
+/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
@@ -17,33 +15,28 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float alpha;
 	float depth;
 	float pad;
-
 } params;
 
 void main() {
 
-	vec2 base_arr[4] = vec2[](vec2(-1.0,-1.0),vec2(-1.0,1.0),vec2(1.0,1.0),vec2(1.0,-1.0));
+	vec2 base_arr[4] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(1.0, -1.0));
 	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp,params.depth,1.0);
-
+	gl_Position = vec4(uv_interp, params.depth, 1.0);
 }
 
 /* clang-format off */
 [fragment]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
 #define M_PI 3.14159265359
 
-layout(location =0) in vec2 uv_interp;
+layout(location = 0) in vec2 uv_interp;
+/* clang-format on */
 
-layout( set=0, binding=0 ) uniform sampler2D source_panorama;
-
+layout(set = 0, binding = 0) uniform sampler2D source_panorama;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
@@ -52,9 +45,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float alpha;
 	float depth;
 	float pad;
-
 } params;
-
 
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
@@ -70,9 +61,7 @@ vec4 texturePanorama(sampler2D pano, vec3 normal) {
 	return texture(pano, st);
 }
 
-
 layout(location = 0) out vec4 frag_color;
-
 
 void main() {
 
@@ -85,5 +74,4 @@ void main() {
 
 	frag_color.rgb = texturePanorama(source_panorama, normalize(cube_normal.xyz)).rgb;
 	frag_color.a = params.alpha;
-
 }

@@ -1,4 +1,3 @@
-
 #define M_PI 3.14159265359
 #define ROUGHNESS_MAX_LOD 5
 
@@ -7,10 +6,7 @@ layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint pad[3]; //16 bits minimum size
 } draw_call;
 
-
-
 /* Set 0 Scene data that never changes, ever */
-
 
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
@@ -29,7 +25,7 @@ layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
-layout(set=0,binding=3,std140) uniform SceneData {
+layout(set = 0, binding = 3, std140) uniform SceneData {
 
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
@@ -43,7 +39,6 @@ layout(set=0,binding=3,std140) uniform SceneData {
 	//used for shadow mapping only
 	float z_offset;
 	float z_slope_scale;
-
 
 	float time;
 	float reflection_multiplier; // one normally, zero when rendering reflections
@@ -74,13 +69,11 @@ layout(set=0,binding=3,std140) uniform SceneData {
 
 	float ambient_energy;
 	float bg_energy;
-
 #endif
 
 #if 0
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
-
 
 	float z_far;
 
@@ -108,16 +101,15 @@ layout(set=0,binding=3,std140) uniform SceneData {
 #define INSTANCE_FLAGS_FORWARD_SPOT_LIGHT_SHIFT 6
 #define INSTANCE_FLAGS_FORWARD_DECAL_SHIFT 9
 
-#define INSTANCE_FLAGS_MULTIMESH  (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D  (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR  (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA  (1 << 15)
+#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
+#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
 
 #define INSTANCE_FLAGS_SKELETON (1 << 19)
-
 
 struct InstanceData {
 	mat4 transform;
@@ -133,13 +125,11 @@ struct InstanceData {
 	uint decal_indices[4];
 };
 
-
-layout(set=0,binding=4,std430)  buffer Instances {
-    InstanceData data[];
+layout(set = 0, binding = 4, std430) buffer Instances {
+	InstanceData data[];
 } instances;
 
 struct LightData { //this structure needs to be 128 bits
-
 	vec3 position;
 	float inv_radius;
 	vec3 direction;
@@ -152,7 +142,7 @@ struct LightData { //this structure needs to be 128 bits
 	mat4 shadow_matrix;
 };
 
-layout(set=0,binding=5,std140) uniform Lights {
+layout(set = 0, binding = 5, std140) uniform Lights {
 	LightData data[MAX_LIGHT_DATA_STRUCTS];
 } lights;
 
@@ -168,12 +158,11 @@ struct ReflectionData {
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
 };
 
-layout(set=0,binding=6,std140) uniform ReflectionProbeData {
+layout(set = 0, binding = 6, std140) uniform ReflectionProbeData {
 	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
 } reflections;
 
 struct DirectionalLightData {
-
 	vec3 direction;
 	float energy;
 	vec3 color;
@@ -189,10 +178,9 @@ struct DirectionalLightData {
 	mat4 shadow_matrix2;
 	mat4 shadow_matrix3;
 	mat4 shadow_matrix4;
-
 };
 
-layout(set=0,binding=7,std140) uniform DirectionalLights {
+layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 } directional_lights;
 
@@ -212,20 +200,18 @@ struct GIProbeData {
 	uint pad2;
 };
 
-layout(set=0,binding=8,std140) uniform GIProbes {
+layout(set = 0, binding = 8, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 } gi_probes;
 
-layout(set=0,binding=9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
-
+layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
 
 /* Set 1, Scene data that changes per render pass */
 
-
-layout(set=1,binding=0) uniform texture2D depth_buffer;
-layout(set=1,binding=1) uniform texture2D color_buffer;
-layout(set=1,binding=2) uniform texture2D normal_buffer;
-layout(set=1,binding=3) uniform texture2D roughness_limit;
+layout(set = 1, binding = 0) uniform texture2D depth_buffer;
+layout(set = 1, binding = 1) uniform texture2D color_buffer;
+layout(set = 1, binding = 2) uniform texture2D normal_buffer;
+layout(set = 1, binding = 3) uniform texture2D roughness_limit;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
@@ -237,20 +223,16 @@ layout(set = 1, binding = 4) uniform textureCube radiance_cubemap;
 
 #endif
 
+layout(set = 1, binding = 5) uniform textureCubeArray reflection_atlas;
 
-layout(set=1,binding=5) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 6) uniform texture2D shadow_atlas;
 
-layout(set=1,binding=6) uniform texture2D shadow_atlas;
-
-layout(set=1,binding=7) uniform texture2D directional_shadow_atlas;
-
+layout(set = 1, binding = 7) uniform texture2D directional_shadow_atlas;
 
 /* Set 2 Skeleton & Instancing (Multimesh) */
 
-layout(set=2,binding=0,std430) buffer Transforms {
-    vec4 data[];
+layout(set = 2, binding = 0, std430) buffer Transforms {
+	vec4 data[];
 } transforms;
 
 /* Set 3 User Material */
-
-
