@@ -35,11 +35,11 @@ void GIProbeEditorPlugin::_bake() {
 	if (gi_probe) {
 		if (gi_probe->get_probe_data().is_null()) {
 			String path = get_tree()->get_edited_scene_root()->get_filename();
-			if (path==String()) {
-				path="res://"+gi_probe->get_name()+"_data.res";
+			if (path == String()) {
+				path = "res://" + gi_probe->get_name() + "_data.res";
 			} else {
 				String ext = path.get_extension();
-				path = path.get_basename()+"."+gi_probe->get_name()+"_data.res";
+				path = path.get_basename() + "." + gi_probe->get_name() + "_data.res";
 			}
 			probe_file->set_current_path(path);
 			probe_file->popup_centered_ratio();
@@ -65,7 +65,7 @@ bool GIProbeEditorPlugin::handles(Object *p_object) const {
 
 void GIProbeEditorPlugin::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_PROCESS) {
+	if (p_what == NOTIFICATION_PROCESS) {
 		if (!gi_probe) {
 			return;
 		}
@@ -73,14 +73,14 @@ void GIProbeEditorPlugin::_notification(int p_what) {
 		String text;
 
 		Vector3i size = gi_probe->get_estimated_cell_size();
-		text = itos(size.x)+", "+itos(size.y)+", "+itos(size.z);
+		text = itos(size.x) + ", " + itos(size.y) + ", " + itos(size.z);
 		int data_size = 4;
 		if (GLOBAL_GET("rendering/quality/gi_probes/anisotropic")) {
-			data_size+=4;
+			data_size += 4;
 		}
-		text += " - VRAM Size: " + String::num(size.x*size.y*size.z*data_size/(1024.0*1024.0),2)+" Mb.";
+		text += " - VRAM Size: " + String::num(size.x * size.y * size.z * data_size / (1024.0 * 1024.0), 2) + " Mb.";
 
-		if (bake_info->get_text()==text) {
+		if (bake_info->get_text() == text) {
 			return;
 		}
 
@@ -123,12 +123,12 @@ void GIProbeEditorPlugin::bake_func_end() {
 	tmp_progress = NULL;
 }
 
-void GIProbeEditorPlugin::_giprobe_save_path_and_bake(const String& p_path) {
+void GIProbeEditorPlugin::_giprobe_save_path_and_bake(const String &p_path) {
 	probe_file->hide();
 	if (gi_probe) {
 		gi_probe->bake();
-		ERR_FAIL_COND( gi_probe->get_probe_data().is_null() );
-		ResourceSaver::save(p_path,gi_probe->get_probe_data(),ResourceSaver::FLAG_CHANGE_PATH);
+		ERR_FAIL_COND(gi_probe->get_probe_data().is_null());
+		ResourceSaver::save(p_path, gi_probe->get_probe_data(), ResourceSaver::FLAG_CHANGE_PATH);
 	}
 }
 
@@ -136,13 +136,12 @@ void GIProbeEditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method("_bake", &GIProbeEditorPlugin::_bake);
 	ClassDB::bind_method("_giprobe_save_path_and_bake", &GIProbeEditorPlugin::_giprobe_save_path_and_bake);
-
 }
 
 GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	bake_hb = memnew( HBoxContainer );
+	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(ToolButton);
@@ -150,17 +149,17 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", this, "_bake");
 	bake_hb->add_child(bake);
-	bake_info = memnew( Label );
+	bake_info = memnew(Label);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_info->set_clip_text(true);
 	bake_hb->add_child(bake_info);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
 	gi_probe = NULL;
-	probe_file = memnew( EditorFileDialog );
+	probe_file = memnew(EditorFileDialog);
 	probe_file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
-	probe_file->connect("file_selected",this,"_giprobe_save_path_and_bake");
+	probe_file->connect("file_selected", this, "_giprobe_save_path_and_bake");
 	get_editor_interface()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for GIProbe Data File"));
 
