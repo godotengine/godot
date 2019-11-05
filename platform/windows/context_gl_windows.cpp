@@ -67,12 +67,12 @@ int ContextGL_Windows::get_window_height() {
 
 bool ContextGL_Windows::should_vsync_via_compositor() {
 
-	if (OS::get_singleton()->is_window_fullscreen()) {
+	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
 		return false;
 	}
 
-	// Note: All Windows versions supported by Godot (Vista and later)
-	// have a compositor.  It can be disabled on earlier Windows versions.
+	// Note: All Windows versions supported by Godot have a compositor.
+	// It can be disabled on earlier Windows versions.
 	BOOL dwm_enabled;
 
 	if (SUCCEEDED(DwmIsCompositionEnabled(&dwm_enabled))) {
@@ -84,6 +84,8 @@ bool ContextGL_Windows::should_vsync_via_compositor() {
 
 void ContextGL_Windows::swap_buffers() {
 
+	SwapBuffers(hDC);
+
 	if (use_vsync) {
 		bool vsync_via_compositor_now = should_vsync_via_compositor();
 
@@ -92,34 +94,12 @@ void ContextGL_Windows::swap_buffers() {
 		}
 
 		if (vsync_via_compositor_now != vsync_via_compositor) {
-
-			// One of the following just occurred...
-			//
-			// 1) Vertical syncing via the compositor has just been enabled.
-			//    This will happen in the following cases:
-			//      a) When switching from full screen mode to windowed mode
-			//         and the OS compositor is enabled.
-			//      b) When, in windowed mode, the user enables the compositor--
-			//         by switching themes, for example.
-			//
-			//    In this case turn vsync via the compositor on and disable it
-			//    for OpenGL.
-			//
-			// 2) Vertical syncing via the compositor has just been disabled.
-			//    This will happen in the following cases:
-			//      a) When switching from windowed mode to full screen mode
-			//         regardless whether the OS compositor is enabled or not.
-			//      b) When, in windowed mode, the user disables the
-			//         compositor--by switching themes, for example.
-			//
-			//    In this case turn vsync via OpenGL on and disable it for the
-			//    compositor.
-
+			// The previous frame had a different operating mode than this
+			// frame.  Set the 'vsync_via_compositor' member variable and the
+			// OpenGL swap interval to their proper values.
 			set_use_vsync(true);
 		}
 	}
-
-	SwapBuffers(hDC);
 }
 
 void ContextGL_Windows::set_use_vsync(bool p_use) {
