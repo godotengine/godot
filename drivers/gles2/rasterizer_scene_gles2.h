@@ -225,7 +225,7 @@ public:
 
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
-	struct ShadowAtlas  {
+	struct ShadowAtlas {
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
@@ -304,7 +304,7 @@ public:
 
 	/* REFLECTION PROBE INSTANCE */
 
-	struct ReflectionProbeInstance  {
+	struct ReflectionProbeInstance {
 
 		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
 		RID probe;
@@ -345,7 +345,7 @@ public:
 
 	/* ENVIRONMENT API */
 
-	struct Environment  {
+	struct Environment {
 		VS::EnvironmentBG bg_mode;
 
 		RID sky;
@@ -496,7 +496,7 @@ public:
 
 	/* LIGHT INSTANCE */
 
-	struct LightInstance  {
+	struct LightInstance {
 
 		struct ShadowTransform {
 			CameraMatrix camera;

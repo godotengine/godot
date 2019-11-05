@@ -59,7 +59,7 @@ public:
 	PhysicsDirectSpaceStateSW();
 };
 
-class SpaceSW  {
+class SpaceSW {
 
 public:
 	enum ElapsedTime {

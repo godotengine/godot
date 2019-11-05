@@ -39,7 +39,7 @@
 
 class BulletPhysicsServer;
 
-class RIDBullet  {
+class RIDBullet {
 	RID self;
 	BulletPhysicsServer *physicsServer;
 

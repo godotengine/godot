@@ -367,7 +367,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 #if defined(VULKAN_ENABLED)
 		if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
-			CALayer* layer = [OS_OSX::singleton->window_view layer];
+			CALayer *layer = [OS_OSX::singleton->window_view layer];
 			layer.contentsScale = OS_OSX::singleton->_display_scale();
 		}
 #endif
@@ -395,7 +395,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 #if defined(VULKAN_ENABLED)
 	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
-		CALayer* layer = [OS_OSX::singleton->window_view layer];
+		CALayer *layer = [OS_OSX::singleton->window_view layer];
 		layer.contentsScale = OS_OSX::singleton->_display_scale();
 		OS_OSX::singleton->context_vulkan->window_resize(0, OS_OSX::singleton->window_size.width, OS_OSX::singleton->window_size.height);
 	}
@@ -462,7 +462,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 - (void)cancelComposition;
 
-- (CALayer*)makeBackingLayer;
+- (CALayer *)makeBackingLayer;
 
 - (BOOL)wantsUpdateLayer;
 - (void)updateLayer;
@@ -477,10 +477,10 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 }
 
-- (CALayer*)makeBackingLayer {
+- (CALayer *)makeBackingLayer {
 #if defined(VULKAN_ENABLED)
 	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
-		CALayer* layer = [[CAMetalLayer class] layer];
+		CALayer *layer = [[CAMetalLayer class] layer];
 		layer.contentsScale = OS_OSX::singleton->_display_scale();
 		return layer;
 	}
@@ -1949,7 +1949,6 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 		cursors_cache.erase(p_shape);
 	}
-
 }
 
 void OS_OSX::set_mouse_show(bool p_show) {
