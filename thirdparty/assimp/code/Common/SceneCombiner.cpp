@@ -1091,6 +1091,35 @@ void SceneCombiner::Copy( aiMesh** _dest, const aiMesh* src ) {
         aiFace& f = dest->mFaces[i];
         GetArrayCopy(f.mIndices,f.mNumIndices);
     }
+
+    // make a deep copy of all blend shapes
+    CopyPtrArray(dest->mAnimMeshes, dest->mAnimMeshes, dest->mNumAnimMeshes);
+}
+
+// ------------------------------------------------------------------------------------------------
+void SceneCombiner::Copy(aiAnimMesh** _dest, const aiAnimMesh* src) {
+    if (nullptr == _dest || nullptr == src) {
+        return;
+    }
+
+    aiAnimMesh* dest = *_dest = new aiAnimMesh();
+
+    // get a flat copy
+    ::memcpy(dest, src, sizeof(aiAnimMesh));
+
+    // and reallocate all arrays
+    GetArrayCopy(dest->mVertices, dest->mNumVertices);
+    GetArrayCopy(dest->mNormals, dest->mNumVertices);
+    GetArrayCopy(dest->mTangents, dest->mNumVertices);
+    GetArrayCopy(dest->mBitangents, dest->mNumVertices);
+
+    unsigned int n = 0;
+    while (dest->HasTextureCoords(n))
+        GetArrayCopy(dest->mTextureCoords[n++], dest->mNumVertices);
+
+    n = 0;
+    while (dest->HasVertexColors(n))
+        GetArrayCopy(dest->mColors[n++], dest->mNumVertices);
 }
 
 // ------------------------------------------------------------------------------------------------

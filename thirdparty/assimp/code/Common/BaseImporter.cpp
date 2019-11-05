@@ -85,7 +85,7 @@ void BaseImporter::UpdateImporterScale( Importer* pImp )
     double activeScale = importerScale * fileScale;
 
     // Set active scaling
-    pImp->SetPropertyFloat( AI_CONFIG_APP_SCALE_KEY, activeScale);
+    pImp->SetPropertyFloat( AI_CONFIG_APP_SCALE_KEY, static_cast<float>( activeScale) );
 
     ASSIMP_LOG_DEBUG_F("UpdateImporterScale scale set: %f", activeScale );
 }

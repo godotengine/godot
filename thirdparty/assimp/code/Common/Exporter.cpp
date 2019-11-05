@@ -316,34 +316,6 @@ const aiExportDataBlob* Exporter::ExportToBlob( const aiScene* pScene, const cha
 }
 
 // ------------------------------------------------------------------------------------------------
-bool IsVerboseFormat(const aiMesh* mesh) {
-    // avoid slow vector<bool> specialization
-    std::vector<unsigned int> seen(mesh->mNumVertices,0);
-    for(unsigned int i = 0; i < mesh->mNumFaces; ++i) {
-        const aiFace& f = mesh->mFaces[i];
-        for(unsigned int j = 0; j < f.mNumIndices; ++j) {
-            if(++seen[f.mIndices[j]] == 2) {
-                // found a duplicate index
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-// ------------------------------------------------------------------------------------------------
-bool IsVerboseFormat(const aiScene* pScene) {
-    for(unsigned int i = 0; i < pScene->mNumMeshes; ++i) {
-        if(!IsVerboseFormat(pScene->mMeshes[i])) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// ------------------------------------------------------------------------------------------------
 aiReturn Exporter::Export( const aiScene* pScene, const char* pFormatId, const char* pPath,
         unsigned int pPreprocessing, const ExportProperties* pProperties) {
     ASSIMP_BEGIN_EXCEPTION_REGION();
@@ -352,7 +324,7 @@ aiReturn Exporter::Export( const aiScene* pScene, const char* pFormatId, const c
     // format. They will likely not be aware that there is a flag in the scene to indicate
     // this, however. To avoid surprises and bug reports, we check for duplicates in
     // meshes upfront.
-    const bool is_verbose_format = !(pScene->mFlags & AI_SCENE_FLAGS_NON_VERBOSE_FORMAT) || IsVerboseFormat(pScene);
+    const bool is_verbose_format = !(pScene->mFlags & AI_SCENE_FLAGS_NON_VERBOSE_FORMAT) || MakeVerboseFormatProcess::IsVerboseFormat(pScene);
 
     pimpl->mProgressHandler->UpdateFileWrite(0, 4);
 
@@ -472,7 +444,10 @@ aiReturn Exporter::Export( const aiScene* pScene, const char* pFormatId, const c
                 }
 
                 ExportProperties emptyProperties;  // Never pass NULL ExportProperties so Exporters don't have to worry.
-                exp.mExportFunction(pPath,pimpl->mIOSystem.get(),scenecopy.get(), pProperties ? pProperties : &emptyProperties);
+                ExportProperties* pProp = pProperties ? (ExportProperties*)pProperties : &emptyProperties;
+                                pProp->SetPropertyBool("bJoinIdenticalVertices", must_join_again);
+                                exp.mExportFunction(pPath,pimpl->mIOSystem.get(),scenecopy.get(), pProp);
+                exp.mExportFunction(pPath,pimpl->mIOSystem.get(),scenecopy.get(), pProp);
 
                 pimpl->mProgressHandler->UpdateFileWrite(4, 4);
             } catch (DeadlyExportError& err) {

@@ -51,6 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/types.h>
 #include <assimp/aabb.h>
 
+struct aiNode;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -264,6 +266,12 @@ struct aiBone {
     //! The maximum value for this member is #AI_MAX_BONE_WEIGHTS.
     unsigned int mNumWeights;
 
+    // The bone armature node - used for skeleton conversion
+    aiNode* mArmature;
+
+    // The bone node in the scene - used for skeleton conversion
+    aiNode* mNode;
+
     //! The influence weights of this bone, by vertex index.
     C_STRUCT aiVertexWeight* mWeights;
 
@@ -279,6 +287,11 @@ struct aiBone {
      * or inverse bind pose matrix.
      */
     C_STRUCT aiMatrix4x4 mOffsetMatrix;
+
+    /** Matrix used for the global rest transform
+     * This tells you directly the rest without extending as required in most game engine implementations
+     * */
+    C_STRUCT aiMatrix4x4 mRestMatrix;
 
 #ifdef __cplusplus
 
@@ -769,7 +782,10 @@ struct aiMesh
         // DO NOT REMOVE THIS ADDITIONAL CHECK
         if (mNumBones && mBones)    {
             for( unsigned int a = 0; a < mNumBones; a++) {
-                delete mBones[a];
+                if(mBones[a])
+                {
+                    delete mBones[a];
+                }
             }
             delete [] mBones;
         }
