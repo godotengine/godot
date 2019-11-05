@@ -33,7 +33,7 @@
 
 #include "body_sw.h"
 
-class ConstraintSW  {
+class ConstraintSW {
 
 	BodySW **_body_ptr;
 	int _body_count;

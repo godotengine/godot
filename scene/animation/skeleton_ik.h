@@ -98,7 +98,7 @@ class FabrikInverseKinematic {
 	};
 
 public:
-	struct Task  {
+	struct Task {
 		RID self;
 		Skeleton *skeleton;
 

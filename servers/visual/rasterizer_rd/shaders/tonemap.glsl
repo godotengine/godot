@@ -1,40 +1,34 @@
 /* clang-format off */
 [vertex]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
 layout(location = 0) out vec2 uv_interp;
+/* clang-format on */
 
 void main() {
 
-	vec2 base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4( uv_interp *2.0 - 1.0, 0.0, 1.0);
+	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
 /* clang-format off */
 [fragment]
 
-/* clang-format on */
-
-
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
+
+layout(location = 0) in vec2 uv_interp;
 /* clang-format on */
 
-layout(location =0) in vec2 uv_interp;
-
-layout( set=0, binding=0 ) uniform sampler2D source_color;
-layout( set=1, binding=0 ) uniform sampler2D source_auto_exposure;
-layout( set=2, binding=0 ) uniform sampler2D source_glow;
-layout( set=3, binding=0 ) uniform sampler3D color_correction;
+layout(set = 0, binding = 0) uniform sampler2D source_color;
+layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
+layout(set = 2, binding = 0) uniform sampler2D source_glow;
+layout(set = 3, binding = 0) uniform sampler3D color_correction;
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec3 bcs;
@@ -54,7 +48,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure;
 	float white;
 	float auto_exposure_grey;
-
 } params;
 
 layout(location = 0) out vec4 frag_color;
@@ -94,7 +87,6 @@ float h0(float a) {
 float h1(float a) {
 	return 1.0f + w3(a) / (w2(a) + w3(a));
 }
-
 
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
@@ -168,7 +160,7 @@ vec3 tonemap_reinhard(vec3 color, float white) {
 
 vec3 linear_to_srgb(vec3 color) {
 	//if going to srgb, clamp from 0 to 1.
-	color = clamp(color,vec3(0.0),vec3(1.0));
+	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -180,11 +172,11 @@ vec3 linear_to_srgb(vec3 color) {
 
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always outputs clamped [0;1] color
 
-	if (params.tonemapper==TONEMAPPER_LINEAR) {
+	if (params.tonemapper == TONEMAPPER_LINEAR) {
 		return color;
-	} else if (params.tonemapper==TONEMAPPER_REINHARD) {
+	} else if (params.tonemapper == TONEMAPPER_REINHARD) {
 		return tonemap_reinhard(color, white);
-	} else if (params.tonemapper==TONEMAPPER_FILMIC) {
+	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
 		return tonemap_filmic(color, white);
 	} else { //aces
 		return tonemap_aces(color, white);
@@ -194,31 +186,31 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	vec3 glow = vec3(0.0f);
 
-	if (bool(params.glow_level_flags&(1<<0))) {
+	if (bool(params.glow_level_flags & (1 << 0))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<1))) {
+	if (bool(params.glow_level_flags & (1 << 1))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<2))) {
+	if (bool(params.glow_level_flags & (1 << 2))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<3))) {
+	if (bool(params.glow_level_flags & (1 << 3))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<4))) {
+	if (bool(params.glow_level_flags & (1 << 4))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<5))) {
+	if (bool(params.glow_level_flags & (1 << 5))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
 	}
 
-	if (bool(params.glow_level_flags&(1<<6))) {
+	if (bool(params.glow_level_flags & (1 << 6))) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
 	}
 
@@ -231,12 +223,12 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #define GLOW_MODE_REPLACE 3
 
 vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
-	if (params.glow_mode==GLOW_MODE_ADD) {
+	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
-	} else if (params.glow_mode==GLOW_MODE_SCREEN) {
+	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
 		//need color clamping
 		return max((color + glow) - (color * glow), vec3(0.0));
-	} else if ( params.glow_mode==GLOW_MODE_SOFTLIGHT) {
+	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
 		//need color clamping
 		glow = glow * vec3(0.5f) + vec3(0.5f);
 
@@ -258,7 +250,7 @@ vec3 apply_bcs(vec3 color, vec3 bcs) {
 }
 
 vec3 apply_color_correction(vec3 color, sampler3D correction_tex) {
-	return texture(correction_tex,color).rgb;
+	return texture(correction_tex, color).rgb;
 }
 
 void main() {

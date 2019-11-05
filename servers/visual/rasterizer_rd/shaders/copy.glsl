@@ -1,52 +1,45 @@
 /* clang-format off */
 [vertex]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
-layout(location =0) out vec2 uv_interp;
+layout(location = 0) out vec2 uv_interp;
+/* clang-format on */
 
 void main() {
 
-	vec2 base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
 
-	gl_Position = vec4( uv_interp *2.0 - 1.0, 0.0, 1.0);
-
+	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
 /* clang-format off */
 [fragment]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
-layout(location =0) in vec2 uv_interp;
+layout(location = 0) in vec2 uv_interp;
+/* clang-format on */
 
 #ifdef MODE_CUBE_TO_DP
 
-layout( set=0, binding=0 ) uniform samplerCube source_cube;
+layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
 layout(push_constant, binding = 0, std430) uniform Params {
 	float bias;
 	float z_far;
 	float z_near;
 	bool z_flip;
-
 } params;
 
-layout(location=0) out float depth_buffer;
+layout(location = 0) out float depth_buffer;
 
 #endif
-
 
 void main() {
 
@@ -56,7 +49,6 @@ void main() {
 
 	normal.z = 0.5 - 0.5 * ((normal.x * normal.x) + (normal.y * normal.y));
 	normal = normalize(normal);
-
 
 	normal.y = -normal.y; //needs to be flipped to match projection matrix
 	if (!params.z_flip) {

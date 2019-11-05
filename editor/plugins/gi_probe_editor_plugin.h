@@ -55,8 +55,7 @@ class GIProbeEditorPlugin : public EditorPlugin {
 	static void bake_func_end();
 
 	void _bake();
-	void _giprobe_save_path_and_bake(const String& p_path);
-
+	void _giprobe_save_path_and_bake(const String &p_path);
 
 protected:
 	static void _bind_methods();
