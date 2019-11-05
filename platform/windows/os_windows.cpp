@@ -1309,7 +1309,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	// Init context and rendering device
 #if defined(OPENGL_ENABLED)
 	if (video_driver_index == VIDEO_DRIVER_GLES2) {
-		
+
 		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
 
 		if (context_gles2->initialize() != OK) {
@@ -1328,7 +1328,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 			context_gles2 = NULL;
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
-
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -1533,7 +1532,6 @@ void OS_Windows::finalize() {
 
 		if (context_gles2)
 			memdelete(context_gles2);
-
 	}
 #endif
 #if defined(VULKAN_ENABLED)

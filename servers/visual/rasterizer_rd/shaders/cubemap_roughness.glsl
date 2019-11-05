@@ -1,41 +1,34 @@
 /* clang-format off */
 [vertex]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
+
+layout(location = 0) out highp vec2 uv_interp;
 /* clang-format on */
-
-
-layout(location=0) out highp vec2 uv_interp;
-
 
 void main() {
 
-	vec2 base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
+	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4( uv_interp *2.0 - 1.0, 0.0, 1.0);
-
+	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
 /* clang-format off */
 [fragment]
-/* clang-format on */
 
 #version 450
 
-/* clang-format off */
 VERSION_DEFINES
-/* clang-format on */
 
 #ifdef MODE_SOURCE_PANORAMA
-layout( set=0, binding=0 ) uniform sampler2D source_panorama;
+layout(set = 0, binding = 0) uniform sampler2D source_panorama;
+/* clang-format on */
 #endif
 
 #ifdef MODE_SOURCE_CUBEMAP
-layout( set=0, binding=0 ) uniform samplerCube source_cube;
+layout(set = 0, binding = 0) uniform samplerCube source_cube;
 #endif
 
 layout(push_constant, binding = 1, std430) uniform Params {
@@ -45,7 +38,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_direct_write;
 } params;
 
-layout(location=0) in vec2 uv_interp;
+layout(location = 0) in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
 
@@ -184,7 +177,6 @@ vec4 texturePanorama(vec3 normal, sampler2D pano) {
 
 #endif
 
-
 void main() {
 
 	vec2 uv = (uv_interp * 2.0) - 1.0;
@@ -200,7 +192,7 @@ void main() {
 #endif
 
 #ifdef MODE_SOURCE_CUBEMAP
-		frag_color = vec4(texture(source_cube,N).rgb, 1.0);
+		frag_color = vec4(texture(source_cube, N).rgb, 1.0);
 #endif
 
 	} else {
