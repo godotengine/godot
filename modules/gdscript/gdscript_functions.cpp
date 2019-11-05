@@ -1125,6 +1125,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					NodePath cp(sname, Vector<StringName>(), false);
 
 					Dictionary d;
+					if (!p->name.empty()) {
+						d["@class_name"] = p->name;
+					}
 					d["@subpath"] = cp;
 					d["@path"] = p->get_path();
 
@@ -1168,26 +1171,36 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			Dictionary d = *p_args[0];
 
-			if (!d.has("@path")) {
+			Ref<Script> scr;
 
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = RTR("Invalid instance dictionary format (missing @path)");
-
-				return;
+			String class_name = d.get("@class_name", "");
+			if (!class_name.empty()) {
+				String script_path = ScriptServer::get_global_class_path(d["@class_name"]);
+				scr = ResourceLoader::load(script_path);
+				if (!scr.is_valid()) {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 0;
+					r_error.expected = Variant::OBJECT;
+					r_ret = RTR("Invalid instance dictionary format (can't find @class_name global class path)");
+					return;
+				}
+			} else {
+				if (!d.has("@path")) {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 0;
+					r_error.expected = Variant::OBJECT;
+					r_ret = RTR("Invalid instance dictionary format (missing @path)");
+					return;
+				}
+				scr = ResourceLoader::load(d["@path"]);
+				if (!scr.is_valid()) {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 0;
+					r_error.expected = Variant::OBJECT;
+					r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
+					return;
+				}
 			}
-
-			Ref<Script> scr = ResourceLoader::load(d["@path"]);
-			if (!scr.is_valid()) {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
-				return;
-			}
-
 			Ref<GDScript> gdscr = scr;
 
 			if (!gdscr.is_valid()) {
