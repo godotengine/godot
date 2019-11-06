@@ -48,8 +48,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_VECTOR2D_INL_INC
 #define AI_VECTOR2D_INL_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #ifdef __cplusplus
-#include "vector2.h"
+#include <assimp/vector2.h>
 
 #include <cmath>
 

@@ -5,8 +5,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -45,6 +43,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_AABB_H_INC
 #define AI_AABB_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/vector3.h>
 
 struct aiAABB {
@@ -69,8 +71,9 @@ struct aiAABB {
         // empty
     }
 
-#endif 
+#endif // __cplusplus
+
 };
 
 
-#endif
+#endif // AI_AABB_H_INC

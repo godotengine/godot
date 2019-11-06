@@ -44,11 +44,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file ParsingUtils.h
  *  @brief Defines helper functions for text parsing
  */
+#pragma once
 #ifndef AI_PARSING_UTILS_H_INC
 #define AI_PARSING_UTILS_H_INC
 
-#include "StringComparison.h"
-#include "StringUtils.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
+#include <assimp/StringComparison.h>
+#include <assimp/StringUtils.h>
 #include <assimp/defs.h>
 
 namespace Assimp {
