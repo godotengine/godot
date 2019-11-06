@@ -104,6 +104,21 @@ namespace Godot
             return new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
         }
 
+        public Vector3 Clamped(real_t length)
+        {
+            var v = this;
+            real_t len_squared = LengthSquared();
+            if (len_squared > 0)
+            {
+                if (len_squared > length * length)
+                {
+                    real_t len = Mathf.Sqrt(len_squared);
+                    v *= (length / len);
+                }
+            }
+            return v;
+        }
+
         public Vector3 Cross(Vector3 b)
         {
             return new Vector3

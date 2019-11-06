@@ -119,14 +119,15 @@ namespace Godot
         public Vector2 Clamped(real_t length)
         {
             var v = this;
-            real_t l = Length();
-
-            if (l > 0 && length < l)
+            real_t len_squared = LengthSquared();
+            if (len_squared > 0)
             {
-                v /= l;
-                v *= length;
+                if (len_squared > length * length)
+                {
+                    real_t len = Mathf.Sqrt(len_squared);
+                    v *= (length / len);
+                }
             }
-
             return v;
         }
 
@@ -171,6 +172,11 @@ namespace Godot
             return new Vector2(Mathf.Floor(x), Mathf.Floor(y));
         }
 
+        public Vector2 Inverse()
+        {
+            return new Vector2(1.0 / x, 1.0 / y);
+        }
+
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
@@ -184,6 +190,16 @@ namespace Godot
         public real_t LengthSquared()
         {
             return x * x + y * y;
+        }
+
+        public Axis MaxAxis()
+        {
+            return x < y ? Axis.Y : Axis.X;
+        }
+
+        public Axis MinAxis()
+        {
+            return x < y ? Axis.X : Axis.Y;
         }
 
         public Vector2 LinearInterpolate(Vector2 b, real_t t)

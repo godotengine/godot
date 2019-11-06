@@ -71,6 +71,12 @@ godot_real GDAPI godot_vector2_length_squared(const godot_vector2 *p_self);
 
 godot_bool GDAPI godot_vector2_is_normalized(const godot_vector2 *p_self);
 
+godot_vector2 GDAPI godot_vector2_inverse(const godot_vector2 *p_self);
+
+godot_int GDAPI godot_vector2_min_axis(const godot_vector2 *p_self);
+
+godot_int GDAPI godot_vector2_max_axis(const godot_vector2 *p_self);
+
 godot_vector2 GDAPI godot_vector2_direction_to(const godot_vector2 *p_self, const godot_vector2 *p_b);
 
 godot_real GDAPI godot_vector2_distance_to(const godot_vector2 *p_self, const godot_vector2 *p_to);
