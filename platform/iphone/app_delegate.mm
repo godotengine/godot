@@ -145,6 +145,12 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 	};
 }
 
+static void on_exit() {
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(
+			MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+}
+
 static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
 	if (!*is_focus_out) {
 		*is_focus_out = true;
@@ -698,6 +704,7 @@ static int frame_count = 0;
 
 - (void)applicationWillTerminate:(UIApplication *)application {
 	[self deinitGameControllers];
+	on_exit();
 
 	if (motionInitialised) {
 		///@TODO is this the right place to clean this up?
