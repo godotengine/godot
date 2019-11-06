@@ -219,6 +219,8 @@ public:
 	StringName script_class_get_base(const String &p_class) const;
 	Object *script_class_instance(const String &p_class);
 
+	Ref<Script> script_class_load_script(const String &p_class) const;
+
 	StringName script_class_get_name(const String &p_path) const;
 	void script_class_set_name(const String &p_path, const StringName &p_class);
 
