@@ -153,12 +153,12 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 //#if defined(OPENGL_ENABLED)
 
 	context_gl = memnew(ContextGL_SDL(sdl_display_mode, current_videomode, true));
+	context_gl->set_screen_orientation(OS::get_singleton()->get_screen_orientation());
 	if( context_gl->initialize() == FAILED )
 	{
 		memdelete(context_gl);
 		return FAILED;
 	}
-	context_gl->set_screen_orientation(get_screen_orientation());
 	sdl_window = context_gl->get_window_pointer();
 
 	if (RasterizerGLES2::is_viable() == OK) {
@@ -649,7 +649,12 @@ void OS_SDL::process_events() {
 	// }
 
 	while (SDL_PollEvent(&event)) {
-
+		if (event.type == SDL_QUIT ) {
+			if(OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("SDL_QUIT event;\n");
+			main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+			continue;
+		}
 		if (event.type == SDL_WINDOWEVENT) {
 			if(OS::get_singleton()->is_stdout_verbose())
 				OS::get_singleton()->print("SDL WindowEvent: ");
@@ -1048,9 +1053,29 @@ void OS_SDL::process_events() {
 
 		if( event.type == SDL_DISPLAYEVENT )
 		{// its mean sreen orientation changed
-			OS::get_singleton()->print("SDL_DisplayEvent.type = %i", event.display.type);
-			// switch(event.display.type) {
-			// }
+			//OS::get_singleton()->print("SDL_DisplayEvent.type = %i\n", event.display.event);
+			if( event.display.event == SDL_DISPLAYEVENT_ORIENTATION) { // DISPLAY event tpe
+				if(OS::get_singleton()->is_stdout_verbose())
+				switch(event.display.data1) {
+					case SDL_ORIENTATION_LANDSCAPE:
+						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE\n");
+						break;
+					case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
+						break;
+					case SDL_ORIENTATION_PORTRAIT:
+						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT\n");
+						break;
+					case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT_FLIPPED\n");
+						break;
+					case SDL_ORIENTATION_UNKNOWN:
+						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN\n");
+						break;
+				}
+				context_gl->set_ext_surface_orientation(event.display.data1);
+			}
+			continue;
 		} 
 
 		if(OS::get_singleton()->is_stdout_verbose()) {
@@ -1124,8 +1149,9 @@ Error OS_SDL::shell_open(String p_uri) {
 
 void OS_SDL::set_screen_orientation(ScreenOrientation p_orientation) {
 	OS::set_screen_orientation(p_orientation);
-	if(context_gl)
-		context_gl->set_screen_orientation(p_orientation);
+	// NO NEED change context_gl orinetation, becuse its should store default app orinetation, as SENSOR_LANDSCAPE, SENSOR_PROTRAIT or SENSOR
+	// if(context_gl) 
+	// 		context_gl->set_screen_orientation(p_orientation);
 }
 
 bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
