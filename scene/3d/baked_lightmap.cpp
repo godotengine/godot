@@ -360,7 +360,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		//check for valid save path
 		DirAccessRef d = DirAccess::open(save_path);
 		if (!d) {
-			ERR_PRINTS("Invalid Save Path '" + save_path + "'.");
+			ERR_PRINT("Invalid Save Path '" + save_path + "'.");
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}
 	}

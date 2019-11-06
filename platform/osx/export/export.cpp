@@ -692,7 +692,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		ERR_PRINTS("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
+		ERR_PRINT("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
 		err = ERR_FILE_NOT_FOUND;
 	}
 

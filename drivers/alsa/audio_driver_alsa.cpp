@@ -204,7 +204,7 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 			} else {
 				wrote = snd_pcm_recover(ad->pcm_handle, wrote, 0);
 				if (wrote < 0) {
-					ERR_PRINTS("ALSA: Failed and can't recover: " + String(snd_strerror(wrote)));
+					ERR_PRINT("ALSA: Failed and can't recover: " + String(snd_strerror(wrote)));
 					ad->active = false;
 					ad->exit_thread = true;
 				}

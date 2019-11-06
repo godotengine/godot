@@ -165,9 +165,9 @@ void CSharpLanguage::finish() {
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
-			ERR_PRINTS("Leaked unsafe reference to object: " + obj->get_class() + ":" + itos(id));
+			ERR_PRINT("Leaked unsafe reference to object: " + obj->get_class() + ":" + itos(id));
 		} else {
-			ERR_PRINTS("Leaked unsafe reference to deleted object: " + itos(id));
+			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
 	}
 #endif
@@ -1080,7 +1080,7 @@ void CSharpLanguage::_load_scripts_metadata() {
 		int err_line;
 		Error json_err = JSON::parse(old_json, old_dict_var, err_str, err_line);
 		if (json_err != OK) {
-			ERR_PRINTS("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ").");
+			ERR_PRINT("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ").");
 			return;
 		}
 
@@ -2444,7 +2444,7 @@ bool CSharpScript::_update_exports() {
 		if (tmp_native && !base_ref) {
 			Node *node = Object::cast_to<Node>(tmp_native);
 			if (node && node->is_inside_tree()) {
-				ERR_PRINTS("Temporary instance was added to the scene tree.");
+				ERR_PRINT("Temporary instance was added to the scene tree.");
 			} else {
 				memdelete(tmp_native);
 			}
@@ -2522,7 +2522,7 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 					arg.type = GDMonoMarshal::managed_to_variant_type(types[i]);
 
 					if (arg.type == Variant::NIL) {
-						ERR_PRINTS("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
+						ERR_PRINT("Unknown type of signal parameter: '" + arg.name + "' in '" + p_class->get_full_name() + "'.");
 						return false;
 					}
 
@@ -2552,7 +2552,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 
 	if (p_member->is_static()) {
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
-			ERR_PRINTS("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 		return false;
 	}
 
@@ -2575,12 +2575,12 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
 		if (!property->has_getter()) {
 			if (exported)
-				ERR_PRINTS("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+				ERR_PRINT("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 			return false;
 		}
 		if (!property->has_setter()) {
 			if (exported)
-				ERR_PRINTS("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+				ERR_PRINT("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 			return false;
 		}
 	}
@@ -2599,7 +2599,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	String hint_string;
 
 	if (variant_type == Variant::NIL) {
-		ERR_PRINTS("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 		return false;
 	}
 
@@ -2891,7 +2891,7 @@ bool CSharpScript::can_instance() const {
 						"Compile",
 						ProjectSettings::get_singleton()->globalize_path(get_path()));
 			} else {
-				ERR_PRINTS("C# project could not be created; cannot add file: '" + get_path() + "'.");
+				ERR_PRINT("C# project could not be created; cannot add file: '" + get_path() + "'.");
 			}
 		}
 	}
@@ -3437,7 +3437,7 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 					"Compile",
 					ProjectSettings::get_singleton()->globalize_path(p_path));
 		} else {
-			ERR_PRINTS("C# project could not be created; cannot add file: '" + p_path + "'.");
+			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
 		}
 	}
 #endif

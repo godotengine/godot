@@ -119,7 +119,7 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 			obj->call(frame_drawn_callbacks.front()->get().method, &v, 1, ce);
 			if (ce.error != Variant::CallError::CALL_OK) {
 				String err = Variant::get_call_error_text(obj, frame_drawn_callbacks.front()->get().method, &v, 1, ce);
-				ERR_PRINTS("Error calling frame drawn function: " + err);
+				ERR_PRINT("Error calling frame drawn function: " + err);
 			}
 		}
 

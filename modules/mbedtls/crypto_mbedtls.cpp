@@ -182,7 +182,7 @@ CryptoMbedTLS::CryptoMbedTLS() {
 	mbedtls_entropy_init(&entropy);
 	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
 	if (ret != 0) {
-		ERR_PRINTS(" failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+		ERR_PRINT(" failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
 	}
 }
 
@@ -267,7 +267,7 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	if (err != 0) {
 		mbedtls_mpi_free(&serial);
 		mbedtls_x509write_crt_free(&crt);
-		ERR_PRINTS("Generated invalid certificate: " + itos(err));
+		ERR_PRINT("Generated invalid certificate: " + itos(err));
 		return NULL;
 	}
 

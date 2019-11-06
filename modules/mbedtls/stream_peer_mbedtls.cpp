@@ -88,7 +88,7 @@ Error StreamPeerMbedTLS::_do_handshake() {
 	while ((ret = mbedtls_ssl_handshake(ssl_ctx->get_context())) != 0) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 			// An error occurred.
-			ERR_PRINTS("TLS handshake error: " + itos(ret));
+			ERR_PRINT("TLS handshake error: " + itos(ret));
 			_print_error(ret);
 			disconnect_from_stream();
 			status = STATUS_ERROR;

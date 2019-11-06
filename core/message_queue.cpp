@@ -250,7 +250,7 @@ void MessageQueue::_call_function(Object *p_target, const StringName &p_func, co
 	p_target->call(p_func, argptrs, p_argcount, ce);
 	if (p_show_error && ce.error != Variant::CallError::CALL_OK) {
 
-		ERR_PRINTS("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce) + ".");
+		ERR_PRINT("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce) + ".");
 	}
 }
 

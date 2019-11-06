@@ -161,7 +161,7 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 		line++;
 	}
 
-	ERR_PRINTS(p_error);
+	ERR_PRINT(p_error);
 }
 
 ShaderGLES3::Version *ShaderGLES3::get_current_version() {

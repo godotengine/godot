@@ -393,11 +393,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg)); \
 	}
 
-#define ERR_PRINTS(m_msg)                                                     \
-	{                                                                         \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg)); \
-	}
-
 // Only prints the error message once.
 
 #define ERR_PRINT_ONCE(m_msg)                                                     \
