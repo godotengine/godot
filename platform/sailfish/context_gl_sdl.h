@@ -71,6 +71,8 @@ public:
 	virtual SDL_Window* get_window_pointer();
 	
 	void set_screen_orientation(OS::ScreenOrientation p_orientation);
+	// is SDL_DisplayOrientation value
+	void set_ext_surface_orientation(int orientation);
 
 	ContextGL_SDL(::SDL_DisplayMode *p_sdl_display_mode, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context);
 	~ContextGL_SDL();

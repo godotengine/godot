@@ -369,7 +369,7 @@ void main() {
 	//default behavior, texture by color
 #if defined(USE_FORCE_LANDSCAPE)
 	if ( force_landscape == 1 ) {
-	// inverted landscape
+	// reverse landscape
 		vec2 canvas_uv = vec2(1.0 - uv.y, uv.x);
 		color *= texture2D(color_texture, canvas_uv);
 	} 
@@ -377,6 +377,11 @@ void main() {
 	// landscape
 		vec2 canvas_uv = vec2(uv.y, 1.0 - uv.x);
 		color *= texture2D(color_texture, canvas_uv);
+	}
+	else if( force_landscape == 3 ) {
+	// reverse portrait
+		vec2 canvas_uv = vec2(1.0 - uv.x, 1.0 - uv.y);
+		color *= texture2D(color_texture, uv);
 	}
 	else if( force_landscape == 0 ) {
 	// normal portrait

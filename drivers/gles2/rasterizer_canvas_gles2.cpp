@@ -189,12 +189,17 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	_set_uniforms();
 	// force landscape only for final render 
 #ifdef SAILFISH_FORCE_LANDSCAPE	
+	// OS::get_singleton()->print("canvas_begin: Set orientation %i\n", OS::get_singleton()->get_screen_orientation());
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE,true);
-	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
-			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE )
+	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE)
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 1);
+	// else if( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ) {
+		// state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 1);
+	// }
 	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 2);
+	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_PORTRAIT )
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 3);
 	else
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
 #endif
