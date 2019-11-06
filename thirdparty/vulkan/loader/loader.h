@@ -333,6 +333,9 @@ struct loader_instance {
     bool wsi_ios_surface_enabled;
 #endif
     bool wsi_headless_surface_enabled;
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    bool wsi_metal_surface_enabled;
+#endif
     bool wsi_display_enabled;
     bool wsi_display_props2_enabled;
 };

@@ -470,6 +470,16 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkCmdDrawIndirectCountKHR CmdDrawIndirectCountKHR;
     PFN_vkCmdDrawIndexedIndirectCountKHR CmdDrawIndexedIndirectCountKHR;
 
+    // ---- VK_KHR_timeline_semaphore extension commands
+    PFN_vkGetSemaphoreCounterValueKHR GetSemaphoreCounterValueKHR;
+    PFN_vkWaitSemaphoresKHR WaitSemaphoresKHR;
+    PFN_vkSignalSemaphoreKHR SignalSemaphoreKHR;
+
+    // ---- VK_KHR_pipeline_executable_properties extension commands
+    PFN_vkGetPipelineExecutablePropertiesKHR GetPipelineExecutablePropertiesKHR;
+    PFN_vkGetPipelineExecutableStatisticsKHR GetPipelineExecutableStatisticsKHR;
+    PFN_vkGetPipelineExecutableInternalRepresentationsKHR GetPipelineExecutableInternalRepresentationsKHR;
+
     // ---- VK_EXT_debug_marker extension commands
     PFN_vkDebugMarkerSetObjectTagEXT DebugMarkerSetObjectTagEXT;
     PFN_vkDebugMarkerSetObjectNameEXT DebugMarkerSetObjectNameEXT;
@@ -630,6 +640,9 @@ typedef struct VkLayerDispatchTable_ {
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkGetDeviceGroupSurfacePresentModes2EXT GetDeviceGroupSurfacePresentModes2EXT;
 #endif // VK_USE_PLATFORM_WIN32_KHR
+
+    // ---- VK_EXT_line_rasterization extension commands
+    PFN_vkCmdSetLineStippleEXT CmdSetLineStippleEXT;
 
     // ---- VK_EXT_host_query_reset extension commands
     PFN_vkResetQueryPoolEXT ResetQueryPoolEXT;
