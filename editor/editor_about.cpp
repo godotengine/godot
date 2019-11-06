@@ -58,6 +58,7 @@ void EditorAbout::_notification(int p_what) {
 void EditorAbout::_license_tree_selected() {
 
 	TreeItem *selected = _tpl_tree->get_selected();
+	_tpl_text->scroll_to_line(0);
 	_tpl_text->set_text(selected->get_metadata(0));
 }
 
