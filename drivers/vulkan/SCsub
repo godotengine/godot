@@ -14,7 +14,6 @@ if env['builtin_vulkan']:
     env_thirdparty.disable_warnings()
 
     loader_sources = [
-        "asm_offset.c",
         "cJSON.c",
         "debug_utils.c",
         "dev_ext_trampoline.c",
@@ -29,6 +28,7 @@ if env['builtin_vulkan']:
 
     if env['platform'] == "windows":
         loader_sources.append("dirent_on_windows.c")
+        loader_sources.append("dxgi_loader.c")
         env_thirdparty.AppendUnique(CPPDEFINES=[
             'VK_USE_PLATFORM_WIN32_KHR',
             'VULKAN_NON_CMAKE_BUILD',

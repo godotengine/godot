@@ -23,6 +23,12 @@
 # VkPhysicalDevice or a dispatchable object it can unwrap the object, possibly overwriting the wrapped physical device, and then
 # jump to the next function in the call chain
 
+#ifdef HAVE_CET_H
+#include <cet.h>
+#else
+#define _CET_ENDBR
+#endif
+
 .intel_syntax noprefix
 .include "gen_defines.asm"
 
@@ -31,6 +37,7 @@
 .macro PhysDevExtTramp num
 .global vkPhysDevExtTramp\num
 vkPhysDevExtTramp\num:
+    _CET_ENDBR
     mov     rax, [rdi]
     mov     rdi, [rdi + PHYS_DEV_OFFSET_PHYS_DEV_TRAMP]
     jmp     [rax + (PHYS_DEV_OFFSET_INST_DISPATCH + (PTR_SIZE * \num))]
@@ -39,6 +46,7 @@ vkPhysDevExtTramp\num:
 .macro PhysDevExtTermin num
 .global vkPhysDevExtTermin\num
 vkPhysDevExtTermin\num:
+    _CET_ENDBR
     mov     rax, [rdi + ICD_TERM_OFFSET_PHYS_DEV_TERM]                          # Store the loader_icd_term* in rax
     cmp     qword ptr [rax + (DISPATCH_OFFSET_ICD_TERM + (PTR_SIZE * \num))], 0 # Check if the next function in the chain is NULL
     je      terminError\num                                                     # Go to the error section if it is NULL
@@ -60,6 +68,7 @@ terminError\num:
 .macro DevExtTramp num
 .global vkdev_ext\num
 vkdev_ext\num:
+    _CET_ENDBR
     mov     rax, [rdi]                                                          # Dereference the handle to get the dispatch table
     jmp     [rax + (EXT_OFFSET_DEVICE_DISPATCH + (PTR_SIZE * \num))]            # Jump to the appropriate call chain
 .endm
@@ -69,6 +78,7 @@ vkdev_ext\num:
 .macro PhysDevExtTramp num
 .global vkPhysDevExtTramp\num
 vkPhysDevExtTramp\num:
+    _CET_ENDBR
     mov     eax, [esp + 4]                              # Load the wrapped VkPhysicalDevice into eax
     mov     ecx, [eax + PHYS_DEV_OFFSET_PHYS_DEV_TRAMP] # Load the unwrapped VkPhysicalDevice into ecx
     mov     [esp + 4], ecx                              # Overwrite the wrapped VkPhysicalDevice with the unwrapped one (on the stack)
@@ -79,6 +89,7 @@ vkPhysDevExtTramp\num:
 .macro PhysDevExtTermin num
 .global vkPhysDevExtTermin\num
 vkPhysDevExtTermin\num:
+    _CET_ENDBR
     mov     ecx, [esp + 4]                                                      # Move the wrapped VkPhysicalDevice into ecx
     mov     eax, [ecx + ICD_TERM_OFFSET_PHYS_DEV_TERM]                          # Store the loader_icd_term* in eax
     cmp     dword ptr [eax + (DISPATCH_OFFSET_ICD_TERM + (PTR_SIZE * \num))], 0 # Check if the next function in the chain is NULL
@@ -102,6 +113,7 @@ terminError\num:
 .macro DevExtTramp num
 .global vkdev_ext\num
 vkdev_ext\num:
+    _CET_ENDBR
     mov     eax, [esp + 4]                                                      # Dereference the handle to get the dispatch table
     jmp     [eax + (EXT_OFFSET_DEVICE_DISPATCH + (PTR_SIZE * \num))]            # Jump to the appropriate call chain
 .endm
