@@ -411,6 +411,7 @@ void ItemList::set_max_columns(int p_amount) {
 	ERR_FAIL_COND(p_amount < 0);
 	max_columns = p_amount;
 	update();
+	shape_changed = true;
 }
 int ItemList::get_max_columns() const {
 
