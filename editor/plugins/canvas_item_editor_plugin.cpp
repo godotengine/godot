@@ -67,13 +67,18 @@ class SnapDialog : public ConfirmationDialog {
 	SpinBox *grid_offset_y;
 	SpinBox *grid_step_x;
 	SpinBox *grid_step_y;
+	SpinBox *primary_grid_steps;
 	SpinBox *rotation_offset;
 	SpinBox *rotation_step;
+	SpinBox *scale_step;
 
 public:
 	SnapDialog() {
 		const int SPIN_BOX_GRID_RANGE = 16384;
 		const int SPIN_BOX_ROTATION_RANGE = 360;
+		const float SPIN_BOX_SCALE_MIN = 0.01f;
+		const float SPIN_BOX_SCALE_MAX = 100;
+
 		Label *label;
 		VBoxContainer *container;
 		GridContainer *child_container;
@@ -132,8 +137,28 @@ public:
 		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
 
+		child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+
+		label = memnew(Label);
+		label->set_text(TTR("Primary Line Every:"));
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+		child_container->add_child(label);
+
+		primary_grid_steps = memnew(SpinBox);
+		primary_grid_steps->set_min(0);
+		primary_grid_steps->set_step(1);
+		primary_grid_steps->set_max(100);
+		primary_grid_steps->set_allow_greater(true);
+		primary_grid_steps->set_suffix(TTR("steps"));
+		primary_grid_steps->set_h_size_flags(SIZE_EXPAND_FILL);
+		child_container->add_child(primary_grid_steps);
+
 		container->add_child(memnew(HSeparator));
 
+		// We need to create another GridContainer with the same column count,
+		// so we can put an HSeparator above
 		child_container = memnew(GridContainer);
 		child_container->set_columns(2);
 		container->add_child(child_container);
@@ -161,22 +186,44 @@ public:
 		rotation_step->set_suffix("deg");
 		rotation_step->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_step);
+
+		container->add_child(memnew(HSeparator));
+
+		child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+		label = memnew(Label);
+		label->set_text(TTR("Scale Step:"));
+		child_container->add_child(label);
+		label->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		scale_step = memnew(SpinBox);
+		scale_step->set_min(SPIN_BOX_SCALE_MIN);
+		scale_step->set_max(SPIN_BOX_SCALE_MAX);
+		scale_step->set_allow_greater(true);
+		scale_step->set_h_size_flags(SIZE_EXPAND_FILL);
+		scale_step->set_step(0.01f);
+		child_container->add_child(scale_step);
 	}
 
-	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const float p_rotation_offset, const float p_rotation_step) {
+	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const float p_rotation_offset, const float p_rotation_step, const float p_scale_step) {
 		grid_offset_x->set_value(p_grid_offset.x);
 		grid_offset_y->set_value(p_grid_offset.y);
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
+		primary_grid_steps->set_value(p_primary_grid_steps);
 		rotation_offset->set_value(p_rotation_offset * (180 / Math_PI));
 		rotation_step->set_value(p_rotation_step * (180 / Math_PI));
+		scale_step->set_value(p_scale_step);
 	}
 
-	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, float &p_rotation_offset, float &p_rotation_step) {
+	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, float &p_rotation_offset, float &p_rotation_step, float &p_scale_step) {
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
+		p_primary_grid_steps = int(primary_grid_steps->get_value());
 		p_rotation_offset = rotation_offset->get_value() / (180 / Math_PI);
 		p_rotation_step = rotation_step->get_value() / (180 / Math_PI);
+		p_scale_step = scale_step->get_value();
 	}
 };
 
@@ -898,7 +945,7 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 }
 
 void CanvasItemEditor::_snap_changed() {
-	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
+	((SnapDialog *)snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
 	grid_step_multiplier = 0;
 	viewport->update();
 }
@@ -1180,8 +1227,8 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 
 		if (panning) {
-			if (!b->is_pressed()) {
-				// Stop panning the viewport (for any mouse button press)
+			if (!b->is_pressed() && (pan_on_scroll || (b->get_button_index() != BUTTON_WHEEL_DOWN && b->get_button_index() != BUTTON_WHEEL_UP))) {
+				// Stop panning the viewport (for any mouse button press except zooming)
 				panning = false;
 			}
 		}
@@ -1791,7 +1838,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				if (_is_node_movable(canvas_item)) {
 
 					Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
-					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					drag_type = DRAG_SCALE_BOTH;
@@ -1825,10 +1872,11 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
 			Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
-			Transform2D unscaled_transform = (transform * parent_xform * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D unscaled_transform = (transform * parent_xform * canvas_item->_edit_get_transform()).orthonormalized();
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->get_shift();
+			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 			Point2 drag_from_local = simple_xform.xform(drag_from);
 			Point2 drag_to_local = simple_xform.xform(drag_to);
@@ -1859,6 +1907,12 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 					}
 				}
 			}
+
+			if (snap_scale && !is_ctrl) {
+				scale.x = roundf(scale.x / snap_scale_step) * snap_scale_step;
+				scale.y = roundf(scale.y / snap_scale_step) * snap_scale_step;
+			}
+
 			canvas_item->call("set_scale", scale);
 			return true;
 		}
@@ -2639,41 +2693,72 @@ void CanvasItemEditor::_draw_rulers() {
 }
 
 void CanvasItemEditor::_draw_grid() {
-	if (show_grid || grid_snap_active) {
-		//Draw the grid
-		Size2 s = viewport->get_size();
-		int last_cell = 0;
-		Transform2D xform = transform.affine_inverse();
 
+	if (show_grid || grid_snap_active) {
+		// Draw the grid
 		Vector2 real_grid_offset;
-		List<CanvasItem *> selection = _get_edited_canvas_items();
+		const List<CanvasItem *> selection = _get_edited_canvas_items();
+
 		if (snap_relative && selection.size() > 0) {
-			Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
+			const Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
 			real_grid_offset.x = fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
 			real_grid_offset.y = fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}
 
-		const Color grid_color = EditorSettings::get_singleton()->get("editors/2d/grid_color");
+		// Draw a "primary" line every several lines to make measurements easier.
+		// The step is configurable in the Configure Snap dialog.
+		const Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/2d/grid_color");
+		const Color primary_grid_color =
+				Color(secondary_grid_color.r, secondary_grid_color.g, secondary_grid_color.b, secondary_grid_color.a * 2.5);
+
+		const Size2 viewport_size = viewport->get_size();
+		const Transform2D xform = transform.affine_inverse();
+		int last_cell = 0;
+
 		if (grid_step.x != 0) {
-			for (int i = 0; i < s.width; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
-				if (i == 0)
+			for (int i = 0; i < viewport_size.width; i++) {
+				const int cell =
+						Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
+
+				if (i == 0) {
 					last_cell = cell;
-				if (last_cell != cell)
-					viewport->draw_line(Point2(i, 0), Point2(i, s.height), grid_color, Math::round(EDSCALE));
+				}
+
+				if (last_cell != cell) {
+					Color grid_color;
+					if (primary_grid_steps == 0) {
+						grid_color = secondary_grid_color;
+					} else {
+						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+					}
+
+					viewport->draw_line(Point2(i, 0), Point2(i, viewport_size.height), grid_color, Math::round(EDSCALE));
+				}
 				last_cell = cell;
 			}
 		}
 
 		if (grid_step.y != 0) {
-			for (int i = 0; i < s.height; i++) {
-				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / (grid_step.y * Math::pow(2.0, grid_step_multiplier))));
-				if (i == 0)
+			for (int i = 0; i < viewport_size.height; i++) {
+				const int cell =
+						Math::fast_ftoi(Math::floor((xform.xform(Vector2(0, i)).y - real_grid_offset.y) / (grid_step.y * Math::pow(2.0, grid_step_multiplier))));
+
+				if (i == 0) {
 					last_cell = cell;
-				if (last_cell != cell)
-					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_color, Math::round(EDSCALE));
+				}
+
+				if (last_cell != cell) {
+					Color grid_color;
+					if (primary_grid_steps == 0) {
+						grid_color = secondary_grid_color;
+					} else {
+						grid_color = cell % primary_grid_steps == 0 ? primary_grid_color : secondary_grid_color;
+					}
+
+					viewport->draw_line(Point2(0, i), Point2(viewport_size.width, i), grid_color, Math::round(EDSCALE));
+				}
 				last_cell = cell;
 			}
 		}
@@ -3074,7 +3159,7 @@ void CanvasItemEditor::_draw_selection() {
 			}
 		} else {
 
-			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 			viewport->draw_set_transform_matrix(simple_xform);
 			viewport->draw_texture(position_icon, -(position_icon->get_size() / 2));
@@ -3086,7 +3171,7 @@ void CanvasItemEditor::_draw_selection() {
 			if (canvas_item->_edit_use_pivot()) {
 
 				// Draw the node's pivot
-				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position() + canvas_item->_edit_get_pivot())).orthonormalized();
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 				viewport->draw_set_transform_matrix(simple_xform);
@@ -3131,7 +3216,7 @@ void CanvasItemEditor::_draw_selection() {
 			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
 			if ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 				if (_is_node_movable(canvas_item)) {
-					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
@@ -3350,7 +3435,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 
 		// Draw the node's position
 		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
-		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 		viewport->draw_set_transform_matrix(simple_xform);
 		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
@@ -4297,6 +4382,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_rotation);
 		} break;
+		case SNAP_USE_SCALE: {
+			snap_scale = !snap_scale;
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_SCALE);
+			snap_config_menu->get_popup()->set_item_checked(idx, snap_scale);
+		} break;
 		case SNAP_RELATIVE: {
 			snap_relative = !snap_relative;
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
@@ -4309,8 +4399,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
-			snap_dialog->popup_centered(Size2(220, 160));
+			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
 			skeleton_show_bones = !skeleton_show_bones;
@@ -4857,8 +4947,10 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
+	state["primary_grid_steps"] = primary_grid_steps;
 	state["snap_rotation_offset"] = snap_rotation_offset;
 	state["snap_rotation_step"] = snap_rotation_step;
+	state["snap_scale_step"] = snap_scale_step;
 	state["smart_snap_active"] = smart_snap_active;
 	state["grid_snap_active"] = grid_snap_active;
 	state["snap_node_parent"] = snap_node_parent;
@@ -4876,6 +4968,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
 	state["snap_rotation"] = snap_rotation;
+	state["snap_scale"] = snap_scale;
 	state["snap_relative"] = snap_relative;
 	state["snap_pixel"] = snap_pixel;
 	state["skeleton_show_bones"] = skeleton_show_bones;
@@ -4905,12 +4998,20 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		grid_step = state["grid_step"];
 	}
 
+	if (state.has("primary_grid_steps")) {
+		primary_grid_steps = state["primary_grid_steps"];
+	}
+
 	if (state.has("snap_rotation_step")) {
 		snap_rotation_step = state["snap_rotation_step"];
 	}
 
 	if (state.has("snap_rotation_offset")) {
 		snap_rotation_offset = state["snap_rotation_offset"];
+	}
+
+	if (state.has("snap_scale_step")) {
+		snap_scale_step = state["snap_scale_step"];
 	}
 
 	if (state.has("smart_snap_active")) {
@@ -5013,6 +5114,12 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		snap_config_menu->get_popup()->set_item_checked(idx, snap_rotation);
 	}
 
+	if (state.has("snap_scale")) {
+		snap_scale = state["snap_scale"];
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_SCALE);
+		snap_config_menu->get_popup()->set_item_checked(idx, snap_scale);
+	}
+
 	if (state.has("snap_relative")) {
 		snap_relative = state["snap_relative"];
 		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
@@ -5094,9 +5201,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
 	grid_step = Point2(10, 10);
+	primary_grid_steps = 8; // A power-of-two value works better as a default
 	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;
 	snap_rotation_step = 15 / (180 / Math_PI);
+	snap_scale_step = 0.1f;
 	smart_snap_active = false;
 	grid_snap_active = false;
 	snap_node_parent = true;
@@ -5319,6 +5428,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->connect("id_pressed", this, "_popup_callback");
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_scale_snap", TTR("Use Scale Snap")), SNAP_USE_SCALE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Relative")), SNAP_RELATIVE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
 	p->add_submenu_item(TTR("Smart Snapping"), "SmartSnapping");

@@ -157,6 +157,8 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns an array of MIDI device names.
+				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
 			</description>
 		</method>
 		<method name="get_current_video_driver" qualifiers="const">
@@ -699,6 +701,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Initialises the singleton for the system MIDI driver.
 			</description>
 		</method>
 		<method name="print_all_resources">

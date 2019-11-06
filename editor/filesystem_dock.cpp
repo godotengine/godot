@@ -115,6 +115,10 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->select(0);
 				file_item->set_as_cursor(0);
 			}
+			String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+			if (main_scene == file_metadata) {
+				file_item->set_custom_color(0, get_color("accent_color", "Editor"));
+			}
 			Array udata;
 			udata.push_back(tree_update_id);
 			udata.push_back(file_item);
@@ -1565,6 +1569,15 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MAIN_SCENE: {
+			// Set as main scene with selected scene file.
+			if (p_selected.size() == 1) {
+				ProjectSettings::get_singleton()->set("application/run/main_scene", p_selected[0]);
+				ProjectSettings::get_singleton()->save();
+				_update_tree(_compute_uncollapsed_paths());
+			}
+		} break;
+
 		case FILE_INSTANCE: {
 			// Instance all selected scenes.
 			Vector<String> paths;
@@ -2138,6 +2151,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("New Inherited Scene"), FILE_INHERIT);
+				p_popup->add_item(TTR("Set As Main Scene"), FILE_MAIN_SCENE);
 			} else {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scenes"), FILE_OPEN);
 			}

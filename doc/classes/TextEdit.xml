@@ -94,7 +94,7 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -110,8 +110,8 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
-				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">
@@ -310,7 +310,15 @@
 			<argument index="3" name="from_column" type="int">
 			</argument>
 			<description>
-				Perform a search inside the text. Search flags can be specified in the[code]SEARCH_*[/code] enum.
+				Perform a search inside the text. Search flags can be specified in the [code]SEARCH_*[/code] enum.
+				Returns an empty [code]PoolIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [code]SEARCH_RESULT_*[/code] enum, e.g:
+				[codeblock]
+				var result = search(key, flags, line, column)
+				if result.size() > 0:
+				    # result found
+				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
+				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="select">
@@ -503,6 +511,12 @@
 		</constant>
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
+		</constant>
+		<constant name="SEARCH_RESULT_COLUMN" value="0" enum="SearchResult">
+			Used to access the result column from [member search].
+		</constant>
+		<constant name="SEARCH_RESULT_LINE" value="1" enum="SearchResult">
+			Used to access the result line from [member search].
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (Copies and clears) the selected text.

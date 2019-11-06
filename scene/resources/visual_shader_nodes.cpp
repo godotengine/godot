@@ -475,27 +475,29 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 		String id = p_input_vars[2];
 
 		String code;
+		code += "\t{\n";
 		if (id == String()) {
-			code += "\tvec4 " + id + "_tex_read = vec4(0.0);\n";
+			code += "\t\tvec4 " + id + "_tex_read = vec4(0.0);\n";
 		} else {
 			if (p_input_vars[0] == String()) { // Use UV by default.
 
 				if (p_input_vars[1] == String()) {
-					code += "\tvec4 " + id + "_tex_read = texture( " + id + " , UV.xy );\n";
+					code += "\t\tvec4 " + id + "_tex_read = texture( " + id + " , UV.xy );\n";
 				} else {
-					code += "\tvec4 " + id + "_tex_read = textureLod( " + id + " , UV.xy , " + p_input_vars[1] + " );\n";
+					code += "\t\tvec4 " + id + "_tex_read = textureLod( " + id + " , UV.xy , " + p_input_vars[1] + " );\n";
 				}
 
 			} else if (p_input_vars[1] == String()) {
 				//no lod
-				code += "\tvec4 " + id + "_tex_read = texture( " + id + " , " + p_input_vars[0] + ".xy );\n";
+				code += "\t\tvec4 " + id + "_tex_read = texture( " + id + " , " + p_input_vars[0] + ".xy );\n";
 			} else {
-				code += "\tvec4 " + id + "_tex_read = textureLod( " + id + " , " + p_input_vars[0] + ".xy , " + p_input_vars[1] + " );\n";
+				code += "\t\tvec4 " + id + "_tex_read = textureLod( " + id + " , " + p_input_vars[0] + ".xy , " + p_input_vars[1] + " );\n";
 			}
 
-			code += "\t" + p_output_vars[0] + " = " + id + "_tex_read.rgb;\n";
-			code += "\t" + p_output_vars[1] + " = " + id + "_tex_read.a;\n";
+			code += "\t\t" + p_output_vars[0] + " = " + id + "_tex_read.rgb;\n";
+			code += "\t\t" + p_output_vars[1] + " = " + id + "_tex_read.a;\n";
 		}
+		code += "\t}\n";
 		return code;
 	}
 
@@ -905,6 +907,7 @@ void VisualShaderNodeCubeMap::_bind_methods() {
 
 VisualShaderNodeCubeMap::VisualShaderNodeCubeMap() {
 	texture_type = TYPE_DATA;
+	source = SOURCE_TEXTURE;
 }
 
 ////////////// Scalar Op

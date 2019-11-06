@@ -611,8 +611,16 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					}
 					var = ResourceLoader::load(path);
 
-					if (pinfo.hint_string == "Script")
-						debugObj->set_script(var);
+					if (pinfo.hint_string == "Script") {
+						if (debugObj->get_script() != var) {
+							debugObj->set_script(RefPtr());
+							Ref<Script> script(var);
+							if (!script.is_null()) {
+								ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
+								debugObj->set_script_and_instance(var, script_instance);
+							}
+						}
+					}
 				} else if (var.get_type() == Variant::OBJECT) {
 					if (((Object *)var)->is_class("EncodedObjectAsID")) {
 						var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
@@ -2416,6 +2424,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		info_message->set_valign(Label::VALIGN_CENTER);
 		info_message->set_align(Label::ALIGN_CENTER);
 		info_message->set_autowrap(true);
+		info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 		perf_draw->add_child(info_message);
 	}

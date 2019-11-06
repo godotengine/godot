@@ -1124,7 +1124,9 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	} else {
-		VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", this, "_update_render_thread")) {
+			VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+		}
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}

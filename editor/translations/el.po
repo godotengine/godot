@@ -355,6 +355,7 @@ msgstr "Δημιουργία %d νέων κομματιών και εισαγω�
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Δημιουργία"
 
@@ -498,15 +499,6 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Προσοχή: Επεξεργασία εισαγμένης κίνησης"
 
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Επιλογή όλων"
-
-#: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Αποεπιλογή Όλων"
-
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -644,7 +636,8 @@ msgid "Scale Ratio:"
 msgstr "Λόγος μεγέθυνσης:"
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
+#, fuzzy
+msgid "Select Tracks to Copy"
 msgstr "Επιλογή κομματιών για αντιγραφή:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
@@ -655,6 +648,11 @@ msgstr "Επιλογή κομματιών για αντιγραφή:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Αντιγραφή"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select All/None"
+msgstr "Αποεπιλογή Όλων"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -984,7 +982,7 @@ msgid "Resource"
 msgstr "Πόρος"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Διαδρομή"
 
@@ -1449,7 +1447,8 @@ msgstr "Προσθήκη AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Διαδρομή:"
 
@@ -1503,7 +1502,7 @@ msgstr "Δημιουργία φακέλου"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Όνομα:"
 
@@ -1899,6 +1898,7 @@ msgid "Class:"
 msgstr "Κλάση:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Κληρονομεί:"
 
@@ -2987,7 +2987,7 @@ msgstr "Επιθεωρητής"
 msgid "Expand Bottom Panel"
 msgstr "Ανάπτυξη κάτω πλαισίου"
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr "Έξοδος"
 
@@ -3239,6 +3239,10 @@ msgstr "Επιλέξτε ένα Viewport"
 msgid "New Script"
 msgstr "Νέα Δέσμη Ενεργειών"
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+msgid "Extend Script"
+msgstr "Επέκταση Δέσμης Ενεργειών"
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr "Νέο %s"
@@ -3264,13 +3268,6 @@ msgstr "Επικόλληση"
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
 msgstr "Μετατροπή σε %s"
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
-msgstr "Άνοιγμα επεξεργαστή"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -4075,7 +4072,7 @@ msgstr "Όνομα προσθέτου:"
 msgid "Subfolder:"
 msgstr "Υποφάκελος:"
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr "Γλώσσα:"
 
@@ -4212,6 +4209,12 @@ msgstr "Ενεργοποίηση κουμπώματος και εμφάνιση 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
 msgstr "Σημείο"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
+msgstr "Άνοιγμα επεξεργαστή"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4565,7 +4568,6 @@ msgstr "Όνομα κίνησης:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Σφάλμα!"
 
@@ -4738,6 +4740,8 @@ msgid "Current:"
 msgstr "Τρέχων:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr "Προσθήκη εισόδου"
 
@@ -4946,6 +4950,10 @@ msgstr "Τελευταίο"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
 msgstr "Όλα"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No results for \"%s\"."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5250,21 +5258,28 @@ msgid "Ruler Mode"
 msgstr "Λειτουργία εκτέλεσης:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
+#, fuzzy
+msgid "Toggle smart snapping."
 msgstr "Εναλλαγή κουμπώματος."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
+#, fuzzy
+msgid "Use Smart Snap"
 msgstr "Χρήση κουμπώματος"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle grid snapping."
+msgstr "Εναλλαγή κουμπώματος."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Grid Snap"
+msgstr "Κούμπωμα στο πλέγμα"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
 msgstr "Επιλογές κουμπώματος"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to Grid"
-msgstr "Κούμπωμα στο Πλέγμα"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
@@ -5353,8 +5368,8 @@ msgid "View"
 msgstr "Κάμερα"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
+#, fuzzy
+msgid "Always Show Grid"
 msgstr "Εμφάνιση πλέγματος"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5620,6 +5635,11 @@ msgstr "Εναλλαγή γραμμικής εφαπτομένης καμπύλ�
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
 msgstr "Πατήστε το Shift για να επεξεργαστείτε εφαπτομένες μεμονωμένα"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Right click to add point"
+msgstr "Δεξί κλικ: Διαγραφή σημείου"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -6267,6 +6287,10 @@ msgid "Grid"
 msgstr "Πλέγμα"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Εμφάνιση πλέγματος"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
 msgstr "Προσαρμογή Πλέγματος:"
 
@@ -6323,6 +6347,7 @@ msgstr "Στιγμιότυπο:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr "Τύπος:"
 
@@ -6421,6 +6446,11 @@ msgstr "Αναφορά Κλάσης %s"
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "Εύρεση επόμενου"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr "Έυρεση προηγούμενου"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
@@ -6694,6 +6724,11 @@ msgstr "Σημεία Διακοπής"
 msgid "Cut"
 msgstr "Αποκοπή"
 
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Επιλογή όλων"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
 msgstr "Διαγραφή γραμμής"
@@ -6750,10 +6785,6 @@ msgstr "Μετατροπή Εσοχών σε Στηλοθέτες"
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "Αυτόματη στοιχειοθέτηση"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr "Έυρεση προηγούμενου"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -7081,6 +7112,11 @@ msgid "Freelook Speed Modifier"
 msgstr "Ταχύτητα ελεύθερου κοιτάγματος"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Slow Modifier"
+msgstr "Ταχύτητα ελεύθερου κοιτάγματος"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7119,6 +7155,10 @@ msgstr ""
 #, fuzzy
 msgid "Use Local Space"
 msgstr "Λειτουργία τοπικού χώρου (%s)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "Χρήση κουμπώματος"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7346,6 +7386,11 @@ msgstr "Sprite"
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
 msgstr "Απλοποίηση: "
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Shrink (Pixels): "
+msgstr "Αύξηση (Εικονοστοιχεία): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8146,11 +8191,8 @@ msgid "(GLES3 only)"
 msgstr "(Μόνο GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add input +"
-msgstr "Προσθήκη εισόδου +"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add output +"
+#, fuzzy
+msgid "Add Output"
 msgstr "Προσθήκη εξόδου +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8164,6 +8206,11 @@ msgstr "Διάνυσμα"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
 msgstr "Λογική Τιμή"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Sampler"
+msgstr "Προσθήκη δείγματος"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9099,15 +9146,19 @@ msgid "Resources to export:"
 msgstr "Πόροι για εξαγωγή:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Φίλτρα για εξαγωγή για αρχεία που δεν είναι πόροι (χωρισμένα με κόμμα π.χ. *."
 "json, *.txt)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Φίλτρα για την εξαίρεση αρχείων από το έργο (χωρισμένα με κόμμα π.χ. *.json, "
 "*.txt)"
@@ -10166,12 +10217,13 @@ msgstr ""
 "του κόμβου στις προεπιλογές τους."
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr "Επεξεργάσιμα παιδιά"
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
-msgstr "Φόρτωση ως μέσο κράτησης θέσης"
+#, fuzzy
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
+msgstr ""
+"Η απενεργοποίηση του «editable_instance» θα επαναφέρει όλες τις ιδιότητες "
+"του κόμβου στις προεπιλογές τους."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10249,6 +10301,14 @@ msgid "Clear Inheritance"
 msgstr "Εκκαθάριση κληρονομικότητας"
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr "Επεξεργάσιμα παιδιά"
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr "Φόρτωση ως μέσο κράτησης θέσης"
+
+#: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
 msgstr "Άνοιγμα Τεκμηρίωσης"
 
@@ -10263,10 +10323,6 @@ msgstr "Σύμπτυξη Όλων"
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Αλλαγή τύπου"
-
-#: editor/scene_tree_dock.cpp
-msgid "Extend Script"
-msgstr "Επέκταση Δέσμης Ενεργειών"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
@@ -10513,23 +10569,18 @@ msgid "Will load an existing script file."
 msgstr "Θα φορτώσει υπαρκτό αρχείο δέσμης ενεργειών."
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "Γλώσσα"
-
-#: editor/script_create_dialog.cpp
-msgid "Inherits"
-msgstr "Κληρονομεί"
-
-#: editor/script_create_dialog.cpp
-msgid "Class Name"
+#, fuzzy
+msgid "Class Name:"
 msgstr "Όνομα κλάσης"
 
 #: editor/script_create_dialog.cpp
-msgid "Template"
+#, fuzzy
+msgid "Template:"
 msgstr "Πρότυπο"
 
 #: editor/script_create_dialog.cpp
-msgid "Built-in Script"
+#, fuzzy
+msgid "Built-in Script:"
 msgstr "Ενσωμάτωση"
 
 #: editor/script_create_dialog.cpp
@@ -11204,12 +11255,37 @@ msgid "Add Function"
 msgstr "Προσθήκη συνάρτησης"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete input port"
+msgstr "Αφαίρεση θύρας εισόδου"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr "Προσθήκη μεταβλητής"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Προσθήκη σήματος"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Input Port"
+msgstr "Προσθήκη θύρας εισόδου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Προσθήκη θύρας εξόδου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Input Port"
+msgstr "Αφαίρεση θύρας εισόδου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Output Port"
+msgstr "Αφαίρεση θύρας εξόδου"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11258,8 +11334,18 @@ msgid "Add Preload Node"
 msgstr "Προσθέστε έναν κόμβο preload"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "Προσθέστε κόμβο/-ους από δέντρο"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11284,6 +11370,11 @@ msgstr "Αφαίρεση κόμβου VisualScript"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
 msgstr "Σύνδεση κόμβων"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Disconnect Nodes"
+msgstr "Αποσύνδεση κόμβων γραφήματος"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11321,6 +11412,28 @@ msgid "Paste VisualScript Nodes"
 msgstr "Επικόλληση κόμβων VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Can't create function with a function node."
+msgstr "Αδύνατη η αντιγραφή του κόμβου συνάρτησης."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select atleast one node with sequence port."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create Function"
+msgstr "Μετονομασία συνάρτησης"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "Αφαίρεση συνάρτησης"
 
@@ -11346,16 +11459,13 @@ msgid "Make Tool:"
 msgstr "Κάνε τοπικό"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr "Τύπος βάσης:"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Μέλη:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr "Διαθέσιμοι κόμβοι:"
+#, fuzzy
+msgid "function_name"
+msgstr "Συνάρτηση:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11377,6 +11487,16 @@ msgstr "Αντιγραφή κόμβων"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
 msgstr "Αποκοπή κόμβων"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Function"
+msgstr "Μετονομασία συνάρτησης"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Refresh Graph"
+msgstr "Αναναίωση"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11481,6 +11601,10 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
 msgstr "Το πακέτο πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
+
+#: platform/android/export/export.cpp
+msgid "Select device from the list"
+msgstr "Επιλέξτε συσκευή από την λίστα"
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
@@ -11610,6 +11734,10 @@ msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικ�
 #, fuzzy
 msgid "Required icon is not specified in the preset."
 msgstr "Το απαιτούμενο εικονίδιο δεν έχει καθοριστεί στην προεπιλογή."
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -12289,10 +12417,6 @@ msgstr ""
 "μέγεθος. Αλλιώς, κάντε το ένα RenderTarget και ορίστε το internal texture σε "
 "έναν κόμβο για απεικόνιση."
 
-#: scene/resources/visual_shader.cpp
-msgid "Input"
-msgstr "Είσοδος"
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12323,6 +12447,27 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Snap to Grid"
+#~ msgstr "Κούμπωμα στο Πλέγμα"
+
+#~ msgid "Add input +"
+#~ msgstr "Προσθήκη εισόδου +"
+
+#~ msgid "Language"
+#~ msgstr "Γλώσσα"
+
+#~ msgid "Inherits"
+#~ msgstr "Κληρονομεί"
+
+#~ msgid "Base Type:"
+#~ msgstr "Τύπος βάσης:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Διαθέσιμοι κόμβοι:"
+
+#~ msgid "Input"
+#~ msgstr "Είσοδος"
 
 #~ msgid "Properties:"
 #~ msgstr "Ιδιότητες:"
@@ -12718,9 +12863,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 #~ msgid "Go to parent folder"
 #~ msgstr "Πήγαινε στον γονικό φάκελο"
 
-#~ msgid "Select device from the list"
-#~ msgstr "Επιλέξτε συσκευή από την λίστα"
-
 #~ msgid "Open Scene(s)"
 #~ msgstr "Άνοιγμα σκηνής"
 
@@ -12964,9 +13106,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 #~ msgid "Warning"
 #~ msgstr "Προειδοποίηση"
 
-#~ msgid "Function:"
-#~ msgstr "Συνάρτηση:"
-
 #~ msgid "Variable"
 #~ msgstr "Μεταβλητή"
 
@@ -13029,9 +13168,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 
 #~ msgid "Connect Graph Nodes"
 #~ msgstr "Σύνδεση κόμβων γραφήματος"
-
-#~ msgid "Disconnect Graph Nodes"
-#~ msgstr "Αποσύνδεση κόμβων γραφήματος"
 
 #~ msgid "Remove Shader Graph Node"
 #~ msgstr "Αφαίρεση κόμβου γραφήματος"
@@ -13853,9 +13989,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 
 #~ msgid "ERROR: Couldn't load sample!"
 #~ msgstr "ΣΦΑΛΜΑ: Δεν ήταν δυνατή η φόρτωση δείγματος!"
-
-#~ msgid "Add Sample"
-#~ msgstr "Προσθήκη δείγματος"
 
 #~ msgid "Rename Sample"
 #~ msgstr "Μετονομασία δείγματος"

@@ -260,6 +260,7 @@ private:
 	int tab_closing;
 
 	bool exiting;
+	bool dimmed;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
@@ -850,6 +851,7 @@ public:
 	void restart_editor();
 
 	void dim_editor(bool p_dimming, bool p_force_dim = false);
+	bool is_editor_dimmed() const;
 
 	void edit_current() { _edit_current(); };
 

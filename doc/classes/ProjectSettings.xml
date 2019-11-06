@@ -145,6 +145,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
 		<method name="set_order">
@@ -166,6 +167,11 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the value of a setting.
+				[b]Example:[/b]
+				[codeblock]
+				ProjectSettings.set_setting("application/config/name", "Example")
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -421,9 +427,6 @@
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
-		</member>
-		<member name="editor/active" type="bool" setter="" getter="" default="false">
-			Internal editor setting, don't touch.
 		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 		</member>

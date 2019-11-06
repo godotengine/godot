@@ -571,6 +571,7 @@ void ScriptTextEditor::_validate_script() {
 		String error_text = "error(" + itos(line) + "," + itos(col) + "): " + errortxt;
 		code_editor->set_error(error_text);
 		code_editor->set_error_pos(line - 1, col - 1);
+		script_is_valid = false;
 	} else {
 		code_editor->set_error("");
 		line = -1;
@@ -585,6 +586,7 @@ void ScriptTextEditor::_validate_script() {
 
 			functions.push_back(E->get());
 		}
+		script_is_valid = true;
 	}
 	_update_connected_methods();
 
@@ -967,7 +969,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	text_edit->clear_info_icons();
 	missing_connections.clear();
 
-	if (!script->is_valid()) {
+	if (!script_is_valid) {
 		return;
 	}
 
@@ -1000,10 +1002,18 @@ void ScriptTextEditor::_update_connected_methods() {
 
 			if (!ClassDB::has_method(script->get_instance_base_type(), connection.method)) {
 				int line = -1;
-				if (script->has_method(connection.method)) {
-					line = script->get_member_line(connection.method);
-					text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
-					methods_found.insert(connection.method);
+
+				for (int j = 0; j < functions.size(); j++) {
+					String name = functions[j].get_slice(":", 0);
+					if (name == connection.method) {
+						line = functions[j].get_slice(":", 1).to_int();
+						text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
+						methods_found.insert(connection.method);
+						break;
+					}
+				}
+
+				if (line >= 0) {
 					continue;
 				}
 
@@ -1728,6 +1738,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 ScriptTextEditor::ScriptTextEditor() {
 
 	theme_loaded = false;
+	script_is_valid = false;
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);

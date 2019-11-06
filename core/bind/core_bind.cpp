@@ -3165,6 +3165,9 @@ Ref<JSONParseResult> _JSON::parse(const String &p_json) {
 
 	result->error = JSON::parse(p_json, result->result, result->error_string, result->error_line);
 
+	if (result->error != OK) {
+		ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
+	}
 	return result;
 }
 

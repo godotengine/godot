@@ -264,7 +264,7 @@ public:
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
 	void clear_custom_types();
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category);
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);

@@ -65,6 +65,7 @@ size_t ZSTD_compressBlock_doubleFast_generic(
     const U32 endIndex = (U32)((size_t)(istart - base) + srcSize);
     const U32 lowestValid = ms->window.dictLimit;
     const U32 maxDistance = 1U << cParams->windowLog;
+    /* presumes that, if there is a dictionary, it must be using Attach mode */
     const U32 prefixLowestIndex = (endIndex - lowestValid > maxDistance) ? endIndex - maxDistance : lowestValid;
     const BYTE* const prefixLowest = base + prefixLowestIndex;
     const BYTE* const iend = istart + srcSize;
@@ -369,9 +370,7 @@ static size_t ZSTD_compressBlock_doubleFast_extDict_generic(
     const BYTE* const ilimit = iend - 8;
     const BYTE* const base = ms->window.base;
     const U32   endIndex = (U32)((size_t)(istart - base) + srcSize);
-    const U32   maxDistance = 1U << cParams->windowLog;
-    const U32   lowestValid = ms->window.lowLimit;
-    const U32   lowLimit = (endIndex - lowestValid > maxDistance) ? endIndex - maxDistance : lowestValid;
+    const U32   lowLimit = ZSTD_getLowestMatchIndex(ms, endIndex, cParams->windowLog);
     const U32   dictStartIndex = lowLimit;
     const U32   dictLimit = ms->window.dictLimit;
     const U32   prefixStartIndex = (dictLimit > lowLimit) ? dictLimit : lowLimit;

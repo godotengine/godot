@@ -508,12 +508,11 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				if (p_format & ARRAY_COMPRESS_TANGENT) {
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
-						uint8_t xyzw[4] = {
-							(uint8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 1] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 2] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
+						int8_t xyzw[4] = {
+							(int8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 1] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 2] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
 						};
 
 						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4);
