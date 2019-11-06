@@ -132,6 +132,7 @@ void TextureEditor::_bind_methods() {
 
 TextureEditor::TextureEditor() {
 
+	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
 }
 
