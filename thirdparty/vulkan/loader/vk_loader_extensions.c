@@ -527,6 +527,16 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
     table->CmdDrawIndirectCountKHR = (PFN_vkCmdDrawIndirectCountKHR)gdpa(dev, "vkCmdDrawIndirectCountKHR");
     table->CmdDrawIndexedIndirectCountKHR = (PFN_vkCmdDrawIndexedIndirectCountKHR)gdpa(dev, "vkCmdDrawIndexedIndirectCountKHR");
 
+    // ---- VK_KHR_timeline_semaphore extension commands
+    table->GetSemaphoreCounterValueKHR = (PFN_vkGetSemaphoreCounterValueKHR)gdpa(dev, "vkGetSemaphoreCounterValueKHR");
+    table->WaitSemaphoresKHR = (PFN_vkWaitSemaphoresKHR)gdpa(dev, "vkWaitSemaphoresKHR");
+    table->SignalSemaphoreKHR = (PFN_vkSignalSemaphoreKHR)gdpa(dev, "vkSignalSemaphoreKHR");
+
+    // ---- VK_KHR_pipeline_executable_properties extension commands
+    table->GetPipelineExecutablePropertiesKHR = (PFN_vkGetPipelineExecutablePropertiesKHR)gdpa(dev, "vkGetPipelineExecutablePropertiesKHR");
+    table->GetPipelineExecutableStatisticsKHR = (PFN_vkGetPipelineExecutableStatisticsKHR)gdpa(dev, "vkGetPipelineExecutableStatisticsKHR");
+    table->GetPipelineExecutableInternalRepresentationsKHR = (PFN_vkGetPipelineExecutableInternalRepresentationsKHR)gdpa(dev, "vkGetPipelineExecutableInternalRepresentationsKHR");
+
     // ---- VK_EXT_debug_marker extension commands
     table->DebugMarkerSetObjectTagEXT = (PFN_vkDebugMarkerSetObjectTagEXT)gdpa(dev, "vkDebugMarkerSetObjectTagEXT");
     table->DebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)gdpa(dev, "vkDebugMarkerSetObjectNameEXT");
@@ -687,6 +697,9 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     table->GetDeviceGroupSurfacePresentModes2EXT = (PFN_vkGetDeviceGroupSurfacePresentModes2EXT)gdpa(dev, "vkGetDeviceGroupSurfacePresentModes2EXT");
 #endif // VK_USE_PLATFORM_WIN32_KHR
+
+    // ---- VK_EXT_line_rasterization extension commands
+    table->CmdSetLineStippleEXT = (PFN_vkCmdSetLineStippleEXT)gdpa(dev, "vkCmdSetLineStippleEXT");
 
     // ---- VK_EXT_host_query_reset extension commands
     table->ResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)gdpa(dev, "vkResetQueryPoolEXT");
@@ -1138,6 +1151,16 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
     if (!strcmp(name, "CmdDrawIndirectCountKHR")) return (void *)table->CmdDrawIndirectCountKHR;
     if (!strcmp(name, "CmdDrawIndexedIndirectCountKHR")) return (void *)table->CmdDrawIndexedIndirectCountKHR;
 
+    // ---- VK_KHR_timeline_semaphore extension commands
+    if (!strcmp(name, "GetSemaphoreCounterValueKHR")) return (void *)table->GetSemaphoreCounterValueKHR;
+    if (!strcmp(name, "WaitSemaphoresKHR")) return (void *)table->WaitSemaphoresKHR;
+    if (!strcmp(name, "SignalSemaphoreKHR")) return (void *)table->SignalSemaphoreKHR;
+
+    // ---- VK_KHR_pipeline_executable_properties extension commands
+    if (!strcmp(name, "GetPipelineExecutablePropertiesKHR")) return (void *)table->GetPipelineExecutablePropertiesKHR;
+    if (!strcmp(name, "GetPipelineExecutableStatisticsKHR")) return (void *)table->GetPipelineExecutableStatisticsKHR;
+    if (!strcmp(name, "GetPipelineExecutableInternalRepresentationsKHR")) return (void *)table->GetPipelineExecutableInternalRepresentationsKHR;
+
     // ---- VK_EXT_debug_marker extension commands
     if (!strcmp(name, "DebugMarkerSetObjectTagEXT")) return (void *)table->DebugMarkerSetObjectTagEXT;
     if (!strcmp(name, "DebugMarkerSetObjectNameEXT")) return (void *)table->DebugMarkerSetObjectNameEXT;
@@ -1298,6 +1321,9 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     if (!strcmp(name, "GetDeviceGroupSurfacePresentModes2EXT")) return (void *)table->GetDeviceGroupSurfacePresentModes2EXT;
 #endif // VK_USE_PLATFORM_WIN32_KHR
+
+    // ---- VK_EXT_line_rasterization extension commands
+    if (!strcmp(name, "CmdSetLineStippleEXT")) return (void *)table->CmdSetLineStippleEXT;
 
     // ---- VK_EXT_host_query_reset extension commands
     if (!strcmp(name, "ResetQueryPoolEXT")) return (void *)table->ResetQueryPoolEXT;
@@ -1882,6 +1908,62 @@ VKAPI_ATTR void VKAPI_CALL CmdDrawIndexedIndirectCountKHR(
     uint32_t                                    stride) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
     disp->CmdDrawIndexedIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+
+// ---- VK_KHR_timeline_semaphore extension trampoline/terminators
+
+VKAPI_ATTR VkResult VKAPI_CALL GetSemaphoreCounterValueKHR(
+    VkDevice                                    device,
+    VkSemaphore                                 semaphore,
+    uint64_t*                                   pValue) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetSemaphoreCounterValueKHR(device, semaphore, pValue);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL WaitSemaphoresKHR(
+    VkDevice                                    device,
+    const VkSemaphoreWaitInfoKHR*               pWaitInfo,
+    uint64_t                                    timeout) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->WaitSemaphoresKHR(device, pWaitInfo, timeout);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL SignalSemaphoreKHR(
+    VkDevice                                    device,
+    const VkSemaphoreSignalInfoKHR*             pSignalInfo) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->SignalSemaphoreKHR(device, pSignalInfo);
+}
+
+
+// ---- VK_KHR_pipeline_executable_properties extension trampoline/terminators
+
+VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutablePropertiesKHR(
+    VkDevice                                    device,
+    const VkPipelineInfoKHR*                    pPipelineInfo,
+    uint32_t*                                   pExecutableCount,
+    VkPipelineExecutablePropertiesKHR*          pProperties) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetPipelineExecutablePropertiesKHR(device, pPipelineInfo, pExecutableCount, pProperties);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutableStatisticsKHR(
+    VkDevice                                    device,
+    const VkPipelineExecutableInfoKHR*          pExecutableInfo,
+    uint32_t*                                   pStatisticCount,
+    VkPipelineExecutableStatisticKHR*           pStatistics) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetPipelineExecutableStatisticsKHR(device, pExecutableInfo, pStatisticCount, pStatistics);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL GetPipelineExecutableInternalRepresentationsKHR(
+    VkDevice                                    device,
+    const VkPipelineExecutableInfoKHR*          pExecutableInfo,
+    uint32_t*                                   pInternalRepresentationCount,
+    VkPipelineExecutableInternalRepresentationKHR* pInternalRepresentations) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    return disp->GetPipelineExecutableInternalRepresentationsKHR(device, pExecutableInfo, pInternalRepresentationCount, pInternalRepresentations);
 }
 
 
@@ -3005,28 +3087,6 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateImagePipeSurfaceFUCHSIA(
 
 #endif // VK_USE_PLATFORM_FUCHSIA
 
-// ---- VK_EXT_metal_surface extension trampoline/terminators
-
-#ifdef VK_USE_PLATFORM_METAL_EXT
-VKAPI_ATTR VkResult VKAPI_CALL CreateMetalSurfaceEXT(
-    VkInstance                                  instance,
-    const VkMetalSurfaceCreateInfoEXT*          pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-    return disp->CreateMetalSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
-}
-
-VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMetalSurfaceEXT(
-    VkInstance                                  instance,
-    const VkMetalSurfaceCreateInfoEXT*          pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkSurfaceKHR*                               pSurface) {
-#error("Not implemented. Likely needs to be manually generated!");
-}
-
-#endif // VK_USE_PLATFORM_METAL_EXT
-
 // ---- VK_EXT_buffer_device_address extension trampoline/terminators
 
 VKAPI_ATTR VkDeviceAddress VKAPI_CALL GetBufferDeviceAddressEXT(
@@ -3109,6 +3169,17 @@ VKAPI_ATTR VkResult VKAPI_CALL ReleaseFullScreenExclusiveModeEXT(
 }
 
 #endif // VK_USE_PLATFORM_WIN32_KHR
+
+// ---- VK_EXT_line_rasterization extension trampoline/terminators
+
+VKAPI_ATTR void VKAPI_CALL CmdSetLineStippleEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    lineStippleFactor,
+    uint16_t                                    lineStipplePattern) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(commandBuffer);
+    disp->CmdSetLineStippleEXT(commandBuffer, lineStippleFactor, lineStipplePattern);
+}
+
 
 // ---- VK_EXT_host_query_reset extension trampoline/terminators
 
@@ -3403,6 +3474,34 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
     }
     if (!strcmp("vkCmdDrawIndexedIndirectCountKHR", name)) {
         *addr = (void *)CmdDrawIndexedIndirectCountKHR;
+        return true;
+    }
+
+    // ---- VK_KHR_timeline_semaphore extension commands
+    if (!strcmp("vkGetSemaphoreCounterValueKHR", name)) {
+        *addr = (void *)GetSemaphoreCounterValueKHR;
+        return true;
+    }
+    if (!strcmp("vkWaitSemaphoresKHR", name)) {
+        *addr = (void *)WaitSemaphoresKHR;
+        return true;
+    }
+    if (!strcmp("vkSignalSemaphoreKHR", name)) {
+        *addr = (void *)SignalSemaphoreKHR;
+        return true;
+    }
+
+    // ---- VK_KHR_pipeline_executable_properties extension commands
+    if (!strcmp("vkGetPipelineExecutablePropertiesKHR", name)) {
+        *addr = (void *)GetPipelineExecutablePropertiesKHR;
+        return true;
+    }
+    if (!strcmp("vkGetPipelineExecutableStatisticsKHR", name)) {
+        *addr = (void *)GetPipelineExecutableStatisticsKHR;
+        return true;
+    }
+    if (!strcmp("vkGetPipelineExecutableInternalRepresentationsKHR", name)) {
+        *addr = (void *)GetPipelineExecutableInternalRepresentationsKHR;
         return true;
     }
 
@@ -3908,16 +4007,6 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
     }
 #endif // VK_USE_PLATFORM_FUCHSIA
 
-    // ---- VK_EXT_metal_surface extension commands
-#ifdef VK_USE_PLATFORM_METAL_EXT
-    if (!strcmp("vkCreateMetalSurfaceEXT", name)) {
-        *addr = (ptr_instance->enabled_known_extensions.ext_metal_surface == 1)
-                     ? (void *)CreateMetalSurfaceEXT
-                     : NULL;
-        return true;
-    }
-#endif // VK_USE_PLATFORM_METAL_EXT
-
     // ---- VK_EXT_buffer_device_address extension commands
     if (!strcmp("vkGetBufferDeviceAddressEXT", name)) {
         *addr = (void *)GetBufferDeviceAddressEXT;
@@ -3961,6 +4050,12 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         return true;
     }
 #endif // VK_USE_PLATFORM_WIN32_KHR
+
+    // ---- VK_EXT_line_rasterization extension commands
+    if (!strcmp("vkCmdSetLineStippleEXT", name)) {
+        *addr = (void *)CmdSetLineStippleEXT;
+        return true;
+    }
 
     // ---- VK_EXT_host_query_reset extension commands
     if (!strcmp("vkResetQueryPoolEXT", name)) {
@@ -4037,12 +4132,6 @@ void extensions_create_instance(struct loader_instance *ptr_instance, const VkIn
         } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)) {
             ptr_instance->enabled_known_extensions.fuchsia_imagepipe_surface = 1;
 #endif // VK_USE_PLATFORM_FUCHSIA
-
-    // ---- VK_EXT_metal_surface extension commands
-#ifdef VK_USE_PLATFORM_METAL_EXT
-        } else if (0 == strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_METAL_SURFACE_EXTENSION_NAME)) {
-            ptr_instance->enabled_known_extensions.ext_metal_surface = 1;
-#endif // VK_USE_PLATFORM_METAL_EXT
         }
     }
 }

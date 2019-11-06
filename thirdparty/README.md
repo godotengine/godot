@@ -526,7 +526,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: 1.1.113
+- Version: 1.1.127
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
