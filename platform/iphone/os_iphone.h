@@ -37,7 +37,10 @@
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 
+#ifdef CAMERA_IOS_ENABLED
 #include "camera_ios.h"
+#endif
+
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
@@ -62,7 +65,9 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
+#ifdef CAMERA_IOS_ENABLED
 	CameraServer *camera_server;
+#endif
 
 #ifdef GAME_CENTER_ENABLED
 	GameCenter *game_center;

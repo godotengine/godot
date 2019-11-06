@@ -164,7 +164,9 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
+#ifdef CAMERA_IOS_ENABLED
 	camera_server = memnew(CameraIOS);
+#endif
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -361,10 +363,12 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
+#ifdef CAMERA_IOS_ENABLED
 	if (camera_server) {
 		memdelete(camera_server);
 		camera_server = NULL;
 	}
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
