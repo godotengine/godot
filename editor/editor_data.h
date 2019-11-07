@@ -275,6 +275,7 @@ public:
 	void clear();
 
 	List<Node *> &get_selected_node_list();
+	List<Node *> get_full_selected_node_list();
 	Map<Node *, Object *> &get_selection() { return selection; }
 
 	EditorSelection();

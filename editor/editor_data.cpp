@@ -1146,6 +1146,16 @@ List<Node *> &EditorSelection::get_selected_node_list() {
 	return selected_node_list;
 }
 
+List<Node *> EditorSelection::get_full_selected_node_list() {
+
+	List<Node *> node_list;
+	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
+		node_list.push_back(E->key());
+	}
+
+	return node_list;
+}
+
 void EditorSelection::clear() {
 
 	while (!selection.empty()) {
