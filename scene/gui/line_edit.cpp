@@ -558,7 +558,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						selection_delete();
 						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
 						append_at_cursor(ucodestr);
-						_text_changed();
 						accept_event();
 					}
 
@@ -948,13 +947,6 @@ void LineEdit::paste_text() {
 
 		if (selection.enabled) selection_delete();
 		append_at_cursor(paste_buffer);
-
-		if (!text_changed_dirty) {
-			if (is_inside_tree()) {
-				MessageQueue::get_singleton()->push_call(this, "_text_changed");
-			}
-			text_changed_dirty = true;
-		}
 	}
 }
 
@@ -1335,6 +1327,9 @@ void LineEdit::append_at_cursor(String p_text) {
 		String post = text.substr(cursor_pos, text.length() - cursor_pos);
 		text = pre + p_text + post;
 		set_cursor_position(cursor_pos + p_text.length());
+		_text_changed();
+	} else {
+		_text_change_rejected(p_text);
 	}
 }
 
@@ -1641,6 +1636,10 @@ void LineEdit::_emit_text_change() {
 	text_changed_dirty = false;
 }
 
+void LineEdit::_text_change_rejected(String p_text) {
+	emit_signal("text_change_rejected", p_text);
+}
+
 void LineEdit::update_placeholder_width() {
 	if ((max_length <= 0) || (placeholder_translated.length() <= max_length)) {
 		Ref<Font> font = get_font("font");
@@ -1753,6 +1752,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_text")));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);

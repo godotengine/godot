@@ -128,6 +128,7 @@ private:
 
 	void _text_changed();
 	void _emit_text_change();
+	void _text_change_rejected(String p_text);
 	bool expand_to_text_length;
 
 	void update_placeholder_width();
