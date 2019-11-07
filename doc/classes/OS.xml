@@ -928,6 +928,9 @@
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
+		<member name="vsync_via_compositor" type="bool" setter="set_vsync_via_compositor" getter="is_vsync_via_compositor_enabled" default="false">
+			If [code]true[/code] and [code]vsync_enabled[/code] is true, the operating system's window compositor will be used for vsync when the compositor is enabled and the game is in windowed mode.
+		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
 			If [code]true[/code], removes the window frame.
 			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.

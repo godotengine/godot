@@ -1480,6 +1480,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	video_driver_index = p_video_driver;
 
 	gl_context->set_use_vsync(video_mode.use_vsync);
+	set_vsync_via_compositor(video_mode.vsync_via_compositor);
 #endif
 
 	visual_server = memnew(VisualServerRaster);
