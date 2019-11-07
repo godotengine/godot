@@ -203,7 +203,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 		}
 	} else {
 
-		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.")
+		WARN_PRINT("No VCS addon is initialized. Select a Version Control Addon from Project menu.");
 	}
 }
 

@@ -2374,13 +2374,13 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		if (tex3d.is_null()) {
 			f->close();
 			memdelete(f);
-			ERR_FAIL_COND_V(tex3d.is_null(), RES())
+			ERR_FAIL_COND_V(tex3d.is_null(), RES());
 		}
 	} else if (header[0] == 'G' && header[1] == 'D' && header[2] == 'A' && header[3] == 'T') {
 		if (texarr.is_null()) {
 			f->close();
 			memdelete(f);
-			ERR_FAIL_COND_V(texarr.is_null(), RES())
+			ERR_FAIL_COND_V(texarr.is_null(), RES());
 		}
 	} else {
 

@@ -233,7 +233,7 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 	if (state.json.has("scene")) {
 		loaded_scene = state.json["scene"];
 	} else {
-		WARN_PRINT("The load-time scene is not defined in the glTF2 file. Picking the first scene.")
+		WARN_PRINT("The load-time scene is not defined in the glTF2 file. Picking the first scene.");
 	}
 
 	if (scenes.size()) {

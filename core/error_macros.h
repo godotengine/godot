@@ -230,38 +230,38 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 // The current function returns.
 
 #define ERR_FAIL_NULL(m_param)                                                                              \
-	{                                                                                                       \
+	do {                                                                                                    \
 		if (unlikely(!m_param)) {                                                                           \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 			return;                                                                                         \
 		}                                                                                                   \
-	}
+	} while (0)
 
 #define ERR_FAIL_NULL_MSG(m_param, m_msg)                                                                                     \
-	{                                                                                                                         \
+	do {                                                                                                                      \
 		if (unlikely(!m_param)) {                                                                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", DEBUG_STR(m_msg)); \
 			return;                                                                                                           \
 		}                                                                                                                     \
-	}
+	} while (0)
 
 // The current function returns m_retval.
 
 #define ERR_FAIL_NULL_V(m_param, m_retval)                                                                  \
-	{                                                                                                       \
+	do {                                                                                                    \
 		if (unlikely(!m_param)) {                                                                           \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
 			return m_retval;                                                                                \
 		}                                                                                                   \
-	}
+	} while (0)
 
 #define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                                         \
-	{                                                                                                                         \
+	do {                                                                                                                      \
 		if (unlikely(!m_param)) {                                                                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", DEBUG_STR(m_msg)); \
 			return m_retval;                                                                                                  \
 		}                                                                                                                     \
-	}
+	} while (0)
 
 // Error condition macros.
 // Ensures that `m_cond` is not true.
@@ -269,193 +269,193 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 // The current function returns.
 
 #define ERR_FAIL_COND(m_cond)                                                                              \
-	{                                                                                                      \
+	do {                                                                                                   \
 		if (unlikely(m_cond)) {                                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true."); \
 			return;                                                                                        \
 		}                                                                                                  \
-	}
+	} while (0)
 
 #define ERR_FAIL_COND_MSG(m_cond, m_msg)                                                                                     \
-	{                                                                                                                        \
+	do {                                                                                                                     \
 		if (unlikely(m_cond)) {                                                                                              \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true.", DEBUG_STR(m_msg)); \
 			return;                                                                                                          \
 		}                                                                                                                    \
-	}
+	} while (0)
 
 // The current function returns m_retval.
 
 #define ERR_FAIL_COND_V(m_cond, m_retval)                                                                                            \
-	{                                                                                                                                \
+	do {                                                                                                                             \
 		if (unlikely(m_cond)) {                                                                                                      \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. returned: " _STR(m_retval)); \
 			return m_retval;                                                                                                         \
 		}                                                                                                                            \
-	}
+	} while (0)
 
 #define ERR_FAIL_COND_V_MSG(m_cond, m_retval, m_msg)                                                                                                   \
-	{                                                                                                                                                  \
+	do {                                                                                                                                               \
 		if (unlikely(m_cond)) {                                                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. returned: " _STR(m_retval), DEBUG_STR(m_msg)); \
 			return m_retval;                                                                                                                           \
 		}                                                                                                                                              \
-	}
+	} while (0)
 
 // The current loop continues.
 
-#define ERR_CONTINUE(m_cond)                                                                                           \
-	{                                                                                                                  \
-		if (unlikely(m_cond)) {                                                                                        \
+#define ERR_CONTINUE(m_cond)                                                                                             \
+	do {                                                                                                                 \
+		if (unlikely(m_cond)) {                                                                                          \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Continuing."); \
-			continue;                                                                                                  \
-		}                                                                                                              \
-	}
+			continue;                                                                                                    \
+		}                                                                                                                \
+	} while (0)
 
-#define ERR_CONTINUE_MSG(m_cond, m_msg)                                                                                                  \
-	{                                                                                                                                    \
-		if (unlikely(m_cond)) {                                                                                                          \
+#define ERR_CONTINUE_MSG(m_cond, m_msg)                                                                                                    \
+	do {                                                                                                                                   \
+		if (unlikely(m_cond)) {                                                                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Continuing.", DEBUG_STR(m_msg)); \
-			continue;                                                                                                                    \
-		}                                                                                                                                \
-	}
+			continue;                                                                                                                      \
+		}                                                                                                                                  \
+	} while (0)
 
 // The current loop breaks.
 
-#define ERR_BREAK(m_cond)                                                                                            \
-	{                                                                                                                \
-		if (unlikely(m_cond)) {                                                                                      \
+#define ERR_BREAK(m_cond)                                                                                              \
+	do {                                                                                                               \
+		if (unlikely(m_cond)) {                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Breaking."); \
-			break;                                                                                                   \
-		}                                                                                                            \
-	}
+			break;                                                                                                     \
+		}                                                                                                              \
+	} while (0)
 
-#define ERR_BREAK_MSG(m_cond, m_msg)                                                                                                   \
-	{                                                                                                                                  \
-		if (unlikely(m_cond)) {                                                                                                        \
+#define ERR_BREAK_MSG(m_cond, m_msg)                                                                                                     \
+	do {                                                                                                                                 \
+		if (unlikely(m_cond)) {                                                                                                          \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Breaking.", DEBUG_STR(m_msg)); \
-			break;                                                                                                                     \
-		}                                                                                                                              \
-	}
+			break;                                                                                                                       \
+		}                                                                                                                                \
+	} while (0)
 
 // Only use CRASH macros if there is no sensible fallback, that is, the error is unrecoverable.
 
 #define CRASH_COND(m_cond)                                                                                        \
-	{                                                                                                             \
+	do {                                                                                                          \
 		if (unlikely(m_cond)) {                                                                                   \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true."); \
 			GENERATE_TRAP();                                                                                      \
 		}                                                                                                         \
-	}
+	} while (0)
 
 #define CRASH_COND_MSG(m_cond, m_msg)                                                                                               \
-	{                                                                                                                               \
+	do {                                                                                                                            \
 		if (unlikely(m_cond)) {                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition \"" _STR(m_cond) "\" is true.", DEBUG_STR(m_msg)); \
 			GENERATE_TRAP();                                                                                                        \
 		}                                                                                                                           \
-	}
+	} while (0)
 
 // Generic error macros.
 
 // The current function returns.
 
 #define ERR_FAIL()                                                                     \
-	{                                                                                  \
+	do {                                                                               \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed."); \
 		return;                                                                        \
-	}
+	} while (0)
 
 #define ERR_FAIL_MSG(m_msg)                                                                              \
-	{                                                                                                    \
+	do {                                                                                                 \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed.", DEBUG_STR(m_msg)); \
 		return;                                                                                          \
-	}
+	} while (0)
 
 // The current function returns m_retval.
 
 #define ERR_FAIL_V(m_retval)                                                                                      \
-	{                                                                                                             \
+	do {                                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed, returning: " __STR(m_value)); \
 		return m_retval;                                                                                          \
-	}
+	} while (0)
 
 #define ERR_FAIL_V_MSG(m_value, m_msg)                                                                                              \
-	{                                                                                                                               \
+	do {                                                                                                                            \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/Function Failed, returning: " __STR(m_value), DEBUG_STR(m_msg)); \
 		return m_value;                                                                                                             \
-	}
+	} while (0)
 
 // Print error message macros.
 
 #define ERR_PRINT(m_msg)                                                      \
-	{                                                                         \
+	do {                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg)); \
-	}
+	} while (0)
 
 // Only prints the error message once.
 
 #define ERR_PRINT_ONCE(m_msg)                                                     \
-	{                                                                             \
+	do {                                                                          \
 		static bool first_print = true;                                           \
 		if (first_print) {                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg)); \
 			first_print = false;                                                  \
 		}                                                                         \
-	}
+	} while (0)
 
 // Print warning message macros.
 // To warn about deprecated usage, use `WARN_DEPRECATED` or `WARN_DEPRECATED_MSG` instead.
 
 #define WARN_PRINT(m_msg)                                                                          \
-	{                                                                                              \
+	do {                                                                                           \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
-	}
+	} while (0)
 
 // Only prints the warning message once.
 
 #define WARN_PRINT_ONCE(m_msg)                                                                         \
-	{                                                                                                  \
+	do {                                                                                               \
 		static bool first_print = true;                                                                \
 		if (first_print) {                                                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
 			first_print = false;                                                                       \
 		}                                                                                              \
-	}
+	} while (0)
 
 // Print deprecated warning message macros.
 // Only prints the warning message once.
 
-#define WARN_DEPRECATED                                                                                                                                    \
-	{                                                                                                                                                      \
-		static volatile bool warning_shown = false;                                                                                                        \
-		if (!warning_shown) {                                                                                                                              \
+#define WARN_DEPRECATED                                                                                                                                   \
+	do {                                                                                                                                                  \
+		static volatile bool warning_shown = false;                                                                                                       \
+		if (!warning_shown) {                                                                                                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                          \
-		}                                                                                                                                                  \
-	}
+			warning_shown = true;                                                                                                                         \
+		}                                                                                                                                                 \
+	} while (0)
 
-#define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                           \
-	{                                                                                                                                                                        \
-		static volatile bool warning_shown = false;                                                                                                                          \
-		if (!warning_shown) {                                                                                                                                                \
+#define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                          \
+	do {                                                                                                                                                                    \
+		static volatile bool warning_shown = false;                                                                                                                         \
+		if (!warning_shown) {                                                                                                                                               \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
-			warning_shown = true;                                                                                                                                            \
-		}                                                                                                                                                                    \
-	}
+			warning_shown = true;                                                                                                                                           \
+		}                                                                                                                                                                   \
+	} while (0)
 
 // Only use CRASH macros if there is no sensible fallback, that is, the error is unrecoverable.
 
 #define CRASH_NOW()                                                                           \
-	{                                                                                         \
+	do {                                                                                      \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/Function Failed."); \
 		GENERATE_TRAP();                                                                      \
-	}
+	} while (0)
 
 #define CRASH_NOW_MSG(m_msg)                                                                                    \
-	{                                                                                                           \
+	do {                                                                                                        \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/Function Failed.", DEBUG_STR(m_msg)); \
 		GENERATE_TRAP();                                                                                        \
-	}
+	} while (0)
 
 #endif
