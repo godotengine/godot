@@ -70,6 +70,7 @@ public:
 
 	void orthonormalize();
 	Transform orthonormalized() const;
+	bool is_equal_approx(const Transform &p_transform) const;
 
 	bool operator==(const Transform &p_transform) const;
 	bool operator!=(const Transform &p_transform) const;

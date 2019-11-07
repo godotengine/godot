@@ -69,6 +69,11 @@ void AABB::merge_with(const AABB &p_aabb) {
 	size = max - min;
 }
 
+bool AABB::is_equal_approx(const AABB &p_aabb) const {
+
+	return position.is_equal_approx(p_aabb.position) && size.is_equal_approx(p_aabb.size);
+}
+
 AABB AABB::intersection(const AABB &p_aabb) const {
 
 	Vector3 src_min = position;

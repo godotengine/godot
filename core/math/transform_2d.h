@@ -96,6 +96,7 @@ struct Transform2D {
 
 	void orthonormalize();
 	Transform2D orthonormalized() const;
+	bool is_equal_approx(const Transform2D &p_transform) const;
 
 	bool operator==(const Transform2D &p_transform) const;
 	bool operator!=(const Transform2D &p_transform) const;

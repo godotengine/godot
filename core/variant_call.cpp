@@ -351,12 +351,13 @@ struct _VariantCall {
 		r_ret = retval;
 	}
 
-	VCALL_LOCALMEM0R(Vector2, normalized);
-	VCALL_LOCALMEM0R(Vector2, length);
-	VCALL_LOCALMEM0R(Vector2, length_squared);
-	VCALL_LOCALMEM0R(Vector2, is_normalized);
 	VCALL_LOCALMEM1R(Vector2, distance_to);
 	VCALL_LOCALMEM1R(Vector2, distance_squared_to);
+	VCALL_LOCALMEM0R(Vector2, length);
+	VCALL_LOCALMEM0R(Vector2, length_squared);
+	VCALL_LOCALMEM0R(Vector2, normalized);
+	VCALL_LOCALMEM0R(Vector2, is_normalized);
+	VCALL_LOCALMEM1R(Vector2, is_equal_approx);
 	VCALL_LOCALMEM1R(Vector2, posmod);
 	VCALL_LOCALMEM1R(Vector2, posmodv);
 	VCALL_LOCALMEM1R(Vector2, project);
@@ -385,24 +386,28 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector2, sign);
 
 	VCALL_LOCALMEM0R(Rect2, get_area);
+	VCALL_LOCALMEM0R(Rect2, has_no_area);
+	VCALL_LOCALMEM1R(Rect2, has_point);
+	VCALL_LOCALMEM1R(Rect2, is_equal_approx);
 	VCALL_LOCALMEM1R(Rect2, intersects);
 	VCALL_LOCALMEM1R(Rect2, encloses);
-	VCALL_LOCALMEM0R(Rect2, has_no_area);
 	VCALL_LOCALMEM1R(Rect2, clip);
 	VCALL_LOCALMEM1R(Rect2, merge);
-	VCALL_LOCALMEM1R(Rect2, has_point);
+	VCALL_LOCALMEM1R(Rect2, expand);
 	VCALL_LOCALMEM1R(Rect2, grow);
 	VCALL_LOCALMEM2R(Rect2, grow_margin);
 	VCALL_LOCALMEM4R(Rect2, grow_individual);
-	VCALL_LOCALMEM1R(Rect2, expand);
 	VCALL_LOCALMEM0R(Rect2, abs);
 
 	VCALL_LOCALMEM0R(Vector3, min_axis);
 	VCALL_LOCALMEM0R(Vector3, max_axis);
+	VCALL_LOCALMEM1R(Vector3, distance_to);
+	VCALL_LOCALMEM1R(Vector3, distance_squared_to);
 	VCALL_LOCALMEM0R(Vector3, length);
 	VCALL_LOCALMEM0R(Vector3, length_squared);
-	VCALL_LOCALMEM0R(Vector3, is_normalized);
 	VCALL_LOCALMEM0R(Vector3, normalized);
+	VCALL_LOCALMEM0R(Vector3, is_normalized);
+	VCALL_LOCALMEM1R(Vector3, is_equal_approx);
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
@@ -418,8 +423,6 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, floor);
 	VCALL_LOCALMEM0R(Vector3, ceil);
 	VCALL_LOCALMEM0R(Vector3, round);
-	VCALL_LOCALMEM1R(Vector3, distance_to);
-	VCALL_LOCALMEM1R(Vector3, distance_squared_to);
 	VCALL_LOCALMEM1R(Vector3, posmod);
 	VCALL_LOCALMEM1R(Vector3, posmodv);
 	VCALL_LOCALMEM1R(Vector3, project);
@@ -433,6 +436,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Plane, normalized);
 	VCALL_LOCALMEM0R(Plane, center);
 	VCALL_LOCALMEM0R(Plane, get_any_point);
+	VCALL_LOCALMEM1R(Plane, is_equal_approx);
 	VCALL_LOCALMEM1R(Plane, is_point_over);
 	VCALL_LOCALMEM1R(Plane, distance_to);
 	VCALL_LOCALMEM2R(Plane, has_point);
@@ -467,6 +471,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Quat, length_squared);
 	VCALL_LOCALMEM0R(Quat, normalized);
 	VCALL_LOCALMEM0R(Quat, is_normalized);
+	VCALL_LOCALMEM1R(Quat, is_equal_approx);
 	VCALL_LOCALMEM0R(Quat, inverse);
 	VCALL_LOCALMEM1R(Quat, dot);
 	VCALL_LOCALMEM1R(Quat, xform);
@@ -492,6 +497,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Color, darkened);
 	VCALL_LOCALMEM1R(Color, to_html);
 	VCALL_LOCALMEM4R(Color, from_hsv);
+	VCALL_LOCALMEM1R(Color, is_equal_approx);
 
 	VCALL_LOCALMEM0R(RID, get_id);
 
@@ -739,13 +745,16 @@ struct _VariantCall {
 	VCALL_PTR0R(AABB, get_area);
 	VCALL_PTR0R(AABB, has_no_area);
 	VCALL_PTR0R(AABB, has_no_surface);
+	VCALL_PTR1R(AABB, has_point);
+	VCALL_PTR1R(AABB, is_equal_approx);
 	VCALL_PTR1R(AABB, intersects);
 	VCALL_PTR1R(AABB, encloses);
-	VCALL_PTR1R(AABB, merge);
-	VCALL_PTR1R(AABB, intersection);
 	VCALL_PTR1R(AABB, intersects_plane);
 	VCALL_PTR2R(AABB, intersects_segment);
-	VCALL_PTR1R(AABB, has_point);
+	VCALL_PTR1R(AABB, intersection);
+	VCALL_PTR1R(AABB, merge);
+	VCALL_PTR1R(AABB, expand);
+	VCALL_PTR1R(AABB, grow);
 	VCALL_PTR1R(AABB, get_support);
 	VCALL_PTR0R(AABB, get_longest_axis);
 	VCALL_PTR0R(AABB, get_longest_axis_index);
@@ -753,8 +762,6 @@ struct _VariantCall {
 	VCALL_PTR0R(AABB, get_shortest_axis);
 	VCALL_PTR0R(AABB, get_shortest_axis_index);
 	VCALL_PTR0R(AABB, get_shortest_axis_size);
-	VCALL_PTR1R(AABB, expand);
-	VCALL_PTR1R(AABB, grow);
 	VCALL_PTR1R(AABB, get_endpoint);
 
 	VCALL_PTR0R(Transform2D, inverse);
@@ -767,6 +774,7 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform2D, scaled);
 	VCALL_PTR1R(Transform2D, translated);
 	VCALL_PTR2R(Transform2D, interpolate_with);
+	VCALL_PTR1R(Transform2D, is_equal_approx);
 
 	static void _call_Transform2D_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
@@ -823,7 +831,7 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
-	VCALL_PTR2R(Basis, is_equal_approx);
+	VCALL_PTR2R(Basis, is_equal_approx); // TODO: Break compatibility in 4.0 to change this to an instance method (a.is_equal_approx(b) as VCALL_PTR1R) for consistency.
 	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);
@@ -834,6 +842,7 @@ struct _VariantCall {
 	VCALL_PTR0R(Transform, orthonormalized);
 	VCALL_PTR2R(Transform, looking_at);
 	VCALL_PTR2R(Transform, interpolate_with);
+	VCALL_PTR1R(Transform, is_equal_approx);
 
 	static void _call_Transform_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
@@ -1614,19 +1623,20 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
 	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
 
-	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, normalized, varray());
-	ADDFUNC0R(VECTOR2, REAL, Vector2, length, varray());
 	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
-	ADDFUNC0R(VECTOR2, REAL, Vector2, length_squared, varray());
-	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_normalized, varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to_point, VECTOR2, "to", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, direction_to, VECTOR2, "b", varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_to, VECTOR2, "to", varray());
 	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_squared_to, VECTOR2, "to", varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, length, varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, length_squared, varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, normalized, varray());
+	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_normalized, varray());
+	ADDFUNC1R(VECTOR2, BOOL, Vector2, is_equal_approx, VECTOR2, "v", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmod, REAL, "mod", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmodv, VECTOR2, "modv", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, project, VECTOR2, "b", varray());
-	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
-	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to_point, VECTOR2, "to", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", REAL, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "b", REAL, "t", varray());
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "t", varray());
@@ -1648,31 +1658,36 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, sign, varray());
 
 	ADDFUNC0R(RECT2, REAL, Rect2, get_area, varray());
+	ADDFUNC0R(RECT2, BOOL, Rect2, has_no_area, varray());
+	ADDFUNC1R(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
+	ADDFUNC1R(RECT2, BOOL, Rect2, is_equal_approx, RECT2, "rect", varray());
 	ADDFUNC1R(RECT2, BOOL, Rect2, intersects, RECT2, "b", varray());
 	ADDFUNC1R(RECT2, BOOL, Rect2, encloses, RECT2, "b", varray());
-	ADDFUNC0R(RECT2, BOOL, Rect2, has_no_area, varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, clip, RECT2, "b", varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, merge, RECT2, "b", varray());
-	ADDFUNC1R(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
+	ADDFUNC1R(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, grow, REAL, "by", varray());
 	ADDFUNC2R(RECT2, RECT2, Rect2, grow_margin, INT, "margin", REAL, "by", varray());
 	ADDFUNC4R(RECT2, RECT2, Rect2, grow_individual, REAL, "left", REAL, "top", REAL, "right", REAL, " bottom", varray());
-	ADDFUNC1R(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
 	ADDFUNC0R(RECT2, RECT2, Rect2, abs, varray());
 
 	ADDFUNC0R(VECTOR3, INT, Vector3, min_axis, varray());
 	ADDFUNC0R(VECTOR3, INT, Vector3, max_axis, varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, direction_to, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
 	ADDFUNC0R(VECTOR3, REAL, Vector3, length, varray());
 	ADDFUNC0R(VECTOR3, REAL, Vector3, length_squared, varray());
-	ADDFUNC0R(VECTOR3, BOOL, Vector3, is_normalized, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, normalized, varray());
+	ADDFUNC0R(VECTOR3, BOOL, Vector3, is_normalized, varray());
+	ADDFUNC1R(VECTOR3, BOOL, Vector3, is_equal_approx, VECTOR3, "v", varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", REAL, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", REAL, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "t", varray());
-	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, direction_to, VECTOR3, "b", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, move_toward, VECTOR3, "to", REAL, "delta", varray());
 	ADDFUNC1R(VECTOR3, REAL, Vector3, dot, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
@@ -1682,12 +1697,9 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, floor, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, ceil, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, round, varray());
-	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
-	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, posmod, REAL, "mod", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, posmodv, VECTOR3, "modv", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, project, VECTOR3, "b", varray());
-	ADDFUNC1R(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "n", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, bounce, VECTOR3, "n", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "n", varray());
@@ -1696,6 +1708,7 @@ void register_variant_methods() {
 	ADDFUNC0R(PLANE, PLANE, Plane, normalized, varray());
 	ADDFUNC0R(PLANE, VECTOR3, Plane, center, varray());
 	ADDFUNC0R(PLANE, VECTOR3, Plane, get_any_point, varray());
+	ADDFUNC1R(PLANE, BOOL, Plane, is_equal_approx, PLANE, "plane", varray());
 	ADDFUNC1R(PLANE, BOOL, Plane, is_point_over, VECTOR3, "point", varray());
 	ADDFUNC1R(PLANE, REAL, Plane, distance_to, VECTOR3, "point", varray());
 	ADDFUNC2R(PLANE, BOOL, Plane, has_point, VECTOR3, "point", REAL, "epsilon", varray(CMP_EPSILON));
@@ -1708,6 +1721,7 @@ void register_variant_methods() {
 	ADDFUNC0R(QUAT, REAL, Quat, length_squared, varray());
 	ADDFUNC0R(QUAT, QUAT, Quat, normalized, varray());
 	ADDFUNC0R(QUAT, BOOL, Quat, is_normalized, varray());
+	ADDFUNC1R(QUAT, BOOL, Quat, is_equal_approx, QUAT, "quat", varray());
 	ADDFUNC0R(QUAT, QUAT, Quat, inverse, varray());
 	ADDFUNC1R(QUAT, REAL, Quat, dot, QUAT, "b", varray());
 	ADDFUNC1R(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
@@ -1733,6 +1747,7 @@ void register_variant_methods() {
 	ADDFUNC1R(COLOR, COLOR, Color, darkened, REAL, "amount", varray());
 	ADDFUNC1R(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
 	ADDFUNC4R(COLOR, COLOR, Color, from_hsv, REAL, "h", REAL, "s", REAL, "v", REAL, "a", varray(1.0));
+	ADDFUNC1R(COLOR, BOOL, Color, is_equal_approx, COLOR, "color", varray());
 
 	ADDFUNC0R(_RID, INT, RID, get_id, varray());
 
@@ -1878,13 +1893,16 @@ void register_variant_methods() {
 	ADDFUNC0R(AABB, REAL, AABB, get_area, varray());
 	ADDFUNC0R(AABB, BOOL, AABB, has_no_area, varray());
 	ADDFUNC0R(AABB, BOOL, AABB, has_no_surface, varray());
+	ADDFUNC1R(AABB, BOOL, AABB, has_point, VECTOR3, "point", varray());
+	ADDFUNC1R(AABB, BOOL, AABB, is_equal_approx, AABB, "aabb", varray());
 	ADDFUNC1R(AABB, BOOL, AABB, intersects, AABB, "with", varray());
 	ADDFUNC1R(AABB, BOOL, AABB, encloses, AABB, "with", varray());
-	ADDFUNC1R(AABB, AABB, AABB, merge, AABB, "with", varray());
-	ADDFUNC1R(AABB, AABB, AABB, intersection, AABB, "with", varray());
 	ADDFUNC1R(AABB, BOOL, AABB, intersects_plane, PLANE, "plane", varray());
 	ADDFUNC2R(AABB, BOOL, AABB, intersects_segment, VECTOR3, "from", VECTOR3, "to", varray());
-	ADDFUNC1R(AABB, BOOL, AABB, has_point, VECTOR3, "point", varray());
+	ADDFUNC1R(AABB, AABB, AABB, intersection, AABB, "with", varray());
+	ADDFUNC1R(AABB, AABB, AABB, merge, AABB, "with", varray());
+	ADDFUNC1R(AABB, AABB, AABB, expand, VECTOR3, "to_point", varray());
+	ADDFUNC1R(AABB, AABB, AABB, grow, REAL, "by", varray());
 	ADDFUNC1R(AABB, VECTOR3, AABB, get_support, VECTOR3, "dir", varray());
 	ADDFUNC0R(AABB, VECTOR3, AABB, get_longest_axis, varray());
 	ADDFUNC0R(AABB, INT, AABB, get_longest_axis_index, varray());
@@ -1892,8 +1910,6 @@ void register_variant_methods() {
 	ADDFUNC0R(AABB, VECTOR3, AABB, get_shortest_axis, varray());
 	ADDFUNC0R(AABB, INT, AABB, get_shortest_axis_index, varray());
 	ADDFUNC0R(AABB, REAL, AABB, get_shortest_axis_size, varray());
-	ADDFUNC1R(AABB, AABB, AABB, expand, VECTOR3, "to_point", varray());
-	ADDFUNC1R(AABB, AABB, AABB, grow, REAL, "by", varray());
 	ADDFUNC1R(AABB, VECTOR3, AABB, get_endpoint, INT, "idx", varray());
 
 	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, inverse, varray());
@@ -1910,6 +1926,7 @@ void register_variant_methods() {
 	ADDFUNC1R(TRANSFORM2D, VECTOR2, Transform2D, basis_xform, VECTOR2, "v", varray());
 	ADDFUNC1R(TRANSFORM2D, VECTOR2, Transform2D, basis_xform_inv, VECTOR2, "v", varray());
 	ADDFUNC2R(TRANSFORM2D, TRANSFORM2D, Transform2D, interpolate_with, TRANSFORM2D, "transform", REAL, "weight", varray());
+	ADDFUNC1R(TRANSFORM2D, BOOL, Transform2D, is_equal_approx, TRANSFORM2D, "transform", varray());
 
 	ADDFUNC0R(BASIS, BASIS, Basis, inverse, varray());
 	ADDFUNC0R(BASIS, BASIS, Basis, transposed, varray());
@@ -1926,7 +1943,7 @@ void register_variant_methods() {
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
 	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "b", REAL, "t", varray());
-	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON));
+	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON)); // TODO: Replace in 4.0, see other TODO.
 	ADDFUNC0R(BASIS, QUAT, Basis, get_rotation_quat, varray());
 
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());
@@ -1937,6 +1954,7 @@ void register_variant_methods() {
 	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "ofs", varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
 	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, interpolate_with, TRANSFORM, "transform", REAL, "weight", varray());
+	ADDFUNC1R(TRANSFORM, BOOL, Transform, is_equal_approx, TRANSFORM, "transform", varray());
 	ADDFUNC1R(TRANSFORM, NIL, Transform, xform, NIL, "v", varray());
 	ADDFUNC1R(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
 

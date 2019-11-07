@@ -214,6 +214,11 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	}
 }
 
+bool Color::is_equal_approx(const Color &p_color) const {
+
+	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
+}
+
 void Color::invert() {
 
 	r = 1.0 - r;

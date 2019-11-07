@@ -541,7 +541,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 				if (CLOCK_TANGENT(apex_point, portal_left, left) >= 0) {
 					//process
-					if (Math::is_zero_approx(portal_left.distance_squared_to(apex_point)) || CLOCK_TANGENT(apex_point, left, portal_right) > 0) {
+					if (portal_left.is_equal_approx(apex_point) || CLOCK_TANGENT(apex_point, left, portal_right) > 0) {
 						left_poly = p;
 						portal_left = left;
 					} else {
@@ -551,7 +551,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						left_poly = p;
 						portal_left = apex_point;
 						portal_right = apex_point;
-						if (!path.size() || path[path.size() - 1] != apex_point)
+						if (!path.size() || !path[path.size() - 1].is_equal_approx(apex_point))
 							path.push_back(apex_point);
 						skip = true;
 					}
@@ -559,7 +559,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 				if (!skip && CLOCK_TANGENT(apex_point, portal_right, right) <= 0) {
 					//process
-					if (Math::is_zero_approx(portal_right.distance_squared_to(apex_point)) || CLOCK_TANGENT(apex_point, right, portal_left) < 0) {
+					if (portal_right.is_equal_approx(apex_point) || CLOCK_TANGENT(apex_point, right, portal_left) < 0) {
 						right_poly = p;
 						portal_right = right;
 					} else {
@@ -569,7 +569,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						right_poly = p;
 						portal_right = apex_point;
 						portal_left = apex_point;
-						if (!path.size() || path[path.size() - 1] != apex_point)
+						if (!path.size() || !path[path.size() - 1].is_equal_approx(apex_point))
 							path.push_back(apex_point);
 					}
 				}
@@ -595,7 +595,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 			}
 		}
 
-		if (!path.size() || !Math::is_zero_approx(path[path.size() - 1].distance_squared_to(begin_point))) {
+		if (!path.size() || !path[path.size() - 1].is_equal_approx(begin_point)) {
 			path.push_back(begin_point); // Add the begin point
 		} else {
 			path.write[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
@@ -603,7 +603,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		path.invert();
 
-		if (path.size() <= 1 || !Math::is_zero_approx(path[path.size() - 1].distance_squared_to(end_point))) {
+		if (path.size() <= 1 || !path[path.size() - 1].is_equal_approx(end_point)) {
 			path.push_back(end_point); // Add the end point
 		} else {
 			path.write[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
