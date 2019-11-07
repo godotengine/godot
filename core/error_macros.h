@@ -412,11 +412,6 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
 	}
 
-#define WARN_PRINTS(m_msg)                                                                         \
-	{                                                                                              \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
-	}
-
 // Only prints the warning message once.
 
 #define WARN_PRINT_ONCE(m_msg)                                                                         \

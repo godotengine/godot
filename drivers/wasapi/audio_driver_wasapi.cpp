@@ -327,7 +327,7 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 			break;
 
 		default:
-			WARN_PRINTS("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
+			WARN_PRINT("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
 			channels = 2;
 			break;
 	}

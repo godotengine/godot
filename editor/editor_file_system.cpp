@@ -1114,7 +1114,7 @@ void EditorFileSystem::_notification(int p_what) {
 				Thread::wait_to_finish(thread);
 				memdelete(thread);
 				thread = NULL;
-				WARN_PRINTS("Scan thread aborted...");
+				WARN_PRINT("Scan thread aborted...");
 				set_process(false);
 			}
 
