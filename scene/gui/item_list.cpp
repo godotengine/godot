@@ -490,8 +490,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (mb.is_valid() && (mb->get_button_index() == BUTTON_LEFT || (allow_rmb_select && mb->get_button_index() == BUTTON_RIGHT)) && mb->is_pressed()) {
-
+	if (mb.is_valid() && (mb->get_button_index() == BUTTON_LEFT || (mb->get_button_index() == BUTTON_RIGHT)) && mb->is_pressed() && !(allow_only_rmb_select && !allow_rmb_select )) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
 		Ref<StyleBox> bg = get_stylebox("bg");
@@ -581,6 +580,99 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
 		emit_signal("nothing_selected");
+	}
+	else if(mb.is_valid() && (mb->get_button_index() != BUTTON_LEFT && (allow_only_rmb_select && mb->get_button_index() == BUTTON_RIGHT)) && mb->is_pressed())
+	{
+		search_string = ""; //any mousepress cancels
+		Vector2 pos = mb->get_position();
+		Ref<StyleBox> bg = get_stylebox("bg");
+		pos -= bg->get_offset();
+		pos.y += scroll_bar->get_value();
+
+		int closest = -1;
+
+		for (int i = 0; i < items.size(); i++) {
+
+			Rect2 rc = items[i].rect_cache;
+			if (i % current_columns == current_columns - 1) {
+				rc.size.width = get_size().width; //not right but works
+			}
+
+			if (rc.has_point(pos)) {
+				closest = i;
+				break;
+			}
+		}
+
+		if (closest != -1) {
+
+			int i = closest;
+
+			if (select_mode == SELECT_MULTI && items[i].selected && mb->get_command()) {
+				unselect(i);
+				emit_signal("multi_selected", i, false);
+
+			} else if (select_mode == SELECT_MULTI && mb->get_shift() && current >= 0 && current < items.size() && current != i) {
+
+				int from = current;
+				int to = i;
+				if (i < current) {
+					SWAP(from, to);
+				}
+				for (int j = from; j <= to; j++) {
+					bool selected = !items[j].selected;
+					select(j, false);
+					if (selected)
+						emit_signal("multi_selected", j, true);
+				}
+
+				if (mb->get_button_index() == BUTTON_RIGHT) {
+
+					emit_signal("item_only_rmb_selected", i, get_local_mouse_position());
+				}
+			} else {
+
+				if (!mb->is_doubleclick() && !mb->get_command() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == BUTTON_LEFT) {
+					defer_select_single = i;
+					return;
+				}
+
+				if (items[i].selected && mb->get_button_index() == BUTTON_RIGHT) {
+
+					emit_signal("item_only_rmb_selected", i, get_local_mouse_position());
+				} else {
+					bool selected = items[i].selected;
+
+					select(i, select_mode == SELECT_SINGLE || !mb->get_command());
+
+					if (!selected || allow_reselect) {
+						if (select_mode == SELECT_SINGLE) {
+							emit_signal("item_selected", i);
+						} else
+							emit_signal("multi_selected", i, true);
+					}
+
+					if (mb->get_button_index() == BUTTON_RIGHT) {
+
+						emit_signal("item_only_rmb_selected", i, get_local_mouse_position());
+					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_doubleclick()) {
+
+						emit_signal("item_activated", i);
+					}
+				}
+			}
+
+			return;
+		}
+		if (mb->get_button_index() == BUTTON_RIGHT) {
+			emit_signal("only_rmb_clicked", mb->get_position());
+
+			return;
+		}
+
+		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
+		emit_signal("nothing_selected");	
+
 	}
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
@@ -1349,6 +1441,16 @@ bool ItemList::get_allow_rmb_select() const {
 	return allow_rmb_select;
 }
 
+void ItemList::set_allow_only_rmb_select(bool p_allow) {
+
+        allow_only_rmb_select = p_allow;
+}
+ 
+bool ItemList::get_allow_only_rmb_select() const {
+
+	return allow_only_rmb_select;
+}
+
 void ItemList::set_allow_reselect(bool p_allow) {
 
 	allow_reselect = p_allow;
@@ -1527,6 +1629,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_rmb_select", "allow"), &ItemList::set_allow_rmb_select);
 	ClassDB::bind_method(D_METHOD("get_allow_rmb_select"), &ItemList::get_allow_rmb_select);
 
+	ClassDB::bind_method(D_METHOD("set_allow_only_rmb_select", "allow"), &ItemList::set_allow_only_rmb_select);
+        ClassDB::bind_method(D_METHOD("get_allow_only_rmb_select"), &ItemList::get_allow_only_rmb_select);
+
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &ItemList::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &ItemList::get_allow_reselect);
 
@@ -1552,6 +1657,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_only_rmb_select"), "set_allow_only_rmb_select", "get_allow_only_rmb_select");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_GROUP("Columns", "");
@@ -1606,6 +1712,7 @@ ItemList::ItemList() {
 	ensure_selected_visible = false;
 	defer_select_single = -1;
 	allow_rmb_select = false;
+	allow_only_rmb_select = false;
 	allow_reselect = false;
 	do_autoscroll_to_bottom = false;
 

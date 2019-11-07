@@ -107,7 +107,8 @@ private:
 	int defer_select_single;
 
 	bool allow_rmb_select;
-
+	
+	bool allow_only_rmb_select;
 	bool allow_reselect;
 
 	real_t icon_scale;
@@ -207,6 +208,9 @@ public:
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
+
+	void set_allow_only_rmb_select(bool p_allow);
+	bool get_allow_only_rmb_select()const;
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
