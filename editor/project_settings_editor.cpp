@@ -1530,28 +1530,33 @@ void ProjectSettingsEditor::_update_translations() {
 	Array l_filter = l_filter_all[1];
 
 	int s = names.size();
-	if (!translation_locales_list_created) {
+	bool is_short_list_when_show_all_selected = filter_mode == SHOW_ALL_LOCALES && translation_filter_treeitems.size() < s;
+	bool is_full_list_when_show_only_selected = filter_mode == SHOW_ONLY_SELECTED_LOCALES && translation_filter_treeitems.size() == s;
+	bool should_recreate_locales_list = is_short_list_when_show_all_selected || is_full_list_when_show_only_selected;
+
+	if (!translation_locales_list_created || should_recreate_locales_list) {
 
 		translation_locales_list_created = true;
 		translation_filter->clear();
 		root = translation_filter->create_item(NULL);
 		translation_filter->set_hide_root(true);
-		translation_filter_treeitems.resize(s);
-
+		translation_filter_treeitems.clear();
 		for (int i = 0; i < s; i++) {
 			String n = names[i];
 			String l = langs[i];
+			bool is_checked = l_filter.has(l);
+			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked) continue;
+
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			t->set_text(0, n);
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
-			t->set_checked(0, l_filter.has(l));
-			translation_filter_treeitems.write[i] = t;
+			t->set_checked(0, is_checked);
+			translation_filter_treeitems.push_back(t);
 		}
 	} else {
-		for (int i = 0; i < s; i++) {
-
+		for (int i = 0; i < translation_filter_treeitems.size(); i++) {
 			TreeItem *t = translation_filter_treeitems[i];
 			t->set_checked(0, l_filter.has(t->get_tooltip(0)));
 		}
