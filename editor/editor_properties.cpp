@@ -1884,6 +1884,23 @@ void EditorPropertyColor::_bind_methods() {
 void EditorPropertyColor::update_property() {
 
 	picker->set_pick_color(get_edited_object()->get(get_edited_property()));
+	const Color color = picker->get_pick_color();
+
+	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
+	if (picker->is_editing_alpha()) {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s\nA: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2),
+				rtos(color.a).pad_decimals(2)));
+	} else {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2)));
+	}
 }
 
 void EditorPropertyColor::setup(bool p_show_alpha) {
