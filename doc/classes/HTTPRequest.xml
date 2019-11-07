@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HTTPRequest" inherits="Node" category="Core" version="3.2">
 	<brief_description>
-		A node with the ability to send HTTP requests.
+		A node with the ability to send HTTP(S) requests.
 	</brief_description>
 	<description>
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
+		[b]Example of loading and displaying an image using HTTPRequest:[/b]
+		[codeblock]
+		func _ready():
+		    # Create an HTTP request node and connect its completion signal.
+		    var http_request = HTTPRequest.new()
+		    add_child(http_request)
+		    http_request.connect("request_completed", self, "_http_request_completed")
+
+		    # Perform the HTTP request. The URL below returns a PNG image as of writing.
+		    var error = http_request.request("https://via.placeholder.com/512")
+		    if error != OK:
+		        push_error("An error occurred in the HTTP request.")
+
+
+		# Called when the HTTP request is completed.
+		func _http_request_completed(result, response_code, headers, body):
+		    var image = Image.new()
+		    var error = image.load_png_from_buffer(body)
+		    if error != OK:
+		        push_error("Couldn't load the image.")
+
+		    var texture = ImageTexture.new()
+		    texture.create_from_image(image)
+
+		    # Display the image in a TextureRect node.
+		    var texture_rect = TextureRect.new()
+		    add_child(texture_rect)
+		    texture_rect.texture = texture
+		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
