@@ -1201,7 +1201,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						if (p_stop_on_slope) {
 							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
-								gt.origin -= collision.travel;
+								gt.origin -= collision.travel.slide(p_floor_direction);
 								set_global_transform(gt);
 								return Vector3();
 							}
@@ -1265,7 +1265,7 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+					col.travel = col.travel.project(p_floor_direction);
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
