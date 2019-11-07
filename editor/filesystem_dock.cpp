@@ -71,11 +71,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		subdirectory_item->select(0);
 	}
 
-	if ((path.begins_with(lpath) && path != lpath)) {
-		subdirectory_item->set_collapsed(false);
-	} else {
-		subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
-	}
+	subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
 	if (searched_string.length() > 0 && dname.to_lower().find(searched_string) >= 0) {
 		parent_should_expand = true;
 	}
