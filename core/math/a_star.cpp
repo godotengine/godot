@@ -164,23 +164,23 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 	}
 
 	Segment s(p_id, p_with_id);
-	if (s.from == p_id) {
-		s.from_point = a;
-		s.to_point = b;
-	} else {
-		s.from_point = b;
-		s.to_point = a;
+	if (bidirectional) s.direction = Segment::BIDIRECTIONAL;
+
+	Set<Segment>::Element *element = segments.find(s);
+	if (element != NULL) {
+		s.direction |= element->get().direction;
+		if (s.direction == Segment::BIDIRECTIONAL) {
+			// Both are neighbours of each other now
+			a->unlinked_neighbours.remove(b->id);
+			b->unlinked_neighbours.remove(a->id);
+		}
+		segments.erase(element);
 	}
 
 	segments.insert(s);
 }
 
-void AStar::disconnect_points(int p_id, int p_with_id) {
-
-	Segment s(p_id, p_with_id);
-	ERR_FAIL_COND(!segments.has(s));
-
-	segments.erase(s);
+void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	Point *a;
 	bool a_exists = points.lookup(p_id, a);
@@ -190,10 +190,33 @@ void AStar::disconnect_points(int p_id, int p_with_id) {
 	bool b_exists = points.lookup(p_with_id, b);
 	CRASH_COND(!b_exists);
 
-	a->neighbours.remove(b->id);
-	a->unlinked_neighbours.remove(b->id);
-	b->neighbours.remove(a->id);
-	b->unlinked_neighbours.remove(a->id);
+	Segment s(p_id, p_with_id);
+	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
+
+	Set<Segment>::Element *element = segments.find(s);
+	if (element != NULL) {
+		// s is the new segment
+		// Erase the directions to be removed
+		s.direction = (element->get().direction & ~remove_direction);
+
+		a->neighbours.remove(b->id);
+		if (bidirectional) {
+			b->neighbours.remove(a->id);
+			if (element->get().direction != Segment::BIDIRECTIONAL) {
+				a->unlinked_neighbours.remove(b->id);
+				b->unlinked_neighbours.remove(a->id);
+			}
+		} else {
+			if (s.direction == Segment::NONE)
+				b->unlinked_neighbours.remove(a->id);
+			else
+				a->unlinked_neighbours.set(b->id, b);
+		}
+
+		segments.erase(element);
+		if (s.direction != Segment::NONE)
+			segments.insert(s);
+	}
 }
 
 bool AStar::has_point(int p_id) const {
@@ -227,10 +250,13 @@ PoolVector<int> AStar::get_point_connections(int p_id) {
 	return point_list;
 }
 
-bool AStar::are_points_connected(int p_id, int p_with_id) const {
+bool AStar::are_points_connected(int p_id, int p_with_id, bool bidirectional) const {
 
 	Segment s(p_id, p_with_id);
-	return segments.has(s);
+	const Set<Segment>::Element *element = segments.find(s);
+
+	return element != NULL &&
+		   (bidirectional || (element->get().direction & s.direction) == s.direction);
 }
 
 void AStar::clear() {
@@ -284,13 +310,17 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 
 	for (const Set<Segment>::Element *E = segments.front(); E; E = E->next()) {
 
-		if (!(E->get().from_point->enabled && E->get().to_point->enabled)) {
+		Point *from_point = nullptr, *to_point = nullptr;
+		points.lookup(E->get().u, from_point);
+		points.lookup(E->get().v, to_point);
+
+		if (!(from_point->enabled && to_point->enabled)) {
 			continue;
 		}
 
 		Vector3 segment[2] = {
-			E->get().from_point->pos,
-			E->get().to_point->pos,
+			from_point->pos,
+			to_point->pos,
 		};
 
 		Vector3 p = Geometry::get_closest_point_to_segment(p_point, segment);
@@ -532,8 +562,8 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar::connect_points, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar::disconnect_points);
-	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar::are_points_connected);
+	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar::disconnect_points, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar::are_points_connected, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar::get_point_count);
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar::get_point_capacity);
