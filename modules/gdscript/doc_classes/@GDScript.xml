@@ -839,6 +839,7 @@
 				printraw("B")
 				# Prints AB
 				[/codeblock]
+				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
