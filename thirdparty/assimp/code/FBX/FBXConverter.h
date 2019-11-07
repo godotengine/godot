@@ -123,7 +123,7 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	// collect and assign child nodes
-	void ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node);
+	void ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, aiMatrix4x4 geometric_transform);
 
 	// ------------------------------------------------------------------------------------------------
 	void ConvertLights(const Model &model, const std::string &orig_name);
@@ -166,11 +166,13 @@ private:
 	bool NeedsComplexTransformationChain(const Model &model);
 
 	const aiMatrix4x4 &GeneratePivotTransform(
-			const Model &model);
+			const Model &model,
+			aiMatrix4x4 &geometric_transform);
 
 	void MagicPivotAlgorithm(
 			aiMatrix4x4 chain[TransformationComp_MAXIMUM],
-			aiMatrix4x4 &result);
+			aiMatrix4x4 &result,
+			aiMatrix4x4 &geometric_transform);
 
 	// ------------------------------------------------------------------------------------------------
 	void SetupNodeMetadata(const Model &model, aiNode *nd);

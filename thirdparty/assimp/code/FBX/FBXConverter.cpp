@@ -139,7 +139,7 @@ void FBXConverter::ConvertRootNode() {
 	out->mRootNode->mName.Set(unique_name);
 
 	// root has ID 0
-	ConvertNodes(0L, out->mRootNode, out->mRootNode);
+	ConvertNodes(0L, out->mRootNode, out->mRootNode, aiMatrix4x4());
 }
 
 static std::string getAncestorBaseName(const aiNode *node) {
@@ -172,7 +172,7 @@ std::string FBXConverter::MakeUniqueNodeName(const Model *const model, const aiN
 /// todo: get bone from stack
 /// todo: make map of aiBone* to aiNode*
 /// then update convert clusters to the new format
-void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node) {
+void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, aiMatrix4x4 geometric_transform) {
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(id, "Model");
 
 	std::vector<aiNode *> nodes;
@@ -211,9 +211,11 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node) 
 				SetupNodeMetadata(*model, node);
 
 				// Handle FBX pivot data (explicitly must be done all the time)
-				new_abs_transform = GeneratePivotTransform(*model);
 
-				node->mTransformation = new_abs_transform;
+				aiMatrix4x4 node_geometric_transform;
+				new_abs_transform = GeneratePivotTransform(*model, node_geometric_transform);
+
+				node->mTransformation = new_abs_transform * node_geometric_transform * geometric_transform;
 				// attach geometry
 				ConvertModel(*model, node, root_node, new_abs_transform);
 
@@ -221,7 +223,7 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node) 
 				const std::vector<const Connection *> &child_conns = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
 
 				// recursion call - child nodes
-				ConvertNodes(model->ID(), node, root_node);
+				ConvertNodes(model->ID(), node, root_node, node_geometric_transform.Inverse() * geometric_transform);
 
 				if (doc.Settings().readLights) {
 					ConvertLights(*model, node_name);
@@ -583,7 +585,8 @@ bool FBXConverter::NeedsComplexTransformationChain(const Model &model) {
 
 void FBXConverter::MagicPivotAlgorithm(
 		aiMatrix4x4 chain[TransformationComp_MAXIMUM],
-		aiMatrix4x4 &result) {
+		aiMatrix4x4 &result,
+		aiMatrix4x4 &geometric_transform) {
 
 	// Maya pivots
 	aiMatrix4x4 T = chain[TransformationComp_Translation];
@@ -601,13 +604,16 @@ void FBXConverter::MagicPivotAlgorithm(
 	aiMatrix4x4 OR = chain[TransformationComp_GeometricRotation];
 	aiMatrix4x4 OS = chain[TransformationComp_GeometricScaling];
 
-	// Let's just compute maya max pivots together? :)
-	//result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * S * Sp.Inverse() * OT * OR * OS;
-	result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
+	// Calculate standard maya pivots
+	result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * S * Sp.Inverse();
+	// Calculate 3DS max pivot transform - use geometric space (e.g doesn't effect children nodes only the current node)
+	geometric_transform = OT * OR * OS;
+	//result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
 }
 
 const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
-		const Model &model) {
+		const Model &model,
+		aiMatrix4x4 &geometric_transform) {
 	const PropertyTable &props = model.Props();
 	const Model::RotOrder rot = model.RotationOrder();
 
@@ -620,12 +626,7 @@ const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
 		chain[x] = aiMatrix4x4();
 	}
 
-	ai_assert(TransformationComp_MAXIMUM < 32);
-
-	std::fill_n(chain, static_cast<unsigned int>(TransformationComp_MAXIMUM), aiMatrix4x4());
-
 	// generate transformation matrices for all the different transformation components
-
 	const aiVector3D &PreRotation = PropertyGet<aiVector3D>(props, "PreRotation", ok);
 	if (ok) {
 		GetRotationMatrix(rot, PreRotation, chain[TransformationComp_PreRotation]);
@@ -692,7 +693,7 @@ const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
 
 	aiMatrix4x4 transform;
 
-	MagicPivotAlgorithm(chain, transform);
+	MagicPivotAlgorithm(chain, transform, geometric_transform);
 
 	return transform;
 }
@@ -2535,7 +2536,6 @@ void FBXConverter::GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
 	NodeMap::const_iterator chain[TransformationComp_MAXIMUM];
 
 	bool has_any = false;
-	bool has_complex = false;
 
 	for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i) {
 		const TransformationComp comp = static_cast<TransformationComp>(i);
@@ -2733,7 +2733,16 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 
 	// some arguments to be removed
 	// input transform unimportant and string is old code
-	aiMatrix4x4 abs_transform = GeneratePivotTransform(target);
+	// this is broken in godot
+
+	// we do not use GeneratePivotTransform here as it has already been run
+	// we just read the chain directly
+	//aiMatrix4x4 out;
+	//MagicPivotAlgorithm(chain, out);
+
+	// Geometric transform used for 3DS Max
+	aiMatrix4x4 geometric_transform;
+	aiMatrix4x4 abs_transform = GeneratePivotTransform(target, geometric_transform);
 
 	abs_transform.Decompose(def_scale, def_rot, def_translate);
 
