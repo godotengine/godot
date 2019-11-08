@@ -92,14 +92,14 @@ public:
     */
 	enum TransformationComp {
 		TransformationComp_Translation,
+		TransformationComp_Scaling,
+		TransformationComp_Rotation,
 		TransformationComp_RotationOffset,
 		TransformationComp_RotationPivot,
 		TransformationComp_PreRotation,
-		TransformationComp_Rotation,
 		TransformationComp_PostRotation,
 		TransformationComp_ScalingOffset,
 		TransformationComp_ScalingPivot,
-		TransformationComp_Scaling,
 		TransformationComp_GeometricTranslation,
 		TransformationComp_GeometricRotation,
 		TransformationComp_GeometricScaling,
