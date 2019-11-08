@@ -121,7 +121,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 			return;                                                                                                 \
 		}                                                                                                           \
-	} while (0);
+	} while (0)
 
 #define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                                    \
 	do {                                                                                                                              \
@@ -129,7 +129,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
 			return;                                                                                                                   \
 		}                                                                                                                             \
-	} while (0);
+	} while (0)
 
 // The current function returns m_retval.
 
@@ -139,7 +139,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 			return m_retval;                                                                                        \
 		}                                                                                                           \
-	} while (0);
+	} while (0)
 
 #define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                        \
 	do {                                                                                                                              \
@@ -147,7 +147,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
 			return m_retval;                                                                                                          \
 		}                                                                                                                             \
-	} while (0);
+	} while (0)
 
 // Only use CRASH macros if there is no sensible fallback, that is, the error is unrecoverable.
 
@@ -157,7 +157,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
 			GENERATE_TRAP();                                                                                                  \
 		}                                                                                                                     \
-	} while (0);
+	} while (0)
 
 #define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                         \
 	do {                                                                                                                                    \
@@ -165,7 +165,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
 			GENERATE_TRAP();                                                                                                                \
 		}                                                                                                                                   \
-	} while (0);
+	} while (0)
 
 // Unsigned integer index out of bounds error macros.
 // Ensures an unsigned integer index `m_index` is less than `m_size`
@@ -178,7 +178,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 			return;                                                                                                 \
 		}                                                                                                           \
-	} while (0);
+	} while (0)
 
 #define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                           \
 	do {                                                                                                                              \
@@ -186,7 +186,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
 			return;                                                                                                                   \
 		}                                                                                                                             \
-	} while (0);
+	} while (0)
 
 // The current function returns m_retval.
 
@@ -196,7 +196,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 			return m_retval;                                                                                        \
 		}                                                                                                           \
-	} while (0);
+	} while (0)
 
 #define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                               \
 	do {                                                                                                                              \
@@ -204,7 +204,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg)); \
 			return m_retval;                                                                                                          \
 		}                                                                                                                             \
-	} while (0);
+	} while (0)
 
 // Only use CRASH macros if there is no sensible fallback, that is, the error is unrecoverable.
 
@@ -214,7 +214,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
 			GENERATE_TRAP();                                                                                                  \
 		}                                                                                                                     \
-	} while (0);
+	} while (0)
 
 #define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                                \
 	do {                                                                                                                                    \
@@ -222,7 +222,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), DEBUG_STR(m_msg), true); \
 			GENERATE_TRAP();                                                                                                                \
 		}                                                                                                                                   \
-	} while (0);
+	} while (0)
 
 // Null reference error macros.
 // Ensures a pointer `m_param` is not null.
