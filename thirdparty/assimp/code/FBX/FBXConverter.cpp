@@ -211,7 +211,6 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				SetupNodeMetadata(*model, node);
 
 				// Handle FBX pivot data (explicitly must be done all the time)
-
 				aiMatrix4x4 node_geometric_transform;
 				new_abs_transform = GeneratePivotTransform(*model, node_geometric_transform);
 
@@ -2274,19 +2273,11 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 	// the FBX DOM for it.
 	LayerMap layer_map;
 
-	const char *prop_whitelist[] = {
-		"Lcl Scaling",
-		"Lcl Rotation",
-		"Lcl Translation",
-		"DeformPercent"
-	};
-
 	std::map<std::string, morphAnimData *> morphAnimDatas;
 
 	for (const AnimationLayer *layer : layers) {
 		ai_assert(layer);
-		const AnimationCurveNodeList &nodes = layer->Nodes(prop_whitelist, 4);
-		for (const AnimationCurveNode *node : nodes) {
+		for (const AnimationCurveNode *node : layer->Nodes()) {
 			ai_assert(node);
 			const Model *const model = dynamic_cast<const Model *>(node->Target());
 			if (model) {
@@ -2516,14 +2507,9 @@ void FBXConverter::GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
 			continue;
 		}
 
+		std::cout << "valid curve node: " << node->Name() << std::endl;
+
 		curve_node = node;
-
-		// pivot animations have no curves so don't ignore them, thanks...
-		// if (node->Curves().empty()) {
-		//     //FBXImporter::LogWarn("no animation curves assigned to AnimationCurveNode: " + node->Name());
-		//     //continue;
-		// }
-
 		node_property_map[node->TargetProperty()].push_back(node);
 	}
 
@@ -2539,20 +2525,23 @@ void FBXConverter::GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
 
 	for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i) {
 		const TransformationComp comp = static_cast<TransformationComp>(i);
+		const char *str = NameTransformationCompProperty(comp);
 
-		chain[i] = node_property_map.find(NameTransformationCompProperty(comp));
+		chain[i] = node_property_map.find(str);
 		if (chain[i] != node_property_map.end()) {
-
+			printf("Detected valid Transform component: %s\n", str);
 			// check if this curves contains redundant information by looking
 			// up the corresponding node's transformation chain.
-			if (doc.Settings().optimizeEmptyAnimationCurves &&
-					IsRedundantAnimationData(target, comp, (*chain[i]).second)) {
+			// if (doc.Settings().optimizeEmptyAnimationCurves &&
+			// 		IsRedundantAnimationData(target, comp, (*chain[i]).second)) {
 
-				FBXImporter::LogDebug("dropping redundant animation channel for node " + target.Name());
-				continue;
-			}
+			// 	FBXImporter::LogDebug("dropping redundant animation channel for node " + target.Name());
+			// 	continue;
+			// }
 
 			has_any = true;
+		} else {
+			printf("Invalid Transform component: %s\n", str);
 		}
 	}
 
@@ -2731,31 +2720,14 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 	aiVector3D def_translate;
 	aiVector3D def_rot;
 
-	// some arguments to be removed
-	// input transform unimportant and string is old code
-	// this is broken in godot
-
-	// we do not use GeneratePivotTransform here as it has already been run
-	// we just read the chain directly
-	//aiMatrix4x4 out;
-	//MagicPivotAlgorithm(chain, out);
-
-	// Geometric transform used for 3DS Max
-	aiMatrix4x4 geometric_transform;
-	aiMatrix4x4 abs_transform = GeneratePivotTransform(target, geometric_transform);
-
-	abs_transform.Decompose(def_scale, def_rot, def_translate);
-
-	// todo basically lets just use abs_transform in
-	// ConvertTransformOrder_TRStoSRT()
-	// and we should have keyframes with pivot data precompiled out
-
-	// todo additionally would like to treble check that no models
-	// have keyframes for pivot transforms
-
 	KeyFrameListList scaling;
 	KeyFrameListList translation;
 	KeyFrameListList rotation;
+
+	// Max pivot test
+	KeyFrameListList geometric_scaling;
+	KeyFrameListList geometric_translation;
+	KeyFrameListList geometric_rotation;
 
 	if (chain[TransformationComp_Scaling] != iter_end) {
 		scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
@@ -2767,6 +2739,38 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 
 	if (chain[TransformationComp_Rotation] != iter_end) {
 		rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
+	}
+
+	// 3DS MAX pivot frames
+	if (chain[TransformationComp_GeometricScaling] != iter_end) {
+		std::cout << "found pivot geometric scaling " << std::endl;
+	}
+	if (chain[TransformationComp_GeometricRotation] != iter_end) {
+		std::cout << "found pivot geometric rotation " << std::endl;
+	}
+	if (chain[TransformationComp_GeometricTranslation] != iter_end) {
+		std::cout << "found pivot geometric translation " << std::endl;
+	}
+
+	// FBX SDK + Maya pivot frames
+	if (chain[TransformationComp_RotationOffset] != iter_end) {
+		std::cout << "found pivot rotation offset" << std::endl;
+	}
+	if (chain[TransformationComp_RotationPivot] != iter_end) {
+		std::cout << "found pivot rotation " << std::endl;
+	}
+	if (chain[TransformationComp_PreRotation] != iter_end) {
+		std::cout << "found pivot pre rotation" << std::endl;
+	}
+
+	if (chain[TransformationComp_PostRotation] != iter_end) {
+		std::cout << "found pivot post rotation " << std::endl;
+	}
+	if (chain[TransformationComp_ScalingOffset] != iter_end) {
+		std::cout << "found pivot scaling offset" << std::endl;
+	}
+	if (chain[TransformationComp_ScalingPivot] != iter_end) {
+		std::cout << "found pivot scaling" << std::endl;
 	}
 
 	KeyFrameListList joined;
@@ -2794,6 +2798,25 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 				def_rot);
 	}
 
+	for (size_t x = 0; x < times.size(); ++x) {
+		aiQuaternion rot = out_quat[x].mValue;
+		aiVector3D scale = out_scale[x].mValue;
+		aiVector3D trans = out_translation[x].mValue;
+
+		// TRS
+		aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
+		aiMatrix4x4 geometric_transform;
+		aiMatrix4x4 pivot_point = GeneratePivotTransform(target, geometric_transform);
+		final_matrix = pivot_point * geometric_translation * final_matrix;
+
+		final_matrix.Decompose(scale, rot, trans);
+
+		// now overwrite with pivot point
+		out_quat[x].mValue = rot;
+		out_scale[x].mValue = scale;
+		out_translation[x].mValue = trans;
+	}
+
 	// XXX remove duplicates / redundant keys which this operation did
 	// likely produce if not all three channels were equally dense.
 
@@ -2808,7 +2831,8 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 	return na.release();
 }
 
-FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<const AnimationCurveNode *> &nodes, int64_t start, int64_t stop) {
+FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<const AnimationCurveNode *> &nodes,
+		int64_t start, int64_t stop) {
 	KeyFrameListList inputs;
 	inputs.reserve(nodes.size() * 3);
 
@@ -2854,7 +2878,7 @@ FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<c
 			inputs.push_back(std::make_tuple(Keys, Values, mapto));
 		}
 	}
-	return inputs; // pray for NRVO :-)
+	return inputs;
 }
 
 KeyTimeList FBXConverter::GetKeyTimeList(const KeyFrameListList &inputs) {
@@ -2984,12 +3008,12 @@ void FBXConverter::InterpolateKeys(aiQuatKey *valOut, const KeyTimeList &keys, c
 
 		// take shortest path by checking the inner product
 		// http://www.3dkingdoms.com/weekly/weekly.php?a=36
-		if (quat.x * lastq.x + quat.y * lastq.y + quat.z * lastq.z + quat.w * lastq.w < 0) {
-			quat.x = -quat.x;
-			quat.y = -quat.y;
-			quat.z = -quat.z;
-			quat.w = -quat.w;
-		}
+		// if (quat.x * lastq.x + quat.y * lastq.y + quat.z * lastq.z + quat.w * lastq.w < 0) {
+		// 	quat.x = -quat.x;
+		// 	quat.y = -quat.y;
+		// 	quat.z = -quat.z;
+		// 	quat.w = -quat.w;
+		// }
 		lastq = quat;
 
 		valOut[i].mValue = quat;
@@ -3010,8 +3034,10 @@ void FBXConverter::ConvertTransformOrder_TRStoSRT(aiQuatKey *out_quat, aiVectorK
 		const aiVector3D &def_rotation) {
 	// todo refactor to use matrix transform and extract scale from caller :)
 	if (rotation.size()) {
+
 		InterpolateKeys(out_quat, times, rotation, def_rotation, maxTime, minTime, order);
 	} else {
+		// make dummy keys
 		for (size_t i = 0; i < times.size(); ++i) {
 			out_quat[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
 			out_quat[i].mValue = EulerToQuaternion(def_rotation, order);
@@ -3021,6 +3047,7 @@ void FBXConverter::ConvertTransformOrder_TRStoSRT(aiQuatKey *out_quat, aiVectorK
 	if (scaling.size()) {
 		InterpolateKeys(out_scale, times, scaling, def_scale, maxTime, minTime);
 	} else {
+		// make dummy keys
 		for (size_t i = 0; i < times.size(); ++i) {
 			out_scale[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
 			out_scale[i].mValue = def_scale;
@@ -3030,24 +3057,11 @@ void FBXConverter::ConvertTransformOrder_TRStoSRT(aiQuatKey *out_quat, aiVectorK
 	if (translation.size()) {
 		InterpolateKeys(out_translation, times, translation, def_translate, maxTime, minTime);
 	} else {
+		// make dummy keys
 		for (size_t i = 0; i < times.size(); ++i) {
 			out_translation[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
 			out_translation[i].mValue = def_translate;
 		}
-	}
-
-	const size_t count = times.size();
-	for (size_t i = 0; i < count; ++i) {
-		aiQuaternion &r = out_quat[i].mValue;
-		aiVector3D &s = out_scale[i].mValue;
-		aiVector3D &t = out_translation[i].mValue;
-
-		aiMatrix4x4 mat, temp;
-		aiMatrix4x4::Translation(t, mat);
-		mat *= aiMatrix4x4(r.GetMatrix());
-		mat *= aiMatrix4x4::Scaling(s, temp);
-
-		mat.Decompose(s, r, t);
 	}
 }
 
