@@ -23,7 +23,7 @@ SConscript('coremidi/SCsub')
 SConscript('winmidi/SCsub')
 
 # Graphics drivers
-if (env["platform"] != "server"):
+if (env["vulkan_enabled"]):
 #    SConscript('gles3/SCsub')
 #    SConscript('gles2/SCsub')
     SConscript('vulkan/SCsub')

@@ -120,6 +120,7 @@ opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
 opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
+opts.Add(BoolVariable('vulkan_enabled', "Enable vulkan", True))
 
 # Advanced options
 opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
