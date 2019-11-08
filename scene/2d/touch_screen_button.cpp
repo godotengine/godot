@@ -325,12 +325,8 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 }
 
 Rect2 TouchScreenButton::_edit_get_rect() const {
-	if (texture.is_null()) {
-		if (shape.is_valid())
-			return shape->get_rect();
-		else
-			return CanvasItem::_edit_get_rect();
-	}
+	if (texture.is_null())
+		return CanvasItem::_edit_get_rect();
 
 	return Rect2(Size2(), texture->get_size());
 }
