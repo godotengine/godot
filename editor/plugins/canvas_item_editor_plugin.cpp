@@ -55,6 +55,7 @@
 #define MAX_ZOOM 100
 
 #define RULER_WIDTH 15 * EDSCALE
+#define MOVE_HANDLE_DISTANCE 25
 #define SCALE_HANDLE_DISTANCE 25
 
 class SnapDialog : public ConfirmationDialog {
@@ -1960,6 +1961,22 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 				if (selection.size() > 0) {
 					drag_type = DRAG_MOVE;
+
+					CanvasItem *canvas_item = drag_selection[0];
+					Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
+					Transform2D unscaled_transform = (transform * parent_xform * canvas_item->_edit_get_transform()).orthonormalized();
+					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+					Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+					Rect2 x_handle_rect = Rect2(move_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+						drag_type = DRAG_MOVE_X;
+					}
+					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(move_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+						drag_type = DRAG_MOVE_Y;
+					}
+
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					drag_selection = selection;
 					_save_canvas_item_state(drag_selection);
@@ -1969,7 +1986,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (drag_type == DRAG_MOVE) {
+	if (drag_type == DRAG_MOVE || drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
 		// Move the nodes
 		if (m.is_valid()) {
 
@@ -1991,7 +2008,15 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			} else {
 				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
 			}
+
 			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, NULL, drag_selection);
+
+			if (drag_type == DRAG_MOVE_X) {
+				new_pos.y = previous_pos.y;
+			} else if (drag_type == DRAG_MOVE_Y) {
+				new_pos.x = previous_pos.x;
+			}
+
 			bool single_axis = m->get_shift();
 			if (single_axis) {
 				if (ABS(new_pos.x - previous_pos.x) > ABS(new_pos.y - previous_pos.y)) {
@@ -3211,9 +3236,48 @@ void CanvasItemEditor::_draw_selection() {
 				}
 			}
 
-			// Draw the rescale handles
+			// Draw the move handles
 			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
+			if (tool == TOOL_MOVE) {
+				if (_is_node_movable(canvas_item)) {
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
+					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+					Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+					viewport->draw_set_transform_matrix(simple_xform);
+
+					Vector<Point2> points;
+					points.push_back(Vector2(move_factor.x * EDSCALE, 5 * EDSCALE));
+					points.push_back(Vector2(move_factor.x * EDSCALE, -5 * EDSCALE));
+					points.push_back(Vector2((move_factor.x + 10) * EDSCALE, 0));
+
+					Vector<Color> colors;
+					colors.push_back(get_color("axis_x_color", "Editor"));
+					colors.push_back(get_color("axis_x_color", "Editor"));
+					colors.push_back(get_color("axis_x_color", "Editor"));
+
+					viewport->draw_polygon(points, colors);
+					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
+
+					points.clear();
+					points.push_back(Vector2(5 * EDSCALE, move_factor.y * -EDSCALE));
+					points.push_back(Vector2(-5 * EDSCALE, move_factor.y * -EDSCALE));
+					points.push_back(Vector2(0, (move_factor.y + 10) * -EDSCALE));
+
+					colors.clear();
+					colors.push_back(get_color("axis_y_color", "Editor"));
+					colors.push_back(get_color("axis_y_color", "Editor"));
+					colors.push_back(get_color("axis_y_color", "Editor"));
+
+					viewport->draw_polygon(points, colors);
+					viewport->draw_line(Point2(), Point2(0, -move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+
+					viewport->draw_set_transform_matrix(viewport->get_transform());
+				}
+			}
+
+			// Draw the rescale handles
 			if ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 				if (_is_node_movable(canvas_item)) {
 					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
