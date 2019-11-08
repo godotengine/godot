@@ -44,8 +44,11 @@ PoolVector<String> Theme::_get_icon_list(const String &p_type) const {
 
 	get_icon_list(p_type, &il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -57,8 +60,11 @@ PoolVector<String> Theme::_get_stylebox_list(const String &p_type) const {
 
 	get_stylebox_list(p_type, &il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -70,8 +76,11 @@ PoolVector<String> Theme::_get_stylebox_types(void) const {
 
 	get_stylebox_types(&il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -83,8 +92,11 @@ PoolVector<String> Theme::_get_font_list(const String &p_type) const {
 
 	get_font_list(p_type, &il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -96,8 +108,11 @@ PoolVector<String> Theme::_get_color_list(const String &p_type) const {
 
 	get_color_list(p_type, &il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -109,8 +124,11 @@ PoolVector<String> Theme::_get_constant_list(const String &p_type) const {
 
 	get_constant_list(p_type, &il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
@@ -122,8 +140,11 @@ PoolVector<String> Theme::_get_type_list(const String &p_type) const {
 
 	get_type_list(&il);
 	ilret.resize(il.size());
-	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-		ilret.push_back(E->get());
+
+	int i = 0;
+	PoolVector<String>::Write w = ilret.write();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
 	}
 	return ilret;
 }
