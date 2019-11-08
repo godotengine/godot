@@ -2767,6 +2767,8 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 
 	if (use_post_process) {
 		next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
+	} else if (storage->frame.current_rt->external.fbo != 0) {
+		next_buffer = storage->frame.current_rt->external.fbo;
 	} else {
 		// set next_buffer to front buffer so multisample blit can happen if needed
 		next_buffer = storage->frame.current_rt->fbo;
@@ -2795,9 +2797,15 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 
 		// In GLES2 Android Blit is not available, so just copy color texture manually
 		_copy_texture_to_buffer(storage->frame.current_rt->multisample_color, next_buffer);
+#else
+		// TODO: any other platform not supported? this will fail.. maybe we should just call _copy_texture_to_buffer here as well?
 #endif
 	} else if (use_post_process) {
-		_copy_texture_to_buffer(storage->frame.current_rt->color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		if (storage->frame.current_rt->external.fbo != 0) {
+			_copy_texture_to_buffer(storage->frame.current_rt->external.color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		} else {
+			_copy_texture_to_buffer(storage->frame.current_rt->color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		}
 	}
 
 	if (!use_post_process) {
@@ -3220,14 +3228,12 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	} else {
 		state.render_no_shadows = false;
-		if (storage->frame.current_rt->external.fbo != 0) {
+		if (storage->frame.current_rt->multisample_active) {
+			current_fb = storage->frame.current_rt->multisample_fbo;
+		} else if (storage->frame.current_rt->external.fbo != 0) {
 			current_fb = storage->frame.current_rt->external.fbo;
 		} else {
-			if (storage->frame.current_rt->multisample_active) {
-				current_fb = storage->frame.current_rt->multisample_fbo;
-			} else {
-				current_fb = storage->frame.current_rt->fbo;
-			}
+			current_fb = storage->frame.current_rt->fbo;
 		}
 		env = environment_owner.getornull(p_environment);
 
