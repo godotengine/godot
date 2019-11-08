@@ -51,8 +51,10 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
+			<argument index="1" name="allow_echo" type="bool" default="false">
+			</argument>
 			<description>
-				Returns [code]true[/code] if the given action is being pressed (and is not an echo event for [InputEventKey] events). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
+				Returns [code]true[/code] if the given action is being pressed (and is not an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is [code]true[/code]). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
 		</method>
 		<method name="is_action_released" qualifiers="const">

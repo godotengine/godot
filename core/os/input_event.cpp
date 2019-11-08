@@ -112,7 +112,7 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
-	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "allow_echo"), &InputEvent::is_action_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action"), &InputEvent::get_action_strength);
 
