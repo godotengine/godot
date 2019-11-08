@@ -153,6 +153,14 @@
 				Returns the vector with all components rounded down.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="v" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_normalized">
 			<return type="bool">
 			</return>

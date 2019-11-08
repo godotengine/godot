@@ -129,6 +129,14 @@
 				Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )[/code].
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="v" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_normalized">
 			<return type="bool">
 			</return>

@@ -77,9 +77,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="false">
-			If [code]true[/code], the [SoftBody] will respond to [RayCast]s.
-		</member>
 		<member name="areaAngular_stiffness" type="float" setter="set_areaAngular_stiffness" getter="get_areaAngular_stiffness" default="0.5">
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
@@ -102,6 +99,9 @@
 		<member name="pose_matching_coefficient" type="float" setter="set_pose_matching_coefficient" getter="get_pose_matching_coefficient" default="0.0">
 		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
+		</member>
+		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
+			If [code]true[/code], the [SoftBody] will respond to [RayCast]s.
 		</member>
 		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.
