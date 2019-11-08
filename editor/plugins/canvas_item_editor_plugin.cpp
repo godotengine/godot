@@ -3811,6 +3811,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		grid_snap_button->set_icon(get_icon("SnapGrid", "EditorIcons"));
 		snap_config_menu->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
 		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
+		override_camera_button->set_icon(get_icon("Camera2D", "EditorIcons"));
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
 		ruler_button->set_icon(get_icon("Ruler", "EditorIcons"));
 		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
@@ -3879,6 +3880,15 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_icon("Anchor", "EditorIcons"));
+	}
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (!is_visible() && override_camera_button->is_pressed()) {
+			ScriptEditorDebugger *debugger = ScriptEditor::get_singleton()->get_debugger();
+
+			debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+			override_camera_button->set_pressed(false);
+		}
 	}
 }
 
@@ -4221,6 +4231,15 @@ void CanvasItemEditor::_button_toggle_grid_snap(bool p_status) {
 	grid_snap_active = p_status;
 	viewport->update();
 }
+void CanvasItemEditor::_button_override_camera(bool p_pressed) {
+	ScriptEditorDebugger *debugger = ScriptEditor::get_singleton()->get_debugger();
+
+	if (p_pressed) {
+		debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_2D);
+	} else {
+		debugger->set_camera_override(ScriptEditorDebugger::OVERRIDE_NONE);
+	}
+}
 
 void CanvasItemEditor::_button_tool_select(int p_index) {
 
@@ -4316,6 +4335,17 @@ void CanvasItemEditor::_button_toggle_anchor_mode(bool p_status) {
 
 	anchors_mode = p_status;
 	viewport->update();
+}
+
+void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
+	if (p_game_running) {
+		override_camera_button->set_disabled(false);
+		override_camera_button->set_tooltip(TTR("Game camera override\nOverrides game camera with editor viewport camera."));
+	} else {
+		override_camera_button->set_disabled(true);
+		override_camera_button->set_pressed(false);
+		override_camera_button->set_tooltip(TTR("Game camera override\nNo game instance running."));
+	}
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
@@ -4915,6 +4945,8 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_button_zoom_plus", &CanvasItemEditor::_button_zoom_plus);
 	ClassDB::bind_method("_button_toggle_smart_snap", &CanvasItemEditor::_button_toggle_smart_snap);
 	ClassDB::bind_method("_button_toggle_grid_snap", &CanvasItemEditor::_button_toggle_grid_snap);
+	ClassDB::bind_method(D_METHOD("_button_override_camera", "pressed"), &CanvasItemEditor::_button_override_camera);
+	ClassDB::bind_method(D_METHOD("_update_override_camera_button", "game_running"), &CanvasItemEditor::_update_override_camera_button);
 	ClassDB::bind_method("_button_toggle_anchor_mode", &CanvasItemEditor::_button_toggle_anchor_mode);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_update_scrollbars", &CanvasItemEditor::_update_scrollbars);
@@ -5246,6 +5278,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", this, "update");
 	editor_selection->connect("selection_changed", this, "_selection_changed");
 
+	editor->call_deferred("connect", "play_pressed", this, "_update_override_camera_button", make_binds(true));
+	editor->call_deferred("connect", "stop_pressed", this, "_update_override_camera_button", make_binds(false));
+
 	hb = memnew(HBoxContainer);
 	add_child(hb);
 	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -5488,6 +5523,15 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Custom Bone(s) from Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Custom Bones")), SKELETON_CLEAR_BONES);
 	p->connect("id_pressed", this, "_popup_callback");
+
+	hb->add_child(memnew(VSeparator));
+
+	override_camera_button = memnew(ToolButton);
+	hb->add_child(override_camera_button);
+	override_camera_button->connect("toggled", this, "_button_override_camera");
+	override_camera_button->set_toggle_mode(true);
+	override_camera_button->set_disabled(true);
+	_update_override_camera_button(false);
 
 	hb->add_child(memnew(VSeparator));
 

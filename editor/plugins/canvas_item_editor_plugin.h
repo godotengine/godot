@@ -364,6 +364,7 @@ private:
 	ToolButton *ungroup_button;
 
 	MenuButton *skeleton_menu;
+	ToolButton *override_camera_button;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -537,7 +538,10 @@ private:
 	void _button_zoom_plus();
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
+	void _button_override_camera(bool p_pressed);
 	void _button_tool_select(int p_index);
+
+	void _update_override_camera_button(bool p_game_running);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;

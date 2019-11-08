@@ -33,6 +33,8 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_network_profiler.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
@@ -1232,6 +1234,42 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						}
 					}
 				}
+
+				if (camera_override == OVERRIDE_2D) {
+					CanvasItemEditor *editor = CanvasItemEditor::get_singleton();
+
+					Dictionary state = editor->get_state();
+					float zoom = state["zoom"];
+					Point2 offset = state["ofs"];
+					Transform2D transform;
+
+					transform.scale_basis(Size2(zoom, zoom));
+					transform.elements[2] = -offset * zoom;
+
+					Array msg;
+					msg.push_back("override_camera_2D:transform");
+					msg.push_back(transform);
+					ppeer->put_var(msg);
+
+				} else if (camera_override >= OVERRIDE_3D_1) {
+					int viewport_idx = camera_override - OVERRIDE_3D_1;
+					SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(viewport_idx);
+					Camera *const cam = viewport->get_camera();
+
+					Array msg;
+					msg.push_back("override_camera_3D:transform");
+					msg.push_back(cam->get_camera_transform());
+					if (cam->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
+						msg.push_back(false);
+						msg.push_back(cam->get_size());
+					} else {
+						msg.push_back(true);
+						msg.push_back(cam->get_fov());
+					}
+					msg.push_back(cam->get_znear());
+					msg.push_back(cam->get_zfar());
+					ppeer->put_var(msg);
+				}
 			}
 
 			if (error_count != last_error_count || warning_count != last_warning_count) {
@@ -1446,6 +1484,7 @@ void ScriptEditorDebugger::start() {
 
 	set_process(true);
 	breaked = false;
+	camera_override = OVERRIDE_NONE;
 }
 
 void ScriptEditorDebugger::pause() {
@@ -1888,6 +1927,45 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 		msg.push_back(p_at_pos);
 		ppeer->put_var(msg);
 	}
+}
+
+ScriptEditorDebugger::CameraOverride ScriptEditorDebugger::get_camera_override() const {
+	return camera_override;
+}
+
+void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
+
+	if (p_override == OVERRIDE_2D && camera_override != OVERRIDE_2D) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_2D:set");
+			msg.push_back(true);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override != OVERRIDE_2D && camera_override == OVERRIDE_2D) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_2D:set");
+			msg.push_back(false);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override >= OVERRIDE_3D_1 && camera_override < OVERRIDE_3D_1) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_3D:set");
+			msg.push_back(true);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override < OVERRIDE_3D_1 && camera_override >= OVERRIDE_3D_1) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_3D:set");
+			msg.push_back(false);
+			ppeer->put_var(msg);
+		}
+	}
+
+	camera_override = p_override;
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {

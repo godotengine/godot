@@ -779,10 +779,45 @@ bool Viewport::is_audio_listener_2d() const {
 	return audio_listener_2d;
 }
 
+void Viewport::enable_canvas_transform_override(bool p_enable) {
+	if (override_canvas_transform == p_enable) {
+		return;
+	}
+
+	override_canvas_transform = p_enable;
+	if (p_enable) {
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform_override);
+	} else {
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform);
+	}
+}
+
+bool Viewport::is_canvas_transform_override_enbled() const {
+	return override_canvas_transform;
+}
+
+void Viewport::set_canvas_transform_override(const Transform2D &p_transform) {
+	if (canvas_transform_override == p_transform) {
+		return;
+	}
+
+	canvas_transform_override = p_transform;
+	if (override_canvas_transform) {
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform_override);
+	}
+}
+
+Transform2D Viewport::get_canvas_transform_override() const {
+	return canvas_transform_override;
+}
+
 void Viewport::set_canvas_transform(const Transform2D &p_transform) {
 
 	canvas_transform = p_transform;
-	VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform);
+
+	if (!override_canvas_transform) {
+		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform);
+	}
 }
 
 Transform2D Viewport::get_canvas_transform() const {
@@ -890,10 +925,12 @@ void Viewport::_camera_set(Camera *p_camera) {
 		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
 	}
 	camera = p_camera;
-	if (camera)
-		VisualServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
-	else
-		VisualServer::get_singleton()->viewport_attach_camera(viewport, RID());
+	if (!camera_override) {
+		if (camera)
+			VisualServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
+		else
+			VisualServer::get_singleton()->viewport_attach_camera(viewport, RID());
+	}
 
 	if (camera) {
 		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
@@ -1108,8 +1145,80 @@ Listener *Viewport::get_listener() const {
 }
 
 Camera *Viewport::get_camera() const {
-
 	return camera;
+}
+
+void Viewport::enable_camera_override(bool p_enable) {
+
+#ifndef _3D_DISABLED
+	if (p_enable == camera_override) {
+		return;
+	}
+
+	if (p_enable) {
+		camera_override.rid = VisualServer::get_singleton()->camera_create();
+	} else {
+		VisualServer::get_singleton()->free(camera_override.rid);
+		camera_override.rid = RID();
+	}
+
+	if (p_enable) {
+		VisualServer::get_singleton()->viewport_attach_camera(viewport, camera_override.rid);
+	} else if (camera) {
+		VisualServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
+	} else {
+		VisualServer::get_singleton()->viewport_attach_camera(viewport, RID());
+	}
+#endif
+}
+
+bool Viewport::is_camera_override_enabled() const {
+	return camera_override;
+}
+
+void Viewport::set_camera_override_transform(const Transform &p_transform) {
+	if (camera_override) {
+		camera_override.transform = p_transform;
+		VisualServer::get_singleton()->camera_set_transform(camera_override.rid, p_transform);
+	}
+}
+
+Transform Viewport::get_camera_override_transform() const {
+	if (camera_override) {
+		return camera_override.transform;
+	}
+
+	return Transform();
+}
+
+void Viewport::set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
+	if (camera_override) {
+		if (camera_override.fov == p_fovy_degrees && camera_override.z_near == p_z_near &&
+				camera_override.z_far == p_z_far && camera_override.projection == CameraOverrideData::PROJECTION_PERSPECTIVE)
+			return;
+
+		camera_override.fov = p_fovy_degrees;
+		camera_override.z_near = p_z_near;
+		camera_override.z_far = p_z_far;
+		camera_override.projection = CameraOverrideData::PROJECTION_PERSPECTIVE;
+
+		VisualServer::get_singleton()->camera_set_perspective(camera_override.rid, camera_override.fov, camera_override.z_near, camera_override.z_far);
+	}
+}
+
+void Viewport::set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far) {
+	if (camera_override) {
+		if (camera_override.size == p_size && camera_override.z_near == p_z_near &&
+				camera_override.z_far == p_z_far && camera_override.projection == CameraOverrideData::PROJECTION_ORTHOGONAL)
+			return;
+
+		camera_override.size = p_size;
+		camera_override.z_near = p_z_near;
+		camera_override.z_far = p_z_far;
+		camera_override.projection = CameraOverrideData::PROJECTION_ORTHOGONAL;
+
+		VisualServer::get_singleton()->camera_set_orthogonal(camera_override.rid, camera_override.size, camera_override.z_near, camera_override.z_far);
+	}
 }
 
 Transform2D Viewport::get_final_transform() const {
@@ -3180,6 +3289,7 @@ Viewport::Viewport() {
 	parent = NULL;
 	listener = NULL;
 	camera = NULL;
+	override_canvas_transform = false;
 	canvas_layers.insert(NULL); // This eases picking code (interpreted as the canvas of the Viewport)
 	arvr = false;
 	size_override = false;
