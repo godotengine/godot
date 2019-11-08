@@ -135,7 +135,16 @@ void TouchScreenButton::_notification(int p_what) {
 				return;
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
-				Vector2 pos = shape_centered ? _edit_get_rect().size * 0.5f : Vector2();
+				Vector2 pos;
+
+				if (shape_centered) {
+					if (texture.is_valid())
+						pos = _edit_get_rect().size * 0.5f;
+				} else {
+					if (texture.is_null())
+						pos = _edit_get_rect().size * 0.5f;
+				}
+
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -325,12 +334,8 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 }
 
 Rect2 TouchScreenButton::_edit_get_rect() const {
-	if (texture.is_null()) {
-		if (shape.is_valid())
-			return shape->get_rect();
-		else
-			return CanvasItem::_edit_get_rect();
-	}
+	if (texture.is_null())
+		return shape.is_valid() ? shape->get_rect() : CanvasItem::_edit_get_rect();
 
 	return Rect2(Size2(), texture->get_size());
 }
