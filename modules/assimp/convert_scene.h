@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  convert_scene_gltf.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,32 +27,71 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#pragma once
 
-#include "register_types.h"
+#ifndef CONVERT_SCENE_GLTF_H
+#define CONVERT_SCENE_GLTF_H
 
 #ifdef TOOLS_ENABLED
-#include "convert_scene.h"
+#include "core/bind/core_bind.h"
+#include "core/reference.h"
 #include "editor/editor_node.h"
-#include "editor_scene_importer_assimp.h"
+#include "editor/editor_plugin.h"
+#include "modules/csg/csg_shape.h"
+#include "modules/gridmap/grid_map.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/main/node.h"
+#include "thirdparty/assimp/include/assimp/matrix4x4.h"
 
-static void _editor_init() {
-	Ref<EditorSceneImporterAssimp> import_assimp;
-	import_assimp.instance();
-	ResourceImporterScene::get_singleton()->add_importer(import_assimp);
-}
+struct aiScene;
+struct aiMaterial;
+struct aiMesh;
+struct aiNode;
+class ConvertScene : public Reference {
+private:
+	GDCLASS(ConvertScene, Reference);
+	struct MeshInfo {
+		Transform transform;
+		Ref<Mesh> mesh;
+		String name;
+		Vector<Ref<Material> > materials;
+		Node *original_node = NULL;
+	};
+	void _find_all_mesh_instances(Vector<MeshInstance *> &r_items, Node *p_current_node, const Node *p_owner);
+	void _find_all_gridmaps(Vector<GridMap *> &r_items, Node *p_current_node, const Node *p_owner);
+	void _find_all_csg_roots(Vector<CSGShape *> &r_items, Node *p_current_node, const Node *p_owner);
+	void _set_assimp_materials(Ref<SpatialMaterial> &mat, aiMaterial *assimp_mat);
+	void _generate_assimp_scene(Node *p_root_node, aiScene &r_scene);
+	void _generate_node(Node *p_node, size_t &num_meshes, aiNode *&p_assimp_current_node, aiNode *&p_assimp_root, Vector<aiMesh *> &assimp_meshes, Vector<aiMaterial *> &assimp_materials);
+	aiMatrix4x4 _convert_assimp_transform(Transform xform);
+
+public:
+	void export_gltf2(const String p_file, Node *p_root_node);
+};
+
+class ConvertScenePlugin : public EditorPlugin {
+
+	GDCLASS(ConvertScenePlugin, EditorPlugin);
+
+	Ref<ConvertScene> convert_gltf2;
+	EditorNode *editor;
+	CheckBox *file_export_lib_merge;
+	EditorFileDialog *file_export_lib;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void _gltf_dialog_action(String p_file);
+	void convert_scene_to_gltf(Variant p_user_data);
+	virtual String get_name() const;
+	virtual void _notification(int notification);
+	bool has_main_screen() const;
+
+	ConvertScenePlugin(class EditorNode *p_node);
+	void _gltf2_dialog_action(String p_file);
+	void convert_scene_to_gltf2(Variant p_user_data);
+};
+
 #endif
-
-void register_assimp_types() {
-#ifdef TOOLS_ENABLED
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<ConvertScene>();
-	EditorPlugins::add_by_type<ConvertScenePlugin>();
-	ClassDB::register_class<EditorSceneImporterAssimp>();
-	ClassDB::set_current_api(prev_api);
-	EditorNode::add_init_callback(_editor_init);
 #endif
-}
-
-void unregister_assimp_types() {
-}

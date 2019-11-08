@@ -1,0 +1,11 @@
+This is a heavily modified and shrinked version of zlib 1.2.3
+
+- Removed comments from zlib.h
+- Removed gzip/zip archive I/O
+- Removed infback.c
+- Added Assimp #idefs to exclude it if not needed
+- Disabled debug macros in zutil.h
+
+Assimp itself does not use the compression part yet, so
+it needn't be compiled (trees.c, deflate.c, compress.c).
+Currently these units are just used by assimp_cmd.
