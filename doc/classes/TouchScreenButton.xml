@@ -37,7 +37,7 @@
 			The button's shape.
 		</member>
 		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" default="true">
-			If [code]true[/code], the button's shape is centered.
+			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, this property has no effect.
 		</member>
 		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" default="true">
 			If [code]true[/code], the button's shape is visible.
