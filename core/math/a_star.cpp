@@ -184,11 +184,11 @@ void AStar::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	Point *a;
 	bool a_exists = points.lookup(p_id, a);
-	CRASH_COND(!a_exists);
+	ERR_FAIL_COND(!a_exists);
 
 	Point *b;
 	bool b_exists = points.lookup(p_with_id, b);
-	CRASH_COND(!b_exists);
+	ERR_FAIL_COND(!b_exists);
 
 	Segment s(p_id, p_with_id);
 	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
@@ -406,11 +406,11 @@ float AStar::_estimate_cost(int p_from_id, int p_to_id) {
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	CRASH_COND(!from_exists);
+	ERR_FAIL_COND_V(!from_exists, 0);
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	CRASH_COND(!to_exists);
+	ERR_FAIL_COND_V(!to_exists, 0);
 
 	return from_point->pos.distance_to(to_point->pos);
 }
@@ -422,11 +422,11 @@ float AStar::_compute_cost(int p_from_id, int p_to_id) {
 
 	Point *from_point;
 	bool from_exists = points.lookup(p_from_id, from_point);
-	CRASH_COND(!from_exists);
+	ERR_FAIL_COND_V(!from_exists, 0);
 
 	Point *to_point;
 	bool to_exists = points.lookup(p_to_id, to_point);
-	CRASH_COND(!to_exists);
+	ERR_FAIL_COND_V(!to_exists, 0);
 
 	return from_point->pos.distance_to(to_point->pos);
 }
