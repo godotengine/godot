@@ -534,7 +534,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 		return;
 	}
 
-	bool bit_value = (p_pixels > 0) ? true : false;
+	bool bit_value = p_pixels > 0;
 	p_pixels = Math::abs(p_pixels);
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);

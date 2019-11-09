@@ -357,6 +357,11 @@ namespace Godot
             return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);
         }
 
+        public bool IsEqualApprox(Transform2D other)
+        {
+            return x.IsEqualApprox(other.x) && y.IsEqualApprox(other.y) && origin.IsEqualApprox(other.origin);
+        }
+
         public override int GetHashCode()
         {
             return x.GetHashCode() ^ y.GetHashCode() ^ origin.GetHashCode();

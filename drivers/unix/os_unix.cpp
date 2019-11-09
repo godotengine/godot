@@ -126,7 +126,9 @@ void OS_Unix::initialize_core() {
 	RWLockDummy::make_default();
 #else
 	ThreadPosix::make_default();
+#if !defined(OSX_ENABLED) && !defined(IPHONE_ENABLED)
 	SemaphorePosix::make_default();
+#endif
 	MutexPosix::make_default();
 	RWLockPosix::make_default();
 #endif

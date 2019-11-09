@@ -644,7 +644,19 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal("property_keyed", property, use_keying_next());
 
 			if (use_keying_next()) {
-				call_deferred("emit_changed", property, object->get(property).operator int64_t() + 1, "", false);
+				if (property == "frame_coords" && (object->is_class("Sprite") || object->is_class("Sprite3D"))) {
+					Vector2 new_coords = object->get(property);
+					new_coords.x++;
+					if (new_coords.x >= object->get("hframes").operator int64_t()) {
+						new_coords.x = 0;
+						new_coords.y++;
+					}
+
+					call_deferred("emit_changed", property, new_coords, "", false);
+				} else {
+					call_deferred("emit_changed", property, object->get(property).operator int64_t() + 1, "", false);
+				}
+
 				call_deferred("update_property");
 			}
 		}

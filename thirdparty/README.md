@@ -4,7 +4,7 @@
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
-- Version: git (1d565b0aab5a2ee00462f18c5b8a81f6a5454a48)
+- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23)
 - License: BSD-3-Clause
 
 
@@ -157,12 +157,12 @@ Files extracted from upstream source:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: 1.3.3
+- Version: git (c8fca6b, 2019)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*.c`
+- `src/*.{c,h}`
 - `include/ogg/*.h` in ogg/
 - COPYING
 
@@ -250,7 +250,7 @@ from the Android NDK r18.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.2
+- Version: 1.0.3
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -534,7 +534,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.1
+- Version: 1.4.3
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

@@ -645,6 +645,7 @@ public:
 		Map<StringName, BuiltInInfo> built_ins;
 		bool can_discard;
 	};
+	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
 private:
 	struct KeyWord {
@@ -714,7 +715,7 @@ private:
 
 	enum SubClassTag {
 		TAG_GLOBAL,
-		TAG_ARRAY
+		TAG_ARRAY,
 	};
 
 	struct BuiltinFuncDef {
@@ -723,6 +724,7 @@ private:
 		DataType rettype;
 		const DataType args[MAX_ARGS];
 		SubClassTag tag;
+		bool high_end;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -742,6 +744,8 @@ private:
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 
+	Error _validate_datatype(DataType p_type);
+
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
 
@@ -750,6 +754,8 @@ private:
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
+	String _get_shader_type_list(const Set<String> &p_shader_types) const;
+
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);

@@ -36,12 +36,13 @@
 # Bastiaan van der Plaat <bastiaan.v.d.plaat@gmail.com>, 2019.
 # Hector Peeters <hector.peeters@gmail.com>, 2019.
 # Shawn Gyina <gyina.shawn@gmail.com>, 2019.
+# ebbe <ebbesteenhoudt@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-04 14:23+0000\n"
-"Last-Translator: Shawn Gyina <gyina.shawn@gmail.com>\n"
+"PO-Revision-Date: 2019-10-18 18:02+0000\n"
+"Last-Translator: ebbe <ebbesteenhoudt@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -93,32 +94,31 @@ msgstr "Tijdens invocatie van '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Mengen"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -391,6 +391,7 @@ msgstr "Maak %d NIEUWE tracks aan en keys invoeren?"
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Maken"
 
@@ -534,15 +535,6 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Waarschuwing:  Geïmporteerde animatie bewerken"
 
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Alles Selecteren"
-
-#: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Niets Selecteren"
-
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -680,7 +672,8 @@ msgid "Scale Ratio:"
 msgstr "Schaal Ratio:"
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
+#, fuzzy
+msgid "Select Tracks to Copy"
 msgstr "Selecteer sporen om te kopieren:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
@@ -691,6 +684,11 @@ msgstr "Selecteer sporen om te kopieren:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopiëren"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select All/None"
+msgstr "Niets Selecteren"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -867,9 +865,8 @@ msgid "Disconnects the signal after its first emission."
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Verbind met Signaal: "
+msgstr "Kan signaal niet verbinden"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -891,9 +888,8 @@ msgid "Connect"
 msgstr "Verbinden"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Signalen:"
+msgstr "Signaal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -917,9 +913,8 @@ msgid "Disconnect"
 msgstr "Losmaken"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "Verbind met Signaal: "
+msgstr "Verbind een Signaal met een Methode"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1029,7 +1024,7 @@ msgid "Resource"
 msgstr "Bron"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Pad"
 
@@ -1507,7 +1502,8 @@ msgstr "AutoLoad Toevoegen"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Pad:"
 
@@ -1562,7 +1558,7 @@ msgstr "Map Maken"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Naam:"
 
@@ -1980,6 +1976,7 @@ msgid "Class:"
 msgstr "Klasse:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Erft:"
 
@@ -3086,7 +3083,7 @@ msgstr "Inspecteur"
 msgid "Expand Bottom Panel"
 msgstr "Vergroot onderste paneel"
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr "Output"
 
@@ -3335,6 +3332,11 @@ msgstr "Kies een Aanzicht portaal"
 msgid "New Script"
 msgstr "Nieuw Script"
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Extend Script"
+msgstr "Omschrijving:"
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr "Nieuw %s"
@@ -3360,13 +3362,6 @@ msgstr "Plakken"
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
 msgstr "Omzetten naar %s"
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
-msgstr "Editor Openen"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -4180,7 +4175,7 @@ msgstr "Pluginnaam:"
 msgid "Subfolder:"
 msgstr "Submap:"
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr "Taal:"
 
@@ -4324,6 +4319,12 @@ msgstr "Schakel automatisch uitlijnen en rasterweergave in."
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
 msgstr "Punt"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
+msgstr "Editor Openen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4696,7 +4697,6 @@ msgstr "Animatie Naam:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Foutmelding!"
 
@@ -4875,6 +4875,8 @@ msgid "Current:"
 msgstr "Huidig:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr "Voeg invoer toe"
 
@@ -5085,6 +5087,10 @@ msgstr "Laatste"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
 msgstr "Alle"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No results for \"%s\"."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5401,22 +5407,28 @@ msgid "Ruler Mode"
 msgstr "Uitvoermodus:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
+#, fuzzy
+msgid "Toggle smart snapping."
 msgstr "Automatisch schikken omschakelen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
+#, fuzzy
+msgid "Use Smart Snap"
 msgstr "Gebruik Uitlijnen"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle grid snapping."
+msgstr "Automatisch schikken omschakelen."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Grid Snap"
+msgstr "Rooster Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
 msgstr "Opties voor automatisch schikken"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Snap to Grid"
-msgstr "Uitlijnen op raster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
@@ -5517,8 +5529,8 @@ msgid "View"
 msgstr "Weergeven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
+#, fuzzy
+msgid "Always Show Grid"
 msgstr "Raster Weergeven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5802,6 +5814,11 @@ msgstr "Schakel Curve Lineaire Raaklijn"
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
 msgstr "Houd Shift ingedrukt om de raaklijnen individueel te bewerken"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Right click to add point"
+msgstr "Rechter Klik: Verwijder Punt"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 #, fuzzy
@@ -6471,6 +6488,10 @@ msgid "Grid"
 msgstr "Grid"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Raster Weergeven"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Configure Grid:"
 msgstr "Configureer Snap"
@@ -6533,6 +6554,7 @@ msgstr "Instantie:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr "Type:"
 
@@ -6641,6 +6663,11 @@ msgstr " Klasse Referentie"
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "Vind Volgende"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr "Vind Vorige"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6930,6 +6957,11 @@ msgstr "Punten aanmaken."
 msgid "Cut"
 msgstr "Knippen"
 
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Alles Selecteren"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
 msgstr "Verwijder Regel"
@@ -6988,10 +7020,6 @@ msgstr "Converteer Indentatie Naar Tabs"
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "Auto Indentatie"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr "Vind Vorige"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7339,6 +7367,11 @@ msgid "Freelook Speed Modifier"
 msgstr "Vrijekijk Snelheid Modificator"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Freelook Slow Modifier"
+msgstr "Vrijekijk Snelheid Modificator"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7380,6 +7413,10 @@ msgstr ""
 #, fuzzy
 msgid "Use Local Space"
 msgstr "Lokale Ruimtemodus (%s)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "Gebruik Uitlijnen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7624,6 +7661,11 @@ msgstr "Sprite-Frames"
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
 msgstr "Simplificatie: "
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Shrink (Pixels): "
+msgstr "Vergroot (Pixels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8481,12 +8523,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add input +"
-msgstr "Voeg invoer toe"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add output +"
+msgid "Add Output"
 msgstr "Voeg invoer toe"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8501,6 +8538,10 @@ msgstr "Inspecteur"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sampler"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9412,15 +9453,19 @@ msgid "Resources to export:"
 msgstr "Bronnen te exporteren:"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Filters voor het exporteren van bestanden dat geen bron zijn (scheiden met "
 "een komma, bijv.: *.json, *.txt)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "Filters voor het uitsluiten van bestanden van het project (scheiden met een "
 "komma, bijv.: *.json, *.txt)"
@@ -10522,11 +10567,9 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10609,6 +10652,14 @@ msgid "Clear Inheritance"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Open Documentation"
 msgstr "Open Godot online documentatie"
@@ -10626,11 +10677,6 @@ msgstr "Alles inklappen"
 #, fuzzy
 msgid "Change Type"
 msgstr "Verander Type"
-
-#: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Extend Script"
-msgstr "Omschrijving:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10890,23 +10936,18 @@ msgid "Will load an existing script file."
 msgstr "Laad bestaand script"
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "Taal"
-
-#: editor/script_create_dialog.cpp
-msgid "Inherits"
-msgstr "Erft"
-
-#: editor/script_create_dialog.cpp
-msgid "Class Name"
+#, fuzzy
+msgid "Class Name:"
 msgstr "Klasse Naam"
 
 #: editor/script_create_dialog.cpp
-msgid "Template"
+#, fuzzy
+msgid "Template:"
 msgstr "Sjabloon"
 
 #: editor/script_create_dialog.cpp
-msgid "Built-in Script"
+#, fuzzy
+msgid "Built-in Script:"
 msgstr "Ingebouwd Script"
 
 #: editor/script_create_dialog.cpp
@@ -11585,12 +11626,37 @@ msgid "Add Function"
 msgstr "Functie Toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete input port"
+msgstr "Punt verwijderen"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr "Variabele Toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Signaal Toevoegen"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Input Port"
+msgstr "Voeg invoer toe"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Voeg invoer toe"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Input Port"
+msgstr "Punt verwijderen"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Output Port"
+msgstr "Punt verwijderen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11643,8 +11709,18 @@ msgid "Add Preload Node"
 msgstr "Preload Node Toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
 msgstr "Voeg Node(s) Toe Uit Tree"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11673,6 +11749,11 @@ msgstr "Verwijder Variabele"
 #, fuzzy
 msgid "Connect Nodes"
 msgstr "Verbind Aan Node:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Disconnect Nodes"
+msgstr "Ontkoppel Graaf Knooppunten"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11712,6 +11793,27 @@ msgid "Paste VisualScript Nodes"
 msgstr "Plak Nodes"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function with a function node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select atleast one node with sequence port."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create Function"
+msgstr "Hernoem Functie"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "Verwijder Functie"
 
@@ -11737,16 +11839,13 @@ msgid "Make Tool:"
 msgstr "Maak Botten"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr "Basis Type:"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Leden:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr "Beschikbare Nodes:"
+#, fuzzy
+msgid "function_name"
+msgstr "Functies:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11768,6 +11867,16 @@ msgstr "Kopiëer Nodes"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
 msgstr "Knip Nodes"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Function"
+msgstr "Hernoem Functie"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Refresh Graph"
+msgstr "Verversen"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11869,6 +11978,10 @@ msgid "The package must have at least one '.' separator."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Select device from the list"
+msgstr "Selecteer apparaat uit de lijst"
+
+#: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
 msgstr ""
 
@@ -11968,6 +12081,10 @@ msgstr "Naam is geen geldige identifier:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -12601,10 +12718,6 @@ msgstr ""
 "hebt zijn inhoud direct op het scherm te weergeven. Anders, maak er een "
 "RenderTarget van en wijs zijn interne texture toe aan een node om te tonen."
 
-#: scene/resources/visual_shader.cpp
-msgid "Input"
-msgstr "Invoer"
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12634,6 +12747,29 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Snap to Grid"
+#~ msgstr "Uitlijnen op raster"
+
+#, fuzzy
+#~ msgid "Add input +"
+#~ msgstr "Voeg invoer toe"
+
+#~ msgid "Language"
+#~ msgstr "Taal"
+
+#~ msgid "Inherits"
+#~ msgstr "Erft"
+
+#~ msgid "Base Type:"
+#~ msgstr "Basis Type:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Beschikbare Nodes:"
+
+#~ msgid "Input"
+#~ msgstr "Invoer"
 
 #~ msgid "Properties:"
 #~ msgstr "Eigenschappen:"
@@ -12838,9 +12974,6 @@ msgstr ""
 
 #~ msgid "Go to parent folder"
 #~ msgstr "Ga naar bovenliggende folder"
-
-#~ msgid "Select device from the list"
-#~ msgstr "Selecteer apparaat uit de lijst"
 
 #~ msgid "Open Scene(s)"
 #~ msgstr "Scene(s) Openen"
@@ -13121,9 +13254,6 @@ msgstr ""
 
 #~ msgid "Connect Graph Nodes"
 #~ msgstr "Verbind Graaf Knooppunten"
-
-#~ msgid "Disconnect Graph Nodes"
-#~ msgstr "Ontkoppel Graaf Knooppunten"
 
 #~ msgid "Remove Shader Graph Node"
 #~ msgstr "Verwijder Shader Graaf Knooppunten"

@@ -837,7 +837,7 @@ void OS_JavaScript::set_clipboard(const String &p_text) {
 		var text = UTF8ToString($0);
 		if (!navigator.clipboard || !navigator.clipboard.writeText)
 			return 1;
-		navigator.clipboard.writeText(text).catch(e => {
+		navigator.clipboard.writeText(text).catch(function(e) {
 			// Setting OS clipboard is only possible from an input callback.
 			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
 		});

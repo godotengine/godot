@@ -40,8 +40,9 @@
 			<return type="String">
 			</return>
 			<description>
-				The string returned from this method is displayed as a warning in the "Scene Dock" if the script that overrides it is a [code]tool[/code] script.
+				The string returned from this method is displayed as a warning in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
 				Returning an empty string produces no warning.
+				Call [method update_configuration_warning] when the warning needs to be updated for this node.
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -816,6 +817,14 @@
 			</argument>
 			<description>
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
+			</description>
+		</method>
+		<method name="update_configuration_warning">
+			<return type="void">
+			</return>
+			<description>
+				Updates the warning displayed for this node in the Scene Dock.
+				Use [method _get_configuration_warning] to setup the warning message to display.
 			</description>
 		</method>
 	</methods>

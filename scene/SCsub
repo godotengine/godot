@@ -30,6 +30,7 @@ SConscript('2d/SCsub')
 SConscript('animation/SCsub')
 SConscript('audio/SCsub')
 SConscript('resources/SCsub')
+SConscript('debugger/SCsub')
 
 
 # Build it all as a library

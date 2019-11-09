@@ -55,8 +55,10 @@ enum ErrorHandlerType {
 	ERR_HANDLER_SHADER,
 };
 
+class String;
 typedef void (*ErrorHandlerFunc)(void *, const char *, const char *, int p_line, const char *, const char *, ErrorHandlerType p_type);
 void _err_set_last_error(const char *p_err);
+void _err_set_last_error(const String &p_err);
 void _err_clear_last_error();
 
 struct ErrorHandlerList {
@@ -77,6 +79,7 @@ void add_error_handler(ErrorHandlerList *p_handler);
 void remove_error_handler(ErrorHandlerList *p_handler);
 
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, bool fatal = false);
 
 #ifndef _STR
@@ -98,10 +101,10 @@ extern bool _err_error_exists;
 		_err_set_last_error(m_reason); \
 		_err_error_exists = true;      \
 	}
-#define ERR_EXPLAIN(m_string)                                    \
-	{                                                            \
-		_err_set_last_error(String(m_string).utf8().get_data()); \
-		_err_error_exists = true;                                \
+#define ERR_EXPLAIN(m_string)          \
+	{                                  \
+		_err_set_last_error(m_string); \
+		_err_error_exists = true;      \
 	}
 
 #else
@@ -430,10 +433,10 @@ extern bool _err_error_exists;
 		_err_error_exists = false;                                    \
 	}
 
-#define ERR_PRINTS(m_string)                                                                    \
-	{                                                                                           \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, String(m_string).utf8().get_data()); \
-		_err_error_exists = false;                                                              \
+#define ERR_PRINTS(m_string)                                          \
+	{                                                                 \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string); \
+		_err_error_exists = false;                                    \
 	}
 
 #define ERR_PRINT_ONCE(m_string)                                          \
@@ -455,10 +458,10 @@ extern bool _err_error_exists;
 		_err_error_exists = false;                                                         \
 	}
 
-#define WARN_PRINTS(m_string)                                                                                        \
-	{                                                                                                                \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, String(m_string).utf8().get_data(), ERR_HANDLER_WARNING); \
-		_err_error_exists = false;                                                                                   \
+#define WARN_PRINTS(m_string)                                                              \
+	{                                                                                      \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
+		_err_error_exists = false;                                                         \
 	}
 
 #define WARN_PRINT_ONCE(m_string)                                                              \

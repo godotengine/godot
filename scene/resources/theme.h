@@ -52,6 +52,14 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Color> > color_map;
 	HashMap<StringName, HashMap<StringName, int> > constant_map;
 
+	PoolVector<String> _get_icon_list(const String &p_type) const;
+	PoolVector<String> _get_stylebox_list(const String &p_type) const;
+	PoolVector<String> _get_stylebox_types(void) const;
+	PoolVector<String> _get_font_list(const String &p_type) const;
+	PoolVector<String> _get_color_list(const String &p_type) const;
+	PoolVector<String> _get_constant_list(const String &p_type) const;
+	PoolVector<String> _get_type_list(const String &p_type) const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -64,70 +72,6 @@ protected:
 	static Ref<Font> default_font;
 
 	Ref<Font> default_theme_font;
-
-	PoolVector<String> _get_icon_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_icon_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_stylebox_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_stylebox_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_stylebox_types(void) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_stylebox_types(&il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_font_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_font_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_color_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_color_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_constant_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_constant_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_type_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_type_list(&il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
 
 	static void _bind_methods();
 

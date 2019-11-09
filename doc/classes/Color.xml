@@ -151,6 +151,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="lightened">
 			<return type="Color">
 			</return>

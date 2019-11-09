@@ -199,7 +199,7 @@ StringName GDScript::get_instance_base_type() const {
 
 	if (native.is_valid())
 		return native->get_name();
-	if (base.is_valid())
+	if (base.is_valid() && base->is_valid())
 		return base->get_instance_base_type();
 	return StringName();
 }
@@ -486,7 +486,7 @@ bool GDScript::_update_exports() {
 
 	placeholder_fallback_enabled = false;
 
-	if (base_cache.is_valid()) {
+	if (base_cache.is_valid() && base_cache->is_valid()) {
 		if (base_cache->_update_exports()) {
 			changed = true;
 		}
@@ -2141,6 +2141,7 @@ GDScriptLanguage::GDScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
+	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
 	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();

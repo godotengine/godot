@@ -33,6 +33,7 @@
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
 #include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
@@ -56,6 +57,7 @@
 #include "editor/editor_help.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
@@ -370,7 +372,7 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-			Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+			theme = create_editor_theme(theme_base->get_theme());
 
 			theme_base->set_theme(theme);
 			gui_base->set_theme(theme);
@@ -1469,7 +1471,7 @@ void EditorNode::_dialog_action(String p_file) {
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 
-			if (err == ERR_CANT_OPEN) {
+			if (err == ERR_FILE_CANT_OPEN || err == ERR_FILE_NOT_FOUND) {
 				config.instance(); // new config
 			} else if (err != OK) {
 				show_warning(TTR("Error trying to save layout!"));
@@ -3558,6 +3560,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<AnimationTrackEditPlugin>();
 	ClassDB::register_class<ScriptCreateDialog>();
 	ClassDB::register_class<EditorFeatureProfile>();
+	ClassDB::register_class<EditorSpinSlider>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -3637,6 +3640,20 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	return StringName();
 }
 
+Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) const {
+	if (p_path.length()) {
+		Ref<Image> img = memnew(Image);
+		Error err = ImageLoader::load_image(p_path, img);
+		if (err == OK) {
+			Ref<ImageTexture> icon = memnew(ImageTexture);
+			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+			icon->create_from_image(img);
+			return icon;
+		}
+	}
+	return NULL;
+}
+
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
@@ -3650,8 +3667,10 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			if (icon_path.length())
-				return ResourceLoader::load(icon_path);
+			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+			if (icon.is_valid()) {
+				return icon;
+			}
 
 			// should probably be deprecated in 4.x
 			StringName base = base_script->get_instance_base_type();
@@ -3689,12 +3708,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 
 	if (ScriptServer::is_global_class(p_class)) {
 		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
-		RES icon;
-
-		if (FileAccess::exists(icon_path)) {
-			icon = ResourceLoader::load(icon_path);
-			if (icon.is_valid())
-				return icon;
+		Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+		if (icon.is_valid()) {
+			return icon;
 		}
 
 		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
@@ -3702,10 +3718,9 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		while (script.is_valid()) {
 			String current_icon_path;
 			script->get_language()->get_global_class_name(script->get_path(), NULL, &current_icon_path);
-			if (FileAccess::exists(current_icon_path)) {
-				RES texture = ResourceLoader::load(current_icon_path);
-				if (texture.is_valid())
-					return texture;
+			icon = _load_custom_class_icon(current_icon_path);
+			if (icon.is_valid()) {
+				return icon;
 			}
 			script = script->get_base_script();
 		}
@@ -5156,12 +5171,18 @@ void EditorNode::_open_imported() {
 }
 
 void EditorNode::dim_editor(bool p_dimming, bool p_force_dim) {
-	// Dimming can be forced regardless of the editor setting, which is useful when quitting the editor
+	// Dimming can be forced regardless of the editor setting, which is useful when quitting the editor.
 	if ((p_force_dim || EditorSettings::get_singleton()->get("interface/editor/dim_editor_on_dialog_popup")) && p_dimming) {
+		dimmed = true;
 		gui_base->set_modulate(Color(0.5, 0.5, 0.5));
 	} else {
+		dimmed = false;
 		gui_base->set_modulate(Color(1, 1, 1));
 	}
+}
+
+bool EditorNode::is_editor_dimmed() const {
+	return dimmed;
 }
 
 void EditorNode::open_export_template_manager() {
@@ -5472,6 +5493,7 @@ EditorNode::EditorNode() {
 
 	singleton = this;
 	exiting = false;
+	dimmed = false;
 	last_checked_version = 0;
 	changing_scene = false;
 	_initializing_addons = false;
@@ -5638,6 +5660,9 @@ EditorNode::EditorNode() {
 	editor_export = memnew(EditorExport);
 	add_child(editor_export);
 
+	// Exporters might need the theme
+	theme = create_custom_theme();
+
 	register_exporters();
 
 	GLOBAL_DEF("editor/main_run_args", "");
@@ -5679,7 +5704,6 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	Ref<Theme> theme = create_custom_theme();
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));

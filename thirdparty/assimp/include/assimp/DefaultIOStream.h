@@ -41,15 +41,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /** @file Default file I/O using fXXX()-family of functions */
+#pragma once
 #ifndef AI_DEFAULTIOSTREAM_H_INC
 #define AI_DEFAULTIOSTREAM_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <stdio.h>
 #include <assimp/IOStream.hpp>
 #include <assimp/importerdesc.h>
 #include <assimp/Defines.h>
 
-namespace Assimp    {
+namespace Assimp {
 
 // ----------------------------------------------------------------------------------
 //! @class  DefaultIOStream
@@ -57,8 +62,7 @@ namespace Assimp    {
 //! @note   An instance of this class can exist without a valid file handle
 //!         attached to it. All calls fail, but the instance can nevertheless be
 //!         used with no restrictions.
-class ASSIMP_API DefaultIOStream : public IOStream
-{
+class ASSIMP_API DefaultIOStream : public IOStream {
     friend class DefaultIOSystem;
 #if __ANDROID__
 # if __ANDROID_API__ > 9
@@ -81,7 +85,6 @@ public:
     size_t Read(void* pvBuffer,
         size_t pSize,
         size_t pCount);
-
 
     // -------------------------------------------------------------------
     /// Write to stream
@@ -107,16 +110,13 @@ public:
     void Flush();
 
 private:
-    //  File data-structure, using clib
     FILE* mFile;
-    //  Filename
     std::string mFilename;
-    // Cached file size
     mutable size_t mCachedSize;
 };
 
 // ----------------------------------------------------------------------------------
-inline
+AI_FORCE_INLINE
 DefaultIOStream::DefaultIOStream() AI_NO_EXCEPT
 : mFile(nullptr)
 , mFilename("")
@@ -125,7 +125,7 @@ DefaultIOStream::DefaultIOStream() AI_NO_EXCEPT
 }
 
 // ----------------------------------------------------------------------------------
-inline
+AI_FORCE_INLINE
 DefaultIOStream::DefaultIOStream (FILE* pFile, const std::string &strFilename)
 : mFile(pFile)
 , mFilename(strFilename)
@@ -137,4 +137,3 @@ DefaultIOStream::DefaultIOStream (FILE* pFile, const std::string &strFilename)
 } // ns assimp
 
 #endif //!!AI_DEFAULTIOSTREAM_H_INC
-

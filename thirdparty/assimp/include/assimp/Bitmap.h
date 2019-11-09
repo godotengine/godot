@@ -46,9 +46,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Used for file formats which embed their textures into the model file.
  */
-
+#pragma once
 #ifndef AI_BITMAP_H_INC
 #define AI_BITMAP_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include "defs.h"
 #include <stdint.h>

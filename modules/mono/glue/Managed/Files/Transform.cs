@@ -185,6 +185,11 @@ namespace Godot
             return basis.Equals(other.basis) && origin.Equals(other.origin);
         }
 
+        public bool IsEqualApprox(Transform other)
+        {
+            return basis.IsEqualApprox(other.basis) && origin.IsEqualApprox(other.origin);
+        }
+
         public override int GetHashCode()
         {
             return basis.GetHashCode() ^ origin.GetHashCode();

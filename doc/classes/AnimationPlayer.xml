@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
+		Updating the target properties of animations occurs at process time.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
@@ -28,7 +29,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
+				Shifts position in the animation timeline and immediately updates the animation. [code]delta[/code] is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
@@ -145,6 +146,7 @@
 			<description>
 				Plays the animation with key [code]name[/code]. Custom speed and blend times can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards.
 				If the animation has been paused by [method stop], it will be resumed. Calling [method play] without arguments will also resume the animation.
+				[b]Note:[/b] The animation will be updated the next time the AnimationPlayer is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
 		</method>
 		<method name="play_backwards">
@@ -157,6 +159,7 @@
 			<description>
 				Plays the animation with key [code]name[/code] in reverse.
 				If the animation has been paused by [code]stop(true)[/code], it will be resumed backwards. Calling [code]play_backwards()[/code] without arguments will also resume the animation backwards.
+				[b]Note:[/b] This is the same as [code]play[/code] in regards to process/update behavior.
 			</description>
 		</method>
 		<method name="queue">

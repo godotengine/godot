@@ -1337,7 +1337,17 @@ String String::num_scientific(double p_num) {
 	char buf[256];
 
 #if defined(__GNUC__) || defined(_MSC_VER)
+
+#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	// MinGW and old MSC require _set_output_format() to conform to C99 output for printf
+	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 	snprintf(buf, 256, "%lg", p_num);
+
+#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	_set_output_format(old_exponent_format);
+#endif
+
 #else
 	sprintf(buf, "%.16lg", p_num);
 #endif
@@ -4056,6 +4066,11 @@ String String::get_basename() const {
 String itos(int64_t p_val) {
 
 	return String::num_int64(p_val);
+}
+
+String uitos(uint64_t p_val) {
+
+	return String::num_uint64(p_val);
 }
 
 String rtos(double p_val) {

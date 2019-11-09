@@ -95,7 +95,9 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "reload");
+		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
+			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "reload");
+		}
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {

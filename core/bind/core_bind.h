@@ -349,6 +349,8 @@ public:
 	bool has_feature(const String &p_feature) const;
 
 	bool request_permission(const String &p_name);
+	bool request_permissions();
+	Vector<String> get_granted_permissions() const;
 
 	static _OS *get_singleton() { return singleton; }
 

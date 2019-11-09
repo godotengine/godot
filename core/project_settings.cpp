@@ -107,7 +107,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal == "") {
 			return "";
 		};
-		return plocal + path.substr(sep, path.size() - sep);
+		return plocal + path.substr((sep + 1), path.size() - (sep + 1));
 	};
 }
 

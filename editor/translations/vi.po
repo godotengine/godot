@@ -11,12 +11,13 @@
 # TyTYct Hihi <tytyct@gmail.com>, 2019.
 # Steve Dang <itsnguu@outlook.com>, 2019.
 # Peter Anh <peteranh3105@gmail.com>, 2019.
+# Dũng Đinh <dqdthanhthanh@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:51+0000\n"
-"Last-Translator: Peter Anh <peteranh3105@gmail.com>\n"
+"PO-Revision-Date: 2019-10-04 03:15+0000\n"
+"Last-Translator: Dũng Đinh <dqdthanhthanh@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -367,6 +368,7 @@ msgstr "Tạo %d track mới và chèn key?"
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Tạo"
 
@@ -496,15 +498,6 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
 msgstr "Cảnh bảo: Chỉnh sửa hoạt ảnh đã nhập"
-
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Chọn Toàn Bộ"
-
-#: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Chọn Không có"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -641,7 +634,8 @@ msgid "Scale Ratio:"
 msgstr "Tỉ lệ Scale:"
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
+#, fuzzy
+msgid "Select Tracks to Copy"
 msgstr "Chọn các Track để sao chép:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
@@ -652,6 +646,11 @@ msgstr "Chọn các Track để sao chép:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Sao chép"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select All/None"
+msgstr "Chọn Không có"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -885,7 +884,7 @@ msgstr "Bạn muốn xoá tất cả kết nối từ tín hiệu \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Tín hiệu"
+msgstr "Tín hiệu (Signal)"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -979,7 +978,7 @@ msgid "Resource"
 msgstr "Tài nguyên"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Đường dẫn"
 
@@ -1443,7 +1442,8 @@ msgstr "Thêm AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Đường dẫn:"
 
@@ -1497,7 +1497,7 @@ msgstr "Tạo thư mục"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Tên:"
 
@@ -1889,6 +1889,7 @@ msgid "Class:"
 msgstr "Lớp:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Thừa kế:"
 
@@ -2771,7 +2772,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr "Trình biên tập"
+msgstr "Editor (trình biên tập)"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2931,7 +2932,7 @@ msgstr "Quản lý đối tượng"
 msgid "Expand Bottom Panel"
 msgstr "Mở rộng bảng điều khiển phía dưới"
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr "Đầu ra"
 
@@ -3170,6 +3171,11 @@ msgstr ""
 msgid "New Script"
 msgstr "Mã lệnh mới"
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Extend Script"
+msgstr "Tạo Script"
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr "Mới %s"
@@ -3194,13 +3200,6 @@ msgstr "Dán"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
-msgstr ""
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
@@ -3742,7 +3741,7 @@ msgstr "Xoá bố cục"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr "Nhóm"
+msgstr "Nhóm (Groups)"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -3992,7 +3991,7 @@ msgstr ""
 msgid "Subfolder:"
 msgstr "Thư mục phụ:"
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr "Ngôn ngữ:"
 
@@ -4128,6 +4127,12 @@ msgstr "Kích hoạt Snap và hiện Grid."
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
 msgstr "Điểm"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4480,7 +4485,6 @@ msgstr "Tên Hoạt ảnh:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Lỗi!"
 
@@ -4653,6 +4657,8 @@ msgid "Current:"
 msgstr "Hiện tại:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr "Thêm Input"
 
@@ -4862,6 +4868,10 @@ msgstr "Cuối cùng"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
 msgstr "Tất cả"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No results for \"%s\"."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5157,21 +5167,26 @@ msgid "Ruler Mode"
 msgstr "Chế độ Tỉ lệ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
+msgid "Toggle smart snapping."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
+#, fuzzy
+msgid "Use Smart Snap"
+msgstr "Sử dụng Snap"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Toggle grid snapping."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Grid Snap"
 msgstr "Sử dụng Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
 msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to Grid"
-msgstr "Snap dạng lưới"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
@@ -5260,8 +5275,8 @@ msgid "View"
 msgstr "Hiện thị"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
+#, fuzzy
+msgid "Always Show Grid"
 msgstr "Hiện lưới"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5525,6 +5540,11 @@ msgstr ""
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
 msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Right click to add point"
+msgstr "Nhấp chuột phải: Xóa Point"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -6166,6 +6186,10 @@ msgid "Grid"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Hiện lưới"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
 msgstr ""
 
@@ -6222,6 +6246,7 @@ msgstr ""
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr ""
 
@@ -6327,6 +6352,11 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "Tìm tiếp theo"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6607,6 +6637,11 @@ msgstr "Tạo các điểm."
 msgid "Cut"
 msgstr "Cắt"
 
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Chọn Toàn Bộ"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
 msgstr ""
@@ -6662,10 +6697,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -6999,6 +7030,10 @@ msgid "Freelook Speed Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Slow Modifier"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7030,6 +7065,10 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "Sử dụng Snap"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7262,6 +7301,10 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Shrink (Pixels): "
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -8081,12 +8124,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add input +"
-msgstr "Thêm Input"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add output +"
+msgid "Add Output"
 msgstr "Thêm Input"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8100,6 +8138,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sampler"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8982,12 +9024,14 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9482,7 +9526,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr ""
+msgstr "Button (nút, phím)"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9992,11 +10036,9 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10072,6 +10114,14 @@ msgid "Clear Inheritance"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
 msgstr ""
 
@@ -10087,11 +10137,6 @@ msgstr "Thu gọn Tất cả"
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr ""
-
-#: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Extend Script"
-msgstr "Tạo Script"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10335,24 +10380,19 @@ msgid "Will load an existing script file."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr ""
+#, fuzzy
+msgid "Class Name:"
+msgstr "Lớp:"
 
 #: editor/script_create_dialog.cpp
-msgid "Inherits"
-msgstr ""
+#, fuzzy
+msgid "Template:"
+msgstr "Khung project"
 
 #: editor/script_create_dialog.cpp
-msgid "Class Name"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Template"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
-msgid "Built-in Script"
-msgstr ""
+#, fuzzy
+msgid "Built-in Script:"
+msgstr "Tạo Script"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11004,12 +11044,37 @@ msgid "Add Function"
 msgstr "Thêm Hàm"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Delete input port"
+msgstr "Xoá Function"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr "Thêm Biến"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Thêm Tín hiệu"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Input Port"
+msgstr "Thêm Input"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Thêm Input"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Input Port"
+msgstr "Xoá Function"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Remove Output Port"
+msgstr "Xóa Template"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11052,7 +11117,17 @@ msgid "Add Preload Node"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11078,6 +11153,11 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Disconnect Nodes"
+msgstr "Đứt kết nối"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11114,6 +11194,27 @@ msgid "Paste VisualScript Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function with a function node."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select atleast one node with sequence port."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create Function"
+msgstr "Đổi tên Hàm"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "Xoá Function"
 
@@ -11138,16 +11239,13 @@ msgid "Make Tool:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Những Thành viên:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr "Nodes khả dụng:"
+#, fuzzy
+msgid "function_name"
+msgstr "Hàm:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11168,6 +11266,16 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Make Function"
+msgstr "Đổi tên Hàm"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Refresh Graph"
+msgstr "Làm mới"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11261,6 +11369,10 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Select device from the list"
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -11362,6 +11474,10 @@ msgstr "Kích thước font không hợp lệ."
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -11912,14 +12028,9 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
-#: scene/resources/visual_shader.cpp
-msgid "Input"
-msgstr "Nhập"
-
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "nguồn vô hiệu cho shader."
+msgstr "nguồn vô hiệu cho xem trước"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
@@ -11945,6 +12056,19 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#~ msgid "Snap to Grid"
+#~ msgstr "Snap dạng lưới"
+
+#, fuzzy
+#~ msgid "Add input +"
+#~ msgstr "Thêm Input"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Nodes khả dụng:"
+
+#~ msgid "Input"
+#~ msgstr "Nhập"
 
 #~ msgid "Properties:"
 #~ msgstr "Thuộc tính:"

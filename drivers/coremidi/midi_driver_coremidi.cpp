@@ -39,7 +39,7 @@
 
 void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con) {
 	MIDIPacket *packet = const_cast<MIDIPacket *>(packet_list->packet);
-	for (int i = 0; i < packet_list->numPackets; i++) {
+	for (UInt32 i = 0; i < packet_list->numPackets; i++) {
 		receive_input_packet(packet->timeStamp, packet->data, packet->length);
 		packet = MIDIPacketNext(packet);
 	}

@@ -106,6 +106,14 @@
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="orthonormalized">
 			<return type="Transform2D">
 			</return>

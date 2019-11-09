@@ -157,6 +157,8 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns an array of MIDI device names.
+				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
 			</description>
 		</method>
 		<method name="get_current_video_driver" qualifiers="const">
@@ -215,6 +217,13 @@
 			</return>
 			<description>
 				Returns the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_granted_permissions" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				With this function you can get the list of dangerous permissions that have been granted to the Android application.
 			</description>
 		</method>
 		<method name="get_ime_selection" qualifiers="const">
@@ -692,6 +701,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Initialises the singleton for the system MIDI driver.
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -742,6 +752,13 @@
 			</argument>
 			<description>
 				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+			</description>
+		</method>
+		<method name="request_permissions">
+			<return type="bool">
+			</return>
+			<description>
+				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
 			</description>
 		</method>
 		<method name="set_icon">

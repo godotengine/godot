@@ -80,11 +80,12 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
 		for (int i = 0; i < protos.size(); i++) {
+			String proto = protos[i].strip_edges();
 			// Check if we have the given protocol
 			for (int j = 0; j < p_protocols.size(); j++) {
-				if (protos[i] != p_protocols[j])
+				if (proto != p_protocols[j])
 					continue;
-				protocol = protos[i];
+				protocol = proto;
 				break;
 			}
 			// Found a protocol
@@ -158,7 +159,12 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 	ERR_FAIL_COND_V(is_listening(), ERR_ALREADY_IN_USE);
 
 	_is_multiplayer = gd_mp_api;
-	_protocols.append_array(p_protocols);
+	// Strip edges from protocols.
+	_protocols.resize(p_protocols.size());
+	String *pw = _protocols.ptrw();
+	for (int i = 0; i < p_protocols.size(); i++) {
+		pw[i] = p_protocols[i].strip_edges();
+	}
 	_server->listen(p_port);
 
 	return OK;

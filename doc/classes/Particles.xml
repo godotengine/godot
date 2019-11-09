@@ -24,6 +24,7 @@
 			<argument index="0" name="pass" type="int">
 			</argument>
 			<description>
+				Returns the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
 		<method name="restart">
@@ -41,6 +42,7 @@
 			<argument index="1" name="mesh" type="Mesh">
 			</argument>
 			<description>
+				Sets the [Mesh] that is drawn at index [code]pass[/code].
 			</description>
 		</method>
 	</methods>

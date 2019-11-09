@@ -231,6 +231,11 @@ namespace Godot
             return _position.Equals(other._position) && _size.Equals(other._size);
         }
 
+        public bool IsEqualApprox(Rect2 other)
+        {
+            return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other.Size);
+        }
+
         public override int GetHashCode()
         {
             return _position.GetHashCode() ^ _size.GetHashCode();

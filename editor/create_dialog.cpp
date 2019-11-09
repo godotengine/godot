@@ -151,6 +151,10 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		if (!ClassDB::is_parent_class(p_type, base_type))
 			return;
 	} else {
+		if (!search_loaded_scripts.has(p_type)) {
+			search_loaded_scripts[p_type] = ed.script_class_load_script(p_type);
+		}
+
 		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type))
 			return;
 
@@ -352,7 +356,12 @@ void CreateDialog::_update_search() {
 		} else {
 
 			bool found = false;
-			String type2 = I->get();
+			String type2 = type;
+
+			if (!cpp_type && !search_loaded_scripts.has(type)) {
+				search_loaded_scripts[type] = ed.script_class_load_script(type);
+			}
+
 			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type2)) {
 
@@ -361,10 +370,15 @@ void CreateDialog::_update_search() {
 				}
 
 				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+
+				if (!cpp_type && !search_loaded_scripts.has(type2)) {
+					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
+				}
 			}
 
-			if (found)
-				add_type(I->get(), search_options_types, root, &to_select);
+			if (found) {
+				add_type(type, search_options_types, root, &to_select);
+			}
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -470,6 +484,7 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", get_rect());
+			search_loaded_scripts.clear();
 		} break;
 	}
 }

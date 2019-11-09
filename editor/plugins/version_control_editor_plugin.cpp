@@ -397,8 +397,9 @@ void VersionControlEditorPlugin::clear_stage_area() {
 void VersionControlEditorPlugin::shut_down() {
 
 	if (EditorVCSInterface::get_singleton()) {
-
-		EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "_refresh_stage_area");
+		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "_refresh_stage_area")) {
+			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "_refresh_stage_area");
+		}
 		EditorVCSInterface::get_singleton()->shut_down();
 		memdelete(EditorVCSInterface::get_singleton());
 		EditorVCSInterface::set_singleton(NULL);

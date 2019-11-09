@@ -16,7 +16,7 @@
 				Returns the video stream's name.
 			</description>
 		</method>
-		<method name="get_video_texture">
+		<method name="get_video_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>

@@ -53,6 +53,13 @@
 				Returns a new [PoolByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
