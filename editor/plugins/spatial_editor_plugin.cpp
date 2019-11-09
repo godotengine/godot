@@ -2765,6 +2765,7 @@ void SpatialEditorViewport::_preview_exited_scene() {
 	preview_camera->disconnect("toggled", this, "_toggle_camera_preview");
 	preview_camera->set_pressed(false);
 	_toggle_camera_preview(false);
+	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	view_menu->show();
 }
 
@@ -3602,6 +3603,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
+	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	previewing = NULL;
 	gizmo_scale = 1.0;
 
