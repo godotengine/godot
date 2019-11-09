@@ -2988,7 +2988,7 @@ void OS_Windows::move_window_to_foreground() {
 
 Error OS_Windows::shell_open(String p_uri) {
 
-	ShellExecuteW(NULL, L"open", p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecuteW(NULL, NULL, p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	return OK;
 }
 
