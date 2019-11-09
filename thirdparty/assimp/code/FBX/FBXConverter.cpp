@@ -2807,7 +2807,9 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 		aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
 		aiMatrix4x4 geometric_transform;
 		aiMatrix4x4 pivot_point = GeneratePivotTransform(target, geometric_transform);
-		final_matrix = pivot_point * geometric_translation * final_matrix;
+		final_matrix = (pivot_point * geometric_transform) * final_matrix;
+
+		// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
 
 		final_matrix.Decompose(scale, rot, trans);
 
