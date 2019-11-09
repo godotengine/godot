@@ -163,6 +163,8 @@ void GeometryInstance::set_material_override(const Ref<Material> &p_material) {
 
 	material_override = p_material;
 	VS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+
+	_change_notify("material_override");
 }
 
 Ref<Material> GeometryInstance::get_material_override() const {

@@ -186,10 +186,18 @@ private:
 
 	void _set_redraw(bool p_redraw);
 
+#ifdef TOOLS_ENABLED
+	Ref<Material> checked_material;
+#endif
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const;
+
+#ifdef TOOLS_ENABLED
+	void _changed_callback(Object *p_changed, const char *p_prop);
+#endif
 
 public:
 	void set_emitting(bool p_emitting);

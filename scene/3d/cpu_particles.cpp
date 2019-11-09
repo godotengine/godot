@@ -169,12 +169,32 @@ CPUParticles::DrawOrder CPUParticles::get_draw_order() const {
 
 void CPUParticles::set_mesh(const Ref<Mesh> &p_mesh) {
 
+	if (mesh == p_mesh) {
+		return;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (mesh.is_valid()) {
+		mesh->remove_change_receptor(this);
+	}
+#endif
+
 	mesh = p_mesh;
+
 	if (mesh.is_valid()) {
 		VS::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
+#ifdef TOOLS_ENABLED
+		mesh->add_change_receptor(this);
+#endif
 	} else {
 		VS::get_singleton()->multimesh_set_mesh(multimesh, RID());
 	}
+
+#ifdef TOOLS_ENABLED
+	_update_checked_materials();
+#endif
+
+	update_configuration_warning();
 }
 
 Ref<Mesh> CPUParticles::get_mesh() const {
@@ -288,6 +308,8 @@ void CPUParticles::set_param(Parameter p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	parameters[p_param] = p_value;
+
+	update_configuration_warning();
 }
 float CPUParticles::get_param(Parameter p_param) const {
 
@@ -495,6 +517,46 @@ void CPUParticles::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void CPUParticles::_update_checked_materials() {
+	for (Set<Ref<Material> >::Element *E = checked_materials.front(); E; E = E->next()) {
+		Ref<Material> mat = E->get();
+		mat->remove_change_receptor(this);
+	}
+	checked_materials.clear();
+	if (mesh.is_valid()) {
+		for (int j = 0; j < mesh->get_surface_count(); j++) {
+			Ref<Material> mat = mesh->surface_get_material(j);
+			if (mat.is_valid()) {
+				checked_materials.insert(mat);
+				mat->add_change_receptor(this);
+			}
+		}
+	}
+	Ref<Material> mat_override = get_material_override();
+	if (mat_override.is_valid()) {
+		checked_materials.insert(mat_override);
+		mat_override->add_change_receptor(this);
+	}
+}
+#endif
+
+#ifdef TOOLS_ENABLED
+void CPUParticles::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_changed == this) {
+		if (p_prop == StringName("material_override")) {
+			_update_checked_materials();
+			update_configuration_warning();
+		}
+	} else {
+		if (Object::cast_to<Mesh>(p_changed)) {
+			_update_checked_materials();
+		}
+		update_configuration_warning();
+	}
+}
+#endif
 
 static uint32_t idhash(uint32_t x) {
 
@@ -1156,12 +1218,21 @@ void CPUParticles::_notification(int p_what) {
 		set_process_internal(emitting);
 
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
+
+#ifdef TOOLS_ENABLED
+		add_change_receptor(this);
+#endif
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_set_redraw(false);
+
+#ifdef TOOLS_ENABLED
+		remove_change_receptor(this);
+#endif
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {

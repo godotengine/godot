@@ -69,10 +69,18 @@ private:
 
 	void _update_particle_emission_transform();
 
+#ifdef TOOLS_ENABLED
+	Ref<Material> checked_material;
+#endif
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
 	void _notification(int p_what);
+
+#ifdef TOOLS_ENABLED
+	void _changed_callback(Object *p_changed, const char *p_prop);
+#endif
 
 public:
 	void set_emitting(bool p_emitting);

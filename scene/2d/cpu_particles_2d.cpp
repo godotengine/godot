@@ -308,6 +308,8 @@ void CPUParticles2D::set_param(Parameter p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	parameters[p_param] = p_value;
+
+	update_configuration_warning();
 }
 float CPUParticles2D::get_param(Parameter p_param) const {
 
@@ -517,6 +519,25 @@ void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void CPUParticles2D::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_changed == this) {
+		Ref<Material> material = get_material();
+		if (material != checked_material) {
+			if (checked_material.is_valid()) {
+				checked_material->remove_change_receptor(this);
+			}
+			if (material.is_valid()) {
+				material->add_change_receptor(this);
+			}
+			checked_material = material;
+		}
+	}
+
+	update_configuration_warning();
+}
+#endif
 
 static uint32_t idhash(uint32_t x) {
 
@@ -1067,10 +1088,18 @@ void CPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		set_process_internal(emitting);
+
+#ifdef TOOLS_ENABLED
+		add_change_receptor(this);
+#endif
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_set_redraw(false);
+
+#ifdef TOOLS_ENABLED
+		remove_change_receptor(this);
+#endif
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {

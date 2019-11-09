@@ -113,10 +113,25 @@ void Particles::set_use_local_coordinates(bool p_enable) {
 }
 void Particles::set_process_material(const Ref<Material> &p_material) {
 
+	if (process_material == p_material) {
+		return;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (process_material.is_valid()) {
+		process_material->remove_change_receptor(this);
+	}
+#endif
+
 	process_material = p_material;
+
 	RID material_rid;
-	if (process_material.is_valid())
+	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+#ifdef TOOLS_ENABLED
+		process_material->add_change_receptor(this);
+#endif
+	}
 	VS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
@@ -202,13 +217,34 @@ void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
+	Ref<Mesh> mesh = draw_passes[p_pass];
+
+	if (mesh == p_mesh) {
+		return;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (mesh.is_valid()) {
+		mesh->remove_change_receptor(this);
+	}
+#endif
+
 	draw_passes.write[p_pass] = p_mesh;
 
 	RID mesh_rid;
-	if (p_mesh.is_valid())
+	if (p_mesh.is_valid()) {
 		mesh_rid = p_mesh->get_rid();
+#ifdef TOOLS_ENABLED
+		mesh = p_mesh;
+		mesh->add_change_receptor(this);
+#endif
+	}
 
 	VS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
+
+#ifdef TOOLS_ENABLED
+	_update_checked_materials();
+#endif
 
 	update_configuration_warning();
 }
@@ -311,7 +347,59 @@ void Particles::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void Particles::_update_checked_materials() {
+	for (Set<Ref<Material> >::Element *E = checked_materials.front(); E; E = E->next()) {
+		Ref<Material> mat = E->get();
+		mat->remove_change_receptor(this);
+	}
+	checked_materials.clear();
+	for (int i = 0; i < draw_passes.size(); i++) {
+		if (draw_passes[i].is_valid()) {
+			for (int j = 0; j < draw_passes[i]->get_surface_count(); j++) {
+				Ref<Material> mat = draw_passes[i]->surface_get_material(j);
+				if (mat.is_valid()) {
+					checked_materials.insert(mat);
+					mat->add_change_receptor(this);
+				}
+			}
+		}
+	}
+	Ref<Material> mat_override = get_material_override();
+	if (mat_override.is_valid()) {
+		checked_materials.insert(mat_override);
+		mat_override->add_change_receptor(this);
+	}
+}
+#endif
+
+#ifdef TOOLS_ENABLED
+void Particles::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_changed == this) {
+		if (p_prop == StringName("material_override")) {
+			_update_checked_materials();
+			update_configuration_warning();
+		}
+	} else {
+		if (Object::cast_to<Mesh>(p_changed)) {
+			_update_checked_materials();
+		}
+		update_configuration_warning();
+	}
+}
+#endif
+
 void Particles::_notification(int p_what) {
+
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		add_change_receptor(this);
+	}
+
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		remove_change_receptor(this);
+	}
+#endif
 
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {

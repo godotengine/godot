@@ -720,6 +720,8 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 		} break;
 		case PARAM_MAX: break; // Can't happen, but silences warning
 	}
+
+	_change_notify();
 }
 float ParticlesMaterial::get_param(Parameter p_param) const {
 

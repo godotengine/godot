@@ -71,10 +71,19 @@ private:
 
 	Vector<Ref<Mesh> > draw_passes;
 
+#ifdef TOOLS_ENABLED
+	Set<Ref<Material> > checked_materials;
+	void _update_checked_materials();
+#endif
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const;
+
+#ifdef TOOLS_ENABLED
+	void _changed_callback(Object *p_changed, const char *p_prop);
+#endif
 
 public:
 	AABB get_aabb() const;
