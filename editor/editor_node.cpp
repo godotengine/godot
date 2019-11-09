@@ -1065,7 +1065,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img->crop_from_point(x, y, vp_size, vp_size);
 		} else {
 			int ratio = vp_size / preview_size;
-			int size = preview_size * (ratio / 2);
+			int size = preview_size * MAX(1, ratio / 2);
 
 			x = (img->get_width() - size) / 2;
 			y = (img->get_height() - size) / 2;
