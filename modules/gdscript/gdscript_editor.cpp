@@ -3068,13 +3068,13 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 }
 
 void GDScriptLanguage::auto_format_code(String &p_code) const {
-    #ifdef TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	GDScriptFormatter formatter(p_code);
 	bool success = formatter.format();
 	if (success) {
 		p_code = formatter.formatted();
 	}
-    #endif 
+#endif
 }
 
 #ifdef TOOLS_ENABLED

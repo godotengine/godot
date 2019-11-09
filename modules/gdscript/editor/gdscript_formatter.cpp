@@ -69,14 +69,14 @@ static bool should_insert_space(GDScriptTokenizer::Token p_left, GDScriptTokeniz
 		return false;
 	}
 
-    // Unspaced binary operators
-    if (p_cur == GDScriptTokenizer::TK_OP_MUL || p_cur == GDScriptTokenizer::TK_OP_DIV || p_cur == GDScriptTokenizer::TK_OP_MOD) {
-        return false;
-    }
+	// Unspaced binary operators
+	if (p_cur == GDScriptTokenizer::TK_OP_MUL || p_cur == GDScriptTokenizer::TK_OP_DIV || p_cur == GDScriptTokenizer::TK_OP_MOD) {
+		return false;
+	}
 
-    if (p_right == GDScriptTokenizer::TK_OP_MUL || p_right == GDScriptTokenizer::TK_OP_DIV || p_right == GDScriptTokenizer::TK_OP_MOD) {
-        return false;
-    }
+	if (p_right == GDScriptTokenizer::TK_OP_MUL || p_right == GDScriptTokenizer::TK_OP_DIV || p_right == GDScriptTokenizer::TK_OP_MOD) {
+		return false;
+	}
 
 	// Parentheses
 

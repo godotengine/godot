@@ -31,8 +31,8 @@
 #ifndef GDSCRIPT_FORMATTER_H
 #define GDSCRIPT_FORMATTER_H
 
-#include "core/string_buffer.h"
 #include "../gdscript_tokenizer.h"
+#include "core/string_buffer.h"
 
 class GDScriptFormatter {
 	const CharType *_source;
@@ -43,7 +43,7 @@ class GDScriptFormatter {
 	GDScriptFormatter &operator=(const GDScriptFormatter &);
 
 public:
-	explicit GDScriptFormatter(const String & p_source);
+	explicit GDScriptFormatter(const String &p_source);
 	~GDScriptFormatter();
 
 	bool format();
