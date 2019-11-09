@@ -305,13 +305,15 @@ private:
 	void ProcessMorphAnimDatas(std::map<std::string, morphAnimData *> *morphAnimDatas, const BlendShapeChannel *bsc, const AnimationCurveNode *node);
 
 	// ------------------------------------------------------------------------------------------------
-	void GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
+	void GenerateNodeAnimations(
+			std::vector<aiNodeAnim *> &node_anims,
 			const std::string &fixed_name,
 			const std::vector<const AnimationCurveNode *> &curves,
 			const LayerMap &layer_map,
 			int64_t start, int64_t stop,
 			double &max_time,
-			double &min_time);
+			double &min_time,
+			aiMatrix4x4 geometric_pivot_data);
 
 	// ------------------------------------------------------------------------------------------------
 	bool IsRedundantAnimationData(const Model &target,
@@ -355,7 +357,8 @@ private:
 			const LayerMap &layer_map,
 			int64_t start, int64_t stop,
 			double &max_time,
-			double &min_time);
+			double &min_time,
+			aiMatrix4x4 geometric_pivot_data);
 
 	// key (time), value, mapto (component index)
 	typedef std::tuple<std::shared_ptr<KeyTimeList>, std::shared_ptr<KeyValueList>, unsigned int> KeyFrameList;
