@@ -179,7 +179,7 @@ void Button::_notification(int p_what) {
 
 					if (icon_width > _size.width) {
 						icon_width = _size.width;
-						icon_height = icon->get_height() * icon_width / _icon->get_width();
+						icon_height = _icon->get_height() * icon_width / _icon->get_width();
 					}
 
 					icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
