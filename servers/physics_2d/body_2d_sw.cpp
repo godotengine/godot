@@ -238,6 +238,7 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
 			_set_static(false);
+			set_active(true);
 
 		} break;
 		case Physics2DServer::BODY_MODE_CHARACTER: {
@@ -245,6 +246,7 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = 0;
 			_set_static(false);
+			set_active(true);
 			angular_velocity = 0;
 		} break;
 	}

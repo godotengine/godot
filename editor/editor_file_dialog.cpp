@@ -253,6 +253,12 @@ void EditorFileDialog::_post_popup() {
 	else
 		item_list->grab_focus();
 
+	if (mode == MODE_OPEN_DIR) {
+		file_box->set_visible(false);
+	} else {
+		file_box->set_visible(true);
+	}
+
 	if (is_visible_in_tree() && get_current_file() != "")
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
@@ -702,6 +708,9 @@ void EditorFileDialog::update_file_list() {
 	Ref<Texture> file_thumbnail;
 
 	item_list->clear();
+
+	// Scroll back to the top after opening a directory
+	item_list->get_v_scroll()->set_value(0);
 
 	if (display_mode == DISPLAY_THUMBNAILS) {
 
@@ -1658,19 +1667,19 @@ EditorFileDialog::EditorFileDialog() {
 	prev_cc->add_child(preview);
 	preview_vb->hide();
 
-	HBoxContainer *filename_hbc = memnew(HBoxContainer);
-	filename_hbc->add_child(memnew(Label(TTR("File:"))));
+	file_box = memnew(HBoxContainer);
+	file_box->add_child(memnew(Label(TTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename_hbc->add_child(file);
+	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflow it.
-	filename_hbc->add_child(filter);
-	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	item_vb->add_child(filename_hbc);
+	file_box->add_child(filter);
+	file_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	item_vb->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;

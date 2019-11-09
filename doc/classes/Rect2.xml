@@ -137,6 +137,14 @@
 				Returns [code]true[/code] if the [Rect2] overlaps with another.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="merge">
 			<return type="Rect2">
 			</return>

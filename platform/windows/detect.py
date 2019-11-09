@@ -65,6 +65,8 @@ def get_opts():
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         ('msvc_version', 'MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.', None),
         BoolVariable('use_mingw', 'Use the Mingw compiler, even if MSVC is installed. Only used on Windows.', False),
+        BoolVariable('use_llvm', 'Use the LLVM compiler', False),
+        BoolVariable('use_thinlto', 'Use ThinLTO', False),
     ]
 
 
@@ -312,17 +314,33 @@ def configure_mingw(env):
         env.Append(LINKFLAGS=['-static'])
         mingw_prefix = env["mingw_prefix_64"]
 
-    env["CC"] = mingw_prefix + "gcc"
-    env['AS'] = mingw_prefix + "as"
-    env['CXX'] = mingw_prefix + "g++"
-    env['AR'] = mingw_prefix + "gcc-ar"
-    env['RANLIB'] = mingw_prefix + "gcc-ranlib"
-    env['LINK'] = mingw_prefix + "g++"
+    if env['use_llvm']:
+        env["CC"] = mingw_prefix + "clang"
+        env['AS'] = mingw_prefix + "as"
+        env["CXX"] = mingw_prefix + "clang++"
+        env['AR'] = mingw_prefix + "ar"
+        env['RANLIB'] = mingw_prefix + "ranlib"
+        env["LINK"] = mingw_prefix + "clang++"
+    else:
+        env["CC"] = mingw_prefix + "gcc"
+        env['AS'] = mingw_prefix + "as"
+        env['CXX'] = mingw_prefix + "g++"
+        env['AR'] = mingw_prefix + "gcc-ar"
+        env['RANLIB'] = mingw_prefix + "gcc-ranlib"
+        env['LINK'] = mingw_prefix + "g++"
     env["x86_libtheora_opt_gcc"] = True
 
     if env['use_lto']:
-        env.Append(CCFLAGS=['-flto'])
-        env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
+        if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
+            env.Append(CCFLAGS=['-flto'])
+            env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
+        else:
+            if env['use_thinlto']:
+                env.Append(CCFLAGS=['-flto=thin'])
+                env.Append(LINKFLAGS=['-flto=thin'])
+            else:
+                env.Append(CCFLAGS=['-flto'])
+                env.Append(LINKFLAGS=['-flto'])
 
 
     ## Compile flags
@@ -332,7 +350,7 @@ def configure_mingw(env):
     env.Append(CPPDEFINES=[('WINVER', env['target_win_version']), ('_WIN32_WINNT', env['target_win_version'])])
     env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid'])
 
-    env.Append(CPPDEFINES=['MINGW_ENABLED'])
+    env.Append(CPPDEFINES=['MINGW_ENABLED', ('MINGW_HAS_SECURE_API', 1)])
 
     # resrc
     env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})

@@ -30,7 +30,6 @@
 
 package org.godotengine.godot;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -56,12 +55,14 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.annotation.Keep;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -95,14 +96,12 @@ import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.input.GodotEditText;
 import org.godotengine.godot.payments.PaymentsManager;
+import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
 
 public abstract class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 
 	static final int MAX_SINGLETONS = 64;
-	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-	static final int REQUEST_CAMERA_PERMISSION = 2;
-	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -125,6 +124,9 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	private boolean mStatePaused;
 	private boolean activityResumed;
 	private int mState;
+
+	// Used to dispatch events to the main thread.
+	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
 	static private Intent mCurrentIntent;
 
@@ -185,6 +187,20 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			}
 
 			Godot.singletons[Godot.singleton_count++] = this;
+		}
+
+		/**
+		 * Invoked once during the Godot Android initialization process after creation of the
+		 * {@link GodotView} view.
+		 * <p>
+		 * This method should be overridden by descendants of this class that would like to add
+		 * their view/layout to the Godot view hierarchy.
+		 *
+		 * @return the view to be included; null if no views should be included.
+		 */
+		@Nullable
+		protected View onMainCreateView(Activity activity) {
+			return null;
 		}
 
 		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
@@ -306,6 +322,20 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			public void run() {
 				GodotLib.setup(current_command_line);
 				setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
+
+				// The Godot Android plugins are setup on completion of GodotLib.setup
+				mainThreadHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						// Include the non-null views returned in the Godot view hierarchy.
+						for (int i = 0; i < singleton_count; i++) {
+							View view = singletons[i].onMainCreateView(Godot.this);
+							if (view != null) {
+								layout.addView(view);
+							}
+						}
+					}
+				});
 			}
 		});
 	}
@@ -973,32 +1003,15 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	}
 
 	public boolean requestPermission(String p_name) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			// Not necessary, asked on install already
-			return true;
-		}
+		return PermissionsUtil.requestPermission(p_name, this);
+	}
 
-		if (p_name.equals("RECORD_AUDIO")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD_AUDIO_PERMISSION);
-				return false;
-			}
-		}
+	public boolean requestPermissions() {
+		return PermissionsUtil.requestManifestPermissions(this);
+	}
 
-		if (p_name.equals("CAMERA")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
-				return false;
-			}
-		}
-
-		if (p_name.equals("VIBRATE")) {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
-				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
-				return false;
-			}
-		}
-		return true;
+	public String[] getGrantedPermissions() {
+		return PermissionsUtil.getGrantedPermissions(this);
 	}
 
 	/**

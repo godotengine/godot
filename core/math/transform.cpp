@@ -182,6 +182,11 @@ Transform Transform::orthonormalized() const {
 	return _copy;
 }
 
+bool Transform::is_equal_approx(const Transform &p_transform) const {
+
+	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
+}
+
 bool Transform::operator==(const Transform &p_transform) const {
 
 	return (basis == p_transform.basis && origin == p_transform.origin);

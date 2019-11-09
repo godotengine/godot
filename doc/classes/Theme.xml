@@ -15,6 +15,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Clears all values on the theme.
 			</description>
 		</method>
 		<method name="clear_color">
@@ -85,6 +86,7 @@
 			<argument index="0" name="other" type="Theme">
 			</argument>
 			<description>
+				Sets the Theme's values to a copy of a given theme.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">

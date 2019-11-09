@@ -64,21 +64,24 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 void StyleBoxPreview::_sb_changed() {
 
 	preview->update();
+}
+
+void StyleBoxPreview::_redraw() {
 	if (stylebox.is_valid()) {
-		Size2 ms = stylebox->get_minimum_size() * 4 / 3;
-		ms.height = MAX(ms.height, 150 * EDSCALE);
-		preview->set_custom_minimum_size(ms);
+		preview->draw_style_box(stylebox, preview->get_rect());
 	}
 }
 
 void StyleBoxPreview::_bind_methods() {
 
 	ClassDB::bind_method("_sb_changed", &StyleBoxPreview::_sb_changed);
+	ClassDB::bind_method("_redraw", &StyleBoxPreview::_redraw);
 }
 
 StyleBoxPreview::StyleBoxPreview() {
-
-	preview = memnew(Panel);
+	preview = memnew(Control);
+	preview->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
+	preview->connect("draw", this, "_redraw");
 	add_margin_child(TTR("Preview:"), preview);
 }
 

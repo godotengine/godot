@@ -136,6 +136,8 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		bucket_table_size += 2 + b.size() * 4;
 	}
 
+	ERR_FAIL_COND(bucket_table_size == 0);
+
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
 

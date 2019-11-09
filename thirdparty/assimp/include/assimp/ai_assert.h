@@ -44,6 +44,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_ASSERT_H_INC
 #define AI_ASSERT_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #ifdef ASSIMP_BUILD_DEBUG
 #   include <assert.h>
 #   define ai_assert(expression) assert( expression )

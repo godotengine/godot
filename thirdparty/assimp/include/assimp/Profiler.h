@@ -43,12 +43,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file Profiler.h
  *  @brief Utility to measure the respective runtime of each import step
  */
-#ifndef INCLUDED_PROFILER_H
-#define INCLUDED_PROFILER_H
+#pragma once
+#ifndef AI_INCLUDED_PROFILER_H
+#define AI_INCLUDED_PROFILER_H
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <chrono>
 #include <assimp/DefaultLogger.hpp>
-#include "TinyFormatter.h"
+#include <assimp/TinyFormatter.h>
 
 #include <map>
 
@@ -67,7 +72,6 @@ public:
         // empty
     }
 
-public:
 
     /** Start a named timer */
     void BeginRegion(const std::string& region) {
@@ -95,5 +99,5 @@ private:
 }
 }
 
-#endif
+#endif // AI_INCLUDED_PROFILER_H
 

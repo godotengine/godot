@@ -37,7 +37,10 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/visual_server.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {
 
@@ -150,7 +153,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 
+	uint64_t loop_begin_usec = 0;
+	uint64_t loop_time_sec = 0;
 	while (true) {
+		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
 
 		_get_output();
 
@@ -279,9 +285,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				break;
 			} else if (command == "request_scene_tree") {
 
-				if (request_scene_tree)
-					request_scene_tree(request_scene_tree_ud);
-
+#ifdef DEBUG_ENABLED
+				if (scene_tree)
+					scene_tree->_debugger_request_tree();
+#endif
 			} else if (command == "request_video_mem") {
 
 				_send_video_memory();
@@ -292,6 +299,40 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 			} else if (command == "set_object_property") {
 
 				_set_object_property(cmd[1], cmd[2], cmd[3]);
+
+			} else if (command == "override_camera_2D:set") {
+				bool enforce = cmd[1];
+
+				if (scene_tree) {
+					scene_tree->get_root()->enable_canvas_transform_override(enforce);
+				}
+			} else if (command == "override_camera_2D:transform") {
+				Transform2D transform = cmd[1];
+
+				if (scene_tree) {
+					scene_tree->get_root()->set_canvas_transform_override(transform);
+				}
+			} else if (command == "override_camera_3D:set") {
+				bool enable = cmd[1];
+
+				if (scene_tree) {
+					scene_tree->get_root()->enable_camera_override(enable);
+				}
+			} else if (command == "override_camera_3D:transform") {
+				Transform transform = cmd[1];
+				bool is_perspective = cmd[2];
+				float size_or_fov = cmd[3];
+				float near = cmd[4];
+				float far = cmd[5];
+
+				if (scene_tree) {
+					if (is_perspective) {
+						scene_tree->get_root()->set_camera_override_perspective(size_or_fov, near, far);
+					} else {
+						scene_tree->get_root()->set_camera_override_orthogonal(size_or_fov, near, far);
+					}
+					scene_tree->get_root()->set_camera_override_transform(transform);
+				}
 
 			} else if (command == "reload_scripts") {
 				reload_all_scripts = true;
@@ -314,6 +355,13 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 		} else {
 			OS::get_singleton()->delay_usec(10000);
 			OS::get_singleton()->process_and_drop_events();
+		}
+
+		// This is for the camera override to stay live even when the game is paused from the editor
+		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
+		VisualServer::get_singleton()->sync();
+		if (VisualServer::get_singleton()->has_changed()) {
+			VisualServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
 		}
 	}
 
@@ -446,93 +494,75 @@ void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char
 
 bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 
+#ifdef DEBUG_ENABLED
+
 	String cmdstr = p_command[0];
-	if (!live_edit_funcs || !cmdstr.begins_with("live_"))
+	if (!scene_tree || !cmdstr.begins_with("live_"))
 		return false;
 
-	//print_line(Variant(cmd).get_construct_string());
 	if (cmdstr == "live_set_root") {
 
-		if (!live_edit_funcs->root_func)
-			return true;
-		//print_line("root: "+Variant(cmd).get_construct_string());
-		live_edit_funcs->root_func(live_edit_funcs->udata, p_command[1], p_command[2]);
+		scene_tree->_live_edit_root_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_path") {
 
-		if (!live_edit_funcs->node_path_func)
-			return true;
-		//print_line("path: "+Variant(cmd).get_construct_string());
-
-		live_edit_funcs->node_path_func(live_edit_funcs->udata, p_command[1], p_command[2]);
+		scene_tree->_live_edit_node_path_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_res_path") {
 
-		if (!live_edit_funcs->res_path_func)
-			return true;
-		live_edit_funcs->res_path_func(live_edit_funcs->udata, p_command[1], p_command[2]);
+		scene_tree->_live_edit_res_path_func(p_command[1], p_command[2]);
 
 	} else if (cmdstr == "live_node_prop_res") {
-		if (!live_edit_funcs->node_set_res_func)
-			return true;
 
-		live_edit_funcs->node_set_res_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_node_set_res_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_prop") {
 
-		if (!live_edit_funcs->node_set_func)
-			return true;
-		live_edit_funcs->node_set_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_node_set_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop_res") {
 
-		if (!live_edit_funcs->res_set_res_func)
-			return true;
-		live_edit_funcs->res_set_res_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_res_set_res_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_res_prop") {
 
-		if (!live_edit_funcs->res_set_func)
-			return true;
-		live_edit_funcs->res_set_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_res_set_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_node_call") {
 
-		if (!live_edit_funcs->node_call_func)
-			return true;
-		live_edit_funcs->node_call_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
+		scene_tree->_live_edit_node_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_res_call") {
 
-		if (!live_edit_funcs->res_call_func)
-			return true;
-		live_edit_funcs->res_call_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
+		scene_tree->_live_edit_res_call_func(p_command[1], p_command[2], p_command[3], p_command[4], p_command[5], p_command[6], p_command[7]);
 
 	} else if (cmdstr == "live_create_node") {
 
-		live_edit_funcs->tree_create_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_create_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_instance_node") {
 
-		live_edit_funcs->tree_instance_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_instance_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_remove_node") {
 
-		live_edit_funcs->tree_remove_node_func(live_edit_funcs->udata, p_command[1]);
+		scene_tree->_live_edit_remove_node_func(p_command[1]);
 
 	} else if (cmdstr == "live_remove_and_keep_node") {
 
-		live_edit_funcs->tree_remove_and_keep_node_func(live_edit_funcs->udata, p_command[1], p_command[2]);
+		scene_tree->_live_edit_remove_and_keep_node_func(p_command[1], p_command[2]);
+
 	} else if (cmdstr == "live_restore_node") {
 
-		live_edit_funcs->tree_restore_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+		scene_tree->_live_edit_restore_node_func(p_command[1], p_command[2], p_command[3]);
 
 	} else if (cmdstr == "live_duplicate_node") {
 
-		live_edit_funcs->tree_duplicate_node_func(live_edit_funcs->udata, p_command[1], p_command[2]);
+		scene_tree->_live_edit_duplicate_node_func(p_command[1], p_command[2]);
+
 	} else if (cmdstr == "live_reparent_node") {
 
-		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4]);
+		scene_tree->_live_edit_reparent_node_func(p_command[1], p_command[2], p_command[3], p_command[4]);
 
 	} else {
 
@@ -540,6 +570,10 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 	}
 
 	return true;
+#else
+
+	return false;
+#endif
 }
 
 void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
@@ -732,8 +766,10 @@ void ScriptDebuggerRemote::_poll_events() {
 				debug(get_break_language());
 		} else if (command == "request_scene_tree") {
 
-			if (request_scene_tree)
-				request_scene_tree(request_scene_tree_ud);
+#ifdef DEBUG_ENABLED
+			if (scene_tree)
+				scene_tree->_debugger_request_tree();
+#endif
 		} else if (command == "request_video_mem") {
 
 			_send_video_memory();
@@ -777,6 +813,40 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			multiplayer->profiling_end();
 			profiling_network = false;
+		} else if (command == "override_camera_2D:set") {
+			bool enforce = cmd[1];
+
+			if (scene_tree) {
+				scene_tree->get_root()->enable_canvas_transform_override(enforce);
+			}
+		} else if (command == "override_camera_2D:transform") {
+			Transform2D transform = cmd[1];
+
+			if (scene_tree) {
+				scene_tree->get_root()->set_canvas_transform_override(transform);
+			}
+		} else if (command == "override_camera_3D:set") {
+			bool enable = cmd[1];
+
+			if (scene_tree) {
+				scene_tree->get_root()->enable_camera_override(enable);
+			}
+		} else if (command == "override_camera_3D:transform") {
+			Transform transform = cmd[1];
+			bool is_perspective = cmd[2];
+			float size_or_fov = cmd[3];
+			float near = cmd[4];
+			float far = cmd[5];
+
+			if (scene_tree) {
+				if (is_perspective) {
+					scene_tree->get_root()->set_camera_override_perspective(size_or_fov, near, far);
+				} else {
+					scene_tree->get_root()->set_camera_override_orthogonal(size_or_fov, near, far);
+				}
+				scene_tree->get_root()->set_camera_override_transform(transform);
+			}
+
 		} else if (command == "reload_scripts") {
 			reload_all_scripts = true;
 		} else if (command == "breakpoint") {
@@ -1106,17 +1176,6 @@ void ScriptDebuggerRemote::request_quit() {
 	requested_quit = true;
 }
 
-void ScriptDebuggerRemote::set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {
-
-	request_scene_tree = p_func;
-	request_scene_tree_ud = p_udata;
-}
-
-void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
-
-	live_edit_funcs = p_funcs;
-}
-
 void ScriptDebuggerRemote::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	multiplayer = p_multiplayer;
 }
@@ -1195,8 +1254,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		msec_count(0),
 		locking(false),
 		poll_every(0),
-		request_scene_tree(NULL),
-		live_edit_funcs(NULL) {
+		scene_tree(NULL) {
 
 	packet_peer_stream->set_stream_peer(tcp_client);
 	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough

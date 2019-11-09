@@ -43,6 +43,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
+				Returns the coordinate of the autotile variation in the tileset. Returns a zero vector if the cell doesn't have autotiling.
 			</description>
 		</method>
 		<method name="get_cellv" qualifiers="const">
@@ -255,6 +256,7 @@
 	</methods>
 	<members>
 		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv" default="false">
+			If [code]true[/code], the cell's UVs will be clipped.
 		</member>
 		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform" default="Transform2D( 64, 0, 0, 64, 0, 0 )">
 			The custom [Transform2D] to be applied to the TileMap's cells.
@@ -294,6 +296,7 @@
 			If [code]true[/code], TileMap collisions will be handled as a kinematic body. If [code]false[/code], collisions will be handled as static body.
 		</member>
 		<member name="collision_use_parent" type="bool" setter="set_collision_use_parent" getter="get_collision_use_parent" default="false">
+			If [code]true[/code], this tilemap's collision shape will be added to the collision shape of the parent. The parent has to be a [CollisionObject2D].
 		</member>
 		<member name="compatibility_mode" type="bool" setter="set_compatibility_mode" getter="is_compatibility_mode_enabled" default="false">
 			If [code]true[/code], the compatibility with the tilemaps made in Godot 3.1 or earlier is maintained (textures move when the tile origin changes and rotate if the texture size is not homogeneous). This mode presents problems when doing [code]flip_h[/code], [code]flip_v[/code] and [code]transpose[/code] tile operations on non-homogeneous isometric tiles (e.g. 2:1), in which the texture could not coincide with the collision, thus it is not recommended for isometric or non-square tiles.

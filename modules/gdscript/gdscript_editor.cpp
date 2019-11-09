@@ -1944,11 +1944,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 								ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_MEMBER);
 								r_result.insert(option.display, option);
 							}
-						} else {
-							for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
-								ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
-								r_result.insert(option.display, option);
-							}
+						}
+						for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
+							ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
+							r_result.insert(option.display, option);
 						}
 					}
 					if (!p_only_functions) {

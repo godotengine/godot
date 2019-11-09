@@ -41,10 +41,11 @@ class StyleBoxPreview : public VBoxContainer {
 
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 
-	Panel *preview;
+	Control *preview;
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();
+	void _redraw();
 
 protected:
 	static void _bind_methods();

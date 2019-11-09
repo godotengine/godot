@@ -16,8 +16,13 @@
 			</return>
 			<argument index="0" name="image" type="Texture">
 			</argument>
+			<argument index="1" name="width" type="int" default="0">
+			</argument>
+			<argument index="2" name="height" type="int" default="0">
+			</argument>
 			<description>
-				Adds an image's opening and closing tags to the tag stack.
+				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
+				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 			</description>
 		</method>
 		<method name="add_text">
@@ -128,6 +133,18 @@
 				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
+		<method name="push_bold">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="push_bold_italics">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="push_cell">
 			<return type="void">
 			</return>
@@ -162,6 +179,12 @@
 				Adds an [code][indent][/code] tag to the tag stack. Multiplies "level" by current tab_size to determine new margin length.
 			</description>
 		</method>
+		<method name="push_italics">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="push_list">
 			<return type="void">
 			</return>
@@ -178,6 +201,18 @@
 			</argument>
 			<description>
 				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+			</description>
+		</method>
+		<method name="push_mono">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="push_normal">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="push_strikethrough">

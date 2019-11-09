@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VScrollBar" inherits="ScrollBar" category="Core" version="3.2">
 	<brief_description>
-		Vertical version of [ScrollBar], which goes from left (min) to right (max).
+		Vertical version of [ScrollBar], which goes from top (min) to bottom (max).
 	</brief_description>
 	<description>
 	</description>

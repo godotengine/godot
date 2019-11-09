@@ -228,7 +228,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _update_node_size(int p_id);
 	void _port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input);
 
-	Vector2 _get_available_pos(bool centered = true, Vector2 pos = Vector2()) const;
+	Vector2 _get_available_pos(bool centered = true, Vector2 ofs = Vector2()) const;
 	StringName _get_function_of_node(int p_id) const;
 
 	void _move_nodes_with_rescan(const StringName &p_func_from, const StringName &p_func_to, int p_id);

@@ -81,6 +81,7 @@ class AnimationTrackEditSpriteFrame : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
 
 	ObjectID id;
+	bool is_coords;
 
 public:
 	virtual int get_key_height() const;
@@ -89,6 +90,9 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 
 	void set_node(Object *p_object);
+	void set_as_coords();
+
+	AnimationTrackEditSpriteFrame() { is_coords = false; }
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {

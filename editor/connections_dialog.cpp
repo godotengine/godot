@@ -417,6 +417,7 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
+	dst_method->connect("text_entered", this, "_builtin_text_entered");
 	dstm_hb->add_child(dst_method);
 
 	advanced = memnew(CheckButton);

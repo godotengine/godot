@@ -637,6 +637,20 @@ public:
         return ptr;
     }
 
+    bool operator==(const Video& other) const
+    {
+        return (
+               type == other.type
+            && relativeFileName == other.relativeFileName
+            && fileName == other.fileName
+        );
+    }
+
+    bool operator<(const Video& other) const
+    {
+        return std::tie(type, relativeFileName, fileName) < std::tie(other.type, other.relativeFileName, other.fileName);
+    }
+
 private:
     std::string type;
     std::string relativeFileName;
@@ -1005,10 +1019,10 @@ public:
 // during their entire lifetime (Document). FBX files have
 // up to many thousands of objects (most of which we never use),
 // so the memory overhead for them should be kept at a minimum.
-typedef std::map<uint64_t, LazyObject*> ObjectMap;
+typedef std::fbx_unordered_map<uint64_t, LazyObject*> ObjectMap;
 typedef std::fbx_unordered_map<std::string, std::shared_ptr<const PropertyTable> > PropertyTemplateMap;
 
-typedef std::multimap<uint64_t, const Connection*> ConnectionMap;
+typedef std::fbx_unordered_multimap<uint64_t, const Connection*> ConnectionMap;
 
 /** DOM class for global document settings, a single instance per document can
  *  be accessed via Document.Globals(). */
@@ -1176,5 +1190,26 @@ private:
 
 } // Namespace FBX
 } // Namespace Assimp
+
+namespace std
+{
+    template <>
+    struct hash<const Assimp::FBX::Video>
+    {
+        std::size_t operator()(const Assimp::FBX::Video& video) const
+        {
+            using std::size_t;
+            using std::hash;
+            using std::string;
+
+            size_t res = 17;
+            res = res * 31 + hash<string>()(video.Name());
+            res = res * 31 + hash<string>()(video.RelativeFilename());
+            res = res * 31 + hash<string>()(video.Type());
+
+            return res;
+        }
+    };
+}
 
 #endif // INCLUDED_AI_FBX_DOCUMENT_H

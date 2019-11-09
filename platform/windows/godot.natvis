@@ -143,4 +143,12 @@
 			<Item Name="alpha">a</Item>
 		</Expand>
 	</Type>
+	
+	<Type Name="Node" Inheritable="false">
+		<Expand>
+			<Item Name="Object">(Object*)this</Item>
+			<Item Name="class_name">(StringName*)(((char*)this) + sizeof(Object))</Item>
+			<Item Name="data">(Node::Data*)(((char*)this) + sizeof(Object) + sizeof(StringName))</Item>
+		</Expand>
+	</Type>
 </AutoVisualizer>

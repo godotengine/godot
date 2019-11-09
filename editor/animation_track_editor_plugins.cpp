@@ -337,7 +337,7 @@ AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
 }
 
-/// SPRITE FRAME ///
+/// SPRITE FRAME / FRAME_COORDS ///
 
 int AnimationTrackEditSpriteFrame::get_key_height() const {
 
@@ -439,12 +439,22 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
 
-		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-
 		texture = object->call("get_texture");
 		if (!texture.is_valid()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;
+		}
+
+		int hframes = object->call("get_hframes");
+		int vframes = object->call("get_vframes");
+
+		Vector2 coords;
+		if (is_coords) {
+			coords = get_animation()->track_get_key_value(get_track(), p_index);
+		} else {
+			int frame = get_animation()->track_get_key_value(get_track(), p_index);
+			coords.x = frame % hframes;
+			coords.y = frame / hframes;
 		}
 
 		region.size = texture->get_size();
@@ -454,9 +464,6 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			region = Rect2(object->call("get_region_rect"));
 		}
 
-		int hframes = object->call("get_hframes");
-		int vframes = object->call("get_vframes");
-
 		if (hframes > 1) {
 			region.size.x /= hframes;
 		}
@@ -464,8 +471,8 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			region.size.y /= vframes;
 		}
 
-		region.position.x += region.size.x * (frame % hframes);
-		region.position.y += region.size.y * (frame / hframes);
+		region.position.x += region.size.x * coords.x;
+		region.position.y += region.size.y * coords.y;
 
 	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 
@@ -530,6 +537,11 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 void AnimationTrackEditSpriteFrame::set_node(Object *p_object) {
 
 	id = p_object->get_instance_id();
+}
+
+void AnimationTrackEditSpriteFrame::set_as_coords() {
+
+	is_coords = true;
 }
 
 /// SUB ANIMATION ///
@@ -1293,6 +1305,14 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 	if (p_property == "frame" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("AnimatedSprite") || p_object->is_class("AnimatedSprite3D"))) {
 
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
+		sprite->set_node(p_object);
+		return sprite;
+	}
+
+	if (p_property == "frame_coords" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D"))) {
+
+		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
+		sprite->set_as_coords();
 		sprite->set_node(p_object);
 		return sprite;
 	}

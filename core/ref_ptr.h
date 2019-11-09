@@ -50,6 +50,7 @@ public:
 	bool is_null() const;
 	void operator=(const RefPtr &p_other);
 	bool operator==(const RefPtr &p_other) const;
+	bool operator!=(const RefPtr &p_other) const;
 	RID get_rid() const;
 	void unref();
 	_FORCE_INLINE_ void *get_data() const { return data; }

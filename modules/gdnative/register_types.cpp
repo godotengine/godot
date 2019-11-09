@@ -158,7 +158,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
 								 "extern void add_ios_init_callback(void (*cb)());\n";
 		String linker_flags = "";
-		for (unsigned int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+		for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
 			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
 			String code = declare_pattern.replace("$name", full_name);
 			code = code.replace("$weak", expected_symbols[i].is_required ? "" : " __attribute__((weak))");
@@ -174,7 +174,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 		additional_code += String("void $prefixinit() {\n").replace("$prefix", lib->get_symbol_prefix());
 		String register_pattern = "  if (&$name) register_dynamic_symbol((char *)\"$name\", (void *)$name);\n";
-		for (unsigned int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+		for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
 			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
 			additional_code += register_pattern.replace("$name", full_name);
 		}

@@ -51,9 +51,9 @@ static void CollectColorBlueTransforms_SSE41(const uint32_t* argb, int stride,
                                              int histo[]) {
   const __m128i mults_r = _mm_set1_epi16(CST_5b(red_to_blue));
   const __m128i mults_g = _mm_set1_epi16(CST_5b(green_to_blue));
-  const __m128i mask_g = _mm_set1_epi16(0xff00);   // green mask
-  const __m128i mask_gb = _mm_set1_epi32(0xffff);  // green/blue mask
-  const __m128i mask_b = _mm_set1_epi16(0x00ff);   // blue mask
+  const __m128i mask_g = _mm_set1_epi16((short)0xff00);   // green mask
+  const __m128i mask_gb = _mm_set1_epi32(0xffff);         // green/blue mask
+  const __m128i mask_b = _mm_set1_epi16(0x00ff);          // blue mask
   const __m128i shuffler_lo = _mm_setr_epi8(-1, 2, -1, 6, -1, 10, -1, 14, -1,
                                             -1, -1, -1, -1, -1, -1, -1);
   const __m128i shuffler_hi = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1,

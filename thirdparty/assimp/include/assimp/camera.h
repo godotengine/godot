@@ -47,6 +47,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_CAMERA_H_INC
 #define AI_CAMERA_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include "types.h"
 
 #ifdef __cplusplus
@@ -113,7 +117,6 @@ struct aiCamera
      */
     C_STRUCT aiVector3D mPosition;
 
-
     /** 'Up' - vector of the camera coordinate system relative to
      *  the coordinate space defined by the corresponding node.
      *
@@ -133,7 +136,6 @@ struct aiCamera
      *  may be normalized, but it needn't.
      */
     C_STRUCT aiVector3D mLookAt;
-
 
     /** Half horizontal field of view angle, in radians.
      *

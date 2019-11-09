@@ -432,7 +432,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "TextEdit", default_font);
 
-	theme->set_color("background_color", "TextEdit", Color(0, 0, 0));
+	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "TextEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
@@ -558,9 +558,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("panel", "PopupPanel", style_pp);
 
+	// PopupDialog
+
+	Ref<StyleBoxTexture> style_pd = make_stylebox(popup_bg_png, 4, 4, 4, 4, 10, 10, 10, 10);
+	theme->set_stylebox("panel", "PopupDialog", style_pd);
+
 	// PopupMenu
 
-	theme->set_stylebox("panel", "PopupMenu", make_stylebox(popup_bg_png, 4, 4, 4, 4, 10, 10, 10, 10));
+	theme->set_stylebox("panel", "PopupMenu", style_pd);
 	theme->set_stylebox("panel_disabled", "PopupMenu", make_stylebox(popup_bg_disabled_png, 4, 4, 4, 4));
 	theme->set_stylebox("hover", "PopupMenu", selected);
 	theme->set_stylebox("separator", "PopupMenu", make_stylebox(vseparator_png, 3, 3, 3, 3));

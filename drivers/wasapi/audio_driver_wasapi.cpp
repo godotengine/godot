@@ -76,7 +76,7 @@ public:
 	CMMNotificationClient() :
 			_cRef(1),
 			_pEnumerator(NULL) {}
-	~CMMNotificationClient() {
+	virtual ~CMMNotificationClient() {
 		if ((_pEnumerator) != NULL) {
 			(_pEnumerator)->Release();
 			(_pEnumerator) = NULL;

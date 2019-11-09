@@ -186,15 +186,15 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 
 		AudioBuffer *abuf = &ioData->mBuffers[i];
-		int frames_left = inNumberFrames;
+		unsigned int frames_left = inNumberFrames;
 		int16_t *out = (int16_t *)abuf->mData;
 
 		while (frames_left) {
 
-			int frames = MIN(frames_left, ad->buffer_frames);
+			unsigned int frames = MIN(frames_left, ad->buffer_frames);
 			ad->audio_server_process(frames, ad->samples_in.ptrw());
 
-			for (int j = 0; j < frames * ad->channels; j++) {
+			for (unsigned int j = 0; j < frames * ad->channels; j++) {
 
 				out[j] = ad->samples_in[j] >> 16;
 			}
@@ -231,7 +231,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		for (int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
+		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
 			int32_t sample = ad->input_buf[i] << 16;
 			ad->capture_buffer_write(sample);
 

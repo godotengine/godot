@@ -33,6 +33,13 @@
 				Appends a [PoolVector2Array] at the end of this array.
 			</description>
 		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
 		<method name="insert">
 			<return type="int">
 			</return>

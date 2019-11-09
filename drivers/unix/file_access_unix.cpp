@@ -56,6 +56,12 @@
 #define S_ISREG(m) ((m)&S_IFREG)
 #endif
 
+#ifndef NO_FCNTL
+#include <fcntl.h>
+#else
+#include <sys/ioctl.h>
+#endif
+
 void FileAccessUnix::check_errors() const {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
@@ -123,11 +129,24 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 			} break;
 		}
 		return last_error;
-	} else {
-		last_error = OK;
-		flags = p_mode_flags;
-		return OK;
 	}
+
+	// Set close on exec to avoid leaking it to subprocesses.
+	int fd = fileno(f);
+
+	if (fd != -1) {
+#if defined(NO_FCNTL)
+		unsigned long par = 0;
+		ioctl(fd, FIOCLEX, &par);
+#else
+		int opts = fcntl(fd, F_GETFD);
+		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
+#endif
+	}
+
+	last_error = OK;
+	flags = p_mode_flags;
+	return OK;
 }
 
 void FileAccessUnix::close() {
@@ -256,6 +275,7 @@ void FileAccessUnix::store_8(uint8_t p_dest) {
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND(!p_src);
 	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 

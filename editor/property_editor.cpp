@@ -246,7 +246,13 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				case OBJ_MENU_NEW_SCRIPT: {
 
 					if (Object::cast_to<Node>(owner))
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner));
+						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), false);
+
+				} break;
+				case OBJ_MENU_EXTEND_SCRIPT: {
+
+					if (Object::cast_to<Node>(owner))
+						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), true);
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {

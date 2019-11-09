@@ -37,6 +37,97 @@ void Theme::_emit_theme_changed() {
 	emit_changed();
 }
 
+PoolVector<String> Theme::_get_icon_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_icon_list(p_type, &il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_stylebox_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_stylebox_list(p_type, &il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_stylebox_types(void) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_stylebox_types(&il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_font_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_font_list(p_type, &il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_color_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_color_list(p_type, &il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_constant_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_constant_list(p_type, &il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
+PoolVector<String> Theme::_get_type_list(const String &p_type) const {
+
+	PoolVector<String> ilret;
+	List<StringName> il;
+
+	get_type_list(&il);
+	ilret.resize(il.size());
+	for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
+		ilret.push_back(E->get());
+	}
+	return ilret;
+}
+
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;
@@ -300,6 +391,8 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_type) {
 
 void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
 
+	ERR_FAIL_NULL(p_list);
+
 	if (!icon_map.has(p_type))
 		return;
 
@@ -344,6 +437,9 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_type) {
 }
 
 void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) const {
+
+	ERR_FAIL_NULL(p_list);
+
 	if (!shader_map.has(p_type))
 		return;
 
@@ -408,6 +504,8 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_type) {
 
 void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const {
 
+	ERR_FAIL_NULL(p_list);
+
 	if (!style_map.has(p_type))
 		return;
 
@@ -420,6 +518,8 @@ void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const
 }
 
 void Theme::get_stylebox_types(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
 	const StringName *key = NULL;
 	while ((key = style_map.next(key))) {
 		p_list->push_back(*key);
@@ -478,6 +578,8 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_type) {
 
 void Theme::get_font_list(StringName p_type, List<StringName> *p_list) const {
 
+	ERR_FAIL_NULL(p_list);
+
 	if (!font_map.has(p_type))
 		return;
 
@@ -526,6 +628,8 @@ void Theme::clear_color(const StringName &p_name, const StringName &p_type) {
 
 void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
 
+	ERR_FAIL_NULL(p_list);
+
 	if (!color_map.has(p_type))
 		return;
 
@@ -573,6 +677,8 @@ void Theme::clear_constant(const StringName &p_name, const StringName &p_type) {
 }
 
 void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const {
+
+	ERR_FAIL_NULL(p_list);
 
 	if (!constant_map.has(p_type))
 		return;
@@ -637,6 +743,12 @@ void Theme::copy_default_theme() {
 
 void Theme::copy_theme(const Ref<Theme> &p_other) {
 
+	if (p_other.is_null()) {
+		clear();
+
+		return;
+	}
+
 	//these need reconnecting, so add normally
 	{
 		const StringName *K = NULL;
@@ -680,8 +792,9 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 
 void Theme::get_type_list(List<StringName> *p_list) const {
 
-	Set<StringName> types;
+	ERR_FAIL_NULL(p_list);
 
+	Set<StringName> types;
 	const StringName *key = NULL;
 
 	while ((key = icon_map.next(key))) {

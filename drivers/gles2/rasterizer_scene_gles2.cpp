@@ -131,7 +131,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &shadow_atlas->depth);
-			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, shadow_atlas->depth);
 			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
 
@@ -2767,6 +2767,8 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 
 	if (use_post_process) {
 		next_buffer = storage->frame.current_rt->mip_maps[0].sizes[0].fbo;
+	} else if (storage->frame.current_rt->external.fbo != 0) {
+		next_buffer = storage->frame.current_rt->external.fbo;
 	} else {
 		// set next_buffer to front buffer so multisample blit can happen if needed
 		next_buffer = storage->frame.current_rt->fbo;
@@ -2795,9 +2797,15 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 
 		// In GLES2 Android Blit is not available, so just copy color texture manually
 		_copy_texture_to_buffer(storage->frame.current_rt->multisample_color, next_buffer);
+#else
+		// TODO: any other platform not supported? this will fail.. maybe we should just call _copy_texture_to_buffer here as well?
 #endif
 	} else if (use_post_process) {
-		_copy_texture_to_buffer(storage->frame.current_rt->color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		if (storage->frame.current_rt->external.fbo != 0) {
+			_copy_texture_to_buffer(storage->frame.current_rt->external.color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		} else {
+			_copy_texture_to_buffer(storage->frame.current_rt->color, storage->frame.current_rt->mip_maps[0].sizes[0].fbo);
+		}
 	}
 
 	if (!use_post_process) {
@@ -3220,14 +3228,12 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	} else {
 		state.render_no_shadows = false;
-		if (storage->frame.current_rt->external.fbo != 0) {
+		if (storage->frame.current_rt->multisample_active) {
+			current_fb = storage->frame.current_rt->multisample_fbo;
+		} else if (storage->frame.current_rt->external.fbo != 0) {
 			current_fb = storage->frame.current_rt->external.fbo;
 		} else {
-			if (storage->frame.current_rt->multisample_active) {
-				current_fb = storage->frame.current_rt->multisample_fbo;
-			} else {
-				current_fb = storage->frame.current_rt->fbo;
-			}
+			current_fb = storage->frame.current_rt->fbo;
 		}
 		env = environment_owner.getornull(p_environment);
 
@@ -3769,6 +3775,10 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	if (storage->config.use_rgba_3d_shadows) {
+		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 	glDisable(GL_SCISSOR_TEST);
 
 	if (light->reverse_cull) {

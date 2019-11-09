@@ -602,7 +602,16 @@ void MultiplayerAPI::_add_peer(int p_id) {
 
 void MultiplayerAPI::_del_peer(int p_id) {
 	connected_peers.erase(p_id);
-	path_get_cache.erase(p_id); // I no longer need your cache, sorry.
+	// Cleanup get cache.
+	path_get_cache.erase(p_id);
+	// Cleanup sent cache.
+	// Some refactoring is needed to make this faster and do paths GC.
+	List<NodePath> keys;
+	path_send_cache.get_key_list(&keys);
+	for (List<NodePath>::Element *E = keys.front(); E; E = E->next()) {
+		PathSentCache *psc = path_send_cache.getptr(E->get());
+		psc->confirmed_peers.erase(p_id);
+	}
 	emit_signal("network_peer_disconnected", p_id);
 }
 

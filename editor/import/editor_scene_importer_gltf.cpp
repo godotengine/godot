@@ -1973,7 +1973,7 @@ Error EditorSceneImporterGLTF::_reparent_to_fake_joint(GLTFState &state, GLTFSke
 	state.nodes.push_back(fake_joint);
 
 	// We better not be a joint, or we messed up in our logic
-	if (node->joint == true)
+	if (node->joint)
 		return FAILED;
 
 	fake_joint->translation = node->translation;

@@ -577,9 +577,8 @@ void Sprite3D::set_frame(int p_frame) {
 
 	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
-	if (frame != p_frame)
+	frame = p_frame;
 
-		frame = p_frame;
 	_queue_update();
 
 	_change_notify("frame");
@@ -661,6 +660,10 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
+
+	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }

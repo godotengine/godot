@@ -116,6 +116,14 @@
 				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="plane" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_point_over">
 			<return type="bool">
 			</return>

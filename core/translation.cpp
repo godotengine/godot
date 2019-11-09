@@ -986,6 +986,7 @@ Array TranslationServer::get_loaded_locales() const {
 	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
 		const Ref<Translation> &t = E->get();
+		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
 
 		locales.push_back(l);
@@ -1057,6 +1058,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
 		const Ref<Translation> &t = E->get();
+		ERR_FAIL_COND_V(t.is_null(), StringName(""));
 		String l = t->get_locale();
 		if (lptr[0] != l[0] || lptr[1] != l[1])
 			continue; // Language code does not match.
@@ -1085,6 +1087,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
 			const Ref<Translation> &t = E->get();
+			ERR_FAIL_COND_V(t.is_null(), StringName(""));
 			String l = t->get_locale();
 			if (fptr[0] != l[0] || fptr[1] != l[1])
 				continue; // Language code does not match.

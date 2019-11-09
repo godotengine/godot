@@ -31,6 +31,7 @@
 #include "error_macros.h"
 
 #include "core/io/logger.h"
+#include "core/ustring.h"
 #include "os/os.h"
 
 bool _err_error_exists = false;
@@ -40,6 +41,11 @@ static ErrorHandlerList *error_handler_list = NULL;
 void _err_set_last_error(const char *p_err) {
 
 	OS::get_singleton()->set_last_error(p_err);
+}
+
+void _err_set_last_error(const String &p_err) {
+
+	_err_set_last_error(p_err.utf8().get_data());
 }
 
 void _err_clear_last_error() {
@@ -97,6 +103,10 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 		OS::get_singleton()->clear_last_error();
 		_err_error_exists = false;
 	}
+}
+
+void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, ErrorHandlerType p_type) {
+	_err_print_error(p_function, p_file, p_line, p_error.utf8().get_data(), p_type);
 }
 
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, bool fatal) {

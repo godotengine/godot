@@ -47,8 +47,6 @@
 
 #include "semaphore_iphone.h"
 
-#include "ios.h"
-
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -184,7 +182,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+	ios = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	return OK;
 };
@@ -506,6 +505,15 @@ String OSIPhone::get_name() const {
 
 	return "iOS";
 };
+
+String OSIPhone::get_model_name() const {
+
+	String model = ios->get_model();
+	if (model != "")
+		return model;
+
+	return OS_Unix::get_model_name();
+}
 
 Size2 OSIPhone::get_window_size() const {
 

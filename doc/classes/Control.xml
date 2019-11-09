@@ -62,7 +62,7 @@
 			</argument>
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. Use [code]for_text[/code] parameter to determine what text the tooltip should contain (likely the contents of [member hint_tooltip]).
-				The returned node must be of type [Control] or Control-derieved. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance, not e.g. a node from scene. When null or non-Control node is returned, the default tooltip will be used instead.
+				The returned node must be of type [Control] or Control-derieved. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance, not e.g. a node from scene. When [code]null[/code] or non-Control node is returned, the default tooltip will be used instead.
 				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
 				Example of usage with custom-constructed node:
 				[codeblock]
@@ -652,7 +652,18 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data].
+				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree.
+				[codeblock]
+				export (Color, RGBA) var color = Color(1, 0, 0, 1)
+
+				func get_drag_data(position):
+				    # Use a control that is not in the tree
+				    var cpb = ColorPickerButton.new()
+				    cpb.color = color
+				    cpb.rect_size = Vector2(50, 50)
+				    set_drag_preview(cpb)
+				    return color
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_end">

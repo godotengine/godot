@@ -387,6 +387,10 @@ void Sprite::_validate_property(PropertyInfo &property) const {
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	if (property.name == "frame_coords") {
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
 }
 
 void Sprite::_texture_changed() {

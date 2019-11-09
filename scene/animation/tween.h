@@ -127,7 +127,8 @@ private:
 
 	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
 	Variant &_get_delta_val(InterpolateData &p_data);
-	Variant &_get_initial_val(InterpolateData &p_data);
+	Variant _get_initial_val(const InterpolateData &p_data) const;
+	Variant _get_final_val(const InterpolateData &p_data) const;
 	Variant _run_equation(InterpolateData &p_data);
 	bool _calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val);
 	bool _apply_tween_value(InterpolateData &p_data, Variant &value);
