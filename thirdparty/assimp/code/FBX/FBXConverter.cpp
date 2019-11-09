@@ -215,8 +215,39 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				new_abs_transform = GeneratePivotTransform(*model, node_geometric_transform);
 
 				node->mTransformation = new_abs_transform * node_geometric_transform * geometric_transform;
+
 				// attach geometry
 				ConvertModel(*model, node, root_node, new_abs_transform);
+
+				// Geometric pivot data application
+				// resamples the node animation
+				// todo: make this 'get anim from stack'
+				// otherwise multiple armatures will get broken probably
+				for (aiAnimation *animation : animations) {
+					for (size_t animId = 0; animId < animation->mNumChannels; ++animId) {
+						aiNodeAnim *node_anim = animation->mChannels[animId];
+						if (node_anim->mNodeName == aiString(node_name)) {
+							for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
+								aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
+								aiVector3D scale = node_anim->mScalingKeys[x].mValue;
+								aiVector3D trans = node_anim->mPositionKeys[x].mValue;
+
+								// TRS
+								aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
+								final_matrix = (new_abs_transform * node_geometric_transform * geometric_transform) * final_matrix;
+
+								// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
+
+								final_matrix.Decompose(scale, rot, trans);
+
+								// now overwrite with pivot point
+								node_anim->mRotationKeys[x].mValue = rot;
+								node_anim->mScalingKeys[x].mValue = scale;
+								node_anim->mPositionKeys[x].mValue = trans;
+							}
+						}
+					}
+				}
 
 				// check if there will be any child nodes
 				const std::vector<const Connection *> &child_conns = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
@@ -2310,14 +2341,17 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 	}
 
 	try {
+		aiMatrix4x4 geometric_pivot;
 		for (const NodeMap::value_type &kv : node_map) {
+			std::cout << "[geom] animation name: " << kv.first << std::endl;
 			GenerateNodeAnimations(node_anims,
 					kv.first,
 					kv.second,
 					layer_map,
 					start_time, stop_time,
 					max_time,
-					min_time);
+					min_time,
+					geometric_pivot);
 		}
 	} catch (std::exception &) {
 		std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
@@ -2484,13 +2518,15 @@ static void validateAnimCurveNodes(const std::vector<const AnimationCurveNode *>
 #endif // ASSIMP_BUILD_DEBUG
 
 // ------------------------------------------------------------------------------------------------
-void FBXConverter::GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
+void FBXConverter::GenerateNodeAnimations(
+		std::vector<aiNodeAnim *> &node_anims,
 		const std::string &fixed_name,
 		const std::vector<const AnimationCurveNode *> &curves,
 		const LayerMap &layer_map,
 		int64_t start, int64_t stop,
 		double &max_time,
-		double &min_time) {
+		double &min_time,
+		aiMatrix4x4 geometric_pivot_data) {
 
 	NodeMap node_property_map;
 	ai_assert(curves.size());
@@ -2555,7 +2591,8 @@ void FBXConverter::GenerateNodeAnimations(std::vector<aiNodeAnim *> &node_anims,
 			layer_map,
 			start, stop,
 			max_time,
-			min_time);
+			min_time,
+			geometric_pivot_data);
 
 	ai_assert(nd);
 	if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
@@ -2710,7 +2747,8 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 		const LayerMap &layer_map,
 		int64_t start, int64_t stop,
 		double &max_time,
-		double &min_time) {
+		double &min_time,
+		aiMatrix4x4 geometric_pivot_data) {
 	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
 	na->mNodeName.Set(name);
 
@@ -2796,27 +2834,6 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 				def_scale,
 				def_translate,
 				def_rot);
-	}
-
-	for (size_t x = 0; x < times.size(); ++x) {
-		aiQuaternion rot = out_quat[x].mValue;
-		aiVector3D scale = out_scale[x].mValue;
-		aiVector3D trans = out_translation[x].mValue;
-
-		// TRS
-		aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
-		aiMatrix4x4 geometric_transform;
-		aiMatrix4x4 pivot_point = GeneratePivotTransform(target, geometric_transform);
-		final_matrix = (pivot_point * geometric_transform) * final_matrix;
-
-		// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
-
-		final_matrix.Decompose(scale, rot, trans);
-
-		// now overwrite with pivot point
-		out_quat[x].mValue = rot;
-		out_scale[x].mValue = scale;
-		out_translation[x].mValue = trans;
 	}
 
 	// XXX remove duplicates / redundant keys which this operation did
