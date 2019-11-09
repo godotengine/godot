@@ -683,26 +683,7 @@ bool HTTPClient::is_blocking_mode_enabled() const {
 Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	if (blocking) {
-
-		// We can't use StreamPeer.get_data, since when reaching EOF we will get an
-		// error without knowing how many bytes we received.
-		Error err = ERR_FILE_EOF;
-		int read = 0;
-		int left = p_bytes;
-		r_received = 0;
-		while (left > 0) {
-			err = connection->get_partial_data(p_buffer + r_received, left, read);
-			if (err == OK) {
-				r_received += read;
-			} else if (err == ERR_FILE_EOF) {
-				r_received += read;
-				return err;
-			} else {
-				return err;
-			}
-			left -= read;
-		}
-		return err;
+		return connection->get_data(p_buffer, p_bytes, r_received);
 	} else {
 		return connection->get_partial_data(p_buffer, p_bytes, r_received);
 	}
