@@ -331,6 +331,13 @@ void Particles::_notification(int p_what) {
 			set_process_internal(false);
 		}
 	}
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		// make sure particles are updated before rendering occurs if they were active before
+		if (is_visible_in_tree() && !VS::get_singleton()->particles_is_inactive(particles)) {
+			VS::get_singleton()->particles_request_process(particles);
+		}
+	}
 }
 
 void Particles::_bind_methods() {
