@@ -112,6 +112,12 @@ class SceneTreeDock : public VBoxContainer {
 	ToolButton *button_create_script;
 	ToolButton *button_clear_script;
 
+	ToolButton *node_shortcuts_toggle;
+	Button *button_2d;
+	Button *button_3d;
+	Button *button_ui;
+	Button *button_custom;
+
 	HBoxContainer *button_hb;
 	ToolButton *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
@@ -223,6 +229,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
+
+	void _update_icons();
 
 	void _update_create_root_dialog();
 	void _favorite_root_selected(const String &p_class);

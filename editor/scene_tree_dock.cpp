@@ -1058,73 +1058,13 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
 			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
 
-			button_add->set_icon(get_icon("Add", "EditorIcons"));
-			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
-			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
-			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
-
-			filter->set_right_icon(get_icon("Search", "EditorIcons"));
-			filter->set_clear_button_enabled(true);
-
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 			scene_tree->get_scene_tree()->connect("item_collapsed", this, "_node_collapsed");
 
-			// create_root_dialog
-			HBoxContainer *top_row = memnew(HBoxContainer);
-			top_row->set_name("NodeShortcutsTopRow");
-			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
-			top_row->add_child(memnew(Label(TTR("Create Root Node:"))));
-			top_row->add_spacer();
-
-			ToolButton *node_shortcuts_toggle = memnew(ToolButton);
-			node_shortcuts_toggle->set_name("NodeShortcutsToggle");
-			node_shortcuts_toggle->set_icon(get_icon("Favorites", "EditorIcons"));
-			node_shortcuts_toggle->set_toggle_mode(true);
-			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
-			node_shortcuts_toggle->set_anchors_and_margins_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect("pressed", this, "_update_create_root_dialog");
-			top_row->add_child(node_shortcuts_toggle);
-
-			create_root_dialog->add_child(top_row);
-
-			VBoxContainer *node_shortcuts = memnew(VBoxContainer);
-			node_shortcuts->set_name("NodeShortcuts");
-
-			VBoxContainer *beginner_node_shortcuts = memnew(VBoxContainer);
-			beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
-			node_shortcuts->add_child(beginner_node_shortcuts);
-
-			Button *button_2d = memnew(Button);
-			beginner_node_shortcuts->add_child(button_2d);
-			button_2d->set_text(TTR("2D Scene"));
-			button_2d->set_icon(get_icon("Node2D", "EditorIcons"));
-			button_2d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_2D_SCENE, false));
-
-			Button *button_3d = memnew(Button);
-			beginner_node_shortcuts->add_child(button_3d);
-			button_3d->set_text(TTR("3D Scene"));
-			button_3d->set_icon(get_icon("Spatial", "EditorIcons"));
-			button_3d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_3D_SCENE, false));
-
-			Button *button_ui = memnew(Button);
-			beginner_node_shortcuts->add_child(button_ui);
-			button_ui->set_text(TTR("User Interface"));
-			button_ui->set_icon(get_icon("Control", "EditorIcons"));
-			button_ui->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_USER_INTERFACE, false));
-
-			VBoxContainer *favorite_node_shortcuts = memnew(VBoxContainer);
-			favorite_node_shortcuts->set_name("FavoriteNodeShortcuts");
-			node_shortcuts->add_child(favorite_node_shortcuts);
-
-			Button *button_custom = memnew(Button);
-			node_shortcuts->add_child(button_custom);
-			button_custom->set_text(TTR("Other Node"));
-			button_custom->set_icon(get_icon("Add", "EditorIcons"));
-			button_custom->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
-
-			node_shortcuts->add_spacer();
-			create_root_dialog->add_child(node_shortcuts);
+			_update_icons();
 			_update_create_root_dialog();
+
+			filter->set_clear_button_enabled(true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1134,13 +1074,11 @@ void SceneTreeDock::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			clear_inherit_confirm->disconnect("confirmed", this, "_tool_selected");
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			button_add->set_icon(get_icon("Add", "EditorIcons"));
-			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
-			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
-			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
+			_update_icons();
+			_update_create_root_dialog();
 
-			filter->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -2697,6 +2635,13 @@ void SceneTreeDock::_update_create_root_dialog() {
 	if (!beginner_nodes || !favorite_nodes)
 		return;
 
+	node_shortcuts_toggle->set_icon(get_icon("Favorites", "EditorIcons"));
+
+	button_2d->set_icon(get_icon("Node2D", "EditorIcons"));
+	button_3d->set_icon(get_icon("Spatial", "EditorIcons"));
+	button_ui->set_icon(get_icon("Control", "EditorIcons"));
+	button_custom->set_icon(get_icon("Add", "EditorIcons"));
+
 	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", toggle->is_pressed());
 	EditorSettings::get_singleton()->save();
 	if (toggle->is_pressed()) {
@@ -2737,6 +2682,15 @@ void SceneTreeDock::_update_create_root_dialog() {
 			favorite_nodes->hide();
 		}
 	}
+}
+
+void SceneTreeDock::_update_icons() {
+	button_add->set_icon(get_icon("Add", "EditorIcons"));
+	button_instance->set_icon(get_icon("Instance", "EditorIcons"));
+	button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
+	button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
+
+	filter->set_right_icon(get_icon("Search", "EditorIcons"));
 }
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
@@ -2931,6 +2885,57 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	add_child(create_dialog);
 	create_dialog->connect("create", this, "_create");
 	create_dialog->connect("favorites_updated", this, "_update_create_root_dialog");
+
+	// Create Root Dialog
+	HBoxContainer *top_row = memnew(HBoxContainer);
+	top_row->set_name("NodeShortcutsTopRow");
+	top_row->set_h_size_flags(SIZE_EXPAND_FILL);
+	top_row->add_child(memnew(Label(TTR("Create Root Node:"))));
+	top_row->add_spacer();
+
+	node_shortcuts_toggle = memnew(ToolButton);
+	node_shortcuts_toggle->set_name("NodeShortcutsToggle");
+	node_shortcuts_toggle->set_toggle_mode(true);
+	node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
+	node_shortcuts_toggle->set_anchors_and_margins_preset(Control::PRESET_CENTER_RIGHT);
+	node_shortcuts_toggle->connect("pressed", this, "_update_create_root_dialog");
+	top_row->add_child(node_shortcuts_toggle);
+
+	create_root_dialog->add_child(top_row);
+
+	VBoxContainer *node_shortcuts = memnew(VBoxContainer);
+	node_shortcuts->set_name("NodeShortcuts");
+
+	VBoxContainer *beginner_node_shortcuts = memnew(VBoxContainer);
+	beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
+	node_shortcuts->add_child(beginner_node_shortcuts);
+
+	button_2d = memnew(Button);
+	beginner_node_shortcuts->add_child(button_2d);
+	button_2d->set_text(TTR("2D Scene"));
+	button_2d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_2D_SCENE, false));
+
+	button_3d = memnew(Button);
+	beginner_node_shortcuts->add_child(button_3d);
+	button_3d->set_text(TTR("3D Scene"));
+	button_3d->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_3D_SCENE, false));
+
+	button_ui = memnew(Button);
+	beginner_node_shortcuts->add_child(button_ui);
+	button_ui->set_text(TTR("User Interface"));
+	button_ui->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_USER_INTERFACE, false));
+
+	VBoxContainer *favorite_node_shortcuts = memnew(VBoxContainer);
+	favorite_node_shortcuts->set_name("FavoriteNodeShortcuts");
+	node_shortcuts->add_child(favorite_node_shortcuts);
+
+	button_custom = memnew(Button);
+	node_shortcuts->add_child(button_custom);
+	button_custom->set_text(TTR("Other Node"));
+	button_custom->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
+
+	node_shortcuts->add_spacer();
+	create_root_dialog->add_child(node_shortcuts);
 
 	rename_dialog = memnew(RenameDialog(scene_tree, &editor_data->get_undo_redo()));
 	add_child(rename_dialog);
