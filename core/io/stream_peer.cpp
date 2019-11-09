@@ -67,7 +67,6 @@ Array StreamPeer::_put_partial_data(const PoolVector<uint8_t> &p_data) {
 Array StreamPeer::_get_data(int p_bytes) {
 
 	Array ret;
-
 	PoolVector<uint8_t> data;
 	data.resize(p_bytes);
 	if (data.size() != p_bytes) {
@@ -77,9 +76,12 @@ Array StreamPeer::_get_data(int p_bytes) {
 		return ret;
 	}
 
+	int received;
 	PoolVector<uint8_t>::Write w = data.write();
-	Error err = get_data(&w[0], p_bytes);
+	Error err = get_data(&w[0], p_bytes, received);
 	w.release();
+	if (p_bytes != received)
+		data.resize(received);
 	ret.push_back(err);
 	ret.push_back(data);
 	return ret;
@@ -235,19 +237,22 @@ void StreamPeer::put_var(const Variant &p_variant, bool p_full_objects) {
 uint8_t StreamPeer::get_u8() {
 
 	uint8_t buf[1];
-	get_data(buf, 1);
+	int received;
+	get_data(buf, 1, received);
 	return buf[0];
 }
 int8_t StreamPeer::get_8() {
 
 	uint8_t buf[1];
-	get_data(buf, 1);
+	int received;
+	get_data(buf, 1, received);
 	return buf[0];
 }
 uint16_t StreamPeer::get_u16() {
 
 	uint8_t buf[2];
-	get_data(buf, 2);
+	int received;
+	get_data(buf, 2, received);
 	uint16_t r = decode_uint16(buf);
 	if (big_endian) {
 		r = BSWAP16(r);
@@ -257,7 +262,8 @@ uint16_t StreamPeer::get_u16() {
 int16_t StreamPeer::get_16() {
 
 	uint8_t buf[2];
-	get_data(buf, 2);
+	int received;
+	get_data(buf, 2, received);
 	uint16_t r = decode_uint16(buf);
 	if (big_endian) {
 		r = BSWAP16(r);
@@ -267,7 +273,8 @@ int16_t StreamPeer::get_16() {
 uint32_t StreamPeer::get_u32() {
 
 	uint8_t buf[4];
-	get_data(buf, 4);
+	int received;
+	get_data(buf, 4, received);
 	uint32_t r = decode_uint32(buf);
 	if (big_endian) {
 		r = BSWAP32(r);
@@ -277,7 +284,8 @@ uint32_t StreamPeer::get_u32() {
 int32_t StreamPeer::get_32() {
 
 	uint8_t buf[4];
-	get_data(buf, 4);
+	int received;
+	get_data(buf, 4, received);
 	uint32_t r = decode_uint32(buf);
 	if (big_endian) {
 		r = BSWAP32(r);
@@ -287,7 +295,8 @@ int32_t StreamPeer::get_32() {
 uint64_t StreamPeer::get_u64() {
 
 	uint8_t buf[8];
-	get_data(buf, 8);
+	int received;
+	get_data(buf, 8, received);
 	uint64_t r = decode_uint64(buf);
 	if (big_endian) {
 		r = BSWAP64(r);
@@ -297,7 +306,8 @@ uint64_t StreamPeer::get_u64() {
 int64_t StreamPeer::get_64() {
 
 	uint8_t buf[8];
-	get_data(buf, 8);
+	int received;
+	get_data(buf, 8, received);
 	uint64_t r = decode_uint64(buf);
 	if (big_endian) {
 		r = BSWAP64(r);
@@ -307,7 +317,8 @@ int64_t StreamPeer::get_64() {
 float StreamPeer::get_float() {
 
 	uint8_t buf[4];
-	get_data(buf, 4);
+	int received;
+	get_data(buf, 4, received);
 
 	if (big_endian) {
 		uint32_t *p32 = (uint32_t *)buf;
@@ -320,7 +331,8 @@ float StreamPeer::get_float() {
 double StreamPeer::get_double() {
 
 	uint8_t buf[8];
-	get_data(buf, 8);
+	int received;
+	get_data(buf, 8, received);
 
 	if (big_endian) {
 		uint64_t *p64 = (uint64_t *)buf;
@@ -335,10 +347,11 @@ String StreamPeer::get_string(int p_bytes) {
 		p_bytes = get_u32();
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
+	int received;
 	Vector<char> buf;
 	Error err = buf.resize(p_bytes + 1);
 	ERR_FAIL_COND_V(err != OK, String());
-	err = get_data((uint8_t *)&buf[0], p_bytes);
+	err = get_data((uint8_t *)&buf[0], p_bytes, received);
 	ERR_FAIL_COND_V(err != OK, String());
 	buf.write[p_bytes] = 0;
 	return buf.ptr();
@@ -349,10 +362,11 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 		p_bytes = get_u32();
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
+	int received;
 	Vector<uint8_t> buf;
 	Error err = buf.resize(p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
-	err = get_data(buf.ptrw(), p_bytes);
+	err = get_data(buf.ptrw(), p_bytes, received);
 	ERR_FAIL_COND_V(err != OK, String());
 
 	String ret;
@@ -362,10 +376,11 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 Variant StreamPeer::get_var(bool p_allow_objects) {
 
 	int len = get_32();
+	int received;
 	Vector<uint8_t> var;
 	Error err = var.resize(len);
 	ERR_FAIL_COND_V(err != OK, Variant());
-	err = get_data(var.ptrw(), len);
+	err = get_data(var.ptrw(), len, received);
 	ERR_FAIL_COND_V(err != OK, Variant());
 
 	Variant ret;
@@ -456,23 +471,19 @@ Error StreamPeerBuffer::put_partial_data(const uint8_t *p_data, int p_bytes, int
 	return put_data(p_data, p_bytes);
 }
 
-Error StreamPeerBuffer::get_data(uint8_t *p_buffer, int p_bytes) {
+Error StreamPeerBuffer::get_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
-	int recv;
-	get_partial_data(p_buffer, p_bytes, recv);
-	if (recv != p_bytes)
-		return ERR_INVALID_PARAMETER;
-
-	return OK;
+	return get_partial_data(p_buffer, p_bytes, r_received);
 }
 
 Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
+	ERR_FAIL_COND_V(p_bytes <= 0, ERR_INVALID_PARAMETER);
 	if (pointer + p_bytes > data.size()) {
 		r_received = data.size() - pointer;
 		if (r_received <= 0) {
 			r_received = 0;
-			return OK; //you got 0
+			return ERR_FILE_EOF; //you got 0
 		}
 	} else {
 		r_received = p_bytes;
@@ -482,9 +493,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	copymem(p_buffer, r.ptr() + pointer, r_received);
 
 	pointer += r_received;
-	// FIXME: return what? OK or ERR_*
-	// return OK for now so we don't maybe return garbage
-	return OK;
+	return r_received == p_bytes ? OK : ERR_FILE_EOF;
 }
 
 int StreamPeerBuffer::get_available_bytes() const {

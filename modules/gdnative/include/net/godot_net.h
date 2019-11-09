@@ -50,7 +50,7 @@ typedef struct {
 	godot_object *data; /* User reference */
 
 	/* This is StreamPeer */
-	godot_error (*get_data)(void *user, uint8_t *p_buffer, int p_bytes);
+	godot_error (*get_data)(void *user, uint8_t *p_buffer, int p_bytes, int *r_received);
 	godot_error (*get_partial_data)(void *user, uint8_t *p_buffer, int p_bytes, int *r_received);
 	godot_error (*put_data)(void *user, const uint8_t *p_data, int p_bytes);
 	godot_error (*put_partial_data)(void *user, const uint8_t *p_data, int p_bytes, int *r_sent);

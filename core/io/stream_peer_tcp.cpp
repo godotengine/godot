@@ -299,10 +299,9 @@ Error StreamPeerTCP::put_partial_data(const uint8_t *p_data, int p_bytes, int &r
 	return write(p_data, p_bytes, r_sent, false);
 }
 
-Error StreamPeerTCP::get_data(uint8_t *p_buffer, int p_bytes) {
+Error StreamPeerTCP::get_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
-	int total;
-	return read(p_buffer, p_bytes, total, true);
+	return read(p_buffer, p_bytes, r_received, true);
 }
 
 Error StreamPeerTCP::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {

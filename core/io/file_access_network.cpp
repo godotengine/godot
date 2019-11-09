@@ -71,14 +71,18 @@ void FileAccessNetworkClient::put_64(int64_t p_64) {
 int FileAccessNetworkClient::get_32() {
 
 	uint8_t buf[4];
-	client->get_data(buf, 4);
+	int received;
+	Error err = client->get_data(buf, 4, received);
+	ERR_FAIL_COND_V(err != OK || received != 4, 0);
 	return decode_uint32(buf);
 }
 
 int64_t FileAccessNetworkClient::get_64() {
 
 	uint8_t buf[8];
-	client->get_data(buf, 8);
+	int received;
+	Error err = client->get_data(buf, 8, received);
+	ERR_FAIL_COND_V(err != OK || received != 8, 0);
 	return decode_uint64(buf);
 }
 
@@ -145,12 +149,16 @@ void FileAccessNetworkClient::_thread_func() {
 			} break;
 			case FileAccessNetwork::RESPONSE_DATA: {
 
+				int received;
 				int64_t offset = get_64();
 				uint32_t len = get_32();
 
 				Vector<uint8_t> block;
 				block.resize(len);
-				client->get_data(block.ptrw(), len);
+				err = client->get_data(block.ptrw(), len, received);
+
+				if (err != OK || (uint32_t)received != len)
+					ERR_PRINT("Invalid response packet");
 
 				if (fa) //may have been queued
 					fa->_set_block(offset, block);

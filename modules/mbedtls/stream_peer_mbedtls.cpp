@@ -198,23 +198,23 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 	return OK;
 }
 
-Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes) {
+Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	Error err;
 
-	int got = 0;
+	int got;
 	while (p_bytes > 0) {
 
 		err = get_partial_data(p_buffer, p_bytes, got);
+		r_received += got;
+		p_buffer += got;
+		p_bytes -= got;
 
 		if (err != OK) {
 			return err;
 		}
-
-		p_buffer += got;
-		p_bytes -= got;
 	}
 
 	return OK;

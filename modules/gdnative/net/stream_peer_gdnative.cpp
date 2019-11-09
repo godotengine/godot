@@ -54,9 +54,9 @@ Error StreamPeerGDNative::put_partial_data(const uint8_t *p_data, int p_bytes, i
 	return (Error)(interface->put_partial_data(interface->data, p_data, p_bytes, &r_sent));
 }
 
-Error StreamPeerGDNative::get_data(uint8_t *p_buffer, int p_bytes) {
+Error StreamPeerGDNative::get_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
-	return (Error)(interface->get_data(interface->data, p_buffer, p_bytes));
+	return (Error)(interface->get_data(interface->data, p_buffer, p_bytes, &r_received));
 }
 
 Error StreamPeerGDNative::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
