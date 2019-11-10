@@ -50,6 +50,7 @@
 #include <execinfo.h>
 #include <csignal>
 #include <cstdlib>
+#include <unistd>
 
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
@@ -100,7 +101,11 @@ static void handle_crash(int sig) {
 
 	// Dump the backtrace to stderr with a message to the user.
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
+	if (OS::get_singleton()->get_stderr_type() == OS::STD_HANDLE_CONSOLE) {
+		print_error(vformat("\x1b[1;91m%s: Program crashed with signal %d.\x1b[0m", __FUNCTION__, sig));
+	} else {
+		print_error(vformat("%s: Program crashed with signal %d.", __FUNCTION__, sig));
+	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(GODOT_VERSION_HASH).is_empty()) {
@@ -174,7 +179,13 @@ static void handle_crash(int sig) {
 				output = fname;
 			}
 
-			print_error(vformat("[%d] %s", (int64_t)i, output));
+			if (OS::get_singleton()->get_stderr_type() == OS::STD_HANDLE_CONSOLE) {
+				// Print colors using ANSI escape codes for easier visual grepping.
+				print_error(vformat("\x1b[94m[%d] \x1b[96m%s\x1b[0m", uint64_t(i), output.utf8().ptr()));
+			} else {
+				// Not a TTY (could be writing to a file). Don't use ANSI escape codes.
+				print_error(vformat("[%d] %s", uint64_t(i), output.utf8().ptr()));
+			}
 		}
 
 		if (strings) {
