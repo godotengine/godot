@@ -70,7 +70,7 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
                               ZSTD_strategy strategy, int disableLiteralCompression,
                               void* dst, size_t dstCapacity,
                         const void* src, size_t srcSize,
-                              void* workspace, size_t wkspSize,
+                              void* entropyWorkspace, size_t entropyWorkspaceSize,
                         const int bmi2)
 {
     size_t const minGain = ZSTD_minGain(srcSize, strategy);
@@ -99,10 +99,15 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
     {   HUF_repeat repeat = prevHuf->repeatMode;
         int const preferRepeat = strategy < ZSTD_lazy ? srcSize <= 1024 : 0;
         if (repeat == HUF_repeat_valid && lhSize == 3) singleStream = 1;
-        cLitSize = singleStream ? HUF_compress1X_repeat(ostart+lhSize, dstCapacity-lhSize, src, srcSize, 255, 11,
-                                      workspace, wkspSize, (HUF_CElt*)nextHuf->CTable, &repeat, preferRepeat, bmi2)
-                                : HUF_compress4X_repeat(ostart+lhSize, dstCapacity-lhSize, src, srcSize, 255, 11,
-                                      workspace, wkspSize, (HUF_CElt*)nextHuf->CTable, &repeat, preferRepeat, bmi2);
+        cLitSize = singleStream ?
+            HUF_compress1X_repeat(
+                ostart+lhSize, dstCapacity-lhSize, src, srcSize,
+                255, 11, entropyWorkspace, entropyWorkspaceSize,
+                (HUF_CElt*)nextHuf->CTable, &repeat, preferRepeat, bmi2) :
+            HUF_compress4X_repeat(
+                ostart+lhSize, dstCapacity-lhSize, src, srcSize,
+                255, 11, entropyWorkspace, entropyWorkspaceSize,
+                (HUF_CElt*)nextHuf->CTable, &repeat, preferRepeat, bmi2);
         if (repeat != HUF_repeat_none) {
             /* reused the existing table */
             hType = set_repeat;

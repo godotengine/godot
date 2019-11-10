@@ -42,15 +42,15 @@ size_t ZSTD_compressBound(size_t srcSize) {
 *  Context memory management
 ***************************************/
 struct ZSTD_CDict_s {
-    void* dictBuffer;
     const void* dictContent;
     size_t dictContentSize;
-    void* workspace;
-    size_t workspaceSize;
+    U32* entropyWorkspace; /* entropy workspace of HUF_WORKSPACE_SIZE bytes */
+    ZSTD_cwksp workspace;
     ZSTD_matchState_t matchState;
     ZSTD_compressedBlockState_t cBlockState;
     ZSTD_customMem customMem;
     U32 dictID;
+    int compressionLevel; /* 0 indicates that advanced API was used to select CDict params */
 };  /* typedef'd to ZSTD_CDict within "zstd.h" */
 
 ZSTD_CCtx* ZSTD_createCCtx(void)
@@ -84,23 +84,26 @@ ZSTD_CCtx* ZSTD_createCCtx_advanced(ZSTD_customMem customMem)
 
 ZSTD_CCtx* ZSTD_initStaticCCtx(void *workspace, size_t workspaceSize)
 {
-    ZSTD_CCtx* const cctx = (ZSTD_CCtx*) workspace;
+    ZSTD_cwksp ws;
+    ZSTD_CCtx* cctx;
     if (workspaceSize <= sizeof(ZSTD_CCtx)) return NULL;  /* minimum size */
     if ((size_t)workspace & 7) return NULL;  /* must be 8-aligned */
-    memset(workspace, 0, workspaceSize);   /* may be a bit generous, could memset be smaller ? */
+    ZSTD_cwksp_init(&ws, workspace, workspaceSize);
+
+    cctx = (ZSTD_CCtx*)ZSTD_cwksp_reserve_object(&ws, sizeof(ZSTD_CCtx));
+    if (cctx == NULL) {
+        return NULL;
+    }
+    memset(cctx, 0, sizeof(ZSTD_CCtx));
+    ZSTD_cwksp_move(&cctx->workspace, &ws);
     cctx->staticSize = workspaceSize;
-    cctx->workSpace = (void*)(cctx+1);
-    cctx->workSpaceSize = workspaceSize - sizeof(ZSTD_CCtx);
 
     /* statically sized space. entropyWorkspace never moves (but prev/next block swap places) */
-    if (cctx->workSpaceSize < HUF_WORKSPACE_SIZE + 2 * sizeof(ZSTD_compressedBlockState_t)) return NULL;
-    assert(((size_t)cctx->workSpace & (sizeof(void*)-1)) == 0);   /* ensure correct alignment */
-    cctx->blockState.prevCBlock = (ZSTD_compressedBlockState_t*)cctx->workSpace;
-    cctx->blockState.nextCBlock = cctx->blockState.prevCBlock + 1;
-    {
-        void* const ptr = cctx->blockState.nextCBlock + 1;
-        cctx->entropyWorkspace = (U32*)ptr;
-    }
+    if (!ZSTD_cwksp_check_available(&cctx->workspace, HUF_WORKSPACE_SIZE + 2 * sizeof(ZSTD_compressedBlockState_t))) return NULL;
+    cctx->blockState.prevCBlock = (ZSTD_compressedBlockState_t*)ZSTD_cwksp_reserve_object(&cctx->workspace, sizeof(ZSTD_compressedBlockState_t));
+    cctx->blockState.nextCBlock = (ZSTD_compressedBlockState_t*)ZSTD_cwksp_reserve_object(&cctx->workspace, sizeof(ZSTD_compressedBlockState_t));
+    cctx->entropyWorkspace = (U32*)ZSTD_cwksp_reserve_object(
+        &cctx->workspace, HUF_WORKSPACE_SIZE);
     cctx->bmi2 = ZSTD_cpuid_bmi2(ZSTD_cpuid());
     return cctx;
 }
@@ -128,11 +131,11 @@ static void ZSTD_freeCCtxContent(ZSTD_CCtx* cctx)
 {
     assert(cctx != NULL);
     assert(cctx->staticSize == 0);
-    ZSTD_free(cctx->workSpace, cctx->customMem); cctx->workSpace = NULL;
     ZSTD_clearAllDicts(cctx);
 #ifdef ZSTD_MULTITHREAD
     ZSTDMT_freeCCtx(cctx->mtctx); cctx->mtctx = NULL;
 #endif
+    ZSTD_cwksp_free(&cctx->workspace, cctx->customMem);
 }
 
 size_t ZSTD_freeCCtx(ZSTD_CCtx* cctx)
@@ -140,8 +143,13 @@ size_t ZSTD_freeCCtx(ZSTD_CCtx* cctx)
     if (cctx==NULL) return 0;   /* support free on NULL */
     RETURN_ERROR_IF(cctx->staticSize, memory_allocation,
                     "not compatible with static CCtx");
-    ZSTD_freeCCtxContent(cctx);
-    ZSTD_free(cctx, cctx->customMem);
+    {
+        int cctxInWorkspace = ZSTD_cwksp_owns_buffer(&cctx->workspace, cctx);
+        ZSTD_freeCCtxContent(cctx);
+        if (!cctxInWorkspace) {
+            ZSTD_free(cctx, cctx->customMem);
+        }
+    }
     return 0;
 }
 
@@ -160,7 +168,9 @@ static size_t ZSTD_sizeof_mtctx(const ZSTD_CCtx* cctx)
 size_t ZSTD_sizeof_CCtx(const ZSTD_CCtx* cctx)
 {
     if (cctx==NULL) return 0;   /* support sizeof on NULL */
-    return sizeof(*cctx) + cctx->workSpaceSize
+    /* cctx may be in the workspace */
+    return (cctx->workspace.workspace == cctx ? 0 : sizeof(*cctx))
+           + ZSTD_cwksp_sizeof(&cctx->workspace)
            + ZSTD_sizeof_localDict(cctx->localDict)
            + ZSTD_sizeof_mtctx(cctx);
 }
@@ -229,23 +239,23 @@ size_t ZSTD_CCtxParams_init_advanced(ZSTD_CCtx_params* cctxParams, ZSTD_paramete
     RETURN_ERROR_IF(!cctxParams, GENERIC);
     FORWARD_IF_ERROR( ZSTD_checkCParams(params.cParams) );
     memset(cctxParams, 0, sizeof(*cctxParams));
+    assert(!ZSTD_checkCParams(params.cParams));
     cctxParams->cParams = params.cParams;
     cctxParams->fParams = params.fParams;
     cctxParams->compressionLevel = ZSTD_CLEVEL_DEFAULT;   /* should not matter, as all cParams are presumed properly defined */
-    assert(!ZSTD_checkCParams(params.cParams));
     return 0;
 }
 
 /* ZSTD_assignParamsToCCtxParams() :
  * params is presumed valid at this stage */
 static ZSTD_CCtx_params ZSTD_assignParamsToCCtxParams(
-        ZSTD_CCtx_params cctxParams, ZSTD_parameters params)
+        const ZSTD_CCtx_params* cctxParams, ZSTD_parameters params)
 {
-    ZSTD_CCtx_params ret = cctxParams;
+    ZSTD_CCtx_params ret = *cctxParams;
+    assert(!ZSTD_checkCParams(params.cParams));
     ret.cParams = params.cParams;
     ret.fParams = params.fParams;
     ret.compressionLevel = ZSTD_CLEVEL_DEFAULT;   /* should not matter, as all cParams are presumed properly defined */
-    assert(!ZSTD_checkCParams(params.cParams));
     return ret;
 }
 
@@ -378,7 +388,7 @@ ZSTD_bounds ZSTD_cParam_getBounds(ZSTD_cParameter param)
     case ZSTD_c_forceAttachDict:
         ZSTD_STATIC_ASSERT(ZSTD_dictDefaultAttach < ZSTD_dictForceCopy);
         bounds.lowerBound = ZSTD_dictDefaultAttach;
-        bounds.upperBound = ZSTD_dictForceCopy;       /* note : how to ensure at compile time that this is the highest value enum ? */
+        bounds.upperBound = ZSTD_dictForceLoad;       /* note : how to ensure at compile time that this is the highest value enum ? */
         return bounds;
 
     case ZSTD_c_literalCompressionMode:
@@ -390,6 +400,11 @@ ZSTD_bounds ZSTD_cParam_getBounds(ZSTD_cParameter param)
     case ZSTD_c_targetCBlockSize:
         bounds.lowerBound = ZSTD_TARGETCBLOCKSIZE_MIN;
         bounds.upperBound = ZSTD_TARGETCBLOCKSIZE_MAX;
+        return bounds;
+
+    case ZSTD_c_srcSizeHint:
+        bounds.lowerBound = ZSTD_SRCSIZEHINT_MIN;
+        bounds.upperBound = ZSTD_SRCSIZEHINT_MAX;
         return bounds;
 
     default:
@@ -448,6 +463,7 @@ static int ZSTD_isUpdateAuthorized(ZSTD_cParameter param)
     case ZSTD_c_forceAttachDict:
     case ZSTD_c_literalCompressionMode:
     case ZSTD_c_targetCBlockSize:
+    case ZSTD_c_srcSizeHint:
     default:
         return 0;
     }
@@ -494,6 +510,7 @@ size_t ZSTD_CCtx_setParameter(ZSTD_CCtx* cctx, ZSTD_cParameter param, int value)
     case ZSTD_c_ldmMinMatch:
     case ZSTD_c_ldmBucketSizeLog:
     case ZSTD_c_targetCBlockSize:
+    case ZSTD_c_srcSizeHint:
         break;
 
     default: RETURN_ERROR(parameter_unsupported);
@@ -517,33 +534,33 @@ size_t ZSTD_CCtxParams_setParameter(ZSTD_CCtx_params* CCtxParams,
         if (value) {  /* 0 : does not change current level */
             CCtxParams->compressionLevel = value;
         }
-        if (CCtxParams->compressionLevel >= 0) return CCtxParams->compressionLevel;
+        if (CCtxParams->compressionLevel >= 0) return (size_t)CCtxParams->compressionLevel;
         return 0;  /* return type (size_t) cannot represent negative values */
     }
 
     case ZSTD_c_windowLog :
         if (value!=0)   /* 0 => use default */
             BOUNDCHECK(ZSTD_c_windowLog, value);
-        CCtxParams->cParams.windowLog = value;
+        CCtxParams->cParams.windowLog = (U32)value;
         return CCtxParams->cParams.windowLog;
 
     case ZSTD_c_hashLog :
         if (value!=0)   /* 0 => use default */
             BOUNDCHECK(ZSTD_c_hashLog, value);
-        CCtxParams->cParams.hashLog = value;
+        CCtxParams->cParams.hashLog = (U32)value;
         return CCtxParams->cParams.hashLog;
 
     case ZSTD_c_chainLog :
         if (value!=0)   /* 0 => use default */
             BOUNDCHECK(ZSTD_c_chainLog, value);
-        CCtxParams->cParams.chainLog = value;
+        CCtxParams->cParams.chainLog = (U32)value;
         return CCtxParams->cParams.chainLog;
 
     case ZSTD_c_searchLog :
         if (value!=0)   /* 0 => use default */
             BOUNDCHECK(ZSTD_c_searchLog, value);
-        CCtxParams->cParams.searchLog = value;
-        return value;
+        CCtxParams->cParams.searchLog = (U32)value;
+        return (size_t)value;
 
     case ZSTD_c_minMatch :
         if (value!=0)   /* 0 => use default */
@@ -674,6 +691,12 @@ size_t ZSTD_CCtxParams_setParameter(ZSTD_CCtx_params* CCtxParams,
         CCtxParams->targetCBlockSize = value;
         return CCtxParams->targetCBlockSize;
 
+    case ZSTD_c_srcSizeHint :
+        if (value!=0)    /* 0 ==> default */
+            BOUNDCHECK(ZSTD_c_srcSizeHint, value);
+        CCtxParams->srcSizeHint = value;
+        return CCtxParams->srcSizeHint;
+
     default: RETURN_ERROR(parameter_unsupported, "unknown parameter");
     }
 }
@@ -778,6 +801,9 @@ size_t ZSTD_CCtxParams_getParameter(
         break;
     case ZSTD_c_targetCBlockSize :
         *value = (int)CCtxParams->targetCBlockSize;
+        break;
+    case ZSTD_c_srcSizeHint :
+        *value = (int)CCtxParams->srcSizeHint;
         break;
     default: RETURN_ERROR(parameter_unsupported, "unknown parameter");
     }
@@ -1029,7 +1055,11 @@ ZSTD_adjustCParams(ZSTD_compressionParameters cPar,
 ZSTD_compressionParameters ZSTD_getCParamsFromCCtxParams(
         const ZSTD_CCtx_params* CCtxParams, U64 srcSizeHint, size_t dictSize)
 {
-    ZSTD_compressionParameters cParams = ZSTD_getCParams(CCtxParams->compressionLevel, srcSizeHint, dictSize);
+    ZSTD_compressionParameters cParams;
+    if (srcSizeHint == ZSTD_CONTENTSIZE_UNKNOWN && CCtxParams->srcSizeHint > 0) {
+      srcSizeHint = CCtxParams->srcSizeHint;
+    }
+    cParams = ZSTD_getCParams(CCtxParams->compressionLevel, srcSizeHint, dictSize);
     if (CCtxParams->ldmParams.enableLdm) cParams.windowLog = ZSTD_LDM_DEFAULT_WINDOW_LOG;
     if (CCtxParams->cParams.windowLog) cParams.windowLog = CCtxParams->cParams.windowLog;
     if (CCtxParams->cParams.hashLog) cParams.hashLog = CCtxParams->cParams.hashLog;
@@ -1049,10 +1079,19 @@ ZSTD_sizeof_matchState(const ZSTD_compressionParameters* const cParams,
     size_t const chainSize = (cParams->strategy == ZSTD_fast) ? 0 : ((size_t)1 << cParams->chainLog);
     size_t const hSize = ((size_t)1) << cParams->hashLog;
     U32    const hashLog3 = (forCCtx && cParams->minMatch==3) ? MIN(ZSTD_HASHLOG3_MAX, cParams->windowLog) : 0;
-    size_t const h3Size = ((size_t)1) << hashLog3;
-    size_t const tableSpace = (chainSize + hSize + h3Size) * sizeof(U32);
-    size_t const optPotentialSpace = ((MaxML+1) + (MaxLL+1) + (MaxOff+1) + (1<<Litbits)) * sizeof(U32)
-                          + (ZSTD_OPT_NUM+1) * (sizeof(ZSTD_match_t)+sizeof(ZSTD_optimal_t));
+    size_t const h3Size = hashLog3 ? ((size_t)1) << hashLog3 : 0;
+    /* We don't use ZSTD_cwksp_alloc_size() here because the tables aren't
+     * surrounded by redzones in ASAN. */
+    size_t const tableSpace = chainSize * sizeof(U32)
+                            + hSize * sizeof(U32)
+                            + h3Size * sizeof(U32);
+    size_t const optPotentialSpace =
+        ZSTD_cwksp_alloc_size((MaxML+1) * sizeof(U32))
+      + ZSTD_cwksp_alloc_size((MaxLL+1) * sizeof(U32))
+      + ZSTD_cwksp_alloc_size((MaxOff+1) * sizeof(U32))
+      + ZSTD_cwksp_alloc_size((1<<Litbits) * sizeof(U32))
+      + ZSTD_cwksp_alloc_size((ZSTD_OPT_NUM+1) * sizeof(ZSTD_match_t))
+      + ZSTD_cwksp_alloc_size((ZSTD_OPT_NUM+1) * sizeof(ZSTD_optimal_t));
     size_t const optSpace = (forCCtx && (cParams->strategy >= ZSTD_btopt))
                                 ? optPotentialSpace
                                 : 0;
@@ -1069,20 +1108,23 @@ size_t ZSTD_estimateCCtxSize_usingCCtxParams(const ZSTD_CCtx_params* params)
         size_t const blockSize = MIN(ZSTD_BLOCKSIZE_MAX, (size_t)1 << cParams.windowLog);
         U32    const divider = (cParams.minMatch==3) ? 3 : 4;
         size_t const maxNbSeq = blockSize / divider;
-        size_t const tokenSpace = WILDCOPY_OVERLENGTH + blockSize + 11*maxNbSeq;
-        size_t const entropySpace = HUF_WORKSPACE_SIZE;
-        size_t const blockStateSpace = 2 * sizeof(ZSTD_compressedBlockState_t);
+        size_t const tokenSpace = ZSTD_cwksp_alloc_size(WILDCOPY_OVERLENGTH + blockSize)
+                                + ZSTD_cwksp_alloc_size(maxNbSeq * sizeof(seqDef))
+                                + 3 * ZSTD_cwksp_alloc_size(maxNbSeq * sizeof(BYTE));
+        size_t const entropySpace = ZSTD_cwksp_alloc_size(HUF_WORKSPACE_SIZE);
+        size_t const blockStateSpace = 2 * ZSTD_cwksp_alloc_size(sizeof(ZSTD_compressedBlockState_t));
         size_t const matchStateSize = ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 1);
 
         size_t const ldmSpace = ZSTD_ldm_getTableSize(params->ldmParams);
-        size_t const ldmSeqSpace = ZSTD_ldm_getMaxNbSeq(params->ldmParams, blockSize) * sizeof(rawSeq);
+        size_t const ldmSeqSpace = ZSTD_cwksp_alloc_size(ZSTD_ldm_getMaxNbSeq(params->ldmParams, blockSize) * sizeof(rawSeq));
 
         size_t const neededSpace = entropySpace + blockStateSpace + tokenSpace +
                                    matchStateSize + ldmSpace + ldmSeqSpace;
+        size_t const cctxSpace = ZSTD_cwksp_alloc_size(sizeof(ZSTD_CCtx));
 
-        DEBUGLOG(5, "sizeof(ZSTD_CCtx) : %u", (U32)sizeof(ZSTD_CCtx));
-        DEBUGLOG(5, "estimate workSpace : %u", (U32)neededSpace);
-        return sizeof(ZSTD_CCtx) + neededSpace;
+        DEBUGLOG(5, "sizeof(ZSTD_CCtx) : %u", (U32)cctxSpace);
+        DEBUGLOG(5, "estimate workspace : %u", (U32)neededSpace);
+        return cctxSpace + neededSpace;
     }
 }
 
@@ -1118,7 +1160,8 @@ size_t ZSTD_estimateCStreamSize_usingCCtxParams(const ZSTD_CCtx_params* params)
         size_t const blockSize = MIN(ZSTD_BLOCKSIZE_MAX, (size_t)1 << cParams.windowLog);
         size_t const inBuffSize = ((size_t)1 << cParams.windowLog) + blockSize;
         size_t const outBuffSize = ZSTD_compressBound(blockSize) + 1;
-        size_t const streamingSize = inBuffSize + outBuffSize;
+        size_t const streamingSize = ZSTD_cwksp_alloc_size(inBuffSize)
+                                   + ZSTD_cwksp_alloc_size(outBuffSize);
 
         return CCtxSize + streamingSize;
     }
@@ -1186,17 +1229,6 @@ size_t ZSTD_toFlushNow(ZSTD_CCtx* cctx)
     return 0;   /* over-simplification; could also check if context is currently running in streaming mode, and in which case, report how many bytes are left to be flushed within output buffer */
 }
 
-
-
-static U32 ZSTD_equivalentCParams(ZSTD_compressionParameters cParams1,
-                                  ZSTD_compressionParameters cParams2)
-{
-    return (cParams1.hashLog  == cParams2.hashLog)
-         & (cParams1.chainLog == cParams2.chainLog)
-         & (cParams1.strategy == cParams2.strategy)   /* opt parser space */
-         & ((cParams1.minMatch==3) == (cParams2.minMatch==3));  /* hashlog3 space */
-}
-
 static void ZSTD_assertEqualCParams(ZSTD_compressionParameters cParams1,
                                     ZSTD_compressionParameters cParams2)
 {
@@ -1209,71 +1241,6 @@ static void ZSTD_assertEqualCParams(ZSTD_compressionParameters cParams1,
     assert(cParams1.minMatch     == cParams2.minMatch);
     assert(cParams1.targetLength == cParams2.targetLength);
     assert(cParams1.strategy     == cParams2.strategy);
-}
-
-/** The parameters are equivalent if ldm is not enabled in both sets or
- *  all the parameters are equivalent. */
-static U32 ZSTD_equivalentLdmParams(ldmParams_t ldmParams1,
-                                    ldmParams_t ldmParams2)
-{
-    return (!ldmParams1.enableLdm && !ldmParams2.enableLdm) ||
-           (ldmParams1.enableLdm == ldmParams2.enableLdm &&
-            ldmParams1.hashLog == ldmParams2.hashLog &&
-            ldmParams1.bucketSizeLog == ldmParams2.bucketSizeLog &&
-            ldmParams1.minMatchLength == ldmParams2.minMatchLength &&
-            ldmParams1.hashRateLog == ldmParams2.hashRateLog);
-}
-
-typedef enum { ZSTDb_not_buffered, ZSTDb_buffered } ZSTD_buffered_policy_e;
-
-/* ZSTD_sufficientBuff() :
- * check internal buffers exist for streaming if buffPol == ZSTDb_buffered .
- * Note : they are assumed to be correctly sized if ZSTD_equivalentCParams()==1 */
-static U32 ZSTD_sufficientBuff(size_t bufferSize1, size_t maxNbSeq1,
-                            size_t maxNbLit1,
-                            ZSTD_buffered_policy_e buffPol2,
-                            ZSTD_compressionParameters cParams2,
-                            U64 pledgedSrcSize)
-{
-    size_t const windowSize2 = MAX(1, (size_t)MIN(((U64)1 << cParams2.windowLog), pledgedSrcSize));
-    size_t const blockSize2 = MIN(ZSTD_BLOCKSIZE_MAX, windowSize2);
-    size_t const maxNbSeq2 = blockSize2 / ((cParams2.minMatch == 3) ? 3 : 4);
-    size_t const maxNbLit2 = blockSize2;
-    size_t const neededBufferSize2 = (buffPol2==ZSTDb_buffered) ? windowSize2 + blockSize2 : 0;
-    DEBUGLOG(4, "ZSTD_sufficientBuff: is neededBufferSize2=%u <= bufferSize1=%u",
-                (U32)neededBufferSize2, (U32)bufferSize1);
-    DEBUGLOG(4, "ZSTD_sufficientBuff: is maxNbSeq2=%u <= maxNbSeq1=%u",
-                (U32)maxNbSeq2, (U32)maxNbSeq1);
-    DEBUGLOG(4, "ZSTD_sufficientBuff: is maxNbLit2=%u <= maxNbLit1=%u",
-                (U32)maxNbLit2, (U32)maxNbLit1);
-    return (maxNbLit2 <= maxNbLit1)
-         & (maxNbSeq2 <= maxNbSeq1)
-         & (neededBufferSize2 <= bufferSize1);
-}
-
-/** Equivalence for resetCCtx purposes */
-static U32 ZSTD_equivalentParams(ZSTD_CCtx_params params1,
-                                 ZSTD_CCtx_params params2,
-                                 size_t buffSize1,
-                                 size_t maxNbSeq1, size_t maxNbLit1,
-                                 ZSTD_buffered_policy_e buffPol2,
-                                 U64 pledgedSrcSize)
-{
-    DEBUGLOG(4, "ZSTD_equivalentParams: pledgedSrcSize=%u", (U32)pledgedSrcSize);
-    if (!ZSTD_equivalentCParams(params1.cParams, params2.cParams)) {
-      DEBUGLOG(4, "ZSTD_equivalentCParams() == 0");
-      return 0;
-    }
-    if (!ZSTD_equivalentLdmParams(params1.ldmParams, params2.ldmParams)) {
-      DEBUGLOG(4, "ZSTD_equivalentLdmParams() == 0");
-      return 0;
-    }
-    if (!ZSTD_sufficientBuff(buffSize1, maxNbSeq1, maxNbLit1, buffPol2,
-                             params2.cParams, pledgedSrcSize)) {
-      DEBUGLOG(4, "ZSTD_sufficientBuff() == 0");
-      return 0;
-    }
-    return 1;
 }
 
 static void ZSTD_reset_compressedBlockState(ZSTD_compressedBlockState_t* bs)
@@ -1301,87 +1268,104 @@ static void ZSTD_invalidateMatchState(ZSTD_matchState_t* ms)
     ms->dictMatchState = NULL;
 }
 
-/*! ZSTD_continueCCtx() :
- *  reuse CCtx without reset (note : requires no dictionary) */
-static size_t ZSTD_continueCCtx(ZSTD_CCtx* cctx, ZSTD_CCtx_params params, U64 pledgedSrcSize)
-{
-    size_t const windowSize = MAX(1, (size_t)MIN(((U64)1 << params.cParams.windowLog), pledgedSrcSize));
-    size_t const blockSize = MIN(ZSTD_BLOCKSIZE_MAX, windowSize);
-    DEBUGLOG(4, "ZSTD_continueCCtx: re-use context in place");
+/**
+ * Indicates whether this compression proceeds directly from user-provided
+ * source buffer to user-provided destination buffer (ZSTDb_not_buffered), or
+ * whether the context needs to buffer the input/output (ZSTDb_buffered).
+ */
+typedef enum {
+    ZSTDb_not_buffered,
+    ZSTDb_buffered
+} ZSTD_buffered_policy_e;
 
-    cctx->blockSize = blockSize;   /* previous block size could be different even for same windowLog, due to pledgedSrcSize */
-    cctx->appliedParams = params;
-    cctx->blockState.matchState.cParams = params.cParams;
-    cctx->pledgedSrcSizePlusOne = pledgedSrcSize+1;
-    cctx->consumedSrcSize = 0;
-    cctx->producedCSize = 0;
-    if (pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN)
-        cctx->appliedParams.fParams.contentSizeFlag = 0;
-    DEBUGLOG(4, "pledged content size : %u ; flag : %u",
-        (U32)pledgedSrcSize, cctx->appliedParams.fParams.contentSizeFlag);
-    cctx->stage = ZSTDcs_init;
-    cctx->dictID = 0;
-    if (params.ldmParams.enableLdm)
-        ZSTD_window_clear(&cctx->ldmState.window);
-    ZSTD_referenceExternalSequences(cctx, NULL, 0);
-    ZSTD_invalidateMatchState(&cctx->blockState.matchState);
-    ZSTD_reset_compressedBlockState(cctx->blockState.prevCBlock);
-    XXH64_reset(&cctx->xxhState, 0);
-    return 0;
-}
+/**
+ * Controls, for this matchState reset, whether the tables need to be cleared /
+ * prepared for the coming compression (ZSTDcrp_makeClean), or whether the
+ * tables can be left unclean (ZSTDcrp_leaveDirty), because we know that a
+ * subsequent operation will overwrite the table space anyways (e.g., copying
+ * the matchState contents in from a CDict).
+ */
+typedef enum {
+    ZSTDcrp_makeClean,
+    ZSTDcrp_leaveDirty
+} ZSTD_compResetPolicy_e;
 
-typedef enum { ZSTDcrp_continue, ZSTDcrp_noMemset } ZSTD_compResetPolicy_e;
+/**
+ * Controls, for this matchState reset, whether indexing can continue where it
+ * left off (ZSTDirp_continue), or whether it needs to be restarted from zero
+ * (ZSTDirp_reset).
+ */
+typedef enum {
+    ZSTDirp_continue,
+    ZSTDirp_reset
+} ZSTD_indexResetPolicy_e;
 
-typedef enum { ZSTD_resetTarget_CDict, ZSTD_resetTarget_CCtx } ZSTD_resetTarget_e;
+typedef enum {
+    ZSTD_resetTarget_CDict,
+    ZSTD_resetTarget_CCtx
+} ZSTD_resetTarget_e;
 
-static void*
+static size_t
 ZSTD_reset_matchState(ZSTD_matchState_t* ms,
-                      void* ptr,
+                      ZSTD_cwksp* ws,
                 const ZSTD_compressionParameters* cParams,
-                      ZSTD_compResetPolicy_e const crp, ZSTD_resetTarget_e const forWho)
+                const ZSTD_compResetPolicy_e crp,
+                const ZSTD_indexResetPolicy_e forceResetIndex,
+                const ZSTD_resetTarget_e forWho)
 {
     size_t const chainSize = (cParams->strategy == ZSTD_fast) ? 0 : ((size_t)1 << cParams->chainLog);
     size_t const hSize = ((size_t)1) << cParams->hashLog;
     U32    const hashLog3 = ((forWho == ZSTD_resetTarget_CCtx) && cParams->minMatch==3) ? MIN(ZSTD_HASHLOG3_MAX, cParams->windowLog) : 0;
-    size_t const h3Size = ((size_t)1) << hashLog3;
-    size_t const tableSpace = (chainSize + hSize + h3Size) * sizeof(U32);
+    size_t const h3Size = hashLog3 ? ((size_t)1) << hashLog3 : 0;
 
-    assert(((size_t)ptr & 3) == 0);
+    DEBUGLOG(4, "reset indices : %u", forceResetIndex == ZSTDirp_reset);
+    if (forceResetIndex == ZSTDirp_reset) {
+        memset(&ms->window, 0, sizeof(ms->window));
+        ms->window.dictLimit = 1;    /* start from 1, so that 1st position is valid */
+        ms->window.lowLimit = 1;     /* it ensures first and later CCtx usages compress the same */
+        ms->window.nextSrc = ms->window.base + 1;   /* see issue #1241 */
+        ZSTD_cwksp_mark_tables_dirty(ws);
+    }
 
     ms->hashLog3 = hashLog3;
-    memset(&ms->window, 0, sizeof(ms->window));
-    ms->window.dictLimit = 1;    /* start from 1, so that 1st position is valid */
-    ms->window.lowLimit = 1;     /* it ensures first and later CCtx usages compress the same */
-    ms->window.nextSrc = ms->window.base + 1;   /* see issue #1241 */
+
     ZSTD_invalidateMatchState(ms);
+
+    assert(!ZSTD_cwksp_reserve_failed(ws)); /* check that allocation hasn't already failed */
+
+    ZSTD_cwksp_clear_tables(ws);
+
+    DEBUGLOG(5, "reserving table space");
+    /* table Space */
+    ms->hashTable = (U32*)ZSTD_cwksp_reserve_table(ws, hSize * sizeof(U32));
+    ms->chainTable = (U32*)ZSTD_cwksp_reserve_table(ws, chainSize * sizeof(U32));
+    ms->hashTable3 = (U32*)ZSTD_cwksp_reserve_table(ws, h3Size * sizeof(U32));
+    RETURN_ERROR_IF(ZSTD_cwksp_reserve_failed(ws), memory_allocation,
+                    "failed a workspace allocation in ZSTD_reset_matchState");
+
+    DEBUGLOG(4, "reset table : %u", crp!=ZSTDcrp_leaveDirty);
+    if (crp!=ZSTDcrp_leaveDirty) {
+        /* reset tables only */
+        ZSTD_cwksp_clean_tables(ws);
+    }
 
     /* opt parser space */
     if ((forWho == ZSTD_resetTarget_CCtx) && (cParams->strategy >= ZSTD_btopt)) {
         DEBUGLOG(4, "reserving optimal parser space");
-        ms->opt.litFreq = (unsigned*)ptr;
-        ms->opt.litLengthFreq = ms->opt.litFreq + (1<<Litbits);
-        ms->opt.matchLengthFreq = ms->opt.litLengthFreq + (MaxLL+1);
-        ms->opt.offCodeFreq = ms->opt.matchLengthFreq + (MaxML+1);
-        ptr = ms->opt.offCodeFreq + (MaxOff+1);
-        ms->opt.matchTable = (ZSTD_match_t*)ptr;
-        ptr = ms->opt.matchTable + ZSTD_OPT_NUM+1;
-        ms->opt.priceTable = (ZSTD_optimal_t*)ptr;
-        ptr = ms->opt.priceTable + ZSTD_OPT_NUM+1;
+        ms->opt.litFreq = (unsigned*)ZSTD_cwksp_reserve_aligned(ws, (1<<Litbits) * sizeof(unsigned));
+        ms->opt.litLengthFreq = (unsigned*)ZSTD_cwksp_reserve_aligned(ws, (MaxLL+1) * sizeof(unsigned));
+        ms->opt.matchLengthFreq = (unsigned*)ZSTD_cwksp_reserve_aligned(ws, (MaxML+1) * sizeof(unsigned));
+        ms->opt.offCodeFreq = (unsigned*)ZSTD_cwksp_reserve_aligned(ws, (MaxOff+1) * sizeof(unsigned));
+        ms->opt.matchTable = (ZSTD_match_t*)ZSTD_cwksp_reserve_aligned(ws, (ZSTD_OPT_NUM+1) * sizeof(ZSTD_match_t));
+        ms->opt.priceTable = (ZSTD_optimal_t*)ZSTD_cwksp_reserve_aligned(ws, (ZSTD_OPT_NUM+1) * sizeof(ZSTD_optimal_t));
     }
-
-    /* table Space */
-    DEBUGLOG(4, "reset table : %u", crp!=ZSTDcrp_noMemset);
-    assert(((size_t)ptr & 3) == 0);  /* ensure ptr is properly aligned */
-    if (crp!=ZSTDcrp_noMemset) memset(ptr, 0, tableSpace);   /* reset tables only */
-    ms->hashTable = (U32*)(ptr);
-    ms->chainTable = ms->hashTable + hSize;
-    ms->hashTable3 = ms->chainTable + chainSize;
-    ptr = ms->hashTable3 + h3Size;
 
     ms->cParams = *cParams;
 
-    assert(((size_t)ptr & 3) == 0);
-    return ptr;
+    RETURN_ERROR_IF(ZSTD_cwksp_reserve_failed(ws), memory_allocation,
+                    "failed a workspace allocation in ZSTD_reset_matchState");
+
+    return 0;
 }
 
 /* ZSTD_indexTooCloseToMax() :
@@ -1397,13 +1381,6 @@ static int ZSTD_indexTooCloseToMax(ZSTD_window_t w)
     return (size_t)(w.nextSrc - w.base) > (ZSTD_CURRENT_MAX - ZSTD_INDEXOVERFLOW_MARGIN);
 }
 
-#define ZSTD_WORKSPACETOOLARGE_FACTOR 3 /* define "workspace is too large" as this number of times larger than needed */
-#define ZSTD_WORKSPACETOOLARGE_MAXDURATION 128  /* when workspace is continuously too large
-                                         * during at least this number of times,
-                                         * context's memory usage is considered wasteful,
-                                         * because it's sized to handle a worst case scenario which rarely happens.
-                                         * In which case, resize it down to free some memory */
-
 /*! ZSTD_resetCCtx_internal() :
     note : `params` are assumed fully validated at this stage */
 static size_t ZSTD_resetCCtx_internal(ZSTD_CCtx* zc,
@@ -1412,30 +1389,12 @@ static size_t ZSTD_resetCCtx_internal(ZSTD_CCtx* zc,
                                       ZSTD_compResetPolicy_e const crp,
                                       ZSTD_buffered_policy_e const zbuff)
 {
+    ZSTD_cwksp* const ws = &zc->workspace;
     DEBUGLOG(4, "ZSTD_resetCCtx_internal: pledgedSrcSize=%u, wlog=%u",
                 (U32)pledgedSrcSize, params.cParams.windowLog);
     assert(!ZSTD_isError(ZSTD_checkCParams(params.cParams)));
 
-    if (crp == ZSTDcrp_continue) {
-        if (ZSTD_equivalentParams(zc->appliedParams, params,
-                                  zc->inBuffSize,
-                                  zc->seqStore.maxNbSeq, zc->seqStore.maxNbLit,
-                                  zbuff, pledgedSrcSize) ) {
-            DEBUGLOG(4, "ZSTD_equivalentParams()==1 -> consider continue mode");
-            zc->workSpaceOversizedDuration += (zc->workSpaceOversizedDuration > 0);   /* if it was too large, it still is */
-            if (zc->workSpaceOversizedDuration <= ZSTD_WORKSPACETOOLARGE_MAXDURATION) {
-                DEBUGLOG(4, "continue mode confirmed (wLog1=%u, blockSize1=%zu)",
-                            zc->appliedParams.cParams.windowLog, zc->blockSize);
-                if (ZSTD_indexTooCloseToMax(zc->blockState.matchState.window)) {
-                    /* prefer a reset, faster than a rescale */
-                    ZSTD_reset_matchState(&zc->blockState.matchState,
-                                           zc->entropyWorkspace + HUF_WORKSPACE_SIZE_U32,
-                                          &params.cParams,
-                                           crp, ZSTD_resetTarget_CCtx);
-                }
-                return ZSTD_continueCCtx(zc, params, pledgedSrcSize);
-    }   }   }
-    DEBUGLOG(4, "ZSTD_equivalentParams()==0 -> reset CCtx");
+    zc->isFirstBlock = 1;
 
     if (params.ldmParams.enableLdm) {
         /* Adjust long distance matching parameters */
@@ -1449,57 +1408,73 @@ static size_t ZSTD_resetCCtx_internal(ZSTD_CCtx* zc,
         size_t const blockSize = MIN(ZSTD_BLOCKSIZE_MAX, windowSize);
         U32    const divider = (params.cParams.minMatch==3) ? 3 : 4;
         size_t const maxNbSeq = blockSize / divider;
-        size_t const tokenSpace = WILDCOPY_OVERLENGTH + blockSize + 11*maxNbSeq;
+        size_t const tokenSpace = ZSTD_cwksp_alloc_size(WILDCOPY_OVERLENGTH + blockSize)
+                                + ZSTD_cwksp_alloc_size(maxNbSeq * sizeof(seqDef))
+                                + 3 * ZSTD_cwksp_alloc_size(maxNbSeq * sizeof(BYTE));
         size_t const buffOutSize = (zbuff==ZSTDb_buffered) ? ZSTD_compressBound(blockSize)+1 : 0;
         size_t const buffInSize = (zbuff==ZSTDb_buffered) ? windowSize + blockSize : 0;
         size_t const matchStateSize = ZSTD_sizeof_matchState(&params.cParams, /* forCCtx */ 1);
         size_t const maxNbLdmSeq = ZSTD_ldm_getMaxNbSeq(params.ldmParams, blockSize);
-        void* ptr;   /* used to partition workSpace */
 
-        /* Check if workSpace is large enough, alloc a new one if needed */
-        {   size_t const entropySpace = HUF_WORKSPACE_SIZE;
-            size_t const blockStateSpace = 2 * sizeof(ZSTD_compressedBlockState_t);
-            size_t const bufferSpace = buffInSize + buffOutSize;
+        ZSTD_indexResetPolicy_e needsIndexReset = ZSTDirp_continue;
+
+        if (ZSTD_indexTooCloseToMax(zc->blockState.matchState.window)) {
+            needsIndexReset = ZSTDirp_reset;
+        }
+
+        ZSTD_cwksp_bump_oversized_duration(ws, 0);
+
+        /* Check if workspace is large enough, alloc a new one if needed */
+        {   size_t const cctxSpace = zc->staticSize ? ZSTD_cwksp_alloc_size(sizeof(ZSTD_CCtx)) : 0;
+            size_t const entropySpace = ZSTD_cwksp_alloc_size(HUF_WORKSPACE_SIZE);
+            size_t const blockStateSpace = 2 * ZSTD_cwksp_alloc_size(sizeof(ZSTD_compressedBlockState_t));
+            size_t const bufferSpace = ZSTD_cwksp_alloc_size(buffInSize) + ZSTD_cwksp_alloc_size(buffOutSize);
             size_t const ldmSpace = ZSTD_ldm_getTableSize(params.ldmParams);
-            size_t const ldmSeqSpace = maxNbLdmSeq * sizeof(rawSeq);
+            size_t const ldmSeqSpace = ZSTD_cwksp_alloc_size(maxNbLdmSeq * sizeof(rawSeq));
 
-            size_t const neededSpace = entropySpace + blockStateSpace + ldmSpace +
-                                       ldmSeqSpace + matchStateSize + tokenSpace +
-                                       bufferSpace;
+            size_t const neededSpace =
+                cctxSpace +
+                entropySpace +
+                blockStateSpace +
+                ldmSpace +
+                ldmSeqSpace +
+                matchStateSize +
+                tokenSpace +
+                bufferSpace;
 
-            int const workSpaceTooSmall = zc->workSpaceSize < neededSpace;
-            int const workSpaceTooLarge = zc->workSpaceSize > ZSTD_WORKSPACETOOLARGE_FACTOR * neededSpace;
-            int const workSpaceWasteful = workSpaceTooLarge && (zc->workSpaceOversizedDuration > ZSTD_WORKSPACETOOLARGE_MAXDURATION);
-            zc->workSpaceOversizedDuration = workSpaceTooLarge ? zc->workSpaceOversizedDuration+1 : 0;
+            int const workspaceTooSmall = ZSTD_cwksp_sizeof(ws) < neededSpace;
+            int const workspaceWasteful = ZSTD_cwksp_check_wasteful(ws, neededSpace);
 
             DEBUGLOG(4, "Need %zuKB workspace, including %zuKB for match state, and %zuKB for buffers",
                         neededSpace>>10, matchStateSize>>10, bufferSpace>>10);
             DEBUGLOG(4, "windowSize: %zu - blockSize: %zu", windowSize, blockSize);
 
-            if (workSpaceTooSmall || workSpaceWasteful) {
-                DEBUGLOG(4, "Resize workSpaceSize from %zuKB to %zuKB",
-                            zc->workSpaceSize >> 10,
+            if (workspaceTooSmall || workspaceWasteful) {
+                DEBUGLOG(4, "Resize workspaceSize from %zuKB to %zuKB",
+                            ZSTD_cwksp_sizeof(ws) >> 10,
                             neededSpace >> 10);
 
                 RETURN_ERROR_IF(zc->staticSize, memory_allocation, "static cctx : no resize");
 
-                zc->workSpaceSize = 0;
-                ZSTD_free(zc->workSpace, zc->customMem);
-                zc->workSpace = ZSTD_malloc(neededSpace, zc->customMem);
-                RETURN_ERROR_IF(zc->workSpace == NULL, memory_allocation);
-                zc->workSpaceSize = neededSpace;
-                zc->workSpaceOversizedDuration = 0;
+                needsIndexReset = ZSTDirp_reset;
 
+                ZSTD_cwksp_free(ws, zc->customMem);
+                FORWARD_IF_ERROR(ZSTD_cwksp_create(ws, neededSpace, zc->customMem));
+
+                DEBUGLOG(5, "reserving object space");
                 /* Statically sized space.
                  * entropyWorkspace never moves,
                  * though prev/next block swap places */
-                assert(((size_t)zc->workSpace & 3) == 0);   /* ensure correct alignment */
-                assert(zc->workSpaceSize >= 2 * sizeof(ZSTD_compressedBlockState_t));
-                zc->blockState.prevCBlock = (ZSTD_compressedBlockState_t*)zc->workSpace;
-                zc->blockState.nextCBlock = zc->blockState.prevCBlock + 1;
-                ptr = zc->blockState.nextCBlock + 1;
-                zc->entropyWorkspace = (U32*)ptr;
+                assert(ZSTD_cwksp_check_available(ws, 2 * sizeof(ZSTD_compressedBlockState_t)));
+                zc->blockState.prevCBlock = (ZSTD_compressedBlockState_t*) ZSTD_cwksp_reserve_object(ws, sizeof(ZSTD_compressedBlockState_t));
+                RETURN_ERROR_IF(zc->blockState.prevCBlock == NULL, memory_allocation, "couldn't allocate prevCBlock");
+                zc->blockState.nextCBlock = (ZSTD_compressedBlockState_t*) ZSTD_cwksp_reserve_object(ws, sizeof(ZSTD_compressedBlockState_t));
+                RETURN_ERROR_IF(zc->blockState.nextCBlock == NULL, memory_allocation, "couldn't allocate nextCBlock");
+                zc->entropyWorkspace = (U32*) ZSTD_cwksp_reserve_object(ws, HUF_WORKSPACE_SIZE);
+                RETURN_ERROR_IF(zc->blockState.nextCBlock == NULL, memory_allocation, "couldn't allocate entropyWorkspace");
         }   }
+
+        ZSTD_cwksp_clear(ws);
 
         /* init params */
         zc->appliedParams = params;
@@ -1519,58 +1494,58 @@ static size_t ZSTD_resetCCtx_internal(ZSTD_CCtx* zc,
 
         ZSTD_reset_compressedBlockState(zc->blockState.prevCBlock);
 
-        ptr = ZSTD_reset_matchState(&zc->blockState.matchState,
-                                     zc->entropyWorkspace + HUF_WORKSPACE_SIZE_U32,
-                                    &params.cParams,
-                                     crp, ZSTD_resetTarget_CCtx);
-
-        /* ldm hash table */
-        /* initialize bucketOffsets table later for pointer alignment */
-        if (params.ldmParams.enableLdm) {
-            size_t const ldmHSize = ((size_t)1) << params.ldmParams.hashLog;
-            memset(ptr, 0, ldmHSize * sizeof(ldmEntry_t));
-            assert(((size_t)ptr & 3) == 0); /* ensure ptr is properly aligned */
-            zc->ldmState.hashTable = (ldmEntry_t*)ptr;
-            ptr = zc->ldmState.hashTable + ldmHSize;
-            zc->ldmSequences = (rawSeq*)ptr;
-            ptr = zc->ldmSequences + maxNbLdmSeq;
-            zc->maxNbLdmSequences = maxNbLdmSeq;
-
-            memset(&zc->ldmState.window, 0, sizeof(zc->ldmState.window));
-        }
-        assert(((size_t)ptr & 3) == 0); /* ensure ptr is properly aligned */
-
-        /* sequences storage */
-        zc->seqStore.maxNbSeq = maxNbSeq;
-        zc->seqStore.sequencesStart = (seqDef*)ptr;
-        ptr = zc->seqStore.sequencesStart + maxNbSeq;
-        zc->seqStore.llCode = (BYTE*) ptr;
-        zc->seqStore.mlCode = zc->seqStore.llCode + maxNbSeq;
-        zc->seqStore.ofCode = zc->seqStore.mlCode + maxNbSeq;
-        zc->seqStore.litStart = zc->seqStore.ofCode + maxNbSeq;
         /* ZSTD_wildcopy() is used to copy into the literals buffer,
          * so we have to oversize the buffer by WILDCOPY_OVERLENGTH bytes.
          */
+        zc->seqStore.litStart = ZSTD_cwksp_reserve_buffer(ws, blockSize + WILDCOPY_OVERLENGTH);
         zc->seqStore.maxNbLit = blockSize;
-        ptr = zc->seqStore.litStart + blockSize + WILDCOPY_OVERLENGTH;
-
-        /* ldm bucketOffsets table */
-        if (params.ldmParams.enableLdm) {
-            size_t const ldmBucketSize =
-                  ((size_t)1) << (params.ldmParams.hashLog -
-                                  params.ldmParams.bucketSizeLog);
-            memset(ptr, 0, ldmBucketSize);
-            zc->ldmState.bucketOffsets = (BYTE*)ptr;
-            ptr = zc->ldmState.bucketOffsets + ldmBucketSize;
-            ZSTD_window_clear(&zc->ldmState.window);
-        }
-        ZSTD_referenceExternalSequences(zc, NULL, 0);
 
         /* buffers */
         zc->inBuffSize = buffInSize;
-        zc->inBuff = (char*)ptr;
+        zc->inBuff = (char*)ZSTD_cwksp_reserve_buffer(ws, buffInSize);
         zc->outBuffSize = buffOutSize;
-        zc->outBuff = zc->inBuff + buffInSize;
+        zc->outBuff = (char*)ZSTD_cwksp_reserve_buffer(ws, buffOutSize);
+
+        /* ldm bucketOffsets table */
+        if (params.ldmParams.enableLdm) {
+            /* TODO: avoid memset? */
+            size_t const ldmBucketSize =
+                  ((size_t)1) << (params.ldmParams.hashLog -
+                                  params.ldmParams.bucketSizeLog);
+            zc->ldmState.bucketOffsets = ZSTD_cwksp_reserve_buffer(ws, ldmBucketSize);
+            memset(zc->ldmState.bucketOffsets, 0, ldmBucketSize);
+        }
+
+        /* sequences storage */
+        ZSTD_referenceExternalSequences(zc, NULL, 0);
+        zc->seqStore.maxNbSeq = maxNbSeq;
+        zc->seqStore.llCode = ZSTD_cwksp_reserve_buffer(ws, maxNbSeq * sizeof(BYTE));
+        zc->seqStore.mlCode = ZSTD_cwksp_reserve_buffer(ws, maxNbSeq * sizeof(BYTE));
+        zc->seqStore.ofCode = ZSTD_cwksp_reserve_buffer(ws, maxNbSeq * sizeof(BYTE));
+        zc->seqStore.sequencesStart = (seqDef*)ZSTD_cwksp_reserve_aligned(ws, maxNbSeq * sizeof(seqDef));
+
+        FORWARD_IF_ERROR(ZSTD_reset_matchState(
+            &zc->blockState.matchState,
+            ws,
+            &params.cParams,
+            crp,
+            needsIndexReset,
+            ZSTD_resetTarget_CCtx));
+
+        /* ldm hash table */
+        if (params.ldmParams.enableLdm) {
+            /* TODO: avoid memset? */
+            size_t const ldmHSize = ((size_t)1) << params.ldmParams.hashLog;
+            zc->ldmState.hashTable = (ldmEntry_t*)ZSTD_cwksp_reserve_aligned(ws, ldmHSize * sizeof(ldmEntry_t));
+            memset(zc->ldmState.hashTable, 0, ldmHSize * sizeof(ldmEntry_t));
+            zc->ldmSequences = (rawSeq*)ZSTD_cwksp_reserve_aligned(ws, maxNbLdmSeq * sizeof(rawSeq));
+            zc->maxNbLdmSequences = maxNbLdmSeq;
+
+            memset(&zc->ldmState.window, 0, sizeof(zc->ldmState.window));
+            ZSTD_window_clear(&zc->ldmState.window);
+        }
+
+        DEBUGLOG(3, "wksp: finished allocating, %zd bytes remain available", ZSTD_cwksp_available_space(ws));
 
         return 0;
     }
@@ -1604,15 +1579,15 @@ static const size_t attachDictSizeCutoffs[ZSTD_STRATEGY_MAX+1] = {
 };
 
 static int ZSTD_shouldAttachDict(const ZSTD_CDict* cdict,
-                                 ZSTD_CCtx_params params,
+                                 const ZSTD_CCtx_params* params,
                                  U64 pledgedSrcSize)
 {
     size_t cutoff = attachDictSizeCutoffs[cdict->matchState.cParams.strategy];
     return ( pledgedSrcSize <= cutoff
           || pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN
-          || params.attachDictPref == ZSTD_dictForceAttach )
-        && params.attachDictPref != ZSTD_dictForceCopy
-        && !params.forceWindow; /* dictMatchState isn't correctly
+          || params->attachDictPref == ZSTD_dictForceAttach )
+        && params->attachDictPref != ZSTD_dictForceCopy
+        && !params->forceWindow; /* dictMatchState isn't correctly
                                  * handled in _enforceMaxDist */
 }
 
@@ -1630,8 +1605,8 @@ ZSTD_resetCCtx_byAttachingCDict(ZSTD_CCtx* cctx,
          * has its own tables. */
         params.cParams = ZSTD_adjustCParams_internal(*cdict_cParams, pledgedSrcSize, 0);
         params.cParams.windowLog = windowLog;
-        ZSTD_resetCCtx_internal(cctx, params, pledgedSrcSize,
-                                ZSTDcrp_continue, zbuff);
+        FORWARD_IF_ERROR(ZSTD_resetCCtx_internal(cctx, params, pledgedSrcSize,
+                                                 ZSTDcrp_makeClean, zbuff));
         assert(cctx->appliedParams.cParams.strategy == cdict_cParams->strategy);
     }
 
@@ -1679,29 +1654,35 @@ static size_t ZSTD_resetCCtx_byCopyingCDict(ZSTD_CCtx* cctx,
         /* Copy only compression parameters related to tables. */
         params.cParams = *cdict_cParams;
         params.cParams.windowLog = windowLog;
-        ZSTD_resetCCtx_internal(cctx, params, pledgedSrcSize,
-                                ZSTDcrp_noMemset, zbuff);
+        FORWARD_IF_ERROR(ZSTD_resetCCtx_internal(cctx, params, pledgedSrcSize,
+                                                 ZSTDcrp_leaveDirty, zbuff));
         assert(cctx->appliedParams.cParams.strategy == cdict_cParams->strategy);
         assert(cctx->appliedParams.cParams.hashLog == cdict_cParams->hashLog);
         assert(cctx->appliedParams.cParams.chainLog == cdict_cParams->chainLog);
     }
 
+    ZSTD_cwksp_mark_tables_dirty(&cctx->workspace);
+
     /* copy tables */
     {   size_t const chainSize = (cdict_cParams->strategy == ZSTD_fast) ? 0 : ((size_t)1 << cdict_cParams->chainLog);
         size_t const hSize =  (size_t)1 << cdict_cParams->hashLog;
-        size_t const tableSpace = (chainSize + hSize) * sizeof(U32);
-        assert((U32*)cctx->blockState.matchState.chainTable == (U32*)cctx->blockState.matchState.hashTable + hSize);  /* chainTable must follow hashTable */
-        assert((U32*)cctx->blockState.matchState.hashTable3 == (U32*)cctx->blockState.matchState.chainTable + chainSize);
-        assert((U32*)cdict->matchState.chainTable == (U32*)cdict->matchState.hashTable + hSize);  /* chainTable must follow hashTable */
-        assert((U32*)cdict->matchState.hashTable3 == (U32*)cdict->matchState.chainTable + chainSize);
-        memcpy(cctx->blockState.matchState.hashTable, cdict->matchState.hashTable, tableSpace);   /* presumes all tables follow each other */
+
+        memcpy(cctx->blockState.matchState.hashTable,
+               cdict->matchState.hashTable,
+               hSize * sizeof(U32));
+        memcpy(cctx->blockState.matchState.chainTable,
+               cdict->matchState.chainTable,
+               chainSize * sizeof(U32));
     }
 
     /* Zero the hashTable3, since the cdict never fills it */
-    {   size_t const h3Size = (size_t)1 << cctx->blockState.matchState.hashLog3;
+    {   int const h3log = cctx->blockState.matchState.hashLog3;
+        size_t const h3Size = h3log ? ((size_t)1 << h3log) : 0;
         assert(cdict->matchState.hashLog3 == 0);
         memset(cctx->blockState.matchState.hashTable3, 0, h3Size * sizeof(U32));
     }
+
+    ZSTD_cwksp_mark_tables_clean(&cctx->workspace);
 
     /* copy dictionary offsets */
     {   ZSTD_matchState_t const* srcMatchState = &cdict->matchState;
@@ -1724,7 +1705,7 @@ static size_t ZSTD_resetCCtx_byCopyingCDict(ZSTD_CCtx* cctx,
  * in-place. We decide here which strategy to use. */
 static size_t ZSTD_resetCCtx_usingCDict(ZSTD_CCtx* cctx,
                             const ZSTD_CDict* cdict,
-                            ZSTD_CCtx_params params,
+                            const ZSTD_CCtx_params* params,
                             U64 pledgedSrcSize,
                             ZSTD_buffered_policy_e zbuff)
 {
@@ -1734,10 +1715,10 @@ static size_t ZSTD_resetCCtx_usingCDict(ZSTD_CCtx* cctx,
 
     if (ZSTD_shouldAttachDict(cdict, params, pledgedSrcSize)) {
         return ZSTD_resetCCtx_byAttachingCDict(
-            cctx, cdict, params, pledgedSrcSize, zbuff);
+            cctx, cdict, *params, pledgedSrcSize, zbuff);
     } else {
         return ZSTD_resetCCtx_byCopyingCDict(
-            cctx, cdict, params, pledgedSrcSize, zbuff);
+            cctx, cdict, *params, pledgedSrcSize, zbuff);
     }
 }
 
@@ -1763,7 +1744,7 @@ static size_t ZSTD_copyCCtx_internal(ZSTD_CCtx* dstCCtx,
         params.cParams = srcCCtx->appliedParams.cParams;
         params.fParams = fParams;
         ZSTD_resetCCtx_internal(dstCCtx, params, pledgedSrcSize,
-                                ZSTDcrp_noMemset, zbuff);
+                                ZSTDcrp_leaveDirty, zbuff);
         assert(dstCCtx->appliedParams.cParams.windowLog == srcCCtx->appliedParams.cParams.windowLog);
         assert(dstCCtx->appliedParams.cParams.strategy == srcCCtx->appliedParams.cParams.strategy);
         assert(dstCCtx->appliedParams.cParams.hashLog == srcCCtx->appliedParams.cParams.hashLog);
@@ -1771,15 +1752,26 @@ static size_t ZSTD_copyCCtx_internal(ZSTD_CCtx* dstCCtx,
         assert(dstCCtx->blockState.matchState.hashLog3 == srcCCtx->blockState.matchState.hashLog3);
     }
 
+    ZSTD_cwksp_mark_tables_dirty(&dstCCtx->workspace);
+
     /* copy tables */
     {   size_t const chainSize = (srcCCtx->appliedParams.cParams.strategy == ZSTD_fast) ? 0 : ((size_t)1 << srcCCtx->appliedParams.cParams.chainLog);
         size_t const hSize =  (size_t)1 << srcCCtx->appliedParams.cParams.hashLog;
-        size_t const h3Size = (size_t)1 << srcCCtx->blockState.matchState.hashLog3;
-        size_t const tableSpace = (chainSize + hSize + h3Size) * sizeof(U32);
-        assert((U32*)dstCCtx->blockState.matchState.chainTable == (U32*)dstCCtx->blockState.matchState.hashTable + hSize);  /* chainTable must follow hashTable */
-        assert((U32*)dstCCtx->blockState.matchState.hashTable3 == (U32*)dstCCtx->blockState.matchState.chainTable + chainSize);
-        memcpy(dstCCtx->blockState.matchState.hashTable, srcCCtx->blockState.matchState.hashTable, tableSpace);   /* presumes all tables follow each other */
+        int const h3log = srcCCtx->blockState.matchState.hashLog3;
+        size_t const h3Size = h3log ? ((size_t)1 << h3log) : 0;
+
+        memcpy(dstCCtx->blockState.matchState.hashTable,
+               srcCCtx->blockState.matchState.hashTable,
+               hSize * sizeof(U32));
+        memcpy(dstCCtx->blockState.matchState.chainTable,
+               srcCCtx->blockState.matchState.chainTable,
+               chainSize * sizeof(U32));
+        memcpy(dstCCtx->blockState.matchState.hashTable3,
+               srcCCtx->blockState.matchState.hashTable3,
+               h3Size * sizeof(U32));
     }
+
+    ZSTD_cwksp_mark_tables_clean(&dstCCtx->workspace);
 
     /* copy dictionary offsets */
     {
@@ -1831,6 +1823,20 @@ ZSTD_reduceTable_internal (U32* const table, U32 const size, U32 const reducerVa
     int rowNb;
     assert((size & (ZSTD_ROWSIZE-1)) == 0);  /* multiple of ZSTD_ROWSIZE */
     assert(size < (1U<<31));   /* can be casted to int */
+
+#if defined (MEMORY_SANITIZER) && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
+    /* To validate that the table re-use logic is sound, and that we don't
+     * access table space that we haven't cleaned, we re-"poison" the table
+     * space every time we mark it dirty.
+     *
+     * This function however is intended to operate on those dirty tables and
+     * re-clean them. So when this function is used correctly, we can unpoison
+     * the memory it operated on. This introduces a blind spot though, since
+     * if we now try to operate on __actually__ poisoned memory, we will not
+     * detect that. */
+    __msan_unpoison(table, size * sizeof(U32));
+#endif
+
     for (rowNb=0 ; rowNb < nbRows ; rowNb++) {
         int column;
         for (column=0; column<ZSTD_ROWSIZE; column++) {
@@ -1938,7 +1944,7 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
                                 ZSTD_entropyCTables_t* nextEntropy,
                           const ZSTD_CCtx_params* cctxParams,
                                 void* dst, size_t dstCapacity,
-                                void* workspace, size_t wkspSize,
+                                void* entropyWorkspace, size_t entropyWkspSize,
                           const int bmi2)
 {
     const int longOffsets = cctxParams->cParams.windowLog > STREAM_ACCUMULATOR_MIN;
@@ -1971,7 +1977,7 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
                                     ZSTD_disableLiteralsCompression(cctxParams),
                                     op, dstCapacity,
                                     literals, litSize,
-                                    workspace, wkspSize,
+                                    entropyWorkspace, entropyWkspSize,
                                     bmi2);
         FORWARD_IF_ERROR(cSize);
         assert(cSize <= dstCapacity);
@@ -1981,12 +1987,17 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
     /* Sequences Header */
     RETURN_ERROR_IF((oend-op) < 3 /*max nbSeq Size*/ + 1 /*seqHead*/,
                     dstSize_tooSmall);
-    if (nbSeq < 0x7F)
+    if (nbSeq < 128) {
         *op++ = (BYTE)nbSeq;
-    else if (nbSeq < LONGNBSEQ)
-        op[0] = (BYTE)((nbSeq>>8) + 0x80), op[1] = (BYTE)nbSeq, op+=2;
-    else
-        op[0]=0xFF, MEM_writeLE16(op+1, (U16)(nbSeq - LONGNBSEQ)), op+=3;
+    } else if (nbSeq < LONGNBSEQ) {
+        op[0] = (BYTE)((nbSeq>>8) + 0x80);
+        op[1] = (BYTE)nbSeq;
+        op+=2;
+    } else {
+        op[0]=0xFF;
+        MEM_writeLE16(op+1, (U16)(nbSeq - LONGNBSEQ));
+        op+=3;
+    }
     assert(op <= oend);
     if (nbSeq==0) {
         /* Copy the old tables over as if we repeated them */
@@ -2002,7 +2013,7 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
     ZSTD_seqToCodes(seqStorePtr);
     /* build CTable for Literal Lengths */
     {   unsigned max = MaxLL;
-        size_t const mostFrequent = HIST_countFast_wksp(count, &max, llCodeTable, nbSeq, workspace, wkspSize);   /* can't fail */
+        size_t const mostFrequent = HIST_countFast_wksp(count, &max, llCodeTable, nbSeq, entropyWorkspace, entropyWkspSize);   /* can't fail */
         DEBUGLOG(5, "Building LL table");
         nextEntropy->fse.litlength_repeatMode = prevEntropy->fse.litlength_repeatMode;
         LLtype = ZSTD_selectEncodingType(&nextEntropy->fse.litlength_repeatMode,
@@ -2012,10 +2023,14 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
                                         ZSTD_defaultAllowed, strategy);
         assert(set_basic < set_compressed && set_rle < set_compressed);
         assert(!(LLtype < set_compressed && nextEntropy->fse.litlength_repeatMode != FSE_repeat_none)); /* We don't copy tables */
-        {   size_t const countSize = ZSTD_buildCTable(op, (size_t)(oend - op), CTable_LitLength, LLFSELog, (symbolEncodingType_e)LLtype,
-                                                    count, max, llCodeTable, nbSeq, LL_defaultNorm, LL_defaultNormLog, MaxLL,
-                                                    prevEntropy->fse.litlengthCTable, sizeof(prevEntropy->fse.litlengthCTable),
-                                                    workspace, wkspSize);
+        {   size_t const countSize = ZSTD_buildCTable(
+                op, (size_t)(oend - op),
+                CTable_LitLength, LLFSELog, (symbolEncodingType_e)LLtype,
+                count, max, llCodeTable, nbSeq,
+                LL_defaultNorm, LL_defaultNormLog, MaxLL,
+                prevEntropy->fse.litlengthCTable,
+                sizeof(prevEntropy->fse.litlengthCTable),
+                entropyWorkspace, entropyWkspSize);
             FORWARD_IF_ERROR(countSize);
             if (LLtype == set_compressed)
                 lastNCount = op;
@@ -2024,7 +2039,8 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
     }   }
     /* build CTable for Offsets */
     {   unsigned max = MaxOff;
-        size_t const mostFrequent = HIST_countFast_wksp(count, &max, ofCodeTable, nbSeq, workspace, wkspSize);  /* can't fail */
+        size_t const mostFrequent = HIST_countFast_wksp(
+            count, &max, ofCodeTable, nbSeq, entropyWorkspace, entropyWkspSize);  /* can't fail */
         /* We can only use the basic table if max <= DefaultMaxOff, otherwise the offsets are too large */
         ZSTD_defaultPolicy_e const defaultPolicy = (max <= DefaultMaxOff) ? ZSTD_defaultAllowed : ZSTD_defaultDisallowed;
         DEBUGLOG(5, "Building OF table");
@@ -2035,10 +2051,14 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
                                         OF_defaultNorm, OF_defaultNormLog,
                                         defaultPolicy, strategy);
         assert(!(Offtype < set_compressed && nextEntropy->fse.offcode_repeatMode != FSE_repeat_none)); /* We don't copy tables */
-        {   size_t const countSize = ZSTD_buildCTable(op, (size_t)(oend - op), CTable_OffsetBits, OffFSELog, (symbolEncodingType_e)Offtype,
-                                                    count, max, ofCodeTable, nbSeq, OF_defaultNorm, OF_defaultNormLog, DefaultMaxOff,
-                                                    prevEntropy->fse.offcodeCTable, sizeof(prevEntropy->fse.offcodeCTable),
-                                                    workspace, wkspSize);
+        {   size_t const countSize = ZSTD_buildCTable(
+                op, (size_t)(oend - op),
+                CTable_OffsetBits, OffFSELog, (symbolEncodingType_e)Offtype,
+                count, max, ofCodeTable, nbSeq,
+                OF_defaultNorm, OF_defaultNormLog, DefaultMaxOff,
+                prevEntropy->fse.offcodeCTable,
+                sizeof(prevEntropy->fse.offcodeCTable),
+                entropyWorkspace, entropyWkspSize);
             FORWARD_IF_ERROR(countSize);
             if (Offtype == set_compressed)
                 lastNCount = op;
@@ -2047,7 +2067,8 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
     }   }
     /* build CTable for MatchLengths */
     {   unsigned max = MaxML;
-        size_t const mostFrequent = HIST_countFast_wksp(count, &max, mlCodeTable, nbSeq, workspace, wkspSize);   /* can't fail */
+        size_t const mostFrequent = HIST_countFast_wksp(
+            count, &max, mlCodeTable, nbSeq, entropyWorkspace, entropyWkspSize);   /* can't fail */
         DEBUGLOG(5, "Building ML table (remaining space : %i)", (int)(oend-op));
         nextEntropy->fse.matchlength_repeatMode = prevEntropy->fse.matchlength_repeatMode;
         MLtype = ZSTD_selectEncodingType(&nextEntropy->fse.matchlength_repeatMode,
@@ -2056,10 +2077,14 @@ ZSTD_compressSequences_internal(seqStore_t* seqStorePtr,
                                         ML_defaultNorm, ML_defaultNormLog,
                                         ZSTD_defaultAllowed, strategy);
         assert(!(MLtype < set_compressed && nextEntropy->fse.matchlength_repeatMode != FSE_repeat_none)); /* We don't copy tables */
-        {   size_t const countSize = ZSTD_buildCTable(op, (size_t)(oend - op), CTable_MatchLength, MLFSELog, (symbolEncodingType_e)MLtype,
-                                                    count, max, mlCodeTable, nbSeq, ML_defaultNorm, ML_defaultNormLog, MaxML,
-                                                    prevEntropy->fse.matchlengthCTable, sizeof(prevEntropy->fse.matchlengthCTable),
-                                                    workspace, wkspSize);
+        {   size_t const countSize = ZSTD_buildCTable(
+                op, (size_t)(oend - op),
+                CTable_MatchLength, MLFSELog, (symbolEncodingType_e)MLtype,
+                count, max, mlCodeTable, nbSeq,
+                ML_defaultNorm, ML_defaultNormLog, MaxML,
+                prevEntropy->fse.matchlengthCTable,
+                sizeof(prevEntropy->fse.matchlengthCTable),
+                entropyWorkspace, entropyWkspSize);
             FORWARD_IF_ERROR(countSize);
             if (MLtype == set_compressed)
                 lastNCount = op;
@@ -2107,13 +2132,13 @@ ZSTD_compressSequences(seqStore_t* seqStorePtr,
                        const ZSTD_CCtx_params* cctxParams,
                              void* dst, size_t dstCapacity,
                              size_t srcSize,
-                             void* workspace, size_t wkspSize,
+                             void* entropyWorkspace, size_t entropyWkspSize,
                              int bmi2)
 {
     size_t const cSize = ZSTD_compressSequences_internal(
                             seqStorePtr, prevEntropy, nextEntropy, cctxParams,
                             dst, dstCapacity,
-                            workspace, wkspSize, bmi2);
+                            entropyWorkspace, entropyWkspSize, bmi2);
     if (cSize == 0) return 0;
     /* When srcSize <= dstCapacity, there is enough space to write a raw uncompressed block.
      * Since we ran out of space, block must be not compressible, so fall back to raw uncompressed block.
@@ -2264,11 +2289,99 @@ static size_t ZSTD_buildSeqStore(ZSTD_CCtx* zc, const void* src, size_t srcSize)
     return ZSTDbss_compress;
 }
 
+static void ZSTD_copyBlockSequences(ZSTD_CCtx* zc)
+{
+    const seqStore_t* seqStore = ZSTD_getSeqStore(zc);
+    const seqDef* seqs = seqStore->sequencesStart;
+    size_t seqsSize = seqStore->sequences - seqs;
+
+    ZSTD_Sequence* outSeqs = &zc->seqCollector.seqStart[zc->seqCollector.seqIndex];
+    size_t i; size_t position; int repIdx;
+
+    assert(zc->seqCollector.seqIndex + 1 < zc->seqCollector.maxSequences);
+    for (i = 0, position = 0; i < seqsSize; ++i) {
+        outSeqs[i].offset = seqs[i].offset;
+        outSeqs[i].litLength = seqs[i].litLength;
+        outSeqs[i].matchLength = seqs[i].matchLength + MINMATCH;
+
+        if (i == seqStore->longLengthPos) {
+            if (seqStore->longLengthID == 1) {
+                outSeqs[i].litLength += 0x10000;
+            } else if (seqStore->longLengthID == 2) {
+                outSeqs[i].matchLength += 0x10000;
+            }
+        }
+
+        if (outSeqs[i].offset <= ZSTD_REP_NUM) {
+            outSeqs[i].rep = outSeqs[i].offset;
+            repIdx = (unsigned int)i - outSeqs[i].offset;
+
+            if (outSeqs[i].litLength == 0) {
+                if (outSeqs[i].offset < 3) {
+                    --repIdx;
+                } else {
+                    repIdx = (unsigned int)i - 1;
+                }
+                ++outSeqs[i].rep;
+            }
+            assert(repIdx >= -3);
+            outSeqs[i].offset = repIdx >= 0 ? outSeqs[repIdx].offset : repStartValue[-repIdx - 1];
+            if (outSeqs[i].rep == 4) {
+                --outSeqs[i].offset;
+            }
+        } else {
+            outSeqs[i].offset -= ZSTD_REP_NUM;
+        }
+
+        position += outSeqs[i].litLength;
+        outSeqs[i].matchPos = (unsigned int)position;
+        position += outSeqs[i].matchLength;
+    }
+    zc->seqCollector.seqIndex += seqsSize;
+}
+
+size_t ZSTD_getSequences(ZSTD_CCtx* zc, ZSTD_Sequence* outSeqs,
+    size_t outSeqsSize, const void* src, size_t srcSize)
+{
+    const size_t dstCapacity = ZSTD_compressBound(srcSize);
+    void* dst = ZSTD_malloc(dstCapacity, ZSTD_defaultCMem);
+    SeqCollector seqCollector;
+
+    RETURN_ERROR_IF(dst == NULL, memory_allocation);
+
+    seqCollector.collectSequences = 1;
+    seqCollector.seqStart = outSeqs;
+    seqCollector.seqIndex = 0;
+    seqCollector.maxSequences = outSeqsSize;
+    zc->seqCollector = seqCollector;
+
+    ZSTD_compress2(zc, dst, dstCapacity, src, srcSize);
+    ZSTD_free(dst, ZSTD_defaultCMem);
+    return zc->seqCollector.seqIndex;
+}
+
+/* Returns true if the given block is a RLE block */
+static int ZSTD_isRLE(const BYTE *ip, size_t length) {
+    size_t i;
+    if (length < 2) return 1;
+    for (i = 1; i < length; ++i) {
+        if (ip[0] != ip[i]) return 0;
+    }
+    return 1;
+}
+
 static size_t ZSTD_compressBlock_internal(ZSTD_CCtx* zc,
                                         void* dst, size_t dstCapacity,
-                                        const void* src, size_t srcSize)
+                                        const void* src, size_t srcSize, U32 frame)
 {
+    /* This the upper bound for the length of an rle block.
+     * This isn't the actual upper bound. Finding the real threshold
+     * needs further investigation.
+     */
+    const U32 rleMaxLength = 25;
     size_t cSize;
+    const BYTE* ip = (const BYTE*)src;
+    BYTE* op = (BYTE*)dst;
     DEBUGLOG(5, "ZSTD_compressBlock_internal (dstCapacity=%u, dictLimit=%u, nextToUpdate=%u)",
                 (unsigned)dstCapacity, (unsigned)zc->blockState.matchState.window.dictLimit,
                 (unsigned)zc->blockState.matchState.nextToUpdate);
@@ -2276,6 +2389,11 @@ static size_t ZSTD_compressBlock_internal(ZSTD_CCtx* zc,
     {   const size_t bss = ZSTD_buildSeqStore(zc, src, srcSize);
         FORWARD_IF_ERROR(bss);
         if (bss == ZSTDbss_noCompress) { cSize = 0; goto out; }
+    }
+
+    if (zc->seqCollector.collectSequences) {
+        ZSTD_copyBlockSequences(zc);
+        return 0;
     }
 
     /* encode sequences and literals */
@@ -2287,8 +2405,21 @@ static size_t ZSTD_compressBlock_internal(ZSTD_CCtx* zc,
             zc->entropyWorkspace, HUF_WORKSPACE_SIZE /* statically allocated in resetCCtx */,
             zc->bmi2);
 
+    if (frame &&
+        /* We don't want to emit our first block as a RLE even if it qualifies because
+         * doing so will cause the decoder (cli only) to throw a "should consume all input error."
+         * This is only an issue for zstd <= v1.4.3
+         */
+        !zc->isFirstBlock &&
+        cSize < rleMaxLength &&
+        ZSTD_isRLE(ip, srcSize))
+    {
+        cSize = 1;
+        op[0] = ip[0];
+    }
+
 out:
-    if (!ZSTD_isError(cSize) && cSize != 0) {
+    if (!ZSTD_isError(cSize) && cSize > 1) {
         /* confirm repcodes and entropy tables when emitting a compressed block */
         ZSTD_compressedBlockState_t* const tmp = zc->blockState.prevCBlock;
         zc->blockState.prevCBlock = zc->blockState.nextCBlock;
@@ -2305,7 +2436,11 @@ out:
 }
 
 
-static void ZSTD_overflowCorrectIfNeeded(ZSTD_matchState_t* ms, ZSTD_CCtx_params const* params, void const* ip, void const* iend)
+static void ZSTD_overflowCorrectIfNeeded(ZSTD_matchState_t* ms,
+                                         ZSTD_cwksp* ws,
+                                         ZSTD_CCtx_params const* params,
+                                         void const* ip,
+                                         void const* iend)
 {
     if (ZSTD_window_needOverflowCorrection(ms->window, iend)) {
         U32 const maxDist = (U32)1 << params->cParams.windowLog;
@@ -2314,7 +2449,9 @@ static void ZSTD_overflowCorrectIfNeeded(ZSTD_matchState_t* ms, ZSTD_CCtx_params
         ZSTD_STATIC_ASSERT(ZSTD_CHAINLOG_MAX <= 30);
         ZSTD_STATIC_ASSERT(ZSTD_WINDOWLOG_MAX_32 <= 30);
         ZSTD_STATIC_ASSERT(ZSTD_WINDOWLOG_MAX <= 31);
+        ZSTD_cwksp_mark_tables_dirty(ws);
         ZSTD_reduceIndex(ms, params, correction);
+        ZSTD_cwksp_mark_tables_clean(ws);
         if (ms->nextToUpdate < correction) ms->nextToUpdate = 0;
         else ms->nextToUpdate -= correction;
         /* invalidate dictionaries on overflow correction */
@@ -2322,7 +2459,6 @@ static void ZSTD_overflowCorrectIfNeeded(ZSTD_matchState_t* ms, ZSTD_CCtx_params
         ms->dictMatchState = NULL;
     }
 }
-
 
 /*! ZSTD_compress_frameChunk() :
 *   Compress a chunk of data into one or multiple blocks.
@@ -2357,7 +2493,8 @@ static size_t ZSTD_compress_frameChunk (ZSTD_CCtx* cctx,
                         "not enough space to store compressed block");
         if (remaining < blockSize) blockSize = remaining;
 
-        ZSTD_overflowCorrectIfNeeded(ms, &cctx->appliedParams, ip, ip + blockSize);
+        ZSTD_overflowCorrectIfNeeded(
+            ms, &cctx->workspace, &cctx->appliedParams, ip, ip + blockSize);
         ZSTD_checkDictValidity(&ms->window, ip + blockSize, maxDist, &ms->loadedDictEnd, &ms->dictMatchState);
 
         /* Ensure hash/chain table insertion resumes no sooner than lowlimit */
@@ -2365,15 +2502,16 @@ static size_t ZSTD_compress_frameChunk (ZSTD_CCtx* cctx,
 
         {   size_t cSize = ZSTD_compressBlock_internal(cctx,
                                 op+ZSTD_blockHeaderSize, dstCapacity-ZSTD_blockHeaderSize,
-                                ip, blockSize);
+                                ip, blockSize, 1 /* frame */);
             FORWARD_IF_ERROR(cSize);
-
             if (cSize == 0) {  /* block is not compressible */
                 cSize = ZSTD_noCompressBlock(op, dstCapacity, ip, blockSize, lastBlock);
                 FORWARD_IF_ERROR(cSize);
             } else {
-                U32 const cBlockHeader24 = lastBlock + (((U32)bt_compressed)<<1) + (U32)(cSize << 3);
-                MEM_writeLE24(op, cBlockHeader24);
+                const U32 cBlockHeader = cSize == 1 ?
+                    lastBlock + (((U32)bt_rle)<<1) + (U32)(blockSize << 3) :
+                    lastBlock + (((U32)bt_compressed)<<1) + (U32)(cSize << 3);
+                MEM_writeLE24(op, cBlockHeader);
                 cSize += ZSTD_blockHeaderSize;
             }
 
@@ -2383,6 +2521,7 @@ static size_t ZSTD_compress_frameChunk (ZSTD_CCtx* cctx,
             op += cSize;
             assert(dstCapacity >= cSize);
             dstCapacity -= cSize;
+            cctx->isFirstBlock = 0;
             DEBUGLOG(5, "ZSTD_compress_frameChunk: adding a block of size %u",
                         (unsigned)cSize);
     }   }
@@ -2393,25 +2532,25 @@ static size_t ZSTD_compress_frameChunk (ZSTD_CCtx* cctx,
 
 
 static size_t ZSTD_writeFrameHeader(void* dst, size_t dstCapacity,
-                                    ZSTD_CCtx_params params, U64 pledgedSrcSize, U32 dictID)
+                                    const ZSTD_CCtx_params* params, U64 pledgedSrcSize, U32 dictID)
 {   BYTE* const op = (BYTE*)dst;
     U32   const dictIDSizeCodeLength = (dictID>0) + (dictID>=256) + (dictID>=65536);   /* 0-3 */
-    U32   const dictIDSizeCode = params.fParams.noDictIDFlag ? 0 : dictIDSizeCodeLength;   /* 0-3 */
-    U32   const checksumFlag = params.fParams.checksumFlag>0;
-    U32   const windowSize = (U32)1 << params.cParams.windowLog;
-    U32   const singleSegment = params.fParams.contentSizeFlag && (windowSize >= pledgedSrcSize);
-    BYTE  const windowLogByte = (BYTE)((params.cParams.windowLog - ZSTD_WINDOWLOG_ABSOLUTEMIN) << 3);
-    U32   const fcsCode = params.fParams.contentSizeFlag ?
+    U32   const dictIDSizeCode = params->fParams.noDictIDFlag ? 0 : dictIDSizeCodeLength;   /* 0-3 */
+    U32   const checksumFlag = params->fParams.checksumFlag>0;
+    U32   const windowSize = (U32)1 << params->cParams.windowLog;
+    U32   const singleSegment = params->fParams.contentSizeFlag && (windowSize >= pledgedSrcSize);
+    BYTE  const windowLogByte = (BYTE)((params->cParams.windowLog - ZSTD_WINDOWLOG_ABSOLUTEMIN) << 3);
+    U32   const fcsCode = params->fParams.contentSizeFlag ?
                      (pledgedSrcSize>=256) + (pledgedSrcSize>=65536+256) + (pledgedSrcSize>=0xFFFFFFFFU) : 0;  /* 0-3 */
     BYTE  const frameHeaderDescriptionByte = (BYTE)(dictIDSizeCode + (checksumFlag<<2) + (singleSegment<<5) + (fcsCode<<6) );
     size_t pos=0;
 
-    assert(!(params.fParams.contentSizeFlag && pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN));
+    assert(!(params->fParams.contentSizeFlag && pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN));
     RETURN_ERROR_IF(dstCapacity < ZSTD_FRAMEHEADERSIZE_MAX, dstSize_tooSmall);
     DEBUGLOG(4, "ZSTD_writeFrameHeader : dictIDFlag : %u ; dictID : %u ; dictIDSizeCode : %u",
-                !params.fParams.noDictIDFlag, (unsigned)dictID, (unsigned)dictIDSizeCode);
+                !params->fParams.noDictIDFlag, (unsigned)dictID, (unsigned)dictIDSizeCode);
 
-    if (params.format == ZSTD_f_zstd1) {
+    if (params->format == ZSTD_f_zstd1) {
         MEM_writeLE32(dst, ZSTD_MAGICNUMBER);
         pos = 4;
     }
@@ -2477,7 +2616,7 @@ static size_t ZSTD_compressContinue_internal (ZSTD_CCtx* cctx,
                     "missing init (ZSTD_compressBegin)");
 
     if (frame && (cctx->stage==ZSTDcs_init)) {
-        fhSize = ZSTD_writeFrameHeader(dst, dstCapacity, cctx->appliedParams,
+        fhSize = ZSTD_writeFrameHeader(dst, dstCapacity, &cctx->appliedParams,
                                        cctx->pledgedSrcSizePlusOne-1, cctx->dictID);
         FORWARD_IF_ERROR(fhSize);
         assert(fhSize <= dstCapacity);
@@ -2497,13 +2636,15 @@ static size_t ZSTD_compressContinue_internal (ZSTD_CCtx* cctx,
 
     if (!frame) {
         /* overflow check and correction for block mode */
-        ZSTD_overflowCorrectIfNeeded(ms, &cctx->appliedParams, src, (BYTE const*)src + srcSize);
+        ZSTD_overflowCorrectIfNeeded(
+            ms, &cctx->workspace, &cctx->appliedParams,
+            src, (BYTE const*)src + srcSize);
     }
 
     DEBUGLOG(5, "ZSTD_compressContinue_internal (blockSize=%u)", (unsigned)cctx->blockSize);
     {   size_t const cSize = frame ?
                              ZSTD_compress_frameChunk (cctx, dst, dstCapacity, src, srcSize, lastFrameChunk) :
-                             ZSTD_compressBlock_internal (cctx, dst, dstCapacity, src, srcSize);
+                             ZSTD_compressBlock_internal (cctx, dst, dstCapacity, src, srcSize, 0 /* frame */);
         FORWARD_IF_ERROR(cSize);
         cctx->consumedSrcSize += srcSize;
         cctx->producedCSize += (cSize + fhSize);
@@ -2550,6 +2691,7 @@ size_t ZSTD_compressBlock(ZSTD_CCtx* cctx, void* dst, size_t dstCapacity, const 
  *  @return : 0, or an error code
  */
 static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
+                                         ZSTD_cwksp* ws,
                                          ZSTD_CCtx_params const* params,
                                          const void* src, size_t srcSize,
                                          ZSTD_dictTableLoadMethod_e dtlm)
@@ -2570,7 +2712,7 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
         size_t const chunk = MIN(remaining, ZSTD_CHUNKSIZE_MAX);
         const BYTE* const ichunk = ip + chunk;
 
-        ZSTD_overflowCorrectIfNeeded(ms, params, ip, ichunk);
+        ZSTD_overflowCorrectIfNeeded(ms, ws, params, ip, ichunk);
 
         switch(params->cParams.strategy)
         {
@@ -2629,10 +2771,11 @@ static size_t ZSTD_checkDictNCount(short* normalizedCounter, unsigned dictMaxSym
 /*! ZSTD_loadZstdDictionary() :
  * @return : dictID, or an error code
  *  assumptions : magic number supposed already checked
- *                dictSize supposed > 8
+ *                dictSize supposed >= 8
  */
 static size_t ZSTD_loadZstdDictionary(ZSTD_compressedBlockState_t* bs,
                                       ZSTD_matchState_t* ms,
+                                      ZSTD_cwksp* ws,
                                       ZSTD_CCtx_params const* params,
                                       const void* dict, size_t dictSize,
                                       ZSTD_dictTableLoadMethod_e dtlm,
@@ -2645,7 +2788,7 @@ static size_t ZSTD_loadZstdDictionary(ZSTD_compressedBlockState_t* bs,
     size_t dictID;
 
     ZSTD_STATIC_ASSERT(HUF_WORKSPACE_SIZE >= (1<<MAX(MLFSELog,LLFSELog)));
-    assert(dictSize > 8);
+    assert(dictSize >= 8);
     assert(MEM_readLE32(dictPtr) == ZSTD_MAGIC_DICTIONARY);
 
     dictPtr += 4;   /* skip magic number */
@@ -2728,7 +2871,8 @@ static size_t ZSTD_loadZstdDictionary(ZSTD_compressedBlockState_t* bs,
         bs->entropy.fse.offcode_repeatMode = FSE_repeat_valid;
         bs->entropy.fse.matchlength_repeatMode = FSE_repeat_valid;
         bs->entropy.fse.litlength_repeatMode = FSE_repeat_valid;
-        FORWARD_IF_ERROR(ZSTD_loadDictionaryContent(ms, params, dictPtr, dictContentSize, dtlm));
+        FORWARD_IF_ERROR(ZSTD_loadDictionaryContent(
+            ms, ws, params, dictPtr, dictContentSize, dtlm));
         return dictID;
     }
 }
@@ -2738,6 +2882,7 @@ static size_t ZSTD_loadZstdDictionary(ZSTD_compressedBlockState_t* bs,
 static size_t
 ZSTD_compress_insertDictionary(ZSTD_compressedBlockState_t* bs,
                                ZSTD_matchState_t* ms,
+                               ZSTD_cwksp* ws,
                          const ZSTD_CCtx_params* params,
                          const void* dict, size_t dictSize,
                                ZSTD_dictContentType_e dictContentType,
@@ -2745,26 +2890,34 @@ ZSTD_compress_insertDictionary(ZSTD_compressedBlockState_t* bs,
                                void* workspace)
 {
     DEBUGLOG(4, "ZSTD_compress_insertDictionary (dictSize=%u)", (U32)dictSize);
-    if ((dict==NULL) || (dictSize<=8)) return 0;
+    if ((dict==NULL) || (dictSize<8)) {
+        RETURN_ERROR_IF(dictContentType == ZSTD_dct_fullDict, dictionary_wrong);
+        return 0;
+    }
 
     ZSTD_reset_compressedBlockState(bs);
 
     /* dict restricted modes */
     if (dictContentType == ZSTD_dct_rawContent)
-        return ZSTD_loadDictionaryContent(ms, params, dict, dictSize, dtlm);
+        return ZSTD_loadDictionaryContent(ms, ws, params, dict, dictSize, dtlm);
 
     if (MEM_readLE32(dict) != ZSTD_MAGIC_DICTIONARY) {
         if (dictContentType == ZSTD_dct_auto) {
             DEBUGLOG(4, "raw content dictionary detected");
-            return ZSTD_loadDictionaryContent(ms, params, dict, dictSize, dtlm);
+            return ZSTD_loadDictionaryContent(
+                ms, ws, params, dict, dictSize, dtlm);
         }
         RETURN_ERROR_IF(dictContentType == ZSTD_dct_fullDict, dictionary_wrong);
         assert(0);   /* impossible */
     }
 
     /* dict as full zstd dictionary */
-    return ZSTD_loadZstdDictionary(bs, ms, params, dict, dictSize, dtlm, workspace);
+    return ZSTD_loadZstdDictionary(
+        bs, ms, ws, params, dict, dictSize, dtlm, workspace);
 }
+
+#define ZSTD_USE_CDICT_PARAMS_SRCSIZE_CUTOFF (128 KB)
+#define ZSTD_USE_CDICT_PARAMS_DICTSIZE_MULTIPLIER (6)
 
 /*! ZSTD_compressBegin_internal() :
  * @return : 0, or an error code */
@@ -2773,23 +2926,34 @@ static size_t ZSTD_compressBegin_internal(ZSTD_CCtx* cctx,
                                     ZSTD_dictContentType_e dictContentType,
                                     ZSTD_dictTableLoadMethod_e dtlm,
                                     const ZSTD_CDict* cdict,
-                                    ZSTD_CCtx_params params, U64 pledgedSrcSize,
+                                    const ZSTD_CCtx_params* params, U64 pledgedSrcSize,
                                     ZSTD_buffered_policy_e zbuff)
 {
-    DEBUGLOG(4, "ZSTD_compressBegin_internal: wlog=%u", params.cParams.windowLog);
+    DEBUGLOG(4, "ZSTD_compressBegin_internal: wlog=%u", params->cParams.windowLog);
     /* params are supposed to be fully validated at this point */
-    assert(!ZSTD_isError(ZSTD_checkCParams(params.cParams)));
+    assert(!ZSTD_isError(ZSTD_checkCParams(params->cParams)));
     assert(!((dict) && (cdict)));  /* either dict or cdict, not both */
-
-    if (cdict && cdict->dictContentSize>0) {
+    if ( (cdict)
+      && (cdict->dictContentSize > 0)
+      && ( pledgedSrcSize < ZSTD_USE_CDICT_PARAMS_SRCSIZE_CUTOFF
+        || pledgedSrcSize < cdict->dictContentSize * ZSTD_USE_CDICT_PARAMS_DICTSIZE_MULTIPLIER
+        || pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN
+        || cdict->compressionLevel == 0)
+      && (params->attachDictPref != ZSTD_dictForceLoad) ) {
         return ZSTD_resetCCtx_usingCDict(cctx, cdict, params, pledgedSrcSize, zbuff);
     }
 
-    FORWARD_IF_ERROR( ZSTD_resetCCtx_internal(cctx, params, pledgedSrcSize,
-                                     ZSTDcrp_continue, zbuff) );
-    {   size_t const dictID = ZSTD_compress_insertDictionary(
-                cctx->blockState.prevCBlock, &cctx->blockState.matchState,
-                &params, dict, dictSize, dictContentType, dtlm, cctx->entropyWorkspace);
+    FORWARD_IF_ERROR( ZSTD_resetCCtx_internal(cctx, *params, pledgedSrcSize,
+                                     ZSTDcrp_makeClean, zbuff) );
+    {   size_t const dictID = cdict ?
+                ZSTD_compress_insertDictionary(
+                        cctx->blockState.prevCBlock, &cctx->blockState.matchState,
+                        &cctx->workspace, params, cdict->dictContent, cdict->dictContentSize,
+                        dictContentType, dtlm, cctx->entropyWorkspace)
+              : ZSTD_compress_insertDictionary(
+                        cctx->blockState.prevCBlock, &cctx->blockState.matchState,
+                        &cctx->workspace, params, dict, dictSize,
+                        dictContentType, dtlm, cctx->entropyWorkspace);
         FORWARD_IF_ERROR(dictID);
         assert(dictID <= UINT_MAX);
         cctx->dictID = (U32)dictID;
@@ -2802,12 +2966,12 @@ size_t ZSTD_compressBegin_advanced_internal(ZSTD_CCtx* cctx,
                                     ZSTD_dictContentType_e dictContentType,
                                     ZSTD_dictTableLoadMethod_e dtlm,
                                     const ZSTD_CDict* cdict,
-                                    ZSTD_CCtx_params params,
+                                    const ZSTD_CCtx_params* params,
                                     unsigned long long pledgedSrcSize)
 {
-    DEBUGLOG(4, "ZSTD_compressBegin_advanced_internal: wlog=%u", params.cParams.windowLog);
+    DEBUGLOG(4, "ZSTD_compressBegin_advanced_internal: wlog=%u", params->cParams.windowLog);
     /* compression parameters verification and optimization */
-    FORWARD_IF_ERROR( ZSTD_checkCParams(params.cParams) );
+    FORWARD_IF_ERROR( ZSTD_checkCParams(params->cParams) );
     return ZSTD_compressBegin_internal(cctx,
                                        dict, dictSize, dictContentType, dtlm,
                                        cdict,
@@ -2822,21 +2986,21 @@ size_t ZSTD_compressBegin_advanced(ZSTD_CCtx* cctx,
                                    ZSTD_parameters params, unsigned long long pledgedSrcSize)
 {
     ZSTD_CCtx_params const cctxParams =
-            ZSTD_assignParamsToCCtxParams(cctx->requestedParams, params);
+            ZSTD_assignParamsToCCtxParams(&cctx->requestedParams, params);
     return ZSTD_compressBegin_advanced_internal(cctx,
                                             dict, dictSize, ZSTD_dct_auto, ZSTD_dtlm_fast,
                                             NULL /*cdict*/,
-                                            cctxParams, pledgedSrcSize);
+                                            &cctxParams, pledgedSrcSize);
 }
 
 size_t ZSTD_compressBegin_usingDict(ZSTD_CCtx* cctx, const void* dict, size_t dictSize, int compressionLevel)
 {
     ZSTD_parameters const params = ZSTD_getParams(compressionLevel, ZSTD_CONTENTSIZE_UNKNOWN, dictSize);
     ZSTD_CCtx_params const cctxParams =
-            ZSTD_assignParamsToCCtxParams(cctx->requestedParams, params);
+            ZSTD_assignParamsToCCtxParams(&cctx->requestedParams, params);
     DEBUGLOG(4, "ZSTD_compressBegin_usingDict (dictSize=%u)", (unsigned)dictSize);
     return ZSTD_compressBegin_internal(cctx, dict, dictSize, ZSTD_dct_auto, ZSTD_dtlm_fast, NULL,
-                                       cctxParams, ZSTD_CONTENTSIZE_UNKNOWN, ZSTDb_not_buffered);
+                                       &cctxParams, ZSTD_CONTENTSIZE_UNKNOWN, ZSTDb_not_buffered);
 }
 
 size_t ZSTD_compressBegin(ZSTD_CCtx* cctx, int compressionLevel)
@@ -2859,7 +3023,7 @@ static size_t ZSTD_writeEpilogue(ZSTD_CCtx* cctx, void* dst, size_t dstCapacity)
 
     /* special case : empty frame */
     if (cctx->stage == ZSTDcs_init) {
-        fhSize = ZSTD_writeFrameHeader(dst, dstCapacity, cctx->appliedParams, 0, 0);
+        fhSize = ZSTD_writeFrameHeader(dst, dstCapacity, &cctx->appliedParams, 0, 0);
         FORWARD_IF_ERROR(fhSize);
         dstCapacity -= fhSize;
         op += fhSize;
@@ -2920,13 +3084,13 @@ static size_t ZSTD_compress_internal (ZSTD_CCtx* cctx,
                                       ZSTD_parameters params)
 {
     ZSTD_CCtx_params const cctxParams =
-            ZSTD_assignParamsToCCtxParams(cctx->requestedParams, params);
+            ZSTD_assignParamsToCCtxParams(&cctx->requestedParams, params);
     DEBUGLOG(4, "ZSTD_compress_internal");
     return ZSTD_compress_advanced_internal(cctx,
                                            dst, dstCapacity,
                                            src, srcSize,
                                            dict, dictSize,
-                                           cctxParams);
+                                           &cctxParams);
 }
 
 size_t ZSTD_compress_advanced (ZSTD_CCtx* cctx,
@@ -2950,7 +3114,7 @@ size_t ZSTD_compress_advanced_internal(
         void* dst, size_t dstCapacity,
         const void* src, size_t srcSize,
         const void* dict,size_t dictSize,
-        ZSTD_CCtx_params params)
+        const ZSTD_CCtx_params* params)
 {
     DEBUGLOG(4, "ZSTD_compress_advanced_internal (srcSize:%u)", (unsigned)srcSize);
     FORWARD_IF_ERROR( ZSTD_compressBegin_internal(cctx,
@@ -2966,9 +3130,9 @@ size_t ZSTD_compress_usingDict(ZSTD_CCtx* cctx,
                                int compressionLevel)
 {
     ZSTD_parameters const params = ZSTD_getParams(compressionLevel, srcSize + (!srcSize), dict ? dictSize : 0);
-    ZSTD_CCtx_params cctxParams = ZSTD_assignParamsToCCtxParams(cctx->requestedParams, params);
+    ZSTD_CCtx_params cctxParams = ZSTD_assignParamsToCCtxParams(&cctx->requestedParams, params);
     assert(params.fParams.contentSizeFlag == 1);
-    return ZSTD_compress_advanced_internal(cctx, dst, dstCapacity, src, srcSize, dict, dictSize, cctxParams);
+    return ZSTD_compress_advanced_internal(cctx, dst, dstCapacity, src, srcSize, dict, dictSize, &cctxParams);
 }
 
 size_t ZSTD_compressCCtx(ZSTD_CCtx* cctx,
@@ -3003,8 +3167,11 @@ size_t ZSTD_estimateCDictSize_advanced(
         ZSTD_dictLoadMethod_e dictLoadMethod)
 {
     DEBUGLOG(5, "sizeof(ZSTD_CDict) : %u", (unsigned)sizeof(ZSTD_CDict));
-    return sizeof(ZSTD_CDict) + HUF_WORKSPACE_SIZE + ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 0)
-           + (dictLoadMethod == ZSTD_dlm_byRef ? 0 : dictSize);
+    return ZSTD_cwksp_alloc_size(sizeof(ZSTD_CDict))
+         + ZSTD_cwksp_alloc_size(HUF_WORKSPACE_SIZE)
+         + ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 0)
+         + (dictLoadMethod == ZSTD_dlm_byRef ? 0
+            : ZSTD_cwksp_alloc_size(ZSTD_cwksp_align(dictSize, sizeof(void *))));
 }
 
 size_t ZSTD_estimateCDictSize(size_t dictSize, int compressionLevel)
@@ -3017,7 +3184,9 @@ size_t ZSTD_sizeof_CDict(const ZSTD_CDict* cdict)
 {
     if (cdict==NULL) return 0;   /* support sizeof on NULL */
     DEBUGLOG(5, "sizeof(*cdict) : %u", (unsigned)sizeof(*cdict));
-    return cdict->workspaceSize + (cdict->dictBuffer ? cdict->dictContentSize : 0) + sizeof(*cdict);
+    /* cdict may be in the workspace */
+    return (cdict->workspace.workspace == cdict ? 0 : sizeof(*cdict))
+        + ZSTD_cwksp_sizeof(&cdict->workspace);
 }
 
 static size_t ZSTD_initCDict_internal(
@@ -3031,28 +3200,29 @@ static size_t ZSTD_initCDict_internal(
     assert(!ZSTD_checkCParams(cParams));
     cdict->matchState.cParams = cParams;
     if ((dictLoadMethod == ZSTD_dlm_byRef) || (!dictBuffer) || (!dictSize)) {
-        cdict->dictBuffer = NULL;
         cdict->dictContent = dictBuffer;
     } else {
-        void* const internalBuffer = ZSTD_malloc(dictSize, cdict->customMem);
-        cdict->dictBuffer = internalBuffer;
-        cdict->dictContent = internalBuffer;
+         void *internalBuffer = ZSTD_cwksp_reserve_object(&cdict->workspace, ZSTD_cwksp_align(dictSize, sizeof(void*)));
         RETURN_ERROR_IF(!internalBuffer, memory_allocation);
+        cdict->dictContent = internalBuffer;
         memcpy(internalBuffer, dictBuffer, dictSize);
     }
     cdict->dictContentSize = dictSize;
 
+    cdict->entropyWorkspace = (U32*)ZSTD_cwksp_reserve_object(&cdict->workspace, HUF_WORKSPACE_SIZE);
+
+
     /* Reset the state to no dictionary */
     ZSTD_reset_compressedBlockState(&cdict->cBlockState);
-    {   void* const end = ZSTD_reset_matchState(&cdict->matchState,
-                            (U32*)cdict->workspace + HUF_WORKSPACE_SIZE_U32,
-                            &cParams,
-                             ZSTDcrp_continue, ZSTD_resetTarget_CDict);
-        assert(end == (char*)cdict->workspace + cdict->workspaceSize);
-        (void)end;
-    }
+    FORWARD_IF_ERROR(ZSTD_reset_matchState(
+        &cdict->matchState,
+        &cdict->workspace,
+        &cParams,
+        ZSTDcrp_makeClean,
+        ZSTDirp_reset,
+        ZSTD_resetTarget_CDict));
     /* (Maybe) load the dictionary
-     * Skips loading the dictionary if it is <= 8 bytes.
+     * Skips loading the dictionary if it is < 8 bytes.
      */
     {   ZSTD_CCtx_params params;
         memset(&params, 0, sizeof(params));
@@ -3060,9 +3230,9 @@ static size_t ZSTD_initCDict_internal(
         params.fParams.contentSizeFlag = 1;
         params.cParams = cParams;
         {   size_t const dictID = ZSTD_compress_insertDictionary(
-                    &cdict->cBlockState, &cdict->matchState, &params,
-                    cdict->dictContent, cdict->dictContentSize,
-                    dictContentType, ZSTD_dtlm_full, cdict->workspace);
+                    &cdict->cBlockState, &cdict->matchState, &cdict->workspace,
+                    &params, cdict->dictContent, cdict->dictContentSize,
+                    dictContentType, ZSTD_dtlm_full, cdict->entropyWorkspace);
             FORWARD_IF_ERROR(dictID);
             assert(dictID <= (size_t)(U32)-1);
             cdict->dictID = (U32)dictID;
@@ -3080,18 +3250,29 @@ ZSTD_CDict* ZSTD_createCDict_advanced(const void* dictBuffer, size_t dictSize,
     DEBUGLOG(3, "ZSTD_createCDict_advanced, mode %u", (unsigned)dictContentType);
     if (!customMem.customAlloc ^ !customMem.customFree) return NULL;
 
-    {   ZSTD_CDict* const cdict = (ZSTD_CDict*)ZSTD_malloc(sizeof(ZSTD_CDict), customMem);
-        size_t const workspaceSize = HUF_WORKSPACE_SIZE + ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 0);
+    {   size_t const workspaceSize =
+            ZSTD_cwksp_alloc_size(sizeof(ZSTD_CDict)) +
+            ZSTD_cwksp_alloc_size(HUF_WORKSPACE_SIZE) +
+            ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 0) +
+            (dictLoadMethod == ZSTD_dlm_byRef ? 0
+             : ZSTD_cwksp_alloc_size(ZSTD_cwksp_align(dictSize, sizeof(void*))));
         void* const workspace = ZSTD_malloc(workspaceSize, customMem);
+        ZSTD_cwksp ws;
+        ZSTD_CDict* cdict;
 
-        if (!cdict || !workspace) {
-            ZSTD_free(cdict, customMem);
+        if (!workspace) {
             ZSTD_free(workspace, customMem);
             return NULL;
         }
+
+        ZSTD_cwksp_init(&ws, workspace, workspaceSize);
+
+        cdict = (ZSTD_CDict*)ZSTD_cwksp_reserve_object(&ws, sizeof(ZSTD_CDict));
+        assert(cdict != NULL);
+        ZSTD_cwksp_move(&cdict->workspace, &ws);
         cdict->customMem = customMem;
-        cdict->workspace = workspace;
-        cdict->workspaceSize = workspaceSize;
+        cdict->compressionLevel = 0; /* signals advanced API usage */
+
         if (ZSTD_isError( ZSTD_initCDict_internal(cdict,
                                         dictBuffer, dictSize,
                                         dictLoadMethod, dictContentType,
@@ -3107,9 +3288,12 @@ ZSTD_CDict* ZSTD_createCDict_advanced(const void* dictBuffer, size_t dictSize,
 ZSTD_CDict* ZSTD_createCDict(const void* dict, size_t dictSize, int compressionLevel)
 {
     ZSTD_compressionParameters cParams = ZSTD_getCParams(compressionLevel, 0, dictSize);
-    return ZSTD_createCDict_advanced(dict, dictSize,
-                                     ZSTD_dlm_byCopy, ZSTD_dct_auto,
-                                     cParams, ZSTD_defaultCMem);
+    ZSTD_CDict* cdict = ZSTD_createCDict_advanced(dict, dictSize,
+                                                  ZSTD_dlm_byCopy, ZSTD_dct_auto,
+                                                  cParams, ZSTD_defaultCMem);
+    if (cdict)
+        cdict->compressionLevel = compressionLevel == 0 ? ZSTD_CLEVEL_DEFAULT : compressionLevel;
+    return cdict;
 }
 
 ZSTD_CDict* ZSTD_createCDict_byReference(const void* dict, size_t dictSize, int compressionLevel)
@@ -3124,9 +3308,11 @@ size_t ZSTD_freeCDict(ZSTD_CDict* cdict)
 {
     if (cdict==NULL) return 0;   /* support free on NULL */
     {   ZSTD_customMem const cMem = cdict->customMem;
-        ZSTD_free(cdict->workspace, cMem);
-        ZSTD_free(cdict->dictBuffer, cMem);
-        ZSTD_free(cdict, cMem);
+        int cdictInWorkspace = ZSTD_cwksp_owns_buffer(&cdict->workspace, cdict);
+        ZSTD_cwksp_free(&cdict->workspace, cMem);
+        if (!cdictInWorkspace) {
+            ZSTD_free(cdict, cMem);
+        }
         return 0;
     }
 }
@@ -3152,28 +3338,30 @@ const ZSTD_CDict* ZSTD_initStaticCDict(
                                  ZSTD_compressionParameters cParams)
 {
     size_t const matchStateSize = ZSTD_sizeof_matchState(&cParams, /* forCCtx */ 0);
-    size_t const neededSize = sizeof(ZSTD_CDict) + (dictLoadMethod == ZSTD_dlm_byRef ? 0 : dictSize)
-                            + HUF_WORKSPACE_SIZE + matchStateSize;
-    ZSTD_CDict* const cdict = (ZSTD_CDict*) workspace;
-    void* ptr;
+    size_t const neededSize = ZSTD_cwksp_alloc_size(sizeof(ZSTD_CDict))
+                            + (dictLoadMethod == ZSTD_dlm_byRef ? 0
+                               : ZSTD_cwksp_alloc_size(ZSTD_cwksp_align(dictSize, sizeof(void*))))
+                            + ZSTD_cwksp_alloc_size(HUF_WORKSPACE_SIZE)
+                            + matchStateSize;
+    ZSTD_CDict* cdict;
+
     if ((size_t)workspace & 7) return NULL;  /* 8-aligned */
+
+    {
+        ZSTD_cwksp ws;
+        ZSTD_cwksp_init(&ws, workspace, workspaceSize);
+        cdict = (ZSTD_CDict*)ZSTD_cwksp_reserve_object(&ws, sizeof(ZSTD_CDict));
+        if (cdict == NULL) return NULL;
+        ZSTD_cwksp_move(&cdict->workspace, &ws);
+    }
+
     DEBUGLOG(4, "(workspaceSize < neededSize) : (%u < %u) => %u",
         (unsigned)workspaceSize, (unsigned)neededSize, (unsigned)(workspaceSize < neededSize));
     if (workspaceSize < neededSize) return NULL;
 
-    if (dictLoadMethod == ZSTD_dlm_byCopy) {
-        memcpy(cdict+1, dict, dictSize);
-        dict = cdict+1;
-        ptr = (char*)workspace + sizeof(ZSTD_CDict) + dictSize;
-    } else {
-        ptr = cdict+1;
-    }
-    cdict->workspace = ptr;
-    cdict->workspaceSize = HUF_WORKSPACE_SIZE + matchStateSize;
-
     if (ZSTD_isError( ZSTD_initCDict_internal(cdict,
                                               dict, dictSize,
-                                              ZSTD_dlm_byRef, dictContentType,
+                                              dictLoadMethod, dictContentType,
                                               cParams) ))
         return NULL;
 
@@ -3195,7 +3383,15 @@ size_t ZSTD_compressBegin_usingCDict_advanced(
     DEBUGLOG(4, "ZSTD_compressBegin_usingCDict_advanced");
     RETURN_ERROR_IF(cdict==NULL, dictionary_wrong);
     {   ZSTD_CCtx_params params = cctx->requestedParams;
-        params.cParams = ZSTD_getCParamsFromCDict(cdict);
+        params.cParams = ( pledgedSrcSize < ZSTD_USE_CDICT_PARAMS_SRCSIZE_CUTOFF
+                        || pledgedSrcSize < cdict->dictContentSize * ZSTD_USE_CDICT_PARAMS_DICTSIZE_MULTIPLIER
+                        || pledgedSrcSize == ZSTD_CONTENTSIZE_UNKNOWN
+                        || cdict->compressionLevel == 0 )
+                      && (params.attachDictPref != ZSTD_dictForceLoad) ?
+                ZSTD_getCParamsFromCDict(cdict)
+              : ZSTD_getCParams(cdict->compressionLevel,
+                                pledgedSrcSize,
+                                cdict->dictContentSize);
         /* Increase window log to fit the entire dictionary and source if the
          * source size is known. Limit the increase to 19, which is the
          * window log for compression level 1 with the largest source size.
@@ -3209,7 +3405,7 @@ size_t ZSTD_compressBegin_usingCDict_advanced(
         return ZSTD_compressBegin_internal(cctx,
                                            NULL, 0, ZSTD_dct_auto, ZSTD_dtlm_fast,
                                            cdict,
-                                           params, pledgedSrcSize,
+                                           &params, pledgedSrcSize,
                                            ZSTDb_not_buffered);
     }
 }
@@ -3300,7 +3496,7 @@ static size_t ZSTD_resetCStream_internal(ZSTD_CStream* cctx,
     FORWARD_IF_ERROR( ZSTD_compressBegin_internal(cctx,
                                          dict, dictSize, dictContentType, ZSTD_dtlm_fast,
                                          cdict,
-                                         params, pledgedSrcSize,
+                                         &params, pledgedSrcSize,
                                          ZSTDb_buffered) );
 
     cctx->inToCompress = 0;
@@ -3334,13 +3530,14 @@ size_t ZSTD_resetCStream(ZSTD_CStream* zcs, unsigned long long pss)
  *  Assumption 2 : either dict, or cdict, is defined, not both */
 size_t ZSTD_initCStream_internal(ZSTD_CStream* zcs,
                     const void* dict, size_t dictSize, const ZSTD_CDict* cdict,
-                    ZSTD_CCtx_params params, unsigned long long pledgedSrcSize)
+                    const ZSTD_CCtx_params* params,
+                    unsigned long long pledgedSrcSize)
 {
     DEBUGLOG(4, "ZSTD_initCStream_internal");
     FORWARD_IF_ERROR( ZSTD_CCtx_reset(zcs, ZSTD_reset_session_only) );
     FORWARD_IF_ERROR( ZSTD_CCtx_setPledgedSrcSize(zcs, pledgedSrcSize) );
-    assert(!ZSTD_isError(ZSTD_checkCParams(params.cParams)));
-    zcs->requestedParams = params;
+    assert(!ZSTD_isError(ZSTD_checkCParams(params->cParams)));
+    zcs->requestedParams = *params;
     assert(!((dict) && (cdict)));  /* either dict or cdict, not both */
     if (dict) {
         FORWARD_IF_ERROR( ZSTD_CCtx_loadDictionary(zcs, dict, dictSize) );
@@ -3379,7 +3576,7 @@ size_t ZSTD_initCStream_usingCDict(ZSTD_CStream* zcs, const ZSTD_CDict* cdict)
 /* ZSTD_initCStream_advanced() :
  * pledgedSrcSize must be exact.
  * if srcSize is not known at init time, use value ZSTD_CONTENTSIZE_UNKNOWN.
- * dict is loaded with default parameters ZSTD_dm_auto and ZSTD_dlm_byCopy. */
+ * dict is loaded with default parameters ZSTD_dct_auto and ZSTD_dlm_byCopy. */
 size_t ZSTD_initCStream_advanced(ZSTD_CStream* zcs,
                                  const void* dict, size_t dictSize,
                                  ZSTD_parameters params, unsigned long long pss)
@@ -3393,7 +3590,7 @@ size_t ZSTD_initCStream_advanced(ZSTD_CStream* zcs,
     FORWARD_IF_ERROR( ZSTD_CCtx_reset(zcs, ZSTD_reset_session_only) );
     FORWARD_IF_ERROR( ZSTD_CCtx_setPledgedSrcSize(zcs, pledgedSrcSize) );
     FORWARD_IF_ERROR( ZSTD_checkCParams(params.cParams) );
-    zcs->requestedParams = ZSTD_assignParamsToCCtxParams(zcs->requestedParams, params);
+    zcs->requestedParams = ZSTD_assignParamsToCCtxParams(&zcs->requestedParams, params);
     FORWARD_IF_ERROR( ZSTD_CCtx_loadDictionary(zcs, dict, dictSize) );
     return 0;
 }
@@ -3643,7 +3840,7 @@ size_t ZSTD_compressStream2( ZSTD_CCtx* cctx,
             if (cctx->mtctx == NULL) {
                 DEBUGLOG(4, "ZSTD_compressStream2: creating new mtctx for nbWorkers=%u",
                             params.nbWorkers);
-                cctx->mtctx = ZSTDMT_createCCtx_advanced(params.nbWorkers, cctx->customMem);
+                cctx->mtctx = ZSTDMT_createCCtx_advanced((U32)params.nbWorkers, cctx->customMem);
                 RETURN_ERROR_IF(cctx->mtctx == NULL, memory_allocation);
             }
             /* mt compression */
@@ -3771,8 +3968,8 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 19, 12, 13,  1,  6,  1, ZSTD_fast    },  /* base for negative levels */
     { 19, 13, 14,  1,  7,  0, ZSTD_fast    },  /* level  1 */
     { 20, 15, 16,  1,  6,  0, ZSTD_fast    },  /* level  2 */
-    { 21, 16, 17,  1,  5,  1, ZSTD_dfast   },  /* level  3 */
-    { 21, 18, 18,  1,  5,  1, ZSTD_dfast   },  /* level  4 */
+    { 21, 16, 17,  1,  5,  0, ZSTD_dfast   },  /* level  3 */
+    { 21, 18, 18,  1,  5,  0, ZSTD_dfast   },  /* level  4 */
     { 21, 18, 19,  2,  5,  2, ZSTD_greedy  },  /* level  5 */
     { 21, 19, 19,  3,  5,  4, ZSTD_greedy  },  /* level  6 */
     { 21, 19, 19,  3,  5,  8, ZSTD_lazy    },  /* level  7 */
@@ -3796,8 +3993,8 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     /* W,  C,  H,  S,  L,  T, strat */
     { 18, 12, 13,  1,  5,  1, ZSTD_fast    },  /* base for negative levels */
     { 18, 13, 14,  1,  6,  0, ZSTD_fast    },  /* level  1 */
-    { 18, 14, 14,  1,  5,  1, ZSTD_dfast   },  /* level  2 */
-    { 18, 16, 16,  1,  4,  1, ZSTD_dfast   },  /* level  3 */
+    { 18, 14, 14,  1,  5,  0, ZSTD_dfast   },  /* level  2 */
+    { 18, 16, 16,  1,  4,  0, ZSTD_dfast   },  /* level  3 */
     { 18, 16, 17,  2,  5,  2, ZSTD_greedy  },  /* level  4.*/
     { 18, 18, 18,  3,  5,  2, ZSTD_greedy  },  /* level  5.*/
     { 18, 18, 19,  3,  5,  4, ZSTD_lazy    },  /* level  6.*/
@@ -3823,8 +4020,8 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 17, 12, 12,  1,  5,  1, ZSTD_fast    },  /* base for negative levels */
     { 17, 12, 13,  1,  6,  0, ZSTD_fast    },  /* level  1 */
     { 17, 13, 15,  1,  5,  0, ZSTD_fast    },  /* level  2 */
-    { 17, 15, 16,  2,  5,  1, ZSTD_dfast   },  /* level  3 */
-    { 17, 17, 17,  2,  4,  1, ZSTD_dfast   },  /* level  4 */
+    { 17, 15, 16,  2,  5,  0, ZSTD_dfast   },  /* level  3 */
+    { 17, 17, 17,  2,  4,  0, ZSTD_dfast   },  /* level  4 */
     { 17, 16, 17,  3,  4,  2, ZSTD_greedy  },  /* level  5 */
     { 17, 17, 17,  3,  4,  4, ZSTD_lazy    },  /* level  6 */
     { 17, 17, 17,  3,  4,  8, ZSTD_lazy2   },  /* level  7 */
@@ -3849,7 +4046,7 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 14, 12, 13,  1,  5,  1, ZSTD_fast    },  /* base for negative levels */
     { 14, 14, 15,  1,  5,  0, ZSTD_fast    },  /* level  1 */
     { 14, 14, 15,  1,  4,  0, ZSTD_fast    },  /* level  2 */
-    { 14, 14, 15,  2,  4,  1, ZSTD_dfast   },  /* level  3 */
+    { 14, 14, 15,  2,  4,  0, ZSTD_dfast   },  /* level  3 */
     { 14, 14, 14,  4,  4,  2, ZSTD_greedy  },  /* level  4 */
     { 14, 14, 14,  3,  4,  4, ZSTD_lazy    },  /* level  5.*/
     { 14, 14, 14,  4,  4,  8, ZSTD_lazy2   },  /* level  6 */
