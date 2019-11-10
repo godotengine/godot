@@ -4238,6 +4238,12 @@
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
 			Multisample antialiasing is set to 16×.
 		</constant>
+		<constant name="VIEWPORT_MSAA_EXT_2X" value="5" enum="ViewportMSAA">
+			Multisample antialiasing is set to 2× on external texture. Special mode for GLES2 VR for the Oculus Quest.
+		</constant>
+		<constant name="VIEWPORT_MSAA_EXT_4X" value="6" enum="ViewportMSAA">
+			Multisample antialiasing is set to 4× on external texture. Special mode for GLES2 VR for the Oculus Quest.
+		</constant>
 		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
 			The Viewport does not render 3D but samples.
 		</constant>

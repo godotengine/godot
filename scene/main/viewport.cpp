@@ -2955,7 +2955,7 @@ int Viewport::gui_get_canvas_sort_index() {
 
 void Viewport::set_msaa(MSAA p_msaa) {
 
-	ERR_FAIL_INDEX(p_msaa, 5);
+	ERR_FAIL_INDEX(p_msaa, 7);
 	if (msaa == p_msaa)
 		return;
 	msaa = p_msaa;
@@ -3186,7 +3186,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transparent_bg"), "set_transparent_background", "has_transparent_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,External 2x,External 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");

@@ -4694,7 +4694,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	/* For MSAA */
 
 #ifndef JAVASCRIPT_ENABLED
-	if (rt->msaa != VS::VIEWPORT_MSAA_DISABLED && config.multisample_supported) {
+	if (rt->msaa >= VS::VIEWPORT_MSAA_2X && rt->msaa <= VS::VIEWPORT_MSAA_16X && config.multisample_supported) {
 
 		rt->multisample_active = true;
 
@@ -5090,6 +5090,11 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			// free this
 			glDeleteFramebuffers(1, &rt->external.fbo);
 
+			// and this
+			if (rt->external.depth != 0) {
+				glDeleteRenderbuffers(1, &rt->external.depth);
+			}
+
 			// clean up our texture
 			Texture *t = texture_owner.get(rt->external.texture);
 			t->alloc_height = 0;
@@ -5102,6 +5107,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 
 			rt->external.fbo = 0;
 			rt->external.color = 0;
+			rt->external.depth = 0;
 		}
 	} else {
 		Texture *t;
@@ -5136,6 +5142,7 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 			t->render_target = rt;
 
 			rt->external.texture = texture_owner.make_rid(t);
+
 		} else {
 			// bind our frame buffer
 			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
@@ -5154,16 +5161,42 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 		t->alloc_height = rt->width;
 		t->alloc_width = rt->height;
 
-		// is there a point to setting the internal formats? we don't know them..
+		// Switch our texture on our frame buffer
+#if ANDROID_ENABLED
+		if (rt->msaa >= VS::VIEWPORT_MSAA_EXT_2X && rt->msaa <= VS::VIEWPORT_MSAA_EXT_4X) {
+			// This code only applies to the Oculus Go and Oculus Quest. Due to the the tiled nature
+			// of the GPU we can do a single render pass by rendering directly into our texture chains
+			// texture and apply MSAA as we render.
 
-		// set our texture as the destination for our framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
+			// On any other hardware these two modes are ignored and we do not have any MSAA,
+			// the normal MSAA modes need to be used to enable our two pass approach
 
-		// seeing we're rendering into this directly, better also use our depth buffer, just use our existing one :)
-		if (config.support_depth_texture) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
-		} else {
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+			static const int msaa_value[] = { 2, 4 };
+			int msaa = msaa_value[rt->msaa - VS::VIEWPORT_MSAA_EXT_2X];
+
+			if (rt->external.depth == 0) {
+				// create a multisample depth buffer, we're not reusing Godots because Godot's didn't get created..
+				glGenRenderbuffers(1, &rt->external.depth);
+				glBindRenderbuffer(GL_RENDERBUFFER, rt->external.depth);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, msaa, config.depth_internalformat, rt->width, rt->height);
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->external.depth);
+			}
+
+			// and set our external texture as the texture...
+			glFramebufferTexture2DMultisample(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0, msaa);
+
+		} else
+#endif
+		{
+			// set our texture as the destination for our framebuffer
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
+
+			// seeing we're rendering into this directly, better also use our depth buffer, just use our existing one :)
+			if (config.support_depth_texture) {
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+			} else {
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+			}
 		}
 
 		// check status and unbind

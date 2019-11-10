@@ -1182,10 +1182,13 @@ public:
 		struct External {
 			GLuint fbo;
 			GLuint color;
+			GLuint depth;
 			RID texture;
 
 			External() :
-					fbo(0) {
+					fbo(0),
+					color(0),
+					depth(0) {
 			}
 		} external;
 
