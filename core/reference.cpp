@@ -105,8 +105,8 @@ bool Reference::unreference() {
 
 void Reference::reset_ref() {
 
-    refcount.init();
-    refcount_init.init();
+	refcount.init();
+	refcount_init.init();
 }
 
 Reference::Reference() {
