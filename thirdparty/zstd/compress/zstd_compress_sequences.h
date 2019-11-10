@@ -35,7 +35,7 @@ ZSTD_buildCTable(void* dst, size_t dstCapacity,
                 const BYTE* codeTable, size_t nbSeq,
                 const S16* defaultNorm, U32 defaultNormLog, U32 defaultMax,
                 const FSE_CTable* prevCTable, size_t prevCTableSize,
-                void* workspace, size_t workspaceSize);
+                void* entropyWorkspace, size_t entropyWorkspaceSize);
 
 size_t ZSTD_encodeSequences(
             void* dst, size_t dstCapacity,
