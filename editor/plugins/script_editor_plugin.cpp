@@ -2250,7 +2250,7 @@ void ScriptEditor::open_script_create_dialog(const String &p_base_name, const St
 
 void ScriptEditor::_editor_play() {
 
-	debugger->start();
+	debugger->start(memnew(ScriptEditorDebuggerTCP));
 	debug_menu->get_popup()->grab_focus();
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);

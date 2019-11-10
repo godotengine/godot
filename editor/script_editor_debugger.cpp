@@ -198,6 +198,28 @@ public:
 	}
 };
 
+Error ScriptEditorDebugger::_server_put_var(const Variant &p_variant) {
+	ERR_FAIL_COND_V(server.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!server->has_peer(), ERR_UNAVAILABLE);
+	return server->get_peer()->put_var(p_variant);
+}
+
+Error ScriptEditorDebugger::_server_get_var(Variant &r_variant) {
+	ERR_FAIL_COND_V(server.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!server->has_peer(), ERR_UNAVAILABLE);
+	return server->get_peer()->get_var(r_variant);
+}
+
+bool ScriptEditorDebugger::_server_has_peer() {
+	return server.is_valid() && server->has_peer();
+}
+
+int ScriptEditorDebugger::_server_get_available_packet_count() {
+	ERR_FAIL_COND_V(server.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!server->has_peer(), ERR_UNAVAILABLE);
+	return server->get_peer()->get_available_packet_count();
+}
+
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
 	if (msg == "") return;
@@ -211,34 +233,32 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 	else
 		skip_breakpoints->set_icon(get_icon("DebugSkipBreakpointsOff", "EditorIcons"));
 
-	if (connection.is_valid()) {
+	if (_server_has_peer()) {
 		Array msg;
 		msg.push_back("set_skip_breakpoints");
 		msg.push_back(skip_breakpoints_value);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 
 void ScriptEditorDebugger::debug_next() {
 
 	ERR_FAIL_COND(!breaked);
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 	Array msg;
 	msg.push_back("next");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 	_clear_execution();
 	stack_dump->clear();
 }
 void ScriptEditorDebugger::debug_step() {
 
 	ERR_FAIL_COND(!breaked);
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	Array msg;
 	msg.push_back("step");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 	_clear_execution();
 	stack_dump->clear();
 }
@@ -246,26 +266,24 @@ void ScriptEditorDebugger::debug_step() {
 void ScriptEditorDebugger::debug_break() {
 
 	ERR_FAIL_COND(breaked);
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	Array msg;
 	msg.push_back("break");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 void ScriptEditorDebugger::debug_continue() {
 
 	ERR_FAIL_COND(!breaked);
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	OS::get_singleton()->enable_for_stealing_focus(EditorNode::get_singleton()->get_child_process_id());
 
 	Array msg;
 	_clear_execution();
 	msg.push_back("continue");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
@@ -304,7 +322,7 @@ void ScriptEditorDebugger::_scene_tree_selected() {
 	Array msg;
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
@@ -329,7 +347,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			msg.push_back("save_node");
 			msg.push_back(inspected_object_id);
 			msg.push_back(p_file);
-			ppeer->put_var(msg);
+			_server_put_var(msg);
 		} break;
 		case SAVE_CSV: {
 			Error err;
@@ -378,7 +396,7 @@ void ScriptEditorDebugger::_scene_tree_property_value_edited(const String &p_pro
 	msg.push_back(inspected_object_id);
 	msg.push_back(p_prop);
 	msg.push_back(p_value);
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 	inspect_edited_object_timeout = 0.7; //avoid annoyance, don't request soon after editing
 }
 
@@ -388,17 +406,16 @@ void ScriptEditorDebugger::_scene_tree_property_select_object(ObjectID p_object)
 	Array msg;
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_request() {
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	Array msg;
 	msg.push_back("request_scene_tree");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 /// Populates inspect_scene_tree recursively given data in nodes.
@@ -482,12 +499,11 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 
 void ScriptEditorDebugger::_video_mem_request() {
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	Array msg;
 	msg.push_back("request_video_mem");
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 }
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
@@ -502,7 +518,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	if (p_msg == "debug_enter") {
 		Array msg;
 		msg.push_back("get_stack_dump");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 		ERR_FAIL_COND(p_data.size() != 2);
 		bool can_continue = p_data[0];
 		String error = p_data[1];
@@ -1209,7 +1225,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 
-			if (connection.is_valid()) {
+			if (server.is_null())
+				break;
+
+			if (_server_has_peer()) {
 
 				inspect_scene_tree_timeout -= get_process_delta_time();
 				if (inspect_scene_tree_timeout < 0) {
@@ -1229,7 +1248,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 								Array msg;
 								msg.push_back("inspect_object");
 								msg.push_back(inspected_object_id);
-								ppeer->put_var(msg);
+								_server_put_var(msg);
 							}
 						}
 					}
@@ -1249,7 +1268,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					Array msg;
 					msg.push_back("override_camera_2D:transform");
 					msg.push_back(transform);
-					ppeer->put_var(msg);
+					_server_put_var(msg);
 
 				} else if (camera_override >= OVERRIDE_3D_1) {
 					int viewport_idx = camera_override - OVERRIDE_3D_1;
@@ -1268,7 +1287,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					}
 					msg.push_back(cam->get_znear());
 					msg.push_back(cam->get_zfar());
-					ppeer->put_var(msg);
+					_server_put_var(msg);
 				}
 			}
 
@@ -1294,78 +1313,63 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				last_warning_count = warning_count;
 			}
 
-			if (server->is_connection_available()) {
-				if (connection.is_valid()) {
-					// We already have a valid connection. Disconnecting any new connecting client to prevent it from hanging.
-					// (If we don't keep a reference to the connection it will be destroyed and disconnect_from_host will be called internally)
-					server->take_connection();
-				} else {
-					// We just got the first connection.
-					connection = server->take_connection();
-					if (connection.is_null())
-						break;
+			bool disconnected;
+			bool connected;
+			server->handle_connections(connected, disconnected);
+			if (disconnected) {
+				stop();
+				editor->notify_child_process_exited();
+				break;
+			}
+			if (connected) {
+				EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 
-					EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
+				dobreak->set_disabled(false);
+				tabs->set_current_tab(0);
 
-					ppeer->set_stream_peer(connection);
+				_set_reason_text(TTR("Child process connected."), MESSAGE_SUCCESS);
+				profiler->clear();
 
-					//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
-					//emit_signal("show_debugger",true);
+				inspect_scene_tree->clear();
+				le_set->set_disabled(true);
+				le_clear->set_disabled(false);
+				error_tree->clear();
+				error_count = 0;
+				warning_count = 0;
+				profiler_signature.clear();
 
-					dobreak->set_disabled(false);
-					tabs->set_current_tab(0);
+				EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+				EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
 
-					_set_reason_text(TTR("Child process connected."), MESSAGE_SUCCESS);
-					profiler->clear();
+				update_live_edit_root();
+				if (profiler->is_profiling()) {
+					_profiler_activate(true);
+				}
 
-					inspect_scene_tree->clear();
-					le_set->set_disabled(true);
-					le_clear->set_disabled(false);
-					error_tree->clear();
-					error_count = 0;
-					warning_count = 0;
-					profiler_signature.clear();
-					//live_edit_root->set_text("/root");
-
-					EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
-					EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
-
-					update_live_edit_root();
-					if (profiler->is_profiling()) {
-						_profiler_activate(true);
-					}
-
-					if (network_profiler->is_profiling()) {
-						_network_profiler_activate(true);
-					}
+				if (network_profiler->is_profiling()) {
+					_network_profiler_activate(true);
 				}
 			}
 
-			if (connection.is_null())
+			if (!_server_has_peer())
 				break;
 
-			if (!connection->is_connected_to_host()) {
-				stop();
-				editor->notify_child_process_exited(); //somehow, exited
-				break;
-			};
-
-			if (ppeer->get_available_packet_count() <= 0) {
+			if (_server_get_available_packet_count() <= 0) {
 				break;
 			};
 
 			const uint64_t until = OS::get_singleton()->get_ticks_msec() + 20;
 
-			while (ppeer->get_available_packet_count() > 0) {
+			while (_server_get_available_packet_count() > 0) {
 
 				if (pending_in_queue) {
 
-					int todo = MIN(ppeer->get_available_packet_count(), pending_in_queue);
+					int todo = MIN(_server_get_available_packet_count(), pending_in_queue);
 
 					for (int i = 0; i < todo; i++) {
 
 						Variant cmd;
-						Error ret = ppeer->get_var(cmd);
+						Error ret = _server_get_var(cmd);
 						if (ret != OK) {
 							stop();
 							ERR_FAIL_COND(ret != OK);
@@ -1382,10 +1386,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				} else {
 
-					if (ppeer->get_available_packet_count() >= 2) {
+					if (_server_get_available_packet_count() >= 2) {
 
 						Variant cmd;
-						Error ret = ppeer->get_var(cmd);
+						Error ret = _server_get_var(cmd);
 						if (ret != OK) {
 							stop();
 							ERR_FAIL_COND(ret != OK);
@@ -1397,7 +1401,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 						message_type = cmd;
 
-						ret = ppeer->get_var(cmd);
+						ret = _server_get_var(cmd);
 						if (ret != OK) {
 							stop();
 							ERR_FAIL_COND(ret != OK);
@@ -1457,9 +1461,13 @@ void ScriptEditorDebugger::_clear_execution() {
 	stack_script.unref();
 }
 
-void ScriptEditorDebugger::start() {
+void ScriptEditorDebugger::start(Ref<ScriptEditorDebuggerServer> p_server) {
 
 	stop();
+
+	ERR_FAIL_COND(p_server.is_null());
+
+	server = p_server;
 
 	if (is_visible_in_tree()) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
@@ -1472,7 +1480,7 @@ void ScriptEditorDebugger::start() {
 	}
 
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	if (server->listen(remote_port) != OK) {
+	if (server->start_server(remote_port) != OK) {
 		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
 		return;
 	}
@@ -1499,17 +1507,15 @@ void ScriptEditorDebugger::stop() {
 	set_process(false);
 	breaked = false;
 	_clear_execution();
-
-	server->stop();
 	_clear_remote_objects();
-	ppeer->set_stream_peer(Ref<StreamPeer>());
 
-	if (connection.is_valid()) {
-		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
-		connection.unref();
-
-		reason->set_text("");
-		reason->set_tooltip("");
+	if (server.is_valid()) {
+		if (_server_has_peer()) {
+			EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
+			reason->set_text("");
+			reason->set_tooltip("");
+		}
+		server->stop_server();
 	}
 
 	pending_in_queue = 0;
@@ -1538,7 +1544,7 @@ void ScriptEditorDebugger::stop() {
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 
-	if (!connection.is_valid())
+	if (!_server_has_peer())
 		return;
 
 	if (p_enable) {
@@ -1548,39 +1554,39 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 		int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
 		max_funcs = CLAMP(max_funcs, 16, 512);
 		msg.push_back(max_funcs);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 		print_verbose("Starting profiling.");
 
 	} else {
 		Array msg;
 		msg.push_back("stop_profiling");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 		print_verbose("Ending profiling.");
 	}
 }
 
 void ScriptEditorDebugger::_network_profiler_activate(bool p_enable) {
 
-	if (!connection.is_valid())
+	if (!_server_has_peer())
 		return;
 
 	if (p_enable) {
 		Array msg;
 		msg.push_back("start_network_profiling");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 		print_verbose("Starting network profiling.");
 
 	} else {
 		Array msg;
 		msg.push_back("stop_network_profiling");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 		print_verbose("Ending network profiling.");
 	}
 }
 
 void ScriptEditorDebugger::_profiler_seeked() {
 
-	if (!connection.is_valid() || !connection->is_connected_to_host())
+	if (!_server_has_peer())
 		return;
 
 	if (breaked)
@@ -1601,11 +1607,11 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	emit_signal("set_execution", stack_script, int(d["line"]) - 1);
 	stack_script.unref();
 
-	if (connection.is_valid() && connection->is_connected_to_host()) {
+	if (_server_has_peer()) {
 		Array msg;
 		msg.push_back("get_stack_frame_vars");
 		msg.push_back(d["frame"]);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	} else {
 		inspector->edit(NULL);
 	}
@@ -1643,7 +1649,7 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 	msg.push_back("live_node_path");
 	msg.push_back(p_path);
 	msg.push_back(last_path_id);
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 
 	return last_path_id;
 }
@@ -1662,14 +1668,14 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	msg.push_back("live_res_path");
 	msg.push_back(p_path);
 	msg.push_back(last_path_id);
-	ppeer->put_var(msg);
+	_server_put_var(msg);
 
 	return last_path_id;
 }
 
 void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
 
-	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
+	if (!p_base || !live_debug || !_server_has_peer() || !editor->get_edited_scene())
 		return;
 
 	Node *node = Object::cast_to<Node>(p_base);
@@ -1695,7 +1701,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 			//no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 
 		return;
 	}
@@ -1715,7 +1721,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 			//no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 
 		return;
 	}
@@ -1723,7 +1729,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p_property, const Variant &p_value) {
 
-	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
+	if (!p_base || !live_debug || !_server_has_peer() || !editor->get_edited_scene())
 		return;
 
 	Node *node = Object::cast_to<Node>(p_base);
@@ -1742,7 +1748,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				msg.push_back(pathid);
 				msg.push_back(p_property);
 				msg.push_back(res->get_path());
-				ppeer->put_var(msg);
+				_server_put_var(msg);
 			}
 		} else {
 
@@ -1751,7 +1757,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 			msg.push_back(pathid);
 			msg.push_back(p_property);
 			msg.push_back(p_value);
-			ppeer->put_var(msg);
+			_server_put_var(msg);
 		}
 
 		return;
@@ -1773,7 +1779,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				msg.push_back(pathid);
 				msg.push_back(p_property);
 				msg.push_back(res2->get_path());
-				ppeer->put_var(msg);
+				_server_put_var(msg);
 			}
 		} else {
 
@@ -1782,7 +1788,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 			msg.push_back(pathid);
 			msg.push_back(p_property);
 			msg.push_back(p_value);
-			ppeer->put_var(msg);
+			_server_put_var(msg);
 		}
 
 		return;
@@ -1808,7 +1814,7 @@ void ScriptEditorDebugger::set_live_debugging(bool p_enable) {
 
 void ScriptEditorDebugger::_live_edit_set() {
 
-	if (!connection.is_valid())
+	if (!_server_has_peer())
 		return;
 
 	TreeItem *ti = inspect_scene_tree->get_selected();
@@ -1841,7 +1847,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 
 	NodePath np = editor->get_editor_data().get_edited_scene_live_edit_root();
 
-	if (connection.is_valid()) {
+	if (_server_has_peer()) {
 		Array msg;
 		msg.push_back("live_set_root");
 		msg.push_back(np);
@@ -1849,84 +1855,84 @@ void ScriptEditorDebugger::update_live_edit_root() {
 			msg.push_back(editor->get_edited_scene()->get_filename());
 		else
 			msg.push_back("");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 	live_edit_root->set_text(np);
 }
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_create_node");
 		msg.push_back(p_parent);
 		msg.push_back(p_type);
 		msg.push_back(p_name);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_instance_node");
 		msg.push_back(p_parent);
 		msg.push_back(p_path);
 		msg.push_back(p_name);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_remove_node");
 		msg.push_back(p_at);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_remove_and_keep_node");
 		msg.push_back(p_at);
 		msg.push_back(p_keep_id);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_restore_node");
 		msg.push_back(p_id);
 		msg.push_back(p_at);
 		msg.push_back(p_at_pos);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_duplicate_node");
 		msg.push_back(p_at);
 		msg.push_back(p_new_name);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 
-	if (live_debug && connection.is_valid()) {
+	if (live_debug && _server_has_peer()) {
 		Array msg;
 		msg.push_back("live_reparent_node");
 		msg.push_back(p_at);
 		msg.push_back(p_new_place);
 		msg.push_back(p_new_name);
 		msg.push_back(p_at_pos);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 
@@ -1936,34 +1942,31 @@ ScriptEditorDebugger::CameraOverride ScriptEditorDebugger::get_camera_override()
 
 void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 
+	if (!_server_has_peer()) {
+		camera_override = p_override;
+		return;
+	}
+
 	if (p_override == OVERRIDE_2D && camera_override != OVERRIDE_2D) {
-		if (connection.is_valid()) {
-			Array msg;
-			msg.push_back("override_camera_2D:set");
-			msg.push_back(true);
-			ppeer->put_var(msg);
-		}
+		Array msg;
+		msg.push_back("override_camera_2D:set");
+		msg.push_back(true);
+		_server_put_var(msg);
 	} else if (p_override != OVERRIDE_2D && camera_override == OVERRIDE_2D) {
-		if (connection.is_valid()) {
-			Array msg;
-			msg.push_back("override_camera_2D:set");
-			msg.push_back(false);
-			ppeer->put_var(msg);
-		}
+		Array msg;
+		msg.push_back("override_camera_2D:set");
+		msg.push_back(false);
+		_server_put_var(msg);
 	} else if (p_override >= OVERRIDE_3D_1 && camera_override < OVERRIDE_3D_1) {
-		if (connection.is_valid()) {
-			Array msg;
-			msg.push_back("override_camera_3D:set");
-			msg.push_back(true);
-			ppeer->put_var(msg);
-		}
+		Array msg;
+		msg.push_back("override_camera_3D:set");
+		msg.push_back(true);
+		_server_put_var(msg);
 	} else if (p_override < OVERRIDE_3D_1 && camera_override >= OVERRIDE_3D_1) {
-		if (connection.is_valid()) {
-			Array msg;
-			msg.push_back("override_camera_3D:set");
-			msg.push_back(false);
-			ppeer->put_var(msg);
-		}
+		Array msg;
+		msg.push_back("override_camera_3D:set");
+		msg.push_back(false);
+		_server_put_var(msg);
 	}
 
 	camera_override = p_override;
@@ -1971,22 +1974,22 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
 
-	if (connection.is_valid()) {
+	if (_server_has_peer()) {
 		Array msg;
 		msg.push_back("breakpoint");
 		msg.push_back(p_path);
 		msg.push_back(p_line);
 		msg.push_back(p_enabled);
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 
 void ScriptEditorDebugger::reload_scripts() {
 
-	if (connection.is_valid()) {
+	if (_server_has_peer()) {
 		Array msg;
 		msg.push_back("reload_scripts");
-		ppeer->put_var(msg);
+		_server_put_var(msg);
 	}
 }
 
@@ -2064,8 +2067,7 @@ Ref<Script> ScriptEditorDebugger::get_dump_stack_script() const {
 
 void ScriptEditorDebugger::_paused() {
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
+	ERR_FAIL_COND(!_server_has_peer());
 
 	if (!breaked && EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
 		debug_break();
@@ -2246,8 +2248,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
 	add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
-	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
-	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
 	editor = p_editor;
 	editor->get_inspector()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
@@ -2257,6 +2257,9 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
 
+	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	tabs->set_margin(MARGIN_LEFT, -editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+	tabs->set_margin(MARGIN_RIGHT, editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 	add_child(tabs);
 
 	{ //debugger
@@ -2348,8 +2351,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
 		sc->add_child(inspector);
-
-		server.instance();
 
 		pending_in_queue = 0;
 
@@ -2617,8 +2618,64 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 
 	memdelete(variables);
 
-	ppeer->set_stream_peer(Ref<StreamPeer>());
-
-	server->stop();
 	_clear_remote_objects();
+}
+
+/// ScriptEditorDebuggerTCP
+
+Error ScriptEditorDebuggerTCP::start_server(int p_port) {
+	return server->listen(p_port);
+}
+
+void ScriptEditorDebuggerTCP::stop_server() {
+	if (connection.is_valid()) {
+		connection.unref();
+	}
+	server->stop();
+}
+
+void ScriptEditorDebuggerTCP::handle_connections(bool &r_connected, bool &r_disconnected) {
+	r_connected = false;
+	r_disconnected = false;
+
+	// Was connected but got a disconnection.
+	if (connection.is_valid() && !connection->is_connected_to_host()) {
+		connection.unref();
+		r_disconnected = true;
+		return;
+	}
+
+	if (server->is_connection_available()) {
+		if (connection.is_valid()) {
+			// We already have a valid connection. Disconnecting any new connecting client to prevent it from hanging.
+			// (If we don't keep a reference to the connection it will be destroyed and disconnect_from_host will be called internally)
+			server->take_connection();
+		} else {
+			// We just got the first connection.
+			connection = server->take_connection();
+			if (connection.is_null())
+				return;
+
+			packet_peer->set_stream_peer(connection);
+			r_connected = true;
+		}
+	}
+}
+
+bool ScriptEditorDebuggerTCP::has_peer() {
+	return connection.is_valid() && connection->is_connected_to_host();
+}
+
+Ref<PacketPeer> ScriptEditorDebuggerTCP::get_peer() {
+	return packet_peer;
+}
+
+ScriptEditorDebuggerTCP::ScriptEditorDebuggerTCP() :
+		packet_peer(memnew(PacketPeerStream)),
+		server(memnew(TCP_Server)) {
+	packet_peer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
+}
+
+ScriptEditorDebuggerTCP::~ScriptEditorDebuggerTCP() {
+	stop_server();
 }

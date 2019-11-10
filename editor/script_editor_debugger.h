@@ -55,6 +55,17 @@ class EditorNetworkProfiler;
 
 class ScriptEditorDebuggerInspectedObject;
 
+class ScriptEditorDebuggerServer : public Reference {
+
+	friend class ScriptEditorDebugger;
+
+	virtual Error start_server(int p_port) = 0;
+	virtual void stop_server() = 0;
+	virtual void handle_connections(bool &r_connected, bool &r_disconnected) = 0;
+	virtual bool has_peer() = 0;
+	virtual Ref<PacketPeer> get_peer() = 0;
+};
+
 class ScriptEditorDebugger : public MarginContainer {
 
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
@@ -156,10 +167,6 @@ private:
 	Tree *stack_dump;
 	EditorInspector *inspector;
 
-	Ref<TCP_Server> server;
-	Ref<StreamPeerTCP> connection;
-	Ref<PacketPeerStream> ppeer;
-
 	String message_type;
 	Array message;
 	int pending_in_queue;
@@ -178,6 +185,13 @@ private:
 	bool live_debug;
 
 	CameraOverride camera_override;
+
+	Ref<ScriptEditorDebuggerServer> server;
+
+	Error _server_put_var(const Variant &p_variant);
+	Error _server_get_var(Variant &r_variant);
+	bool _server_has_peer();
+	int _server_get_available_packet_count();
 
 	void _performance_draw();
 	void _performance_select();
@@ -236,7 +250,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void start();
+	void start(Ref<ScriptEditorDebuggerServer> p_server);
 	void pause();
 	void unpause();
 	void stop();
@@ -287,6 +301,25 @@ public:
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor = NULL);
 	~ScriptEditorDebugger();
+};
+
+class ScriptEditorDebuggerTCP : public ScriptEditorDebuggerServer {
+
+private:
+	Ref<PacketPeerStream> packet_peer;
+	Ref<StreamPeerTCP> connection;
+	Ref<TCP_Server> server;
+
+protected:
+	virtual Error start_server(int p_port);
+	virtual void stop_server();
+	virtual void handle_connections(bool &r_connected, bool &r_disconnected);
+	virtual bool has_peer();
+	virtual Ref<PacketPeer> get_peer();
+
+public:
+	ScriptEditorDebuggerTCP();
+	~ScriptEditorDebuggerTCP();
 };
 
 #endif // SCRIPT_EDITOR_DEBUGGER_H
