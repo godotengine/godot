@@ -52,6 +52,7 @@ void Reference::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_ref"), &Reference::init_ref);
 	ClassDB::bind_method(D_METHOD("reference"), &Reference::reference);
 	ClassDB::bind_method(D_METHOD("unreference"), &Reference::unreference);
+	ClassDB::bind_method(D_METHOD("reset_ref"), &Reference::reset_ref);
 }
 
 int Reference::reference_get_count() const {
@@ -100,6 +101,12 @@ bool Reference::unreference() {
 	}
 
 	return die;
+}
+
+void Reference::reset_ref() {
+
+    refcount.init();
+    refcount_init.init();
 }
 
 Reference::Reference() {

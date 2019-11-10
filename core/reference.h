@@ -51,6 +51,7 @@ public:
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
+	void reset_ref();
 	int reference_get_count() const;
 
 	Reference();
