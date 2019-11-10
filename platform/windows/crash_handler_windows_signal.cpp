@@ -137,9 +137,9 @@ int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, 
 				free(demangled);
 			}
 		}
-		print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
+		print_error(vformat("\x1b[96m[%d] \x1b[94m%x \x1b[90m(%s+%x) - %s (%s:%d)\x1b[0m", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
 	} else if ((int64_t)ch_data->pc > 0) {
-		print_error(vformat("[%d] %x (%s+%x) - ???", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
+		print_error(vformat("\x1b[96m[%d] \x1b[94m%x \x1b[90m(%s+%x) - ???\x1b[0m", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
 	}
 	return 0;
 }
@@ -168,7 +168,7 @@ void error_callback(void *data, const char *msg, int errnum) {
 				}
 			}
 		}
-		print_error(vformat("[%d] %x (%s+%x) - %s", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(msg)));
+		print_error(vformat("\x1b[96m[%d] \x1b[94m%x \x1b[90m(%s+%x) - %s\x1b[0m", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(msg)));
 	}
 }
 
