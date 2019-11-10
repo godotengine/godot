@@ -31,6 +31,7 @@
 #include "gd_mono_marshal.h"
 
 #include "gd_mono.h"
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 
 namespace GDMonoMarshal {
@@ -556,7 +557,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 
 			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-				if (GDMonoUtils::tools_godot_api_check()) {
+				if (GDMonoCache::tools_godot_api_check()) {
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 				} else {
 					return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
@@ -683,7 +684,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				}
 
 				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
-					if (GDMonoUtils::tools_godot_api_check()) {
+					if (GDMonoCache::tools_godot_api_check()) {
 						return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 					} else {
 						return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
@@ -834,14 +835,14 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 			if (CACHED_CLASS(Array) == type_class) {
 				MonoException *exc = NULL;
-				Array *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Array, GetPtr), p_obj, &exc);
+				Array *ptr = CACHED_METHOD_THUNK(Array, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
 				MonoException *exc = NULL;
-				Dictionary *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Dictionary, GetPtr), p_obj, &exc);
+				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}

@@ -46,6 +46,7 @@
 #include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../utils/path_utils.h"
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
@@ -56,13 +57,26 @@
 
 #ifdef ANDROID_ENABLED
 #include "android_mono_config.h"
+#include "gd_mono_android.h"
 #endif
+
+// TODO:
+// This has turn into a gigantic mess. There's too much going on here. Too much #ifdef as well.
+// It's just painful to read... It needs to be re-structured. Please, clean this up, future me.
 
 GDMono *GDMono::singleton = NULL;
 
 namespace {
 
-void setup_runtime_main_args() {
+#if defined(JAVASCRIPT_ENABLED)
+extern "C" {
+void mono_wasm_load_runtime(const char *managed_path, int enable_debugging);
+}
+#endif
+
+#if !defined(JAVASCRIPT_ENABLED)
+
+void gd_mono_setup_runtime_main_args() {
 	CharString execpath = OS::get_singleton()->get_executable_path().utf8();
 
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
@@ -83,7 +97,7 @@ void setup_runtime_main_args() {
 	mono_runtime_set_main_args(main_args.size(), main_args.ptrw());
 }
 
-void gdmono_profiler_init() {
+void gd_mono_profiler_init() {
 	String profiler_args = GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
 	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
 	if (profiler_enabled) {
@@ -91,9 +105,9 @@ void gdmono_profiler_init() {
 	}
 }
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED)
 
-bool _wait_for_debugger_msecs(uint32_t p_msecs) {
+bool gd_mono_wait_for_debugger_msecs(uint32_t p_msecs) {
 
 	do {
 		if (mono_is_debugger_attached())
@@ -115,7 +129,7 @@ bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 	return mono_is_debugger_attached();
 }
 
-void gdmono_debug_init() {
+void gd_mono_debug_init() {
 
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 
@@ -151,11 +165,37 @@ void gdmono_debug_init() {
 	mono_jit_parse_options(2, (char **)options);
 }
 
+#endif // defined(DEBUG_ENABLED)
+#endif // !defined(JAVASCRIPT_ENABLED)
+
+#if defined(JAVASCRIPT_ENABLED)
+MonoDomain *gd_initialize_mono_runtime() {
+	const char *vfs_prefix = "managed";
+	int enable_debugging = 0;
+
+#ifdef DEBUG_ENABLED
+	enable_debugging = 1;
+#endif
+
+	mono_wasm_load_runtime(vfs_prefix, enable_debugging);
+
+	return mono_get_root_domain();
+}
+#else
+MonoDomain *gd_initialize_mono_runtime() {
+#ifdef DEBUG_ENABLED
+	gd_mono_debug_init();
+#endif
+
+	return mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
+}
 #endif
 
 } // namespace
 
 void GDMono::add_mono_shared_libs_dir_to_path() {
+	// TODO: Replace this with a mono_dl_fallback
+
 	// By default Mono seems to search shared libraries in the following directories:
 	// Current working directory, @executable_path@ and PATH
 	// The parent directory of the image file (assembly where the dllimport method is declared)
@@ -279,11 +319,17 @@ void GDMono::initialize() {
 	config_dir = bundled_config_dir;
 #endif // TOOLS_ENABLED
 
+#if !defined(JAVASCRIPT_ENABLED)
 	// Leak if we call mono_set_dirs more than once
 	mono_set_dirs(assembly_rootdir.length() ? assembly_rootdir.utf8().get_data() : NULL,
 			config_dir.length() ? config_dir.utf8().get_data() : NULL);
 
 	add_mono_shared_libs_dir_to_path();
+#endif
+
+#if defined(ANDROID_ENABLED)
+	GDMonoAndroid::register_android_dl_fallback();
+#endif
 
 	{
 		PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/unhandled_exception_policy", PROPERTY_HINT_ENUM,
@@ -299,10 +345,8 @@ void GDMono::initialize() {
 
 	GDMonoAssembly::initialize();
 
-	gdmono_profiler_init();
-
-#ifdef DEBUG_ENABLED
-	gdmono_debug_init();
+#if !defined(JAVASCRIPT_ENABLED)
+	gd_mono_profiler_init();
 #endif
 
 #ifdef ANDROID_ENABLED
@@ -326,12 +370,14 @@ void GDMono::initialize() {
 	}
 #endif
 
-	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
+	root_domain = gd_initialize_mono_runtime();
 	ERR_FAIL_NULL_MSG(root_domain, "Mono: Failed to initialize runtime.");
 
 	GDMonoUtils::set_main_thread(GDMonoUtils::get_current_thread());
 
-	setup_runtime_main_args(); // Required for System.Environment.GetCommandLineArgs
+#if !defined(JAVASCRIPT_ENABLED)
+	gd_mono_setup_runtime_main_args(); // Required for System.Environment.GetCommandLineArgs
+#endif
 
 	runtime_initialized = true;
 
@@ -344,8 +390,8 @@ void GDMono::initialize() {
 	Error domain_load_err = _load_scripts_domain();
 	ERR_FAIL_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
 
-#ifdef DEBUG_ENABLED
-	bool debugger_attached = _wait_for_debugger_msecs(500);
+#if defined(DEBUG_ENABLED) && !defined(JAVASCRIPT_ENABLED)
+	bool debugger_attached = gd_mono_wait_for_debugger_msecs(500);
 	if (!debugger_attached && OS::get_singleton()->is_stdout_verbose())
 		print_error("Mono: Debugger wait timeout");
 #endif
@@ -381,7 +427,7 @@ void GDMono::initialize_load_assemblies() {
 }
 
 bool GDMono::_are_api_assemblies_out_of_sync() {
-	bool out_of_sync = core_api_assembly.assembly && (core_api_assembly.out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated);
+	bool out_of_sync = core_api_assembly.assembly && (core_api_assembly.out_of_sync || !GDMonoCache::cached_data.godot_api_cache_updated);
 #ifdef TOOLS_ENABLED
 	if (!out_of_sync)
 		out_of_sync = editor_api_assembly.assembly && editor_api_assembly.out_of_sync;
@@ -561,7 +607,7 @@ bool GDMono::_load_corlib_assembly() {
 	bool success = load_assembly("mscorlib", &corlib_assembly);
 
 	if (success)
-		GDMonoUtils::update_corlib_cache();
+		GDMonoCache::update_corlib_cache();
 
 	return success;
 }
@@ -834,9 +880,9 @@ bool GDMono::_try_load_api_assemblies(LoadedApiAssembly &r_core_api_assembly, Lo
 }
 
 bool GDMono::_on_core_api_assembly_loaded() {
-	GDMonoUtils::update_godot_api_cache();
+	GDMonoCache::update_godot_api_cache();
 
-	if (!GDMonoUtils::mono_cache.godot_api_cache_updated)
+	if (!GDMonoCache::cached_data.godot_api_cache_updated)
 		return false;
 
 	get_singleton()->_install_trace_listener();
@@ -884,7 +930,7 @@ void GDMono::_load_api_assemblies() {
 		if (_are_api_assemblies_out_of_sync()) {
 			if (core_api_assembly.out_of_sync) {
 				ERR_PRINT("The assembly '" CORE_API_ASSEMBLY_NAME "' is out of sync.");
-			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
+			} else if (!GDMonoCache::cached_data.godot_api_cache_updated) {
 				ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed.");
 			}
 
@@ -984,7 +1030,7 @@ Error GDMono::_unload_scripts_domain() {
 
 	mono_gc_collect(mono_gc_max_generation());
 
-	GDMonoUtils::clear_godot_api_cache();
+	GDMonoCache::clear_godot_api_cache();
 
 	_domain_assemblies_cleanup(mono_domain_get_id(scripts_domain));
 

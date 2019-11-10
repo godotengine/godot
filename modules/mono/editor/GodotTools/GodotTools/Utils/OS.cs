@@ -1,56 +1,78 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace GodotTools.Utils
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
-        extern static string GetPlatformName();
+        static extern string GetPlatformName();
 
-        const string HaikuName = "Haiku";
-        const string OSXName = "OSX";
-        const string ServerName = "Server";
-        const string UWPName = "UWP";
-        const string WindowsName = "Windows";
-        const string X11Name = "X11";
-
-        public static bool IsHaiku()
+        public static class Names
         {
-            return HaikuName.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
+            public const string Windows = "Windows";
+            public const string OSX = "OSX";
+            public const string X11 = "X11";
+            public const string Server = "Server";
+            public const string UWP = "UWP";
+            public const string Haiku = "Haiku";
+            public const string Android = "Android";
+            public const string HTML5 = "HTML5";
         }
 
-        public static bool IsOSX()
+        public static class Platforms
         {
-            return OSXName.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
+            public const string Windows = "windows";
+            public const string OSX = "osx";
+            public const string X11 = "x11";
+            public const string Server = "server";
+            public const string UWP = "uwp";
+            public const string Haiku = "haiku";
+            public const string Android = "android";
+            public const string HTML5 = "javascript";
         }
 
-        public static bool IsServer()
+        public static readonly Dictionary<string, string> PlatformNameMap = new Dictionary<string, string>
         {
-            return ServerName.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
+            [Names.Windows] = Platforms.Windows,
+            [Names.OSX] = Platforms.OSX,
+            [Names.X11] = Platforms.X11,
+            [Names.Server] = Platforms.Server,
+            [Names.UWP] = Platforms.UWP,
+            [Names.Haiku] = Platforms.Haiku,
+            [Names.Android] = Platforms.Android,
+            [Names.HTML5] = Platforms.HTML5
+        };
+
+        private static bool IsOS(string name)
+        {
+            return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool IsUWP()
-        {
-            return UWPName.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
-        }
+        public static bool IsWindows() => IsOS(Names.Windows);
 
-        public static bool IsWindows()
-        {
-            return WindowsName.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
-        }
+        public static bool IsOSX => IsOS(Names.OSX);
 
-        public static bool IsX11()
-        {
-            return X11Name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
-        }
+        public static bool IsX11 => IsOS(Names.X11);
+
+        public static bool IsServer => IsOS(Names.Server);
+
+        public static bool IsUWP => IsOS(Names.UWP);
+
+        public static bool IsHaiku => IsOS(Names.Haiku);
+
+        public static bool IsAndroid => IsOS(Names.Android);
+
+        public static bool IsHTML5 => IsOS(Names.HTML5);
 
         private static bool? _isUnixCache;
-        private static readonly string[] UnixPlatforms = {HaikuName, OSXName, ServerName, X11Name};
+        private static readonly string[] UnixPlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android};
 
         public static bool IsUnix()
         {

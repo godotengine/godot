@@ -30,7 +30,6 @@
 
 #include "gd_mono_log.h"
 
-#include <mono/utils/mono-logger.h>
 #include <stdlib.h> // abort
 
 #include "core/os/dir_access.h"
@@ -39,7 +38,19 @@
 #include "../godotsharp_dirs.h"
 #include "../utils/string_utils.h"
 
-static int log_level_get_id(const char *p_log_level) {
+static CharString get_default_log_level() {
+#ifdef DEBUG_ENABLED
+	return String("info").utf8();
+#else
+	return String("warning").utf8();
+#endif
+}
+
+GDMonoLog *GDMonoLog::singleton = NULL;
+
+#if !defined(JAVASCRIPT_ENABLED)
+
+static int get_log_level_id(const char *p_log_level) {
 
 	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", NULL };
 
@@ -53,11 +64,11 @@ static int log_level_get_id(const char *p_log_level) {
 	return -1;
 }
 
-static void mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *user_data) {
+void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
 
-	FileAccess *f = GDMonoLog::get_singleton()->get_log_file();
+	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
-	if (GDMonoLog::get_singleton()->get_log_level_id() >= log_level_get_id(log_level)) {
+	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
 		String text(message);
 		text += " (in domain ";
 		text += log_domain;
@@ -72,7 +83,7 @@ static void mono_log_callback(const char *log_domain, const char *log_level, con
 	}
 
 	if (fatal) {
-		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->get_log_file_path() + "'.");
+		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
 		// Make sure to flush before aborting
 		f->flush();
 		f->close();
@@ -81,8 +92,6 @@ static void mono_log_callback(const char *log_domain, const char *log_level, con
 		abort();
 	}
 }
-
-GDMonoLog *GDMonoLog::singleton = NULL;
 
 bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 
@@ -129,17 +138,13 @@ void GDMonoLog::initialize() {
 
 	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
 
-	if (log_level.length() != 0 && log_level_get_id(log_level.get_data()) == -1) {
+	if (log_level.length() != 0 && get_log_level_id(log_level.get_data()) == -1) {
 		ERR_PRINTS(String() + "Mono: Ignoring invalid log level (GODOT_MONO_LOG_LEVEL): '" + log_level.get_data() + "'.");
 		log_level = CharString();
 	}
 
 	if (log_level.length() == 0) {
-#ifdef DEBUG_ENABLED
-		log_level = String("info").utf8();
-#else
-		log_level = String("warning").utf8();
-#endif
+		log_level = get_default_log_level();
 	}
 
 	String logs_dir = GodotSharpDirs::get_mono_logs_dir();
@@ -149,11 +154,14 @@ void GDMonoLog::initialize() {
 
 		OS::Date date_now = OS::get_singleton()->get_date();
 		OS::Time time_now = OS::get_singleton()->get_time();
-		int pid = OS::get_singleton()->get_process_id();
 
-		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d (%d).txt",
+		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d",
 				date_now.year, date_now.month, date_now.day,
-				time_now.hour, time_now.min, time_now.sec, pid);
+				time_now.hour, time_now.min, time_now.sec);
+
+		log_file_name += str_format(" (%d)", OS::get_singleton()->get_process_id());
+
+		log_file_name += ".txt";
 
 		log_file_path = logs_dir.plus_file(log_file_name);
 
@@ -164,7 +172,7 @@ void GDMonoLog::initialize() {
 	}
 
 	mono_trace_set_level_string(log_level.get_data());
-	log_level_id = log_level_get_id(log_level.get_data());
+	log_level_id = get_log_level_id(log_level.get_data());
 
 	if (log_file) {
 		OS::get_singleton()->print("Mono: Logfile is: %s\n", log_file_path.utf8().get_data());
@@ -190,3 +198,22 @@ GDMonoLog::~GDMonoLog() {
 		memdelete(log_file);
 	}
 }
+
+#else
+
+void GDMonoLog::initialize() {
+	CharString log_level = get_default_log_level();
+	mono_trace_set_level_string(log_level.get_data());
+}
+
+GDMonoLog::GDMonoLog() {
+
+	singleton = this;
+}
+
+GDMonoLog::~GDMonoLog() {
+
+	singleton = NULL;
+}
+
+#endif // !defined(JAVASCRIPT_ENABLED)

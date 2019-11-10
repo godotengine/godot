@@ -30,8 +30,10 @@
 
 #include "gd_mono_property.h"
 
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
+#include "gd_mono_utils.h"
 
 #include <mono/metadata/attrdefs.h>
 

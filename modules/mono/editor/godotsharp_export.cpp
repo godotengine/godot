@@ -36,6 +36,7 @@
 
 #include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_assembly.h"
+#include "../mono_gd/gd_mono_cache.h"
 
 namespace GodotSharpExport {
 

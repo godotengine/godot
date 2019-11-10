@@ -31,6 +31,7 @@
 #include "signal_awaiter_utils.h"
 
 #include "csharp_script.h"
+#include "mono_gd/gd_mono_cache.h"
 #include "mono_gd/gd_mono_class.h"
 #include "mono_gd/gd_mono_marshal.h"
 #include "mono_gd/gd_mono_utils.h"
@@ -98,7 +99,7 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 
 	MonoException *exc = NULL;
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	invoke_method_thunk(CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback), get_target(), signal_args, &exc);
+	CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback).invoke(get_target(), signal_args, &exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
@@ -130,7 +131,7 @@ SignalAwaiterHandle::~SignalAwaiterHandle() {
 		if (awaiter) {
 			MonoException *exc = NULL;
 			GD_MONO_BEGIN_RUNTIME_INVOKE;
-			invoke_method_thunk(CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback), awaiter, &exc);
+			CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback).invoke(awaiter, &exc);
 			GD_MONO_END_RUNTIME_INVOKE;
 
 			if (exc) {

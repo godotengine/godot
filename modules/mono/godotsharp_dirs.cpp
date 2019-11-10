@@ -130,7 +130,11 @@ private:
 		res_temp_assemblies_base_dir = res_temp_dir.plus_file("bin");
 		res_temp_assemblies_dir = res_temp_assemblies_base_dir.plus_file(_get_expected_build_config());
 
+#ifdef JAVASCRIPT_ENABLED
+		mono_user_dir = "user://";
+#else
 		mono_user_dir = _get_mono_user_dir();
+#endif
 		mono_logs_dir = mono_user_dir.plus_file("mono_logs");
 
 #ifdef TOOLS_ENABLED

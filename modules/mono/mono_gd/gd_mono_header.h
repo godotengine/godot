@@ -33,6 +33,12 @@
 
 #include "core/int_types.h"
 
+#ifdef WIN32
+#define GD_MONO_STDCALL __stdcall
+#else
+#define GD_MONO_STDCALL
+#endif
+
 class GDMonoAssembly;
 class GDMonoClass;
 class GDMonoField;
