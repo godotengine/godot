@@ -820,7 +820,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHis
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 
 	EditedScene &es = edited_scene.write[current_edited_scene];
-	es.selection = p_selection->get_selected_node_list();
+	es.selection = p_selection->get_full_selected_node_list();
 	es.history_current = p_history->current;
 	es.history_stored = p_history->history;
 	es.editor_states = get_editor_states();
