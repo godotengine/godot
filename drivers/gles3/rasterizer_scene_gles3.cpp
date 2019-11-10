@@ -2550,7 +2550,7 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector3) * 8, vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 8, vertices, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
 	glBindVertexArray(state.sky_array);
@@ -2690,7 +2690,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.scene_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(State::SceneDataUBO), &state.ubo_data);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(State::SceneDataUBO), &state.ubo_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	//fill up environment
@@ -2698,7 +2698,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 	store_transform(sky_orientation * p_cam_transform, state.env_radiance_data.transform);
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.env_radiance_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_data);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -2808,7 +2808,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.directional_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightDataUBO), &ubo_data);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightDataUBO), &ubo_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	directional_light = li;
