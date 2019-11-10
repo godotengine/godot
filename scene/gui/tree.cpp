@@ -4049,6 +4049,7 @@ Tree::Tree() {
 	drop_mode_section = 0;
 	single_select_defer = NULL;
 
+	scrolling = false;
 	allow_rmb_select = false;
 	force_edit_checkbox_only_on_checkbox = false;
 
