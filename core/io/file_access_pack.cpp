@@ -90,7 +90,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 			}
 		}
 		String filename = path.get_file();
-		// Don't add as a file if the path points to a directoryy
+		// Don't add as a file if the path points to a directory
 		if (!filename.empty()) {
 			cd->files.insert(filename);
 		}
@@ -463,10 +463,14 @@ String DirAccessPack::get_current_dir() {
 
 bool DirAccessPack::file_exists(String p_file) {
 
+	p_file = fix_path(p_file);
+
 	return current->files.has(p_file);
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
+
+	p_dir = fix_path(p_dir);
 
 	return current->subdirs.has(p_dir);
 }

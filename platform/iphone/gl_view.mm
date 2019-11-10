@@ -334,7 +334,6 @@ static void clear_touches() {
 	[self destroyFramebuffer];
 	[self createFramebuffer];
 	[self drawView];
-	[self drawView];
 }
 
 - (BOOL)createFramebuffer {
@@ -450,22 +449,22 @@ static void clear_touches() {
 
 // Updates the OpenGL view when the timer fires
 - (void)drawView {
-	if (useCADisplayLink) {
-		// Pause the CADisplayLink to avoid recursion
-		[displayLink setPaused:YES];
-
-		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource)
-			;
-
-		// We are good to go, resume the CADisplayLink
-		[displayLink setPaused:NO];
-	}
 
 	if (!active) {
 		printf("draw view not active!\n");
 		return;
 	};
+	if (useCADisplayLink) {
+		// Pause the CADisplayLink to avoid recursion
+		[displayLink setPaused:YES];
+
+		// Process all input events
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
+			;
+
+		// We are good to go, resume the CADisplayLink
+		[displayLink setPaused:NO];
+	}
 
 	// Make sure that you are drawing to the current context
 	[EAGLContext setCurrentContext:context];

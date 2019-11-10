@@ -28,7 +28,6 @@ def get_opts():
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
         EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86', 'x86_64')),
         BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
-        BoolVariable('android_stl', 'Enable Android STL support (for modules)', True)
     ]
 
 
@@ -213,12 +212,17 @@ def configure(env):
 
     ## Compile flags
 
-    if env['android_stl']:
-        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
-        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
-        env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
+    env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
+    env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
+    env.Append(CXXFLAGS=["-std=gnu++14"])
+
+    # Disable exceptions and rtti on non-tools (template) builds
+    if env['tools']:
+        env.Append(CXXFLAGS=['-frtti'])
     else:
-        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
+        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPFLAGS=['-DNO_SAFE_CAST'])
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):

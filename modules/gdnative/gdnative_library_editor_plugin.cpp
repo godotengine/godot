@@ -387,11 +387,9 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 void GDNativeLibraryEditorPlugin::edit(Object *p_node) {
 
-	if (Object::cast_to<GDNativeLibrary>(p_node)) {
-		library_editor->edit(Object::cast_to<GDNativeLibrary>(p_node));
-		library_editor->show();
-	} else
-		library_editor->hide();
+	Ref<GDNativeLibrary> new_library = Object::cast_to<GDNativeLibrary>(p_node);
+	if (new_library.is_valid())
+		library_editor->edit(new_library);
 }
 
 bool GDNativeLibraryEditorPlugin::handles(Object *p_node) const {

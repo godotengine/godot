@@ -120,7 +120,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &shadow_atlas->depth);
-			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, shadow_atlas->depth);
 			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
 
@@ -1847,14 +1847,14 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 	}
 }
 
-void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform) {
+void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform, bool accum_pass) {
 
 	RasterizerStorageGLES2::Light *light_ptr = light->light_ptr;
 
 	//common parameters
 	float energy = light_ptr->param[VS::LIGHT_PARAM_ENERGY];
 	float specular = light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-	float sign = light_ptr->negative ? -1 : 1;
+	float sign = (light_ptr->negative && !accum_pass) ? -1 : 1; //inverse color for base pass lights only
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPECULAR, specular);
 	Color color = light_ptr->color * sign * energy * Math_PI;
@@ -2258,6 +2258,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (accum_pass) { //accum pass force pass
 				blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_ADD;
+				if (rebind_light && light && light->light_ptr->negative) {
+					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_SUB;
+				}
 			}
 
 			if (prev_blend_mode != blend_mode) {
@@ -2484,7 +2489,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		}
 
 		if (rebind_light && light) {
-			_setup_light(light, shadow_atlas, p_view_transform);
+			_setup_light(light, shadow_atlas, p_view_transform, accum_pass);
 		}
 
 		if (rebind_reflection && (refprobe_1 || refprobe_2)) {
@@ -3093,6 +3098,10 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	glEnable(GL_SCISSOR_TEST);
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	if (storage->config.use_rgba_3d_shadows) {
+		glClearColor(1.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 	glDisable(GL_SCISSOR_TEST);
 
 	if (light->reverse_cull) {

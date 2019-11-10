@@ -5789,6 +5789,13 @@ EditorNode::EditorNode() {
 	bottom_panel_hb_editors = memnew(HBoxContainer);
 	bottom_panel_hb_editors->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bottom_panel_hb->add_child(bottom_panel_hb_editors);
+
+	version_label = memnew(Label);
+	version_label->set_text(VERSION_FULL_CONFIG);
+	// Fade out the version label to be less prominent, but still readable
+	version_label->set_self_modulate(Color(1, 1, 1, 0.6));
+	bottom_panel_hb->add_child(version_label);
+
 	bottom_panel_raise = memnew(ToolButton);
 	bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
 

@@ -205,9 +205,9 @@ void WindowDialog::_notification(int p_what) {
 			Color title_color = get_color("title_color", "WindowDialog");
 			int title_height = get_constant("title_height", "WindowDialog");
 			int font_height = title_font->get_height() - title_font->get_descent() * 2;
-			int x = (size.x - title_font->get_string_size(title).x) / 2;
+			int x = (size.x - title_font->get_string_size(xl_title).x) / 2;
 			int y = (-title_height + font_height) / 2;
-			title_font->draw(canvas, Point2(x, y), title, title_color, size.x - panel->get_minimum_size().x);
+			title_font->draw(canvas, Point2(x, y), xl_title, title_color, size.x - panel->get_minimum_size().x);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
@@ -219,6 +219,15 @@ void WindowDialog::_notification(int p_what) {
 			close_button->set_begin(Point2(-get_constant("close_h_ofs", "WindowDialog"), -get_constant("close_v_ofs", "WindowDialog")));
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			String new_title = tr(title);
+			if (new_title != xl_title) {
+				xl_title = new_title;
+				minimum_size_changed();
+				update();
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			// Reset the mouse cursor when leaving the resizable window border.
 			if (resizable && !drag_type) {
@@ -226,11 +235,13 @@ void WindowDialog::_notification(int p_what) {
 					set_default_cursor_shape(CURSOR_ARROW);
 			}
 		} break;
+
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_POST_POPUP: {
 			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
 				EditorNode::get_singleton()->dim_editor(true);
 		} break;
+
 		case NOTIFICATION_POPUP_HIDE: {
 			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
 				EditorNode::get_singleton()->dim_editor(false);
@@ -272,8 +283,12 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 void WindowDialog::set_title(const String &p_title) {
 
-	title = tr(p_title);
-	update();
+	if (title != p_title) {
+		title = p_title;
+		xl_title = tr(p_title);
+		minimum_size_changed();
+		update();
+	}
 }
 String WindowDialog::get_title() const {
 
@@ -292,12 +307,12 @@ Size2 WindowDialog::get_minimum_size() const {
 	Ref<Font> font = get_font("title_font", "WindowDialog");
 
 	const int button_width = close_button->get_combined_minimum_size().x;
-	const int title_width = font->get_string_size(title).x;
+	const int title_width = font->get_string_size(xl_title).x;
 	const int padding = button_width / 2;
 	const int button_area = button_width + padding;
 
-	// as the title gets centered, title_width + close_button_width is not enough.
-	// we want a width w, such that w / 2 - title_width / 2 >= button_area, i.e.
+	// As the title gets centered, title_width + close_button_width is not enough.
+	// We want a width w, such that w / 2 - title_width / 2 >= button_area, i.e.
 	// w >= 2 * button_area + title_width
 
 	return Size2(2 * button_area + title_width, 1);
@@ -324,7 +339,6 @@ void WindowDialog::_bind_methods() {
 
 WindowDialog::WindowDialog() {
 
-	//title="Hello!";
 	drag_type = DRAG_NONE;
 	resizable = false;
 	close_button = memnew(TextureButton);
@@ -340,7 +354,6 @@ WindowDialog::~WindowDialog() {
 void PopupDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		RID ci = get_canvas_item();
 		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
 	}
@@ -362,15 +375,15 @@ void AcceptDialog::_post_popup() {
 
 void AcceptDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_MODAL_CLOSE) {
+	switch (p_what) {
+		case NOTIFICATION_MODAL_CLOSE: {
+			cancel_pressed();
+		} break;
 
-		cancel_pressed();
-	} else if (p_what == NOTIFICATION_READY) {
-
-		_update_child_rects();
-	} else if (p_what == NOTIFICATION_RESIZED) {
-
-		_update_child_rects();
+		case NOTIFICATION_READY:
+		case NOTIFICATION_RESIZED: {
+			_update_child_rects();
+		} break;
 	}
 }
 

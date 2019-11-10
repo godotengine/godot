@@ -627,6 +627,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			singletons[i].onMainDestroy();
 		}
 		super.onDestroy();
+
+		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
+		// native Godot components that is started in Godot#onVideoInit.
+		forceQuit();
 	}
 
 	@Override

@@ -268,7 +268,10 @@ Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, cons
 
 		ERR_FAIL_COND_V(p_to == p_from, FAILED);
 
-		return get_peer(p_to)->put_packet(p_buffer, p_buffer_size); // Sending to specific peer
+		Ref<WebSocketPeer> peer_to = get_peer(p_to);
+		ERR_FAIL_COND_V(peer_to.is_null(), FAILED);
+
+		return peer_to->put_packet(p_buffer, p_buffer_size); // Sending to specific peer
 	}
 }
 
@@ -299,8 +302,6 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		ERR_FAIL_COND(type != SYS_NONE); // Only server sends sys messages
 		ERR_FAIL_COND(from != p_peer_id); // Someone is cheating
 
-		_server_relay(from, to, in_buffer, size); // Relay if needed
-
 		if (to == 1) { // This is for the server
 
 			_store_pkt(from, to, in_buffer, data_size);
@@ -315,13 +316,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 			// All but one, for us if not excluded
 			if (_peer_id != -(int32_t)p_peer_id)
 				_store_pkt(from, to, in_buffer, data_size);
-
-		} else {
-
-			// Send to specific peer
-			ERR_FAIL_COND(!_peer_map.has(to));
-			get_peer(to)->put_packet(in_buffer, size);
 		}
+		// Relay if needed (i.e. "to" includes a peer that is not the server)
+		_server_relay(from, to, in_buffer, size);
 
 	} else {
 

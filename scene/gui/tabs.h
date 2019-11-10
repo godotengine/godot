@@ -58,6 +58,7 @@ private:
 	struct Tab {
 
 		String text;
+		String xl_text;
 		Ref<Texture> icon;
 		int ofs_cache;
 		bool disabled;

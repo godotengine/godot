@@ -1539,7 +1539,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 			} break;
 
@@ -5333,7 +5333,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_depth_cubemaps = true;
 #else
 	config.use_rgba_2d_shadows = !(config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg"));
-	config.support_depth_texture = config.extensions.has("GL_OES_depth_texture");
+	config.support_depth_texture = config.extensions.has("GL_OES_depth_texture") || config.extensions.has("WEBGL_depth_texture");
 	config.use_rgba_3d_shadows = !config.support_depth_texture;
 	config.support_depth_cubemaps = config.extensions.has("GL_OES_depth_texture_cube_map");
 #endif
