@@ -175,6 +175,29 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 
+	HANDLE stdoutHandle;
+	DWORD outModeInit;
+	DWORD outMode = 0;
+
+	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	if (stdoutHandle == INVALID_HANDLE_VALUE) {
+		exit(GetLastError());
+	}
+
+	if (!GetConsoleMode(stdoutHandle, &outMode)) {
+		exit(GetLastError());
+	}
+
+	outModeInit = outMode;
+
+	// Enable ANSI escape codes
+	outMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	if (!SetConsoleMode(stdoutHandle, outMode)) {
+		exit(GetLastError());
+	}
+
 	int n = 0;
 	do {
 		if (skip_first) {
@@ -184,11 +207,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line))
-					fprintf(stderr, "[%d] %s (%s:%d)\n", n, fnName.c_str(), line.FileName, line.LineNumber);
+					fprintf(stderr, "\x1b[94m[%d] \x1b[96m%s \x1b[90m(%s:%d)\x1b[0m\n", n, fnName.c_str(), line.FileName, line.LineNumber);
 				else
-					fprintf(stderr, "[%d] %s\n", n, fnName.c_str());
+					fprintf(stderr, "\x1b[94m[%d] \x1b[96m%s\x1b[0m\n", n, fnName.c_str());
 			} else
-				fprintf(stderr, "[%d] ???\n", n);
+				fprintf(stderr, "\x1b[94m[%d] \x1b[96m???\x1b[0m\n", n);
 
 			n++;
 		}

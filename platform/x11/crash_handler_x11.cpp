@@ -44,6 +44,7 @@
 #include <execinfo.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static void handle_crash(int sig) {
 	if (OS::get_singleton() == NULL) {
@@ -107,7 +108,13 @@ static void handle_crash(int sig) {
 				output.erase(output.length() - 1, 1);
 			}
 
-			fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());
+			if (isatty(fileno(stdout))) {
+				// Print colors using ANSI escape codes for easier visual grepping
+				fprintf(stderr, "\e[94m[%ld] \e[96m%s \e[90m(%ls)\e[0m\n", i, fname, output.c_str());
+			} else {
+				// Not a TTY (could be writing to a file), don't use ANSI escape codes
+				fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());
+			}
 		}
 
 		free(strings);
