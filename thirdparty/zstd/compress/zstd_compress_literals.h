@@ -23,7 +23,7 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
                               ZSTD_strategy strategy, int disableLiteralCompression,
                               void* dst, size_t dstCapacity,
                         const void* src, size_t srcSize,
-                              void* workspace, size_t wkspSize,
+                              void* entropyWorkspace, size_t entropyWorkspaceSize,
                         const int bmi2);
 
 #endif /* ZSTD_COMPRESS_LITERALS_H */

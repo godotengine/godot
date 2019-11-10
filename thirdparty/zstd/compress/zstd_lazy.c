@@ -810,7 +810,7 @@ ZSTD_compressBlock_lazy_generic(
         /* store sequence */
 _storeSequence:
         {   size_t const litLength = start - anchor;
-            ZSTD_storeSeq(seqStore, litLength, anchor, (U32)offset, matchLength-MINMATCH);
+            ZSTD_storeSeq(seqStore, litLength, anchor, iend, (U32)offset, matchLength-MINMATCH);
             anchor = ip = start + matchLength;
         }
 
@@ -828,7 +828,7 @@ _storeSequence:
                     const BYTE* const repEnd2 = repIndex < prefixLowestIndex ? dictEnd : iend;
                     matchLength = ZSTD_count_2segments(ip+4, repMatch+4, iend, repEnd2, prefixLowest) + 4;
                     offset = offset_2; offset_2 = offset_1; offset_1 = (U32)offset;   /* swap offset_2 <=> offset_1 */
-                    ZSTD_storeSeq(seqStore, 0, anchor, 0, matchLength-MINMATCH);
+                    ZSTD_storeSeq(seqStore, 0, anchor, iend, 0, matchLength-MINMATCH);
                     ip += matchLength;
                     anchor = ip;
                     continue;
@@ -843,7 +843,7 @@ _storeSequence:
                 /* store sequence */
                 matchLength = ZSTD_count(ip+4, ip+4-offset_2, iend) + 4;
                 offset = offset_2; offset_2 = offset_1; offset_1 = (U32)offset; /* swap repcodes */
-                ZSTD_storeSeq(seqStore, 0, anchor, 0, matchLength-MINMATCH);
+                ZSTD_storeSeq(seqStore, 0, anchor, iend, 0, matchLength-MINMATCH);
                 ip += matchLength;
                 anchor = ip;
                 continue;   /* faster when present ... (?) */
@@ -1051,7 +1051,7 @@ size_t ZSTD_compressBlock_lazy_extDict_generic(
         /* store sequence */
 _storeSequence:
         {   size_t const litLength = start - anchor;
-            ZSTD_storeSeq(seqStore, litLength, anchor, (U32)offset, matchLength-MINMATCH);
+            ZSTD_storeSeq(seqStore, litLength, anchor, iend, (U32)offset, matchLength-MINMATCH);
             anchor = ip = start + matchLength;
         }
 
@@ -1066,7 +1066,7 @@ _storeSequence:
                 const BYTE* const repEnd = repIndex < dictLimit ? dictEnd : iend;
                 matchLength = ZSTD_count_2segments(ip+4, repMatch+4, iend, repEnd, prefixStart) + 4;
                 offset = offset_2; offset_2 = offset_1; offset_1 = (U32)offset;   /* swap offset history */
-                ZSTD_storeSeq(seqStore, 0, anchor, 0, matchLength-MINMATCH);
+                ZSTD_storeSeq(seqStore, 0, anchor, iend, 0, matchLength-MINMATCH);
                 ip += matchLength;
                 anchor = ip;
                 continue;   /* faster when present ... (?) */
