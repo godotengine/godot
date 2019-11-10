@@ -2901,7 +2901,10 @@ FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<c
 }
 
 KeyTimeList FBXConverter::GetKeyTimeList(const KeyFrameListList &inputs) {
-	ai_assert(!inputs.empty());
+
+	if (inputs.empty()) {
+		return std::vector<int64_t>();
+	}
 
 	// reserve some space upfront - it is likely that the key-frame lists
 	// have matching time values, so max(of all key-frame lists) should
