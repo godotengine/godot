@@ -39,8 +39,24 @@
 
 class SceneTree;
 
+class ScriptDebuggerConnection : public Reference {
+	friend class ScriptDebuggerRemote;
+
+	virtual void poll() = 0;
+	virtual Ref<PacketPeer> get_peer() = 0;
+	virtual Error connect_to_host(const String &p_host, uint16_t p_port) = 0;
+	virtual bool is_connected_to_host() = 0;
+
+protected:
+	static ScriptDebuggerConnection *(*_create)();
+
+public:
+	static ScriptDebuggerConnection *create();
+};
+
 class ScriptDebuggerRemote : public ScriptDebugger {
 
+private:
 	struct Message {
 
 		String message;
@@ -66,9 +82,6 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	int max_frame_functions;
 	bool skip_profile_frame;
 	bool reload_all_scripts;
-
-	Ref<StreamPeerTCP> tcp_client;
-	Ref<PacketPeerStream> packet_peer_stream;
 
 	uint64_t last_perf_time;
 	uint64_t last_net_prof_time;
@@ -116,6 +129,12 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _get_output();
 	void _poll_events();
+	Error _connection_put_var(const Variant &p_variant);
+	Error _connection_get_var(Variant &r_variant);
+	bool _connection_is_connected();
+	bool _connection_has_packet();
+	int _connection_get_max_packet_size();
+	void _connection_poll();
 	uint32_t poll_every;
 
 	SceneTree *scene_tree;
@@ -149,6 +168,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	void _save_node(ObjectID id, const String &p_path);
 
 	bool skip_breakpoints;
+
+	Ref<ScriptDebuggerConnection> connection;
 
 public:
 	struct ResourceUsage {
@@ -189,8 +210,22 @@ public:
 
 	void set_scene_tree(SceneTree *p_scene_tree) { scene_tree = p_scene_tree; };
 
-	ScriptDebuggerRemote();
+	ScriptDebuggerRemote(Ref<ScriptDebuggerConnection> p_connection);
 	~ScriptDebuggerRemote();
+};
+
+class ScriptDebuggerTCP : public ScriptDebuggerConnection {
+
+	Ref<StreamPeerTCP> tcp_client;
+	Ref<PacketPeerStream> packet_peer_stream;
+
+	virtual void poll();
+	virtual Ref<PacketPeer> get_peer();
+
+public:
+	virtual Error connect_to_host(const String &p_host, uint16_t p_port);
+	virtual bool is_connected_to_host();
+	ScriptDebuggerTCP();
 };
 
 #endif // SCRIPT_DEBUGGER_REMOTE_H

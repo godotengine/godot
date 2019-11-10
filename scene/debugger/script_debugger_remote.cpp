@@ -42,6 +42,51 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/visual_server.h"
 
+ScriptDebuggerConnection *(*ScriptDebuggerConnection::_create)() = NULL;
+
+ScriptDebuggerConnection *ScriptDebuggerConnection::create() {
+	return _create ? _create() : memnew(ScriptDebuggerTCP);
+}
+
+Error ScriptDebuggerRemote::_connection_put_var(const Variant &p_variant) {
+	ERR_FAIL_COND_V(connection.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(connection->get_peer().is_null(), ERR_UNAVAILABLE);
+	return connection->get_peer()->put_var(p_variant);
+}
+
+Error ScriptDebuggerRemote::_connection_get_var(Variant &r_variant) {
+	ERR_FAIL_COND_V(connection.is_null(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(connection->get_peer().is_null(), ERR_UNAVAILABLE);
+	return connection->get_peer()->get_var(r_variant);
+}
+
+bool ScriptDebuggerRemote::_connection_is_connected() {
+	ERR_FAIL_COND_V(connection.is_null(), false);
+	return connection->is_connected_to_host();
+}
+
+bool ScriptDebuggerRemote::_connection_has_packet() {
+	ERR_FAIL_COND_V(connection.is_null(), false);
+	ERR_FAIL_COND_V(connection->get_peer().is_null(), false);
+	return connection->get_peer()->get_available_packet_count() > 0;
+}
+
+int ScriptDebuggerRemote::_connection_get_max_packet_size() {
+	ERR_FAIL_COND_V(connection.is_null(), 0);
+	ERR_FAIL_COND_V(connection->get_peer().is_null(), 0);
+	return connection->get_peer()->get_max_packet_size();
+}
+
+void ScriptDebuggerRemote::_connection_poll() {
+	ERR_FAIL_COND(connection.is_null());
+	connection->poll();
+}
+
+Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_port) {
+	ERR_FAIL_COND_V(connection.is_null(), ERR_UNAVAILABLE);
+	return connection->connect_to_host(p_host, p_port);
+}
+
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -50,60 +95,21 @@ void ScriptDebuggerRemote::_send_video_memory() {
 
 	usage.sort();
 
-	packet_peer_stream->put_var("message:video_mem");
-	packet_peer_stream->put_var(usage.size() * 4);
+	_connection_put_var("message:video_mem");
+	_connection_put_var(usage.size() * 4);
 
 	for (List<ResourceUsage>::Element *E = usage.front(); E; E = E->next()) {
 
-		packet_peer_stream->put_var(E->get().path);
-		packet_peer_stream->put_var(E->get().type);
-		packet_peer_stream->put_var(E->get().format);
-		packet_peer_stream->put_var(E->get().vram);
+		_connection_put_var(E->get().path);
+		_connection_put_var(E->get().type);
+		_connection_put_var(E->get().format);
+		_connection_put_var(E->get().vram);
 	}
-}
-
-Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_port) {
-
-	IP_Address ip;
-	if (p_host.is_valid_ip_address())
-		ip = p_host;
-	else
-		ip = IP::get_singleton()->resolve_hostname(p_host);
-
-	int port = p_port;
-
-	const int tries = 6;
-	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
-
-	tcp_client->connect_to_host(ip, port);
-
-	for (int i = 0; i < tries; i++) {
-
-		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
-			print_verbose("Remote Debugger: Connected!");
-			break;
-		} else {
-
-			const int ms = waits[i];
-			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
-		};
-	};
-
-	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-
-		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
-		return FAILED;
-	};
-
-	packet_peer_stream->set_stream_peer(tcp_client);
-
-	return OK;
 }
 
 void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
 
-	packet_peer_stream->put_var(p_name);
+	_connection_put_var(p_name);
 
 	Variant var = p_variable;
 	if (p_variable.get_type() == Variant::OBJECT && !ObjectDB::instance_validate(p_variable)) {
@@ -115,10 +121,10 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant.");
 
-	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
-		packet_peer_stream->put_var(Variant());
+	if (len > _connection_get_max_packet_size()) { //limit to max size
+		_connection_put_var(Variant());
 	} else {
-		packet_peer_stream->put_var(var);
+		_connection_put_var(var);
 	}
 }
 
@@ -140,12 +146,12 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 	if (skip_breakpoints && !p_is_error_breakpoint)
 		return;
 
-	ERR_FAIL_COND_MSG(!tcp_client->is_connected_to_host(), "Script Debugger failed to connect, but being used anyway.");
+	ERR_FAIL_COND_MSG(!_connection_is_connected(), "Script Debugger failed to connect, but being used anyway.");
 
-	packet_peer_stream->put_var("debug_enter");
-	packet_peer_stream->put_var(2);
-	packet_peer_stream->put_var(p_can_continue);
-	packet_peer_stream->put_var(p_script->debug_get_error());
+	_connection_put_var("debug_enter");
+	_connection_put_var(2);
+	_connection_put_var(p_can_continue);
+	_connection_put_var(p_script->debug_get_error());
 
 	skip_profile_frame = true; // to avoid super long frame time for the frame
 
@@ -156,14 +162,17 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
 	while (true) {
+		_connection_poll();
+		if (!_connection_is_connected())
+			break;
 		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
 
 		_get_output();
 
-		if (packet_peer_stream->get_available_packet_count() > 0) {
+		if (_connection_has_packet() > 0) {
 
 			Variant var;
-			Error err = packet_peer_stream->get_var(var);
+			Error err = _connection_get_var(var);
 
 			ERR_CONTINUE(err != OK);
 			ERR_CONTINUE(var.get_type() != Variant::ARRAY);
@@ -177,9 +186,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 
 			if (command == "get_stack_dump") {
 
-				packet_peer_stream->put_var("stack_dump");
+				_connection_put_var("stack_dump");
 				int slc = p_script->debug_get_stack_level_count();
-				packet_peer_stream->put_var(slc);
+				_connection_put_var(slc);
 
 				for (int i = 0; i < slc; i++) {
 
@@ -190,7 +199,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 					//d["id"]=p_script->debug_get_stack_level_
 					d["id"] = 0;
 
-					packet_peer_stream->put_var(d);
+					_connection_put_var(d);
 				}
 
 			} else if (command == "get_stack_frame_vars") {
@@ -218,11 +227,11 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				p_script->debug_get_globals(&globals, &globals_vals);
 				ERR_CONTINUE(globals.size() != globals_vals.size());
 
-				packet_peer_stream->put_var("stack_frame_vars");
-				packet_peer_stream->put_var(3 + (locals.size() + members.size() + globals.size()) * 2);
+				_connection_put_var("stack_frame_vars");
+				_connection_put_var(3 + (locals.size() + members.size() + globals.size()) * 2);
 
 				{ //locals
-					packet_peer_stream->put_var(locals.size());
+					_connection_put_var(locals.size());
 
 					List<String>::Element *E = locals.front();
 					List<Variant>::Element *F = local_vals.front();
@@ -236,7 +245,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				}
 
 				{ //members
-					packet_peer_stream->put_var(members.size());
+					_connection_put_var(members.size());
 
 					List<String>::Element *E = members.front();
 					List<Variant>::Element *F = member_vals.front();
@@ -251,7 +260,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				}
 
 				{ //globals
-					packet_peer_stream->put_var(globals.size());
+					_connection_put_var(globals.size());
 
 					List<String>::Element *E = globals.front();
 					List<Variant>::Element *F = globals_vals.front();
@@ -365,8 +374,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 		}
 	}
 
-	packet_peer_stream->put_var("debug_exit");
-	packet_peer_stream->put_var(0);
+	_connection_put_var("debug_exit");
+	_connection_put_var(0);
 
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
 		Input::get_singleton()->set_mouse_mode(mouse_mode);
@@ -378,12 +387,12 @@ void ScriptDebuggerRemote::_get_output() {
 	if (output_strings.size()) {
 
 		locking = true;
-		packet_peer_stream->put_var("output");
-		packet_peer_stream->put_var(output_strings.size());
+		_connection_put_var("output");
+		_connection_put_var(output_strings.size());
 
 		while (output_strings.size()) {
 
-			packet_peer_stream->put_var(output_strings.front()->get());
+			_connection_put_var(output_strings.front()->get());
 			output_strings.pop_front();
 		}
 		locking = false;
@@ -398,10 +407,10 @@ void ScriptDebuggerRemote::_get_output() {
 
 	while (messages.size()) {
 		locking = true;
-		packet_peer_stream->put_var("message:" + messages.front()->get().message);
-		packet_peer_stream->put_var(messages.front()->get().data.size());
+		_connection_put_var("message:" + messages.front()->get().message);
+		_connection_put_var(messages.front()->get().data.size());
 		for (int i = 0; i < messages.front()->get().data.size(); i++) {
-			packet_peer_stream->put_var(messages.front()->get().data[i]);
+			_connection_put_var(messages.front()->get().data[i]);
 		}
 		messages.pop_front();
 		locking = false;
@@ -437,10 +446,10 @@ void ScriptDebuggerRemote::_get_output() {
 
 	while (errors.size()) {
 		locking = true;
-		packet_peer_stream->put_var("error");
+		_connection_put_var("error");
 		OutputError oe = errors.front()->get();
 
-		packet_peer_stream->put_var(oe.callstack.size() + 2);
+		_connection_put_var(oe.callstack.size() + 2);
 
 		Array error_data;
 
@@ -454,10 +463,10 @@ void ScriptDebuggerRemote::_get_output() {
 		error_data.push_back(oe.error);
 		error_data.push_back(oe.error_descr);
 		error_data.push_back(oe.warning);
-		packet_peer_stream->put_var(error_data);
-		packet_peer_stream->put_var(oe.callstack.size());
+		_connection_put_var(error_data);
+		_connection_put_var(oe.callstack.size());
 		for (int i = 0; i < oe.callstack.size(); i++) {
-			packet_peer_stream->put_var(oe.callstack[i]);
+			_connection_put_var(oe.callstack[i]);
 		}
 
 		errors.pop_front();
@@ -694,7 +703,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 		//only send information that can be sent..
 		int len = 0; //test how big is this to encode
 		encode_variant(var, NULL, len);
-		if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+		if (len > _connection_get_max_packet_size()) { //limit to max size
 			prop.push_back(PROPERTY_HINT_OBJECT_TOO_BIG);
 			prop.push_back("");
 			prop.push_back(pi.usage);
@@ -713,11 +722,11 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 		send_props.push_back(prop);
 	}
 
-	packet_peer_stream->put_var("message:inspect_object");
-	packet_peer_stream->put_var(3);
-	packet_peer_stream->put_var(p_id);
-	packet_peer_stream->put_var(obj->get_class());
-	packet_peer_stream->put_var(send_props);
+	_connection_put_var("message:inspect_object");
+	_connection_put_var(3);
+	_connection_put_var(p_id);
+	_connection_put_var(obj->get_class());
+	_connection_put_var(send_props);
 }
 
 void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
@@ -739,15 +748,19 @@ void ScriptDebuggerRemote::_poll_events() {
 
 	//this si called from ::idle_poll, happens only when running the game,
 	//does not get called while on debug break
+	_connection_poll();
 
-	while (packet_peer_stream->get_available_packet_count() > 0) {
+	if (!_connection_is_connected())
+		return;
+
+	while (_connection_has_packet() > 0) {
 
 		_get_output();
 
 		//send over output_strings
 
 		Variant var;
-		Error err = packet_peer_stream->get_var(var);
+		Error err = _connection_get_var(var);
 
 		ERR_CONTINUE(err != OK);
 		ERR_CONTINUE(var.get_type() != Variant::ARRAY);
@@ -892,10 +905,10 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 		if (!profiler_function_signature_map.has(profile_info_ptrs[i]->signature)) {
 
 			int idx = profiler_function_signature_map.size();
-			packet_peer_stream->put_var("profile_sig");
-			packet_peer_stream->put_var(2);
-			packet_peer_stream->put_var(profile_info_ptrs[i]->signature);
-			packet_peer_stream->put_var(idx);
+			_connection_put_var("profile_sig");
+			_connection_put_var(2);
+			_connection_put_var(profile_info_ptrs[i]->signature);
+			_connection_put_var(idx);
 
 			profiler_function_signature_map[profile_info_ptrs[i]->signature] = idx;
 		}
@@ -906,33 +919,33 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	//send frames then
 
 	if (p_for_frame) {
-		packet_peer_stream->put_var("profile_frame");
-		packet_peer_stream->put_var(8 + profile_frame_data.size() * 2 + to_send * 4);
+		_connection_put_var("profile_frame");
+		_connection_put_var(8 + profile_frame_data.size() * 2 + to_send * 4);
 	} else {
-		packet_peer_stream->put_var("profile_total");
-		packet_peer_stream->put_var(8 + to_send * 4);
+		_connection_put_var("profile_total");
+		_connection_put_var(8 + to_send * 4);
 	}
 
-	packet_peer_stream->put_var(Engine::get_singleton()->get_frames_drawn()); //total frame time
-	packet_peer_stream->put_var(frame_time); //total frame time
-	packet_peer_stream->put_var(idle_time); //idle frame time
-	packet_peer_stream->put_var(physics_time); //fixed frame time
-	packet_peer_stream->put_var(physics_frame_time); //fixed frame time
+	_connection_put_var(Engine::get_singleton()->get_frames_drawn()); //total frame time
+	_connection_put_var(frame_time); //total frame time
+	_connection_put_var(idle_time); //idle frame time
+	_connection_put_var(physics_time); //fixed frame time
+	_connection_put_var(physics_frame_time); //fixed frame time
 
-	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); //total script execution time
+	_connection_put_var(USEC_TO_SEC(total_script_time)); //total script execution time
 
 	if (p_for_frame) {
 
-		packet_peer_stream->put_var(profile_frame_data.size()); //how many profile framedatas to send
-		packet_peer_stream->put_var(to_send); //how many script functions to send
+		_connection_put_var(profile_frame_data.size()); //how many profile framedatas to send
+		_connection_put_var(to_send); //how many script functions to send
 		for (int i = 0; i < profile_frame_data.size(); i++) {
 
-			packet_peer_stream->put_var(profile_frame_data[i].name);
-			packet_peer_stream->put_var(profile_frame_data[i].data);
+			_connection_put_var(profile_frame_data[i].name);
+			_connection_put_var(profile_frame_data[i].data);
 		}
 	} else {
-		packet_peer_stream->put_var(0); //how many script functions to send
-		packet_peer_stream->put_var(to_send); //how many script functions to send
+		_connection_put_var(0); //how many script functions to send
+		_connection_put_var(to_send); //how many script functions to send
 	}
 
 	for (int i = 0; i < to_send; i++) {
@@ -943,10 +956,10 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 			sig_id = profiler_function_signature_map[profile_info_ptrs[i]->signature];
 		}
 
-		packet_peer_stream->put_var(sig_id);
-		packet_peer_stream->put_var(profile_info_ptrs[i]->call_count);
-		packet_peer_stream->put_var(profile_info_ptrs[i]->total_time / 1000000.0);
-		packet_peer_stream->put_var(profile_info_ptrs[i]->self_time / 1000000.0);
+		_connection_put_var(sig_id);
+		_connection_put_var(profile_info_ptrs[i]->call_count);
+		_connection_put_var(profile_info_ptrs[i]->total_time / 1000000.0);
+		_connection_put_var(profile_info_ptrs[i]->self_time / 1000000.0);
 	}
 
 	if (p_for_frame) {
@@ -963,8 +976,8 @@ void ScriptDebuggerRemote::idle_poll() {
 
 	if (requested_quit) {
 
-		packet_peer_stream->put_var("kill_me");
-		packet_peer_stream->put_var(0);
+		_connection_put_var("kill_me");
+		_connection_put_var(0);
 		requested_quit = false;
 	}
 
@@ -980,9 +993,9 @@ void ScriptDebuggerRemote::idle_poll() {
 			for (int i = 0; i < max; i++) {
 				arr[i] = performance->call("get_monitor", i);
 			}
-			packet_peer_stream->put_var("performance");
-			packet_peer_stream->put_var(1);
-			packet_peer_stream->put_var(arr);
+			_connection_put_var("performance");
+			_connection_put_var(1);
+			_connection_put_var(arr);
 		}
 	}
 
@@ -1024,15 +1037,15 @@ void ScriptDebuggerRemote::_send_network_profiling_data() {
 
 	int n_nodes = multiplayer->get_profiling_frame(&network_profile_info.write[0]);
 
-	packet_peer_stream->put_var("network_profile");
-	packet_peer_stream->put_var(n_nodes * 6);
+	_connection_put_var("network_profile");
+	_connection_put_var(n_nodes * 6);
 	for (int i = 0; i < n_nodes; ++i) {
-		packet_peer_stream->put_var(network_profile_info[i].node);
-		packet_peer_stream->put_var(network_profile_info[i].node_path);
-		packet_peer_stream->put_var(network_profile_info[i].incoming_rpc);
-		packet_peer_stream->put_var(network_profile_info[i].incoming_rset);
-		packet_peer_stream->put_var(network_profile_info[i].outgoing_rpc);
-		packet_peer_stream->put_var(network_profile_info[i].outgoing_rset);
+		_connection_put_var(network_profile_info[i].node);
+		_connection_put_var(network_profile_info[i].node_path);
+		_connection_put_var(network_profile_info[i].incoming_rpc);
+		_connection_put_var(network_profile_info[i].incoming_rset);
+		_connection_put_var(network_profile_info[i].outgoing_rpc);
+		_connection_put_var(network_profile_info[i].outgoing_rset);
 	}
 }
 
@@ -1042,16 +1055,16 @@ void ScriptDebuggerRemote::_send_network_bandwidth_usage() {
 	int incoming_bandwidth = multiplayer->get_incoming_bandwidth_usage();
 	int outgoing_bandwidth = multiplayer->get_outgoing_bandwidth_usage();
 
-	packet_peer_stream->put_var("network_bandwidth");
-	packet_peer_stream->put_var(2);
-	packet_peer_stream->put_var(incoming_bandwidth);
-	packet_peer_stream->put_var(outgoing_bandwidth);
+	_connection_put_var("network_bandwidth");
+	_connection_put_var(2);
+	_connection_put_var(incoming_bandwidth);
+	_connection_put_var(outgoing_bandwidth);
 }
 
 void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_args) {
 
 	mutex->lock();
-	if (!locking && tcp_client->is_connected_to_host()) {
+	if (!locking && _connection_is_connected()) {
 
 		if (messages.size() >= max_messages_per_frame) {
 			n_messages_dropped++;
@@ -1110,7 +1123,7 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 
 	mutex->lock();
 
-	if (!locking && tcp_client->is_connected_to_host()) {
+	if (!locking && _connection_is_connected()) {
 
 		if (oe.warning) {
 			if (warn_count > max_warnings_per_second) {
@@ -1157,7 +1170,7 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, 
 	bool overflowed = sdr->char_count >= sdr->max_cps;
 
 	sdr->mutex->lock();
-	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
+	if (!sdr->locking && sdr->_connection_is_connected()) {
 
 		if (overflowed)
 			s += "[...]";
@@ -1227,14 +1240,12 @@ void ScriptDebuggerRemote::set_skip_breakpoints(bool p_skip_breakpoints) {
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
-ScriptDebuggerRemote::ScriptDebuggerRemote() :
+ScriptDebuggerRemote::ScriptDebuggerRemote(Ref<ScriptDebuggerConnection> p_connection) :
 		profiling(false),
 		profiling_network(false),
 		max_frame_functions(16),
 		skip_profile_frame(false),
 		reload_all_scripts(false),
-		tcp_client(Ref<StreamPeerTCP>(memnew(StreamPeerTCP))),
-		packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
 		last_perf_time(0),
 		last_net_prof_time(0),
 		last_net_bandwidth_time(0),
@@ -1254,10 +1265,8 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		msec_count(0),
 		locking(false),
 		poll_every(0),
-		scene_tree(NULL) {
-
-	packet_peer_stream->set_stream_peer(tcp_client);
-	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough
+		scene_tree(NULL),
+		connection(p_connection) {
 
 	phl.printfunc = _print_handler;
 	phl.userdata = this;
@@ -1277,4 +1286,65 @@ ScriptDebuggerRemote::~ScriptDebuggerRemote() {
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
 	memdelete(mutex);
+}
+
+/// ScriptDebuggerTCP
+
+Error ScriptDebuggerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
+
+	IP_Address ip;
+	if (p_host.is_valid_ip_address())
+		ip = p_host;
+	else
+		ip = IP::get_singleton()->resolve_hostname(p_host);
+
+	int port = p_port;
+
+	const int tries = 6;
+	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+
+	tcp_client->connect_to_host(ip, port);
+
+	for (int i = 0; i < tries; i++) {
+
+		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
+			print_verbose("Remote Debugger: Connected!");
+			break;
+		} else {
+
+			const int ms = waits[i];
+			OS::get_singleton()->delay_usec(ms * 1000);
+			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
+		};
+	};
+
+	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+
+		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
+		return FAILED;
+	};
+
+	packet_peer_stream->set_stream_peer(tcp_client);
+
+	return OK;
+}
+
+void ScriptDebuggerTCP::poll() {
+	tcp_client->get_status();
+}
+
+Ref<PacketPeer> ScriptDebuggerTCP::get_peer() {
+	return packet_peer_stream;
+}
+
+bool ScriptDebuggerTCP::is_connected_to_host() {
+	return tcp_client->is_connected_to_host();
+}
+
+ScriptDebuggerTCP::ScriptDebuggerTCP() :
+		tcp_client(Ref<StreamPeerTCP>(memnew(StreamPeerTCP))),
+		packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))) {
+
+	packet_peer_stream->set_stream_peer(tcp_client);
+	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough
 }

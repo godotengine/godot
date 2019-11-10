@@ -852,7 +852,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (debug_mode == "remote") {
 
-		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
+		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote(ScriptDebuggerConnection::create()));
 		uint16_t debug_port = 6007;
 		if (debug_host.find(":") != -1) {
 			int sep_pos = debug_host.find_last(":");
