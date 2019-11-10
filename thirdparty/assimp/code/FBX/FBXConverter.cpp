@@ -217,7 +217,7 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				node->mTransformation = new_abs_transform * node_geometric_transform * geometric_transform;
 
 				// attach geometry
-				ConvertModel(*model, node, root_node, new_abs_transform);
+				ConvertModel(*model, node, root_node, node->mTransformation);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -234,7 +234,7 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
 								// TRS
 								aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
-								final_matrix = (new_abs_transform * node_geometric_transform * geometric_transform) * final_matrix;
+								final_matrix = (node->mTransformation) * final_matrix;
 
 								// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
 
