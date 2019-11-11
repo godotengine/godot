@@ -83,7 +83,13 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a hashed integer value representing the dictionary contents.
+				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
+				[codeblock]
+				var dict1 = {0: 10}
+				var dict2 = {0: 10}
+				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
+				print(dict1.hash() == dict2.hash())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="keys">
