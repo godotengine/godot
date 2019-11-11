@@ -562,7 +562,8 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 		Skeleton *skeleton, const NodePath &node_path,
 		const String &node_name, aiBone *track_bone) {
 
-	if (track_id > assimp_anim->mNumChannels) {
+	unsigned int track_idx = (unsigned int)track_id;
+	if (track_idx > assimp_anim->mNumChannels) {
 		print_error("Track ID cannot be greater than available channels");
 		return;
 	}
