@@ -468,6 +468,16 @@ bool _OS::is_in_low_processor_usage_mode() const {
 	return OS::get_singleton()->is_in_low_processor_usage_mode();
 }
 
+void _OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
+
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(p_usec);
+}
+
+int _OS::get_low_processor_usage_mode_sleep_usec() const {
+
+	return OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
+}
+
 String _OS::get_executable_path() const {
 
 	return OS::get_singleton()->get_executable_path();
@@ -1232,6 +1242,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
 
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode_sleep_usec", "usec"), &_OS::set_low_processor_usage_mode_sleep_usec);
+	ClassDB::bind_method(D_METHOD("get_low_processor_usage_mode_sleep_usec"), &_OS::get_low_processor_usage_mode_sleep_usec);
+
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
@@ -1337,6 +1350,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "min_window_size"), "set_min_window_size", "get_min_window_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_window_size"), "set_max_window_size", "get_max_window_size");
@@ -1358,6 +1372,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("vsync_enabled", true);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
+	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 	ADD_PROPERTY_DEFAULT("keep_screen_on", true);
 	ADD_PROPERTY_DEFAULT("min_window_size", Vector2());
 	ADD_PROPERTY_DEFAULT("max_window_size", Vector2());
