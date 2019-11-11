@@ -2147,7 +2147,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("New Inherited Scene"), FILE_INHERIT);
-				p_popup->add_icon_item(get_icon("PlayScene", "EditorIcons"), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+				if (ProjectSettings::get_singleton()->get("application/run/main_scene") != filenames[0]) {
+					p_popup->add_icon_item(get_icon("PlayScene", "EditorIcons"), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+				}
 			} else {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scenes"), FILE_OPEN);
 			}
