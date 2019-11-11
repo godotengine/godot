@@ -120,32 +120,17 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 
 	//importer.SetPropertyFloat(AI_CONFIG_PP_DB_THRESHOLD, 1.0f);
 	int32_t post_process_Steps = aiProcess_CalcTangentSpace |
-								 aiProcess_GlobalScale |
 								 // imports models and listens to their file scale for CM to M conversions
-								 //aiProcess_FlipUVs |
-								 aiProcess_FlipWindingOrder |
+								 aiProcess_GlobalScale |
 								 // very important for culling so that it is done in the correct order.
-								 //aiProcess_DropNormals |
-								 //aiProcess_GenSmoothNormals |
-								 //aiProcess_JoinIdenticalVertices |
+								 aiProcess_FlipWindingOrder |
 								 aiProcess_ImproveCacheLocality |
-								 //aiProcess_RemoveRedundantMaterials | // Causes a crash
-								 //aiProcess_SplitLargeMeshes |
 								 aiProcess_Triangulate |
 								 aiProcess_GenUVCoords |
-								 //aiProcess_FindDegenerates |
-								 //aiProcess_SortByPType |
-								 // aiProcess_FindInvalidData |
 								 aiProcess_TransformUVCoords |
 								 aiProcess_FindInstances |
-								 //aiProcess_FixInfacingNormals |
-								 //aiProcess_ValidateDataStructure |
 								 aiProcess_OptimizeMeshes |
 								 aiProcess_PopulateArmatureData |
-								 //aiProcess_OptimizeGraph |
-								 //aiProcess_Debone |
-								 // aiProcess_EmbedTextures |
-								 //aiProcess_SplitByBoneCount |
 								 0;
 	aiScene *scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
 	ERR_EXPLAIN(String("Open Asset Import failed to open: ") + String(importer.GetErrorString()));
