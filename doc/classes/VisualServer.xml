@@ -2782,6 +2782,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="particles_is_inactive">
+			<return type="bool">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_request_process">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="particles_restart">
 			<return type="void">
 			</return>
