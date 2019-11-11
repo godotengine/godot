@@ -34,24 +34,7 @@
 #include "core/ustring.h"
 #include "os/os.h"
 
-bool _err_error_exists = false;
-
 static ErrorHandlerList *error_handler_list = NULL;
-
-void _err_set_last_error(const char *p_err) {
-
-	OS::get_singleton()->set_last_error(p_err);
-}
-
-void _err_set_last_error(const String &p_err) {
-
-	_err_set_last_error(p_err.utf8().get_data());
-}
-
-void _err_clear_last_error() {
-
-	OS::get_singleton()->clear_last_error();
-}
 
 void add_error_handler(ErrorHandlerList *p_handler) {
 
@@ -86,27 +69,11 @@ void remove_error_handler(ErrorHandlerList *p_handler) {
 }
 
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, ErrorHandlerType p_type) {
-
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", (Logger::ErrorType)p_type);
-
-	_global_lock();
-	ErrorHandlerList *l = error_handler_list;
-	while (l) {
-
-		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", p_type);
-		l = l->next;
-	}
-
-	_global_unlock();
-
-	if (_err_error_exists) {
-		OS::get_singleton()->clear_last_error();
-		_err_error_exists = false;
-	}
+	_err_print_error(p_function, p_file, p_line, p_error, "", p_type);
 }
 
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, ErrorHandlerType p_type) {
-	_err_print_error(p_function, p_file, p_line, p_error.utf8().get_data(), p_type);
+	_err_print_error(p_function, p_file, p_line, p_error.utf8().get_data(), "", p_type);
 }
 
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, ErrorHandlerType p_type) {
