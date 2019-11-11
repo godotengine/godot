@@ -136,28 +136,39 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/highlighting/function_color"));
 	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/highlighting/member_variable_color"));
 
+	syntax_highlighter->clear_keyword_colors();
+
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
-
-	if (shader.is_valid()) {
-		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
-			for (const Map<StringName, ShaderLanguage::BuiltInInfo>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
-				keywords.push_back(F->key());
-			}
-		}
-
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())).size(); i++) {
-			keywords.push_back(ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()))[i]);
-		}
-	}
-
 	const Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-	syntax_highlighter->clear_keyword_colors();
+
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 		syntax_highlighter->add_keyword_color(E->get(), keyword_color);
 	}
 
-	//colorize comments
+	// Colorize built-ins like `COLOR` differently to make them easier
+	// to distinguish from keywords at a quick glance.
+
+	List<String> built_ins;
+	if (shader.is_valid()) {
+		for (const Map<StringName, ShaderLanguage::FunctionInfo>::Element *E = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())).front(); E; E = E->next()) {
+			for (const Map<StringName, ShaderLanguage::BuiltInInfo>::Element *F = E->get().built_ins.front(); F; F = F->next()) {
+				built_ins.push_back(F->key());
+			}
+		}
+
+		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())).size(); i++) {
+			built_ins.push_back(ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()))[i]);
+		}
+	}
+
+	const Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
+
+	for (List<String>::Element *E = built_ins.front(); E; E = E->next()) {
+		syntax_highlighter->add_keyword_color(E->get(), member_variable_color);
+	}
+
+	// Colorize comments.
 	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
