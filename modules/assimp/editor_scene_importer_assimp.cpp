@@ -109,7 +109,7 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 	// Cannot remove pivot points because the static mesh will be in the wrong place
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
-	int32_t max_bone_weights = 8;
+	int32_t max_bone_weights = 4;
 	//if (p_flags & IMPORT_ANIMATION_EIGHT_WEIGHTS) {
 	//	const int eight_bones = 8;
 	//	importer.SetPropertyBool(AI_CONFIG_PP_LBW_MAX_WEIGHTS, eight_bones);
@@ -576,8 +576,8 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 		float ticks_per_second,
 		Skeleton *skeleton, const NodePath &node_path,
 		const String &node_name, aiBone *track_bone) {
-	
-	if(track_id > assimp_anim->mNumChannels){
+
+	if (track_id > assimp_anim->mNumChannels) {
 		print_error("Track ID cannot be greater than available channels");
 		return;
 	}
