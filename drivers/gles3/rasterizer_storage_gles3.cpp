@@ -6961,7 +6961,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 		rt->buffers.active = true;
 
-		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
+		static const int msaa_value[] = { 0, 2, 4, 8, 16, 4, 16 }; // MSAA_EXT_nX is a GLES2 temporary hack ignored in GLES3 for now...
 		int msaa = msaa_value[rt->msaa];
 
 		int max_samples = 0;
