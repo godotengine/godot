@@ -106,29 +106,20 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 
 	register_editor();
 
-	if (EditorVCSInterface::get_singleton()) {
-
-		ERR_EXPLAIN(EditorVCSInterface::get_singleton()->get_vcs_name() + " is already active");
-		return;
-	}
+	ERR_FAIL_COND_MSG(EditorVCSInterface::get_singleton(), EditorVCSInterface::get_singleton()->get_vcs_name() + " is already active");
 
 	const int id = set_up_choice->get_selected_id();
 	String selected_addon = set_up_choice->get_item_text(id);
 
 	String path = ScriptServer::get_global_class_path(selected_addon);
 	Ref<Script> script = ResourceLoader::load(path);
-	if (!script.is_valid()) {
 
-		ERR_EXPLAIN("VCS Addon path is invalid");
-	}
+	ERR_FAIL_COND_MSG(!script.is_valid(), "VCS Addon path is invalid");
 
 	EditorVCSInterface *vcs_interface = memnew(EditorVCSInterface);
 	ScriptInstance *addon_script_instance = script->instance_create(vcs_interface);
-	if (!addon_script_instance) {
 
-		ERR_FAIL_NULL(addon_script_instance);
-		return;
-	}
+	ERR_FAIL_COND_MSG(!addon_script_instance, "Failed to create addon script instance.");
 
 	// The addon is attached as a script to the VCS interface as a proxy end-point
 	vcs_interface->set_script_and_instance(script.get_ref_ptr(), addon_script_instance);
@@ -137,10 +128,8 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_refresh_stage_area");
 
 	String res_dir = OS::get_singleton()->get_resource_dir();
-	if (!EditorVCSInterface::get_singleton()->initialize(res_dir)) {
 
-		ERR_EXPLAIN("VCS was not initialized");
-	}
+	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized");
 
 	_refresh_stage_area();
 }
