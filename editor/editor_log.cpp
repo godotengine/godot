@@ -119,7 +119,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 	}
 
-	log->add_text(p_msg);
+	log->append_bbcode(p_msg);
 
 	if (restore)
 		log->pop();
@@ -173,6 +173,7 @@ EditorLog::EditorLog() {
 	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_use_bbcode(true);
 	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2007-2019 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
