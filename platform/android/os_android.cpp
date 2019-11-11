@@ -49,9 +49,6 @@
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 
-#define PAN_GESTURE_MIN_DELTA 5 // only advertise PanGesture event with dx and dy greater than this
-#define MAGNIFY_GESTURE_MIN_FACTOR 0.1 // only advertise MagnifyGesture event with a factor difference from 1.0 greater than this
-
 class AndroidLogger : public Logger {
 public:
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) {
@@ -409,35 +406,6 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
-			if (touch.size() == 1) {
-				Point2 d = (p_points[0].pos - touch.write[0].pos);
-				if (fabs(d.x) > PAN_GESTURE_MIN_DELTA || fabs(d.y) > PAN_GESTURE_MIN_DELTA) {
-					Ref<InputEventPanGesture> ev;
-					ev.instance();
-					ev->set_position(p_points[0].pos);
-					ev->set_delta(d);
-					input->parse_input_event(ev);
-					touch.write[0].pos = p_points[0].pos;
-				}
-			} else if (touch.size() == 2) {
-				Point2 v0 = touch[1].pos - touch[0].pos;
-				float l0 = (v0.x * v0.x) + (v0.y * v0.y);
-				if (l0 != 0.0) {
-					Point2 v1 = p_points[1].pos - p_points[0].pos;
-					float l1 = (v1.x * v1.x) + (v1.y * v1.y);
-					float f = (l1 / l0);
-					if (fabs(f - 1.0) > MAGNIFY_GESTURE_MIN_FACTOR) {
-						Ref<InputEventMagnifyGesture> ev;
-						ev.instance();
-						ev->set_position(p_points[0].pos + v1 / 2);
-						ev->set_factor(sqrt(f));
-						input->parse_input_event(ev);
-						touch.write[0].pos = p_points[0].pos;
-						touch.write[1].pos = p_points[1].pos;
-					}
-				}
-			}
-
 			for (int i = 0; i < touch.size(); i++) {
 
 				int idx = -1;
@@ -452,7 +420,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ERR_CONTINUE(idx == -1);
 
 				if (touch[i].pos == p_points[idx].pos)
-					continue; //no unnecessary move
+					continue; //no move unncesearily
 
 				Ref<InputEventScreenDrag> ev;
 				ev.instance();
