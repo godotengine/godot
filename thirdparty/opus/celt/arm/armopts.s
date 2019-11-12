@@ -1,8 +1,4 @@
-/* Copyright (C) 2008 CSIRO */
-/**
-   @file fixed_c6x.h
-   @brief Fixed-point operations for the TI C6x DSP family
-*/
+/* Copyright (C) 2013 Mozilla Corporation */
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -28,43 +24,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef FIXED_C6X_H
-#define FIXED_C6X_H
+; Set the following to 1 if we have EDSP instructions
+;  (LDRD/STRD, etc., ARMv5E and later).
+OPUS_ARM_MAY_HAVE_EDSP  * 
 
-#undef MULT16_16SU
-#define MULT16_16SU(a,b) _mpysu(a,b)
+; Set the following to 1 if we have ARMv6 media instructions.
+OPUS_ARM_MAY_HAVE_MEDIA * 
 
-#undef MULT_16_16
-#define MULT_16_16(a,b) _mpy(a,b)
+; Set the following to 1 if we have NEON (some ARMv7)
+OPUS_ARM_MAY_HAVE_NEON  * 
 
-#define celt_ilog2(x) (30 - _norm(x))
-#define OVERRIDE_CELT_ILOG2
-
-#undef MULT16_32_Q15
-#define MULT16_32_Q15(a,b) (_mpylill(a, b) >> 15)
-
-#if 0
-#include "dsplib.h"
-
-#undef MAX16
-#define MAX16(a,b) _max(a,b)
-
-#undef MIN16
-#define MIN16(a,b) _min(a,b)
-
-#undef MAX32
-#define MAX32(a,b) _lmax(a,b)
-
-#undef MIN32
-#define MIN32(a,b) _lmin(a,b)
-
-#undef VSHR32
-#define VSHR32(a, shift) _lshl(a,-(shift))
-
-#undef MULT16_16_Q15
-#define MULT16_16_Q15(a,b) (_smpy(a,b))
-
-#define celt_maxabs16(x, len) MAX32(EXTEND32(maxval((DATA *)x, len)),-EXTEND32(minval((DATA *)x, len)))
-#define OVERRIDE_CELT_MAXABS16
-
-#endif /* FIXED_C6X_H */
+END
