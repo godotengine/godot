@@ -54,9 +54,9 @@
 #define MIN_ZOOM 0.01
 #define MAX_ZOOM 100
 
-#define RULER_WIDTH 15 * EDSCALE
-#define MOVE_HANDLE_DISTANCE 25
+#define RULER_WIDTH (15 * EDSCALE)
 #define SCALE_HANDLE_DISTANCE 25
+#define MOVE_HANDLE_DISTANCE 25
 
 class SnapDialog : public ConfirmationDialog {
 
@@ -1850,7 +1850,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 						if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 							drag_type = DRAG_SCALE_X;
 						}
-						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 						if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 							drag_type = DRAG_SCALE_Y;
 						}
@@ -1904,7 +1904,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 						scale.y = scale.x * ratio;
 					}
 				} else if (drag_type == DRAG_SCALE_Y) {
-					scale.y += scale_factor.y;
+					scale.y -= scale_factor.y;
 					if (uniform) {
 						scale.x = scale.y / ratio;
 					}
@@ -1975,7 +1975,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 						if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 							drag_type = DRAG_MOVE_X;
 						}
-						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(move_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, move_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 						if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 							drag_type = DRAG_MOVE_Y;
 						}
@@ -3256,26 +3256,16 @@ void CanvasItemEditor::_draw_selection() {
 					points.push_back(Vector2(move_factor.x * EDSCALE, -5 * EDSCALE));
 					points.push_back(Vector2((move_factor.x + 10) * EDSCALE, 0));
 
-					Vector<Color> colors;
-					colors.push_back(get_color("axis_x_color", "Editor"));
-					colors.push_back(get_color("axis_x_color", "Editor"));
-					colors.push_back(get_color("axis_x_color", "Editor"));
-
-					viewport->draw_polygon(points, colors);
+					viewport->draw_colored_polygon(points, get_color("axis_x_color", "Editor"));
 					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
 
 					points.clear();
-					points.push_back(Vector2(5 * EDSCALE, move_factor.y * -EDSCALE));
-					points.push_back(Vector2(-5 * EDSCALE, move_factor.y * -EDSCALE));
-					points.push_back(Vector2(0, (move_factor.y + 10) * -EDSCALE));
+					points.push_back(Vector2(5 * EDSCALE, move_factor.y * EDSCALE));
+					points.push_back(Vector2(-5 * EDSCALE, move_factor.y * EDSCALE));
+					points.push_back(Vector2(0, (move_factor.y + 10) * EDSCALE));
 
-					colors.clear();
-					colors.push_back(get_color("axis_y_color", "Editor"));
-					colors.push_back(get_color("axis_y_color", "Editor"));
-					colors.push_back(get_color("axis_y_color", "Editor"));
-
-					viewport->draw_polygon(points, colors);
-					viewport->draw_line(Point2(), Point2(0, -move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_colored_polygon(points, get_color("axis_y_color", "Editor"));
+					viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
 
 					viewport->draw_set_transform_matrix(viewport->get_transform());
 				}
@@ -3297,9 +3287,9 @@ void CanvasItemEditor::_draw_selection() {
 							scale_factor.y += offset.x;
 						}
 					} else if (drag_type == DRAG_SCALE_Y) {
-						scale_factor.y -= offset.y;
+						scale_factor.y += offset.y;
 						if (uniform) {
-							scale_factor.x -= offset.y;
+							scale_factor.x += offset.y;
 						}
 					}
 
@@ -3308,9 +3298,9 @@ void CanvasItemEditor::_draw_selection() {
 					viewport->draw_rect(x_handle_rect, get_color("axis_x_color", "Editor"));
 					viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
 
-					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 					viewport->draw_rect(y_handle_rect, get_color("axis_y_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(0, -scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
 
 					viewport->draw_set_transform_matrix(viewport->get_transform());
 				}
@@ -5306,9 +5296,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_helpers = false;
 	show_rulers = true;
 	show_guides = true;
-	show_edit_locks = true;
 	show_transformation_gizmos = true;
-	zoom = 1;
+	show_edit_locks = true;
+	zoom = 1.0 / MAX(1, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
