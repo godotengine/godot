@@ -564,6 +564,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 				 char * lanaddr, int lanaddrlen)
 {
 	struct xml_desc {
+		char lanaddr[40];
 		char * xml;
 		int size;
 		int is_igd;
@@ -573,7 +574,6 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 	int i;
 	int state = -1; /* state 1 : IGD connected. State 2 : IGD. State 3 : anything */
 	char extIpAddr[16];
-	char myLanAddr[40];
 	int status_code = -1;
 
 	if(!devlist)
@@ -596,7 +596,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 		/* we should choose an internet gateway device.
 		 * with st == urn:schemas-upnp-org:device:InternetGatewayDevice:1 */
 		desc[i].xml = miniwget_getaddr(dev->descURL, &(desc[i].size),
-		                               myLanAddr, sizeof(myLanAddr),
+		                               desc[i].lanaddr, sizeof(desc[i].lanaddr),
 		                               dev->scope_id, &status_code);
 #ifdef DEBUG
 		if(!desc[i].xml)
@@ -613,8 +613,6 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 			           "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:"))
 			{
 				desc[i].is_igd = 1;
-				if(lanaddr)
-					strncpy(lanaddr, myLanAddr, lanaddrlen);
 			}
 		}
 	}
@@ -680,6 +678,8 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 	}
 	state = 0;
 free_and_return:
+	if (lanaddr != NULL && state >= 1 && state <= 3 && i < ndev)
+		strncpy(lanaddr, desc[i].lanaddr, lanaddrlen);
 	for(i = 0; i < ndev; i++)
 		free(desc[i].xml);
 	free(desc);
@@ -713,4 +713,3 @@ UPNP_GetIGDFromUrl(const char * rootdescurl,
 		return 0;
 	}
 }
-
