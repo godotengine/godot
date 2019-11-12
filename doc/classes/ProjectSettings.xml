@@ -254,6 +254,8 @@
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
+		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="">
+		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>
@@ -280,6 +282,8 @@
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
 			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum @GlobalScope.Error] enum.
+		</member>
+		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
 			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
@@ -705,14 +709,14 @@
 		<member name="rendering/limits/buffers/immediate_buffer_size_kb" type="int" setter="" getter="">
 			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
 		</member>
+		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
+			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
+		</member>
 		<member name="rendering/limits/rendering/max_renderable_lights" type="int" setter="" getter="">
 			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="">
 			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
-		</member>
-		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
-			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).

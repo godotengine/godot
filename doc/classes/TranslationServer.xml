@@ -27,6 +27,12 @@
 				Clears the server from all translations.
 			</description>
 		</method>
+		<method name="get_loaded_locales" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_locale" qualifiers="const">
 			<return type="String">
 			</return>
