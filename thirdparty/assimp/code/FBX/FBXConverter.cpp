@@ -137,7 +137,8 @@ void FBXConverter::ConvertRootNode() {
 	std::string unique_name;
 	GetUniqueName("RootNode", unique_name);
 	out->mRootNode->mName.Set(unique_name);
-
+	// populate our node animation stack lookup tool
+	GenerateAnimStack();
 	// root has ID 0
 	ConvertNodes(0L, out->mRootNode, out->mRootNode, aiMatrix4x4());
 }
@@ -168,9 +169,76 @@ std::string FBXConverter::MakeUniqueNodeName(const Model *const model, const aiN
 	GetUniqueName(original_name, unique_name);
 	return unique_name;
 }
-/// todo: pre-build node hierarchy
-/// todo: get bone from stack
-/// todo: make map of aiBone* to aiNode*
+
+void FBXConverter::GenerateAnimStack() {
+
+	for (aiAnimation *animation : animations) {
+		std::vector<aiNodeAnim *> nodes;
+		for (unsigned int nodeId = 0; nodeId < animation->mNumChannels; ++nodeId) {
+			aiNodeAnim *node_anim = animation->mChannels[nodeId];
+			nodes.push_back(node_anim);
+		}
+
+		animation_stack.insert(std::pair<aiAnimation *, std::vector<aiNodeAnim *> >(animation, nodes));
+	}
+}
+
+std::vector<aiNodeAnim *> FBXConverter::GetNodeAnimsFromStack(const std::string &node_name) {
+
+	std::vector<aiNodeAnim *> list;
+
+	for (std::pair<aiAnimation *, std::vector<aiNodeAnim *> > pair : animation_stack) {
+
+		bool found_erase = false;
+		std::vector<aiNodeAnim *>::iterator iter;
+
+		for (iter = pair.second.begin(); iter != pair.second.end(); ++iter) {
+			aiNodeAnim *anim = *iter;
+			if (anim->mNodeName.C_Str() == node_name) {
+				std::cout << "added animation to GetNodeAnimsFromStack" << std::endl;
+				list.push_back(anim);
+				found_erase = true;
+				break;
+			}
+		}
+
+		// we have stored our value from stack we now must erase it
+		if (found_erase) {
+			std::cout << "found valid animation for stack erasing from stack: " << (*iter)->mNodeName.C_Str() << std::endl;
+			pair.second.erase(iter);
+		}
+	}
+
+	std::cout << "animation stack size: " << list.size() << std::endl;
+
+	return list;
+}
+
+void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim_list, aiMatrix4x4 transform) {
+	// resample all animations, but only sample the nodes which we are looking for from the stack.
+	for (aiNodeAnim *node_anim : node_anim_list) {
+		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
+			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
+			aiVector3D scale = node_anim->mScalingKeys[x].mValue;
+			aiVector3D trans = node_anim->mPositionKeys[x].mValue;
+
+			// TRS
+			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
+			final_matrix = transform * final_matrix;
+
+			// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
+
+			final_matrix.Decompose(scale, rot, trans);
+
+			// now overwrite with pivot point
+			node_anim->mRotationKeys[x].mValue = rot;
+			node_anim->mScalingKeys[x].mValue = scale;
+			node_anim->mPositionKeys[x].mValue = trans;
+		}
+	}
+	//}
+}
+
 /// then update convert clusters to the new format
 void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, aiMatrix4x4 geometric_transform) {
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(id, "Model");
@@ -216,38 +284,18 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
 				node->mTransformation = new_abs_transform * node_geometric_transform * geometric_transform;
 
+				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+				ResampleAnimationsWithPivots(anims, node->mTransformation);
+
 				// attach geometry
 				ConvertModel(*model, node, root_node, node->mTransformation);
 
 				// Geometric pivot data application
 				// resamples the node animation
 				// todo: make this 'get anim from stack'
+				// todo: make this recreate ibm xform too... otherwise it will break scale of
+				// inversed bones :)
 				// otherwise multiple armatures will get broken probably
-				for (aiAnimation *animation : animations) {
-					for (size_t animId = 0; animId < animation->mNumChannels; ++animId) {
-						aiNodeAnim *node_anim = animation->mChannels[animId];
-						if (node_anim->mNodeName == aiString(node_name)) {
-							for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
-								aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
-								aiVector3D scale = node_anim->mScalingKeys[x].mValue;
-								aiVector3D trans = node_anim->mPositionKeys[x].mValue;
-
-								// TRS
-								aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
-								final_matrix = (node->mTransformation) * final_matrix;
-
-								// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
-
-								final_matrix.Decompose(scale, rot, trans);
-
-								// now overwrite with pivot point
-								node_anim->mRotationKeys[x].mValue = rot;
-								node_anim->mScalingKeys[x].mValue = scale;
-								node_anim->mPositionKeys[x].mValue = trans;
-							}
-						}
-					}
-				}
 
 				// check if there will be any child nodes
 				const std::vector<const Connection *> &child_conns = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
@@ -695,8 +743,6 @@ const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
 	const aiVector3D &Scaling = PropertyGet<aiVector3D>(props, "Lcl Scaling", ok);
 	if (ok) {
 		aiMatrix4x4::Scaling(Scaling, chain[TransformationComp_Scaling]);
-	} else {
-		aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_Scaling]);
 	}
 
 	const aiVector3D &Rotation = PropertyGet<aiVector3D>(props, "Lcl Rotation", ok);
@@ -707,8 +753,6 @@ const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
 	const aiVector3D &GeometricScaling = PropertyGet<aiVector3D>(props, "GeometricScaling", ok);
 	if (ok) {
 		aiMatrix4x4::Scaling(GeometricScaling, chain[TransformationComp_GeometricScaling]);
-	} else {
-		aiMatrix4x4::Scaling(aiVector3D::NORMAL(), chain[TransformationComp_GeometricScaling]);
 	}
 
 	const aiVector3D &GeometricRotation = PropertyGet<aiVector3D>(props, "GeometricRotation", ok);

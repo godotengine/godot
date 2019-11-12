@@ -117,6 +117,18 @@ public:
 	~FBXConverter();
 
 private:
+	//
+	// Animation stack used for pivot calculations
+	// very important for resampling the right node, if there are duplicates
+	void GenerateAnimStack();
+	void ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim, aiMatrix4x4 transform);
+	std::vector<aiNodeAnim *> GetNodeAnimsFromStack(const std::string &node_name);
+	// pass into resample
+	// input of ResampleFunction
+	// list of the first node
+	// from each animation
+
+	std::map<aiAnimation *, std::vector<aiNodeAnim *> > animation_stack;
 	// ------------------------------------------------------------------------------------------------
 	// find scene root and trigger recursive scene conversion
 	void ConvertRootNode();
