@@ -1,7 +1,7 @@
 /* Copyright (c) 2015 Xiph.Org Foundation
    Written by Viswanath Puttagunta */
 /**
-   @file celt_ne10_mdct.c
+   @file celt_mdct_ne10.c
    @brief ARM Neon optimizations for mdct using NE10 library
  */
 

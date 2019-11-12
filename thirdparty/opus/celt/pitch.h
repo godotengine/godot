@@ -46,8 +46,7 @@
 #include "mips/pitch_mipsr1.h"
 #endif
 
-#if ((defined(OPUS_ARM_ASM) && defined(FIXED_POINT)) \
-  || defined(OPUS_ARM_MAY_HAVE_NEON_INTR))
+#if (defined(OPUS_ARM_ASM) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR))
 # include "arm/pitch_arm.h"
 #endif
 
@@ -184,17 +183,10 @@ opus_val32
 void
 #endif
 celt_pitch_xcorr_c(const opus_val16 *_x, const opus_val16 *_y,
-      opus_val32 *xcorr, int len, int max_pitch);
-
-#if !defined(OVERRIDE_PITCH_XCORR)
-#ifdef FIXED_POINT
-opus_val32
-#else
-void
-#endif
-celt_pitch_xcorr(const opus_val16 *_x, const opus_val16 *_y,
       opus_val32 *xcorr, int len, int max_pitch, int arch);
 
+#ifndef OVERRIDE_PITCH_XCORR
+# define celt_pitch_xcorr celt_pitch_xcorr_c
 #endif
 
 #endif

@@ -36,14 +36,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "opus_defines.h"
 #include "arch.h"
 
-#if OPUS_GNUC_PREREQ(3, 0)
-#define opus_likely(x)       (__builtin_expect(!!(x), 1))
-#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
-#else
-#define opus_likely(x)       (!!(x))
-#define opus_unlikely(x)     (!!(x))
-#endif
-
 /* This is an OPUS_INLINE header file for general platform. */
 
 /* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */

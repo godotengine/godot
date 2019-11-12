@@ -48,30 +48,16 @@ typedef struct {
 } silk_shape_state_FIX;
 
 /********************************/
-/* Prefilter state              */
-/********************************/
-typedef struct {
-    opus_int16                  sLTP_shp[ LTP_BUF_LENGTH ];
-    opus_int32                  sAR_shp[ MAX_SHAPE_LPC_ORDER + 1 ];
-    opus_int                    sLTP_shp_buf_idx;
-    opus_int32                  sLF_AR_shp_Q12;
-    opus_int32                  sLF_MA_shp_Q12;
-    opus_int32                  sHarmHP_Q2;
-    opus_int32                  rand_seed;
-    opus_int                    lagPrev;
-} silk_prefilter_state_FIX;
-
-/********************************/
 /* Encoder state FIX            */
 /********************************/
 typedef struct {
     silk_encoder_state          sCmn;                                   /* Common struct, shared with floating-point code       */
     silk_shape_state_FIX        sShape;                                 /* Shape state                                          */
-    silk_prefilter_state_FIX    sPrefilt;                               /* Prefilter State                                      */
 
     /* Buffer for find pitch and noise shape analysis */
     silk_DWORD_ALIGN opus_int16 x_buf[ 2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX ];/* Buffer for find pitch and noise shape analysis  */
     opus_int                    LTPCorr_Q15;                            /* Normalized correlation from pitch lag estimator      */
+    opus_int32                    resNrgSmth;
 } silk_encoder_state_FIX;
 
 /************************/
@@ -87,11 +73,8 @@ typedef struct {
 
     /* Noise shaping parameters */
     /* Testing */
-    silk_DWORD_ALIGN opus_int16 AR1_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
-    silk_DWORD_ALIGN opus_int16 AR2_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
+    silk_DWORD_ALIGN opus_int16 AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
     opus_int32                  LF_shp_Q14[        MAX_NB_SUBFR ];      /* Packs two int16 coefficients per int32 value         */
-    opus_int                    GainsPre_Q14[      MAX_NB_SUBFR ];
-    opus_int                    HarmBoost_Q14[     MAX_NB_SUBFR ];
     opus_int                    Tilt_Q14[          MAX_NB_SUBFR ];
     opus_int                    HarmShapeGain_Q14[ MAX_NB_SUBFR ];
     opus_int                    Lambda_Q10;
@@ -99,7 +82,6 @@ typedef struct {
     opus_int                    coding_quality_Q14;
 
     /* measures */
-    opus_int                    sparseness_Q8;
     opus_int32                  predGain_Q16;
     opus_int                    LTPredCodGain_Q7;
     opus_int32                  ResNrg[ MAX_NB_SUBFR ];                 /* Residual energy per subframe                         */

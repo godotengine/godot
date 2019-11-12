@@ -273,7 +273,7 @@ OPUS_EXPORT OPUS_WARN_UNUSED_RESULT OpusMSEncoder *opus_multistream_surround_enc
       unsigned char *mapping,
       int application,
       int *error
-) OPUS_ARG_NONNULL(5);
+) OPUS_ARG_NONNULL(4) OPUS_ARG_NONNULL(5) OPUS_ARG_NONNULL(6);
 
 /** Initialize a previously allocated multistream encoder state.
   * The memory pointed to by \a st must be at least the size returned by
@@ -342,7 +342,7 @@ OPUS_EXPORT int opus_multistream_surround_encoder_init(
       int *coupled_streams,
       unsigned char *mapping,
       int application
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(6);
+) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(5) OPUS_ARG_NONNULL(6) OPUS_ARG_NONNULL(7);
 
 /** Encodes a multistream Opus frame.
   * @param st <tt>OpusMSEncoder*</tt>: Multistream encoder state.

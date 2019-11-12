@@ -38,10 +38,43 @@
 #include "entcode.h"
 #include "os_support.h"
 
+#define PI 3.141592653f
+
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a,b) ((16384+((opus_int32)(opus_int16)(a)*(opus_int16)(b)))>>15)
 
 unsigned isqrt32(opus_uint32 _val);
+
+/* CELT doesn't need it for fixed-point, by analysis.c does. */
+#if !defined(FIXED_POINT) || defined(ANALYSIS_C)
+#define cA 0.43157974f
+#define cB 0.67848403f
+#define cC 0.08595542f
+#define cE ((float)PI/2)
+static OPUS_INLINE float fast_atan2f(float y, float x) {
+   float x2, y2;
+   x2 = x*x;
+   y2 = y*y;
+   /* For very small values, we don't care about the answer, so
+      we can just return 0. */
+   if (x2 + y2 < 1e-18f)
+   {
+      return 0;
+   }
+   if(x2<y2){
+      float den = (y2 + cB*x2) * (y2 + cC*x2);
+      return -x*y*(y2 + cA*x2) / den + (y<0 ? -cE : cE);
+   }else{
+      float den = (x2 + cB*y2) * (x2 + cC*y2);
+      return  x*y*(x2 + cA*y2) / den + (y<0 ? -cE : cE) - (x*y<0 ? -cE : cE);
+   }
+}
+#undef cA
+#undef cB
+#undef cC
+#undef cE
+#endif
+
 
 #ifndef OVERRIDE_CELT_MAXABS16
 static OPUS_INLINE opus_val32 celt_maxabs16(const opus_val16 *x, int len)
@@ -80,7 +113,6 @@ static OPUS_INLINE opus_val32 celt_maxabs32(const opus_val32 *x, int len)
 
 #ifndef FIXED_POINT
 
-#define PI 3.141592653f
 #define celt_sqrt(x) ((float)sqrt(x))
 #define celt_rsqrt(x) (1.f/celt_sqrt(x))
 #define celt_rsqrt_norm(x) (celt_rsqrt(x))
@@ -147,7 +179,7 @@ static OPUS_INLINE float celt_exp2(float x)
 /** Integer log in base2. Undefined for zero and negative numbers */
 static OPUS_INLINE opus_int16 celt_ilog2(opus_int32 x)
 {
-   celt_assert2(x>0, "celt_ilog2() only defined for strictly positive numbers");
+   celt_sig_assert(x>0);
    return EC_ILOG(x)-1;
 }
 #endif

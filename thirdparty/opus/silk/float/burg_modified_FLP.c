@@ -52,7 +52,7 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
     double           CAf[ SILK_MAX_ORDER_LPC + 1 ], CAb[ SILK_MAX_ORDER_LPC + 1 ];
     double           Af[ SILK_MAX_ORDER_LPC ];
 
-    silk_assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
+    celt_assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
 
     /* Compute autocorrelations, added over subframes */
     C0 = silk_energy_FLP( x, nb_subfr * subfr_length );

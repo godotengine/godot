@@ -45,12 +45,11 @@ void celt_fir_c(
          opus_val16 *y,
          int N,
          int ord,
-         opus_val16 *mem,
          int arch);
 
 #if !defined(OVERRIDE_CELT_FIR)
-#define celt_fir(x, num, y, N, ord, mem, arch) \
-    (celt_fir_c(x, num, y, N, ord, mem, arch))
+#define celt_fir(x, num, y, N, ord, arch) \
+    (celt_fir_c(x, num, y, N, ord, arch))
 #endif
 
 void celt_iir(const opus_val32 *x,

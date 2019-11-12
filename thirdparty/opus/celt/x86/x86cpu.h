@@ -82,7 +82,9 @@ int opus_select_arch(void);
  (_mm_cvtepi8_epi32(*(__m128i *)(x)))
 #endif
 
-# if !defined(__OPTIMIZE__)
+/* similar reasoning about the instruction sequence as in the 32-bit macro above,
+ */
+# if defined(__clang__) || !defined(__OPTIMIZE__)
 #  define OP_CVTEPI16_EPI32_M64(x) \
  (_mm_cvtepi16_epi32(_mm_loadl_epi64((__m128i *)(x))))
 # else

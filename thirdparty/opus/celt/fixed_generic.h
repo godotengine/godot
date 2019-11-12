@@ -104,6 +104,9 @@
 
 /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
 #define ROUND16(x,a) (EXTRACT16(PSHR32((x),(a))))
+/** Shift by a and round-to-neareast 32-bit value. Result is a saturated 16-bit value */
+#define SROUND16(x,a) EXTRACT16(SATURATE(PSHR32(x,a), 32767));
+
 /** Divide by two */
 #define HALF16(x)  (SHR16(x,1))
 #define HALF32(x)  (SHR32(x,1))
@@ -116,6 +119,14 @@
 #define ADD32(a,b) ((opus_val32)(a)+(opus_val32)(b))
 /** Subtract two 32-bit values */
 #define SUB32(a,b) ((opus_val32)(a)-(opus_val32)(b))
+
+/** Add two 32-bit values, ignore any overflows */
+#define ADD32_ovflw(a,b) ((opus_val32)((opus_uint32)(a)+(opus_uint32)(b)))
+/** Subtract two 32-bit values, ignore any overflows */
+#define SUB32_ovflw(a,b) ((opus_val32)((opus_uint32)(a)-(opus_uint32)(b)))
+/* Avoid MSVC warning C4146: unary minus operator applied to unsigned type */
+/** Negate 32-bit value, ignore any overflows */
+#define NEG32_ovflw(a) ((opus_val32)(0-(opus_uint32)(a)))
 
 /** 16x16 multiplication where the result fits in 16 bits */
 #define MULT16_16_16(a,b)     ((((opus_val16)(a))*((opus_val16)(b))))

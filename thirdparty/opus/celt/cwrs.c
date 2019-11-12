@@ -482,7 +482,7 @@ static opus_val32 cwrsi(int _n,int _k,opus_uint32 _i,int *_y){
       k0=_k;
       q=row[_n];
       if(q>_i){
-        celt_assert(p>q);
+        celt_sig_assert(p>q);
         _k=_n;
         do p=CELT_PVQ_U_ROW[--_k][_n];
         while(p>_i);

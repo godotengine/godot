@@ -40,8 +40,8 @@ opus_int silk_decoder_set_fs(
 {
     opus_int frame_length, ret = 0;
 
-    silk_assert( fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16 );
-    silk_assert( psDec->nb_subfr == MAX_NB_SUBFR || psDec->nb_subfr == MAX_NB_SUBFR/2 );
+    celt_assert( fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16 );
+    celt_assert( psDec->nb_subfr == MAX_NB_SUBFR || psDec->nb_subfr == MAX_NB_SUBFR/2 );
 
     /* New (sub)frame length */
     psDec->subfr_length = silk_SMULBB( SUB_FRAME_LENGTH_MS, fs_kHz );
@@ -86,7 +86,7 @@ opus_int silk_decoder_set_fs(
                 psDec->pitch_lag_low_bits_iCDF = silk_uniform4_iCDF;
             } else {
                 /* unsupported sampling rate */
-                silk_assert( 0 );
+                celt_assert( 0 );
             }
             psDec->first_frame_after_reset = 1;
             psDec->lagPrev                 = 100;
@@ -101,7 +101,7 @@ opus_int silk_decoder_set_fs(
     }
 
     /* Check that settings are valid */
-    silk_assert( psDec->frame_length > 0 && psDec->frame_length <= MAX_FRAME_LENGTH );
+    celt_assert( psDec->frame_length > 0 && psDec->frame_length <= MAX_FRAME_LENGTH );
 
     return ret;
 }

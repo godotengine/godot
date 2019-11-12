@@ -33,7 +33,6 @@
 #if !defined(MDCT_ARM_H)
 #define MDCT_ARM_H
 
-#include "config.h"
 #include "mdct.h"
 
 #if defined(HAVE_ARM_NE10)

@@ -72,7 +72,7 @@ void silk_burg_modified_sse4_1(
     __m128i FIRST_3210, LAST_3210, ATMP_3210, TMP1_3210, TMP2_3210, T1_3210, T2_3210, PTR_3210, SUBFR_3210, X1_3210, X2_3210;
     __m128i CONST1 = _mm_set1_epi32(1);
 
-    silk_assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
+    celt_assert( subfr_length * nb_subfr <= MAX_FRAME_SIZE );
 
     /* Compute autocorrelations, added over subframes */
     silk_sum_sqr_shift( &C0, &rshifts, x, nb_subfr * subfr_length );

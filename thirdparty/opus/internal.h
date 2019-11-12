@@ -136,6 +136,9 @@ struct OggOpusLink{
      that end-trimming calculations work properly.
     This is only valid for seekable sources.*/
   opus_int64   end_offset;
+  /*The total duration of all prior links.
+    This is always zero for non-seekable sources.*/
+  ogg_int64_t  pcm_file_offset;
   /*The granule position of the last sample.
     This is only valid for seekable sources.*/
   ogg_int64_t  pcm_end;
@@ -150,23 +153,25 @@ struct OggOpusLink{
 };
 
 struct OggOpusFile{
-  /*The callbacks used to access the data source.*/
+  /*The callbacks used to access the stream.*/
   OpusFileCallbacks  callbacks;
-  /*A FILE *, memory bufer, etc.*/
-  void              *source;
-  /*Whether or not we can seek with this data source.*/
+  /*A FILE *, memory buffer, etc.*/
+  void              *stream;
+  /*Whether or not we can seek with this stream.*/
   int                seekable;
   /*The number of links in this chained Ogg Opus file.*/
   int                nlinks;
   /*The cached information from each link in a chained Ogg Opus file.
-    If source isn't seekable (e.g., it's a pipe), only the current link
+    If stream isn't seekable (e.g., it's a pipe), only the current link
      appears.*/
   OggOpusLink       *links;
   /*The number of serial numbers from a single link.*/
   int                nserialnos;
   /*The capacity of the list of serial numbers from a single link.*/
   int                cserialnos;
-  /*Storage for the list of serial numbers from a single link.*/
+  /*Storage for the list of serial numbers from a single link.
+    This is a scratch buffer used when scanning the BOS pages at the start of
+     each link.*/
   ogg_uint32_t      *serialnos;
   /*This is the current offset of the data processed by the ogg_sync_state.
     After a seek, this should be set to the target offset so that we can track
@@ -174,9 +179,9 @@ struct OggOpusFile{
     After a call to op_get_next_page(), this will point to the first byte after
      that page.*/
   opus_int64         offset;
-  /*The total size of this data source, or -1 if it's unseekable.*/
+  /*The total size of this stream, or -1 if it's unseekable.*/
   opus_int64         end;
-  /*Used to locate pages in the data source.*/
+  /*Used to locate pages in the stream.*/
   ogg_sync_state     oy;
   /*One of OP_NOTOPEN, OP_PARTOPEN, OP_OPENED, OP_STREAMSET, OP_INITSET.*/
   int                ready_state;
@@ -227,7 +232,7 @@ struct OggOpusFile{
   /*The number of valid samples in the decoded buffer.*/
   int                od_buffer_size;
   /*The type of gain offset to apply.
-    One of OP_HEADER_GAIN, OP_TRACK_GAIN, or OP_ABSOLUTE_GAIN.*/
+    One of OP_HEADER_GAIN, OP_ALBUM_GAIN, OP_TRACK_GAIN, or OP_ABSOLUTE_GAIN.*/
   int                gain_type;
   /*The offset to apply to the gain.*/
   opus_int32         gain_offset_q8;

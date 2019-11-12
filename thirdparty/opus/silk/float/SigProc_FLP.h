@@ -68,13 +68,6 @@ void silk_k2a_FLP(
     opus_int32          order               /* I     prediction order                                           */
 );
 
-/* Solve the normal equations using the Levinson-Durbin recursion */
-silk_float silk_levinsondurbin_FLP(         /* O    prediction error energy                                     */
-    silk_float          A[],                /* O    prediction coefficients [order]                             */
-    const silk_float    corr[],             /* I    input auto-correlations [order + 1]                         */
-    const opus_int      order               /* I    prediction order                                            */
-);
-
 /* compute autocorrelation */
 void silk_autocorrelation_FLP(
     silk_float          *results,           /* O    result (length correlationCount)                            */

@@ -235,8 +235,7 @@ void *op_fopen(OpusFileCallbacks *_cb,const char *_path,const char *_mode){
   fp=fopen(_path,_mode);
 #else
   fp=NULL;
-  if(_path==NULL||_mode==NULL)errno=EINVAL;
-  else{
+  {
     wchar_t *wpath;
     wchar_t *wmode;
     wpath=op_utf8_to_utf16(_path);
@@ -266,8 +265,7 @@ void *op_freopen(OpusFileCallbacks *_cb,const char *_path,const char *_mode,
   fp=freopen(_path,_mode,(FILE *)_stream);
 #else
   fp=NULL;
-  if(_path==NULL||_mode==NULL)errno=EINVAL;
-  else{
+  {
     wchar_t *wpath;
     wchar_t *wmode;
     wpath=op_utf8_to_utf16(_path);

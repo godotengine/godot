@@ -92,7 +92,7 @@ void silk_find_LPC_FIX(
             silk_interpolate( NLSF0_Q15, psEncC->prev_NLSFq_Q15, NLSF_Q15, k, psEncC->predictLPCOrder );
 
             /* Convert to LPC for residual energy evaluation */
-            silk_NLSF2A( a_tmp_Q12, NLSF0_Q15, psEncC->predictLPCOrder );
+            silk_NLSF2A( a_tmp_Q12, NLSF0_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
             /* Calculate residual energy with NLSF interpolation */
             silk_LPC_analysis_filter( LPC_res, x, a_tmp_Q12, 2 * subfr_length, psEncC->predictLPCOrder, psEncC->arch );
@@ -146,6 +146,6 @@ void silk_find_LPC_FIX(
         silk_A2NLSF( NLSF_Q15, a_Q16, psEncC->predictLPCOrder );
     }
 
-    silk_assert( psEncC->indices.NLSFInterpCoef_Q2 == 4 || ( psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR ) );
+    celt_assert( psEncC->indices.NLSFInterpCoef_Q2 == 4 || ( psEncC->useInterpolatedNLSFs && !psEncC->first_frame_after_reset && psEncC->nb_subfr == MAX_NB_SUBFR ) );
     RESTORE_STACK;
 }

@@ -164,11 +164,11 @@ while (<>) {
         $prefix = "";
         if ($proc)
         {
-            $prefix = $prefix.sprintf("\t.type\t%s, %%function; ",$proc) unless ($apple);
+            $prefix = $prefix.sprintf("\t.type\t%s, %%function", $proc) unless ($apple);
             # Make sure we $prefix isn't empty here (for the $apple case).
             # We handle mangling the label here, make sure it doesn't match
             # the label handling below (if $prefix would be empty).
-            $prefix = "; ";
+            $prefix = $prefix."; ";
             push(@proc_stack, $proc);
             s/^[A-Za-z_\.]\w+/$symprefix$&:/;
         }

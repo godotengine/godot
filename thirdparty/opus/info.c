@@ -107,26 +107,32 @@ static int op_tags_ensure_capacity(OpusTags *_tags,size_t _ncomments){
   char   **user_comments;
   int     *comment_lengths;
   int      cur_ncomments;
-  char    *binary_suffix_data;
-  int      binary_suffix_len;
   size_t   size;
   if(OP_UNLIKELY(_ncomments>=(size_t)INT_MAX))return OP_EFAULT;
   size=sizeof(*_tags->comment_lengths)*(_ncomments+1);
   if(size/sizeof(*_tags->comment_lengths)!=_ncomments+1)return OP_EFAULT;
   cur_ncomments=_tags->comments;
-  comment_lengths=_tags->comment_lengths;
-  binary_suffix_len=comment_lengths==NULL?0:comment_lengths[cur_ncomments];
+  /*We only support growing.
+    Trimming requires cleaning up the allocated strings in the old space, and
+     is best handled separately if it's ever needed.*/
+  OP_ASSERT(_ncomments>=(size_t)cur_ncomments);
   comment_lengths=(int *)_ogg_realloc(_tags->comment_lengths,size);
   if(OP_UNLIKELY(comment_lengths==NULL))return OP_EFAULT;
-  comment_lengths[_ncomments]=binary_suffix_len;
+  if(_tags->comment_lengths==NULL){
+    OP_ASSERT(cur_ncomments==0);
+    comment_lengths[cur_ncomments]=0;
+  }
+  comment_lengths[_ncomments]=comment_lengths[cur_ncomments];
   _tags->comment_lengths=comment_lengths;
   size=sizeof(*_tags->user_comments)*(_ncomments+1);
   if(size/sizeof(*_tags->user_comments)!=_ncomments+1)return OP_EFAULT;
-  user_comments=_tags->user_comments;
-  binary_suffix_data=user_comments==NULL?NULL:user_comments[cur_ncomments];
   user_comments=(char **)_ogg_realloc(_tags->user_comments,size);
   if(OP_UNLIKELY(user_comments==NULL))return OP_EFAULT;
-  user_comments[_ncomments]=binary_suffix_data;
+  if(_tags->user_comments==NULL){
+    OP_ASSERT(cur_ncomments==0);
+    user_comments[cur_ncomments]=NULL;
+  }
+  user_comments[_ncomments]=user_comments[cur_ncomments];
   _tags->user_comments=user_comments;
   return 0;
 }
@@ -275,28 +281,30 @@ int opus_tags_copy(OpusTags *_dst,const OpusTags *_src){
   ret=opus_tags_copy_impl(&dst,_src);
   if(OP_UNLIKELY(ret<0))opus_tags_clear(&dst);
   else *_dst=*&dst;
-  return 0;
+  return ret;
 }
 
 int opus_tags_add(OpusTags *_tags,const char *_tag,const char *_value){
-  char *comment;
-  int   tag_len;
-  int   value_len;
-  int   ncomments;
-  int   ret;
+  char   *comment;
+  size_t  tag_len;
+  size_t  value_len;
+  int     ncomments;
+  int     ret;
   ncomments=_tags->comments;
   ret=op_tags_ensure_capacity(_tags,ncomments+1);
   if(OP_UNLIKELY(ret<0))return ret;
   tag_len=strlen(_tag);
   value_len=strlen(_value);
   /*+2 for '=' and '\0'.*/
+  if(tag_len+value_len<tag_len)return OP_EFAULT;
+  if(tag_len+value_len>(size_t)INT_MAX-2)return OP_EFAULT;
   comment=(char *)_ogg_malloc(sizeof(*comment)*(tag_len+value_len+2));
   if(OP_UNLIKELY(comment==NULL))return OP_EFAULT;
   memcpy(comment,_tag,sizeof(*comment)*tag_len);
   comment[tag_len]='=';
   memcpy(comment+tag_len+1,_value,sizeof(*comment)*(value_len+1));
   _tags->user_comments[ncomments]=comment;
-  _tags->comment_lengths[ncomments]=tag_len+value_len+1;
+  _tags->comment_lengths[ncomments]=(int)(tag_len+value_len+1);
   _tags->comments=ncomments+1;
   return 0;
 }
@@ -337,7 +345,10 @@ int opus_tags_set_binary_suffix(OpusTags *_tags,
 }
 
 int opus_tagcompare(const char *_tag_name,const char *_comment){
-  return opus_tagncompare(_tag_name,strlen(_tag_name),_comment);
+  size_t tag_len;
+  tag_len=strlen(_tag_name);
+  if(OP_UNLIKELY(tag_len>(size_t)INT_MAX))return -1;
+  return opus_tagncompare(_tag_name,(int)tag_len,_comment);
 }
 
 int opus_tagncompare(const char *_tag_name,int _tag_len,const char *_comment){
@@ -348,17 +359,18 @@ int opus_tagncompare(const char *_tag_name,int _tag_len,const char *_comment){
 }
 
 const char *opus_tags_query(const OpusTags *_tags,const char *_tag,int _count){
-  char **user_comments;
-  int    tag_len;
-  int    found;
-  int    ncomments;
-  int    ci;
+  char   **user_comments;
+  size_t   tag_len;
+  int      found;
+  int      ncomments;
+  int      ci;
   tag_len=strlen(_tag);
+  if(OP_UNLIKELY(tag_len>(size_t)INT_MAX))return NULL;
   ncomments=_tags->comments;
   user_comments=_tags->user_comments;
   found=0;
   for(ci=0;ci<ncomments;ci++){
-    if(!opus_tagncompare(_tag,tag_len,user_comments[ci])){
+    if(!opus_tagncompare(_tag,(int)tag_len,user_comments[ci])){
       /*We return a pointer to the data, not a copy.*/
       if(_count==found++)return user_comments[ci]+tag_len+1;
     }
@@ -368,17 +380,18 @@ const char *opus_tags_query(const OpusTags *_tags,const char *_tag,int _count){
 }
 
 int opus_tags_query_count(const OpusTags *_tags,const char *_tag){
-  char **user_comments;
-  int    tag_len;
-  int    found;
-  int    ncomments;
-  int    ci;
+  char   **user_comments;
+  size_t   tag_len;
+  int      found;
+  int      ncomments;
+  int      ci;
   tag_len=strlen(_tag);
+  if(OP_UNLIKELY(tag_len>(size_t)INT_MAX))return 0;
   ncomments=_tags->comments;
   user_comments=_tags->user_comments;
   found=0;
   for(ci=0;ci<ncomments;ci++){
-    if(!opus_tagncompare(_tag,tag_len,user_comments[ci]))found++;
+    if(!opus_tagncompare(_tag,(int)tag_len,user_comments[ci]))found++;
   }
   return found;
 }
@@ -403,7 +416,8 @@ static int opus_tags_get_gain(const OpusTags *_tags,int *_gain_q8,
   ncomments=_tags->comments;
   /*Look for the first valid tag with the name _tag_name and use that.*/
   for(ci=0;ci<ncomments;ci++){
-    if(opus_tagncompare(_tag_name,_tag_len,comments[ci])==0){
+    OP_ASSERT(_tag_len<=(size_t)INT_MAX);
+    if(opus_tagncompare(_tag_name,(int)_tag_len,comments[ci])==0){
       char       *p;
       opus_int32  gain_q8;
       int         negative;
@@ -439,8 +453,7 @@ int opus_tags_get_track_gain(const OpusTags *_tags,int *_gain_q8){
 }
 
 static int op_is_jpeg(const unsigned char *_buf,size_t _buf_sz){
-  return _buf_sz>=11&&memcmp(_buf,"\xFF\xD8\xFF\xE0",4)==0
-   &&(_buf[4]<<8|_buf[5])>=16&&memcmp(_buf+6,"JFIF",5)==0;
+  return _buf_sz>=3&&memcmp(_buf,"\xFF\xD8\xFF",3)==0;
 }
 
 /*Tries to extract the width, height, bits per pixel, and palette size of a

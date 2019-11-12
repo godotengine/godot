@@ -65,9 +65,9 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
 
     /* Safety checks */
     silk_assert( VAD_N_BANDS == 4 );
-    silk_assert( MAX_FRAME_LENGTH >= psEncC->frame_length );
-    silk_assert( psEncC->frame_length <= 512 );
-    silk_assert( psEncC->frame_length == 8 * silk_RSHIFT( psEncC->frame_length, 3 ) );
+    celt_assert( MAX_FRAME_LENGTH >= psEncC->frame_length );
+    celt_assert( psEncC->frame_length <= 512 );
+    celt_assert( psEncC->frame_length == 8 * silk_RSHIFT( psEncC->frame_length, 3 ) );
 
     /***********************/
     /* Filter and Decimate */

@@ -539,8 +539,7 @@ static OPUS_INLINE opus_int32 silk_DIV32_16_(opus_int32 a32, opus_int32 b32, cha
    no checking needed for silk_POS_SAT32
    no checking needed for silk_ADD_POS_SAT8
    no checking needed for silk_ADD_POS_SAT16
-   no checking needed for silk_ADD_POS_SAT32
-   no checking needed for silk_ADD_POS_SAT64 */
+   no checking needed for silk_ADD_POS_SAT32 */
 
 #undef silk_LSHIFT8
 #define silk_LSHIFT8(a,b) silk_LSHIFT8_((a), (b), __FILE__, __LINE__)

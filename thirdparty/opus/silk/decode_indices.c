@@ -79,7 +79,7 @@ void silk_decode_indices(
     /**********************/
     psDec->indices.NLSFIndices[ 0 ] = (opus_int8)ec_dec_icdf( psRangeDec, &psDec->psNLSF_CB->CB1_iCDF[ ( psDec->indices.signalType >> 1 ) * psDec->psNLSF_CB->nVectors ], 8 );
     silk_NLSF_unpack( ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[ 0 ] );
-    silk_assert( psDec->psNLSF_CB->order == psDec->LPC_order );
+    celt_assert( psDec->psNLSF_CB->order == psDec->LPC_order );
     for( i = 0; i < psDec->psNLSF_CB->order; i++ ) {
         Ix = ec_dec_icdf( psRangeDec, &psDec->psNLSF_CB->ec_iCDF[ ec_ix[ i ] ], 8 );
         if( Ix == 0 ) {

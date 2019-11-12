@@ -107,7 +107,7 @@ OPUS_EXPORT void opus_pcm_soft_clip(float *_x, int N, int C, float *declip_mem)
          /* Slightly boost "a" by 2^-22. This is just enough to ensure -ffast-math
             does not cause output values larger than +/-1, but small enough not
             to matter even for 24-bit output.  */
-         a += a*2.4e-7;
+         a += a*2.4e-7f;
          if (x[i*C]>0)
             a = -a;
          /* Apply soft clipping */
@@ -252,7 +252,7 @@ int opus_packet_parse_impl(const unsigned char *data, opus_int32 len,
       /* Number of frames encoded in bits 0 to 5 */
       ch = *data++;
       count = ch&0x3F;
-      if (count <= 0 || framesize*count > 5760)
+      if (count <= 0 || framesize*(opus_int32)count > 5760)
          return OPUS_INVALID_PACKET;
       len--;
       /* Padding flag is bit 6 */

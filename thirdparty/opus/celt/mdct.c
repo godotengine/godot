@@ -270,8 +270,8 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
          int rev;
          kiss_fft_scalar yr, yi;
          rev = *bitrev++;
-         yr = S_MUL(*xp2, t[i]) + S_MUL(*xp1, t[N4+i]);
-         yi = S_MUL(*xp1, t[i]) - S_MUL(*xp2, t[N4+i]);
+         yr = ADD32_ovflw(S_MUL(*xp2, t[i]), S_MUL(*xp1, t[N4+i]));
+         yi = SUB32_ovflw(S_MUL(*xp1, t[i]), S_MUL(*xp2, t[N4+i]));
          /* We swap real and imag because we use an FFT instead of an IFFT. */
          yp[2*rev+1] = yr;
          yp[2*rev] = yi;
@@ -301,8 +301,8 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
          t0 = t[i];
          t1 = t[N4+i];
          /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-         yr = S_MUL(re,t0) + S_MUL(im,t1);
-         yi = S_MUL(re,t1) - S_MUL(im,t0);
+         yr = ADD32_ovflw(S_MUL(re,t0), S_MUL(im,t1));
+         yi = SUB32_ovflw(S_MUL(re,t1), S_MUL(im,t0));
          /* We swap real and imag because we're using an FFT instead of an IFFT. */
          re = yp1[1];
          im = yp1[0];
@@ -312,8 +312,8 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
          t0 = t[(N4-i-1)];
          t1 = t[(N2-i-1)];
          /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-         yr = S_MUL(re,t0) + S_MUL(im,t1);
-         yi = S_MUL(re,t1) - S_MUL(im,t0);
+         yr = ADD32_ovflw(S_MUL(re,t0), S_MUL(im,t1));
+         yi = SUB32_ovflw(S_MUL(re,t1), S_MUL(im,t0));
          yp1[0] = yr;
          yp0[1] = yi;
          yp0 += 2;
@@ -333,8 +333,8 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
          kiss_fft_scalar x1, x2;
          x1 = *xp1;
          x2 = *yp1;
-         *yp1++ = MULT16_32_Q15(*wp2, x2) - MULT16_32_Q15(*wp1, x1);
-         *xp1-- = MULT16_32_Q15(*wp1, x2) + MULT16_32_Q15(*wp2, x1);
+         *yp1++ = SUB32_ovflw(MULT16_32_Q15(*wp2, x2), MULT16_32_Q15(*wp1, x1));
+         *xp1-- = ADD32_ovflw(MULT16_32_Q15(*wp1, x2), MULT16_32_Q15(*wp2, x1));
          wp1++;
          wp2--;
       }

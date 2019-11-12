@@ -56,8 +56,8 @@ void silk_encode_indices(
     /* Encode signal type and quantizer offset */
     /*******************************************/
     typeOffset = 2 * psIndices->signalType + psIndices->quantOffsetType;
-    silk_assert( typeOffset >= 0 && typeOffset < 6 );
-    silk_assert( encode_LBRR == 0 || typeOffset >= 2 );
+    celt_assert( typeOffset >= 0 && typeOffset < 6 );
+    celt_assert( encode_LBRR == 0 || typeOffset >= 2 );
     if( encode_LBRR || typeOffset >= 2 ) {
         ec_enc_icdf( psRangeEnc, typeOffset - 2, silk_type_offset_VAD_iCDF, 8 );
     } else {
@@ -90,7 +90,7 @@ void silk_encode_indices(
     /****************/
     ec_enc_icdf( psRangeEnc, psIndices->NLSFIndices[ 0 ], &psEncC->psNLSF_CB->CB1_iCDF[ ( psIndices->signalType >> 1 ) * psEncC->psNLSF_CB->nVectors ], 8 );
     silk_NLSF_unpack( ec_ix, pred_Q8, psEncC->psNLSF_CB, psIndices->NLSFIndices[ 0 ] );
-    silk_assert( psEncC->psNLSF_CB->order == psEncC->predictLPCOrder );
+    celt_assert( psEncC->psNLSF_CB->order == psEncC->predictLPCOrder );
     for( i = 0; i < psEncC->psNLSF_CB->order; i++ ) {
         if( psIndices->NLSFIndices[ i+1 ] >= NLSF_QUANT_MAX_AMPLITUDE ) {
             ec_enc_icdf( psRangeEnc, 2 * NLSF_QUANT_MAX_AMPLITUDE, &psEncC->psNLSF_CB->ec_iCDF[ ec_ix[ i ] ], 8 );

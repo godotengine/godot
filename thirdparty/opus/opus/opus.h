@@ -531,7 +531,7 @@ OPUS_EXPORT int opus_packet_parse(
    const unsigned char *frames[48],
    opus_int16 size[48],
    int *payload_offset
-) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(4);
+) OPUS_ARG_NONNULL(1) OPUS_ARG_NONNULL(5);
 
 /** Gets the bandwidth of an Opus packet.
   * @param [in] data <tt>char*</tt>: Opus packet

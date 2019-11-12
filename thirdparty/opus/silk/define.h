@@ -46,7 +46,6 @@ extern "C"
 /* Limits on bitrate */
 #define MIN_TARGET_RATE_BPS                     5000
 #define MAX_TARGET_RATE_BPS                     80000
-#define TARGET_RATE_TAB_SZ                      8
 
 /* LBRR thresholds */
 #define LBRR_NB_MIN_RATE_BPS                    12000
@@ -56,6 +55,12 @@ extern "C"
 /* DTX settings */
 #define NB_SPEECH_FRAMES_BEFORE_DTX             10      /* eq 200 ms */
 #define MAX_CONSECUTIVE_DTX                     20      /* eq 400 ms */
+#define DTX_ACTIVITY_THRESHOLD                  0.1f
+
+/* VAD decision */
+#define VAD_NO_DECISION                         -1
+#define VAD_NO_ACTIVITY                         0
+#define VAD_ACTIVITY                            1
 
 /* Maximum sampling frequency */
 #define MAX_FS_KHZ                              16
@@ -147,7 +152,7 @@ extern "C"
 #define USE_HARM_SHAPING                        1
 
 /* Max LPC order of noise shaping filters */
-#define MAX_SHAPE_LPC_ORDER                     16
+#define MAX_SHAPE_LPC_ORDER                     24
 
 #define HARM_SHAPE_FIR_TAPS                     3
 
@@ -157,8 +162,7 @@ extern "C"
 #define LTP_BUF_LENGTH                          512
 #define LTP_MASK                                ( LTP_BUF_LENGTH - 1 )
 
-#define DECISION_DELAY                          32
-#define DECISION_DELAY_MASK                     ( DECISION_DELAY - 1 )
+#define DECISION_DELAY                          40
 
 /* Number of subframes for excitation entropy coding */
 #define SHELL_CODEC_FRAME_LENGTH                16
@@ -173,11 +177,7 @@ extern "C"
 
 #define MAX_MATRIX_SIZE                         MAX_LPC_ORDER /* Max of LPC Order and LTP order */
 
-#if( MAX_LPC_ORDER > DECISION_DELAY )
 # define NSQ_LPC_BUF_LENGTH                     MAX_LPC_ORDER
-#else
-# define NSQ_LPC_BUF_LENGTH                     DECISION_DELAY
-#endif
 
 /***************************/
 /* Voice activity detector */
@@ -205,7 +205,6 @@ extern "C"
 /******************/
 #define NLSF_W_Q                                2
 #define NLSF_VQ_MAX_VECTORS                     32
-#define NLSF_VQ_MAX_SURVIVORS                   32
 #define NLSF_QUANT_MAX_AMPLITUDE                4
 #define NLSF_QUANT_MAX_AMPLITUDE_EXT            10
 #define NLSF_QUANT_LEVEL_ADJ                    0.1

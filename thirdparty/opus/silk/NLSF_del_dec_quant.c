@@ -84,7 +84,7 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
     nStates = 1;
     RD_Q25[ 0 ] = 0;
     prev_out_Q10[ 0 ] = 0;
-    for( i = order - 1; ; i-- ) {
+    for( i = order - 1; i >= 0; i-- ) {
         rates_Q5 = &ec_rates_Q5[ ec_ix[ i ] ];
         in_Q10 = x_Q10[ i ];
         for( j = 0; j < nStates; j++ ) {
@@ -131,7 +131,7 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
             RD_Q25[ j + nStates ] = silk_SMLABB( silk_MLA( RD_tmp_Q25, silk_SMULBB( diff_Q10, diff_Q10 ), w_Q5[ i ] ), mu_Q20, rate1_Q5 );
         }
 
-        if( nStates <= ( NLSF_QUANT_DEL_DEC_STATES >> 1 ) ) {
+        if( nStates <= NLSF_QUANT_DEL_DEC_STATES/2 ) {
             /* double number of states and copy */
             for( j = 0; j < nStates; j++ ) {
                 ind[ j + nStates ][ i ] = ind[ j ][ i ] + 1;
@@ -140,7 +140,7 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
             for( j = nStates; j < NLSF_QUANT_DEL_DEC_STATES; j++ ) {
                 ind[ j ][ i ] = ind[ j - nStates ][ i ];
             }
-        } else if( i > 0 ) {
+        } else {
             /* sort lower and upper half of RD_Q25, pairwise */
             for( j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++ ) {
                 if( RD_Q25[ j ] > RD_Q25[ j + NLSF_QUANT_DEL_DEC_STATES ] ) {
@@ -191,8 +191,6 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
             for( j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++ ) {
                 ind[ j ][ i ] += silk_RSHIFT( ind_sort[ j ], NLSF_QUANT_DEL_DEC_STATES_LOG2 );
             }
-        } else {  /* i == 0 */
-            break;
         }
     }
 
