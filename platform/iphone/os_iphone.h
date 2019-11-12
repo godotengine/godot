@@ -167,9 +167,6 @@ public:
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
-
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
 

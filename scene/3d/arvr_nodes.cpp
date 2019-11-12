@@ -376,7 +376,7 @@ String ARVRController::get_configuration_warning() const {
 };
 
 ARVRController::ARVRController() {
-	controller_id = 0;
+	controller_id = 1;
 	is_active = true;
 	button_states = 0;
 };
@@ -502,7 +502,7 @@ Plane ARVRAnchor::get_plane() const {
 };
 
 ARVRAnchor::ARVRAnchor() {
-	anchor_id = 0;
+	anchor_id = 1;
 	is_active = true;
 };
 

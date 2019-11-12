@@ -363,7 +363,7 @@ static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
   assert(xbits <= 3);
   switch (xbits) {
     case 0: {
-      const __m128i ff = _mm_set1_epi16(0xff00);
+      const __m128i ff = _mm_set1_epi16((short)0xff00);
       const __m128i zero = _mm_setzero_si128();
       // Store 0xff000000 | (row[x] << 8).
       for (x = 0; x + 16 <= width; x += 16, dst += 16) {
@@ -382,7 +382,7 @@ static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
       break;
     }
     case 1: {
-      const __m128i ff = _mm_set1_epi16(0xff00);
+      const __m128i ff = _mm_set1_epi16((short)0xff00);
       const __m128i mul = _mm_set1_epi16(0x110);
       for (x = 0; x + 16 <= width; x += 16, dst += 8) {
         // 0a0b | (where a/b are 4 bits).

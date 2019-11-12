@@ -45,6 +45,16 @@
 #include "mbedtls/pem.h"
 #endif /* MBEDTLS_PEM_WRITE_C */
 
+/*
+ * For the currently used signature algorithms the buffer to store any signature
+ * must be at least of size MAX(MBEDTLS_ECDSA_MAX_LEN, MBEDTLS_MPI_MAX_SIZE)
+ */
+#if MBEDTLS_ECDSA_MAX_LEN > MBEDTLS_MPI_MAX_SIZE
+#define SIGNATURE_MAX_SIZE MBEDTLS_ECDSA_MAX_LEN
+#else
+#define SIGNATURE_MAX_SIZE MBEDTLS_MPI_MAX_SIZE
+#endif
+
 void mbedtls_x509write_crt_init( mbedtls_x509write_cert *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_x509write_cert ) );
@@ -218,26 +228,51 @@ int mbedtls_x509write_crt_set_authority_key_identifier( mbedtls_x509write_cert *
 }
 #endif /* MBEDTLS_SHA1_C */
 
+static size_t crt_get_unused_bits_for_named_bitstring( unsigned char bitstring,
+                                                       size_t bit_offset )
+{
+    size_t unused_bits;
+
+     /* Count the unused bits removing trailing 0s */
+    for( unused_bits = bit_offset; unused_bits < 8; unused_bits++ )
+        if( ( ( bitstring >> unused_bits ) & 0x1 ) != 0 )
+            break;
+
+     return( unused_bits );
+}
+
 int mbedtls_x509write_crt_set_key_usage( mbedtls_x509write_cert *ctx,
                                          unsigned int key_usage )
 {
     unsigned char buf[4], ku;
     unsigned char *c;
     int ret;
+    size_t unused_bits;
+    const unsigned int allowed_bits = MBEDTLS_X509_KU_DIGITAL_SIGNATURE |
+        MBEDTLS_X509_KU_NON_REPUDIATION   |
+        MBEDTLS_X509_KU_KEY_ENCIPHERMENT  |
+        MBEDTLS_X509_KU_DATA_ENCIPHERMENT |
+        MBEDTLS_X509_KU_KEY_AGREEMENT     |
+        MBEDTLS_X509_KU_KEY_CERT_SIGN     |
+        MBEDTLS_X509_KU_CRL_SIGN;
 
-    /* We currently only support 7 bits, from 0x80 to 0x02 */
-    if( ( key_usage & ~0xfe ) != 0 )
+    /* Check that nothing other than the allowed flags is set */
+    if( ( key_usage & ~allowed_bits ) != 0 )
         return( MBEDTLS_ERR_X509_FEATURE_UNAVAILABLE );
 
     c = buf + 4;
-    ku = (unsigned char) key_usage;
+    ku = (unsigned char)key_usage;
+    unused_bits = crt_get_unused_bits_for_named_bitstring( ku, 1 );
+    ret = mbedtls_asn1_write_bitstring( &c, buf, &ku, 8 - unused_bits );
 
-    if( ( ret = mbedtls_asn1_write_bitstring( &c, buf, &ku, 7 ) ) != 4 )
+    if( ret < 0 )
         return( ret );
+    else if( ret < 3 || ret > 4 )
+        return( MBEDTLS_ERR_X509_INVALID_FORMAT );
 
     ret = mbedtls_x509write_crt_set_extension( ctx, MBEDTLS_OID_KEY_USAGE,
                                        MBEDTLS_OID_SIZE( MBEDTLS_OID_KEY_USAGE ),
-                                       1, buf, 4 );
+                                       1, c, (size_t)ret );
     if( ret != 0 )
         return( ret );
 
@@ -249,16 +284,22 @@ int mbedtls_x509write_crt_set_ns_cert_type( mbedtls_x509write_cert *ctx,
 {
     unsigned char buf[4];
     unsigned char *c;
+    size_t unused_bits;
     int ret;
 
     c = buf + 4;
 
-    if( ( ret = mbedtls_asn1_write_bitstring( &c, buf, &ns_cert_type, 8 ) ) != 4 )
+    unused_bits = crt_get_unused_bits_for_named_bitstring( ns_cert_type, 0 );
+    ret = mbedtls_asn1_write_bitstring( &c,
+                                        buf,
+                                        &ns_cert_type,
+                                        8 - unused_bits );
+    if( ret < 3 || ret > 4 )
         return( ret );
 
     ret = mbedtls_x509write_crt_set_extension( ctx, MBEDTLS_OID_NS_CERT_TYPE,
                                        MBEDTLS_OID_SIZE( MBEDTLS_OID_NS_CERT_TYPE ),
-                                       0, buf, 4 );
+                                       0, c, (size_t)ret );
     if( ret != 0 )
         return( ret );
 
@@ -303,7 +344,7 @@ int mbedtls_x509write_crt_der( mbedtls_x509write_cert *ctx, unsigned char *buf, 
     size_t sig_oid_len = 0;
     unsigned char *c, *c2;
     unsigned char hash[64];
-    unsigned char sig[MBEDTLS_MPI_MAX_SIZE];
+    unsigned char sig[SIGNATURE_MAX_SIZE];
     unsigned char tmp_buf[2048];
     size_t sub_len = 0, pub_len = 0, sig_and_oid_len = 0, sig_len;
     size_t len = 0;

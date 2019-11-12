@@ -38,6 +38,12 @@
 #ifndef MBEDTLS_BN_MUL_H
 #define MBEDTLS_BN_MUL_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "bignum.h"
 
 #if defined(MBEDTLS_HAVE_ASM)
@@ -636,7 +642,8 @@
            "r6", "r7", "r8", "r9", "cc"         \
          );
 
-#elif defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1)
+#elif (__ARM_ARCH >= 6) && \
+    defined (__ARM_FEATURE_DSP) && (__ARM_FEATURE_DSP == 1)
 
 #define MULADDC_INIT                            \
     asm(
@@ -750,7 +757,7 @@
         "sw     $10, %2         \n\t"   \
         : "=m" (c), "=m" (d), "=m" (s)                      \
         : "m" (s), "m" (d), "m" (c), "m" (b)                \
-        : "$9", "$10", "$11", "$12", "$13", "$14", "$15"    \
+        : "$9", "$10", "$11", "$12", "$13", "$14", "$15", "lo", "hi" \
     );
 
 #endif /* MIPS */

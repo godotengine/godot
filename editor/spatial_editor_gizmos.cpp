@@ -36,6 +36,7 @@
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/collision_shape.h"
+#include "scene/3d/cpu_particles.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
@@ -571,9 +572,11 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		Transform orig_camera_transform = p_camera->get_camera_transform();
 
-		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01) {
+		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01 &&
+				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
 			p_camera->look_at(t.origin, Vector3(0, 1, 0));
 		}
+
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
 		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
 
@@ -582,7 +585,7 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		p_camera->set_global_transform(orig_camera_transform);
 
-		Rect2 rect(p0, p1 - p0);
+		Rect2 rect(p0, (p1 - p0).abs());
 
 		rect.set_position(center - rect.get_size() / 2.0);
 
@@ -2369,6 +2372,33 @@ void VisibilityNotifierGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
+}
+
+////
+
+CPUParticlesGizmoPlugin::CPUParticlesGizmoPlugin() {
+	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoCPUParticles", "EditorIcons"));
+}
+
+bool CPUParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<CPUParticles>(p_spatial) != NULL;
+}
+
+String CPUParticlesGizmoPlugin::get_name() const {
+	return "CPUParticles";
+}
+
+int CPUParticlesGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool CPUParticlesGizmoPlugin::is_selectable_when_hidden() const {
+	return true;
+}
+
+void CPUParticlesGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	Ref<Material> icon = get_material("particles_icon", p_gizmo);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
 ////

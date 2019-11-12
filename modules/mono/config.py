@@ -120,8 +120,8 @@ def configure(env):
             else:
                 env.Append(LINKFLAGS=os.path.join(mono_lib_path, mono_static_lib_name + lib_suffix))
 
-                env.Append(LIBS='psapi')
-                env.Append(LIBS='version')
+                env.Append(LIBS=['psapi'])
+                env.Append(LIBS=['version'])
         else:
             mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
 
@@ -131,7 +131,7 @@ def configure(env):
             if env.msvc:
                 env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
             else:
-                env.Append(LIBS=mono_lib_name)
+                env.Append(LIBS=[mono_lib_name])
 
             mono_bin_path = os.path.join(mono_root, 'bin')
 

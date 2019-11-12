@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_HMAC_DRBG_H
 #define MBEDTLS_HMAC_DRBG_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "md.h"
 
 #if defined(MBEDTLS_THREADING_C)
@@ -76,7 +82,7 @@ extern "C" {
  */
 typedef struct mbedtls_hmac_drbg_context
 {
-    /* Working state: the key K is not stored explicitely,
+    /* Working state: the key K is not stored explicitly,
      * but is implied by the HMAC context */
     mbedtls_md_context_t md_ctx;                    /*!< HMAC context (inc. K)  */
     unsigned char V[MBEDTLS_MD_MAX_SIZE];  /*!< V in the spec          */

@@ -2478,11 +2478,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
-		gui.tooltip = NULL;
-	if (gui.tooltip == p_control) {
-		gui.tooltip = NULL;
 		_gui_cancel_tooltip();
-	}
 }
 
 void Viewport::_gui_remove_control(Control *p_control) {
@@ -2565,7 +2561,7 @@ void Viewport::_drop_mouse_focus() {
 
 List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 
-	gui.modal_stack.push_back(p_control);
+	List<Control *>::Element *node = gui.modal_stack.push_back(p_control);
 	if (gui.key_focus)
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
@@ -2576,7 +2572,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		_drop_mouse_focus();
 	}
 
-	return gui.modal_stack.back();
+	return node;
 }
 
 Control *Viewport::_gui_get_focus_owner() {

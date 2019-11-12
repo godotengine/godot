@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -85,10 +85,10 @@ if (c < 256)
   if ((*data & XCL_HASPROP) == 0)
     {
     if ((*data & XCL_MAP) == 0) return negated;
-    return (((uint8_t *)(data + 1))[c/8] & (1 << (c&7))) != 0;
+    return (((uint8_t *)(data + 1))[c/8] & (1u << (c&7))) != 0;
     }
   if ((*data & XCL_MAP) != 0 &&
-    (((uint8_t *)(data + 1))[c/8] & (1 << (c&7))) != 0)
+    (((uint8_t *)(data + 1))[c/8] & (1u << (c&7))) != 0)
     return !negated; /* char found */
   }
 

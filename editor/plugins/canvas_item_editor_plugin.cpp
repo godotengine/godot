@@ -3547,18 +3547,19 @@ void CanvasItemEditor::_update_scrollbars() {
 	// Constraints the view offset and updates the scrollbars
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
+	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		if (ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+		if (constrain_editor_view && ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
 
 		v_scroll->hide();
 	} else {
-		if (view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
 			view_offset.y = MAX(end.y, previous_update_view_offset.y);
 		}
-		if (view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
+		if (constrain_editor_view && view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
 			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
 		}
 
@@ -3569,16 +3570,16 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		if (ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+		if (constrain_editor_view && ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
 
 		h_scroll->hide();
 	} else {
-		if (view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
 			view_offset.x = MAX(end.x, previous_update_view_offset.x);
 		}
-		if (view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
+		if (constrain_editor_view && view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
 			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
 		}
 
@@ -3903,6 +3904,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_rulers = !show_rulers;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 			view_menu->get_popup()->set_item_checked(idx, show_rulers);
+			_update_scrollbars();
 			viewport->update();
 		} break;
 		case SHOW_GUIDES: {
@@ -4371,6 +4373,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
+	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_relative"] = snap_relative;
@@ -4381,6 +4384,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
+	bool update_scrollbars = false;
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
 		zoom = p_state["zoom"];
@@ -4389,7 +4393,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	if (state.has("ofs")) {
 		view_offset = p_state["ofs"];
 		previous_update_view_offset = view_offset;
-		_update_scrollbars();
+		update_scrollbars = true;
 	}
 
 	if (state.has("grid_offset")) {
@@ -4477,6 +4481,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_rulers = state["show_rulers"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 		view_menu->get_popup()->set_item_checked(idx, show_rulers);
+		update_scrollbars = true;
 	}
 
 	if (state.has("show_guides")) {
@@ -4495,6 +4500,11 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_edit_locks = state["show_edit_locks"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
 		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+	}
+
+	if (state.has("show_zoom_control")) {
+		// This one is not user-controllable, but instrumentable
+		zoom_hb->set_visible(state["show_zoom_control"]);
 	}
 
 	if (state.has("snap_rotation")) {
@@ -4521,6 +4531,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 	}
 
+	if (update_scrollbars) {
+		_update_scrollbars();
+	}
 	viewport->update();
 }
 

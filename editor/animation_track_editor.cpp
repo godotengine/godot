@@ -544,7 +544,7 @@ public:
 
 		if (use_fps && animation->get_step() > 0) {
 			float max_frame = animation->get_length() / animation->get_step();
-			p_list->push_back(PropertyInfo(Variant::REAL, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",0.01"));
+			p_list->push_back(PropertyInfo(Variant::REAL, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
 		} else {
 			p_list->push_back(PropertyInfo(Variant::REAL, "time", PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01"));
 		}
@@ -1205,7 +1205,9 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 ////////////////////////////////////
 
 void AnimationTrackEdit::_notification(int p_what) {
+
 	if (p_what == NOTIFICATION_DRAW) {
+
 		if (animation.is_null())
 			return;
 		ERR_FAIL_INDEX(track, animation->get_track_count());
@@ -1241,20 +1243,15 @@ void AnimationTrackEdit::_notification(int p_what) {
 			int ofs = in_group ? check->get_width() : 0; //not the best reference for margin but..
 
 			check_rect = Rect2(Point2(ofs, int(get_size().height - check->get_height()) / 2), check->get_size());
-
 			draw_texture(check, check_rect.position);
-
 			ofs += check->get_width() + hsep;
 
 			Ref<Texture> type_icon = type_icons[animation->track_get_type(track)];
-
 			draw_texture(type_icon, Point2(ofs, int(get_size().height - type_icon->get_height()) / 2));
 			ofs += type_icon->get_width() + hsep;
 
 			NodePath path = animation->track_get_path(track);
-
 			Node *node = NULL;
-
 			if (root && root->has_node(path)) {
 				node = root->get_node(path);
 			}
@@ -1319,12 +1316,11 @@ void AnimationTrackEdit::_notification(int p_what) {
 			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 		}
 
-		// KEYFAMES //
+		// KEYFRAMES //
 
 		draw_bg(limit, get_size().width - timeline->get_buttons_width());
 
 		{
-
 			float scale = timeline->get_zoom_scale();
 			int limit_end = get_size().width - timeline->get_buttons_width();
 
@@ -1353,6 +1349,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 		draw_fg(limit, get_size().width - timeline->get_buttons_width());
 
 		// BUTTONS //
+
 		{
 
 			Ref<Texture> wrap_icon[2] = {
@@ -1577,7 +1574,18 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	if (p_x < p_clip_left || p_x > p_clip_right)
 		return;
 
-	Vector2 ofs(p_x - type_icon->get_width() / 2, int(get_size().height - type_icon->get_height()) / 2);
+	Ref<Texture> icon_to_draw = p_selected ? selected_icon : type_icon;
+
+	// Override type icon for invalid value keys, unless selected.
+	if (!p_selected && animation->track_get_type(track) == Animation::TYPE_VALUE) {
+		const Variant &v = animation->track_get_key_value(track, p_index);
+		Variant::Type valid_type = Variant::NIL;
+		if (!_is_value_key_valid(v, valid_type)) {
+			icon_to_draw = get_icon("KeyInvalid", "EditorIcons");
+		}
+	}
+
+	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, int(get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 		Ref<Font> font = get_font("font", "Label");
@@ -1601,16 +1609,13 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 		text += ")";
 
-		int limit = MAX(0, p_clip_right - p_x - type_icon->get_width());
+		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
 		if (limit > 0) {
-			draw_string(font, Vector2(p_x + type_icon->get_width(), int(get_size().height - font->get_height()) / 2 + font->get_ascent()), text, color, limit);
+			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height()) / 2 + font->get_ascent()), text, color, limit);
 		}
 	}
-	if (p_selected) {
-		draw_texture(selected_icon, ofs);
-	} else {
-		draw_texture(type_icon, ofs);
-	}
+
+	draw_texture(icon_to_draw, ofs);
 }
 
 //helper
@@ -1775,6 +1780,27 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 	undo_redo->commit_action();
 }
 
+bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
+
+	RES res;
+	Vector<StringName> leftover_path;
+	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
+
+	Object *obj = NULL;
+	if (res.is_valid()) {
+		obj = res.ptr();
+	} else if (node) {
+		obj = node;
+	}
+
+	bool prop_exists = false;
+	if (obj) {
+		r_valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
+	}
+
+	return (!prop_exists || Variant::can_convert(p_key_value.get_type(), r_valid_type));
+}
+
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 	if (check_rect.has_point(p_pos)) {
@@ -1845,29 +1871,10 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 				} break;
 				case Animation::TYPE_VALUE: {
 
-					Variant v = animation->track_get_key_value(track, key_idx);
-					//text+="value: "+String(v)+"\n";
-
-					bool prop_exists = false;
-					Variant::Type valid_type = Variant::NIL;
-					Object *obj = NULL;
-
-					RES res;
-					Vector<StringName> leftover_path;
-					Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
-
-					if (res.is_valid()) {
-						obj = res.ptr();
-					} else if (node) {
-						obj = node;
-					}
-
-					if (obj) {
-						valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
-					}
-
+					const Variant &v = animation->track_get_key_value(track, key_idx);
 					text += "Type: " + Variant::get_type_name(v.get_type()) + "\n";
-					if (prop_exists && !Variant::can_convert(v.get_type(), valid_type)) {
+					Variant::Type valid_type = Variant::NIL;
+					if (!_is_value_key_valid(v, valid_type)) {
 						text += "Value: " + String(v) + "  (Invalid, expected type: " + Variant::get_type_name(valid_type) + ")\n";
 					} else {
 						text += "Value: " + String(v) + "\n";
@@ -4122,6 +4129,7 @@ void AnimationTrackEditor::_update_key_edit() {
 	key_edit = memnew(AnimationTrackKeyEdit);
 	key_edit->animation = animation;
 	key_edit->track = selection.front()->key().track;
+	key_edit->use_fps = timeline->is_using_fps();
 
 	float ofs = animation->track_get_key_time(key_edit->track, selection.front()->key().key);
 	key_edit->key_ofs = ofs;

@@ -395,9 +395,9 @@ static uint32_t RCON[10];
 /*
  * Tables generation code
  */
-#define ROTL8(x) ( ( x << 8 ) & 0xFFFFFFFF ) | ( x >> 24 )
-#define XTIME(x) ( ( x << 1 ) ^ ( ( x & 0x80 ) ? 0x1B : 0x00 ) )
-#define MUL(x,y) ( ( x && y ) ? pow[(log[x]+log[y]) % 255] : 0 )
+#define ROTL8(x) ( ( (x) << 8 ) & 0xFFFFFFFF ) | ( (x) >> 24 )
+#define XTIME(x) ( ( (x) << 1 ) ^ ( ( (x) & 0x80 ) ? 0x1B : 0x00 ) )
+#define MUL(x,y) ( ( (x) && (y) ) ? pow[(log[(x)]+log[(y)]) % 255] : 0 )
 
 static int aes_init_done = 0;
 
@@ -815,51 +815,53 @@ int mbedtls_aes_xts_setkey_dec( mbedtls_aes_xts_context *ctx,
 
 #endif /* !MBEDTLS_AES_SETKEY_DEC_ALT */
 
-#define AES_FROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)         \
-{                                                   \
-    X0 = *RK++ ^ AES_FT0( ( Y0       ) & 0xFF ) ^   \
-                 AES_FT1( ( Y1 >>  8 ) & 0xFF ) ^   \
-                 AES_FT2( ( Y2 >> 16 ) & 0xFF ) ^   \
-                 AES_FT3( ( Y3 >> 24 ) & 0xFF );    \
-                                                    \
-    X1 = *RK++ ^ AES_FT0( ( Y1       ) & 0xFF ) ^   \
-                 AES_FT1( ( Y2 >>  8 ) & 0xFF ) ^   \
-                 AES_FT2( ( Y3 >> 16 ) & 0xFF ) ^   \
-                 AES_FT3( ( Y0 >> 24 ) & 0xFF );    \
-                                                    \
-    X2 = *RK++ ^ AES_FT0( ( Y2       ) & 0xFF ) ^   \
-                 AES_FT1( ( Y3 >>  8 ) & 0xFF ) ^   \
-                 AES_FT2( ( Y0 >> 16 ) & 0xFF ) ^   \
-                 AES_FT3( ( Y1 >> 24 ) & 0xFF );    \
-                                                    \
-    X3 = *RK++ ^ AES_FT0( ( Y3       ) & 0xFF ) ^   \
-                 AES_FT1( ( Y0 >>  8 ) & 0xFF ) ^   \
-                 AES_FT2( ( Y1 >> 16 ) & 0xFF ) ^   \
-                 AES_FT3( ( Y2 >> 24 ) & 0xFF );    \
-}
+#define AES_FROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)                     \
+    do                                                          \
+    {                                                           \
+        (X0) = *RK++ ^ AES_FT0( ( (Y0)       ) & 0xFF ) ^       \
+                       AES_FT1( ( (Y1) >>  8 ) & 0xFF ) ^       \
+                       AES_FT2( ( (Y2) >> 16 ) & 0xFF ) ^       \
+                       AES_FT3( ( (Y3) >> 24 ) & 0xFF );        \
+                                                                \
+        (X1) = *RK++ ^ AES_FT0( ( (Y1)       ) & 0xFF ) ^       \
+                       AES_FT1( ( (Y2) >>  8 ) & 0xFF ) ^       \
+                       AES_FT2( ( (Y3) >> 16 ) & 0xFF ) ^       \
+                       AES_FT3( ( (Y0) >> 24 ) & 0xFF );        \
+                                                                \
+        (X2) = *RK++ ^ AES_FT0( ( (Y2)       ) & 0xFF ) ^       \
+                       AES_FT1( ( (Y3) >>  8 ) & 0xFF ) ^       \
+                       AES_FT2( ( (Y0) >> 16 ) & 0xFF ) ^       \
+                       AES_FT3( ( (Y1) >> 24 ) & 0xFF );        \
+                                                                \
+        (X3) = *RK++ ^ AES_FT0( ( (Y3)       ) & 0xFF ) ^       \
+                       AES_FT1( ( (Y0) >>  8 ) & 0xFF ) ^       \
+                       AES_FT2( ( (Y1) >> 16 ) & 0xFF ) ^       \
+                       AES_FT3( ( (Y2) >> 24 ) & 0xFF );        \
+    } while( 0 )
 
-#define AES_RROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)         \
-{                                                   \
-    X0 = *RK++ ^ AES_RT0( ( Y0       ) & 0xFF ) ^   \
-                 AES_RT1( ( Y3 >>  8 ) & 0xFF ) ^   \
-                 AES_RT2( ( Y2 >> 16 ) & 0xFF ) ^   \
-                 AES_RT3( ( Y1 >> 24 ) & 0xFF );    \
-                                                    \
-    X1 = *RK++ ^ AES_RT0( ( Y1       ) & 0xFF ) ^   \
-                 AES_RT1( ( Y0 >>  8 ) & 0xFF ) ^   \
-                 AES_RT2( ( Y3 >> 16 ) & 0xFF ) ^   \
-                 AES_RT3( ( Y2 >> 24 ) & 0xFF );    \
-                                                    \
-    X2 = *RK++ ^ AES_RT0( ( Y2       ) & 0xFF ) ^   \
-                 AES_RT1( ( Y1 >>  8 ) & 0xFF ) ^   \
-                 AES_RT2( ( Y0 >> 16 ) & 0xFF ) ^   \
-                 AES_RT3( ( Y3 >> 24 ) & 0xFF );    \
-                                                    \
-    X3 = *RK++ ^ AES_RT0( ( Y3       ) & 0xFF ) ^   \
-                 AES_RT1( ( Y2 >>  8 ) & 0xFF ) ^   \
-                 AES_RT2( ( Y1 >> 16 ) & 0xFF ) ^   \
-                 AES_RT3( ( Y0 >> 24 ) & 0xFF );    \
-}
+#define AES_RROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)                 \
+    do                                                      \
+    {                                                       \
+        (X0) = *RK++ ^ AES_RT0( ( (Y0)       ) & 0xFF ) ^   \
+                       AES_RT1( ( (Y3) >>  8 ) & 0xFF ) ^   \
+                       AES_RT2( ( (Y2) >> 16 ) & 0xFF ) ^   \
+                       AES_RT3( ( (Y1) >> 24 ) & 0xFF );    \
+                                                            \
+        (X1) = *RK++ ^ AES_RT0( ( (Y1)       ) & 0xFF ) ^   \
+                       AES_RT1( ( (Y0) >>  8 ) & 0xFF ) ^   \
+                       AES_RT2( ( (Y3) >> 16 ) & 0xFF ) ^   \
+                       AES_RT3( ( (Y2) >> 24 ) & 0xFF );    \
+                                                            \
+        (X2) = *RK++ ^ AES_RT0( ( (Y2)       ) & 0xFF ) ^   \
+                       AES_RT1( ( (Y1) >>  8 ) & 0xFF ) ^   \
+                       AES_RT2( ( (Y0) >> 16 ) & 0xFF ) ^   \
+                       AES_RT3( ( (Y3) >> 24 ) & 0xFF );    \
+                                                            \
+        (X3) = *RK++ ^ AES_RT0( ( (Y3)       ) & 0xFF ) ^   \
+                       AES_RT1( ( (Y2) >>  8 ) & 0xFF ) ^   \
+                       AES_RT2( ( (Y1) >> 16 ) & 0xFF ) ^   \
+                       AES_RT3( ( (Y0) >> 24 ) & 0xFF );    \
+    } while( 0 )
 
 /*
  * AES-ECB block encryption

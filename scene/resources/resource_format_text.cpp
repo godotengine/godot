@@ -1664,15 +1664,15 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			Vector<StringName> groups = state->get_node_groups(i);
 
 			String header = "[node";
-			header += " name=\"" + String(name) + "\"";
+			header += " name=\"" + String(name).c_escape() + "\"";
 			if (type != StringName()) {
 				header += " type=\"" + String(type) + "\"";
 			}
 			if (path != NodePath()) {
-				header += " parent=\"" + String(path.simplified()) + "\"";
+				header += " parent=\"" + String(path.simplified()).c_escape() + "\"";
 			}
 			if (owner != NodePath() && owner != NodePath(".")) {
-				header += " owner=\"" + String(owner.simplified()) + "\"";
+				header += " owner=\"" + String(owner.simplified()).c_escape() + "\"";
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";

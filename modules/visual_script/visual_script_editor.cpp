@@ -2040,7 +2040,7 @@ void VisualScriptEditor::set_edit_state(const Variant &p_state) {
 
 	Dictionary d = p_state;
 	if (d.has("function")) {
-		edited_func = p_state;
+		edited_func = d["function"];
 		selected = edited_func;
 	}
 

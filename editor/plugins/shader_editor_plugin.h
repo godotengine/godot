@@ -88,12 +88,12 @@ class ShaderEditor : public PanelContainer {
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
 		SEARCH_GOTO_LINE,
-
+		HELP_DOCS,
 	};
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
-	MenuButton *settings_menu;
+	MenuButton *help_menu;
 	PopupMenu *context_menu;
 	uint64_t idle;
 

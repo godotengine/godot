@@ -49,9 +49,9 @@ size_t ZSTD_ldm_getTableSize(ldmParams_t params)
 {
     size_t const ldmHSize = ((size_t)1) << params.hashLog;
     size_t const ldmBucketSizeLog = MIN(params.bucketSizeLog, params.hashLog);
-    size_t const ldmBucketSize =
-        ((size_t)1) << (params.hashLog - ldmBucketSizeLog);
-    size_t const totalSize = ldmBucketSize + ldmHSize * sizeof(ldmEntry_t);
+    size_t const ldmBucketSize = ((size_t)1) << (params.hashLog - ldmBucketSizeLog);
+    size_t const totalSize = ZSTD_cwksp_alloc_size(ldmBucketSize)
+                           + ZSTD_cwksp_alloc_size(ldmHSize * sizeof(ldmEntry_t));
     return params.enableLdm ? totalSize : 0;
 }
 
@@ -447,7 +447,7 @@ size_t ZSTD_ldm_generateSequences(
         if (ZSTD_window_needOverflowCorrection(ldmState->window, chunkEnd)) {
             U32 const ldmHSize = 1U << params->hashLog;
             U32 const correction = ZSTD_window_correctOverflow(
-                &ldmState->window, /* cycleLog */ 0, maxDist, src);
+                &ldmState->window, /* cycleLog */ 0, maxDist, chunkStart);
             ZSTD_ldm_reduceTable(ldmState->hashTable, ldmHSize, correction);
         }
         /* 2. We enforce the maximum offset allowed.
@@ -583,7 +583,7 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
                 rep[i] = rep[i-1];
             rep[0] = sequence.offset;
             /* Store the sequence */
-            ZSTD_storeSeq(seqStore, newLitLength, ip - newLitLength,
+            ZSTD_storeSeq(seqStore, newLitLength, ip - newLitLength, iend,
                           sequence.offset + ZSTD_REP_MOVE,
                           sequence.matchLength - MINMATCH);
             ip += sequence.matchLength;

@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_SSL_TICKET_H
 #define MBEDTLS_SSL_TICKET_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 /*
  * This implementation of the session ticket callbacks includes key
  * management, rotating the keys periodically in order to preserve forward
@@ -111,14 +117,14 @@ int mbedtls_ssl_ticket_setup( mbedtls_ssl_ticket_context *ctx,
 /**
  * \brief           Implementation of the ticket write callback
  *
- * \note            See \c mbedlts_ssl_ticket_write_t for description
+ * \note            See \c mbedtls_ssl_ticket_write_t for description
  */
 mbedtls_ssl_ticket_write_t mbedtls_ssl_ticket_write;
 
 /**
  * \brief           Implementation of the ticket parse callback
  *
- * \note            See \c mbedlts_ssl_ticket_parse_t for description
+ * \note            See \c mbedtls_ssl_ticket_parse_t for description
  */
 mbedtls_ssl_ticket_parse_t mbedtls_ssl_ticket_parse;
 

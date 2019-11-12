@@ -98,7 +98,7 @@ mbedtls_x509_crt;
  * Build flag from an algorithm/curve identifier (pk, md, ecp)
  * Since 0 is always XXX_NONE, ignore it.
  */
-#define MBEDTLS_X509_ID_FLAG( id )   ( 1 << ( id - 1 ) )
+#define MBEDTLS_X509_ID_FLAG( id )   ( 1 << ( (id) - 1 ) )
 
 /**
  * Security profile for certificate verification.

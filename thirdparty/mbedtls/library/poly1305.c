@@ -58,10 +58,10 @@
 #define POLY1305_BLOCK_SIZE_BYTES ( 16U )
 
 #define BYTES_TO_U32_LE( data, offset )                           \
-    ( (uint32_t) data[offset]                                     \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 1] << 8 )   \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 2] << 16 )  \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 3] << 24 )  \
+    ( (uint32_t) (data)[offset]                                     \
+          | (uint32_t) ( (uint32_t) (data)[( offset ) + 1] << 8 )   \
+          | (uint32_t) ( (uint32_t) (data)[( offset ) + 2] << 16 )  \
+          | (uint32_t) ( (uint32_t) (data)[( offset ) + 3] << 24 )  \
     )
 
 /*

@@ -51,7 +51,7 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 	0, 0, 1, 2, 3, 4, 5, 6, 7
 };
 
-#define W_OP (1 << 31)
+#define W_OP (1u << 31)
 #define RD(rd) (reg_map[rd])
 #define RT(rt) (reg_map[rt])
 #define RN(rn) (reg_map[rn] << 5)
@@ -560,7 +560,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 	/* dst must be register, TMP_REG1
 	   arg1 must be register, TMP_REG1, imm
 	   arg2 must be register, TMP_REG2, imm */
-	sljit_ins inv_bits = (flags & INT_OP) ? (1 << 31) : 0;
+	sljit_ins inv_bits = (flags & INT_OP) ? W_OP : 0;
 	sljit_ins inst_bits;
 	sljit_s32 op = (flags & 0xffff);
 	sljit_s32 reg;
@@ -710,7 +710,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 		return push_inst(compiler, ORR | RD(dst) | RN(TMP_ZERO) | RM(arg2));
 	case SLJIT_MOV_U8:
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
-		return push_inst(compiler, (UBFM ^ (1 << 31)) | RD(dst) | RN(arg2) | (7 << 10));
+		return push_inst(compiler, (UBFM ^ W_OP) | RD(dst) | RN(arg2) | (7 << 10));
 	case SLJIT_MOV_S8:
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
 		if (!(flags & INT_OP))
@@ -718,7 +718,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 		return push_inst(compiler, (SBFM ^ inv_bits) | RD(dst) | RN(arg2) | (7 << 10));
 	case SLJIT_MOV_U16:
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
-		return push_inst(compiler, (UBFM ^ (1 << 31)) | RD(dst) | RN(arg2) | (15 << 10));
+		return push_inst(compiler, (UBFM ^ W_OP) | RD(dst) | RN(arg2) | (15 << 10));
 	case SLJIT_MOV_S16:
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
 		if (!(flags & INT_OP))
@@ -728,7 +728,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
 		if ((flags & INT_OP) && dst == arg2)
 			return SLJIT_SUCCESS;
-		return push_inst(compiler, (ORR ^ (1 << 31)) | RD(dst) | RN(TMP_ZERO) | RM(arg2));
+		return push_inst(compiler, (ORR ^ W_OP) | RD(dst) | RN(TMP_ZERO) | RM(arg2));
 	case SLJIT_MOV_S32:
 		SLJIT_ASSERT(!(flags & SET_FLAGS) && arg1 == TMP_REG1);
 		if ((flags & INT_OP) && dst == arg2)
@@ -1080,7 +1080,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_return(struct sljit_compiler *comp
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compiler, sljit_s32 op)
 {
-	sljit_ins inv_bits = (op & SLJIT_I32_OP) ? (1 << 31) : 0;
+	sljit_ins inv_bits = (op & SLJIT_I32_OP) ? W_OP : 0;
 
 	CHECK_ERROR();
 	CHECK(check_sljit_emit_op0(compiler, op));
@@ -1360,7 +1360,7 @@ static SLJIT_INLINE sljit_s32 sljit_emit_fop1_conv_sw_from_f64(struct sljit_comp
 	sljit_ins inv_bits = (op & SLJIT_F32_OP) ? (1 << 22) : 0;
 
 	if (GET_OPCODE(op) == SLJIT_CONV_S32_FROM_F64)
-		inv_bits |= (1 << 31);
+		inv_bits |= W_OP;
 
 	if (src & SLJIT_MEM) {
 		emit_fop_mem(compiler, (op & SLJIT_F32_OP) ? INT_SIZE : WORD_SIZE, TMP_FREG1, src, srcw);
@@ -1382,7 +1382,7 @@ static SLJIT_INLINE sljit_s32 sljit_emit_fop1_conv_f64_from_sw(struct sljit_comp
 	sljit_ins inv_bits = (op & SLJIT_F32_OP) ? (1 << 22) : 0;
 
 	if (GET_OPCODE(op) == SLJIT_CONV_F64_FROM_S32)
-		inv_bits |= (1 << 31);
+		inv_bits |= W_OP;
 
 	if (src & SLJIT_MEM) {
 		emit_op_mem(compiler, ((GET_OPCODE(op) == SLJIT_CONV_F64_FROM_S32) ? INT_SIZE : WORD_SIZE), TMP_REG1, src, srcw, TMP_REG1);
@@ -1662,7 +1662,7 @@ static SLJIT_INLINE struct sljit_jump* emit_cmp_to0(struct sljit_compiler *compi
 	sljit_s32 src, sljit_sw srcw)
 {
 	struct sljit_jump *jump;
-	sljit_ins inv_bits = (type & SLJIT_I32_OP) ? (1 << 31) : 0;
+	sljit_ins inv_bits = (type & SLJIT_I32_OP) ? W_OP : 0;
 
 	SLJIT_ASSERT((type & 0xff) == SLJIT_EQUAL || (type & 0xff) == SLJIT_NOT_EQUAL);
 	ADJUST_LOCAL_OFFSET(src, srcw);
@@ -1787,7 +1787,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_cmov(struct sljit_compiler *compil
 	sljit_s32 dst_reg,
 	sljit_s32 src, sljit_sw srcw)
 {
-	sljit_ins inv_bits = (dst_reg & SLJIT_I32_OP) ? (1 << 31) : 0;
+	sljit_ins inv_bits = (dst_reg & SLJIT_I32_OP) ? W_OP : 0;
 	sljit_ins cc;
 
 	CHECK_ERROR();

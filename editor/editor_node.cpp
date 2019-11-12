@@ -504,6 +504,7 @@ void EditorNode::_fs_changed() {
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	List<String> scenes; //will load later
+	int current_tab = scene_tabs->get_current_tab();
 
 	for (int i = 0; i < p_resources.size(); i++) {
 		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
@@ -526,6 +527,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	for (List<String>::Element *E = scenes.front(); E; E = E->next()) {
 		reload_scene(E->get());
 	}
+
+	scene_tabs->set_current_tab(current_tab);
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -1187,6 +1190,17 @@ void EditorNode::save_all_scenes() {
 
 	_menu_option_confirm(RUN_STOP, true);
 	_save_all_scenes();
+}
+
+void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
+
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		Node *scene = editor_data.get_edited_scene_root(i);
+
+		if (scene && (p_scene_filenames.find(scene->get_filename()) >= 0)) {
+			_save_scene(scene->get_filename(), i);
+		}
+	}
 }
 
 void EditorNode::restart_editor() {
@@ -2744,7 +2758,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	return plugin_addons.has(p_addon);
 }
 
-void EditorNode::_remove_edited_scene() {
+void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
 
@@ -2760,18 +2774,19 @@ void EditorNode::_remove_edited_scene() {
 	if (editor_data.get_scene_path(old_index) != String()) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
-	_scene_tab_changed(new_index);
+
+	if (p_change_tab) _scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history(false);
 	_update_title();
 	_update_scene_tabs();
 }
 
-void EditorNode::_remove_scene(int index) {
+void EditorNode::_remove_scene(int index, bool p_change_tab) {
 
 	if (editor_data.get_edited_scene() == index) {
 		//Scene to remove is current scene
-		_remove_edited_scene();
+		_remove_edited_scene(p_change_tab);
 	} else {
 		//Scene to remove is not active scene
 		editor_data.remove_scene(index);
@@ -4023,6 +4038,14 @@ bool EditorNode::has_scenes_in_session() {
 	return !scenes.empty();
 }
 
+int EditorNode::get_current_tab() {
+	return scene_tabs->get_current_tab();
+}
+
+void EditorNode::set_current_tab(int p_tab) {
+	scene_tabs->set_current_tab(p_tab);
+}
+
 void EditorNode::_update_layouts_menu() {
 
 	editor_layouts->clear();
@@ -4612,8 +4635,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	if (scene_idx == -1) {
 		if (get_edited_scene()) {
-			//scene is not open, so at it might be instanced, just refresh, set tab to itself and it will reload
-			set_current_scene(current_tab);
+			//scene is not open, so at it might be instanced. We'll refresh the whole scene later.
 			editor_data.get_undo_redo().clear_history();
 		}
 		return;
@@ -4623,17 +4645,19 @@ void EditorNode::reload_scene(const String &p_path) {
 		editor_data.apply_changes_in_editors();
 		_set_scene_metadata(p_path);
 	}
-	//remove scene
-	_remove_scene(scene_idx);
-	//reload scene
 
+	//remove scene
+	_remove_scene(scene_idx, false);
+
+	//reload scene
 	load_scene(p_path, true, false, true, true);
+
 	//adjust index so tab is back a the previous position
 	editor_data.move_edited_scene_to_index(scene_idx);
 	get_undo_redo()->clear_history();
+
 	//recover the tab
 	scene_tabs->set_current_tab(current_tab);
-	_scene_tab_changed(current_tab);
 }
 
 int EditorNode::plugin_init_callback_count = 0;
@@ -5440,7 +5464,7 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/undo", TTR("Undo"), KEY_MASK_CMD + KEY_Z), EDIT_UNDO, true);
 	p->add_shortcut(ED_SHORTCUT("editor/redo", TTR("Redo"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_Z), EDIT_REDO, true);
 	p->add_separator();
-	p->add_item(TTR("Revert Scene"), EDIT_REVERT);
+	p->add_shortcut(ED_SHORTCUT("editor/revert_scene", TTR("Revert Scene")), EDIT_REVERT);
 
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_name("RecentScenes");
@@ -5460,10 +5484,10 @@ EditorNode::EditorNode() {
 
 	p = project_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
+	p->add_shortcut(ED_SHORTCUT("editor/project_settings", TTR("Project Settings")), RUN_SETTINGS);
 	p->add_separator();
 	p->connect("id_pressed", this, "_menu_option");
-	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
+	p->add_shortcut(ED_SHORTCUT("editor/export", TTR("Export")), FILE_EXPORT_PROJECT);
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", this, "_on_plugin_ready");
@@ -5474,10 +5498,10 @@ EditorNode::EditorNode() {
 	tool_menu->connect("index_pressed", this, "_tool_menu_option");
 	p->add_child(tool_menu);
 	p->add_submenu_item(TTR("Tools"), "Tools");
-	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
+	tool_menu->add_shortcut(ED_SHORTCUT("editor/orphan_resource_explorer", TTR("Orphan Resource Explorer")), TOOLS_ORPHAN_RESOURCES);
 	p->add_separator();
 
-	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_shortcut(ED_SHORTCUT("editor/open_project_data_folder", TTR("Open Project Data Folder")), RUN_PROJECT_DATA_FOLDER);
 	p->add_separator();
 
 #ifdef OSX_ENABLED
@@ -5501,21 +5525,21 @@ EditorNode::EditorNode() {
 	p = debug_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->set_hide_on_item_selection(false);
-	p->add_check_item(TTR("Deploy with Remote Debug"), RUN_DEPLOY_REMOTE_DEBUG);
+	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
-	p->add_check_item(TTR("Small Deploy with Network FS"), RUN_FILE_SERVER);
+	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network FS")), RUN_FILE_SERVER);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
 	p->add_separator();
-	p->add_check_item(TTR("Visible Collision Shapes"), RUN_DEBUG_COLLISONS);
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
-	p->add_check_item(TTR("Visible Navigation"), RUN_DEBUG_NAVIGATION);
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
 	p->add_separator();
 	//those are now on by default, since they are harmless
-	p->add_check_item(TTR("Sync Scene Changes"), RUN_LIVE_DEBUG);
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
-	p->add_check_item(TTR("Sync Script Changes"), RUN_RELOAD_SCRIPTS);
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
 	p->connect("id_pressed", this, "_menu_option");
@@ -5531,7 +5555,7 @@ EditorNode::EditorNode() {
 
 	p = settings_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
+	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings")), SETTINGS_PREFERENCES);
 	p->add_separator();
 
 	editor_layouts = memnew(PopupMenu);
@@ -5571,12 +5595,12 @@ EditorNode::EditorNode() {
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_F4), HELP_SEARCH);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Q&A"), HELP_QA);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Issue Tracker"), HELP_ISSUES);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Community"), HELP_COMMUNITY);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/issue_tracker", TTR("Issue Tracker")), HELP_ISSUES);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("Godot", "EditorIcons"), TTR("About"), HELP_ABOUT);
+	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About")), HELP_ABOUT);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);

@@ -241,7 +241,6 @@ void AppxPackager::make_block_map() {
 
 	tmp_file->close();
 	memdelete(tmp_file);
-	tmp_file = NULL;
 }
 
 String AppxPackager::content_type(String p_extension) {
@@ -291,7 +290,6 @@ void AppxPackager::make_content_types() {
 
 	tmp_file->close();
 	memdelete(tmp_file);
-	tmp_file = NULL;
 }
 
 Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
@@ -602,7 +600,6 @@ void AppxPackager::finish() {
 
 	blockmap_file->close();
 	memdelete(blockmap_file);
-	blockmap_file = NULL;
 
 	// Add content types
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
@@ -618,7 +615,6 @@ void AppxPackager::finish() {
 
 	types_file->close();
 	memdelete(types_file);
-	types_file = NULL;
 
 	// Pre-process central directory before signing
 	for (int i = 0; i < file_metadata.size(); i++) {

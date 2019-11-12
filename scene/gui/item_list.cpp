@@ -1243,7 +1243,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width; //not right but works
+			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
 		}
 
 		if (rc.has_point(pos)) {

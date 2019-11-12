@@ -175,8 +175,9 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	if (p_constant.strip_edges() == "2147483647") {
 		return "0x7FFFFFFF";
 	}
+
 	if (p_constant.strip_edges() == "1048575") {
-		return "0xfffff";
+		return "0xFFFFF";
 	}
 
 	return p_constant;

@@ -79,6 +79,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
 size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
                           const void* src, size_t srcSize)   /* note : srcSize < BLOCKSIZE */
 {
+    DEBUGLOG(5, "ZSTD_decodeLiteralsBlock");
     RETURN_ERROR_IF(srcSize < MIN_CBLOCK_SIZE, corruption_detected);
 
     {   const BYTE* const istart = (const BYTE*) src;
@@ -87,6 +88,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
         switch(litEncType)
         {
         case set_repeat:
+            DEBUGLOG(5, "set_repeat flag : re-using stats from previous compressed literals block");
             RETURN_ERROR_IF(dctx->litEntropy==0, dictionary_corrupted);
             /* fall-through */
 
@@ -116,7 +118,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
                     /* 2 - 2 - 18 - 18 */
                     lhSize = 5;
                     litSize  = (lhc >> 4) & 0x3FFFF;
-                    litCSize = (lhc >> 22) + (istart[4] << 10);
+                    litCSize = (lhc >> 22) + ((size_t)istart[4] << 10);
                     break;
                 }
                 RETURN_ERROR_IF(litSize > ZSTD_BLOCKSIZE_MAX, corruption_detected);
@@ -391,7 +393,8 @@ ZSTD_buildFSETable(ZSTD_seqSymbol* dt,
                     symbolNext[s] = 1;
                 } else {
                     if (normalizedCounter[s] >= largeLimit) DTableH.fastMode=0;
-                    symbolNext[s] = normalizedCounter[s];
+                    assert(normalizedCounter[s]>=0);
+                    symbolNext[s] = (U16)normalizedCounter[s];
         }   }   }
         memcpy(dt, &DTableH, sizeof(DTableH));
     }
@@ -505,7 +508,7 @@ size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
     *nbSeqPtr = nbSeq;
 
     /* FSE table descriptors */
-    RETURN_ERROR_IF(ip+4 > iend, srcSize_wrong); /* minimum possible size */
+    RETURN_ERROR_IF(ip+1 > iend, srcSize_wrong); /* minimum possible size: 1 byte for symbol encoding types */
     {   symbolEncodingType_e const LLtype = (symbolEncodingType_e)(*ip >> 6);
         symbolEncodingType_e const OFtype = (symbolEncodingType_e)((*ip >> 4) & 3);
         symbolEncodingType_e const MLtype = (symbolEncodingType_e)((*ip >> 2) & 3);
@@ -570,38 +573,118 @@ typedef struct {
     size_t pos;
 } seqState_t;
 
+/*! ZSTD_overlapCopy8() :
+ *  Copies 8 bytes from ip to op and updates op and ip where ip <= op.
+ *  If the offset is < 8 then the offset is spread to at least 8 bytes.
+ *
+ *  Precondition: *ip <= *op
+ *  Postcondition: *op - *op >= 8
+ */
+static void ZSTD_overlapCopy8(BYTE** op, BYTE const** ip, size_t offset) {
+    assert(*ip <= *op);
+    if (offset < 8) {
+        /* close range match, overlap */
+        static const U32 dec32table[] = { 0, 1, 2, 1, 4, 4, 4, 4 };   /* added */
+        static const int dec64table[] = { 8, 8, 8, 7, 8, 9,10,11 };   /* subtracted */
+        int const sub2 = dec64table[offset];
+        (*op)[0] = (*ip)[0];
+        (*op)[1] = (*ip)[1];
+        (*op)[2] = (*ip)[2];
+        (*op)[3] = (*ip)[3];
+        *ip += dec32table[offset];
+        ZSTD_copy4(*op+4, *ip);
+        *ip -= sub2;
+    } else {
+        ZSTD_copy8(*op, *ip);
+    }
+    *ip += 8;
+    *op += 8;
+    assert(*op - *ip >= 8);
+}
 
-/* ZSTD_execSequenceLast7():
- * exceptional case : decompress a match starting within last 7 bytes of output buffer.
- * requires more careful checks, to ensure there is no overflow.
- * performance does not matter though.
- * note : this case is supposed to be never generated "naturally" by reference encoder,
- *        since in most cases it needs at least 8 bytes to look for a match.
- *        but it's allowed by the specification. */
+/*! ZSTD_safecopy() :
+ *  Specialized version of memcpy() that is allowed to READ up to WILDCOPY_OVERLENGTH past the input buffer
+ *  and write up to 16 bytes past oend_w (op >= oend_w is allowed).
+ *  This function is only called in the uncommon case where the sequence is near the end of the block. It
+ *  should be fast for a single long sequence, but can be slow for several short sequences.
+ *
+ *  @param ovtype controls the overlap detection
+ *         - ZSTD_no_overlap: The source and destination are guaranteed to be at least WILDCOPY_VECLEN bytes apart.
+ *         - ZSTD_overlap_src_before_dst: The src and dst may overlap and may be any distance apart.
+ *           The src buffer must be before the dst buffer.
+ */
+static void ZSTD_safecopy(BYTE* op, BYTE* const oend_w, BYTE const* ip, ptrdiff_t length, ZSTD_overlap_e ovtype) {
+    ptrdiff_t const diff = op - ip;
+    BYTE* const oend = op + length;
+
+    assert((ovtype == ZSTD_no_overlap && (diff <= -8 || diff >= 8 || op >= oend_w)) ||
+           (ovtype == ZSTD_overlap_src_before_dst && diff >= 0));
+
+    if (length < 8) {
+        /* Handle short lengths. */
+        while (op < oend) *op++ = *ip++;
+        return;
+    }
+    if (ovtype == ZSTD_overlap_src_before_dst) {
+        /* Copy 8 bytes and ensure the offset >= 8 when there can be overlap. */
+        assert(length >= 8);
+        ZSTD_overlapCopy8(&op, &ip, diff);
+        assert(op - ip >= 8);
+        assert(op <= oend);
+    }
+
+    if (oend <= oend_w) {
+        /* No risk of overwrite. */
+        ZSTD_wildcopy(op, ip, length, ovtype);
+        return;
+    }
+    if (op <= oend_w) {
+        /* Wildcopy until we get close to the end. */
+        assert(oend > oend_w);
+        ZSTD_wildcopy(op, ip, oend_w - op, ovtype);
+        ip += oend_w - op;
+        op = oend_w;
+    }
+    /* Handle the leftovers. */
+    while (op < oend) *op++ = *ip++;
+}
+
+/* ZSTD_execSequenceEnd():
+ * This version handles cases that are near the end of the output buffer. It requires
+ * more careful checks to make sure there is no overflow. By separating out these hard
+ * and unlikely cases, we can speed up the common cases.
+ *
+ * NOTE: This function needs to be fast for a single long sequence, but doesn't need
+ * to be optimized for many small sequences, since those fall into ZSTD_execSequence().
+ */
 FORCE_NOINLINE
-size_t ZSTD_execSequenceLast7(BYTE* op,
-                              BYTE* const oend, seq_t sequence,
-                              const BYTE** litPtr, const BYTE* const litLimit,
-                              const BYTE* const base, const BYTE* const vBase, const BYTE* const dictEnd)
+size_t ZSTD_execSequenceEnd(BYTE* op,
+                            BYTE* const oend, seq_t sequence,
+                            const BYTE** litPtr, const BYTE* const litLimit,
+                            const BYTE* const prefixStart, const BYTE* const virtualStart, const BYTE* const dictEnd)
 {
     BYTE* const oLitEnd = op + sequence.litLength;
     size_t const sequenceLength = sequence.litLength + sequence.matchLength;
     BYTE* const oMatchEnd = op + sequenceLength;   /* risk : address space overflow (32-bits) */
     const BYTE* const iLitEnd = *litPtr + sequence.litLength;
     const BYTE* match = oLitEnd - sequence.offset;
+    BYTE* const oend_w = oend - WILDCOPY_OVERLENGTH;
 
-    /* check */
-    RETURN_ERROR_IF(oMatchEnd>oend, dstSize_tooSmall, "last match must fit within dstBuffer");
+    /* bounds checks */
+    assert(oLitEnd < oMatchEnd);
+    RETURN_ERROR_IF(oMatchEnd > oend, dstSize_tooSmall, "last match must fit within dstBuffer");
     RETURN_ERROR_IF(iLitEnd > litLimit, corruption_detected, "try to read beyond literal buffer");
 
     /* copy literals */
-    while (op < oLitEnd) *op++ = *(*litPtr)++;
+    ZSTD_safecopy(op, oend_w, *litPtr, sequence.litLength, ZSTD_no_overlap);
+    op = oLitEnd;
+    *litPtr = iLitEnd;
 
     /* copy Match */
-    if (sequence.offset > (size_t)(oLitEnd - base)) {
+    if (sequence.offset > (size_t)(oLitEnd - prefixStart)) {
         /* offset beyond prefix */
-        RETURN_ERROR_IF(sequence.offset > (size_t)(oLitEnd - vBase),corruption_detected);
-        match = dictEnd - (base-match);
+        RETURN_ERROR_IF(sequence.offset > (size_t)(oLitEnd - virtualStart), corruption_detected);
+        match = dictEnd - (prefixStart-match);
         if (match + sequence.matchLength <= dictEnd) {
             memmove(oLitEnd, match, sequence.matchLength);
             return sequenceLength;
@@ -611,12 +694,11 @@ size_t ZSTD_execSequenceLast7(BYTE* op,
             memmove(oLitEnd, match, length1);
             op = oLitEnd + length1;
             sequence.matchLength -= length1;
-            match = base;
+            match = prefixStart;
     }   }
-    while (op < oMatchEnd) *op++ = *match++;
+    ZSTD_safecopy(op, oend_w, match, sequence.matchLength, ZSTD_overlap_src_before_dst);
     return sequenceLength;
 }
-
 
 HINT_INLINE
 size_t ZSTD_execSequence(BYTE* op,
@@ -631,19 +713,29 @@ size_t ZSTD_execSequence(BYTE* op,
     const BYTE* const iLitEnd = *litPtr + sequence.litLength;
     const BYTE* match = oLitEnd - sequence.offset;
 
-    /* check */
-    RETURN_ERROR_IF(oMatchEnd>oend, dstSize_tooSmall, "last match must start at a minimum distance of WILDCOPY_OVERLENGTH from oend");
-    RETURN_ERROR_IF(iLitEnd > litLimit, corruption_detected, "over-read beyond lit buffer");
-    if (oLitEnd>oend_w) return ZSTD_execSequenceLast7(op, oend, sequence, litPtr, litLimit, prefixStart, virtualStart, dictEnd);
+    /* Errors and uncommon cases handled here. */
+    assert(oLitEnd < oMatchEnd);
+    if (iLitEnd > litLimit || oMatchEnd > oend_w)
+        return ZSTD_execSequenceEnd(op, oend, sequence, litPtr, litLimit, prefixStart, virtualStart, dictEnd);
 
-    /* copy Literals */
-    ZSTD_copy8(op, *litPtr);
-    if (sequence.litLength > 8)
-        ZSTD_wildcopy(op+8, (*litPtr)+8, sequence.litLength - 8);   /* note : since oLitEnd <= oend-WILDCOPY_OVERLENGTH, no risk of overwrite beyond oend */
+    /* Assumptions (everything else goes into ZSTD_execSequenceEnd()) */
+    assert(iLitEnd <= litLimit /* Literal length is in bounds */);
+    assert(oLitEnd <= oend_w /* Can wildcopy literals */);
+    assert(oMatchEnd <= oend_w /* Can wildcopy matches */);
+
+    /* Copy Literals:
+     * Split out litLength <= 16 since it is nearly always true. +1.6% on gcc-9.
+     * We likely don't need the full 32-byte wildcopy.
+     */
+    assert(WILDCOPY_OVERLENGTH >= 16);
+    ZSTD_copy16(op, (*litPtr));
+    if (sequence.litLength > 16) {
+        ZSTD_wildcopy(op+16, (*litPtr)+16, sequence.litLength-16, ZSTD_no_overlap);
+    }
     op = oLitEnd;
     *litPtr = iLitEnd;   /* update for next sequence */
 
-    /* copy Match */
+    /* Copy Match */
     if (sequence.offset > (size_t)(oLitEnd - prefixStart)) {
         /* offset beyond prefix -> go into extDict */
         RETURN_ERROR_IF(sequence.offset > (size_t)(oLitEnd - virtualStart), corruption_detected);
@@ -658,121 +750,33 @@ size_t ZSTD_execSequence(BYTE* op,
             op = oLitEnd + length1;
             sequence.matchLength -= length1;
             match = prefixStart;
-            if (op > oend_w || sequence.matchLength < MINMATCH) {
-              U32 i;
-              for (i = 0; i < sequence.matchLength; ++i) op[i] = match[i];
-              return sequenceLength;
-            }
     }   }
-    /* Requirement: op <= oend_w && sequence.matchLength >= MINMATCH */
+    /* Match within prefix of 1 or more bytes */
+    assert(op <= oMatchEnd);
+    assert(oMatchEnd <= oend_w);
+    assert(match >= prefixStart);
+    assert(sequence.matchLength >= 1);
 
-    /* match within prefix */
-    if (sequence.offset < 8) {
-        /* close range match, overlap */
-        static const U32 dec32table[] = { 0, 1, 2, 1, 4, 4, 4, 4 };   /* added */
-        static const int dec64table[] = { 8, 8, 8, 7, 8, 9,10,11 };   /* subtracted */
-        int const sub2 = dec64table[sequence.offset];
-        op[0] = match[0];
-        op[1] = match[1];
-        op[2] = match[2];
-        op[3] = match[3];
-        match += dec32table[sequence.offset];
-        ZSTD_copy4(op+4, match);
-        match -= sub2;
-    } else {
-        ZSTD_copy8(op, match);
+    /* Nearly all offsets are >= WILDCOPY_VECLEN bytes, which means we can use wildcopy
+     * without overlap checking.
+     */
+    if (sequence.offset >= WILDCOPY_VECLEN) {
+        /* We bet on a full wildcopy for matches, since we expect matches to be
+         * longer than literals (in general). In silesia, ~10% of matches are longer
+         * than 16 bytes.
+         */
+        ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength, ZSTD_no_overlap);
+        return sequenceLength;
     }
-    op += 8; match += 8;
+    assert(sequence.offset < WILDCOPY_VECLEN);
 
-    if (oMatchEnd > oend-(16-MINMATCH)) {
-        if (op < oend_w) {
-            ZSTD_wildcopy(op, match, oend_w - op);
-            match += oend_w - op;
-            op = oend_w;
-        }
-        while (op < oMatchEnd) *op++ = *match++;
-    } else {
-        ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength-8);   /* works even if matchLength < 8 */
-    }
-    return sequenceLength;
-}
+    /* Copy 8 bytes and spread the offset to be >= 8. */
+    ZSTD_overlapCopy8(&op, &match, sequence.offset);
 
-
-HINT_INLINE
-size_t ZSTD_execSequenceLong(BYTE* op,
-                             BYTE* const oend, seq_t sequence,
-                             const BYTE** litPtr, const BYTE* const litLimit,
-                             const BYTE* const prefixStart, const BYTE* const dictStart, const BYTE* const dictEnd)
-{
-    BYTE* const oLitEnd = op + sequence.litLength;
-    size_t const sequenceLength = sequence.litLength + sequence.matchLength;
-    BYTE* const oMatchEnd = op + sequenceLength;   /* risk : address space overflow (32-bits) */
-    BYTE* const oend_w = oend - WILDCOPY_OVERLENGTH;
-    const BYTE* const iLitEnd = *litPtr + sequence.litLength;
-    const BYTE* match = sequence.match;
-
-    /* check */
-    RETURN_ERROR_IF(oMatchEnd > oend, dstSize_tooSmall, "last match must start at a minimum distance of WILDCOPY_OVERLENGTH from oend");
-    RETURN_ERROR_IF(iLitEnd > litLimit, corruption_detected, "over-read beyond lit buffer");
-    if (oLitEnd > oend_w) return ZSTD_execSequenceLast7(op, oend, sequence, litPtr, litLimit, prefixStart, dictStart, dictEnd);
-
-    /* copy Literals */
-    ZSTD_copy8(op, *litPtr);  /* note : op <= oLitEnd <= oend_w == oend - 8 */
-    if (sequence.litLength > 8)
-        ZSTD_wildcopy(op+8, (*litPtr)+8, sequence.litLength - 8);   /* note : since oLitEnd <= oend-WILDCOPY_OVERLENGTH, no risk of overwrite beyond oend */
-    op = oLitEnd;
-    *litPtr = iLitEnd;   /* update for next sequence */
-
-    /* copy Match */
-    if (sequence.offset > (size_t)(oLitEnd - prefixStart)) {
-        /* offset beyond prefix */
-        RETURN_ERROR_IF(sequence.offset > (size_t)(oLitEnd - dictStart), corruption_detected);
-        if (match + sequence.matchLength <= dictEnd) {
-            memmove(oLitEnd, match, sequence.matchLength);
-            return sequenceLength;
-        }
-        /* span extDict & currentPrefixSegment */
-        {   size_t const length1 = dictEnd - match;
-            memmove(oLitEnd, match, length1);
-            op = oLitEnd + length1;
-            sequence.matchLength -= length1;
-            match = prefixStart;
-            if (op > oend_w || sequence.matchLength < MINMATCH) {
-              U32 i;
-              for (i = 0; i < sequence.matchLength; ++i) op[i] = match[i];
-              return sequenceLength;
-            }
-    }   }
-    assert(op <= oend_w);
-    assert(sequence.matchLength >= MINMATCH);
-
-    /* match within prefix */
-    if (sequence.offset < 8) {
-        /* close range match, overlap */
-        static const U32 dec32table[] = { 0, 1, 2, 1, 4, 4, 4, 4 };   /* added */
-        static const int dec64table[] = { 8, 8, 8, 7, 8, 9,10,11 };   /* subtracted */
-        int const sub2 = dec64table[sequence.offset];
-        op[0] = match[0];
-        op[1] = match[1];
-        op[2] = match[2];
-        op[3] = match[3];
-        match += dec32table[sequence.offset];
-        ZSTD_copy4(op+4, match);
-        match -= sub2;
-    } else {
-        ZSTD_copy8(op, match);
-    }
-    op += 8; match += 8;
-
-    if (oMatchEnd > oend-(16-MINMATCH)) {
-        if (op < oend_w) {
-            ZSTD_wildcopy(op, match, oend_w - op);
-            match += oend_w - op;
-            op = oend_w;
-        }
-        while (op < oMatchEnd) *op++ = *match++;
-    } else {
-        ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength-8);   /* works even if matchLength < 8 */
+    /* If the match length is > 8 bytes, then continue with the wildcopy. */
+    if (sequence.matchLength > 8) {
+        assert(op < oMatchEnd);
+        ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength-8, ZSTD_overlap_src_before_dst);
     }
     return sequenceLength;
 }
@@ -889,6 +893,7 @@ ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets)
 }
 
 FORCE_INLINE_TEMPLATE size_t
+DONT_VECTORIZE
 ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
                                void* dst, size_t maxDstSize,
                          const void* seqStart, size_t seqSize, int nbSeq,
@@ -918,6 +923,11 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
         ZSTD_initFseState(&seqState.stateOffb, &seqState.DStream, dctx->OFTptr);
         ZSTD_initFseState(&seqState.stateML, &seqState.DStream, dctx->MLTptr);
 
+        ZSTD_STATIC_ASSERT(
+                BIT_DStream_unfinished < BIT_DStream_completed &&
+                BIT_DStream_endOfBuffer < BIT_DStream_completed &&
+                BIT_DStream_completed < BIT_DStream_overflow);
+
         for ( ; (BIT_reloadDStream(&(seqState.DStream)) <= BIT_DStream_completed) && nbSeq ; ) {
             nbSeq--;
             {   seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset);
@@ -930,6 +940,7 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
         /* check if reached exact end */
         DEBUGLOG(5, "ZSTD_decompressSequences_body: after decode loop, remaining nbSeq : %i", nbSeq);
         RETURN_ERROR_IF(nbSeq, corruption_detected);
+        RETURN_ERROR_IF(BIT_reloadDStream(&seqState.DStream) < BIT_DStream_completed, corruption_detected);
         /* save reps for next block */
         { U32 i; for (i=0; i<ZSTD_REP_NUM; i++) dctx->entropy.rep[i] = (U32)(seqState.prevOffset[i]); }
     }
@@ -1085,7 +1096,7 @@ ZSTD_decompressSequencesLong_body(
         /* decode and decompress */
         for ( ; (BIT_reloadDStream(&(seqState.DStream)) <= BIT_DStream_completed) && (seqNb<nbSeq) ; seqNb++) {
             seq_t const sequence = ZSTD_decodeSequenceLong(&seqState, isLongOffset);
-            size_t const oneSeqSize = ZSTD_execSequenceLong(op, oend, sequences[(seqNb-ADVANCED_SEQS) & STORED_SEQS_MASK], &litPtr, litEnd, prefixStart, dictStart, dictEnd);
+            size_t const oneSeqSize = ZSTD_execSequence(op, oend, sequences[(seqNb-ADVANCED_SEQS) & STORED_SEQS_MASK], &litPtr, litEnd, prefixStart, dictStart, dictEnd);
             if (ZSTD_isError(oneSeqSize)) return oneSeqSize;
             PREFETCH_L1(sequence.match); PREFETCH_L1(sequence.match + sequence.matchLength - 1); /* note : it's safe to invoke PREFETCH() on any memory address, including invalid ones */
             sequences[seqNb & STORED_SEQS_MASK] = sequence;
@@ -1096,7 +1107,7 @@ ZSTD_decompressSequencesLong_body(
         /* finish queue */
         seqNb -= seqAdvance;
         for ( ; seqNb<nbSeq ; seqNb++) {
-            size_t const oneSeqSize = ZSTD_execSequenceLong(op, oend, sequences[seqNb&STORED_SEQS_MASK], &litPtr, litEnd, prefixStart, dictStart, dictEnd);
+            size_t const oneSeqSize = ZSTD_execSequence(op, oend, sequences[seqNb&STORED_SEQS_MASK], &litPtr, litEnd, prefixStart, dictStart, dictEnd);
             if (ZSTD_isError(oneSeqSize)) return oneSeqSize;
             op += oneSeqSize;
         }
@@ -1131,6 +1142,7 @@ ZSTD_decompressSequencesLong_default(ZSTD_DCtx* dctx,
 
 #ifndef ZSTD_FORCE_DECOMPRESS_SEQUENCES_LONG
 static TARGET_ATTRIBUTE("bmi2") size_t
+DONT_VECTORIZE
 ZSTD_decompressSequences_bmi2(ZSTD_DCtx* dctx,
                                  void* dst, size_t maxDstSize,
                            const void* seqStart, size_t seqSize, int nbSeq,

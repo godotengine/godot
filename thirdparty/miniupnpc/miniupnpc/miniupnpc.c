@@ -1,9 +1,9 @@
-/* $Id: miniupnpc.c,v 1.149 2016/02/09 09:50:46 nanard Exp $ */
+/* $Id: miniupnpc.c,v 1.154 2019/04/23 12:12:13 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2018 Thomas Bernard
+ * copyright (c) 2005-2019 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #include <stdlib.h>
@@ -63,7 +63,7 @@
 #include "connecthostport.h"
 
 /* compare the beginning of a string with a constant string */
-#define COMPARE(str, cstr) (0==memcmp(str, cstr, sizeof(cstr) - 1))
+#define COMPARE(str, cstr) (0==strncmp(str, cstr, sizeof(cstr) - 1))
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -85,8 +85,7 @@ static int is_rfc1918addr(const char * addr)
 		return 1;
 	/* 172.16.0.0      -   172.31.255.255  (172.16/12 prefix) */
 	if(COMPARE(addr, "172.")) {
-		int i = atoi(addr + 4);
-		if((16 <= i) && (i <= 31))
+		if((atoi(addr + 4) | 0x0f) == 0x1f)
 			return 1;
 	}
 	return 0;
@@ -416,7 +415,7 @@ static char *
 build_absolute_url(const char * baseurl, const char * descURL,
                    const char * url, unsigned int scope_id)
 {
-	int l, n;
+	size_t l, n;
 	char * s;
 	const char * base;
 	char * p;
@@ -459,7 +458,7 @@ build_absolute_url(const char * baseurl, const char * descURL,
 	memcpy(s, base, n);
 	if(scope_id != 0) {
 		s[n] = '\0';
-		if(0 == memcmp(s, "http://[fe80:", 13)) {
+		if(n > 13 && 0 == memcmp(s, "http://[fe80:", 13)) {
 			/* this is a linklocal IPv6 address */
 			p = strchr(s, ']');
 			if(p) {
@@ -565,6 +564,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 				 char * lanaddr, int lanaddrlen)
 {
 	struct xml_desc {
+		char lanaddr[40];
 		char * xml;
 		int size;
 		int is_igd;
@@ -573,9 +573,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 	int ndev = 0;
 	int i;
 	int state = -1; /* state 1 : IGD connected. State 2 : IGD. State 3 : anything */
-	int n_igd = 0;
 	char extIpAddr[16];
-	char myLanAddr[40];
 	int status_code = -1;
 
 	if(!devlist)
@@ -588,19 +586,17 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 	/* counting total number of devices in the list */
 	for(dev = devlist; dev; dev = dev->pNext)
 		ndev++;
-	if(ndev > 0)
-	{
-		desc = calloc(ndev, sizeof(struct xml_desc));
-		if(!desc)
-			return -1; /* memory allocation error */
-	}
+	/* ndev is always > 0 */
+	desc = calloc(ndev, sizeof(struct xml_desc));
+	if(!desc)
+		return -1; /* memory allocation error */
 	/* Step 1 : downloading descriptions and testing type */
 	for(dev = devlist, i = 0; dev; dev = dev->pNext, i++)
 	{
 		/* we should choose an internet gateway device.
 		 * with st == urn:schemas-upnp-org:device:InternetGatewayDevice:1 */
 		desc[i].xml = miniwget_getaddr(dev->descURL, &(desc[i].size),
-		                               myLanAddr, sizeof(myLanAddr),
+		                               desc[i].lanaddr, sizeof(desc[i].lanaddr),
 		                               dev->scope_id, &status_code);
 #ifdef DEBUG
 		if(!desc[i].xml)
@@ -617,9 +613,6 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 			           "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:"))
 			{
 				desc[i].is_igd = 1;
-				n_igd++;
-				if(lanaddr)
-					strncpy(lanaddr, myLanAddr, lanaddrlen);
 			}
 		}
 	}
@@ -685,14 +678,11 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 	}
 	state = 0;
 free_and_return:
-	if(desc) {
-		for(i = 0; i < ndev; i++) {
-			if(desc[i].xml) {
-				free(desc[i].xml);
-			}
-		}
-		free(desc);
-	}
+	if (lanaddr != NULL && state >= 1 && state <= 3 && i < ndev)
+		strncpy(lanaddr, desc[i].lanaddr, lanaddrlen);
+	for(i = 0; i < ndev; i++)
+		free(desc[i].xml);
+	free(desc);
 	return state;
 }
 
@@ -717,11 +707,9 @@ UPNP_GetIGDFromUrl(const char * rootdescurl,
 		memset(urls, 0, sizeof(struct UPNPUrls));
 		parserootdesc(descXML, descXMLsize, data);
 		free(descXML);
-		descXML = NULL;
 		GetUPNPUrls(urls, data, rootdescurl, 0);
 		return 1;
 	} else {
 		return 0;
 	}
 }
-

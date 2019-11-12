@@ -28,4 +28,4 @@ with open_utf8('register_platform_apis.gen.cpp', 'w') as f:
 platform_sources.append('register_platform_apis.gen.cpp')
 
 lib = env.add_library('platform', platform_sources)
-env.Prepend(LIBS=lib)
+env.Prepend(LIBS=[lib])

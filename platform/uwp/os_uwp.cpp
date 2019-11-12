@@ -704,6 +704,11 @@ void OS_UWP::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
+OS::CursorShape OS_UWP::get_cursor_shape() const {
+
+	return cursor_shape;
+}
+
 void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 }

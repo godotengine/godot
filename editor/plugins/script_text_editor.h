@@ -59,7 +59,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
-	int color_line;
+	Vector2 color_position;
 	String color_args;
 
 	void _update_member_keywords();
