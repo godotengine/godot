@@ -62,15 +62,18 @@ name is available.
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
     Eric Lasota (elasota)
+    Erik Selecký (rxlecky)
     est31
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
+    Fredia Huya-Kouadio (m4gr3d)
     Geequlim
     George Marques (vnen)
     Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
+    Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hanif Bin Ariffin (hbina)
     Hein-Pieter van Braam-Stewart (hpvb)
@@ -81,6 +84,7 @@ name is available.
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
     Ignacio Etcheverry (neikeq)
+    Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
@@ -105,13 +109,12 @@ name is available.
     Martin Capitanio (capnm)
     Martin Liška (marxin)
     Martin Sjursen (binbitten)
-    Marxin Liška (marxin)
     marynate
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
-    Michael Alexsander Silva Dias (YeldhamDev)
+    Michael Alexsander (YeldhamDev)
     MichiRecRoom (LikeLakers2)
     mrezai
     Nathan Warden (NathanWarden)
@@ -143,12 +146,13 @@ name is available.
     santouits
     SaracenOne
     sersoong
+    Shiqing (kawa-yoiko)
     Simon Wenner (swenner)
     Swarnim Arun (minraws)
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
-    Timo (toger5)
     Timo Schwarzer (timoschwarzer)
+    Timo (toger5)
     Tomasz Chabora (KoBeWi)
     Twarit Waikar (IronicallySerious)
     Vinzenz Feenstra (vinzenz)
