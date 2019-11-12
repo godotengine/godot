@@ -194,7 +194,7 @@
 			</return>
 			<description>
 				Reloads the currently active scene.
-				Returns an [enum Error] code as described in [method change_scene], with the addition of [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet.
+				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
 		<method name="set_auto_accept_quit">
