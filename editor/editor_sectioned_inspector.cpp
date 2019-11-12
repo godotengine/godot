@@ -136,6 +136,7 @@ void SectionedInspector::_bind_methods() {
 	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
 	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
 
+	ClassDB::bind_method("get_sections", &SectionedInspector::get_sections);
 	ClassDB::bind_method("collapse_all_sections", &SectionedInspector::collapse_all_sections);
 	ClassDB::bind_method("expand_all_sections", &SectionedInspector::expand_all_sections);
 	ClassDB::bind_method("collapse_unselected", &SectionedInspector::collapse_unselected);
@@ -165,6 +166,11 @@ String SectionedInspector::get_current_section() const {
 		return sections->get_selected()->get_metadata(0);
 	else
 		return "";
+}
+
+Tree *SectionedInspector::get_sections() const {
+
+	return sections;
 }
 
 String SectionedInspector::get_full_item_path(const String &p_item) {
