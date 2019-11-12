@@ -3,6 +3,14 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		The [PCKPacker] is used to create packages in application runtime.
+		[codeblock]
+		var packer = PCKPacker.new()
+		packer.pck_start("test.pck", 0)
+		packer.add_file("res://text.txt", "text.txt")
+		packer.flush(false)
+		[/codeblock]
+		The above [PCKPacker] creates package [b]test.pck[/b], then adds a file named [b]text.txt[/b] in the root of the package.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +23,7 @@
 			<argument index="1" name="source_path" type="String">
 			</argument>
 			<description>
+				Adds the [code]source_path[/code] file to the current PCK package at the [code]pck_path[/code] internal path (should start with [code]res://[/code]).
 			</description>
 		</method>
 		<method name="flush">
