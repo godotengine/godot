@@ -225,6 +225,7 @@ private:
 		Color font_color_selected;
 		Color font_color_readonly;
 		Color keyword_color;
+		Color control_flow_keyword_color;
 		Color number_color;
 		Color function_color;
 		Color member_variable_color;

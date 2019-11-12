@@ -113,6 +113,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 
 	get_text_edit()->add_color_override("background_color", background_color);
@@ -147,7 +148,11 @@ void ShaderTextEditor::_load_theme_settings() {
 	ShaderLanguage::get_keyword_list(&keywords);
 
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
-		get_text_edit()->add_keyword_color(E->get(), keyword_color);
+		if (ShaderLanguage::is_control_flow_keyword(E->get())) {
+			get_text_edit()->add_keyword_color(E->get(), control_flow_keyword_color);
+		} else {
+			get_text_edit()->add_keyword_color(E->get(), keyword_color);
+		}
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier
