@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  script_editor_debugger_websocket.cpp                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
-#else
-#include "wsl_client.h"
-#include "wsl_server.h"
-#endif
-#ifdef TOOLS_ENABLED
-#include "modules/websocket/script_editor_debugger_websocket.h"
-#endif
+#include "script_editor_debugger_websocket.h"
 
-void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
-
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
-
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
-
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	WSLPeer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
-#endif
-
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
-
-#ifdef TOOLS_ENABLED
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<ScriptEditorDebuggerWebSocket>();
-	ClassDB::set_current_api(ClassDB::API_CORE);
-#endif
+void ScriptEditorDebuggerWebSocket::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_peer_connected"), &ScriptEditorDebuggerWebSocket::_peer_connected);
 }
 
-void unregister_websocket_types() {}
+void ScriptEditorDebuggerWebSocket::_peer_connected(int p_id, String _protocol) {
+	if (peer_id) {
+		server->disconnect_peer(p_id);
+		return;
+	}
+	peer_id = p_id;
+	just_connected = true;
+}
+
+Error ScriptEditorDebuggerWebSocket::start_server(int p_port) {
+	Vector<String> protocols;
+	protocols.push_back("binary"); // compatibility with EMSCRIPTEN TCP-to-WebSocket layer.
+	return server->listen(p_port, protocols);
+}
+
+void ScriptEditorDebuggerWebSocket::stop_server() {
+	server->stop();
+	peer_id = 0;
+	just_connected = false;
+}
+
+void ScriptEditorDebuggerWebSocket::handle_connections(bool &r_connected, bool &r_disconnected) {
+	r_connected = false;
+	r_disconnected = false;
+
+	server->poll();
+
+	// Was connected but got a disconnection.
+	if (peer_id && !server->has_peer(peer_id)) {
+		r_disconnected = true;
+		peer_id = 0;
+		return;
+	}
+
+	if (just_connected) {
+		just_connected = false;
+		r_connected = true;
+	}
+}
+
+bool ScriptEditorDebuggerWebSocket::has_peer() {
+	return server->has_peer(peer_id);
+}
+
+Ref<PacketPeer> ScriptEditorDebuggerWebSocket::get_peer() {
+	return server->get_peer(peer_id);
+}
+
+ScriptEditorDebuggerWebSocket::ScriptEditorDebuggerWebSocket() :
+		server(WebSocketServer::create()),
+		peer_id(0),
+		just_connected(false) {
+	server->connect("client_connected", this, "_peer_connected");
+}
+
+ScriptEditorDebuggerWebSocket::~ScriptEditorDebuggerWebSocket() {
+	stop_server();
+}

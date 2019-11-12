@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  script_editor_debugger_websocket.h                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
-#else
-#include "wsl_client.h"
-#include "wsl_server.h"
-#endif
-#ifdef TOOLS_ENABLED
-#include "modules/websocket/script_editor_debugger_websocket.h"
-#endif
+#ifndef SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
+#define SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
 
-void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+#include "modules/websocket/websocket_server.h"
 
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
+#include "editor/script_editor_debugger.h"
 
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
+class ScriptEditorDebuggerWebSocket : public ScriptEditorDebuggerServer {
 
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	WSLPeer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
-#endif
+	GDCLASS(ScriptEditorDebuggerWebSocket, ScriptEditorDebuggerServer);
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
+private:
+	Ref<WebSocketServer> server;
+	int peer_id;
+	bool just_connected;
 
-#ifdef TOOLS_ENABLED
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<ScriptEditorDebuggerWebSocket>();
-	ClassDB::set_current_api(ClassDB::API_CORE);
-#endif
-}
+protected:
+	static void _bind_methods();
 
-void unregister_websocket_types() {}
+	virtual Error start_server(int p_port);
+	virtual void stop_server();
+	virtual void handle_connections(bool &r_connected, bool &r_disconnected);
+	virtual bool has_peer();
+	virtual Ref<PacketPeer> get_peer();
+
+public:
+	void _peer_connected(int p_peer, String p_protocol);
+
+	ScriptEditorDebuggerWebSocket();
+	~ScriptEditorDebuggerWebSocket();
+};
+
+#endif // SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
