@@ -57,7 +57,9 @@ class EditorSettingsDialog : public AcceptDialog {
 	MenuButton *general_menu_button;
 	MenuButton *shortcut_menu_button;
 	PopupMenu *general_menu_button_popup;
+	PopupMenu *general_context_menu;
 	PopupMenu *shortcut_menu_button_popup;
+	PopupMenu *shortcut_context_menu;
 	ConfirmationDialog *restore_default_settings_ask;
 	ConfirmationDialog *restore_default_shortcuts_ask;
 
@@ -65,7 +67,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _general_menu_option(int p_option);
 	void _general_section_right_click(Vector2 p_position);
 	void _restore_default_settings();
-	void _shortcut_right_click(Vector2 p_position);
+	void _shortcut_section_right_click(Vector2 p_position);
 	void _shortcut_menu_option(int p_option);
 	void _shortcut_section_collapsed(Object *p_item);
 	void _restore_default_shortcuts();

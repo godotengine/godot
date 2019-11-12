@@ -178,6 +178,13 @@ void EditorSettingsDialog::_update_menus() {
 	general_menu_button_popup->add_separator();
 	general_menu_button_popup->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
 
+	general_context_menu->clear();
+	general_context_menu->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	general_context_menu->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	general_context_menu->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	general_context_menu->add_separator();
+	general_context_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+
 	shortcut_menu_button_popup = shortcut_menu_button->get_popup();
 	shortcut_menu_button_popup->clear();
 	shortcut_menu_button_popup->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
@@ -185,20 +192,27 @@ void EditorSettingsDialog::_update_menus() {
 	shortcut_menu_button_popup->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
 	shortcut_menu_button_popup->add_separator();
 	shortcut_menu_button_popup->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
+
+	shortcut_context_menu->clear();
+	shortcut_context_menu->add_icon_item(get_icon("AnimationTrackGroup", "EditorIcons"), TTR("Expand Sections"), MENU_EXPAND_ALL);
+	shortcut_context_menu->add_icon_item(get_icon("AnimationTrackList", "EditorIcons"), TTR("Collapse Sections"), MENU_COLLAPSE_ALL);
+	shortcut_context_menu->add_item(TTR("Collapse Unselected"), MENU_COLLAPSE_UNSELECTED);
+	shortcut_context_menu->add_separator();
+	shortcut_context_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Restore Defaults"), MENU_RESTORE_DEFAULTS);
 }
 
-void EditorSettingsDialog::_shortcut_right_click(Vector2 p_position) {
-	/*shortcut_popup->set_position(get_global_transform().xform(get_local_mouse_position()));
-	shortcut_popup->set_size(Vector2(1, 1));
-	shortcut_popup->set_scale(get_global_transform().get_scale());
-	shortcut_popup->popup();*/
+void EditorSettingsDialog::_shortcut_section_right_click(Vector2 p_position) {
+	shortcut_context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	shortcut_context_menu->set_size(Vector2(1, 1));
+	shortcut_context_menu->set_scale(get_global_transform().get_scale());
+	shortcut_context_menu->popup();
 }
 
 void EditorSettingsDialog::_general_section_right_click(Vector2 p_position) {
-	/*shortcut_popup->set_position(get_global_transform().xform(get_local_mouse_position()));
-	shortcut_popup->set_size(Vector2(1, 1));
-	shortcut_popup->set_scale(get_global_transform().get_scale());
-	shortcut_popup->popup();*/
+	general_context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	general_context_menu->set_size(Vector2(1, 1));
+	general_context_menu->set_scale(get_global_transform().get_scale());
+	general_context_menu->popup();
 }
 
 // Tabs and content
@@ -563,7 +577,7 @@ void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 	ClassDB::bind_method(D_METHOD("_settings_property_edited"), &EditorSettingsDialog::_settings_property_edited);
 	ClassDB::bind_method(D_METHOD("_shortcut_button_pressed"), &EditorSettingsDialog::_shortcut_button_pressed);
-	ClassDB::bind_method(D_METHOD("_shortcut_right_click"), &EditorSettingsDialog::_shortcut_right_click);
+	ClassDB::bind_method(D_METHOD("_shortcut_section_right_click"), &EditorSettingsDialog::_shortcut_section_right_click);
 	ClassDB::bind_method(D_METHOD("_general_section_right_click"), &EditorSettingsDialog::_general_section_right_click);
 	ClassDB::bind_method(D_METHOD("_filter_shortcuts"), &EditorSettingsDialog::_filter_shortcuts);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
@@ -588,7 +602,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(tabs);
 
 	// General Tab --------------------------------------------------------------------------------------
-
 	tab_general = memnew(VBoxContainer);
 	tabs->add_child(tab_general);
 	tab_general->set_name(TTR("General"));
@@ -603,6 +616,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	general_menu_button_popup = general_menu_button->get_popup();
 	general_menu_button_popup->set_anchors_preset(PRESET_TOP_RIGHT);
 	general_menu_button_popup->connect("id_pressed", this, "_general_menu_option");
+	general_context_menu = memnew(PopupMenu);
+	general_context_menu->hide();
+	general_context_menu->connect("id_pressed", this, "_general_menu_option");
+	add_child(general_context_menu);
 	restore_default_settings_ask = memnew(ConfirmationDialog);
 	add_child(restore_default_settings_ask);
 	restore_default_settings_ask->connect("confirmed", this, "_restore_default_settings");
@@ -619,9 +636,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->register_search_box(search_box);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->get_inspector()->set_undo_redo(undo_redo);
+	inspector->get_sections()->set_allow_rmb_select(true);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", this, "_settings_property_edited");
 	inspector->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
+	inspector->get_sections()->connect("item_rmb_selected", this, "_general_section_right_click");
 
 	/* restart required container */
 	restart_container = memnew(PanelContainer);
@@ -645,7 +664,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_container->hide();
 
 	// Shortcuts Tab ------------------------------------------------------------------------------------
-
 	tab_shortcuts = memnew(VBoxContainer);
 	tabs->add_child(tab_shortcuts);
 	tab_shortcuts->set_name(TTR("Shortcuts"));
@@ -660,6 +678,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_menu_button_popup = shortcut_menu_button->get_popup();
 	shortcut_menu_button_popup->set_anchors_preset(PRESET_TOP_RIGHT);
 	shortcut_menu_button_popup->connect("id_pressed", this, "_shortcut_menu_option");
+	shortcut_context_menu = memnew(PopupMenu);
+	shortcut_context_menu->hide();
+	shortcut_context_menu->connect("id_pressed", this, "_shortcut_menu_option");
+	add_child(shortcut_context_menu);
 	restore_default_shortcuts_ask = memnew(ConfirmationDialog);
 	add_child(restore_default_shortcuts_ask);
 	restore_default_shortcuts_ask->connect("confirmed", this, "_restore_default_shortcuts");
@@ -681,8 +703,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
 	shortcuts->set_select_mode(Tree::SELECT_ROW);
+	shortcuts->set_allow_rmb_select(true);
 	shortcuts->connect("item_collapsed", this, "_shortcut_section_collapsed");
 	shortcuts->connect("button_pressed", this, "_shortcut_button_pressed");
+	shortcuts->connect("item_rmb_selected", this, "_shortcut_section_right_click");
 
 	/* keybind dialogue */
 	press_a_key = memnew(ConfirmationDialog);
