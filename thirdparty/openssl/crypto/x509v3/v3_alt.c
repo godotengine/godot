@@ -4,7 +4,7 @@
  * project.
  */
 /* ====================================================================
- * Copyright (c) 1999-2003 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 1999-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -205,15 +205,18 @@ int GENERAL_NAME_print(BIO *out, GENERAL_NAME *gen)
         break;
 
     case GEN_EMAIL:
-        BIO_printf(out, "email:%s", gen->d.ia5->data);
+        BIO_printf(out, "email:");
+        ASN1_STRING_print(out, gen->d.ia5);
         break;
 
     case GEN_DNS:
-        BIO_printf(out, "DNS:%s", gen->d.ia5->data);
+        BIO_printf(out, "DNS:");
+        ASN1_STRING_print(out, gen->d.ia5);
         break;
 
     case GEN_URI:
-        BIO_printf(out, "URI:%s", gen->d.ia5->data);
+        BIO_printf(out, "URI:");
+        ASN1_STRING_print(out, gen->d.ia5);
         break;
 
     case GEN_DIRNAME:

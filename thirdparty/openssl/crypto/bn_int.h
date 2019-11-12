@@ -19,3 +19,6 @@ int bn_mul_fixed_top(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
 int bn_sqr_fixed_top(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx);
 
 int bn_bn2binpad(const BIGNUM *a, unsigned char *to, int tolen);
+
+BIGNUM *bn_lebin2bn(const unsigned char *s, int len, BIGNUM *ret);
+int bn_bn2lebinpad(const BIGNUM *a, unsigned char *to, int tolen);

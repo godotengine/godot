@@ -3,7 +3,7 @@
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
 /* ====================================================================
- * Copyright (c) 1998-2018 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 1998-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -565,3 +565,18 @@ EC_GROUP *FIPS_ec_group_new_curve_gf2m(const BIGNUM *p, const BIGNUM *a,
                                        const BIGNUM *b, BN_CTX *ctx);
 EC_GROUP *FIPS_ec_group_new_by_curve_name(int nid);
 #endif
+
+int ec_curve_nid_from_params(const EC_GROUP *group, BN_CTX *ctx);
+
+/*
+ * The next 2 functions are just internal wrappers around the omonimous
+ * functions with either the `_GFp` or the `_GF2m` suffix.
+ *
+ * They are meant to facilitate backporting of code from newer branches, where
+ * the public API includes a "field agnostic" version of these 2 functions.
+ */
+int ec_group_get_curve(const EC_GROUP *group, BIGNUM *p, BIGNUM *a,
+                       BIGNUM *b, BN_CTX *ctx);
+int ec_point_get_affine_coordinates(const EC_GROUP *group,
+                                    const EC_POINT *point, BIGNUM *x,
+                                    BIGNUM *y, BN_CTX *ctx);

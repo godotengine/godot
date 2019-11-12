@@ -3,7 +3,7 @@
  * Written by Nils Larsch for the OpenSSL project.
  */
 /* ====================================================================
- * Copyright (c) 2000-2003 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 2000-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -695,10 +695,12 @@ ECPKPARAMETERS *ec_asn1_group2pkparameters(const EC_GROUP *group,
 static EC_GROUP *ec_asn1_parameters2group(const ECPARAMETERS *params)
 {
     int ok = 0, tmp;
-    EC_GROUP *ret = NULL;
+    EC_GROUP *ret = NULL, *dup = NULL;
     BIGNUM *p = NULL, *a = NULL, *b = NULL;
     EC_POINT *point = NULL;
     long field_bits;
+    int curve_name = NID_undef;
+    BN_CTX *ctx = NULL;
 
     if (!params->fieldID || !params->fieldID->fieldType ||
         !params->fieldID->p.ptr) {
@@ -914,13 +916,75 @@ static EC_GROUP *ec_asn1_parameters2group(const ECPARAMETERS *params)
         goto err;
     }
 
+    /*
+     * Check if the explicit parameters group just created matches one of the
+     * built-in curves.
+     *
+     * We create a copy of the group just built, so that we can remove optional
+     * fields for the lookup: we do this to avoid the possibility that one of
+     * the optional parameters is used to force the library into using a less
+     * performant and less secure EC_METHOD instead of the specialized one.
+     * In any case, `seed` is not really used in any computation, while a
+     * cofactor different from the one in the built-in table is just
+     * mathematically wrong anyway and should not be used.
+     */
+    if ((ctx = BN_CTX_new()) == NULL) {
+        ECerr(EC_F_EC_ASN1_PARAMETERS2GROUP, ERR_R_BN_LIB);
+        goto err;
+    }
+    if ((dup = EC_GROUP_dup(ret)) == NULL
+            || EC_GROUP_set_seed(dup, NULL, 0) != 1
+            || !EC_GROUP_set_generator(dup, point, a, NULL)) {
+        ECerr(EC_F_EC_ASN1_PARAMETERS2GROUP, ERR_R_EC_LIB);
+        goto err;
+    }
+    if ((curve_name = ec_curve_nid_from_params(dup, ctx)) != NID_undef) {
+        /*
+         * The input explicit parameters successfully matched one of the
+         * built-in curves: often for built-in curves we have specialized
+         * methods with better performance and hardening.
+         *
+         * In this case we replace the `EC_GROUP` created through explicit
+         * parameters with one created from a named group.
+         */
+        EC_GROUP *named_group = NULL;
+
+#ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
+        /*
+         * NID_wap_wsg_idm_ecid_wtls12 and NID_secp224r1 are both aliases for
+         * the same curve, we prefer the SECP nid when matching explicit
+         * parameters as that is associated with a specialized EC_METHOD.
+         */
+        if (curve_name == NID_wap_wsg_idm_ecid_wtls12)
+            curve_name = NID_secp224r1;
+#endif /* !def(OPENSSL_NO_EC_NISTP_64_GCC_128) */
+
+        if ((named_group = EC_GROUP_new_by_curve_name(curve_name)) == NULL) {
+            ECerr(EC_F_EC_ASN1_PARAMETERS2GROUP, ERR_R_EC_LIB);
+            goto err;
+        }
+        EC_GROUP_free(ret);
+        ret = named_group;
+
+        /*
+         * Set the flag so that EC_GROUPs created from explicit parameters are
+         * serialized using explicit parameters by default.
+         *
+         * 0x0 = OPENSSL_EC_EXPLICIT_CURVE
+         */
+        EC_GROUP_set_asn1_flag(ret, 0x0);
+    }
+
     ok = 1;
 
- err:if (!ok) {
+ err:
+    if (!ok) {
         if (ret)
-            EC_GROUP_clear_free(ret);
+            EC_GROUP_free(ret);
         ret = NULL;
     }
+    if (dup)
+        EC_GROUP_free(dup);
 
     if (p)
         BN_free(p);
@@ -930,6 +994,8 @@ static EC_GROUP *ec_asn1_parameters2group(const ECPARAMETERS *params)
         BN_free(b);
     if (point)
         EC_POINT_free(point);
+    if (ctx)
+        BN_CTX_free(ctx);
     return (ret);
 }
 
@@ -990,7 +1056,7 @@ EC_GROUP *d2i_ECPKParameters(EC_GROUP **a, const unsigned char **in, long len)
     }
 
     if (a && *a)
-        EC_GROUP_clear_free(*a);
+        EC_GROUP_free(*a);
     if (a)
         *a = group;
 
@@ -1040,7 +1106,7 @@ EC_KEY *d2i_ECPrivateKey(EC_KEY **a, const unsigned char **in, long len)
 
     if (priv_key->parameters) {
         if (ret->group)
-            EC_GROUP_clear_free(ret->group);
+            EC_GROUP_free(ret->group);
         ret->group = ec_asn1_pkparameters2group(priv_key->parameters);
     }
 

@@ -66,6 +66,7 @@
 #include <stdio.h>
 #include "cryptlib.h"
 #include "bn_lcl.h"
+#include "constant_time_locl.h"
 
 const char BN_version[] = "Big Number" OPENSSL_VERSION_PTEXT;
 
@@ -187,13 +188,57 @@ int BN_num_bits_word(BN_ULONG l)
     return bits;
 }
 
+/*
+ * This function still leaks `a->dmax`: it's caller's responsibility to
+ * expand the input `a` in advance to a public length.
+ */
+static inline
+int bn_num_bits_consttime(const BIGNUM *a)
+{
+    int j, ret;
+    unsigned int mask, past_i;
+    int i = a->top - 1;
+    bn_check_top(a);
+
+    for (j = 0, past_i = 0, ret = 0; j < a->dmax; j++) {
+        mask = constant_time_eq_int(i, j); /* 0xff..ff if i==j, 0x0 otherwise */
+
+        ret += BN_BITS2 & (~mask & ~past_i);
+        ret += BN_num_bits_word(a->d[j]) & mask;
+
+        past_i |= mask; /* past_i will become 0xff..ff after i==j */
+    }
+
+    /*
+     * if BN_is_zero(a) => i is -1 and ret contains garbage, so we mask the
+     * final result.
+     */
+    mask = ~(constant_time_eq_int(i, ((int)-1)));
+
+    return ret & mask;
+}
+
 int BN_num_bits(const BIGNUM *a)
 {
     int i = a->top - 1;
     bn_check_top(a);
 
+    if (a->flags & BN_FLG_CONSTTIME) {
+        /*
+         * We assume that BIGNUMs flagged as CONSTTIME have also been expanded
+         * so that a->dmax is not leaking secret information.
+         *
+         * In other words, it's the caller's responsibility to ensure `a` has
+         * been preallocated in advance to a public length if we hit this
+         * branch.
+         *
+         */
+        return bn_num_bits_consttime(a);
+    }
+
     if (BN_is_zero(a))
         return 0;
+
     return ((i * BN_BITS2) + BN_num_bits_word(a->d[i]));
 }
 
@@ -613,8 +658,11 @@ BIGNUM *BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret)
     return (ret);
 }
 
+typedef enum {big, little} endianess_t;
+
 /* ignore negative */
-static int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
+static
+int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen, endianess_t endianess)
 {
     int n;
     size_t i, lasti, j, atop, mask;
@@ -646,10 +694,17 @@ static int bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
 
     lasti = atop - 1;
     atop = a->top * BN_BYTES;
-    for (i = 0, j = 0, to += tolen; j < (size_t)tolen; j++) {
+    if (endianess == big)
+        to += tolen; /* start from the end of the buffer */
+    for (i = 0, j = 0; j < (size_t)tolen; j++) {
+        unsigned char val;
         l = a->d[i / BN_BYTES];
         mask = 0 - ((j - atop) >> (8 * sizeof(i) - 1));
-        *--to = (unsigned char)(l >> (8 * (i % BN_BYTES)) & mask);
+        val = (unsigned char)(l >> (8 * (i % BN_BYTES)) & mask);
+        if (endianess == big)
+            *--to = val;
+        else
+            *to++ = val;
         i += (i - lasti) >> (8 * sizeof(i) - 1); /* stay on last limb */
     }
 
@@ -660,21 +715,66 @@ int bn_bn2binpad(const BIGNUM *a, unsigned char *to, int tolen)
 {
     if (tolen < 0)
         return -1;
-    return bn2binpad(a, to, tolen);
+    return bn2binpad(a, to, tolen, big);
 }
 
 int BN_bn2bin(const BIGNUM *a, unsigned char *to)
 {
-    int n, i;
-    BN_ULONG l;
+    return bn2binpad(a, to, -1, big);
+}
 
-    bn_check_top(a);
-    n = i = BN_num_bytes(a);
-    while (i--) {
-        l = a->d[i / BN_BYTES];
-        *(to++) = (unsigned char)(l >> (8 * (i % BN_BYTES))) & 0xff;
+BIGNUM *bn_lebin2bn(const unsigned char *s, int len, BIGNUM *ret)
+{
+    unsigned int i, m;
+    unsigned int n;
+    BN_ULONG l;
+    BIGNUM *bn = NULL;
+
+    if (ret == NULL)
+        ret = bn = BN_new();
+    if (ret == NULL)
+        return NULL;
+    bn_check_top(ret);
+    s += len;
+    /* Skip trailing zeroes. */
+    for ( ; len > 0 && s[-1] == 0; s--, len--)
+        continue;
+    n = len;
+    if (n == 0) {
+        ret->top = 0;
+        return ret;
     }
-    return (n);
+    i = ((n - 1) / BN_BYTES) + 1;
+    m = ((n - 1) % (BN_BYTES));
+    if (bn_wexpand(ret, (int)i) == NULL) {
+        BN_free(bn);
+        return NULL;
+    }
+    ret->top = i;
+    ret->neg = 0;
+    l = 0;
+    while (n--) {
+        s--;
+        l = (l << 8L) | *s;
+        if (m-- == 0) {
+            ret->d[--i] = l;
+            l = 0;
+            m = BN_BYTES - 1;
+        }
+    }
+    /*
+     * need to call this due to clear byte at top if avoiding having the top
+     * bit set (-ve number)
+     */
+    bn_correct_top(ret);
+    return ret;
+}
+
+int bn_bn2lebinpad(const BIGNUM *a, unsigned char *to, int tolen)
+{
+    if (tolen < 0)
+        return -1;
+    return bn2binpad(a, to, tolen, little);
 }
 
 int BN_ucmp(const BIGNUM *a, const BIGNUM *b)
