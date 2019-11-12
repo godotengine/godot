@@ -483,7 +483,7 @@ Files extracted from upstream source:
 ## vhacd
 
 - Upstream: https://github.com/kmammou/v-hacd
-- Version: git (2297aa1, 2018)
+- Version: git (b07958e, 2019)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
