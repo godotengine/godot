@@ -454,7 +454,7 @@ are provided to reapply them.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (65f9859, 2018)
+- Version: git (656bb61, 2019)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
