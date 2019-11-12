@@ -225,6 +225,7 @@ Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
+
 ## minizip
 
 - Upstream: http://www.zlib.net
@@ -326,7 +327,7 @@ Files extracted from the upstream source:
 ## openssl
 
 - Upstream: https://www.openssl.org
-- Version: 1.0.2s
+- Version: 1.0.2t
 - License: OpenSSL license / BSD-like
 
 Files extracted from the upstream source:
