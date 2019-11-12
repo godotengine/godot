@@ -113,12 +113,18 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 float EditorQuickOpen::_path_cmp(String search, String path) const {
 
+	// Exact match.
 	if (search == path) {
 		return 1.2f;
 	}
-	if (path.findn(search) != -1) {
-		return 1.1f;
+
+	// Substring match, with positive bias for matches close to the end of the path.
+	int pos = path.rfindn(search);
+	if (pos != -1) {
+		return 1.1f + 0.09 / (path.length() - pos + 1);
 	}
+
+	// Similarity.
 	return path.to_lower().similarity(search.to_lower());
 }
 
