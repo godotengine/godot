@@ -262,7 +262,7 @@ def make_template_dir(env, mono_root):
 
     template_dir_name = ''
 
-    if platform in ['windows', 'osx', 'x11', 'android']:
+    if platform in ['windows', 'osx', 'x11', 'android', 'server']:
         template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
     else:
         assert False
@@ -386,7 +386,7 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if platform == 'osx':
             # TODO: Make sure nothing is missing
             copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.dylib'), target_mono_lib_dir)
-        elif platform == 'x11' or platform == 'android':
+        elif platform == 'x11' or platform == 'android' or platform == 'server':
             lib_file_names = [lib_name + '.so' for lib_name in [
                 'libmono-btls-shared', 'libmono-ee-interp', 'libmono-native', 'libMonoPosixHelper',
                 'libmono-profiler-aot', 'libmono-profiler-coverage', 'libmono-profiler-log', 'libMonoSupportW'
