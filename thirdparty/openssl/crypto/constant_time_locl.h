@@ -6,7 +6,7 @@
  * Based on previous work by Bodo Moeller, Emilia Kasper, Adam Langley
  * (Google).
  * ====================================================================
- * Copyright (c) 2014 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 2014-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -185,11 +185,29 @@ static inline unsigned char constant_time_eq_int_8(int a, int b)
     return constant_time_eq_8((unsigned)(a), (unsigned)(b));
 }
 
+/*
+ * Returns the value unmodified, but avoids optimizations.
+ * The barriers prevent the compiler from narrowing down the
+ * possible value range of the mask and ~mask in the select
+ * statements, which avoids the recognition of the select
+ * and turning it into a conditional load or branch.
+ */
+static inline unsigned int value_barrier(unsigned int a)
+{
+#if !defined(OPENSSL_NO_ASM) && defined(__GNUC__)
+    unsigned int r;
+    __asm__("" : "=r"(r) : "0"(a));
+#else
+    volatile unsigned int r = a;
+#endif
+    return r;
+}
+
 static inline unsigned int constant_time_select(unsigned int mask,
                                                 unsigned int a,
                                                 unsigned int b)
 {
-    return (mask & a) | (~mask & b);
+    return (value_barrier(mask) & a) | (value_barrier(~mask) & b);
 }
 
 static inline unsigned char constant_time_select_8(unsigned char mask,

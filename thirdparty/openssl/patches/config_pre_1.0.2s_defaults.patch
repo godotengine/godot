@@ -1,0 +1,35 @@
+diff --git a/thirdparty/openssl/openssl/opensslconf.h b/thirdparty/openssl/openssl/opensslconf.h
+index 619e5ca48b..0edbf7b1c5 100644
+--- a/thirdparty/openssl/openssl/opensslconf.h
++++ b/thirdparty/openssl/openssl/opensslconf.h
+@@ -123,7 +123,11 @@ extern "C" {
+ # endif
+ #endif
+ 
+-#define OPENSSL_CPUID_OBJ
++// -- GODOT start --
++// Added in 1.0.2s and we didn't define it up to now,
++// so keeping it as previously to ensure compatibility.
++//#define OPENSSL_CPUID_OBJ
++// -- GODOT end --
+ 
+ /* crypto/opensslconf.h.in */
+ 
+@@ -190,10 +194,15 @@ extern "C" {
+ /* Should we define BN_DIV2W here? */
+ 
+ /* Only one for the following should be defined */
+-#define SIXTY_FOUR_BIT_LONG
++// -- GODOT start --
++// Default changed in 1.0.2s, we keep previous value to ensure compatibility.
++//#define SIXTY_FOUR_BIT_LONG
++#undef SIXTY_FOUR_BIT_LONG
+ #undef SIXTY_FOUR_BIT
+-#undef THIRTY_TWO_BIT
++//#undef THIRTY_TWO_BIT
++#define THIRTY_TWO_BIT
+ #endif
++// -- GODOT end --
+ 
+ #if defined(HEADER_RC4_LOCL_H) && !defined(CONFIG_HEADER_RC4_LOCL_H)
+ #define CONFIG_HEADER_RC4_LOCL_H
