@@ -283,3 +283,7 @@ ShaderTypes::ShaderTypes() {
 	shader_types.insert("canvas_item");
 	shader_types.insert("particles");
 }
+
+ShaderTypes::~ShaderTypes() {
+	singleton = NULL;
+}

@@ -1381,6 +1381,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 		return; //just invalid, but no error
 	}
 
+	if (!ShaderTypes::get_singleton()) // It can happens when Godot cleaned singleton to prepare program to exit
+		return;
+
 	ShaderCompilerGLES2::GeneratedCode gen_code;
 	ShaderCompilerGLES2::IdentifierActions *actions = NULL;
 
