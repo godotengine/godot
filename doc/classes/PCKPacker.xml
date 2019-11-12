@@ -17,12 +17,12 @@
 			<description>
 				The [PCKPacker] is used to create packages in application runtime.
 				[codeblock]
-				var Packer = new PCKPacker();
-				Packer.PckStart("Test.pck", 0)
-				Packer.AddFile("res://Text.txt", "Test.txt");
-				Packer.Flush(false);
+				var packer = PCKPacker.new()
+				packer.pck_start("test.pck", 0)
+				packer.add_file("res://text.txt", "text.txt")
+				packer.flush(false)
 				[/codeblock]
-				The above [PCKPacker] creates package [b]Test.pck[/b], then adds a file named [b]Text.txt[/b] in the root of the package.
+				The above [PCKPacker] creates package [b]test.pck[/b], then adds a file named [b]text.txt[/b] in the root of the package.
 			</description>
 		</method>
 		<method name="flush">
