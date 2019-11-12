@@ -907,8 +907,10 @@ void GDScriptTokenizerText::_advance() {
 								return;
 							}
 							hexa_found = true;
-						} else if (GETCHAR(i) == 'b') {
-							if (hexa_found || bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
+						} else if (hexa_found && _is_hex(GETCHAR(i))) {
+
+						} else if (!hexa_found && GETCHAR(i) == 'b') {
+							if (bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
 								_make_error("Invalid numeric constant at 'b'");
 								return;
 							}
@@ -921,7 +923,6 @@ void GDScriptTokenizerText::_advance() {
 							exponent_found = true;
 						} else if (_is_number(GETCHAR(i))) {
 							//all ok
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
 
 						} else if (bin_found && _is_bin(GETCHAR(i))) {
 
