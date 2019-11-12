@@ -2224,8 +2224,9 @@ void Tree::_go_down() {
 	TreeItem *next = NULL;
 	if (!selected_item) {
 
-		next = hide_root ? root->get_next_visible() : root;
-		selected_item = 0;
+		if (root) {
+			next = hide_root ? root->get_next_visible() : root;
+		}
 	} else {
 
 		next = selected_item->get_next_visible();
