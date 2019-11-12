@@ -144,6 +144,7 @@ $GODOT_HEAD_INCLUDE
 
 			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const MAIN_FLAGS = JSON.parse('$GODOT_FLAGS');
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
 			var canvas = document.getElementById('canvas');
@@ -255,7 +256,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK, MAIN_FLAGS).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

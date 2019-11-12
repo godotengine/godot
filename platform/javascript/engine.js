@@ -131,11 +131,13 @@
 			);
 		};
 
-		this.startGame = function(execName, mainPack) {
+		this.startGame = function(execName, mainPack, flags) {
 
 			executableName = execName;
 			var mainArgs = [ '--main-pack', mainPack ];
-
+			if (flags) {
+				mainArgs = mainArgs.concat(flags);
+			}
 			return Promise.all([
 				// Load from directory,
 				this.init(getBasePath(mainPack)),
