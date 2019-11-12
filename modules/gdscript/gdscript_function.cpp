@@ -397,8 +397,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		if (unlikely(m_cond)) {                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Breaking..:"); \
 			OPCODE_BREAK;                                                                                              \
-		} else                                                                                                         \
-			_err_error_exists = false;                                                                                 \
+		}                                                                                                              \
 	}
 
 #define CHECK_SPACE(m_space) \
@@ -1561,14 +1560,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->path != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->path != "")
 			err_file = p_instance->script->path;
 		else if (script)
 			err_file = script->path;
 		if (err_file == "")
 			err_file = "<built-in>";
 		String err_func = name;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->name != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->name != "")
 			err_func = p_instance->script->name + "." + err_func;
 		int err_line = line;
 		if (err_text == "") {

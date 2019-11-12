@@ -1345,7 +1345,7 @@ public:
 		return logo;
 	}
 
-	virtual bool poll_devices() {
+	virtual bool poll_export() {
 
 		bool dc = devices_changed;
 		if (dc) {
@@ -1355,7 +1355,7 @@ public:
 		return dc;
 	}
 
-	virtual int get_device_count() const {
+	virtual int get_options_count() const {
 
 		device_lock->lock();
 		int dc = devices.size();
@@ -1364,20 +1364,31 @@ public:
 		return dc;
 	}
 
-	virtual String get_device_name(int p_device) const {
+	virtual String get_options_tooltip() const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		return TTR("Select device from the list");
+	}
+
+	virtual String get_option_label(int p_index) const {
+
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].name;
+		String s = devices[p_index].name;
 		device_lock->unlock();
 		return s;
 	}
 
-	virtual String get_device_info(int p_device) const {
+	virtual String get_option_tooltip(int p_index) const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].description;
+		String s = devices[p_index].description;
+		if (devices.size() == 1) {
+			// Tooltip will be:
+			// Name
+			// Description
+			s = devices[p_index].name + "\n\n" + s;
+		}
 		device_lock->unlock();
 		return s;
 	}

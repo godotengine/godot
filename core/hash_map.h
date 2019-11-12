@@ -210,6 +210,7 @@ private:
 		e->next = hash_table[index];
 		e->hash = hash;
 		e->pair.key = p_key;
+		e->pair.data = TData();
 
 		hash_table[index] = e;
 		elements++;

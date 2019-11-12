@@ -176,6 +176,14 @@
 				Returns [code]true[/code] if the [AABB] intersects the line segment between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="merge">
 			<return type="AABB">
 			</return>

@@ -55,6 +55,7 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
+    David Sichma (DavidSichma)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
@@ -120,6 +121,7 @@ name is available.
     Patrick (firefly2442)
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
+    Paul Trojahn (ptrojahn)
     Pawel Kowal (pkowal1982)
     Pedro J. Estébanez (RandomShaper)
     Pieter-Jan Briers (PJB3005)

@@ -117,8 +117,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 			if (S) {
 				err_msg += "\n" + S->get()->get_error();
 			}
-			ERR_EXPLAIN(err_msg);
-			ERR_CONTINUE(err != OK);
+			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}
 	}
 }

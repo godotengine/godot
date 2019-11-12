@@ -157,6 +157,8 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns an array of MIDI device names.
+				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
 			</description>
 		</method>
 		<method name="get_current_video_driver" qualifiers="const">
@@ -215,6 +217,13 @@
 			</return>
 			<description>
 				Returns the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_granted_permissions" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				With this function you can get the list of dangerous permissions that have been granted to the Android application.
 			</description>
 		</method>
 		<method name="get_ime_selection" qualifiers="const">
@@ -692,6 +701,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Initialises the singleton for the system MIDI driver.
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -742,6 +752,13 @@
 			</argument>
 			<description>
 				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+			</description>
+		</method>
+		<method name="request_permissions">
+			<return type="bool">
+			</return>
+			<description>
+				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -860,6 +877,9 @@
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+		</member>
+		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
+			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
 		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size" default="Vector2( 0, 0 )">
 			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.

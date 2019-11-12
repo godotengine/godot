@@ -203,6 +203,10 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }
 
+bool Vector2::is_equal_approx(const Vector2 &p_v) const {
+	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
+}
+
 /* Vector2i */
 
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {

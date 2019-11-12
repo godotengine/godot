@@ -132,7 +132,7 @@ void GDAPI godot_array_destroy(godot_array *p_self);
 
 godot_array GDAPI godot_array_duplicate(const godot_array *p_self, const godot_bool p_deep);
 
-godot_array GDAPI godot_array_slice(const godot_array *p_self, const godot_int p_begin, const godot_int p_end, const godot_int p_delta, const godot_bool p_deep);
+godot_array GDAPI godot_array_slice(const godot_array *p_self, const godot_int p_begin, const godot_int p_end, const godot_int p_step, const godot_bool p_deep);
 
 godot_variant GDAPI godot_array_max(const godot_array *p_self);
 

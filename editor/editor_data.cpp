@@ -820,7 +820,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHis
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 
 	EditedScene &es = edited_scene.write[current_edited_scene];
-	es.selection = p_selection->get_selected_node_list();
+	es.selection = p_selection->get_full_selected_node_list();
 	es.history_current = p_history->current;
 	es.history_stored = p_history->history;
 	es.editor_states = get_editor_states();
@@ -870,7 +870,7 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	if (!ScriptServer::is_global_class(p_class))
 		return false;
 	String base = script_class_get_base(p_class);
-	Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
+	Ref<Script> script = script_class_load_script(p_class);
 	Ref<Script> base_script = script->get_base_script();
 
 	while (p_inherits != base) {
@@ -889,12 +889,7 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 
 StringName EditorData::script_class_get_base(const String &p_class) const {
 
-	if (!ScriptServer::is_global_class(p_class))
-		return StringName();
-
-	String path = ScriptServer::get_global_class_path(p_class);
-
-	Ref<Script> script = ResourceLoader::load(path, "Script");
+	Ref<Script> script = script_class_load_script(p_class);
 	if (script.is_null())
 		return StringName();
 
@@ -910,13 +905,22 @@ Object *EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
 		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
-			RES script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
+			Ref<Script> script = script_class_load_script(p_class);
 			if (script.is_valid())
 				obj->set_script(script.get_ref_ptr());
 			return obj;
 		}
 	}
 	return NULL;
+}
+
+Ref<Script> EditorData::script_class_load_script(const String &p_class) const {
+
+	if (!ScriptServer::is_global_class(p_class))
+		return Ref<Script>();
+
+	String path = ScriptServer::get_global_class_path(p_class);
+	return ResourceLoader::load(path, "Script");
 }
 
 void EditorData::script_class_set_icon_path(const String &p_class, const String &p_icon_path) {
@@ -1140,6 +1144,16 @@ List<Node *> &EditorSelection::get_selected_node_list() {
 	else
 		_update_nl();
 	return selected_node_list;
+}
+
+List<Node *> EditorSelection::get_full_selected_node_list() {
+
+	List<Node *> node_list;
+	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
+		node_list.push_back(E->key());
+	}
+
+	return node_list;
 }
 
 void EditorSelection::clear() {

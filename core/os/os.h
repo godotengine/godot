@@ -61,8 +61,6 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 
-	char *last_error;
-
 	void *_stack_bottom;
 
 	CompositeLogger *_logger;
@@ -154,10 +152,6 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
-
-	virtual void set_last_error(const char *p_error);
-	virtual const char *get_last_error() const;
-	virtual void clear_last_error();
 
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
@@ -530,6 +524,8 @@ public:
 	List<String> get_restart_on_exit_arguments() const;
 
 	virtual bool request_permission(const String &p_name) { return true; }
+	virtual bool request_permissions() { return true; }
+	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
 	OS();

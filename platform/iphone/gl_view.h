@@ -79,8 +79,6 @@
 @property(strong, nonatomic) AVPlayer *avPlayer;
 @property(strong, nonatomic) AVPlayerLayer *avPlayerLayer;
 
-// Old videoplayer properties
-@property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
 @property(strong, nonatomic) UIWindow *backgroundWindow;
 
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;

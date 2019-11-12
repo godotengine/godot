@@ -71,10 +71,14 @@ matrix:
       env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
+      addons:
+        apt:
+          packages:
+            - openjdk-8-jdk
 
     - name: macOS editor (debug, Clang)
       stage: build
-      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
 
@@ -116,13 +120,13 @@ before_install:
 install:
   - pip install --user scons;
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64;
+      export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
+      java -version;
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
-      misc/travis/android-tools-osx.sh;
     fi
 
 before_script:

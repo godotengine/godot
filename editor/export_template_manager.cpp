@@ -69,9 +69,15 @@ void ExportTemplateManager::_update_template_list() {
 	memdelete(d);
 
 	String current_version = VERSION_FULL_CONFIG;
-	// Downloadable export templates are only available for stable, alpha, beta and RC versions.
+	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
+	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
-	const bool downloads_available = String(VERSION_STATUS) != String("dev");
+	// (whose builds aren't numbered).
+	const bool downloads_available =
+			String(VERSION_STATUS) != String("dev") &&
+			String(VERSION_STATUS) != String("alpha") &&
+			String(VERSION_STATUS) != String("beta") &&
+			String(VERSION_STATUS) != String("rc");
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -155,38 +161,27 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 
 void ExportTemplateManager::_uninstall_template_confirm() {
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(EditorSettings::get_singleton()->get_templates_dir());
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String &templates_dir = EditorSettings::get_singleton()->get_templates_dir();
+	Error err = da->change_dir(templates_dir);
+	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
+	err = da->change_dir(to_remove);
+	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir.plus_file(to_remove) + "'.");
 
-	ERR_FAIL_COND(err != OK);
+	err = da->erase_contents_recursive();
+	ERR_FAIL_COND_MSG(err != OK, "Could not remove all templates in '" + templates_dir.plus_file(to_remove) + "'.");
 
-	err = d->change_dir(to_remove);
-
-	ERR_FAIL_COND(err != OK);
-
-	Vector<String> files;
-	d->list_dir_begin();
-	String c = d->get_next();
-	while (c != String()) {
-		if (!d->current_is_dir()) {
-			files.push_back(c);
-		}
-		c = d->get_next();
-	}
-	d->list_dir_end();
-
-	for (int i = 0; i < files.size(); i++) {
-		d->remove(files[i]);
-	}
-
-	d->change_dir("..");
-	d->remove(to_remove);
+	da->change_dir("..");
+	da->remove(to_remove);
+	ERR_FAIL_COND_MSG(err != OK, "Could not remove templates directory at '" + templates_dir.plus_file(to_remove) + "'.");
 
 	_update_template_list();
 }
 
 bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_progress) {
 
+	// unzClose() will take care of closing the file stored in the unzFile,
+	// so we don't need to `memdelete(fa)` in this method.
 	FileAccess *fa = NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&fa);
 
@@ -251,15 +246,13 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(version);
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = d->make_dir_recursive(template_path);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for templates:") + "\n" + template_path);
 		unzClose(pkg);
 		return false;
 	}
-
-	memdelete(d);
 
 	ret = unzGoToFirstFile(pkg);
 
@@ -316,7 +309,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		}
 
 		String to_write = template_path.plus_file(file);
-		FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
+		FileAccessRef f = FileAccess::open(to_write, FileAccess::WRITE);
 
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
@@ -325,8 +318,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		}
 
 		f->store_buffer(data.ptr(), data.size());
-
-		memdelete(f);
 
 #ifndef WINDOWS_ENABLED
 		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
@@ -343,7 +334,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	unzClose(pkg);
 
 	_update_template_list();
-
 	return true;
 }
 

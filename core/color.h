@@ -86,6 +86,8 @@ struct Color {
 	void operator/=(const Color &p_color);
 	void operator/=(const real_t &rvalue);
 
+	bool is_equal_approx(const Color &p_color) const;
+
 	void invert();
 	void contrast();
 	Color inverted() const;

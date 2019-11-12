@@ -167,6 +167,17 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="on_request_permissions_result">
+			<argument index="0" name="permission" type="String">
+			</argument>
+			<argument index="1" name="granted" type="bool">
+			</argument>
+			<description>
+				Emitted when an user responds to permission request.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 			Notification received from the OS when the mouse enters the game window.

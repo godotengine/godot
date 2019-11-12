@@ -44,7 +44,6 @@
 #include "core/project_settings.h"
 #include "core/register_core_types.h"
 #include "core/script_debugger_local.h"
-#include "core/script_debugger_remote.h"
 #include "core/script_language.h"
 #include "core/translation.h"
 #include "core/version.h"
@@ -59,6 +58,7 @@
 #include "main/tests/test_main.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/register_scene_types.h"
@@ -1348,8 +1348,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
 
-	print_verbose("CORE API HASH: " + itos(ClassDB::get_api_hash(ClassDB::API_CORE)));
-	print_verbose("EDITOR API HASH: " + itos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
+	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
+	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
 	return OK;
@@ -1422,8 +1422,6 @@ bool Main::start() {
 			}
 		}
 	}
-
-	GLOBAL_DEF("editor/active", editor);
 
 	String main_loop_type;
 #ifdef TOOLS_ENABLED
@@ -1583,6 +1581,12 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
+				if (script_debugger && script_debugger->is_remote()) {
+					ScriptDebuggerRemote *remote_debugger = static_cast<ScriptDebuggerRemote *>(script_debugger);
+
+					remote_debugger->set_scene_tree(sml);
+				}
+
 				//autoload
 				List<PropertyInfo> props;
 				ProjectSettings::get_singleton()->get_property_list(&props);
@@ -1856,9 +1860,7 @@ bool Main::start() {
 			// Hide console window if requested (Windows-only).
 			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
 			OS::get_singleton()->set_console_visible(!hide_console);
-		}
 
-		if (project_manager || editor) {
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}
@@ -2162,6 +2164,5 @@ void Main::cleanup() {
 	unregister_core_driver_types();
 	unregister_core_types();
 
-	OS::get_singleton()->clear_last_error();
 	OS::get_singleton()->finalize_core();
 }

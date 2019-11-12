@@ -44,6 +44,7 @@
 			</return>
 			<description>
 				Returns the response's body length.
+				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
@@ -175,7 +176,7 @@
 			<argument index="0" name="bytes" type="int">
 			</argument>
 			<description>
-				Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
+				Sets the size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
 			</description>
 		</method>
 	</methods>

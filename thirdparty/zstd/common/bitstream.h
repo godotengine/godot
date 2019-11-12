@@ -57,6 +57,8 @@ extern "C" {
 =========================================*/
 #if defined(__BMI__) && defined(__GNUC__)
 #  include <immintrin.h>   /* support for bextr (experimental) */
+#elif defined(__ICCARM__)
+#  include <intrinsics.h>
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
@@ -162,7 +164,9 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
         _BitScanReverse ( &r, val );
         return (unsigned) r;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
-        return 31 - __builtin_clz (val);
+        return __builtin_clz (val) ^ 31;
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return 31 - __CLZ(val);
 #   else   /* Software version */
         static const unsigned DeBruijnClz[32] = { 0,  9,  1, 10, 13, 21,  2, 29,
                                                  11, 14, 16, 18, 22, 25,  3, 30,
@@ -240,9 +244,9 @@ MEM_STATIC void BIT_flushBitsFast(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
-    assert(bitC->ptr <= bitC->endPtr);
     bitC->bitPos &= 7;
     bitC->bitContainer >>= nbBytes*8;
 }
@@ -256,6 +260,7 @@ MEM_STATIC void BIT_flushBits(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
     if (bitC->ptr > bitC->endPtr) bitC->ptr = bitC->endPtr;

@@ -48,6 +48,7 @@ class EditorPath : public MenuButton {
 	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

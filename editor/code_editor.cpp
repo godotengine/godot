@@ -191,7 +191,9 @@ void FindReplaceBar::_replace() {
 		results_count = -1;
 	}
 
-	search_current();
+	if (!search_current()) {
+		search_next();
+	}
 }
 
 void FindReplaceBar::_replace_all() {

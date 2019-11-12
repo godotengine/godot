@@ -217,6 +217,14 @@
 			Deprecated, use [member mesh_library] instead.
 		</member>
 	</members>
+	<signals>
+		<signal name="cell_size_changed">
+			<argument index="0" name="cell_size" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).

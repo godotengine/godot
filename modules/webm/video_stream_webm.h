@@ -90,7 +90,7 @@ public:
 
 	virtual void set_audio_track(int p_idx);
 
-	virtual Ref<Texture> get_texture();
+	virtual Ref<Texture> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);

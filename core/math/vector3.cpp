@@ -149,6 +149,11 @@ Basis Vector3::to_diagonal_matrix() const {
 			0, 0, z);
 }
 
+bool Vector3::is_equal_approx(const Vector3 &p_v) const {
+
+	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z);
+}
+
 Vector3::operator String() const {
 
 	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));

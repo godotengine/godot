@@ -648,9 +648,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("hseparation", "CheckBox", 4 * EDSCALE);
 	theme->set_constant("check_vadjust", "CheckBox", 0 * EDSCALE);
 
+	// PopupDialog
+	theme->set_stylebox("panel", "PopupDialog", style_popup);
+
 	// PopupMenu
-	Ref<StyleBoxFlat> style_popup_menu = style_popup;
-	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
+	theme->set_stylebox("panel", "PopupMenu", style_popup);
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", style_popup_labeled_separator_right);
@@ -1087,7 +1089,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
 
 	// GridContainer
-	theme->set_constant("vseperation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
 
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));

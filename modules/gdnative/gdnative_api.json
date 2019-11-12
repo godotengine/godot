@@ -91,6 +91,55 @@
               ["const godot_int", "p_step"],
               ["const godot_bool", "p_deep"]
             ]
+          },
+          {
+            "name": "godot_pool_byte_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_byte_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_int_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_int_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_real_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_real_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_string_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_string_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_vector2_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_vector2_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_vector3_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_vector3_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_color_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_color_array *", "p_self"]
+            ]
           }
         ]
       },

@@ -508,12 +508,11 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				if (p_format & ARRAY_COMPRESS_TANGENT) {
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-
-						uint8_t xyzw[4] = {
-							(uint8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 1] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 2] * 127, -128, 127),
-							(uint8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
+						int8_t xyzw[4] = {
+							(int8_t)CLAMP(src[i * 4 + 0] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 1] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 2] * 127, -128, 127),
+							(int8_t)CLAMP(src[i * 4 + 3] * 127, -128, 127)
 						};
 
 						copymem(&vw[p_offsets[ai] + i * p_stride], xyzw, 4);
@@ -1845,6 +1844,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_process_material", "particles", "material"), &VisualServer::particles_set_process_material);
 	ClassDB::bind_method(D_METHOD("particles_set_fixed_fps", "particles", "fps"), &VisualServer::particles_set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("particles_set_fractional_delta", "particles", "enable"), &VisualServer::particles_set_fractional_delta);
+	ClassDB::bind_method(D_METHOD("particles_is_inactive", "particles"), &VisualServer::particles_is_inactive);
+	ClassDB::bind_method(D_METHOD("particles_request_process", "particles"), &VisualServer::particles_request_process);
 	ClassDB::bind_method(D_METHOD("particles_restart", "particles"), &VisualServer::particles_restart);
 	ClassDB::bind_method(D_METHOD("particles_set_draw_order", "particles", "order"), &VisualServer::particles_set_draw_order);
 	ClassDB::bind_method(D_METHOD("particles_set_draw_passes", "particles", "count"), &VisualServer::particles_set_draw_passes);
@@ -2170,6 +2171,8 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_4X);
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_8X);
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_16X);
+	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_EXT_2X);
+	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_EXT_4X);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_USAGE_2D);
 	BIND_ENUM_CONSTANT(VIEWPORT_USAGE_2D_NO_SAMPLING);

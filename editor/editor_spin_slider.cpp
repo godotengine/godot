@@ -112,7 +112,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 				if (mm->get_control()) {
 					set_value(Math::round(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10));
 				} else {
-					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10);
+					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache);
 				}
 			}
 		} else if (updown_offset != -1) {
@@ -228,9 +228,9 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(focus, Rect2(Vector2(), get_size()));
 		}
 
-		draw_string(font, Vector2(sb->get_offset().x, vofs), label, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, lc * Color(1, 1, 1, 0.5));
 
-		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
+		draw_string(font, Vector2(Math::round(sb->get_offset().x + string_width + sep), vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
 			Ref<Texture> updown2 = get_icon("updown", "SpinBox");

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShader" inherits="Shader" category="Core" version="3.2">
 	<brief_description>
+		A custom shader program with a visual editor.
 	</brief_description>
 	<description>
+		This class allows you to define a custom shader program that can be used for various materials to render objects.
+		The visual shader editor creates the shader.
 	</description>
 	<tutorials>
 	</tutorials>

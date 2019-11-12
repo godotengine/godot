@@ -64,9 +64,15 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 }
 
-Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const PoolVector<String> p_protocols, const Vector<String> p_custom_headers) {
+Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 
-	String proto_string = p_protocols.join(",");
+	String proto_string;
+	for (int i = 0; i < p_protocols.size(); i++) {
+		if (i != 0)
+			proto_string += ",";
+		proto_string += p_protocols[i];
+	}
+
 	String str = "ws://";
 
 	if (p_custom_headers.size()) {

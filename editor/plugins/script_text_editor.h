@@ -59,6 +59,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	RichTextLabel *warnings_panel;
 
 	Ref<Script> script;
+	bool script_is_valid;
 
 	Vector<String> functions;
 

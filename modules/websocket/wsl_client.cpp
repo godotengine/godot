@@ -181,8 +181,12 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	_connection = _tcp;
 	_use_ssl = p_ssl;
 	_host = p_host;
-	_protocols.clear();
-	_protocols.append_array(p_protocols);
+	// Strip edges from protocols.
+	_protocols.resize(p_protocols.size());
+	String *pw = _protocols.ptrw();
+	for (int i = 0; i < p_protocols.size(); i++) {
+		pw[i] = p_protocols[i].strip_edges();
+	}
 
 	_key = WSLPeer::generate_key();
 	// TODO custom extra headers (allow overriding this too?)

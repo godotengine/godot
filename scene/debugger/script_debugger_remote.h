@@ -37,6 +37,8 @@
 #include "core/os/os.h"
 #include "core/script_language.h"
 
+class SceneTree;
+
 class ScriptDebuggerRemote : public ScriptDebugger {
 
 	struct Message {
@@ -116,16 +118,14 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	void _poll_events();
 	uint32_t poll_every;
 
-	bool _parse_live_edit(const Array &p_command);
+	SceneTree *scene_tree;
 
-	RequestSceneTreeMessageFunc request_scene_tree;
-	void *request_scene_tree_ud;
+	bool _parse_live_edit(const Array &p_command);
 
 	void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 
 	void _send_object_id(ObjectID p_id);
 	void _send_video_memory();
-	LiveEditFuncs *live_edit_funcs;
 
 	Ref<MultiplayerAPI> multiplayer;
 
@@ -176,8 +176,6 @@ public:
 	virtual void send_message(const String &p_message, const Array &p_args);
 	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info);
 
-	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
-	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
 	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 
 	virtual bool is_profiling() const;
@@ -188,6 +186,8 @@ public:
 	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
 
 	virtual void set_skip_breakpoints(bool p_skip_breakpoints);
+
+	void set_scene_tree(SceneTree *p_scene_tree) { scene_tree = p_scene_tree; };
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

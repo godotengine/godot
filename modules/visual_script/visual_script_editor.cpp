@@ -1916,8 +1916,6 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	return false;
 }
 
-#ifdef TOOLS_ENABLED
-
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
@@ -1936,8 +1934,6 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 
 	return NULL;
 }
-
-#endif
 
 void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 
@@ -2167,7 +2163,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
 		if (!sn) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes because script '" + get_name() + "' is not used in this scene."));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop nodes because script '%s' is not used in this scene."), get_name()));
 			return;
 		}
 
@@ -2237,7 +2233,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
 		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't drop properties because script '" + get_name() + "' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
 			return;
 		}
 
@@ -2456,12 +2452,8 @@ Ref<Texture> VisualScriptEditor::get_icon() {
 }
 
 bool VisualScriptEditor::is_unsaved() {
-#ifdef TOOLS_ENABLED
 
 	return script->is_edited() || script->are_subnodes_edited();
-#else
-	return false;
-#endif
 }
 
 Variant VisualScriptEditor::get_edit_state() {
@@ -3523,6 +3515,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	}
 
 	Ref<VisualScriptNode> vnode;
+	Ref<VisualScriptPropertySet> script_prop_set;
 
 	if (p_category == String("method")) {
 
@@ -3533,8 +3526,8 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 		Ref<VisualScriptPropertySet> n;
 		n.instance();
-		n->set_property(p_text);
 		vnode = n;
+		script_prop_set = n;
 	} else if (p_category == String("get")) {
 
 		Ref<VisualScriptPropertyGet> n;
@@ -3585,6 +3578,9 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	undo_redo->add_do_method(this, "_update_graph", new_id);
 	undo_redo->add_undo_method(this, "_update_graph", new_id);
 	undo_redo->commit_action();
+
+	if (script_prop_set.is_valid())
+		script_prop_set->set_property(p_text);
 
 	port_action_new_node = new_id;
 
@@ -4229,7 +4225,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				if (nd.is_valid() && nd->has_input_sequence_port())
 					start_node = nodes.front()->key();
 				else {
-					EditorNode::get_singleton()->show_warning(TTR("Select atleast one node with sequence port."));
+					EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
 					return;
 				}
 			} else {
@@ -4260,7 +4256,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					if (nd.is_valid() && nd->has_input_sequence_port())
 						start_node = top_nd;
 					else {
-						EditorNode::get_singleton()->show_warning(TTR("Select atleast one node with sequence port."));
+						EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
 						return;
 					}
 				} else {

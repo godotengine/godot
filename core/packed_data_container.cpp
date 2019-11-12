@@ -137,6 +137,7 @@ uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 int PackedDataContainer::_size(uint32_t p_ofs) const {
 
 	PoolVector<uint8_t>::Read rd = data.read();
+	ERR_FAIL_COND_V(!rd.ptr(), 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 

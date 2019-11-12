@@ -121,6 +121,11 @@ Quat Quat::operator*(const Quat &q) const {
 	return r;
 }
 
+bool Quat::is_equal_approx(const Quat &p_quat) const {
+
+	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
+}
+
 real_t Quat::length() const {
 
 	return Math::sqrt(length_squared());

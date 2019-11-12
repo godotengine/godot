@@ -71,11 +71,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		subdirectory_item->select(0);
 	}
 
-	if ((path.begins_with(lpath) && path != lpath)) {
-		subdirectory_item->set_collapsed(false);
-	} else {
-		subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
-	}
+	subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
 	if (searched_string.length() > 0 && dname.to_lower().find(searched_string) >= 0) {
 		parent_should_expand = true;
 	}
@@ -114,6 +110,10 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			if (!p_select_in_favorites && path == file_metadata) {
 				file_item->select(0);
 				file_item->set_as_cursor(0);
+			}
+			String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
+			if (main_scene == file_metadata) {
+				file_item->set_custom_color(0, get_color("accent_color", "Editor"));
 			}
 			Array udata;
 			udata.push_back(tree_update_id);
@@ -333,10 +333,11 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dd = get_viewport()->gui_get_drag_data();
 			if (tree->is_visible_in_tree() && dd.has("type")) {
-				if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs") || (String(dd["type"]) == "resource")) {
+				if (dd.has("favorite")) {
+					if ((String(dd["favorite"]) == "all"))
+						tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+				} else if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs") || (String(dd["type"]) == "resource")) {
 					tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM | Tree::DROP_MODE_INBETWEEN);
-				} else if ((String(dd["type"]) == "favorite")) {
-					tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 				}
 			}
 		} break;
@@ -1564,6 +1565,15 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MAIN_SCENE: {
+			// Set as main scene with selected scene file.
+			if (p_selected.size() == 1) {
+				ProjectSettings::get_singleton()->set("application/run/main_scene", p_selected[0]);
+				ProjectSettings::get_singleton()->save();
+				_update_tree(_compute_uncollapsed_paths());
+			}
+		} break;
+
 		case FILE_INSTANCE: {
 			// Instance all selected scenes.
 			Vector<String> paths;
@@ -1839,7 +1849,7 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 			all_not_favorites &= !is_favorite;
 			selected = tree->get_next_selected(selected);
 		}
-		if (all_favorites) {
+		if (!all_not_favorites) {
 			paths = _tree_get_selected(false);
 		} else {
 			paths = _tree_get_selected();
@@ -1857,12 +1867,9 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 	if (paths.empty())
 		return Variant();
 
-	if (!all_favorites && !all_not_favorites)
-		return Variant();
-
 	Dictionary drag_data = EditorNode::get_singleton()->drag_files_and_dirs(paths, p_from);
-	if (all_favorites) {
-		drag_data["type"] = "favorite";
+	if (!all_not_favorites) {
+		drag_data["favorite"] = all_favorites ? "all" : "mixed";
 	}
 	return drag_data;
 }
@@ -1870,7 +1877,11 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	Dictionary drag_data = p_data;
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "favorite") {
+	if (drag_data.has("favorite")) {
+
+		if (String(drag_data["favorite"]) != "all") {
+			return false;
+		}
 
 		// Moving favorite around.
 		TreeItem *ti = tree->get_item_at_position(p_point);
@@ -1937,7 +1948,11 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	Vector<String> dirs = EditorSettings::get_singleton()->get_favorites();
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "favorite") {
+	if (drag_data.has("favorite")) {
+
+		if (String(drag_data["favorite"]) != "all") {
+			return;
+		}
 		// Moving favorite around.
 		TreeItem *ti = tree->get_item_at_position(p_point);
 		if (!ti)
@@ -2132,6 +2147,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("New Inherited Scene"), FILE_INHERIT);
+				if (ProjectSettings::get_singleton()->get("application/run/main_scene") != filenames[0]) {
+					p_popup->add_icon_item(get_icon("PlayScene", "EditorIcons"), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+				}
 			} else {
 				p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open Scenes"), FILE_OPEN);
 			}

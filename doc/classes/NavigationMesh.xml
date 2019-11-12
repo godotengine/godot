@@ -107,6 +107,10 @@
 		</member>
 		<member name="geometry/parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" default="0">
 		</member>
+		<member name="geometry/source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" default="0">
+		</member>
+		<member name="geometry/source_group_name" type="String" setter="set_source_group_name" getter="get_source_group_name">
+		</member>
 		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly" default="6.0">
 		</member>
 		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">

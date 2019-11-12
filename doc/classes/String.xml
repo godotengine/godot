@@ -459,7 +459,7 @@
 			<argument index="1" name="what" type="String">
 			</argument>
 			<description>
-				Inserts a substring at a given position.
+				Returns a copy of the string with the substring [code]what[/code] inserted at the given position.
 			</description>
 		</method>
 		<method name="is_abs_path">

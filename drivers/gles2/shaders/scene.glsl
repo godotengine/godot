@@ -729,9 +729,6 @@ uniform highp vec2 viewport_size;
 uniform vec2 screen_pixel_size;
 #endif
 
-// I think supporting this in GLES2 is difficult
-// uniform highp sampler2D depth_buffer;
-
 #if defined(SCREEN_TEXTURE_USED)
 uniform highp sampler2D screen_texture; //texunit:-4
 #endif
