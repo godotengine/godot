@@ -2606,7 +2606,7 @@ int mbedtls_ssl_fetch_input( mbedtls_ssl_context *ssl, size_t nb_want )
         }
 
         /*
-         * A record can't be split accross datagrams. If we need to read but
+         * A record can't be split across datagrams. If we need to read but
          * are not at the beginning of a new record, the caller did something
          * wrong.
          */
@@ -9043,8 +9043,12 @@ static int ssl_preset_suiteb_hashes[] = {
 
 #if defined(MBEDTLS_ECP_C)
 static mbedtls_ecp_group_id ssl_preset_suiteb_curves[] = {
+#if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
     MBEDTLS_ECP_DP_SECP256R1,
+#endif
+#if defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
     MBEDTLS_ECP_DP_SECP384R1,
+#endif
     MBEDTLS_ECP_DP_NONE
 };
 #endif
