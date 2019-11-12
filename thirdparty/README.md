@@ -266,15 +266,16 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.2
+- Version: 2.16.3
 - License: Apache 2.0
 
 File extracted from upstream release tarball (`-apache.tgz` variant):
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
-- Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453).
+- LICENSE and apache-2.0.txt files
+- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (PR 1453).
   Soon to be merged upstream. Check it out at next update.
-- Applied the patch in `thirdparty/mbedtls/padlock.diff`. This disables VIA
+- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables VIA
   padlock support which defines a symbol `unsupported` which clashes with
   a symbol in libwebsockets.
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
