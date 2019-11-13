@@ -2343,10 +2343,13 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 	}
 
 	anim->mName.Set(name);
-
+	//typedef std::map<std::string, std::vector<const AnimationCurveNode *> > NodeMap;
 	// need to find all nodes for which we need to generate node animations -
 	// it may happen that we need to merge multiple layers, though.
-	NodeMap node_map;
+
+	// after
+	std::vector<AnimNodeItem *> AnimNodes;
+	//NodeMap node_map;
 
 	// reverse mapping from curves to layers, much faster than querying
 	// the FBX DOM for it.
@@ -2361,7 +2364,8 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 			const Model *const model = dynamic_cast<const Model *>(node->Target());
 			if (model) {
 				const std::string &name = FixNodeName(model->Name());
-				node_map[name].push_back(node);
+				std::cout << "animation layer name: " << name << std::endl;
+				AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
 				layer_map[node] = layer;
 				continue;
 			}
@@ -2390,11 +2394,11 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 
 	try {
 		aiMatrix4x4 geometric_pivot;
-		for (const NodeMap::value_type &kv : node_map) {
-			std::cout << "[geom] animation name: " << kv.first << std::endl;
+		for (std::pair<std::string, const AnimationCurveNode *> kvp : NodeList) {
+			std::cout << "animation name: " << kvp.first << std::endl;
 			GenerateNodeAnimations(node_anims,
-					kv.first,
-					kv.second,
+					kvp.first,
+					kvp.second,
 					layer_map,
 					start_time, stop_time,
 					max_time,
@@ -2575,8 +2579,7 @@ void FBXConverter::GenerateNodeAnimations(
 		double &max_time,
 		double &min_time,
 		aiMatrix4x4 geometric_pivot_data) {
-
-	NodeMap node_property_map;
+	std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > > node_property_map;
 	ai_assert(curves.size());
 
 #ifdef ASSIMP_BUILD_DEBUG
@@ -2594,7 +2597,9 @@ void FBXConverter::GenerateNodeAnimations(
 		std::cout << "valid curve node: " << node->Name() << std::endl;
 
 		curve_node = node;
-		node_property_map[node->TargetProperty()].push_back(node);
+		node_property_map.push_back(
+				std::pair<std::string, const AnimationCurveNode *>(
+						node->TargetProperty(), node));
 	}
 
 	ai_assert(curve_node);
@@ -2611,21 +2616,13 @@ void FBXConverter::GenerateNodeAnimations(
 		const TransformationComp comp = static_cast<TransformationComp>(i);
 		const char *str = NameTransformationCompProperty(comp);
 
-		chain[i] = node_property_map.find(str);
-		if (chain[i] != node_property_map.end()) {
-			printf("Detected valid Transform component: %s\n", str);
-			// check if this curves contains redundant information by looking
-			// up the corresponding node's transformation chain.
-			// if (doc.Settings().optimizeEmptyAnimationCurves &&
-			// 		IsRedundantAnimationData(target, comp, (*chain[i]).second)) {
-
-			// 	FBXImporter::LogDebug("dropping redundant animation channel for node " + target.Name());
-			// 	continue;
-			// }
-
-			has_any = true;
-		} else {
-			printf("Invalid Transform component: %s\n", str);
+		// this can be removed later probably
+		for (std::pair<std::string, const AnimationCurveNode *> &elem : node_property_map) {
+			if (elem.first == std::string(str)) {
+				chain[i] = elem.second;
+				printf("Detected valid Transform component: %s\n", str);
+				has_any = true;
+			}
 		}
 	}
 

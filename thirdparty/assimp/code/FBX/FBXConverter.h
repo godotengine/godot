@@ -124,12 +124,28 @@ private:
 	void GenerateAnimStack();
 	void ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim, aiMatrix4x4 transform);
 	std::vector<aiNodeAnim *> GetNodeAnimsFromStack(const std::string &node_name);
+
 	// pass into resample
 	// input of ResampleFunction
 	// list of the first node
 	// from each animation
 
 	std::map<aiAnimation *, std::vector<aiNodeAnim *> > animation_stack;
+
+	// we must ignore aiBones from resampling
+	std::vector<aiBone *> bone_nodes;
+	// we must still overwrite their node counterparts though.
+
+	bool IsBone(aiString name) {
+		for (aiBone *bone : bone_nodes) {
+			if (bone->mName == name) {
+				std::cout << "is bone check: " << name.C_Str() << std::endl;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// ------------------------------------------------------------------------------------------------
 	// find scene root and trigger recursive scene conversion
 	void ConvertRootNode();
@@ -308,8 +324,14 @@ private:
 
 	typedef std::map<const AnimationCurveNode *, const AnimationLayer *> LayerMap;
 
-	// XXX: better use multi_map ..
-	typedef std::map<std::string, std::vector<const AnimationCurveNode *> > NodeMap;
+	// anim node item for list of anim curves
+	struct AnimNodeItem {
+		AnimNodeItem(const std::string &_name, std::vector<const AnimationCurveNode *> &_curves) :
+				name(_name),
+				curves(_curves) {}
+		std::string name;
+		std::vector<const AnimationCurveNode *> &curves;
+	};
 
 	// ------------------------------------------------------------------------------------------------
 	void ConvertAnimationStack(const AnimationStack &st);
@@ -365,8 +387,8 @@ private:
 	// generate node anim, extracting only Rotation, Scaling and Translation from the given chain
 	aiNodeAnim *GenerateSimpleNodeAnim(const std::string &name,
 			const Model &target,
-			NodeMap::const_iterator chain[TransformationComp_MAXIMUM],
-			NodeMap::const_iterator iter_end,
+			std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator chain[TransformationComp_MAXIMUM],
+			std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator iter_end,
 			const LayerMap &layer_map,
 			int64_t start, int64_t stop,
 			double &max_time,
