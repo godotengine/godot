@@ -77,6 +77,8 @@ private:
 	bool selecting_enabled;
 
 	bool context_menu_enabled;
+	bool virtual_keyboard_enabled;
+
 	PopupMenu *menu;
 
 	int cursor_pos;
@@ -173,6 +175,8 @@ public:
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled();
 	PopupMenu *get_menu() const;
 
 	void select(int p_from = 0, int p_to = -1);
