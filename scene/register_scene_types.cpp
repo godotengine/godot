@@ -125,6 +125,7 @@
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
+#include "scene/main/spawner.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
@@ -268,6 +269,7 @@ void register_scene_types() {
 	ClassDB::register_class<ViewportTexture>();
 	ClassDB::register_class<HTTPRequest>();
 	ClassDB::register_class<Timer>();
+	ClassDB::register_class<Spawner>();
 	ClassDB::register_class<CanvasLayer>();
 	ClassDB::register_class<CanvasModulate>();
 	ClassDB::register_class<ResourcePreloader>();
