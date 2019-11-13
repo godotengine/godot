@@ -217,16 +217,20 @@ std::vector<aiNodeAnim *> FBXConverter::GetNodeAnimsFromStack(const std::string 
 void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim_list, aiMatrix4x4 transform) {
 	// resample all animations, but only sample the nodes which we are looking for from the stack.
 	for (aiNodeAnim *node_anim : node_anim_list) {
+		// we must not resample bone animations
+		//if (IsBone(node_anim->mNodeName)) continue;
+
+		// now iterate and resample animations
 		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
 			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
+			rot = rot.Normalize();
 			aiVector3D scale = node_anim->mScalingKeys[x].mValue;
 			aiVector3D trans = node_anim->mPositionKeys[x].mValue;
 
 			// TRS
 			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
-			final_matrix = transform * final_matrix;
 
-			// todo: move geometric_transform to another step outside of this generation call, so we can inverse after creation.
+			final_matrix = final_matrix * transform;
 
 			final_matrix.Decompose(scale, rot, trans);
 
@@ -266,8 +270,9 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 			// This detects if we can cast the object into this model structure.
 			const Model *const model = dynamic_cast<const Model *>(object);
 
+			ai_assert(model);
+
 			if (nullptr != model) {
-				aiMatrix4x4 new_abs_transform = parent->mTransformation;
 				std::string node_name = FixNodeName(model->Name());
 
 				aiNode *node = new aiNode();
@@ -280,15 +285,13 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
 				// Handle FBX pivot data (explicitly must be done all the time)
 				aiMatrix4x4 node_geometric_transform;
-				new_abs_transform = GeneratePivotTransform(*model, node_geometric_transform);
+				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, node_geometric_transform);
+				node->mTransformation = (pivot_xform * node_geometric_transform) * geometric_transform;
 
-				node->mTransformation = new_abs_transform * node_geometric_transform * geometric_transform;
+				ConvertModel(*model, node, root_node, node->mTransformation);
 
 				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
 				ResampleAnimationsWithPivots(anims, node->mTransformation);
-
-				// attach geometry
-				ConvertModel(*model, node, root_node, node->mTransformation);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -1463,9 +1466,9 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 		bone->mOffsetMatrix = cl->TransformLink();
 		bone->mOffsetMatrix.Inverse();
 
-		aiMatrix4x4 matrix = (aiMatrix4x4)absolute_transform;
+		bone->mOffsetMatrix = bone->mOffsetMatrix * absolute_transform; // * mesh_offset
 
-		bone->mOffsetMatrix = bone->mOffsetMatrix * matrix; // * mesh_offset
+		bone_nodes.push_back(bone);
 
 		//
 		// Now calculate the aiVertexWeights
@@ -2332,6 +2335,7 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 
 	// strip AnimationStack:: prefix
 	std::string name = st.Name();
+	std::cout << "name of animation stack: " << name << std::endl;
 	if (name.substr(0, 16) == "AnimationStack::") {
 		name = name.substr(16);
 	} else if (name.substr(0, 11) == "AnimStack::") {
@@ -2798,9 +2802,16 @@ aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
 
 	const PropertyTable &props = target.Props();
 
+	// we must get pivot xform
+	aiMatrix4x4 ignore_me;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, ignore_me);
+	pivot_xform = pivot_xform; //* ignore_me;
+
 	aiVector3D def_scale;
 	aiVector3D def_translate;
 	aiVector3D def_rot;
+
+	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList scaling;
 	KeyFrameListList translation;

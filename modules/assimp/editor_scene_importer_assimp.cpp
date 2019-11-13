@@ -531,6 +531,9 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 		state.animation_player->set_owner(state.root);
 
 		for (uint32_t i = 0; i < scene->mNumAnimations; i++) {
+
+			// generate bone stack for animation import
+			RegenerateBoneStack(state);
 			_import_animation(state, i, p_bake_fps);
 		}
 	}
@@ -637,6 +640,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 
 		if (skeleton) {
 			int skeleton_bone = skeleton->find_bone(node_name);
+			//print_verbose("Skeleton name: " + skeleton->get_name() + " bone id: " + itos(skeleton_bone));
 
 			if (skeleton_bone >= 0 && track_bone) {
 
@@ -749,14 +753,11 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	animation->set_name(name);
 	animation->set_length(anim->mDuration / ticks_per_second);
 
-	// generate bone stack for animation import
-	RegenerateBoneStack(state);
-
 	//regular tracks
-	for (size_t i = 0; i < anim->mNumChannels; i++) {
-		const aiNodeAnim *track = anim->mChannels[i];
-		String node_name = AssimpUtils::get_assimp_string(track->mNodeName);
-		print_verbose("track name import: " + node_name);
+	for (size_t track_id = 0; track_id < anim->mNumChannels; ++track_id) {
+		const aiNodeAnim *track = anim->mChannels[track_id];
+		String node_name = AssimpUtils::get_anim_string_from_assimp(track->mNodeName);
+		print_verbose("animation node name: " + node_name);
 		if (track->mNumRotationKeys == 0 && track->mNumPositionKeys == 0 && track->mNumScalingKeys == 0) {
 			continue; //do not bother
 		}
@@ -780,7 +781,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 					node_path = path;
 
 					if (node_path != NodePath()) {
-						_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton,
+						_insert_animation_track(state, anim, track_id, p_bake_fps, animation, ticks_per_second, skeleton,
 								node_path, node_name, bone);
 					} else {
 						print_error("Failed to find valid node path for animation");
@@ -816,13 +817,13 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 				}
 
 				if (node_path != NodePath()) {
-					_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton,
+					_insert_animation_track(state, anim, track_id, p_bake_fps, animation, ticks_per_second, skeleton,
 							node_path, node_name, nullptr);
 				}
 
 			} else {
 				if (node_path != NodePath()) {
-					_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton,
+					_insert_animation_track(state, anim, track_id, p_bake_fps, animation, ticks_per_second, skeleton,
 							node_path, node_name, nullptr);
 				}
 			}

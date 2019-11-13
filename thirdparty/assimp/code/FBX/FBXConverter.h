@@ -59,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/light.h>
 #include <assimp/material.h>
 #include <assimp/texture.h>
+#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 
