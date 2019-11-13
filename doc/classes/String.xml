@@ -744,7 +744,15 @@
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings, starting from right.
 				The splits in the returned array are sorted in the same order as the original string, from left to right.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the right up to [code]maxsplit[/code]. The default value of 0 means that all items are split, thus giving the same result as [method split].
-				For example, [code]"One,Two,Three,Four"[/code] will return [code]["Three","Four"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
+				Example:
+				[codeblock]
+				var some_string = "One,Two,Three,Four"
+				var some_array = some_string.rsplit(",", true, 1)
+				print(some_array.size()) # Prints 2
+				print(some_array[0]) # Prints "Four"
+				print(some_array[1]) # Prints "Three,Two,One"
+				[/codeblock]
+
 			</description>
 		</method>
 		<method name="rstrip">
@@ -805,7 +813,14 @@
 			<description>
 				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings.
 				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of 0 means that all items are split.
-				For example, [code]"One,Two,Three"[/code] will return [code]["One","Two"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
+				Example:
+				[codeblock]
+				var some_string = "One,Two,Three,Four"
+				var some_array = some_string.split(",", true, 1)
+				print(some_array.size()) # Prints 2
+				print(some_array[0]) # Prints "One"
+				print(some_array[1]) # Prints "Two,Three,Four"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="split_floats">
