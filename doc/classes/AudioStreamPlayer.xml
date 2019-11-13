@@ -79,7 +79,12 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Emitted when the audio stops playing.
+				Emitted when the playback reaches the end of the audio stream. The signal is [b]not[/b] emitted when the playback is abruptly interrupted with the [method stop] method or other reason.
+			</description>
+		</signal>
+		<signal name="stopped">
+			<description>
+				Emitted when the audio stops playing with the [method stop] method or other reason. The signal is [b]not[/b] emitted when the playback reaches the end of the audio stream normally, without interruption.
 			</description>
 		</signal>
 	</signals>

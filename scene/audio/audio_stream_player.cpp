@@ -143,7 +143,12 @@ void AudioStreamPlayer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
+		if (!active || setstop) {
+			active = false;
+			set_process_internal(false);
+			emit_signal("stopped");
+		} else if (setseek < 0 && !stream_playback->is_playing()) {
+			// End of stream reached.
 			active = false;
 			set_process_internal(false);
 			emit_signal("finished");
@@ -238,6 +243,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
+		setstop = false;
 		stop_has_priority = false;
 		active = true;
 		set_process_internal(true);
@@ -395,6 +401,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("stopped"));
 
 	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
 	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
@@ -413,6 +420,7 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	mix_target = MIX_TARGET_STEREO;
 	fadeout_buffer.resize(512);
 	setstop = false;
+	stop_has_priority = false;
 	use_fadeout = false;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer::_bus_layout_changed));
