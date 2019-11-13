@@ -39,8 +39,8 @@
 #include "editor/editor_settings.h"
 #endif
 
-#ifdef __ANDROID__
-#include "utils/android_utils.h"
+#ifdef ANDROID_ENABLED
+#include "mono_gd/gd_mono_android.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
@@ -164,8 +164,8 @@ private:
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
-#if __ANDROID__
-		data_mono_lib_dir = GDMonoUtils::Android::get_app_native_lib_dir();
+#ifdef ANDROID_ENABLED
+		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 #endif
@@ -201,8 +201,8 @@ private:
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
-#if __ANDROID__
-		data_mono_lib_dir = GDMonoUtils::Android::get_app_native_lib_dir();
+#ifdef ANDROID_ENABLED
+		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 #endif

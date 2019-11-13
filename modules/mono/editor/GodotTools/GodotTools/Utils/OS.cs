@@ -55,7 +55,7 @@ namespace GodotTools.Utils
             return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool IsWindows() => IsOS(Names.Windows);
+        public static bool IsWindows => IsOS(Names.Windows);
 
         public static bool IsOSX => IsOS(Names.OSX);
 
@@ -72,23 +72,23 @@ namespace GodotTools.Utils
         public static bool IsHTML5 => IsOS(Names.HTML5);
 
         private static bool? _isUnixCache;
-        private static readonly string[] UnixPlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android};
+        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android};
 
-        public static bool IsUnix()
+        public static bool IsUnixLike()
         {
             if (_isUnixCache.HasValue)
                 return _isUnixCache.Value;
 
             string osName = GetPlatformName();
-            _isUnixCache = UnixPlatforms.Any(p => p.Equals(osName, StringComparison.OrdinalIgnoreCase));
+            _isUnixCache = UnixLikePlatforms.Any(p => p.Equals(osName, StringComparison.OrdinalIgnoreCase));
             return _isUnixCache.Value;
         }
 
-        public static char PathSep => IsWindows() ? ';' : ':';
+        public static char PathSep => IsWindows ? ';' : ':';
 
         public static string PathWhich(string name)
         {
-            string[] windowsExts = IsWindows() ? Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) : null;
+            string[] windowsExts = IsWindows ? Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) : null;
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
 
             var searchDirs = new List<string>();
@@ -102,7 +102,7 @@ namespace GodotTools.Utils
             {
                 string path = Path.Combine(dir, name);
 
-                if (IsWindows() && windowsExts != null)
+                if (IsWindows && windowsExts != null)
                 {
                     foreach (var extension in windowsExts)
                     {
@@ -124,12 +124,14 @@ namespace GodotTools.Utils
 
         public static void RunProcess(string command, IEnumerable<string> arguments)
         {
+            // TODO: Once we move to .NET Standard 2.1 we can use ProcessStartInfo.ArgumentList instead
             string CmdLineArgsToString(IEnumerable<string> args)
             {
+                // Not perfect, but as long as we are careful...
                 return string.Join(" ", args.Select(arg => arg.Contains(" ") ? $@"""{arg}""" : arg));
             }
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(command, CmdLineArgsToString(arguments))
+            var startInfo = new ProcessStartInfo(command, CmdLineArgsToString(arguments))
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

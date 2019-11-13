@@ -416,7 +416,7 @@ namespace GodotTools
 
             string settingsHintStr = "Disabled";
 
-            if (OS.IsWindows())
+            if (OS.IsWindows)
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
@@ -427,7 +427,7 @@ namespace GodotTools
                                    $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
-            else if (OS.IsUnix())
+            else if (OS.IsUnixLike())
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
@@ -444,6 +444,7 @@ namespace GodotTools
             // Export plugin
             var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
+            exportPlugin.RegisterExportSettings();
             exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();

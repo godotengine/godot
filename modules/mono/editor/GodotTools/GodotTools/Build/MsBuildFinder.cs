@@ -21,7 +21,7 @@ namespace GodotTools.Build
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
             var buildTool = (BuildManager.BuildTool) editorSettings.GetSetting("mono/builds/build_tool");
 
-            if (OS.IsWindows())
+            if (OS.IsWindows)
             {
                 switch (buildTool)
                 {
@@ -59,7 +59,7 @@ namespace GodotTools.Build
                 }
             }
 
-            if (OS.IsUnix())
+            if (OS.IsUnixLike())
             {
                 if (buildTool == BuildManager.BuildTool.MsBuildMono)
                 {
@@ -128,7 +128,7 @@ namespace GodotTools.Build
 
         private static string FindMsBuildToolsPathOnWindows()
         {
-            if (!OS.IsWindows())
+            if (!OS.IsWindows)
                 throw new PlatformNotSupportedException();
 
             // Try to find 15.0 with vswhere

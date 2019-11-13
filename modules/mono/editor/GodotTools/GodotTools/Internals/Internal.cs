@@ -52,7 +52,7 @@ namespace GodotTools.Internals
 
         public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
 
-        // Internal Calls
+        #region Internal
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
@@ -110,5 +110,7 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+
+        #endregion
     }
 }

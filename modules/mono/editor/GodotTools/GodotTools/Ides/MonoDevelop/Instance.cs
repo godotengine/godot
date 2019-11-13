@@ -107,7 +107,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.VisualStudioForMac, "com.microsoft.visual-studio"}
                 };
             }
-            else if (OS.IsWindows())
+            else if (OS.IsWindows)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -118,7 +118,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.MonoDevelop, "MonoDevelop.exe"}
                 };
             }
-            else if (OS.IsUnix())
+            else if (OS.IsUnixLike())
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
