@@ -13,6 +13,7 @@ Spawner::Spawner() {
 void Spawner::set_spawn_scene(const Ref<PackedScene> &scene) {
 	spawn_scene = scene;
 }
+
 Ref<PackedScene> Spawner::get_spawn_scene() const {
 	ERR_FAIL_COND_V_MSG(!spawn_scene.is_valid(), Ref<PackedScene>(), "No spawn Scene set!");
 	return spawn_scene;
@@ -61,8 +62,9 @@ void Spawner::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			if (Engine::get_singleton()->is_editor_hint() == false)
 				connect("timeout", this, "spawn");
-		} break;
-		default:;
+		}
+		break;
+		default: ;
 	}
 }
 
