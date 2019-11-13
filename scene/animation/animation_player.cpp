@@ -1072,25 +1072,34 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 	accum_pass++;
 
 	bool seeked = c.seeked; // The animation may be changed during process, so it is safer that the state is changed before process.
+
 	if (p_delta != 0) {
 		c.seeked = false;
 	}
 
-	_animation_process_data(c.current, p_delta, 1.0f, seeked, p_started);
+	float blend = 1.0; // First animation we play at 100% blend
 
-	List<Blend>::Element *prev = nullptr;
-	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
+	List<Blend>::Element *next = NULL;
+	for (List<Blend>::Element *E = c.blend.front(); E; E = next) {
 		Blend &b = E->get();
-		float blend = b.blend_left / b.blend_time;
-		b.blend_left -= Math::absf(speed_scale * p_delta);
-		prev = E->prev();
-		if (b.blend_left < 0) {
-			c.blend.erase(E);
-		}
-		// The effect of animation changes during blending is unknown...
-		// In that case, we recommends to use method call mode "deferred", not "immediate".
+		// Note: There may be issues if an animation event triggers an animation change while this blend is active,
+		// so it is best to use "deferred" calls instead of "immediate" for animation events that can trigger new animations.
 		_animation_process_data(b.data, p_delta, blend, false, false);
+		blend = 1.0 - b.blend_left / b.blend_time; // This is how much to blend the NEXT animation
+		b.blend_left -= Math::absf(speed_scale * p_delta);
+		next = E->next();
+		if (b.blend_left < 0) {
+			// If the blend of this has finished, we need to remove ALL the previous blends
+			List<Blend>::Element *prev;
+			while (E) {
+				prev = E->prev();
+				c.blend.erase(E);
+				E = prev;
+			}
+		}
 	}
+
+	_animation_process_data(c.current, p_delta, blend, seeked, p_started);
 }
 
 void AnimationPlayer::_animation_update_transforms() {
@@ -1643,6 +1652,8 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 			b.data = c.current;
 			b.blend_time = b.blend_left = blend_time;
 			c.blend.push_back(b);
+		} else {
+			c.blend.clear();
 		}
 	}
 
