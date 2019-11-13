@@ -474,6 +474,7 @@ void TileMapEditor::_update_palette() {
 		sel_tile = selected.get(Math::rand() % selected.size());
 	} else if (palette->get_item_count() > 0) {
 		palette->select(0);
+		sel_tile = palette->get_selected_items().get(0);
 	}
 
 	if (sel_tile != TileMap::INVALID_CELL) {
