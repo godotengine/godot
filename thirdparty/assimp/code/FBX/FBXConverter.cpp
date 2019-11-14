@@ -2357,25 +2357,6 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 
 	std::map<std::string, morphAnimData *> morphAnimDatas;
 
-	for (const AnimationLayer *layer : layers) {
-		ai_assert(layer);
-		for (const AnimationCurveNode *node : layer->Nodes()) {
-			ai_assert(node);
-			const Model *const model = dynamic_cast<const Model *>(node->Target());
-			if (model) {
-				const std::string &name = FixNodeName(model->Name());
-				std::cout << "animation layer name: " << name << std::endl;
-				AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
-				layer_map[node] = layer;
-				continue;
-			}
-			const BlendShapeChannel *const bsc = dynamic_cast<const BlendShapeChannel *>(node->Target());
-			if (bsc) {
-				ProcessMorphAnimDatas(&morphAnimDatas, bsc, node);
-			}
-		}
-	}
-
 	// generate node animations
 	std::vector<aiNodeAnim *> node_anims;
 
@@ -2392,23 +2373,64 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 		stop_time = 9223372036854775807ll - 20000;
 	}
 
-	try {
-		aiMatrix4x4 geometric_pivot;
-		for (std::pair<std::string, const AnimationCurveNode *> kvp : NodeList) {
-			std::cout << "animation name: " << kvp.first << std::endl;
-			GenerateNodeAnimations(node_anims,
-					kvp.first,
-					kvp.second,
-					layer_map,
-					start_time, stop_time,
-					max_time,
-					min_time,
-					geometric_pivot);
+	for (const AnimationLayer *layer : layers) {
+		std::cout << "animation layer change: " << layer->Name() << std::endl;
+		ai_assert(layer);
+		for (const AnimationCurveNode *node : layer->Nodes()) {
+
+			ai_assert(node);
+			const Model *const model = node->TargetAsModel();
+			if (model) {
+				const std::string &model_name = FixNodeName(model->Name());
+				std::cout << "Anim curve node: id " << node->ID() << " name: " << node->Name() << " layer: " << model_name << std::endl;
+
+				//AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
+				AnimationCurveNodeList list = layer->Nodes();
+
+				try {
+					aiMatrix4x4 geometric_pivot;
+					GenerateNodeAnimations(node_anims,
+							model_name,
+							list,
+							layer_map,
+							start_time, stop_time,
+							max_time,
+							min_time,
+							geometric_pivot);
+
+				} catch (std::exception &) {
+					std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+					throw;
+				}
+
+				//std::cout << "curve list: " << layer->Nodes()
+				layer_map[node] = layer;
+				continue;
+			}
+			const BlendShapeChannel *const bsc = dynamic_cast<const BlendShapeChannel *>(node->Target());
+			if (bsc) {
+				ProcessMorphAnimDatas(&morphAnimDatas, bsc, node);
+			}
 		}
-	} catch (std::exception &) {
-		std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
-		throw;
 	}
+
+	// try {
+	// 	aiMatrix4x4 geometric_pivot;
+	// 	for (std::pair<std::string, const AnimationCurveNode *> kvp : NodeList) {
+	// 		std::cout << "animation name: " << kvp.first << std::endl;
+	// 		GenerateNodeAnimations(node_anims,
+	// 				kvp.first,
+	// 				kvp.second,
+	// 				layer_map,
+	// 				start_time, stop_time,
+	// 				max_time,
+	// 				min_time,
+	// 				geometric_pivot);
+	// 	}
+	// } catch (std::exception &) {
+	// 	std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+	// 	throw;
+	// }
 
 	if (node_anims.size() || morphAnimDatas.size()) {
 		if (node_anims.size()) {
@@ -2579,12 +2601,22 @@ void FBXConverter::GenerateNodeAnimations(
 		double &max_time,
 		double &min_time,
 		aiMatrix4x4 geometric_pivot_data) {
+
+	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
+	na->mNodeName.Set(fixed_name);
+
 	std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > > node_property_map;
-	ai_assert(curves.size());
+
+	if (curves.size() == 0) return;
 
 #ifdef ASSIMP_BUILD_DEBUG
 	validateAnimCurveNodes(curves, doc.Settings().strictMode);
 #endif
+
+	std::vector<const AnimationCurveNode *> scaling;
+	std::vector<const AnimationCurveNode *> translation;
+	std::vector<const AnimationCurveNode *> rotation;
+
 	const AnimationCurveNode *curve_node = nullptr;
 	for (const AnimationCurveNode *node : curves) {
 		ai_assert(node);
@@ -2594,12 +2626,37 @@ void FBXConverter::GenerateNodeAnimations(
 			continue;
 		}
 
-		std::cout << "valid curve node: " << node->Name() << std::endl;
-
 		curve_node = node;
-		node_property_map.push_back(
-				std::pair<std::string, const AnimationCurveNode *>(
-						node->TargetProperty(), node));
+		std::cout << "valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << std::endl;
+
+		std::string property_type = node->TargetProperty();
+		const AnimationCurveMap &curves = node->Curves();
+
+		//typedef std::map<std::string, const AnimationCurve *> AnimationCurveMap;
+		for (auto cake : node->Curves()) {
+			std::cout << "[sub curve curve] Debug curve: " << cake.second->Name() << std::endl;
+		}
+
+		if (property_type == "Lcl Rotation") {
+			rotation.push_back(node);
+		} else if (property_type == "Lcl Translation") {
+			translation.push_back(node);
+		} else if (property_type == "Lcl Scaling") {
+			scaling.push_back(node);
+		}
+	}
+	KeyFrameListList scalingKeys, rotationKeys, translationKeys;
+
+	if (scaling.size()) {
+		scalingKeys = GetKeyframeList(scaling, start, stop);
+	}
+
+	if (rotation.size()) {
+		rotationKeys = GetKeyframeList(rotation, start, stop);
+	}
+
+	if (translation.size()) {
+		translationKeys = GetKeyframeList(translation, start, stop);
 	}
 
 	ai_assert(curve_node);
@@ -2607,37 +2664,50 @@ void FBXConverter::GenerateNodeAnimations(
 
 	const Model &target = *curve_node->TargetAsModel();
 
-	// check for all possible transformation components
-	NodeMap::const_iterator chain[TransformationComp_MAXIMUM];
+	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
+	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
+	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
+	aiMatrix4x4 geometric_pivot;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	pivot_xform = pivot_xform * geometric_pivot;
+	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
-	bool has_any = false;
+	KeyFrameListList joined;
+	joined.insert(joined.end(), scalingKeys.begin(), scalingKeys.end());
+	joined.insert(joined.end(), translationKeys.begin(), translationKeys.end());
+	joined.insert(joined.end(), rotationKeys.begin(), rotationKeys.end());
 
-	for (size_t i = 0; i < TransformationComp_MAXIMUM; ++i) {
-		const TransformationComp comp = static_cast<TransformationComp>(i);
-		const char *str = NameTransformationCompProperty(comp);
+	const KeyTimeList &times = GetKeyTimeList(joined);
 
-		// this can be removed later probably
-		for (std::pair<std::string, const AnimationCurveNode *> &elem : node_property_map) {
-			if (elem.first == std::string(str)) {
-				chain[i] = elem.second;
-				printf("Detected valid Transform component: %s\n", str);
-				has_any = true;
-			}
-		}
+	aiQuatKey *out_quat = new aiQuatKey[times.size()];
+	aiVectorKey *out_scale = new aiVectorKey[times.size()];
+	aiVectorKey *out_translation = new aiVectorKey[times.size()];
+
+	if (times.size()) {
+		ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
+				scalingKeys,
+				translationKeys,
+				rotationKeys,
+				times,
+				max_time,
+				min_time,
+				target.RotationOrder(),
+				def_scale,
+				def_translate,
+				def_rot);
 	}
 
-	if (!has_any) {
-		FBXImporter::LogWarn("ignoring node animation, did not find any transformation key frames");
-		return;
-	}
+	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
+	na->mNumRotationKeys = na->mNumScalingKeys;
+	na->mNumPositionKeys = na->mNumScalingKeys;
 
-	aiNodeAnim *const nd = GenerateSimpleNodeAnim(fixed_name, target, chain,
-			node_property_map.end(),
-			layer_map,
-			start, stop,
-			max_time,
-			min_time,
-			geometric_pivot_data);
+	na->mScalingKeys = out_scale;
+	na->mRotationKeys = out_quat;
+	na->mPositionKeys = out_translation;
+
+	//na.release();
+
+	aiNodeAnim *nd = na.release();
 
 	ai_assert(nd);
 	if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
@@ -2785,122 +2855,122 @@ aiNodeAnim *FBXConverter::GenerateTranslationNodeAnim(const std::string &name,
 	return na.release();
 }
 
-aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
-		const Model &target,
-		NodeMap::const_iterator chain[TransformationComp_MAXIMUM],
-		NodeMap::const_iterator iter_end,
-		const LayerMap &layer_map,
-		int64_t start, int64_t stop,
-		double &max_time,
-		double &min_time,
-		aiMatrix4x4 geometric_pivot_data) {
-	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
-	na->mNodeName.Set(name);
+// aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
+// 		const Model &target,
+// 		NodeMap::const_iterator chain[TransformationComp_MAXIMUM],
+// 		NodeMap::const_iterator iter_end,
+// 		const LayerMap &layer_map,
+// 		int64_t start, int64_t stop,
+// 		double &max_time,
+// 		double &min_time,
+// 		aiMatrix4x4 geometric_pivot_data) {
+// 	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
+// 	na->mNodeName.Set(name);
 
-	const PropertyTable &props = target.Props();
+// 	const PropertyTable &props = target.Props();
 
-	// we must get pivot xform
-	aiMatrix4x4 ignore_me;
-	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, ignore_me);
-	pivot_xform = pivot_xform; //* ignore_me;
+// 	// we must get pivot xform
+// 	aiMatrix4x4 ignore_me;
+// 	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, ignore_me);
+// 	pivot_xform = pivot_xform; //* ignore_me;
 
-	aiVector3D def_scale;
-	aiVector3D def_translate;
-	aiVector3D def_rot;
+// 	aiVector3D def_scale;
+// 	aiVector3D def_translate;
+// 	aiVector3D def_rot;
 
-	pivot_xform.Decompose(def_scale, def_translate, def_rot);
+// 	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
-	KeyFrameListList scaling;
-	KeyFrameListList translation;
-	KeyFrameListList rotation;
+// 	KeyFrameListList scaling;
+// 	KeyFrameListList translation;
+// 	KeyFrameListList rotation;
 
-	// Max pivot test
-	KeyFrameListList geometric_scaling;
-	KeyFrameListList geometric_translation;
-	KeyFrameListList geometric_rotation;
+// 	// Max pivot test
+// 	KeyFrameListList geometric_scaling;
+// 	KeyFrameListList geometric_translation;
+// 	KeyFrameListList geometric_rotation;
 
-	if (chain[TransformationComp_Scaling] != iter_end) {
-		scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
-	}
+// 	if (chain[TransformationComp_Scaling] != iter_end) {
+// 		scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
+// 	}
 
-	if (chain[TransformationComp_Translation] != iter_end) {
-		translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
-	}
+// 	if (chain[TransformationComp_Translation] != iter_end) {
+// 		translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
+// 	}
 
-	if (chain[TransformationComp_Rotation] != iter_end) {
-		rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
-	}
+// 	if (chain[TransformationComp_Rotation] != iter_end) {
+// 		rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
+// 	}
 
-	// 3DS MAX pivot frames
-	if (chain[TransformationComp_GeometricScaling] != iter_end) {
-		std::cout << "found pivot geometric scaling " << std::endl;
-	}
-	if (chain[TransformationComp_GeometricRotation] != iter_end) {
-		std::cout << "found pivot geometric rotation " << std::endl;
-	}
-	if (chain[TransformationComp_GeometricTranslation] != iter_end) {
-		std::cout << "found pivot geometric translation " << std::endl;
-	}
+// 	// 3DS MAX pivot frames
+// 	if (chain[TransformationComp_GeometricScaling] != iter_end) {
+// 		std::cout << "found pivot geometric scaling " << std::endl;
+// 	}
+// 	if (chain[TransformationComp_GeometricRotation] != iter_end) {
+// 		std::cout << "found pivot geometric rotation " << std::endl;
+// 	}
+// 	if (chain[TransformationComp_GeometricTranslation] != iter_end) {
+// 		std::cout << "found pivot geometric translation " << std::endl;
+// 	}
 
-	// FBX SDK + Maya pivot frames
-	if (chain[TransformationComp_RotationOffset] != iter_end) {
-		std::cout << "found pivot rotation offset" << std::endl;
-	}
-	if (chain[TransformationComp_RotationPivot] != iter_end) {
-		std::cout << "found pivot rotation " << std::endl;
-	}
-	if (chain[TransformationComp_PreRotation] != iter_end) {
-		std::cout << "found pivot pre rotation" << std::endl;
-	}
+// 	// FBX SDK + Maya pivot frames
+// 	if (chain[TransformationComp_RotationOffset] != iter_end) {
+// 		std::cout << "found pivot rotation offset" << std::endl;
+// 	}
+// 	if (chain[TransformationComp_RotationPivot] != iter_end) {
+// 		std::cout << "found pivot rotation " << std::endl;
+// 	}
+// 	if (chain[TransformationComp_PreRotation] != iter_end) {
+// 		std::cout << "found pivot pre rotation" << std::endl;
+// 	}
 
-	if (chain[TransformationComp_PostRotation] != iter_end) {
-		std::cout << "found pivot post rotation " << std::endl;
-	}
-	if (chain[TransformationComp_ScalingOffset] != iter_end) {
-		std::cout << "found pivot scaling offset" << std::endl;
-	}
-	if (chain[TransformationComp_ScalingPivot] != iter_end) {
-		std::cout << "found pivot scaling" << std::endl;
-	}
+// 	if (chain[TransformationComp_PostRotation] != iter_end) {
+// 		std::cout << "found pivot post rotation " << std::endl;
+// 	}
+// 	if (chain[TransformationComp_ScalingOffset] != iter_end) {
+// 		std::cout << "found pivot scaling offset" << std::endl;
+// 	}
+// 	if (chain[TransformationComp_ScalingPivot] != iter_end) {
+// 		std::cout << "found pivot scaling" << std::endl;
+// 	}
 
-	KeyFrameListList joined;
-	joined.insert(joined.end(), scaling.begin(), scaling.end());
-	joined.insert(joined.end(), translation.begin(), translation.end());
-	joined.insert(joined.end(), rotation.begin(), rotation.end());
+// 	KeyFrameListList joined;
+// 	joined.insert(joined.end(), scaling.begin(), scaling.end());
+// 	joined.insert(joined.end(), translation.begin(), translation.end());
+// 	joined.insert(joined.end(), rotation.begin(), rotation.end());
 
-	const KeyTimeList &times = GetKeyTimeList(joined);
+// 	const KeyTimeList &times = GetKeyTimeList(joined);
 
-	aiQuatKey *out_quat = new aiQuatKey[times.size()];
-	aiVectorKey *out_scale = new aiVectorKey[times.size()];
-	aiVectorKey *out_translation = new aiVectorKey[times.size()];
+// 	aiQuatKey *out_quat = new aiQuatKey[times.size()];
+// 	aiVectorKey *out_scale = new aiVectorKey[times.size()];
+// 	aiVectorKey *out_translation = new aiVectorKey[times.size()];
 
-	if (times.size()) {
-		ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
-				scaling,
-				translation,
-				rotation,
-				times,
-				max_time,
-				min_time,
-				target.RotationOrder(),
-				def_scale,
-				def_translate,
-				def_rot);
-	}
+// 	if (times.size()) {
+// 		ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
+// 				scaling,
+// 				translation,
+// 				rotation,
+// 				times,
+// 				max_time,
+// 				min_time,
+// 				target.RotationOrder(),
+// 				def_scale,
+// 				def_translate,
+// 				def_rot);
+// 	}
 
-	// XXX remove duplicates / redundant keys which this operation did
-	// likely produce if not all three channels were equally dense.
+// 	// XXX remove duplicates / redundant keys which this operation did
+// 	// likely produce if not all three channels were equally dense.
 
-	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
-	na->mNumRotationKeys = na->mNumScalingKeys;
-	na->mNumPositionKeys = na->mNumScalingKeys;
+// 	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
+// 	na->mNumRotationKeys = na->mNumScalingKeys;
+// 	na->mNumPositionKeys = na->mNumScalingKeys;
 
-	na->mScalingKeys = out_scale;
-	na->mRotationKeys = out_quat;
-	na->mPositionKeys = out_translation;
+// 	na->mScalingKeys = out_scale;
+// 	na->mRotationKeys = out_quat;
+// 	na->mPositionKeys = out_translation;
 
-	return na.release();
-}
+// 	return na.release();
+// }
 
 FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<const AnimationCurveNode *> &nodes,
 		int64_t start, int64_t stop) {

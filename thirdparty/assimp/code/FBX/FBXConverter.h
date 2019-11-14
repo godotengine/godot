@@ -385,15 +385,15 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	// generate node anim, extracting only Rotation, Scaling and Translation from the given chain
-	aiNodeAnim *GenerateSimpleNodeAnim(const std::string &name,
-			const Model &target,
-			std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator chain[TransformationComp_MAXIMUM],
-			std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator iter_end,
-			const LayerMap &layer_map,
-			int64_t start, int64_t stop,
-			double &max_time,
-			double &min_time,
-			aiMatrix4x4 geometric_pivot_data);
+	// aiNodeAnim *GenerateSimpleNodeAnim(const std::string &name,
+	// 		const Model &target,
+	// 		std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator chain[TransformationComp_MAXIMUM],
+	// 		std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator iter_end,
+	// 		const LayerMap &layer_map,
+	// 		int64_t start, int64_t stop,
+	// 		double &max_time,
+	// 		double &min_time,
+	// 		aiMatrix4x4 geometric_pivot_data);
 
 	// key (time), value, mapto (component index)
 	typedef std::tuple<std::shared_ptr<KeyTimeList>, std::shared_ptr<KeyValueList>, unsigned int> KeyFrameList;
