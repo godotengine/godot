@@ -6230,7 +6230,7 @@ EditorNode::EditorNode() {
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip(TTR("Pause the scene"));
+	pause_button->set_tooltip(TTR("Pause the scene execution for debugging."));
 	pause_button->set_disabled(true);
 	play_hb->add_child(pause_button);
 #ifdef OSX_ENABLED
