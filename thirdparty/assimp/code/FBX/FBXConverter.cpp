@@ -223,14 +223,14 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 		// now iterate and resample animations
 		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
 			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
-			rot = rot.Normalize();
+			//rot = rot.Normalize();
 			aiVector3D scale = node_anim->mScalingKeys[x].mValue;
 			aiVector3D trans = node_anim->mPositionKeys[x].mValue;
 
 			// TRS
 			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
 
-			final_matrix = final_matrix * transform;
+			final_matrix = transform * final_matrix;
 
 			final_matrix.Decompose(scale, rot, trans);
 
@@ -261,6 +261,7 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
 			// convert connection source object into Object base class
 			const Object *const object = con->SourceObject();
+
 			if (nullptr == object) {
 				FBXImporter::LogError("failed to convert source object for Model link");
 				continue;
@@ -285,10 +286,11 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 
 				// Handle FBX pivot data (explicitly must be done all the time)
 				aiMatrix4x4 node_geometric_transform;
+				std::cout << "Node Pivot lookup ID: " << model->ID() << std::endl;
 				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, node_geometric_transform);
 				node->mTransformation = (pivot_xform * node_geometric_transform) * geometric_transform;
 
-				ConvertModel(*model, node, root_node, node->mTransformation);
+				ConvertModel(*model, node, root_node, pivot_xform);
 
 				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
 				ResampleAnimationsWithPivots(anims, node->mTransformation);
@@ -687,6 +689,7 @@ void FBXConverter::MagicPivotAlgorithm(
 
 	// Calculate standard maya pivots
 	result = T * Roff * Rp * Rpre * R * Rpost.Inverse() * Rp.Inverse() * Soff * Sp * S * Sp.Inverse();
+	//result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
 	// Calculate 3DS max pivot transform - use geometric space (e.g doesn't effect children nodes only the current node)
 	geometric_transform = OT * OR * OS;
 	//result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
@@ -2376,50 +2379,87 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 	for (const AnimationLayer *layer : layers) {
 		std::cout << "animation layer change: " << layer->Name() << std::endl;
 		ai_assert(layer);
+
+		uint64_t last_target_id = 0;
+		std::string last_name;
+
+		AnimationCurveNodeList valid_target_node;
+		const AnimationCurveNode *back_node = layer->Nodes().back();
 		for (const AnimationCurveNode *node : layer->Nodes()) {
 
 			ai_assert(node);
 			const Model *const model = node->TargetAsModel();
 			if (model) {
 				const std::string &model_name = FixNodeName(model->Name());
+				std::cout << "==============================================================================================================" << std::endl;
 				std::cout << "Anim curve node: id " << node->ID() << " name: " << node->Name() << " layer: " << model_name << std::endl;
 
-				//AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
-				AnimationCurveNodeList list = layer->Nodes();
-				AnimationCurveNodeList valid_target_node;
-				for (auto element : list) {
+				//  element->TargetProperty() ==
+				if (node->Target()->ID() == model->ID()) {
+					std::cout << "curveID: " << node->ID() << ", tgt: " << node->TargetProperty() << ", tgt name: " << node->Target()->Name() << ", tgt id: " << node->Target()->ID() << std::endl;
+					//std::cout << "this is valid target!" << std::endl;
 
-					if (element->Target()->ID() == model->ID()) {
-						std::cout << "curveID: " << element->ID() << ", tgt: " << element->TargetProperty() << ", tgt name: " << element->Target()->Name() << ", tgt id: " << element->Target()->ID() << std::endl;
-						//std::cout << "this is valid target!" << std::endl;
-						valid_target_node.push_back(element);
+					// if the target has changed since last iteration finalize and process the animations
+					if (last_target_id != node->Target()->ID() && last_target_id != 0) {
+
+						if (valid_target_node.size()) {
+							try {
+								std::cout << "Processing animations together:" << std::endl;
+								aiMatrix4x4 geometric_pivot;
+								GenerateNodeAnimations(node_anims,
+										last_name,
+										valid_target_node,
+										layer_map,
+										start_time, stop_time,
+										max_time,
+										min_time,
+										geometric_pivot);
+
+								// clear combined target nodes (they've been joined together)
+								valid_target_node.clear();
+
+							} catch (std::exception &) {
+								std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+								throw;
+							}
+						} else {
+							std::cout << "Error: target was not found in curves!" << std::endl;
+						}
+					}
+					last_name = model_name;
+					last_target_id = node->Target()->ID();
+
+					valid_target_node.push_back(node);
+				}
+
+				// force last element to process now
+				if (node == back_node) {
+					if (valid_target_node.size()) {
+						try {
+							std::cout << "(end force) Processing animations together:" << std::endl;
+							aiMatrix4x4 geometric_pivot;
+							GenerateNodeAnimations(node_anims,
+									model_name,
+									valid_target_node,
+									layer_map,
+									start_time, stop_time,
+									max_time,
+									min_time,
+									geometric_pivot);
+
+							// clear combined target nodes (they've been joined together)
+							valid_target_node.clear();
+
+						} catch (std::exception &) {
+							std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+							throw;
+						}
+					} else {
+						std::cout << "Error: target was not found in curves!" << std::endl;
 					}
 				}
 
-				if (valid_target_node.size() > 0) {
-
-					try {
-						aiMatrix4x4 geometric_pivot;
-						GenerateNodeAnimations(node_anims,
-								model_name,
-								valid_target_node,
-								layer_map,
-								start_time, stop_time,
-								max_time,
-								min_time,
-								geometric_pivot);
-
-					} catch (std::exception &) {
-						std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
-						throw;
-					}
-				} else {
-					std::cout << "Error: target was not found in curves!" << std::endl;
-				}
-
-				//std::cout << "curve list: " << layer->Nodes()
 				layer_map[node] = layer;
-				continue;
 			}
 			const BlendShapeChannel *const bsc = dynamic_cast<const BlendShapeChannel *>(node->Target());
 			if (bsc) {
@@ -2643,7 +2683,7 @@ void FBXConverter::GenerateNodeAnimations(
 			curve_node = node;
 		}
 
-		std::cout << "valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << std::endl;
+		std::cout << "[" << node->ID() << "] valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << ", target id: " << node->TargetAsModel()->ID() << std::endl;
 
 		std::string property_type = node->TargetProperty();
 		const AnimationCurveMap &curves = node->Curves();
@@ -2683,15 +2723,16 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-	//aiMatrix4x4 geometric_pivot;
-	//aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	//pivot_xform = pivot_xform * geometric_pivot;
-	//pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	aiMatrix4x4 geometric_pivot;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	//pivot_xform = pivot_xform;
+	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList joined;
+
 	joined.insert(joined.end(), scalingKeys.begin(), scalingKeys.end());
-	joined.insert(joined.end(), translationKeys.begin(), translationKeys.end());
 	joined.insert(joined.end(), rotationKeys.begin(), rotationKeys.end());
+	joined.insert(joined.end(), translationKeys.begin(), translationKeys.end());
 
 	const KeyTimeList &times = GetKeyTimeList(joined);
 
