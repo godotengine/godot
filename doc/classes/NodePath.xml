@@ -7,6 +7,19 @@
 		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite"[/code] which is a child of the other named nodes in the path.
 		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
 		A [NodePath] is composed of a list of slash-separated node names (like a filesystem path) and an optional colon-separated list of "subnames" which can be resources or properties.
+		Some examples of NodePaths include the following:
+		[codeblock]
+		# No leading slash means it is relative to the current node.
+		@"A" # Immediate child A
+		@"A/B" # A's child B
+		@"." # The current node.
+		@".." # The parent node.
+		@"../C" # A sibling node C.
+		# A leading slash means it is absolute from the SceneTree.
+		@"/root" # Equivalent to get_tree().get_root().
+		@"/root/Main" # If your main scene's root node were named "Main".
+		@"/root/MyAutoload" # If you have an autoloaded node or scene.
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
