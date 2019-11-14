@@ -2387,21 +2387,25 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 				//AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
 				AnimationCurveNodeList list = layer->Nodes();
 
-				try {
-					aiMatrix4x4 geometric_pivot;
-					GenerateNodeAnimations(node_anims,
-							model_name,
-							list,
-							layer_map,
-							start_time, stop_time,
-							max_time,
-							min_time,
-							geometric_pivot);
-
-				} catch (std::exception &) {
-					std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
-					throw;
+				for (auto element : list) {
+					std::cout << "curveID: " << element->ID() << std::endl;
 				}
+
+				// try {
+				// 	aiMatrix4x4 geometric_pivot;
+				// 	GenerateNodeAnimations(node_anims,
+				// 			model_name,
+				// 			list,
+				// 			layer_map,
+				// 			start_time, stop_time,
+				// 			max_time,
+				// 			min_time,
+				// 			geometric_pivot);
+
+				// } catch (std::exception &) {
+				// 	std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+				// 	throw;
+				// }
 
 				//std::cout << "curve list: " << layer->Nodes()
 				layer_map[node] = layer;
@@ -2625,17 +2629,19 @@ void FBXConverter::GenerateNodeAnimations(
 			FBXImporter::LogWarn("target property for animation curve not set: " + node->Name());
 			continue;
 		}
+		if (curve_node == nullptr) {
+			curve_node = node;
+		}
 
-		curve_node = node;
 		std::cout << "valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << std::endl;
 
 		std::string property_type = node->TargetProperty();
 		const AnimationCurveMap &curves = node->Curves();
 
-		//typedef std::map<std::string, const AnimationCurve *> AnimationCurveMap;
-		for (auto cake : node->Curves()) {
-			std::cout << "[sub curve curve] Debug curve: " << cake.second->Name() << std::endl;
-		}
+		// //typedef std::map<std::string, const AnimationCurve *> AnimationCurveMap;
+		// for (auto cake : node->Curves()) {
+		// 	std::cout << "[sub curve curve] Debug curve: " << cake.second->Name() << std::endl;
+		// }
 
 		if (property_type == "Lcl Rotation") {
 			rotation.push_back(node);
