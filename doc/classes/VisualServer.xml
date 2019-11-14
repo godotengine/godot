@@ -1333,27 +1333,6 @@
 				Returns a certain information, see [code]RENDER_INFO_*[/code] for options.
 			</description>
 		</method>
-		<method name="get_test_cube">
-			<return type="RID">
-			</return>
-			<description>
-				Returns the id of the test cube. Creates one if none exists.
-			</description>
-		</method>
-		<method name="get_test_texture">
-			<return type="RID">
-			</return>
-			<description>
-				Returns the id of the test texture. Creates one if none exists.
-			</description>
-		</method>
-		<method name="get_white_texture">
-			<return type="RID">
-			</return>
-			<description>
-				Returns the id of a white texture. Creates one if none exists.
-			</description>
-		</method>
 		<method name="gi_probe_create">
 			<return type="RID">
 			</return>
@@ -2192,19 +2171,6 @@
 			<argument index="1" name="xform" type="Transform">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="make_sphere_mesh">
-			<return type="RID">
-			</return>
-			<argument index="0" name="latitudes" type="int">
-			</argument>
-			<argument index="1" name="longitudes" type="int">
-			</argument>
-			<argument index="2" name="radius" type="float">
-			</argument>
-			<description>
-				Returns a mesh of a sphere with the given amount of horizontal and vertical subdivisions.
 			</description>
 		</method>
 		<method name="material_create">

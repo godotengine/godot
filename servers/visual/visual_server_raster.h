@@ -681,7 +681,9 @@ public:
 
 	virtual int get_render_info(RenderInfo p_info);
 
+#ifdef TOOLS_ENABLED
 	virtual RID get_test_cube();
+#endif
 
 	/* TESTING */
 

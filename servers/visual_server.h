@@ -52,8 +52,9 @@ class VisualServer : public Object {
 	Array _get_array_from_surface(uint32_t p_format, PoolVector<uint8_t> p_vertex_data, int p_vertex_len, PoolVector<uint8_t> p_index_data, int p_index_len) const;
 
 protected:
+#ifdef TOOLS_ENABLED
 	RID _make_test_cube();
-	void _free_internal_rids();
+#endif
 	RID test_texture;
 	RID white_texture;
 	RID test_material;
@@ -1022,12 +1023,10 @@ public:
 
 	/* TESTING */
 
+#ifdef TOOLS_ENABLED
 	virtual RID get_test_cube() = 0;
-
-	virtual RID get_test_texture();
-	virtual RID get_white_texture();
-
 	virtual RID make_sphere_mesh(int p_lats, int p_lons, float p_radius);
+#endif
 
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes);

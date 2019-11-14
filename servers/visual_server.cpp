@@ -124,64 +124,7 @@ Array VisualServer::_instances_cull_convex_bind(const Array &p_convex, RID p_sce
 	return to_array(ids);
 }
 
-RID VisualServer::get_test_texture() {
-
-	if (test_texture.is_valid()) {
-		return test_texture;
-	};
-
-#define TEST_TEXTURE_SIZE 256
-
-	PoolVector<uint8_t> test_data;
-	test_data.resize(TEST_TEXTURE_SIZE * TEST_TEXTURE_SIZE * 3);
-
-	{
-		PoolVector<uint8_t>::Write w = test_data.write();
-
-		for (int x = 0; x < TEST_TEXTURE_SIZE; x++) {
-
-			for (int y = 0; y < TEST_TEXTURE_SIZE; y++) {
-
-				Color c;
-				int r = 255 - (x + y) / 2;
-
-				if ((x % (TEST_TEXTURE_SIZE / 8)) < 2 || (y % (TEST_TEXTURE_SIZE / 8)) < 2) {
-
-					c.r = y;
-					c.g = r;
-					c.b = x;
-
-				} else {
-
-					c.r = r;
-					c.g = x;
-					c.b = y;
-				}
-
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b * 255, 0, 255));
-			}
-		}
-	}
-
-	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data));
-
-	test_texture = texture_create_from_image(data);
-
-	return test_texture;
-}
-
-void VisualServer::_free_internal_rids() {
-
-	if (test_texture.is_valid())
-		free(test_texture);
-	if (white_texture.is_valid())
-		free(white_texture);
-	if (test_material.is_valid())
-		free(test_material);
-}
-
+#ifdef TOOLS_ENABLED
 RID VisualServer::_make_test_cube() {
 
 	PoolVector<Vector3> vertices;
@@ -248,17 +191,6 @@ RID VisualServer::_make_test_cube() {
 	d[VisualServer::ARRAY_INDEX] = indices;
 
 	mesh_add_surface_from_arrays(test_cube, PRIMITIVE_TRIANGLES, d);
-
-	/*
-	test_material = fixed_material_create();
-	//material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
-	fixed_material_set_texture( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
-	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
-	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_EMISSION, Color(0.2,0.2,0.2) );
-
-	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, Color(1, 1, 1) );
-	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR, Color(1,1,1) );
-*/
 	mesh_surface_set_material(test_cube, 0, test_material);
 
 	return test_cube;
@@ -320,25 +252,7 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 
 	return mesh;
 }
-
-RID VisualServer::get_white_texture() {
-
-	if (white_texture.is_valid())
-		return white_texture;
-
-	PoolVector<uint8_t> wt;
-	wt.resize(16 * 3);
-	{
-		PoolVector<uint8_t>::Write w = wt.write();
-		for (int i = 0; i < 16 * 3; i++)
-			w[i] = 255;
-	}
-	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
-	white_texture = texture_create();
-	texture_allocate(white_texture, 4, 4, 0, Image::FORMAT_RGB8, TEXTURE_TYPE_2D);
-	texture_set_data(white_texture, white);
-	return white_texture;
-}
+#endif
 
 #define SMALL_VEC2 Vector2(0.00001, 0.00001)
 #define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
@@ -2031,13 +1945,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
-#ifndef _3D_DISABLED
-
-	ClassDB::bind_method(D_METHOD("make_sphere_mesh", "latitudes", "longitudes", "radius"), &VisualServer::make_sphere_mesh);
-	ClassDB::bind_method(D_METHOD("get_test_cube"), &VisualServer::get_test_cube);
-#endif
-	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
-	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
 
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &VisualServer::set_boot_image, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &VisualServer::set_default_clear_color);

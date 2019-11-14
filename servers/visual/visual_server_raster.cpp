@@ -169,12 +169,14 @@ bool VisualServerRaster::has_feature(Features p_feature) const {
 	return false;
 }
 
+#ifdef TOOLS_ENABLED
 RID VisualServerRaster::get_test_cube() {
 	if (!test_cube.is_valid()) {
 		test_cube = _make_test_cube();
 	}
 	return test_cube;
 }
+#endif
 
 bool VisualServerRaster::has_os_feature(const String &p_feature) const {
 
