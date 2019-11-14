@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from methods import generate_modules_enabled
+
 Import('env')
 
 env_modules = env.Clone()
@@ -15,6 +17,8 @@ for x in env.module_list:
         continue
     env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
     SConscript(x + "/SCsub")
+
+env.Command("modules_enabled.gen.h", Value([sorted(env.module_list), sorted(env.disabled_modules)]), generate_modules_enabled)
 
 if env.split_modules:
     env.split_lib("modules", env_lib = env_modules)
