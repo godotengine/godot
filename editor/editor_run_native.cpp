@@ -133,7 +133,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		return;
 	}
 
-	emit_signal("native_run");
+	emit_signal("native_run", preset);
 
 	int flags = 0;
 	if (deploy_debug_remote)
@@ -156,7 +156,7 @@ void EditorRunNative::_bind_methods() {
 
 	ClassDB::bind_method("_run_native", &EditorRunNative::_run_native);
 
-	ADD_SIGNAL(MethodInfo("native_run"));
+	ADD_SIGNAL(MethodInfo("native_run", PropertyInfo(Variant::OBJECT, "platform")));
 }
 
 void EditorRunNative::set_deploy_dumb(bool p_enabled) {

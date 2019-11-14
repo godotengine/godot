@@ -42,6 +42,7 @@
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/script_editor_debugger.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/resource_format_text.h"
@@ -1146,6 +1147,11 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		r_flags.push_back("--debug-navigation");
 	}
 }
+
+ScriptEditorDebuggerServer *EditorExportPlatform::create_debugger_server() {
+	return memnew(ScriptEditorDebuggerTCP);
+}
+
 EditorExportPlatform::EditorExportPlatform() {
 }
 

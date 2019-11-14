@@ -40,6 +40,7 @@
 class FileAccess;
 class EditorExportPlatform;
 class EditorFileSystemDirectory;
+class ScriptEditorDebuggerServer;
 struct EditorProgress;
 
 class EditorExportPreset : public Reference {
@@ -216,6 +217,8 @@ protected:
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 
 public:
+	virtual ScriptEditorDebuggerServer *create_debugger_server();
+
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) = 0;
 
 	struct ExportOption {

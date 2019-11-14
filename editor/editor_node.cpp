@@ -1952,6 +1952,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		return;
 	}
 
+	emit_signal("start_debugger", Ref<EditorExportPreset>());
 	emit_signal("play_pressed");
 	if (p_current) {
 		play_scene_button->set_pressed(true);
@@ -1967,6 +1968,24 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	stop_button->set_disabled(false);
 
 	_playing_edited = p_current;
+}
+
+void EditorNode::_native_run(const Ref<EditorExportPreset> p_preset) {
+
+	bool autosave = EDITOR_GET("run/auto_save/save_before_running");
+	if (autosave) {
+		_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
+	}
+	if (run_native->is_deploy_debug_remote_enabled()) {
+		_menu_option_confirm(RUN_STOP, true);
+
+		if (!call_build())
+			return; // build failed
+
+		emit_signal("start_debugger", p_preset);
+		emit_signal("play_pressed");
+		editor_run.run_native_notify();
+	}
 }
 
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
@@ -2351,22 +2370,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_menu_option_confirm(RUN_STOP, true);
 			_run(true);
 
-		} break;
-		case RUN_PLAY_NATIVE: {
-
-			bool autosave = EDITOR_GET("run/auto_save/save_before_running");
-			if (autosave) {
-				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
-			}
-			if (run_native->is_deploy_debug_remote_enabled()) {
-				_menu_option_confirm(RUN_STOP, true);
-
-				if (!call_build())
-					break; // build failed
-
-				emit_signal("play_pressed");
-				editor_run.run_native_notify();
-			}
 		} break;
 		case RUN_SCENE_SETTINGS: {
 
@@ -5319,6 +5322,7 @@ void EditorNode::_feature_profile_changed() {
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
+	ClassDB::bind_method("_native_run", &EditorNode::_native_run);
 	ClassDB::bind_method("_tool_menu_option", &EditorNode::_tool_menu_option);
 	ClassDB::bind_method("_menu_confirm_current", &EditorNode::_menu_confirm_current);
 	ClassDB::bind_method("_dialog_action", &EditorNode::_dialog_action);
@@ -5406,6 +5410,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_request_screenshot", &EditorNode::_request_screenshot);
 	ClassDB::bind_method("_save_screenshot", &EditorNode::_save_screenshot);
 
+	ADD_SIGNAL(MethodInfo("start_debugger", PropertyInfo(Variant::OBJECT, "p_preset")));
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -6254,7 +6259,7 @@ EditorNode::EditorNode() {
 
 	run_native = memnew(EditorRunNative);
 	play_hb->add_child(run_native);
-	run_native->connect("native_run", this, "_menu_option", varray(RUN_PLAY_NATIVE));
+	run_native->connect("native_run", this, "_native_run");
 
 	play_scene_button = memnew(ToolButton);
 	play_hb->add_child(play_scene_button);

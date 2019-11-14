@@ -1411,7 +1411,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			editor->connect("play_pressed", this, "_editor_play");
+			editor->connect("start_debugger", this, "_editor_play");
 			editor->connect("pause_pressed", this, "_editor_pause");
 			editor->connect("stop_pressed", this, "_editor_stop");
 			editor->connect("script_add_function_request", this, "_add_callback");
@@ -1453,7 +1453,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 
-			editor->disconnect("play_pressed", this, "_editor_play");
+			editor->disconnect("start_debugger", this, "_editor_play");
 			editor->disconnect("pause_pressed", this, "_editor_pause");
 			editor->disconnect("stop_pressed", this, "_editor_stop");
 		} break;
@@ -2248,9 +2248,12 @@ void ScriptEditor::open_script_create_dialog(const String &p_base_name, const St
 	script_create_dialog->config(p_base_name, p_base_path);
 }
 
-void ScriptEditor::_editor_play() {
+void ScriptEditor::_editor_play(Ref<EditorExportPreset> p_preset) {
 
-	debugger->start(memnew(ScriptEditorDebuggerTCP));
+	if (p_preset.is_null())
+		debugger->start(memnew(ScriptEditorDebuggerTCP));
+	else
+		debugger->start(p_preset->get_platform()->create_debugger_server());
 	debug_menu->get_popup()->grab_focus();
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);

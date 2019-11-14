@@ -33,6 +33,7 @@
 
 #include "core/script_language.h"
 #include "editor/code_editor.h"
+#include "editor/editor_export.h"
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
@@ -314,7 +315,7 @@ class ScriptEditor : public PanelContainer {
 
 	EditorScriptCodeCompletionCache *completion_cache;
 
-	void _editor_play();
+	void _editor_play(Ref<EditorExportPreset> p_preset);
 	void _editor_pause();
 	void _editor_stop();
 
