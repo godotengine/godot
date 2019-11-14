@@ -439,7 +439,7 @@ FRAGMENT_SHADER_CODE
 		light_base >>= (i & 3) * 8;
 		light_base &= 0xFF;
 
-		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].matrix[0], light_array.data[light_base].matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec4 light_color = texture(sampler2D(light_textures[i], texture_sampler), tex_uv);
 		vec4 light_base_color = light_array.data[light_base].color;
 
