@@ -46,6 +46,9 @@ Area2DSW::BodyKey::BodyKey(Area2DSW *p_body, uint32_t p_body_shape, uint32_t p_a
 }
 
 void Area2DSW::_shapes_changed() {
+
+	if (!moved_list.in_list() && get_space())
+		get_space()->area_add_to_moved_list(&moved_list);
 }
 
 void Area2DSW::set_transform(const Transform2D &p_transform) {
