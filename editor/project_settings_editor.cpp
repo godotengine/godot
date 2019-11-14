@@ -445,6 +445,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
+		press_a_key->get_ok()->set_disabled(false);
 		press_a_key->accept_event();
 	}
 }
@@ -458,6 +459,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		case INPUT_KEY: {
 
 			press_a_key_label->set_text(TTR("Press a Key..."));
+			press_a_key->get_ok()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -1958,6 +1960,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+	press_a_key->get_ok()->set_disabled(true);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
 	press_a_key->connect("gui_input", this, "_wait_for_key");
