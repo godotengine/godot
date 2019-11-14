@@ -30,6 +30,7 @@
 
 #include "editor_node.h"
 
+#include <string>
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
 #include "core/io/config_file.h"
@@ -2029,37 +2030,38 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (!p_confirmed && (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER)) {
 				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false);
 				String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
-				save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+				save_confirmation->get_ok()->set_text(TTR("Svvave &_save_default_environment Close"));
 				save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
 				save_confirmation->popup_centered_minsize();
+				save_layout();
 				break;
 			} else {
 				tab_closing = editor_data.get_edited_scene();
 			}
 			if (!editor_data.get_edited_scene_root(tab_closing)) {
 				// empty tab
-				_scene_tab_closed(tab_closing);
+				//_scene_tab_closed(tab_closing);
 				break;
 			}
-
+			save_layout();
 			FALLTHROUGH;
 		}
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
-
+			show_warning(TTR("Entered FILE_SAVE_SCENE"));
 			int scene_idx = (p_option == FILE_SAVE_SCENE) ? -1 : tab_closing;
-
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && scene->get_filename() != "") {
-
+				show_warning(TTR("Extnered scene && scene->get_filename() != """));
+				save_layout();
 				if (scene_idx != editor_data.get_edited_scene())
 					_save_scene_with_preview(scene->get_filename(), scene_idx);
 				else
 					_save_scene_with_preview(scene->get_filename());
 
-				if (scene_idx != -1)
-					_discard_changes();
-				save_layout();
+		 		if (scene_idx != -1)
+                                          _discard_changes();
+
 
 				break;
 			}
