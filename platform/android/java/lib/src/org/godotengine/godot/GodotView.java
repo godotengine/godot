@@ -32,8 +32,10 @@ package org.godotengine.godot;
 import android.annotation.SuppressLint;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
 import org.godotengine.godot.xr.XRMode;
@@ -68,6 +70,7 @@ public class GodotView extends GLSurfaceView {
 
 	private final Godot activity;
 	private final GodotInputHandler inputHandler;
+	private final GestureDetector detector;
 	private final GodotRenderer godotRenderer;
 
 	public GodotView(Godot activity, XRMode xrMode, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl) {
@@ -78,6 +81,7 @@ public class GodotView extends GLSurfaceView {
 
 		this.activity = activity;
 		this.inputHandler = new GodotInputHandler(this);
+		this.detector = new GestureDetector(activity, new GodotGestureHandler(this));
 		this.godotRenderer = new GodotRenderer();
 		init(xrMode, false, 16, 0);
 	}
@@ -90,6 +94,7 @@ public class GodotView extends GLSurfaceView {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
+		this.detector.onTouchEvent(event);
 		return activity.gotTouchEvent(event);
 	}
 

@@ -100,6 +100,16 @@ public class GodotLib {
 	public static native void hover(int type, int x, int y);
 
 	/**
+	 * Forward double_tap events from the main thread to the GL thread.
+	 */
+	public static native void double_tap(int x, int y);
+
+	/**
+	 * Forward scroll events from the main thread to the GL thread.
+	 */
+	public static native void scroll(int x, int y);
+
+	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
