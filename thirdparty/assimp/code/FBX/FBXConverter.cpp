@@ -2386,26 +2386,36 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 
 				//AnimNodes.push_back(new AnimNodeItem(name, layer->Nodes()));
 				AnimationCurveNodeList list = layer->Nodes();
-
+				AnimationCurveNodeList valid_target_node;
 				for (auto element : list) {
-					std::cout << "curveID: " << element->ID() << std::endl;
+
+					if (element->Target()->ID() == model->ID()) {
+						std::cout << "curveID: " << element->ID() << ", tgt: " << element->TargetProperty() << ", tgt name: " << element->Target()->Name() << ", tgt id: " << element->Target()->ID() << std::endl;
+						//std::cout << "this is valid target!" << std::endl;
+						valid_target_node.push_back(element);
+					}
 				}
 
-				// try {
-				// 	aiMatrix4x4 geometric_pivot;
-				// 	GenerateNodeAnimations(node_anims,
-				// 			model_name,
-				// 			list,
-				// 			layer_map,
-				// 			start_time, stop_time,
-				// 			max_time,
-				// 			min_time,
-				// 			geometric_pivot);
+				if (valid_target_node.size() > 0) {
 
-				// } catch (std::exception &) {
-				// 	std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
-				// 	throw;
-				// }
+					try {
+						aiMatrix4x4 geometric_pivot;
+						GenerateNodeAnimations(node_anims,
+								model_name,
+								valid_target_node,
+								layer_map,
+								start_time, stop_time,
+								max_time,
+								min_time,
+								geometric_pivot);
+
+					} catch (std::exception &) {
+						std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
+						throw;
+					}
+				} else {
+					std::cout << "Error: target was not found in curves!" << std::endl;
+				}
 
 				//std::cout << "curve list: " << layer->Nodes()
 				layer_map[node] = layer;
@@ -2673,10 +2683,10 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-	aiMatrix4x4 geometric_pivot;
-	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	pivot_xform = pivot_xform * geometric_pivot;
-	pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	//aiMatrix4x4 geometric_pivot;
+	//aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	//pivot_xform = pivot_xform * geometric_pivot;
+	//pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList joined;
 	joined.insert(joined.end(), scalingKeys.begin(), scalingKeys.end());
