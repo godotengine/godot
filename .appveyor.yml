@@ -7,10 +7,19 @@ environment:
   PYTHON: C:\Python38
   SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
   SCONS_CACHE_LIMIT: 1024
+  OPTIONS: "debug_symbols=no verbose=yes progress=no"
+  EXTRA_ARGS: "warnings=all werror=yes"
   matrix:
-    - GD_PLATFORM: windows
-      TOOLS: yes
-      TARGET: release_debug
+  - GD_PLATFORM: windows
+    TARGET: release_debug
+    TOOLS: yes
+# Disabled for performance reasons until master is more stable.
+#  - GD_PLATFORM: windows
+#    TARGET: release
+#    TOOLS: no
+
+matrix:
+  fast_finish: true
 
 init:
   - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
@@ -29,4 +38,4 @@ before_build:
   - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
 
 build_script:
-  - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% debug_symbols=no verbose=yes progress=no gdnative_wrapper=yes
+  - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
