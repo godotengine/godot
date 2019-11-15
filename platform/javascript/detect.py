@@ -49,12 +49,10 @@ def configure(env):
 
     env['CC'] = em_path + '/emcc'
     env['CXX'] = em_path + '/emcc'
-    #env['AR'] = em_path+"/emar"
-    env['AR'] = em_path + "/emcc"
+    env['AR'] = em_path + "/emar"
     env['ARFLAGS'] = "-o"
+    env['RANLIB'] = em_path + "/emranlib"
 
-#	env['RANLIB'] = em_path+"/emranlib"
-    env['RANLIB'] = em_path + "/emcc"
     env['OBJSUFFIX'] = '.bc'
     env['LIBSUFFIX'] = '.bc'
     env['CCCOM'] = "$CC -o $TARGET $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES"
