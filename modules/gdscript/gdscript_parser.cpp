@@ -6466,6 +6466,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 					DataType true_type = _reduce_node_type(op->arguments[1]);
 					DataType false_type = _reduce_node_type(op->arguments[2]);
+					// Check arguments[0] errors.
+					_reduce_node_type(op->arguments[0]);
 
 					// If types are equal, then the expression is of the same type
 					// If they are compatible, return the broader type
