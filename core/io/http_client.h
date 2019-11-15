@@ -166,6 +166,7 @@ private:
 	bool ssl_verify_host;
 	bool blocking;
 	bool handshaking;
+	bool head_request;
 
 	Vector<uint8_t> response_str;
 
