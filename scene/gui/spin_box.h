@@ -48,6 +48,7 @@ class SpinBox : public Range {
 	virtual void _value_changed(double);
 	String prefix;
 	String suffix;
+	double arrow_step;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -88,6 +89,8 @@ public:
 	String get_prefix() const;
 
 	void apply();
+	void set_arrow_step(const double p_arrow_step);
+	double get_arrow_step() const;
 
 	SpinBox();
 };
