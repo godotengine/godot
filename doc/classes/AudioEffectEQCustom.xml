@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectEQCustom" inherits="AudioEffectEQ" category="Core" version="3.2">
+	<brief_description>
+		A custom equalizer that allows band frequencies to be customized and changed on the fly.
+		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.
+	</brief_description>
+	<description>
+		[AudioEffectEQCustom] is a semi-parametric equalizer that allows a custom setup of band frequencies. The setup can be changed in real time as well.
+		An equalizer should contain at least 2 bands and at most 31 bands. The center frequencies should lie between 10 Hz and 22050 Hz (inclusive).
+		It is suggested to ensure that band frequencies strictly increasing.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_band_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="count" type="int">
+			</argument>
+			<description>
+				Sets the number of bands. [code]count[/code] should lie between 2 to 31 (inclusive).
+			</description>
+		</method>
+		<method name="set_band_frequency">
+			<return type="void">
+			</return>
+			<argument index="0" name="band_idx" type="int">
+			</argument>
+			<argument index="1" name="frequency" type="float">
+			</argument>
+			<description>
+				Sets the center frequency (in hertz) of a band. [code]frequency[/code] should lie between 10 to 22050 (inclusive).
+				Band frequencies should be pairwise distinct. Otherwise a warning will be raised.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

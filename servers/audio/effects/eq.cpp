@@ -108,7 +108,11 @@ void EQ::recalculate_band_coefficients() {
 		double r1 = 0, r2 = 0; //roots
 		int roots = solve_quadratic(c2a, c2b, c2c, &r1, &r2);
 
-		ERR_CONTINUE(roots == 0);
+		if (roots == 0) {
+
+			WARN_PRINT("Could not process one of the bands; probably caused by coinciding band frequencies");
+			continue;
+		}
 
 		band.write[i].c1 = 2.0 * ((0.5 - r1) / 2.0);
 		band.write[i].c2 = 2.0 * r1;
@@ -172,7 +176,7 @@ int EQ::get_band_count() const {
 
 	return band.size();
 }
-float EQ::get_band_frequency(int p_band) {
+float EQ::get_band_frequency(int p_band) const {
 
 	ERR_FAIL_INDEX_V(p_band, band.size(), 0);
 	return band[p_band].freq;
@@ -194,7 +198,7 @@ void EQ::set_mix_rate(float p_mix_rate) {
 	recalculate_band_coefficients();
 }
 
-EQ::BandProcess EQ::get_band_processor(int p_band) const {
+EQ::BandProcess EQ::get_band_processor(int p_band, const BandProcess &p_cur) const {
 
 	EQ::BandProcess band_proc;
 
@@ -203,6 +207,7 @@ EQ::BandProcess EQ::get_band_processor(int p_band) const {
 	band_proc.c1 = band[p_band].c1;
 	band_proc.c2 = band[p_band].c2;
 	band_proc.c3 = band[p_band].c3;
+	band_proc.history = p_cur.history;
 
 	return band_proc;
 }

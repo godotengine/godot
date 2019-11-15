@@ -130,7 +130,6 @@ void register_server_types() {
 	ClassDB::register_class<AudioStreamRandomPitch>();
 	ClassDB::register_virtual_class<AudioEffect>();
 	ClassDB::register_virtual_class<AudioEffectInstance>();
-	ClassDB::register_class<AudioEffectEQ>();
 	ClassDB::register_class<AudioEffectFilter>();
 	ClassDB::register_class<AudioBusLayout>();
 
@@ -154,6 +153,7 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectEQ6>();
 		ClassDB::register_class<AudioEffectEQ10>();
 		ClassDB::register_class<AudioEffectEQ21>();
+		ClassDB::register_class<AudioEffectEQCustom>();
 
 		ClassDB::register_class<AudioEffectDistortion>();
 

@@ -86,8 +86,10 @@ public:
 	int get_band_count() const;
 	void set_preset_band_mode(Preset p_preset);
 	void set_bands(const Vector<float> &p_bands);
-	BandProcess get_band_processor(int p_band) const;
-	float get_band_frequency(int p_band);
+	float get_band_frequency(int p_band) const;
+
+	// Keeps filter history for fluent transition
+	BandProcess get_band_processor(int p_band, const BandProcess &p_cur) const;
 
 	EQ();
 	~EQ();

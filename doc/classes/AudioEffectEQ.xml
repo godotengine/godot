@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectEQ" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
-		Base class for audio equalizers. Gives you control over frequencies.
-		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.
+		Base class for audio equalizers. Choose among [AudioEffectEQ6], [AudioEffectEQ10], [AudioEffectEQ21] or [AudioEffectEQCustom] according to specific needs.
 	</brief_description>
 	<description>
-		AudioEffectEQ gives you control over frequencies. Use it to compensate for existing deficiencies in audio. AudioEffectEQs are useful on the Master bus to completely master a mix and give it more character. They are also useful when a game is run on a mobile device, to adjust the mix to that kind of speakers (it can be added but disabled when headphones are plugged).
+		An equalizer gives you control over different parts of the audio according to frequencies. It boosts or suppresses certain frequencies (bands) according to the setup.
+		Equalizers can compensate for existing deficiencies in audio as well as create different effects on a sound. An equalizer may be applied on the Master bus to master a mix as a whole and give it more character. They are also useful when a game is run on a mobile device, to adjust the mix to that kind of speakers (for example, an equalizer can be added but disabled when headphones are plugged).
+		[AudioEffectEQ] is the base class and need not be directly used. See [AudioEffectEQ6], [AudioEffectEQ10], [AudioEffectEQ21] and [AudioEffectEQCustom] for different setups.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +16,15 @@
 			</return>
 			<description>
 				Returns the number of bands of the equalizer.
+			</description>
+		</method>
+		<method name="get_band_frequency" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="band_idx" type="int">
+			</argument>
+			<description>
+				Returns the band's center frequency at the specified index in hertz.
 			</description>
 		</method>
 		<method name="get_band_gain_db" qualifiers="const">
