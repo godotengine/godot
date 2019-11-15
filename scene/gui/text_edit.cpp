@@ -6540,9 +6540,9 @@ void TextEdit::_update_completion_candidates() {
 			option.insert_text = option.insert_text.quote(quote);
 		}
 
-		if (option.display.begins_with(s)) {
+		if (option.display.find(s) != -1) {
 			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
+		} else if (option.display.findn(s) != -1) {
 			completion_options_casei.push_back(option);
 		}
 	}
