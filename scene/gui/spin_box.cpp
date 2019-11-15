@@ -88,7 +88,8 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
-		set_value(get_value() + (up ? get_step() : -get_step()));
+		double step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+		set_value(get_value() + (up ? step : -step));
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.075);
@@ -118,6 +119,8 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
+	double step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+
 	if (mb.is_valid() && mb->is_pressed()) {
 		bool up = mb->get_position().y < (get_size().height / 2);
 
@@ -125,7 +128,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::LEFT: {
 				line_edit->grab_focus();
 
-				set_value(get_value() + (up ? get_step() : -get_step()));
+				set_value(get_value() + (up ? step : -step));
 
 				range_click_timer->set_wait_time(0.6);
 				range_click_timer->set_one_shot(true);
@@ -140,13 +143,13 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->has_focus()) {
-					set_value(get_value() + get_step() * mb->get_factor());
+					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->has_focus()) {
-					set_value(get_value() - get_step() * mb->get_factor());
+					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
 			} break;
@@ -168,7 +171,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			double diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8) * SIGN(drag.diff_y);
-			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
+			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
@@ -294,6 +297,14 @@ void SpinBox::apply() {
 	_text_submitted(line_edit->get_text());
 }
 
+void SpinBox::set_custom_arrow_step(double p_custom_arrow_step) {
+	custom_arrow_step = p_custom_arrow_step;
+}
+
+double SpinBox::get_custom_arrow_step() const {
+	return custom_arrow_step;
+}
+
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
@@ -302,6 +313,8 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
+	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
+	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
@@ -313,6 +326,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step"), "set_custom_arrow_step", "get_custom_arrow_step");
 }
 
 SpinBox::SpinBox() {
