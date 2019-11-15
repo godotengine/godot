@@ -819,8 +819,11 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			if (gn && gn->is_selected()) {
 
 				Vector2 pos = (gn->get_drag_from() * zoom + drag_accum) / zoom;
-				if (is_using_snap()) {
-					int snap = get_snap();
+
+				// Snapping can be toggled temporarily by holding down Ctrl.
+				// This is done here as to not toggle the grid when holding down Ctrl.
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
 
