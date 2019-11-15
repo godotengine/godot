@@ -31,17 +31,17 @@ def can_build():
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
         print("libaudioresource-devel not found. Install libaudioresource-devel for all your targets in MerSDK")
-        # return False;
+        return False;
 
     glib_error = os.system("pkg-config glib-2.0 --modversion > /dev/null")
     if(glib_error):
         print("glib2-devel not found. Install glib2-devel for all your targets in MerSDK")
-        # return False;
+        return False;
 
-    # vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
-    # if(vpx_error):
-    #     print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
-    #     return False;
+    udev_error = os.system("pkg-config libudev --modversion > /dev/null")
+    if(udev_error):
+        print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
+        return False;
 
     # webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
     # if(webp_error):
@@ -148,6 +148,7 @@ def configure(env):
     ## Dependencies
     # try use static SDL2
     env.ParseConfig('pkg-config sdl2 --cflags --libs')
+    env.ParseConfig('pkg-config libudev --cflags --libs')
     #env.Append(LINKFLAGS=['-Lplatform/sailfish/outputsdl/lib/', '-L/home/src1/Projects/Sailfish/godot/platform/sailfish/outputsdl/lib', '', '-lSDL2'])
     #env.Append(LIBPATH=['/home/src1/Projects/Sailfish/godot/platform/sailfish/outputsdl/lib'])
     #env.Append(LIBS=['SDL2'])
@@ -274,7 +275,7 @@ def configure(env):
     env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad', '#platform/sailfish/outputsdl/include', '#platform/sailfish/SDL_src/src'])
     # env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_ls -lGL'])
     env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
-    env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE'])
+    env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE', '-DJOYDEV_ENABLED', '-DUDEV_ENABLED'])
     # include paths for different versions of SailfishSDK width different SDL2 version  
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 

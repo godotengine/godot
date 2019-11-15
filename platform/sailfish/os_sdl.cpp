@@ -299,9 +299,9 @@ void OS_SDL::finalize() {
 
 	memdelete(power_manager);
 
-#if defined(OPENGL_ENABLED)
+// #if defined(OPENGL_ENABLED || GLES_ENABLED)
 	memdelete(context_gl);
-#endif
+// #endif
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		if (cursors[i] != NULL)
 			SDL_FreeCursor(cursors[i]);
@@ -625,7 +625,7 @@ void OS_SDL::process_events() {
 	do_mouse_warp = false;
 	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
 	Size2i window_size;
-	SDL_Scancode current_scancode;
+	SDL_Scancode current_scancode = SDL_NUM_SCANCODES;
 	bool current_echo = false;
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 	Vector<String> dropped_files;
@@ -649,6 +649,10 @@ void OS_SDL::process_events() {
 	// }
 
 	while (SDL_PollEvent(&event)) {
+		// if(OS::get_singleton()->is_stdout_verbose()) {
+			// OS::get_singleton()->print("SDL_Event %d;\n",event.type);
+		// }
+
 		if (event.type == SDL_QUIT ) {
 			if(OS::get_singleton()->is_stdout_verbose())
 				OS::get_singleton()->print("SDL_QUIT event;\n");
@@ -923,6 +927,8 @@ void OS_SDL::process_events() {
 		}//*/
 #endif
 
+		// else if( event.type == SDL_CONTROLLER_EVENT)
+
 		// Outside of text input mode. Events created here won't have unicode mappings.
 		if (event.type == SDL_KEYDOWN && text_edit_mode == SDL_FALSE) {
 			last_timestamp = event.key.timestamp;
@@ -991,7 +997,8 @@ void OS_SDL::process_events() {
 				get_key_modifier_state(k);
 				k->set_unicode(tmp[i]);
 				k->set_pressed(true);
-				if (current_scancode) k->set_scancode(current_scancode);
+				if (current_scancode != SDL_NUM_SCANCODES) 
+					k->set_scancode(current_scancode);
 				k->set_echo(current_echo);
 
 				input->parse_input_event(k);
@@ -1437,7 +1444,7 @@ void OS_SDL::run() {
 
 		process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
-		// joypad->process_joypads();
+		joypad->process_joypads();
 #endif
 		if (Main::iteration() == true)
 			break;
