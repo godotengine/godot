@@ -235,7 +235,7 @@ Error ContextGL_SDL::initialize() {
 
 	// SDL_GetDisplayMode()
 
-	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN ); //| SDL_WINDOW_FULLSCREEN
+	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN); //| SDL_WINDOW_FULLSCREEN
 
 	if( !sdl_window ) {
 		OS::get_singleton()->print("SDL_Error \"%s\"",SDL_GetError());
