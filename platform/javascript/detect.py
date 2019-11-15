@@ -82,10 +82,7 @@ def configure(env):
     env['CXX'] = 'em++'
     env['LINK'] = 'emcc'
 
-    # Emscripten's ar has issues with duplicate file names, so use cc.
-    env['AR'] = 'emcc'
-    env['ARFLAGS'] = '-o'
-    # emranlib is a noop, so it's safe to use with AR=emcc.
+    env['AR'] = 'emar'
     env['RANLIB'] = 'emranlib'
 
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
