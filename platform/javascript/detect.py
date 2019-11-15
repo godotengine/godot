@@ -84,8 +84,7 @@ def configure(env):
     env['CXX']     = 'em++'
     env['LINK']    = 'emcc'
     env['RANLIB']  = 'emranlib'
-    # Emscripten's ar has issues with duplicate file names, so use cc
-    env['AR']      = 'emcc'
+    env['AR']      = 'emar'
     env['ARFLAGS'] = '-o'
 
     if (os.name == 'nt'):
