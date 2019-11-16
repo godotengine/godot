@@ -350,6 +350,7 @@ public:
 	bool is_processing_internal() const;
 
 	void set_process_priority(int p_priority);
+	int get_process_priority() const;
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;

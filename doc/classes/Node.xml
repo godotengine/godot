@@ -783,15 +783,6 @@
 				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes' behaviour.
 			</description>
 		</method>
-		<method name="set_process_priority">
-			<return type="void">
-			</return>
-			<argument index="0" name="priority" type="int">
-			</argument>
-			<description>
-				Sets the node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
-			</description>
-		</method>
 		<method name="set_process_unhandled_input">
 			<return type="void">
 			</return>
@@ -846,6 +837,9 @@
 		</member>
 		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode" default="0">
 			Pause mode. How the node will behave if the [SceneTree] is paused.
+		</member>
+		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
+			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
 		</member>
 	</members>
 	<signals>
