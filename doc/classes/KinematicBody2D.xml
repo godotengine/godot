@@ -101,6 +101,8 @@
 			</argument>
 			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
+			<argument index="6" name="delta" type="float" default="0.0">
+			</argument>
 			<description>
 				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
@@ -110,6 +112,7 @@
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
 				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody2D] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
+				If [code]delta[/code] is greater than zero, it will override the current physics process delta time. This is useful for synchronizing physics calculations across multiple devices (e.g. a server and clients).
 				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
@@ -129,6 +132,8 @@
 			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<argument index="6" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<argument index="7" name="delta" type="float" default="0.0">
 			</argument>
 			<description>
 				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
