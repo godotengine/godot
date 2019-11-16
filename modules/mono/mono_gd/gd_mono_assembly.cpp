@@ -39,6 +39,7 @@
 #include "core/project_settings.h"
 
 #include "../godotsharp_dirs.h"
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 
 bool GDMonoAssembly::no_search = false;

@@ -36,6 +36,7 @@
 #include "core/string_name.h"
 
 #include "../csharp_script.h"
+#include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"
 #include "../mono_gd/gd_mono_utils.h"

@@ -71,10 +71,10 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
 	void fetch_attributes();
 
+	_FORCE_INLINE_ MonoMethod *get_mono_ptr() { return mono_method; }
+
 	_FORCE_INLINE_ int get_parameters_count() { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() { return return_type; }
-
-	void *get_thunk();
 
 	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL);
 	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL);

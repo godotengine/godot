@@ -34,6 +34,7 @@
 
 #include <mono/metadata/exception.h>
 
+#include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_utils.h"
 

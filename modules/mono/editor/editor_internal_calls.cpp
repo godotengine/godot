@@ -219,15 +219,15 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 	return err;
 }
 
-uint32_t godot_icall_GodotSharpExport_GetExportedAssemblyDependencies(MonoString *p_project_dll_name, MonoString *p_project_dll_src_path,
-		MonoString *p_build_config, MonoString *p_custom_lib_dir, MonoObject *r_dependencies) {
+uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoString *p_project_dll_name, MonoString *p_project_dll_src_path,
+		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_dependencies) {
 	String project_dll_name = GDMonoMarshal::mono_string_to_godot(p_project_dll_name);
 	String project_dll_src_path = GDMonoMarshal::mono_string_to_godot(p_project_dll_src_path);
 	String build_config = GDMonoMarshal::mono_string_to_godot(p_build_config);
-	String custom_lib_dir = GDMonoMarshal::mono_string_to_godot(p_custom_lib_dir);
+	String custom_bcl_dir = GDMonoMarshal::mono_string_to_godot(p_custom_bcl_dir);
 	Dictionary dependencies = GDMonoMarshal::mono_object_to_variant(r_dependencies);
 
-	return GodotSharpExport::get_exported_assembly_dependencies(project_dll_name, project_dll_src_path, build_config, custom_lib_dir, dependencies);
+	return GodotSharpExport::get_exported_assembly_dependencies(project_dll_name, project_dll_src_path, build_config, custom_bcl_dir, dependencies);
 }
 
 MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt(MonoString *p_config) {
@@ -411,8 +411,8 @@ void register_editor_internal_calls() {
 	// ScriptClassParser
 	mono_add_internal_call("GodotTools.Internals.ScriptClassParser::internal_ParseFile", (void *)godot_icall_ScriptClassParser_ParseFile);
 
-	// GodotSharpExport
-	mono_add_internal_call("GodotTools.GodotSharpExport::internal_GetExportedAssemblyDependencies", (void *)godot_icall_GodotSharpExport_GetExportedAssemblyDependencies);
+	// ExportPlugin
+	mono_add_internal_call("GodotTools.Export.ExportPlugin::internal_GetExportedAssemblyDependencies", (void *)godot_icall_ExportPlugin_GetExportedAssemblyDependencies);
 
 	// Internals
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_UpdateApiAssembliesFromPrebuilt", (void *)godot_icall_Internal_UpdateApiAssembliesFromPrebuilt);

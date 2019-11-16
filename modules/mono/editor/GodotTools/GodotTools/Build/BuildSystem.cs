@@ -44,7 +44,7 @@ namespace GodotTools.Build
         {
             get
             {
-                if (OS.IsWindows())
+                if (OS.IsWindows)
                 {
                     return (BuildManager.BuildTool) EditorSettings.GetSetting("mono/builds/build_tool")
                            == BuildManager.BuildTool.MsBuildMono;
