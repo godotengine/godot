@@ -325,13 +325,14 @@ void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray 
 	int pos = script->get_language()->find_function(p_function, code);
 	if (pos == -1) {
 		//does not exist
+		const int last_line_with_content = code_editor->get_text_editor()->get_last_line_with_content();
 		code_editor->get_text_editor()->deselect();
-		pos = code_editor->get_text_editor()->get_line_count() + 2;
 		String func = script->get_language()->make_function("", p_function, p_args);
 		//code=code+func;
-		code_editor->get_text_editor()->cursor_set_line(pos + 1);
+		code_editor->get_text_editor()->cursor_set_line(last_line_with_content + 1);
 		code_editor->get_text_editor()->cursor_set_column(1000000); //none shall be that big
 		code_editor->get_text_editor()->insert_text_at_cursor("\n\n" + func);
+		pos = last_line_with_content + 2;
 	}
 	code_editor->get_text_editor()->cursor_set_line(pos);
 	code_editor->get_text_editor()->cursor_set_column(1);

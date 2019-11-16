@@ -5711,6 +5711,24 @@ bool TextEdit::is_line_comment(int p_line) const {
 	return false;
 }
 
+int TextEdit::get_last_line_with_content() const {
+	const int last_index = get_line_count() - 1;
+
+	// Timeout index used as basic sanity test to prevent unnecessary iteration
+	// for white space at the end of a document. If there's over 50 spaces of
+	// whitespace at the end of the document, we'll stop 50 lines in.
+	const int line_timeout = get_line_count() > 50 ? 50 : get_line_count() - 1;
+	const int last_to_check = last_index - line_timeout;
+
+	for (int i = last_index; i > last_to_check; i--) {
+		if (text[i].length() > 0) {
+			return i;
+		}
+	}
+
+	return last_to_check;
+}
+
 bool TextEdit::can_fold(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	if (!is_hiding_enabled()) {

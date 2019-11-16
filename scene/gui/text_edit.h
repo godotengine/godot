@@ -673,6 +673,8 @@ public:
 	int get_indent_level(int p_line) const;
 	bool is_line_comment(int p_line) const;
 
+	int get_last_line_with_content() const;
+
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
 		update();
