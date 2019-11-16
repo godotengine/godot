@@ -949,7 +949,7 @@ String VisualScriptOperator::get_caption() const {
 		//mathematic
 		L"A + B", //OP_ADD,
 		L"A - B", //OP_SUBTRACT,
-		L"A x B", //OP_MULTIPLY,
+		L"A \u00D7 B", //OP_MULTIPLY,
 		L"A \u00F7 B", //OP_DIVIDE,
 		L"\u00AC A", //OP_NEGATE,
 		L"+ A", //OP_POSITIVE,
