@@ -1020,7 +1020,7 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 		case OP_POST_DECREMENT:
 		case OP_NEGATE: {
 			DataType na = p_op->arguments[0]->get_datatype();
-			valid = na > TYPE_BOOL && na < TYPE_MAT2;
+			valid = (na > TYPE_BOOL && na < TYPE_UINT) || (na > TYPE_UVEC4 && na < TYPE_MAT2);
 			ret_type = na;
 		} break;
 		case OP_ADD:
@@ -3769,9 +3769,9 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 						nv.sint = -cn->values[i].sint;
 					} break;
 					case TYPE_UINT: {
-						// FIXME: This can't work on uint
-						nv.uint = -cn->values[i].uint;
-					} break;
+						ERR_PRINT("Failed to reduce expression, cannot negate an unsigned integer.");
+						return p_node;
+					}
 					case TYPE_FLOAT: {
 						nv.real = -cn->values[i].real;
 					} break;
