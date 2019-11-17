@@ -260,6 +260,8 @@ private:
 			uint64_t proximity_fade : 1;
 			uint64_t distance_fade : 2;
 			uint64_t emission_op : 1;
+			uint64_t texture_metallic : 1;
+			uint64_t texture_roughness : 1;
 		};
 
 		uint64_t key;
@@ -305,6 +307,8 @@ private:
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
+		mk.texture_metallic = textures[TEXTURE_METALLIC].is_valid() ? 1 : 0;
+		mk.texture_roughness = textures[TEXTURE_ROUGHNESS].is_valid() ? 1 : 0;
 
 		return mk;
 	}

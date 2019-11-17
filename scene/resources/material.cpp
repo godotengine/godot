@@ -1405,8 +1405,8 @@ void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_te
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
-	_queue_shader_change();
 	_change_notify();
+	_queue_shader_change();
 }
 
 Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
