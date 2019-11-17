@@ -752,7 +752,6 @@
 				print(some_array[0]) # Prints "Four"
 				print(some_array[1]) # Prints "Three,Two,One"
 				[/codeblock]
-
 			</description>
 		</method>
 		<method name="rstrip">
