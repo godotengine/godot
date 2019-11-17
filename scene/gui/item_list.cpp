@@ -32,7 +32,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
+int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
 	Item item;
 	item.icon = p_texture;
 	item.icon_transposed = false;
@@ -45,12 +45,14 @@ void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, b
 	item.tooltip_enabled = true;
 	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
+	int item_id = items.size() - 1;
 
 	update();
 	shape_changed = true;
+	return item_id;
 }
 
-void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
+int ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	Item item;
 	item.icon = p_item;
 	item.icon_transposed = false;
@@ -63,9 +65,11 @@ void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 	item.tooltip_enabled = true;
 	item.custom_bg = Color(0, 0, 0, 0);
 	items.push_back(item);
+	int item_id = items.size() - 1;
 
 	update();
 	shape_changed = true;
+	return item_id;
 }
 
 void ItemList::set_item_text(int p_idx, const String &p_text) {

@@ -12,18 +12,18 @@
 	</tutorials>
 	<methods>
 		<method name="add_icon_item">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="icon" type="Texture2D">
 			</argument>
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with no text, only an icon.
+				Adds an item to the item list with no text, only an icon. Returns the index of an added item.
 			</description>
 		</method>
 		<method name="add_item">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
@@ -32,7 +32,8 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with specified text. Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
+				Adds an item to the item list with specified text. Returns the index of an added item.
+				Specify an [code]icon[/code], or use [code]null[/code] as the [code]icon[/code] for a list item with no icon.
 				If selectable is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
