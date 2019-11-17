@@ -3991,6 +3991,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				sig.name = tokenizer->get_token_identifier();
 				sig.emissions = 0;
 				sig.line = tokenizer->get_token_line();
+
+				for (int i = 0; i < current_class->_signals.size(); i++) {
+					if (current_class->_signals[i].name == sig.name) {
+						_set_error("The signal \"" + sig.name + "\" already exists in this class (at line: " + itos(current_class->_signals[i].line) + ").");
+						return;
+					}
+				}
+
 				tokenizer->advance();
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
@@ -7803,6 +7811,47 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		if (!found_getter && v.getter != StringName()) {
 			_set_error("The getter function isn't defined.", v.line);
 			return;
+		}
+	}
+
+	// Signals
+	DataType base = p_class->base_type;
+
+	while (base.kind == DataType::CLASS) {
+		ClassNode *base_class = base.class_type;
+		for (int i = 0; i < p_class->_signals.size(); i++) {
+			for (int j = 0; j < base_class->_signals.size(); j++) {
+				if (p_class->_signals[i].name == base_class->_signals[j].name) {
+					_set_error("The signal \"" + p_class->_signals[i].name + "\" already exists in a parent class.", p_class->_signals[i].line);
+					return;
+				}
+			}
+		}
+		base = base_class->base_type;
+	}
+
+	StringName native;
+	if (base.kind == DataType::GDSCRIPT || base.kind == DataType::SCRIPT) {
+		Ref<Script> scr = base.script_type;
+		if (scr.is_valid() && scr->is_valid()) {
+			native = scr->get_instance_base_type();
+			for (int i = 0; i < p_class->_signals.size(); i++) {
+				if (scr->has_script_signal(p_class->_signals[i].name)) {
+					_set_error("The signal \"" + p_class->_signals[i].name + "\" already exists in a parent class.", p_class->_signals[i].line);
+					return;
+				}
+			}
+		}
+	} else if (base.kind == DataType::NATIVE) {
+		native = base.native_type;
+	}
+
+	if (native != StringName()) {
+		for (int i = 0; i < p_class->_signals.size(); i++) {
+			if (ClassDB::has_signal(native, p_class->_signals[i].name)) {
+				_set_error("The signal \"" + p_class->_signals[i].name + "\" already exists in a parent class.", p_class->_signals[i].line);
+				return;
+			}
 		}
 	}
 
