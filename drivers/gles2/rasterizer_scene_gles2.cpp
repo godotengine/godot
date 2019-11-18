@@ -2342,9 +2342,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (accum_pass) { //accum pass force pass
 				blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_ADD;
-				if (rebind_light && light && light->light_ptr->negative) {
-					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				if (light && light->light_ptr->negative) {
 					blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_SUB;
 				}
 			}
