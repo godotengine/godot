@@ -12,7 +12,7 @@ namespace Godot
         internal static IntPtr GetPtr(RID instance)
         {
             if (instance == null)
-                return IntPtr.Zero;
+                throw new NullReferenceException($"The instance of type {nameof(RID)} is null.");
 
             if (instance.disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
