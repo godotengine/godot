@@ -35,7 +35,7 @@
 /* #undef FUZZING */
 
 /* Define to 1 if you have the <alloca.h> header file. */
-/* #undef HAVE_ALLOCA_H */
+/*  #undef HAVE_ALLOCA_H  */
 
 /* NE10 library is installed on host. Make sure it is on target! */
 /* #undef HAVE_ARM_NE10 */
@@ -46,11 +46,15 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+#if (!defined( _MSC_VER ) || ( _MSC_VER >= 1800 ))
+
 /* Define to 1 if you have the `lrint' function. */
 #define HAVE_LRINT 1
 
 /* Define to 1 if you have the `lrintf' function. */
 #define HAVE_LRINTF 1
+
+#endif
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -79,7 +83,8 @@
 /* Define to 1 if you have the `__malloc_hook' function. */
 #define HAVE___MALLOC_HOOK 1
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
 #define LT_OBJDIR ".libs/"
 
 #ifdef OPUS_ARM_OPT
@@ -186,7 +191,7 @@
 #define PACKAGE_NAME "opus"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "opus 1.3.1"
+#define PACKAGE_STRING "opus unknown"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "opus"
@@ -195,7 +200,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.3.1"
+#define PACKAGE_VERSION "unknown"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
@@ -227,7 +232,11 @@
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
+#if (!defined( _MSC_VER ) || ( _MSC_VER >= 1800 ))
 #define restrict __restrict
+#else
+#undef restrict
+#endif
 /* Work around a bug in Sun C++: it does not support _Restrict or
    __restrict__, even though the corresponding Sun C compiler ends up with
    "#define restrict _Restrict" or "#define restrict __restrict__" in the
