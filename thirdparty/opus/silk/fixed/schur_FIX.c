@@ -43,29 +43,28 @@ opus_int32 silk_schur(                              /* O    Returns residual ene
     opus_int32    C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
     opus_int32    Ctmp1, Ctmp2, rc_tmp_Q15;
 
-    celt_assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
+    silk_assert( order==6||order==8||order==10||order==12||order==14||order==16 );
 
     /* Get number of leading zeros */
     lz = silk_CLZ32( c[ 0 ] );
 
     /* Copy correlations and adjust level to Q30 */
-    k = 0;
     if( lz < 2 ) {
         /* lz must be 1, so shift one to the right */
-        do {
+        for( k = 0; k < order + 1; k++ ) {
             C[ k ][ 0 ] = C[ k ][ 1 ] = silk_RSHIFT( c[ k ], 1 );
-        } while( ++k <= order );
+        }
     } else if( lz > 2 ) {
         /* Shift to the left */
         lz -= 2;
-        do {
+        for( k = 0; k < order + 1; k++ ) {
             C[ k ][ 0 ] = C[ k ][ 1 ] = silk_LSHIFT( c[ k ], lz );
-        } while( ++k <= order );
+        }
     } else {
         /* No need to shift */
-        do {
+        for( k = 0; k < order + 1; k++ ) {
             C[ k ][ 0 ] = C[ k ][ 1 ] = c[ k ];
-        } while( ++k <= order );
+        }
     }
 
     for( k = 0; k < order; k++ ) {

@@ -109,11 +109,11 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
     const opus_int8 *Lag_CB_ptr;
 
     /* Check for valid sampling frequency */
-    celt_assert( Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16 );
+    silk_assert( Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16 );
 
     /* Check for valid complexity setting */
-    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     silk_assert( search_thres1 >= 0.0f && search_thres1 <= 1.0f );
     silk_assert( search_thres2 >= 0.0f && search_thres2 <= 1.0f );
@@ -148,7 +148,7 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
         silk_resampler_down2_3( filt_state, frame_8_FIX, frame_12_FIX, frame_length );
         silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
     } else {
-        celt_assert( Fs_kHz == 8 );
+        silk_assert( Fs_kHz == 8 );
         silk_float2short_array( frame_8_FIX, frame, frame_length_8kHz );
     }
 
@@ -159,7 +159,7 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
 
     /* Low-pass filter */
     for( i = frame_length_4kHz - 1; i > 0; i-- ) {
-        frame_4kHz[ i ] = silk_ADD_SAT16( frame_4kHz[ i ], frame_4kHz[ i - 1 ] );
+        frame_4kHz[ i ] += frame_4kHz[ i - 1 ];
     }
 
     /******************************************************************************
@@ -169,14 +169,14 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
     target_ptr = &frame_4kHz[ silk_LSHIFT( sf_length_4kHz, 2 ) ];
     for( k = 0; k < nb_subfr >> 1; k++ ) {
         /* Check that we are within range of the array */
-        celt_assert( target_ptr >= frame_4kHz );
-        celt_assert( target_ptr + sf_length_8kHz <= frame_4kHz + frame_length_4kHz );
+        silk_assert( target_ptr >= frame_4kHz );
+        silk_assert( target_ptr + sf_length_8kHz <= frame_4kHz + frame_length_4kHz );
 
         basis_ptr = target_ptr - min_lag_4kHz;
 
         /* Check that we are within range of the array */
-        celt_assert( basis_ptr >= frame_4kHz );
-        celt_assert( basis_ptr + sf_length_8kHz <= frame_4kHz + frame_length_4kHz );
+        silk_assert( basis_ptr >= frame_4kHz );
+        silk_assert( basis_ptr + sf_length_8kHz <= frame_4kHz + frame_length_4kHz );
 
         celt_pitch_xcorr( target_ptr, target_ptr-max_lag_4kHz, xcorr, sf_length_8kHz, max_lag_4kHz - min_lag_4kHz + 1, arch );
 
@@ -215,7 +215,7 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
 
     /* Sort */
     length_d_srch = 4 + 2 * complexity;
-    celt_assert( 3 * length_d_srch <= PE_D_SRCH_LENGTH );
+    silk_assert( 3 * length_d_srch <= PE_D_SRCH_LENGTH );
     silk_insertion_sort_decreasing_FLP( &C[ 0 ][ min_lag_4kHz ], d_srch, max_lag_4kHz - min_lag_4kHz + 1, length_d_srch );
 
     /* Escape if correlation is very low already here */
@@ -238,7 +238,7 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
             break;
         }
     }
-    celt_assert( length_d_srch > 0 );
+    silk_assert( length_d_srch > 0 );
 
     for( i = min_lag_8kHz - 5; i < max_lag_8kHz + 5; i++ ) {
         d_comp[ i ] = 0;
@@ -471,7 +471,7 @@ opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 
         *lagIndex = (opus_int16)( lag - min_lag_8kHz );
         *contourIndex = (opus_int8)CBimax;
     }
-    celt_assert( *lagIndex >= 0 );
+    silk_assert( *lagIndex >= 0 );
     /* return as voiced */
     return 0;
 }
@@ -506,8 +506,8 @@ static void silk_P_Ana_calc_corr_st3(
     opus_val32 xcorr[ SCRATCH_SIZE ];
     const opus_int8 *Lag_range_ptr, *Lag_CB_ptr;
 
-    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     if( nb_subfr == PE_MAX_NB_SUBFR ) {
         Lag_range_ptr = &silk_Lag_range_stage3[ complexity ][ 0 ][ 0 ];
@@ -515,7 +515,7 @@ static void silk_P_Ana_calc_corr_st3(
         nb_cbk_search = silk_nb_cbk_searchs_stage3[ complexity ];
         cbk_size      = PE_NB_CBKS_STAGE3_MAX;
     } else {
-        celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
+        silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
         Lag_range_ptr = &silk_Lag_range_stage3_10_ms[ 0 ][ 0 ];
         Lag_CB_ptr    = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
         nb_cbk_search = PE_NB_CBKS_STAGE3_10MS;
@@ -572,8 +572,8 @@ static void silk_P_Ana_calc_energy_st3(
     silk_float scratch_mem[ SCRATCH_SIZE ];
     const opus_int8 *Lag_range_ptr, *Lag_CB_ptr;
 
-    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     if( nb_subfr == PE_MAX_NB_SUBFR ) {
         Lag_range_ptr = &silk_Lag_range_stage3[ complexity ][ 0 ][ 0 ];
@@ -581,7 +581,7 @@ static void silk_P_Ana_calc_energy_st3(
         nb_cbk_search = silk_nb_cbk_searchs_stage3[ complexity ];
         cbk_size      = PE_NB_CBKS_STAGE3_MAX;
     } else {
-        celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
+        silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
         Lag_range_ptr = &silk_Lag_range_stage3_10_ms[ 0 ][ 0 ];
         Lag_CB_ptr    = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
         nb_cbk_search = PE_NB_CBKS_STAGE3_10MS;

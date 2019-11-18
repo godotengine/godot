@@ -42,11 +42,11 @@ void silk_warped_autocorrelation_FLP(
 {
     opus_int    n, i;
     double      tmp1, tmp2;
-    double      state[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
-    double      C[     MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    double      state[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    double      C[     MAX_SHAPE_LPC_ORDER + 1 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 
     /* Order must be even */
-    celt_assert( ( order & 1 ) == 0 );
+    silk_assert( ( order & 1 ) == 0 );
 
     /* Loop over samples */
     for( n = 0; n < length; n++ ) {

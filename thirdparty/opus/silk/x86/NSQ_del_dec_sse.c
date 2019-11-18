@@ -107,12 +107,12 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
     opus_int            predictLPCOrder,        /* I    Prediction filter order             */
     opus_int            warping_Q16,            /* I                                        */
     opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    opus_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
+    opus_int            *smpl_buf_idx,          /* I    Index to newest samples in buffers  */
     opus_int            decisionDelay           /* I                                        */
 );
 
 void silk_NSQ_del_dec_sse4_1(
-    const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
+    const silk_encoder_state    *psEncC,                                    /* I/O  Encoder State                   */
     silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
     const opus_int32            x_Q3[],                                     /* I    Prefiltered input signal        */
@@ -234,8 +234,7 @@ void silk_NSQ_del_dec_sse4_1(
                     psDD = &psDelDec[ Winner_ind ];
                     last_smple_idx = smpl_buf_idx + decisionDelay;
                     for( i = 0; i < decisionDelay; i++ ) {
-                        last_smple_idx = ( last_smple_idx - 1 ) % DECISION_DELAY;
-                        if( last_smple_idx < 0 ) last_smple_idx += DECISION_DELAY;
+                        last_smple_idx = ( last_smple_idx - 1 ) & DECISION_DELAY_MASK;
                         pulses[   i - decisionDelay ] = (opus_int8)silk_RSHIFT_ROUND( psDD->Q_Q10[ last_smple_idx ], 10 );
                         pxq[ i - decisionDelay ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND(
                             silk_SMULWW( psDD->Xq_Q14[ last_smple_idx ], Gains_Q16[ 1 ] ), 14 ) );
@@ -247,7 +246,7 @@ void silk_NSQ_del_dec_sse4_1(
 
                 /* Rewhiten with new A coefs */
                 start_idx = psEncC->ltp_mem_length - lag - psEncC->predictLPCOrder - LTP_ORDER / 2;
-                celt_assert( start_idx > 0 );
+                silk_assert( start_idx > 0 );
 
                 silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k * psEncC->subfr_length ],
                     A_Q12, psEncC->ltp_mem_length - start_idx, psEncC->predictLPCOrder, psEncC->arch );
@@ -286,8 +285,7 @@ void silk_NSQ_del_dec_sse4_1(
     last_smple_idx = smpl_buf_idx + decisionDelay;
     Gain_Q10 = silk_RSHIFT32( Gains_Q16[ psEncC->nb_subfr - 1 ], 6 );
     for( i = 0; i < decisionDelay; i++ ) {
-        last_smple_idx = ( last_smple_idx - 1 ) % DECISION_DELAY;
-        if( last_smple_idx < 0 ) last_smple_idx += DECISION_DELAY;
+        last_smple_idx = ( last_smple_idx - 1 ) & DECISION_DELAY_MASK;
         pulses[   i - decisionDelay ] = (opus_int8)silk_RSHIFT_ROUND( psDD->Q_Q10[ last_smple_idx ], 10 );
         pxq[ i - decisionDelay ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND(
             silk_SMULWW( psDD->Xq_Q14[ last_smple_idx ], Gain_Q10 ), 8 ) );
@@ -301,6 +299,7 @@ void silk_NSQ_del_dec_sse4_1(
     NSQ->lagPrev        = pitchL[ psEncC->nb_subfr - 1 ];
 
     /* Save quantized speech signal */
+    /* DEBUG_STORE_DATA( enc.pcm, &NSQ->xq[psEncC->ltp_mem_length], psEncC->frame_length * sizeof( opus_int16 ) ) */
     silk_memmove( NSQ->xq,           &NSQ->xq[           psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( opus_int16 ) );
     silk_memmove( NSQ->sLTP_shp_Q14, &NSQ->sLTP_shp_Q14[ psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( opus_int32 ) );
     RESTORE_STACK;
@@ -334,7 +333,7 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
     opus_int            predictLPCOrder,        /* I    Prediction filter order             */
     opus_int            warping_Q16,            /* I                                        */
     opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    opus_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
+    opus_int            *smpl_buf_idx,          /* I    Index to newest samples in buffers  */
     opus_int            decisionDelay           /* I                                        */
 )
 {
@@ -353,7 +352,7 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
     __m128i b_Q12_0123, b_sr_Q12_0123;
     SAVE_STACK;
 
-    celt_assert( nStatesDelayedDecision > 0 );
+    silk_assert( nStatesDelayedDecision > 0 );
     ALLOC( psSampleState, nStatesDelayedDecision, NSQ_sample_pair );
 
     shp_lag_ptr  = &NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2 ];
@@ -639,9 +638,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
                 psSS[ 1 ].xq_Q14       = xq_Q14;
             }
         }
-        *smpl_buf_idx  = ( *smpl_buf_idx - 1 ) % DECISION_DELAY;
-        if( *smpl_buf_idx < 0 ) *smpl_buf_idx += DECISION_DELAY;
-        last_smple_idx = ( *smpl_buf_idx + decisionDelay ) % DECISION_DELAY;
+        *smpl_buf_idx  = ( *smpl_buf_idx - 1 ) & DECISION_DELAY_MASK;                   /* Index to newest samples              */
+        last_smple_idx = ( *smpl_buf_idx + decisionDelay ) & DECISION_DELAY_MASK;       /* Index to decisionDelay old samples   */
 
         /* Find winner */
         RDmin_Q10 = psSampleState[ 0 ][ 0 ].RD_Q10;

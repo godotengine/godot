@@ -61,13 +61,7 @@
 **      the config.h file.
 */
 
-/* With GCC, when SSE is available, the fastest conversion is cvtss2si. */
-#if defined(__GNUC__) && defined(__SSE__)
-
-#include <xmmintrin.h>
-static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_ss(x));}
-
-#elif defined(HAVE_LRINTF)
+#if (HAVE_LRINTF)
 
 /*      These defines enable functionality introduced with the 1999 ISO C
 **      standard. They must be defined before the inclusion of math.h to
@@ -96,10 +90,10 @@ static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_s
 #include <math.h>
 #define float2int(x) lrint(x)
 
-#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1))
+#elif (defined(_MSC_VER) && _MSC_VER >= 1400) && defined (_M_X64)
         #include <xmmintrin.h>
 
-        static __inline long int float2int(float value)
+        __inline long int float2int(float value)
         {
                 return _mm_cvtss_si32(_mm_load_ss(&value));
         }
@@ -110,7 +104,7 @@ static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_s
         **      Therefore implement OPUS_INLINE versions of these functions here.
         */
 
-        static __inline long int
+        __inline long int
         float2int (float flt)
         {       int intgr;
 

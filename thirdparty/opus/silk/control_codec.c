@@ -57,7 +57,7 @@ static opus_int silk_setup_complexity(
 
 static OPUS_INLINE opus_int silk_setup_LBRR(
     silk_encoder_state              *psEncC,            /* I/O                      */
-    const silk_EncControlStruct     *encControl         /* I                        */
+    const opus_int32                TargetRate_bps      /* I                        */
 );
 
 
@@ -65,6 +65,7 @@ static OPUS_INLINE opus_int silk_setup_LBRR(
 opus_int silk_control_encoder(
     silk_encoder_state_Fxx          *psEnc,                                 /* I/O  Pointer to Silk encoder state                                               */
     silk_EncControlStruct           *encControl,                            /* I    Control structure                                                           */
+    const opus_int32                TargetRate_bps,                         /* I    Target max bitrate (bps)                                                    */
     const opus_int                  allow_bw_switch,                        /* I    Flag to allow switching audio bandwidth                                     */
     const opus_int                  channelNb,                              /* I    Channel number                                                              */
     const opus_int                  force_fs_kHz
@@ -124,7 +125,7 @@ opus_int silk_control_encoder(
     /********************************************/
     /* Set LBRR usage                           */
     /********************************************/
-    ret += silk_setup_LBRR( &psEnc->sCmn, encControl );
+    ret += silk_setup_LBRR( &psEnc->sCmn, TargetRate_bps );
 
     psEnc->sCmn.controlled_since_last_payload = 1;
 
@@ -238,11 +239,12 @@ static opus_int silk_setup_fs(
     }
 
     /* Set internal sampling frequency */
-    celt_assert( fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16 );
-    celt_assert( psEnc->sCmn.nb_subfr == 2 || psEnc->sCmn.nb_subfr == 4 );
+    silk_assert( fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16 );
+    silk_assert( psEnc->sCmn.nb_subfr == 2 || psEnc->sCmn.nb_subfr == 4 );
     if( psEnc->sCmn.fs_kHz != fs_kHz ) {
         /* reset part of the state */
         silk_memset( &psEnc->sShape,               0, sizeof( psEnc->sShape ) );
+        silk_memset( &psEnc->sPrefilt,             0, sizeof( psEnc->sPrefilt ) );
         silk_memset( &psEnc->sCmn.sNSQ,            0, sizeof( psEnc->sCmn.sNSQ ) );
         silk_memset( psEnc->sCmn.prev_NLSFq_Q15,   0, sizeof( psEnc->sCmn.prev_NLSFq_Q15 ) );
         silk_memset( &psEnc->sCmn.sLP.In_LP_State, 0, sizeof( psEnc->sCmn.sLP.In_LP_State ) );
@@ -253,6 +255,7 @@ static opus_int silk_setup_fs(
         /* Initialize non-zero parameters */
         psEnc->sCmn.prevLag                     = 100;
         psEnc->sCmn.first_frame_after_reset     = 1;
+        psEnc->sPrefilt.lagPrev                 = 100;
         psEnc->sShape.LastGainIndex             = 10;
         psEnc->sCmn.sNSQ.lagPrev                = 100;
         psEnc->sCmn.sNSQ.prev_gain_Q16          = 65536;
@@ -290,16 +293,19 @@ static opus_int silk_setup_fs(
             psEnc->sCmn.pitch_LPC_win_length = silk_SMULBB( FIND_PITCH_LPC_WIN_MS_2_SF, fs_kHz );
         }
         if( psEnc->sCmn.fs_kHz == 16 ) {
+            psEnc->sCmn.mu_LTP_Q9 = SILK_FIX_CONST( MU_LTP_QUANT_WB, 9 );
             psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform8_iCDF;
         } else if( psEnc->sCmn.fs_kHz == 12 ) {
+            psEnc->sCmn.mu_LTP_Q9 = SILK_FIX_CONST( MU_LTP_QUANT_MB, 9 );
             psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform6_iCDF;
         } else {
+            psEnc->sCmn.mu_LTP_Q9 = SILK_FIX_CONST( MU_LTP_QUANT_NB, 9 );
             psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform4_iCDF;
         }
     }
 
     /* Check that settings are valid */
-    celt_assert( ( psEnc->sCmn.subfr_length * psEnc->sCmn.nb_subfr ) == psEnc->sCmn.frame_length );
+    silk_assert( ( psEnc->sCmn.subfr_length * psEnc->sCmn.nb_subfr ) == psEnc->sCmn.frame_length );
 
     return ret;
 }
@@ -312,76 +318,61 @@ static opus_int silk_setup_complexity(
     opus_int ret = 0;
 
     /* Set encoding complexity */
-    celt_assert( Complexity >= 0 && Complexity <= 10 );
-    if( Complexity < 1 ) {
+    silk_assert( Complexity >= 0 && Complexity <= 10 );
+    if( Complexity < 2 ) {
         psEncC->pitchEstimationComplexity       = SILK_PE_MIN_COMPLEX;
         psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.8, 16 );
         psEncC->pitchEstimationLPCOrder         = 6;
-        psEncC->shapingLPCOrder                 = 12;
+        psEncC->shapingLPCOrder                 = 8;
         psEncC->la_shape                        = 3 * psEncC->fs_kHz;
         psEncC->nStatesDelayedDecision          = 1;
         psEncC->useInterpolatedNLSFs            = 0;
-        psEncC->NLSF_MSVQ_Survivors             = 2;
-        psEncC->warping_Q16                     = 0;
-    } else if( Complexity < 2 ) {
-        psEncC->pitchEstimationComplexity       = SILK_PE_MID_COMPLEX;
-        psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.76, 16 );
-        psEncC->pitchEstimationLPCOrder         = 8;
-        psEncC->shapingLPCOrder                 = 14;
-        psEncC->la_shape                        = 5 * psEncC->fs_kHz;
-        psEncC->nStatesDelayedDecision          = 1;
-        psEncC->useInterpolatedNLSFs            = 0;
-        psEncC->NLSF_MSVQ_Survivors             = 3;
-        psEncC->warping_Q16                     = 0;
-    } else if( Complexity < 3 ) {
-        psEncC->pitchEstimationComplexity       = SILK_PE_MIN_COMPLEX;
-        psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.8, 16 );
-        psEncC->pitchEstimationLPCOrder         = 6;
-        psEncC->shapingLPCOrder                 = 12;
-        psEncC->la_shape                        = 3 * psEncC->fs_kHz;
-        psEncC->nStatesDelayedDecision          = 2;
-        psEncC->useInterpolatedNLSFs            = 0;
+        psEncC->LTPQuantLowComplexity           = 1;
         psEncC->NLSF_MSVQ_Survivors             = 2;
         psEncC->warping_Q16                     = 0;
     } else if( Complexity < 4 ) {
         psEncC->pitchEstimationComplexity       = SILK_PE_MID_COMPLEX;
         psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.76, 16 );
         psEncC->pitchEstimationLPCOrder         = 8;
-        psEncC->shapingLPCOrder                 = 14;
+        psEncC->shapingLPCOrder                 = 10;
         psEncC->la_shape                        = 5 * psEncC->fs_kHz;
-        psEncC->nStatesDelayedDecision          = 2;
+        psEncC->nStatesDelayedDecision          = 1;
         psEncC->useInterpolatedNLSFs            = 0;
+        psEncC->LTPQuantLowComplexity           = 0;
         psEncC->NLSF_MSVQ_Survivors             = 4;
         psEncC->warping_Q16                     = 0;
     } else if( Complexity < 6 ) {
         psEncC->pitchEstimationComplexity       = SILK_PE_MID_COMPLEX;
         psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.74, 16 );
         psEncC->pitchEstimationLPCOrder         = 10;
-        psEncC->shapingLPCOrder                 = 16;
+        psEncC->shapingLPCOrder                 = 12;
         psEncC->la_shape                        = 5 * psEncC->fs_kHz;
         psEncC->nStatesDelayedDecision          = 2;
         psEncC->useInterpolatedNLSFs            = 1;
-        psEncC->NLSF_MSVQ_Survivors             = 6;
+        psEncC->LTPQuantLowComplexity           = 0;
+        psEncC->NLSF_MSVQ_Survivors             = 8;
         psEncC->warping_Q16                     = psEncC->fs_kHz * SILK_FIX_CONST( WARPING_MULTIPLIER, 16 );
     } else if( Complexity < 8 ) {
         psEncC->pitchEstimationComplexity       = SILK_PE_MID_COMPLEX;
         psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.72, 16 );
         psEncC->pitchEstimationLPCOrder         = 12;
-        psEncC->shapingLPCOrder                 = 20;
+        psEncC->shapingLPCOrder                 = 14;
         psEncC->la_shape                        = 5 * psEncC->fs_kHz;
         psEncC->nStatesDelayedDecision          = 3;
         psEncC->useInterpolatedNLSFs            = 1;
-        psEncC->NLSF_MSVQ_Survivors             = 8;
+        psEncC->LTPQuantLowComplexity           = 0;
+        psEncC->NLSF_MSVQ_Survivors             = 16;
         psEncC->warping_Q16                     = psEncC->fs_kHz * SILK_FIX_CONST( WARPING_MULTIPLIER, 16 );
     } else {
         psEncC->pitchEstimationComplexity       = SILK_PE_MAX_COMPLEX;
         psEncC->pitchEstimationThreshold_Q16    = SILK_FIX_CONST( 0.7, 16 );
         psEncC->pitchEstimationLPCOrder         = 16;
-        psEncC->shapingLPCOrder                 = 24;
+        psEncC->shapingLPCOrder                 = 16;
         psEncC->la_shape                        = 5 * psEncC->fs_kHz;
         psEncC->nStatesDelayedDecision          = MAX_DEL_DEC_STATES;
         psEncC->useInterpolatedNLSFs            = 1;
-        psEncC->NLSF_MSVQ_Survivors             = 16;
+        psEncC->LTPQuantLowComplexity           = 0;
+        psEncC->NLSF_MSVQ_Survivors             = 32;
         psEncC->warping_Q16                     = psEncC->fs_kHz * SILK_FIX_CONST( WARPING_MULTIPLIER, 16 );
     }
 
@@ -390,32 +381,46 @@ static opus_int silk_setup_complexity(
     psEncC->shapeWinLength          = SUB_FRAME_LENGTH_MS * psEncC->fs_kHz + 2 * psEncC->la_shape;
     psEncC->Complexity              = Complexity;
 
-    celt_assert( psEncC->pitchEstimationLPCOrder <= MAX_FIND_PITCH_LPC_ORDER );
-    celt_assert( psEncC->shapingLPCOrder         <= MAX_SHAPE_LPC_ORDER      );
-    celt_assert( psEncC->nStatesDelayedDecision  <= MAX_DEL_DEC_STATES       );
-    celt_assert( psEncC->warping_Q16             <= 32767                    );
-    celt_assert( psEncC->la_shape                <= LA_SHAPE_MAX             );
-    celt_assert( psEncC->shapeWinLength          <= SHAPE_LPC_WIN_MAX        );
+    silk_assert( psEncC->pitchEstimationLPCOrder <= MAX_FIND_PITCH_LPC_ORDER );
+    silk_assert( psEncC->shapingLPCOrder         <= MAX_SHAPE_LPC_ORDER      );
+    silk_assert( psEncC->nStatesDelayedDecision  <= MAX_DEL_DEC_STATES       );
+    silk_assert( psEncC->warping_Q16             <= 32767                    );
+    silk_assert( psEncC->la_shape                <= LA_SHAPE_MAX             );
+    silk_assert( psEncC->shapeWinLength          <= SHAPE_LPC_WIN_MAX        );
+    silk_assert( psEncC->NLSF_MSVQ_Survivors     <= NLSF_VQ_MAX_SURVIVORS    );
 
     return ret;
 }
 
 static OPUS_INLINE opus_int silk_setup_LBRR(
     silk_encoder_state          *psEncC,            /* I/O                      */
-    const silk_EncControlStruct *encControl         /* I                        */
+    const opus_int32            TargetRate_bps      /* I                        */
 )
 {
     opus_int   LBRR_in_previous_packet, ret = SILK_NO_ERROR;
+    opus_int32 LBRR_rate_thres_bps;
 
     LBRR_in_previous_packet = psEncC->LBRR_enabled;
-    psEncC->LBRR_enabled = encControl->LBRR_coded;
-    if( psEncC->LBRR_enabled ) {
-        /* Set gain increase for coding LBRR excitation */
-        if( LBRR_in_previous_packet == 0 ) {
-            /* Previous packet did not have LBRR, and was therefore coded at a higher bitrate */
-            psEncC->LBRR_GainIncreases = 7;
+    psEncC->LBRR_enabled = 0;
+    if( psEncC->useInBandFEC && psEncC->PacketLoss_perc > 0 ) {
+        if( psEncC->fs_kHz == 8 ) {
+            LBRR_rate_thres_bps = LBRR_NB_MIN_RATE_BPS;
+        } else if( psEncC->fs_kHz == 12 ) {
+            LBRR_rate_thres_bps = LBRR_MB_MIN_RATE_BPS;
         } else {
-            psEncC->LBRR_GainIncreases = silk_max_int( 7 - silk_SMULWB( (opus_int32)psEncC->PacketLoss_perc, SILK_FIX_CONST( 0.4, 16 ) ), 2 );
+            LBRR_rate_thres_bps = LBRR_WB_MIN_RATE_BPS;
+        }
+        LBRR_rate_thres_bps = silk_SMULWB( silk_MUL( LBRR_rate_thres_bps, 125 - silk_min( psEncC->PacketLoss_perc, 25 ) ), SILK_FIX_CONST( 0.01, 16 ) );
+
+        if( TargetRate_bps > LBRR_rate_thres_bps ) {
+            /* Set gain increase for coding LBRR excitation */
+            if( LBRR_in_previous_packet == 0 ) {
+                /* Previous packet did not have LBRR, and was therefore coded at a higher bitrate */
+                psEncC->LBRR_GainIncreases = 7;
+            } else {
+                psEncC->LBRR_GainIncreases = silk_max_int( 7 - silk_SMULWB( (opus_int32)psEncC->PacketLoss_perc, SILK_FIX_CONST( 0.4, 16 ) ), 2 );
+            }
+            psEncC->LBRR_enabled = 1;
         }
     }
 

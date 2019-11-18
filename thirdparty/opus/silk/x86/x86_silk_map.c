@@ -66,9 +66,8 @@ opus_int (*const SILK_VAD_GETSA_Q8_IMPL[ OPUS_ARCHMASK + 1 ] )(
   MAY_HAVE_SSE4_1( silk_VAD_GetSA_Q8 )  /* avx */
 };
 
-#if 0 /* FIXME: SSE disabled until the NSQ code gets updated. */
 void (*const SILK_NSQ_IMPL[ OPUS_ARCHMASK + 1 ] )(
-    const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
+    const silk_encoder_state    *psEncC,                                    /* I/O  Encoder State                   */
     silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
     const opus_int32            x_Q3[],                                     /* I    Prefiltered input signal        */
@@ -90,9 +89,7 @@ void (*const SILK_NSQ_IMPL[ OPUS_ARCHMASK + 1 ] )(
   MAY_HAVE_SSE4_1( silk_NSQ ), /* sse4.1 */
   MAY_HAVE_SSE4_1( silk_NSQ )  /* avx */
 };
-#endif
 
-#if 0 /* FIXME: SSE disabled until silk_VQ_WMat_EC_sse4_1() gets updated. */
 void (*const SILK_VQ_WMAT_EC_IMPL[ OPUS_ARCHMASK + 1 ] )(
     opus_int8                   *ind,                           /* O    index of best codebook vector               */
     opus_int32                  *rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
@@ -112,11 +109,9 @@ void (*const SILK_VQ_WMAT_EC_IMPL[ OPUS_ARCHMASK + 1 ] )(
   MAY_HAVE_SSE4_1( silk_VQ_WMat_EC ), /* sse4.1 */
   MAY_HAVE_SSE4_1( silk_VQ_WMat_EC )  /* avx */
 };
-#endif
 
-#if 0 /* FIXME: SSE disabled until the NSQ code gets updated. */
 void (*const SILK_NSQ_DEL_DEC_IMPL[ OPUS_ARCHMASK + 1 ] )(
-    const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
+    const silk_encoder_state    *psEncC,                                    /* I/O  Encoder State                   */
     silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
     const opus_int32            x_Q3[],                                     /* I    Prefiltered input signal        */
@@ -138,9 +133,24 @@ void (*const SILK_NSQ_DEL_DEC_IMPL[ OPUS_ARCHMASK + 1 ] )(
   MAY_HAVE_SSE4_1( silk_NSQ_del_dec ), /* sse4.1 */
   MAY_HAVE_SSE4_1( silk_NSQ_del_dec )  /* avx */
 };
-#endif
 
 #if defined(FIXED_POINT)
+
+void (*const SILK_WARPED_LPC_ANALYSIS_FILTER_FIX_IMPL[ OPUS_ARCHMASK + 1 ] )(
+    opus_int32                  state[],                    /* I/O  State [order + 1]                   */
+    opus_int32                  res_Q2[],                   /* O    Residual signal [length]            */
+    const opus_int16            coef_Q13[],                 /* I    Coefficients [order]                */
+    const opus_int16            input[],                    /* I    Input signal [length]               */
+    const opus_int16            lambda_Q16,                 /* I    Warping factor                      */
+    const opus_int              length,                     /* I    Length of input signal              */
+    const opus_int              order                       /* I    Filter order (even)                 */
+) = {
+  silk_warped_LPC_analysis_filter_FIX_c,                  /* non-sse */
+  silk_warped_LPC_analysis_filter_FIX_c,
+  silk_warped_LPC_analysis_filter_FIX_c,
+  MAY_HAVE_SSE4_1( silk_warped_LPC_analysis_filter_FIX ), /* sse4.1 */
+  MAY_HAVE_SSE4_1( silk_warped_LPC_analysis_filter_FIX )  /* avx */
+};
 
 void (*const SILK_BURG_MODIFIED_IMPL[ OPUS_ARCHMASK + 1 ] )(
     opus_int32                  *res_nrg,           /* O    Residual energy                                             */

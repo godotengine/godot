@@ -215,7 +215,7 @@ void silk_LPC_analysis_filter_FLP(
     const opus_int                  Order                               /* I    LPC order                                   */
 )
 {
-    celt_assert( Order <= length );
+    silk_assert( Order <= length );
 
     switch( Order ) {
         case 6:
@@ -239,7 +239,7 @@ void silk_LPC_analysis_filter_FLP(
         break;
 
         default:
-            celt_assert( 0 );
+            silk_assert( 0 );
         break;
     }
 

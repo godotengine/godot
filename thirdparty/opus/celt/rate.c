@@ -348,17 +348,12 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
             /*This if() block is the only part of the allocation function that
                is not a mandatory part of the bitstream: any bands we choose to
                skip here must be explicitly signaled.*/
-            int depth_threshold;
-            /*We choose a threshold with some hysteresis to keep bands from
-               fluctuating in and out, but we try not to fold below a certain point. */
-            if (codedBands > 17)
-               depth_threshold = j<prev ? 7 : 9;
-            else
-               depth_threshold = 0;
+            /*Choose a threshold with some hysteresis to keep bands from
+               fluctuating in and out.*/
 #ifdef FUZZING
             if ((rand()&0x1) == 0)
 #else
-            if (codedBands<=start+2 || (band_bits > (depth_threshold*band_width<<LM<<BITRES)>>4 && j<=signalBandwidth))
+            if (codedBands<=start+2 || (band_bits > ((j<prev?7:9)*band_width<<LM<<BITRES)>>4 && j<=signalBandwidth))
 #endif
             {
                ec_enc_bit_logp(ec, 1, 1);
@@ -529,7 +524,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
    return codedBands;
 }
 
-int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
+int compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
       opus_int32 total, opus_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
 {
    int lo, hi, len, j;

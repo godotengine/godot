@@ -36,15 +36,12 @@
 #include "entdec.h"
 #include "rate.h"
 
-opus_int16 bitexact_cos(opus_int16 x);
-int bitexact_log2tan(int isin,int icos);
-
 /** Compute the amplitude (sqrt energy) in each of the bands
  * @param m Mode data
  * @param X Spectrum
  * @param bandE Square root of the energy for each band (returned)
  */
-void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *bandE, int end, int C, int LM, int arch);
+void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *bandE, int end, int C, int LM);
 
 /*void compute_noise_energies(const CELTMode *m, const celt_sig *X, const opus_val16 *tonality, celt_ener *bandE);*/
 
@@ -72,7 +69,7 @@ void denormalise_bands(const CELTMode *m, const celt_norm * OPUS_RESTRICT X,
 
 int spreading_decision(const CELTMode *m, const celt_norm *X, int *average,
       int last_decision, int *hf_average, int *tapset_decision, int update_hf,
-      int end, int C, int M, const int *spread_weight);
+      int end, int C, int M);
 
 #ifdef MEASURE_NORM_MSE
 void measure_norm_mse(const CELTMode *m, float *X, float *X0, float *bandE, float *bandE0, int M, int N, int C);
@@ -108,7 +105,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
       const celt_ener *bandE, int *pulses, int shortBlocks, int spread,
       int dual_stereo, int intensity, int *tf_res, opus_int32 total_bits,
       opus_int32 balance, ec_ctx *ec, int M, int codedBands, opus_uint32 *seed,
-      int complexity, int arch, int disable_inv);
+      int arch);
 
 void anti_collapse(const CELTMode *m, celt_norm *X_,
       unsigned char *collapse_masks, int LM, int C, int size, int start,
