@@ -51,6 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXDocument.h"
 #include "FBXImporter.h"
 #include "FBXDocumentUtil.h"
+#include <iostream>
 
 namespace Assimp {
 namespace FBX {
@@ -167,6 +168,7 @@ const AnimationCurveMap& AnimationCurveNode::Curves() const
         // resolve attached animation curves
         const std::vector<const Connection*>& conns = doc.GetConnectionsByDestinationSequenced(ID(),"AnimationCurve");
 
+        std::cout << "================== connection processing ======================" << std::endl;
         for(const Connection* con : conns) {
 
             // link should go for a property
@@ -176,19 +178,21 @@ const AnimationCurveMap& AnimationCurveNode::Curves() const
 
             const Object* const ob = con->SourceObject();
             if(!ob) {
-                DOMWarning("failed to read source object for AnimationCurve->AnimationCurveNode link, ignoring",&element);
+                DOMWarning("failed to read source object for AnimationCurve->AnimationCurveNode link, ignoring", &element);
                 continue;
             }
 
             const AnimationCurve* const anim = dynamic_cast<const AnimationCurve*>(ob);
             if(!anim) {
-                DOMWarning("source object for ->AnimationCurveNode link is not an AnimationCurve",&element);
+                DOMWarning("source object for ->AnimationCurveNode link is not an AnimationCurve", &element);
                 continue;
             }
-
+            std::cout << "property found " << con->PropertyName() << std::endl;
             curves[con->PropertyName()] = anim;
         }
     }
+
+    
 
     return curves;
 }

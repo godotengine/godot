@@ -445,9 +445,10 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				int boneIdx = skeleton->get_bone_count();
 
 				Transform pform = AssimpUtils::assimp_matrix_transform(bone->mNode->mTransformation);
+				Transform pose_form = AssimpUtils::assimp_matrix_transform(bone->mOffsetMatrix);
 				skeleton->add_bone(bone_name);
 				skeleton->set_bone_rest(boneIdx, pform);
-				skeleton->set_bone_pose(boneIdx, pform);
+				skeleton->set_bone_pose(boneIdx, pose_form);
 
 				if (parent_node != NULL) {
 					int parent_bone_id = skeleton->find_bone(AssimpUtils::get_anim_string_from_assimp(parent_node->mName));

@@ -255,9 +255,14 @@ aiNode *ArmaturePopulate::GetNodeFromStack(const aiString &node_name,
 
     return found;
   }
+  else
+  {
+    
+  }
+  
 
   // unique names can cause this problem
-  ASSIMP_LOG_ERROR("[Serious] GetNodeFromStack() can't find node from stack!");
+  ASSIMP_LOG_ERROR_F("[Serious] GetNodeFromStack() ",node_name.C_Str()," can't find node from stack!");
 
   return nullptr;
 }

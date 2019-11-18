@@ -61,6 +61,7 @@ namespace FBX {
 class Parser;
 class Object;
 struct ImportSettings;
+class Connection;
 
 class PropertyTable;
 class Document;

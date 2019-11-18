@@ -290,10 +290,10 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, node_geometric_transform);
 				node->mTransformation = (pivot_xform * node_geometric_transform) * geometric_transform;
 
-				ConvertModel(*model, node, root_node, pivot_xform);
+				ConvertModel(*model, node, root_node, node_geometric_transform);
 
-				//std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
-				//ResampleAnimationsWithPivots(anims, node->mTransformation);
+				// std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+				// ResampleAnimationsWithPivots(anims, node_geometric_transform);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -1386,7 +1386,8 @@ void FBXConverter::ConvertWeights(aiMesh *out, const Model &model, const MeshGeo
 				const unsigned int *const out_idx = geo.ToOutputVertexIndex(index, count);
 				// ToOutputVertexIndex only returns nullptr if index is out of bounds
 				// which should never happen
-				ai_assert(out_idx != nullptr);
+				//ai_assert(out_idx != nullptr);
+				if(out_idx == nullptr) continue;
 
 				index_out_indices.push_back(no_index_sentinel);
 				count_out_indices.push_back(0);
@@ -2726,10 +2727,10 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-	//aiMatrix4x4 geometric_pivot;
-	//aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	//pivot_xform = pivot_xform;
-	//pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	aiMatrix4x4 geometric_pivot;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	pivot_xform = pivot_xform;
+	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList joined;
 
@@ -2756,6 +2757,9 @@ void FBXConverter::GenerateNodeAnimations(
 				def_translate,
 				def_rot);
 	}
+
+	// std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+	// ResampleAnimationsWithPivots(anims, node->mTransformation);
 
 	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
 	na->mNumRotationKeys = na->mNumScalingKeys;
@@ -3055,6 +3059,7 @@ FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<c
 			} else if (kv.first == "d|Z") {
 				mapto = 2;
 			} else {
+				std::cout << "invalid component: " << kv.first << std::endl;
 				FBXImporter::LogWarn("ignoring scale animation curve, did not recognize target component");
 				continue;
 			}
