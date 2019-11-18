@@ -55,9 +55,9 @@ class EditorNetworkProfiler;
 
 class ScriptEditorDebuggerInspectedObject;
 
-class ScriptEditorDebugger : public Control {
+class ScriptEditorDebugger : public MarginContainer {
 
-	GDCLASS(ScriptEditorDebugger, Control);
+	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 public:
 	enum CameraOverride {
