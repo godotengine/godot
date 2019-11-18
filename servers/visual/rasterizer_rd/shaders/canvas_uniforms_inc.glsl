@@ -104,7 +104,7 @@ layout(set = 2, binding = 2, std140) uniform SkeletonData {
 #define LIGHT_FLAGS_SHADOW_PCF13 (2 << 22)
 
 struct Light {
-	mat2x4 matrix; //light to texture coordinate matrix (transposed)
+	mat2x4 texture_matrix; //light to texture coordinate matrix (transposed)
 	mat2x4 shadow_matrix; //light to shadow coordinate matrix (transposed)
 	vec4 color;
 	vec4 shadow_color;
