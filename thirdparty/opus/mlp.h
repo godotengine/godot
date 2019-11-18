@@ -1,4 +1,5 @@
-/* Copyright (c) 2017 Jean-Marc Valin */
+/* Copyright (c) 2008-2011 Octasic Inc.
+   Written by Jean-Marc Valin */
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -27,34 +28,16 @@
 #ifndef _MLP_H_
 #define _MLP_H_
 
-#include "opus_types.h"
-
-#define WEIGHTS_SCALE (1.f/128)
-
-#define MAX_NEURONS 32
+#include "arch.h"
 
 typedef struct {
-  const opus_int8 *bias;
-  const opus_int8 *input_weights;
-  int nb_inputs;
-  int nb_neurons;
-  int sigmoid;
-} DenseLayer;
+    int layers;
+    const int *topo;
+    const float *weights;
+} MLP;
 
-typedef struct {
-  const opus_int8 *bias;
-  const opus_int8 *input_weights;
-  const opus_int8 *recurrent_weights;
-  int nb_inputs;
-  int nb_neurons;
-} GRULayer;
+extern const MLP net;
 
-extern const DenseLayer layer0;
-extern const GRULayer layer1;
-extern const DenseLayer layer2;
-
-void compute_dense(const DenseLayer *layer, float *output, const float *input);
-
-void compute_gru(const GRULayer *gru, float *state, const float *input);
+void mlp_process(const MLP *m, const float *in, float *out);
 
 #endif /* _MLP_H_ */

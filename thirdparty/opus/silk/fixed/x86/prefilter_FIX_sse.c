@@ -49,7 +49,7 @@ void silk_warped_LPC_analysis_filter_FIX_sse4_1(
     opus_int32   acc_Q11, tmp1, tmp2;
 
     /* Order must be even */
-    celt_assert( ( order & 1 ) == 0 );
+    silk_assert( ( order & 1 ) == 0 );
 
     if (order == 10)
     {
@@ -65,7 +65,7 @@ void silk_warped_LPC_analysis_filter_FIX_sse4_1(
             register opus_int32 state_8, state_9, state_a;
             register opus_int64 coef_Q13_8, coef_Q13_9;
 
-            celt_assert( length > 0 );
+            silk_assert( length > 0 );
 
             coef_Q13_3210 = OP_CVTEPI16_EPI32_M64( &coef_Q13[ 0 ] );
             coef_Q13_7654 = OP_CVTEPI16_EPI32_M64( &coef_Q13[ 4 ] );
@@ -107,8 +107,8 @@ void silk_warped_LPC_analysis_filter_FIX_sse4_1(
                 xmm_tempb = _mm_add_epi32( xmm_tempb, xmm_product2 );
                 xmm_tempa = _mm_add_epi32( xmm_tempa, xmm_tempb );
 
-                sum  = (opus_int32)((coef_Q13_8 * state_8) >> 16);
-                sum += (opus_int32)((coef_Q13_9 * state_9) >> 16);
+                sum  = (coef_Q13_8 * state_8) >> 16;
+                sum += (coef_Q13_9 * state_9) >> 16;
 
                 xmm_tempa = _mm_add_epi32( xmm_tempa, _mm_shuffle_epi32( xmm_tempa, _MM_SHUFFLE( 0, 0, 0, 2 ) ) );
                 sum += _mm_cvtsi128_si32( xmm_tempa);

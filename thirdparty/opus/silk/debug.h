@@ -39,10 +39,23 @@ extern "C"
 
 unsigned long GetHighResolutionTime(void); /* O  time in usec*/
 
-/* Set to 1 to enable DEBUG_STORE_DATA() macros for dumping
- * intermediate signals from the codec.
- */
-#define SILK_DEBUG 0
+/* make SILK_DEBUG dependent on compiler's _DEBUG */
+#if defined _WIN32
+    #ifdef _DEBUG
+        #define SILK_DEBUG  1
+    #else
+        #define SILK_DEBUG  0
+    #endif
+
+    /* overrule the above */
+    #if 0
+    /*  #define NO_ASSERTS*/
+    #undef  SILK_DEBUG
+    #define SILK_DEBUG  1
+    #endif
+#else
+    #define SILK_DEBUG  0
+#endif
 
 /* Flag for using timers */
 #define SILK_TIC_TOC    0
