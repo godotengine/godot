@@ -12,7 +12,7 @@ namespace Godot
         internal static IntPtr GetPtr(NodePath instance)
         {
             if (instance == null)
-                return IntPtr.Zero;
+                throw new NullReferenceException($"The instance of type {nameof(NodePath)} is null.");
 
             if (instance.disposed)
                 throw new ObjectDisposedException(instance.GetType().FullName);
