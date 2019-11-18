@@ -3671,7 +3671,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		int nb_having_pivot = 0;
 
 		// Update the viewport if the canvas_item changes
-		List<CanvasItem *> selection = _get_edited_canvas_items();
+		List<CanvasItem *> selection = _get_edited_canvas_items(true);
 		for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
 			CanvasItem *canvas_item = E->get();
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
