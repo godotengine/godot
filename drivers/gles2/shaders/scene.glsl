@@ -1560,12 +1560,14 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_RADIANCE_MAP
 
+#if !defined(SPECULAR_DISABLED)
 	vec3 ref_vec = reflect(-eye_position, N);
 	ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+#endif
 #ifndef USE_LIGHTMAP
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
