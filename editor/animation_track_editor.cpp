@@ -2026,7 +2026,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-					offset = editor->snap_time(offset + editor->get_moving_selection_offset());
+					offset = editor->snap_time(offset + editor->get_moving_selection_offset(), true);
 				}
 				offset = offset * scale + limit;
 				if (i < animation->track_get_key_count(track) - 1) {
@@ -5703,7 +5703,7 @@ void AnimationTrackEditor::_selection_changed() {
 	}
 }
 
-float AnimationTrackEditor::snap_time(float p_value) {
+float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 
 	if (is_snap_enabled()) {
 
@@ -5713,7 +5713,12 @@ float AnimationTrackEditor::snap_time(float p_value) {
 		else
 			snap_increment = step->get_value();
 
-		p_value = Math::stepify(p_value, snap_increment);
+		if (p_relative) {
+			double rel = Math::fmod(timeline->get_value(), snap_increment);
+			p_value = Math::stepify(p_value + rel, snap_increment) - rel;
+		} else {
+			p_value = Math::stepify(p_value, snap_increment);
+		}
 	}
 
 	return p_value;

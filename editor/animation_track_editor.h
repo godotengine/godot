@@ -521,7 +521,7 @@ public:
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
-	float snap_time(float p_value);
+	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();
 
 	MenuButton *get_edit_menu();
