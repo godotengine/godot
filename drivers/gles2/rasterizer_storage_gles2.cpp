@@ -4583,13 +4583,24 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	GLuint color_internal_format;
 	GLuint color_format;
 	GLuint color_type = GL_UNSIGNED_BYTE;
+	Image::Format image_format;
 
 	if (rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+#ifdef GLES_OVER_GL
+		color_internal_format = GL_RGBA8;
+#else
 		color_internal_format = GL_RGBA;
+#endif
 		color_format = GL_RGBA;
+		image_format = Image::FORMAT_RGBA8;
 	} else {
+#ifdef GLES_OVER_GL
+		color_internal_format = GL_RGB8;
+#else
 		color_internal_format = GL_RGB;
+#endif
 		color_format = GL_RGB;
+		image_format = Image::FORMAT_RGB8;
 	}
 
 	rt->used_dof_blur_near = false;
@@ -4676,10 +4687,10 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			return;
 		}
 
-		texture->format = Image::FORMAT_RGBA8;
-		texture->gl_format_cache = GL_RGBA;
+		texture->format = image_format;
+		texture->gl_format_cache = color_format;
 		texture->gl_type_cache = GL_UNSIGNED_BYTE;
-		texture->gl_internal_format_cache = GL_RGBA;
+		texture->gl_internal_format_cache = color_internal_format;
 		texture->tex_id = rt->color;
 		texture->width = rt->width;
 		texture->alloc_width = rt->width;
