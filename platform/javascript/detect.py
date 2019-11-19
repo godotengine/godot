@@ -87,6 +87,10 @@ def configure(env):
         lzma_dec = "LZMA.decompress"
         env.Append(LINKFLAGS=['--compression', lzma_binpath + "," + lzma_decoder + "," + lzma_dec])
 
+    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
+    # be linked explicitly.
+    env.Append(LIBS=['idbfs.js'])
+
     env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
     env.Append(LINKFLAGS=['-s', 'WASM=0'])
     env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
