@@ -45,6 +45,25 @@ class Main {
 	static bool force_redraw_requested;
 	static int iterating;
 
+	// Auxiliar variables
+	static int fixed_fps;
+	static bool project_manager;
+	static bool editor;
+	static bool use_debug_profiler;
+	static bool disable_render_loop;
+	static bool print_fps;
+	static bool auto_quit;
+	static bool _start_success; // We error out if setup2() doesn't turn this true
+
+	static bool doc_base;
+	static bool export_debug;
+	static bool check_only;
+	static String doc_tool;
+	static String game_path;
+	static String script;
+	static String test;
+	static String _export_preset;
+
 public:
 	static bool is_project_manager();
 

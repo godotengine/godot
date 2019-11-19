@@ -185,6 +185,10 @@ _ResourceSaver::_ResourceSaver() {
 
 /////////////////OS
 
+CommandParser *_OS::get_command_parser() const {
+	return OS::get_singleton()->get_command_parser();
+}
+
 void _OS::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
 
 	OS::get_singleton()->global_menu_add_item(p_menu, p_label, p_signal, p_meta);
@@ -533,6 +537,18 @@ String _OS::get_name() const {
 Vector<String> _OS::get_cmdline_args() {
 
 	List<String> cmdline = OS::get_singleton()->get_cmdline_args();
+	Vector<String> cmdlinev;
+	for (List<String>::Element *E = cmdline.front(); E; E = E->next()) {
+
+		cmdlinev.push_back(E->get());
+	}
+
+	return cmdlinev;
+}
+
+Vector<String> _OS::get_project_args() {
+
+	List<String> cmdline = OS::get_singleton()->get_project_args();
 	Vector<String> cmdlinev;
 	for (List<String>::Element *E = cmdline.front(); E; E = E->next()) {
 
@@ -1160,6 +1176,8 @@ _OS *_OS::singleton = NULL;
 
 void _OS::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("get_command_parser"), &_OS::get_command_parser);
+
 	//ClassDB::bind_method(D_METHOD("get_mouse_position"),&_OS::get_mouse_position);
 	//ClassDB::bind_method(D_METHOD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
 
@@ -1258,6 +1276,7 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_name"), &_OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &_OS::get_cmdline_args);
+	ClassDB::bind_method(D_METHOD("get_project_args"), &_OS::get_project_args);
 
 	ClassDB::bind_method(D_METHOD("get_datetime", "utc"), &_OS::get_datetime, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_date", "utc"), &_OS::get_date, DEFVAL(false));

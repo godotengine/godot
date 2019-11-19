@@ -465,6 +465,15 @@ void OS::_ensure_user_data_dir() {
 	memdelete(da);
 }
 
+void OS::delete_command_parser() {
+
+	if (_command_parser) {
+		_command_parser->clear();
+		memdelete(_command_parser);
+		_command_parser = NULL;
+	}
+}
+
 void OS::set_native_icon(const String &p_filename) {
 }
 
@@ -479,7 +488,7 @@ String OS::get_model_name() const {
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
 
 	_execpath = p_execpath;
-	_cmdline = p_args;
+	_command_parser->set_cmdline_args(p_args);
 };
 
 void OS::release_rendering_thread() {
@@ -759,5 +768,10 @@ OS::OS() {
 
 OS::~OS() {
 	memdelete(_logger);
+	if (_command_parser) {
+		_command_parser->clear();
+		memdelete(_command_parser);
+		_command_parser = NULL;
+	}
 	singleton = NULL;
 }
