@@ -23,14 +23,11 @@ SConscript('coremidi/SCsub')
 SConscript('winmidi/SCsub')
 
 # Graphics drivers
-if (env["renderer"] == "gles2"):
-    SConscript('gles2/SCsub')
-    SConscript('gl_context/SCsub')
-elif (env["renderer"] == "gles3"):
-    SConscript('gles3/SCsub')
-    SConscript('gl_context/SCsub')
-elif (env["renderer"] == "vulkan"):
+if (env["renderer"] == "vulkan"):
     SConscript('vulkan/SCsub')
+    SConscript('gl_context/SCsub')
+elif (env["renderer"] == "gles2"):
+    SConscript('gles2/SCsub')
     SConscript('gl_context/SCsub')
 elif (env["renderer"] == "none"):
     SConscript('dummy/SCsub')
