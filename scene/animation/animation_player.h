@@ -192,6 +192,7 @@ private:
 	uint64_t accum_pass = 1;
 	float speed_scale = 1.0;
 	double default_blend_time = 0.0;
+	bool is_stopping = false;
 
 	struct AnimationData {
 		String name;
@@ -277,7 +278,7 @@ private:
 	void _animation_process(double p_delta);
 
 	void _node_removed(Node *p_node);
-	void _stop_playing_caches();
+	void _stop_playing_caches(bool p_reset);
 
 	// bind helpers
 	Vector<String> _get_animation_list() const {

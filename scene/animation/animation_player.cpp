@@ -745,7 +745,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 			} break;
 			case Animation::TYPE_METHOD: {
-				if (!nc->node) {
+				if (!nc->node || is_stopping) {
 					continue;
 				}
 				if (!p_is_current) {
@@ -808,7 +808,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-				if (!nc->node) {
+				if (!nc->node || is_stopping) {
 					continue;
 				}
 
@@ -915,6 +915,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
+				if (is_stopping) {
+					continue;
+				}
+
 				AnimationPlayer *player = Object::cast_to<AnimationPlayer>(nc->node);
 				if (!player) {
 					continue;
@@ -1658,7 +1662,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	}
 
 	if (get_current_animation() != p_name) {
-		_stop_playing_caches();
+		_stop_playing_caches(false);
 	}
 
 	c.current.from = &animation_set[name];
@@ -1808,7 +1812,7 @@ void AnimationPlayer::_animation_changed(const StringName &p_name) {
 	}
 }
 
-void AnimationPlayer::_stop_playing_caches() {
+void AnimationPlayer::_stop_playing_caches(bool p_reset) {
 	for (TrackNodeCache *E : playing_caches) {
 		if (E->node && E->audio_playing) {
 			E->node->call(SNAME("stop"));
@@ -1818,7 +1822,12 @@ void AnimationPlayer::_stop_playing_caches() {
 			if (!player) {
 				continue;
 			}
-			player->stop();
+
+			if (p_reset) {
+				player->stop();
+			} else {
+				player->pause();
+			}
 		}
 	}
 
@@ -1830,7 +1839,7 @@ void AnimationPlayer::_node_removed(Node *p_node) {
 }
 
 void AnimationPlayer::clear_caches() {
-	_stop_playing_caches();
+	_stop_playing_caches(true);
 
 	node_cache_map.clear();
 
@@ -1952,13 +1961,15 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 }
 
 void AnimationPlayer::_stop_internal(bool p_reset) {
-	_stop_playing_caches();
+	_stop_playing_caches(p_reset);
 	Playback &c = playback;
 	c.blend.clear();
 	if (p_reset) {
+		is_stopping = true;
+		seek(0, true);
+		is_stopping = false;
 		c.current.from = nullptr;
 		c.current.speed_scale = 1;
-		c.current.pos = 0;
 	}
 	_set_process(false);
 	queued.clear();
