@@ -497,6 +497,9 @@
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
 		</constant>
+		<constant name="BLEND_MODE_PMALPHA" value="4" enum="BlendMode">
+			The color of the object is added to the background and the alpha channel is used to mask out the background.  This is effectively a hybrid of blend and add mode, useful for FX like fire where you want the flame to add but the smoke to mix.
+		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 			Default depth draw mode. Depth is drawn only for opaque objects.
 		</constant>
