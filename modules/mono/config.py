@@ -267,7 +267,7 @@ def make_template_dir(env, mono_root):
 
     template_dir_name = ''
 
-    if platform in ['windows', 'osx', 'x11']:
+    if platform in ['windows', 'osx', 'x11', 'server']:
         template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
     else:
         assert False
@@ -383,7 +383,7 @@ def copy_mono_shared_libs(mono_root, target_mono_root_dir, platform):
 
         if platform == 'osx':
             copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.dylib'), os.path.join(target_mono_lib_dir, 'libMonoPosixHelper.dylib'))
-        elif platform == 'x11':
+        elif platform == 'x11' or platform == 'server':
             copy(os.path.join(mono_root, 'lib', 'libmono-btls-shared.so'), os.path.join(target_mono_lib_dir, 'libmono-btls-shared.so'))
             copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.so'), os.path.join(target_mono_lib_dir, 'libMonoPosixHelper.so'))
 
