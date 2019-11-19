@@ -2702,7 +2702,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector3) * 8, vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 8, vertices, GL_DYNAMIC_DRAW);
 
 	// bind sky vertex array....
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, 0);

@@ -64,6 +64,7 @@ public:
 		GLuint particle_quad_array;
 
 		uint32_t polygon_buffer_size;
+		uint32_t polygon_index_buffer_size;
 
 	} data;
 

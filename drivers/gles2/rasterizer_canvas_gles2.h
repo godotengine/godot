@@ -65,6 +65,7 @@ public:
 		GLuint polygon_index_buffer;
 
 		uint32_t polygon_buffer_size;
+		uint32_t polygon_index_buffer_size;
 
 		GLuint ninepatch_vertices;
 		GLuint ninepatch_elements;
