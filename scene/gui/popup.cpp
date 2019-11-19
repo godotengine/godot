@@ -183,7 +183,10 @@ void Popup::_popup(const Rect2 &p_bounds, const bool p_centered) {
 			set_position(p_bounds.position);
 		}
 	}
-	_fix_size();
+	
+	if (get_parent_control() != NULL) {
+		_fix_size();
+	}
 
 	Control *focusable = find_next_valid_focus();
 
