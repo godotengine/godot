@@ -112,6 +112,10 @@ def configure(env):
 
     ## Link flags
 
+    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
+    # be linked explicitly.
+    env.Append(LIBS=['idbfs.js'])
+
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
