@@ -47,15 +47,6 @@ matrix:
             - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
-        coverity_scan:
-          project:
-            name: "godotengine/godot"
-            description: "Godot Engine Coverity scans"
-          notification_email: coverity@godotengine.org
-          build_command_prepend: ""
-          build_command: "scons p=x11 -j2 $OPTIONS"
-          branch_pattern: coverity_scan
-
     - name: Linux export template (release, Clang)
       stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
