@@ -124,7 +124,7 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 		godot_vector2 vec = interface->get_texture_size(data_struct);
 		texture_size = *(Vector2 *)&vec;
 		//Only do memset if num_channels>0 otherwise it will be crash
-		if (num_channels){
+		if (num_channels) {
 			pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
 			memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
 		}
