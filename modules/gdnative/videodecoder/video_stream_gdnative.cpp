@@ -123,13 +123,11 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 
 		godot_vector2 vec = interface->get_texture_size(data_struct);
 		texture_size = *(Vector2 *)&vec;
-
-		pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
-
-		//VideoStreamGDNativeAudioFix Branch
 		//Only do memset if num_channels>0 otherwise it will be crash
-		if (num_channels)
+		if (num_channels){
+			pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
 			memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+		}
 
 		pcm_write_idx = -1;
 		samples_decoded = 0;
@@ -151,8 +149,7 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->update(data_struct, p_delta);
 
-	//VideoStreamGDNativeAudioFix Branch
-	//Checkin also num_channels > 0
+	//Check also if num_channels > 0
 	if (mix_callback && num_channels) {
 		if (pcm_write_idx >= 0) {
 			// Previous remains
