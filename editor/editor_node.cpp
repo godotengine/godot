@@ -1109,6 +1109,47 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
+static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource> > &edited_resources);
+
+static bool _find_edited_resources_in_variant(const Variant &coll, Set<Ref<Resource> > &edited_resources) {
+	switch (coll.get_type()) {
+		case Variant::OBJECT: {
+
+			RES res = coll;
+			if (res.is_null()) {
+				return false;
+			}
+			return _find_edited_resources(res, edited_resources);
+		} break;
+		case Variant::ARRAY: {
+
+			Array varray = coll;
+
+			for (int i = 0; i < varray.size(); i++) {
+
+				if (_find_edited_resources_in_variant(varray.get(i), edited_resources)) {
+					return true;
+				}
+			}
+		} break;
+		case Variant::DICTIONARY: {
+
+			Dictionary d = coll;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			for (List<Variant>::Element *F = keys.front(); F; F = F->next()) {
+				if (_find_edited_resources_in_variant(d[F->get()], edited_resources)) {
+					return true;
+				}
+			}
+		} break;
+		default:
+			break;
+	}
+	return false;
+}
+
 static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource> > &edited_resources) {
 
 	if (p_resource->is_edited()) {
@@ -1121,15 +1162,22 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 	p_resource->get_property_list(&plist);
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().type == Variant::OBJECT && E->get().usage & PROPERTY_USAGE_STORAGE && !(E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
-			RES res = p_resource->get(E->get().name);
-			if (res.is_null()) {
-				continue;
-			}
-			if (res->get_path().is_resource_file()) { //not a subresource, continue
-				continue;
-			}
-			if (_find_edited_resources(res, edited_resources)) {
+		Variant::Type type = E->get().type;
+		bool allowed_type = type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY;
+		if (allowed_type && E->get().usage & PROPERTY_USAGE_STORAGE && !(E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
+			Variant v = p_resource->get(E->get().name);
+			if (type == Variant::OBJECT) {
+				RES res = v;
+				if (res.is_null()) {
+					continue;
+				}
+				if (res->get_path().is_resource_file()) { //not a subresource, continue
+					continue;
+				}
+				if (_find_edited_resources(res, edited_resources)) {
+					return true;
+				}
+			} else if (_find_edited_resources_in_variant(v, edited_resources)) {
 				return true;
 			}
 		}
