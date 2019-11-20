@@ -195,7 +195,7 @@ private:
     */
 	bool NeedsComplexTransformationChain(const Model &model);
 
-	const aiMatrix4x4 &GeneratePivotTransform(
+	aiMatrix4x4 GeneratePivotTransform(
 			const Model &model,
 			aiMatrix4x4 &geometric_transform);
 

@@ -710,7 +710,7 @@ void FBXConverter::MagicPivotAlgorithm(
 	//result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
 }
 
-const aiMatrix4x4 &FBXConverter::GeneratePivotTransform(
+aiMatrix4x4 FBXConverter::GeneratePivotTransform(
 		const Model &model,
 		aiMatrix4x4 &geometric_transform) {
 	const PropertyTable &props = model.Props();
