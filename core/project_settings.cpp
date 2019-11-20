@@ -525,6 +525,8 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		set(key, value);
 	}
 
+	f->close();
+	memdelete(f);
 	return OK;
 }
 

@@ -95,8 +95,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	// this function will be compiled branchless by any decent compiler
 
 	int32_t final, final_r, next, next_r;
-	while (amount--) {
-
+	while (amount) {
+		amount--;
 		int64_t pos = offset >> MIX_FRAC_BITS;
 		if (is_stereo && !is_ima_adpcm)
 			pos <<= 1;
@@ -444,6 +444,7 @@ int AudioStreamSample::get_loop_end() const {
 
 void AudioStreamSample::set_mix_rate(int p_hz) {
 
+	ERR_FAIL_COND(p_hz == 0);
 	mix_rate = p_hz;
 }
 int AudioStreamSample::get_mix_rate() const {

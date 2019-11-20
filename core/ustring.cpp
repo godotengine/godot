@@ -1416,7 +1416,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			if (skip == 0) {
 
-				uint8_t c = *ptrtmp;
+				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0)
