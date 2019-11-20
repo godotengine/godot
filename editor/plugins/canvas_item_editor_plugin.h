@@ -252,6 +252,7 @@ private:
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
+	bool selected_from_canvas;
 	bool anchors_mode;
 
 	Point2 grid_offset;

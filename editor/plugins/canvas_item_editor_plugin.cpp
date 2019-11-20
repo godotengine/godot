@@ -794,6 +794,7 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 			editor_selection->add_node(item);
 			// Reselect
 			if (Engine::get_singleton()->is_editor_hint()) {
+				selected_from_canvas = true;
 				editor->call("edit_node", item);
 			}
 		}
@@ -3911,6 +3912,11 @@ void CanvasItemEditor::_selection_changed() {
 	}
 	anchors_mode = (nbValidControls == nbAnchorsMode);
 	anchor_mode_button->set_pressed(anchors_mode);
+
+	if (!selected_from_canvas) {
+		drag_type = DRAG_NONE;
+	}
+	selected_from_canvas = false;
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
@@ -5253,6 +5259,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
+	selected_from_canvas = false;
 	anchors_mode = false;
 
 	skeleton_show_bones = true;
