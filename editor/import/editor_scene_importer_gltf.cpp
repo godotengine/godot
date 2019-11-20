@@ -229,6 +229,7 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 
 	ERR_FAIL_COND_V(!state.json.has("scenes"), ERR_FILE_CORRUPT);
 	const Array &scenes = state.json["scenes"];
+	ERR_FAIL_COND_V(!scenes.size(), ERR_FILE_CORRUPT);
 	for (int i = 0; i < 1; i++) { //only first scene is imported
 		const Dictionary &s = scenes[i];
 		ERR_FAIL_COND_V(!s.has("nodes"), ERR_UNAVAILABLE);
