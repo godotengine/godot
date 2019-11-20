@@ -39,8 +39,8 @@
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
 
-	Label *method;
-	Tree *tree;
+	Label *method = nullptr;
+	Tree *tree = nullptr;
 
 	virtual void ok_pressed() override;
 
@@ -53,11 +53,12 @@ public:
 class ScriptTextEditor : public ScriptEditorBase {
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
-	CodeTextEditor *code_editor;
-	RichTextLabel *warnings_panel;
+	CodeTextEditor *code_editor = nullptr;
+	RichTextLabel *warnings_panel = nullptr;
 
 	Ref<Script> script;
-	bool script_is_valid;
+	bool script_is_valid = false;
+	bool editor_enabled = false;
 
 	Vector<String> functions;
 
@@ -65,25 +66,27 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Vector<String> member_keywords;
 
-	HBoxContainer *edit_hb;
+	HBoxContainer *edit_hb = nullptr;
 
-	MenuButton *edit_menu;
-	MenuButton *search_menu;
-	PopupMenu *bookmarks_menu;
-	PopupMenu *breakpoints_menu;
-	PopupMenu *highlighter_menu;
-	PopupMenu *context_menu;
+	MenuButton *edit_menu = nullptr;
+	MenuButton *search_menu = nullptr;
+	MenuButton *goto_menu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	PopupMenu *breakpoints_menu = nullptr;
+	PopupMenu *highlighter_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
+	PopupMenu *convert_case = nullptr;
 
-	GotoLineDialog *goto_line_dialog;
-	ScriptEditorQuickOpen *quick_open;
-	ConnectionInfoDialog *connection_info_dialog;
+	GotoLineDialog *goto_line_dialog = nullptr;
+	ScriptEditorQuickOpen *quick_open = nullptr;
+	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
-	PopupPanel *color_panel;
-	ColorPicker *color_picker;
+	PopupPanel *color_panel = nullptr;
+	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
 	String color_args;
 
-	bool theme_loaded;
+	bool theme_loaded = false;
 
 	enum {
 		EDIT_UNDO,
@@ -132,6 +135,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		LOOKUP_SYMBOL,
 	};
 
+	void _enable_code_editor();
+
 protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
@@ -149,7 +154,6 @@ protected:
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
@@ -185,6 +189,7 @@ public:
 	virtual void apply_code() override;
 	virtual RES get_edited_resource() const override;
 	virtual void set_edited_resource(const RES &p_res) override;
+	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 	virtual void reload_text() override;
 	virtual String get_name() override;
