@@ -164,12 +164,12 @@ namespace GodotTools.Export
                 Directory.Delete(aotTempDir, recursive: true);
 
             // TODO: Just a workaround until the export plugins can be made to abort with errors
-            if (string.IsNullOrEmpty(maybeLastExportError)) // Check empty as well, because it's set to empty after hot-reloading
+            if (!string.IsNullOrEmpty(maybeLastExportError)) // Check empty as well, because it's set to empty after hot-reloading
             {
                 string lastExportError = maybeLastExportError;
                 maybeLastExportError = null;
 
-                GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "C# export failed");
+                GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "Failed to export C# project");
             }
         }
 
