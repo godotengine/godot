@@ -394,7 +394,9 @@ public:
 			return Ref<Image>();
 		} else {
 			Ref<Texture> texture = ResourceLoader::load(p_path);
+			ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
 			Ref<Image> image = texture->get_data();
+			ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
 			state.path_to_image_cache.insert(p_path, image);
 			return image;
 		}
