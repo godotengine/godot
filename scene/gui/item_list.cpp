@@ -955,7 +955,7 @@ void ItemList::_notification(int p_what) {
 							separators.push_back(ofs.y + max_h + vseparation / 2);
 
 						for (int j = i; j >= 0 && col > 0; j--, col--) {
-							items.write[j].rect_cache.size.y = max_h; 
+							items.write[j].rect_cache.size.y = max_h;
 						}
 
 						ofs.x = 0;
@@ -966,7 +966,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
-					items.write[j].rect_cache.size.y = max_h; 
+					items.write[j].rect_cache.size.y = max_h;
 				}
 
 				if (all_fit) {
