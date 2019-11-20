@@ -34,7 +34,7 @@
 				- [code]"offset"[/code] to store the offset of the line change since the first contextual line content.
 			</description>
 		</method>
-		<method name="get_is_vcs_intialized">
+		<method name="is_vcs_initialized">
 			<return type="bool">
 			</return>
 			<description>
