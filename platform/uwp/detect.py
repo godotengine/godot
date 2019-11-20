@@ -34,6 +34,7 @@ def get_flags():
     return [
         ('tools', False),
         ('xaudio2', True),
+        ('builtin_pcre2_with_jit', False),
     ]
 
 

@@ -6,12 +6,10 @@ Import('env_modules')
 env_regex = env_modules.Clone()
 
 if env['builtin_pcre2']:
-    jit_blacklist = ['javascript', 'uwp']
-
     thirdparty_dir = '#thirdparty/pcre2/src/'
     thirdparty_flags = ['PCRE2_STATIC', 'HAVE_CONFIG_H']
 
-    if 'platform' in env and env['platform'] not in jit_blacklist:
+    if env['builtin_pcre2_with_jit']:
         thirdparty_flags.append('SUPPORT_JIT')
 
     thirdparty_sources = [
