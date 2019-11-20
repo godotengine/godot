@@ -37,18 +37,19 @@ class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
 private:
-	CodeTextEditor *code_editor;
+	CodeTextEditor *code_editor = nullptr;
 
 	Ref<TextFile> text_file;
+	bool editor_enabled = false;
 
-	HBoxContainer *edit_hb;
-	MenuButton *edit_menu;
-	PopupMenu *highlighter_menu;
-	MenuButton *search_menu;
-	PopupMenu *bookmarks_menu;
-	PopupMenu *context_menu;
+	HBoxContainer *edit_hb = nullptr;
+	MenuButton *edit_menu = nullptr;
+	PopupMenu *highlighter_menu = nullptr;
+	MenuButton *search_menu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog;
+	GotoLineDialog *goto_line_dialog = nullptr;
 
 	enum {
 		EDIT_UNDO,
@@ -88,8 +89,6 @@ private:
 protected:
 	static void _bind_methods();
 
-	void _notification(int p_what);
-
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
@@ -113,7 +112,7 @@ public:
 	virtual Ref<Texture2D> get_theme_icon() override;
 	virtual RES get_edited_resource() const override;
 	virtual void set_edited_resource(const RES &p_res) override;
-	void set_edited_file(const Ref<TextFile> &p_file);
+	virtual void enable_editor() override;
 	virtual void reload_text() override;
 	virtual void apply_code() override;
 	virtual bool is_unsaved() override;
