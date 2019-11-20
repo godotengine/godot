@@ -1547,7 +1547,11 @@ FRAGMENT_SHADER_CODE
 #endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef BASE_PASS
-	//none
+
+	// IBL precalculations
+	float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+	vec3 f0 = F0(metallic, specular, albedo);
+	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
 
 #ifdef AMBIENT_LIGHT_DISABLED
 	ambient_light = vec3(0.0, 0.0, 0.0);
@@ -1561,12 +1565,15 @@ FRAGMENT_SHADER_CODE
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+#ifndef USE_LIGHTMAP
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
-		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).xyz * bg_energy;
+		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, 4.0).xyz * bg_energy;
+		env_ambient *= 1.0 - F;
 
 		ambient_light = mix(ambient_color.rgb, env_ambient, ambient_sky_contribution);
 	}
+#endif
 
 #else
 
@@ -1574,7 +1581,6 @@ FRAGMENT_SHADER_CODE
 	specular_light = bg_color.rgb * bg_energy;
 
 #endif
-
 #endif // AMBIENT_LIGHT_DISABLED
 	ambient_light *= ambient_energy;
 
@@ -1646,12 +1652,9 @@ FRAGMENT_SHADER_CODE
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
+		specular_light *= env.x * F + env.y;
 
 #endif
 	}

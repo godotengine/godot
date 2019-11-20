@@ -627,6 +627,8 @@ layout(std140) uniform Radiance { // ubo:2
 
 #define RADIANCE_MAX_LOD 5.0
 
+uniform sampler2D irradiance_map; // texunit:-6
+
 #ifdef USE_RADIANCE_MAP_ARRAY
 
 uniform sampler2DArray radiance_map; // texunit:-2
@@ -1766,6 +1768,11 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_vec = view;
 
+	// IBL precalculations
+	float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
+	vec3 f0 = F0(metallic, specular, albedo);
+	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
+
 #ifdef USE_RADIANCE_MAP
 
 #ifdef AMBIENT_LIGHT_DISABLED
@@ -1775,22 +1782,27 @@ FRAGMENT_SHADER_CODE
 
 		{ //read radiance from dual paraboloid
 
-			vec3 ref_vec = reflect(-eye_vec, normal); //2.0 * ndotv * normal - view; // reflect(v, n);
+			vec3 ref_vec = reflect(-eye_vec, normal);
 			ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 			vec3 radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
 			env_reflection_light = radiance;
 		}
-		//no longer a cubemap
-		//vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 	}
 #ifndef USE_LIGHTMAP
 	{
 
-		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
-		vec3 env_ambient = textureDualParaboloid(radiance_map, ambient_dir, 1.0) * bg_energy;
+		vec3 norm = normal;
+		norm = normalize((radiance_inverse_xform * vec4(norm, 0.0)).xyz);
+		norm.xy /= 1.0 + abs(norm.z);
+		norm.xy = norm.xy * vec2(0.5, 0.25) + vec2(0.5, 0.25);
+		if (norm.z > 0.0) {
+			norm.y = 0.5 - norm.y + 0.5;
+		}
+
+		vec3 env_ambient = texture(irradiance_map, norm.xy).rgb * bg_energy;
+		env_ambient *= 1.0 - F;
 
 		ambient_light = mix(ambient_light_color.rgb, env_ambient, radiance_ambient_contribution);
-		//ambient_light=vec3(0.0,0.0,0.0);
 	}
 #endif
 #endif //AMBIENT_LIGHT_DISABLED
@@ -1892,12 +1904,9 @@ FRAGMENT_SHADER_CODE
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
+		specular_light *= env.x * F + env.y;
 #endif
 	}
 

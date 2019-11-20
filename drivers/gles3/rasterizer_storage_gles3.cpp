@@ -1757,6 +1757,7 @@ RID RasterizerStorageGLES3::sky_create() {
 
 	Sky *sky = memnew(Sky);
 	sky->radiance = 0;
+	sky->irradiance = 0;
 	return sky_owner.make_rid(sky);
 }
 
@@ -1768,7 +1769,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	if (sky->panorama.is_valid()) {
 		sky->panorama = RID();
 		glDeleteTextures(1, &sky->radiance);
+		glDeleteTextures(1, &sky->irradiance);
 		sky->radiance = 0;
+		sky->irradiance = 0;
 	}
 
 	sky->panorama = p_panorama;
@@ -1791,10 +1794,14 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //need this for proper sampling
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 10);
+	// Need Mipmaps regardless of whether they are set in import by user
+	glGenerateMipmap(texture->target);
+	glTexParameterf(texture->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	if (config.srgb_decode_supported && texture->srgb && !texture->using_srgb) {
 
@@ -1807,6 +1814,66 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		}
 #endif
 	}
+
+	{
+		//Irradiance map
+		glActiveTexture(GL_TEXTURE1);
+		glGenTextures(1, &sky->irradiance);
+		glBindTexture(GL_TEXTURE_2D, sky->irradiance);
+
+		GLuint tmp_fb;
+
+		glGenFramebuffers(1, &tmp_fb);
+		glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
+
+		int size = 64;
+
+		bool use_float = config.framebuffer_half_float_supported;
+
+		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
+		GLenum format = GL_RGBA;
+		GLenum type = use_float ? GL_HALF_FLOAT : GL_UNSIGNED_INT_2_10_10_10_REV;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameterf(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->irradiance, 0);
+
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, true);
+		shaders.cubemap_filter.bind();
+
+		// Very large Panoramas require way too much effort to compute irradiance so use a mipmap
+		// level that corresponds to a panorama of 1024x512
+		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::log(float(texture->width)) / Math::log(2.0f) - 10.0f, 0.0f));
+
+		for (int i = 0; i < 2; i++) {
+			glViewport(0, i * size, size, size);
+			glBindVertexArray(resources.quadie_array);
+
+			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i > 0);
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glBindVertexArray(0);
+		}
+
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, false);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glDeleteFramebuffers(1, &tmp_fb);
+	}
+
+	// Now compute radiance
 
 	glActiveTexture(GL_TEXTURE1);
 	glGenTextures(1, &sky->radiance);
@@ -1833,8 +1900,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internal_format, size, size * 2, array_level, 0, format, type, NULL);
 
-		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		GLuint tmp_fb2;
 		GLuint tmp_tex;
@@ -1846,8 +1913,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			glBindTexture(GL_TEXTURE_2D, tmp_tex);
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
-			glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #ifdef DEBUG_ENABLED
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
@@ -1858,25 +1925,25 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
 
-			if (j == 0) {
+			if (j < 3) {
 
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
-				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, false);
 				shaders.cubemap_filter.bind();
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(texture->target, texture->tex_id);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(texture->width / 4));
 			} else {
 
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, true);
-				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, false);
 				shaders.cubemap_filter.bind();
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, sky->radiance);
 				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_ARRAY_INDEX, j - 1); //read from previous to ensure better blur
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size / 2));
 			}
 
 			for (int i = 0; i < 2; i++) {
@@ -1902,7 +1969,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, false);
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, false);
 
 		//restore ranges
 		glActiveTexture(GL_TEXTURE0);
@@ -1947,23 +2013,64 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		GLuint tmp_fb2;
+		GLuint tmp_tex;
+		{
+			// Need a temporary framebuffer for rendering so we can read from previous iterations
+			glGenFramebuffers(1, &tmp_fb2);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glGenTextures(1, &tmp_tex);
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#ifdef DEBUG_ENABLED
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+#endif
+		}
 
 		lod = 0;
 		mm_level = mipmaps;
 
 		size = p_radiance_size;
 
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
-		shaders.cubemap_filter.bind();
-
 		while (mm_level) {
-
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->radiance, lod);
+
 #ifdef DEBUG_ENABLED
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
 #endif
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+			if (lod < 3) {
+
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID, false);
+				shaders.cubemap_filter.bind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(texture->target, texture->tex_id);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(texture->width / 4));
+			} else {
+
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.bind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, sky->radiance);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, lod - 1); //read from previous to ensure better blur
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size));
+			}
 
 			for (int i = 0; i < 2; i++) {
 				glViewport(0, i * size, size, size);
@@ -1975,6 +2082,14 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				glBindVertexArray(0);
 			}
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tmp_fb);
+			glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sky->radiance, 0, lod);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, tmp_fb2);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBlitFramebuffer(0, 0, size, size * 2, 0, 0, size, size * 2, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 			if (size > 1)
 				size >>= 1;
@@ -1995,6 +2110,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 		glDeleteFramebuffers(1, &tmp_fb);
+		glDeleteFramebuffers(1, &tmp_fb2);
+		glDeleteTextures(1, &tmp_tex);
 	}
 }
 
