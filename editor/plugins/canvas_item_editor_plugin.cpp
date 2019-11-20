@@ -5269,6 +5269,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	drag_to = Vector2();
 	dragged_guide_pos = Point2();
 	dragged_guide_index = -1;
+	is_hovering_h_guide = false;
+	is_hovering_v_guide = false;
 	panning = false;
 	pan_pressed = false;
 

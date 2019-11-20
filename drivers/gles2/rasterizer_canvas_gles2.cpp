@@ -766,6 +766,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					WARN_PRINT("NinePatch without texture not supported yet in GLES2 backend, skipping.");
 					continue;
 				}
+				if (tex->width == 0 || tex->height == 0) {
+					WARN_PRINT("Cannot set empty texture to NinePatch.");
+					continue;
+				}
 
 				Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 

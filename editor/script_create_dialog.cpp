@@ -852,6 +852,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(path_button);
 	gc->add_child(memnew(Label(TTR("Path:"))));
 	gc->add_child(hb);
+	re_check_path = false;
 
 	/* Dialog Setup */
 

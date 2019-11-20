@@ -119,6 +119,7 @@ private:
 		bool ok;
 		Version() {
 			code_version = 0;
+			frag_id = 0;
 			ok = false;
 			uniform_location = NULL;
 		}

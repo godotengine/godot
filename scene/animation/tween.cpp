@@ -63,6 +63,8 @@ void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const 
 		count = 2;
 	else if (p_arg1.get_type() != Variant::NIL)
 		count = 1;
+	else
+		count = 0;
 
 	// Add the specified arguments to the command
 	// TODO: Make this a switch statement?
