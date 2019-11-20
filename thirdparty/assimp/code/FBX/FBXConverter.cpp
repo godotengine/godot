@@ -140,7 +140,7 @@ void FBXConverter::ConvertRootNode() {
 	// populate our node animation stack lookup tool
 	GenerateAnimStack();
 	// root has ID 0
-	ConvertNodes(0L, out->mRootNode, out->mRootNode, aiMatrix4x4());
+	ConvertNodes(0L, out->mRootNode, out->mRootNode, aiMatrix4x4(), aiMatrix4x4());
 }
 
 static std::string getAncestorBaseName(const aiNode *node) {
@@ -244,7 +244,11 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 }
 
 /// then update convert clusters to the new format
-void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, aiMatrix4x4 geometric_transform) {
+void FBXConverter::ConvertNodes(uint64_t id,
+		aiNode *parent,
+		aiNode *root_node,
+		aiMatrix4x4 inverse_geometric_xform,
+		aiMatrix4x4 world_transform) {
 	const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(id, "Model");
 
 	std::vector<aiNode *> nodes;
@@ -285,15 +289,25 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				SetupNodeMetadata(*model, node);
 
 				// Handle FBX pivot data (explicitly must be done all the time)
-				aiMatrix4x4 node_geometric_transform;
+				aiMatrix4x4 geometric_node;
 				std::cout << "Node Pivot lookup ID: " << model->ID() << std::endl;
-				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, node_geometric_transform);
-				node->mTransformation = (pivot_xform * node_geometric_transform) * geometric_transform;
+				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, geometric_node);
 
-				ConvertModel(*model, node, root_node, node_geometric_transform);
+				// formula (world_space) * (model space * inverse previous model space)
+				//
+				// original formula pivot_xform * node_geometric_transform * geometric_transform
+				//world_transform *= pivot_xform;
+				node->mTransformation = (pivot_xform * inverse_geometric_xform) * geometric_node;
 
-				// std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
-				// ResampleAnimationsWithPivots(anims, node_geometric_transform);
+				aiVector3D scale, pos, rot;
+				node->mTransformation.Decompose(scale, rot, pos);
+				std::cout << "[pivot] ======== \nscale: " << scale.ToString() << ", \nrot: " << rot.ToString() << " \npos: " << pos.ToString() << "\n======" << std::endl;
+				// link nodes in a row the old way
+				aiMatrix4x4 new_abs_transform = node->mTransformation;
+				ConvertModel(*model, node, root_node, new_abs_transform);
+
+				//std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+				//ResampleAnimationsWithPivots(anims, pivot_xform);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -306,7 +320,8 @@ void FBXConverter::ConvertNodes(uint64_t id, aiNode *parent, aiNode *root_node, 
 				const std::vector<const Connection *> &child_conns = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
 
 				// recursion call - child nodes
-				ConvertNodes(model->ID(), node, root_node, node_geometric_transform.Inverse() * geometric_transform);
+				ConvertNodes(model->ID(), node, root_node, geometric_node.Inverse() * inverse_geometric_xform,
+						world_transform);
 
 				if (doc.Settings().readLights) {
 					ConvertLights(*model, node_name);
@@ -1387,7 +1402,7 @@ void FBXConverter::ConvertWeights(aiMesh *out, const Model &model, const MeshGeo
 				// ToOutputVertexIndex only returns nullptr if index is out of bounds
 				// which should never happen
 				//ai_assert(out_idx != nullptr);
-				if(out_idx == nullptr) continue;
+				if (out_idx == nullptr) continue;
 
 				index_out_indices.push_back(no_index_sentinel);
 				count_out_indices.push_back(0);
@@ -1457,55 +1472,45 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 
 	aiBone *bone = nullptr;
 
-	if (bone_map.count(deformer_name)) {
-		//std::cout << "retrieved bone from lookup " << bone_name.C_Str() << ". Deformer: " << deformer_name
-		//          << std::endl;
-		bone = bone_map[deformer_name];
-	} else {
-		//std::cout << "created new bone " << bone_name.C_Str() << ". Deformer: " << deformer_name << std::endl;
-		bone = new aiBone();
-		bone->mName = bone_name;
+	//std::cout << "created new bone " << bone_name.C_Str() << ". Deformer: " << deformer_name << std::endl;
+	bone = new aiBone();
+	bone->mName = bone_name;
 
-		// store local transform link for post processing
-		bone->mOffsetMatrix = cl->TransformLink();
-		bone->mOffsetMatrix.Inverse();
+	// store local transform link for post processing
+	bone->mOffsetMatrix = cl->TransformLink() * absolute_transform;
+	bone->mOffsetMatrix.Inverse();
 
-		bone->mOffsetMatrix = bone->mOffsetMatrix * absolute_transform; // * mesh_offset
+	bone_nodes.push_back(bone);
 
-		bone_nodes.push_back(bone);
+	//
+	// Now calculate the aiVertexWeights
+	//
 
-		//
-		// Now calculate the aiVertexWeights
-		//
+	aiVertexWeight *cursor = nullptr;
 
-		aiVertexWeight *cursor = nullptr;
+	bone->mNumWeights = static_cast<unsigned int>(out_indices.size());
+	cursor = bone->mWeights = new aiVertexWeight[out_indices.size()];
 
-		bone->mNumWeights = static_cast<unsigned int>(out_indices.size());
-		cursor = bone->mWeights = new aiVertexWeight[out_indices.size()];
+	const size_t no_index_sentinel = std::numeric_limits<size_t>::max();
+	const WeightArray &weights = cl->GetWeights();
 
-		const size_t no_index_sentinel = std::numeric_limits<size_t>::max();
-		const WeightArray &weights = cl->GetWeights();
+	const size_t c = index_out_indices.size();
+	for (size_t i = 0; i < c; ++i) {
+		const size_t index_index = index_out_indices[i];
 
-		const size_t c = index_out_indices.size();
-		for (size_t i = 0; i < c; ++i) {
-			const size_t index_index = index_out_indices[i];
-
-			if (index_index == no_index_sentinel) {
-				continue;
-			}
-
-			const size_t cc = count_out_indices[i];
-			for (size_t j = 0; j < cc; ++j) {
-				// cursor runs from first element relative to the start
-				// or relative to the start of the next indexes.
-				aiVertexWeight &out_weight = *cursor++;
-
-				out_weight.mVertexId = static_cast<unsigned int>(out_indices[index_index + j]);
-				out_weight.mWeight = weights[i];
-			}
+		if (index_index == no_index_sentinel) {
+			continue;
 		}
 
-		bone_map.insert(std::pair<const std::string, aiBone *>(deformer_name, bone));
+		const size_t cc = count_out_indices[i];
+		for (size_t j = 0; j < cc; ++j) {
+			// cursor runs from first element relative to the start
+			// or relative to the start of the next indexes.
+			aiVertexWeight &out_weight = *cursor++;
+
+			out_weight.mVertexId = static_cast<unsigned int>(out_indices[index_index + j]);
+			out_weight.mWeight = weights[i];
+		}
 	}
 
 	//    std::cout << "bone research: Indicies size: " << out_indices.size() << std::endl;
@@ -2727,10 +2732,10 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-	aiMatrix4x4 geometric_pivot;
-	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	pivot_xform = pivot_xform;
-	pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	// aiMatrix4x4 geometric_pivot;
+	// aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	// pivot_xform = pivot_xform;
+	//pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList joined;
 
@@ -2758,8 +2763,8 @@ void FBXConverter::GenerateNodeAnimations(
 				def_rot);
 	}
 
-	// std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
-	// ResampleAnimationsWithPivots(anims, node->mTransformation);
+	//std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+	//ResampleAnimationsWithPivots(anims, node->mTransformation);
 
 	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
 	na->mNumRotationKeys = na->mNumScalingKeys;
