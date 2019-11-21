@@ -40,7 +40,7 @@ def can_build():
 
     udev_error = os.system("pkg-config libudev --modversion > /dev/null")
     if(udev_error):
-        print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
+        print("libudev-devel not found. Install libudev-devel for all your targets in MerSDK")
         return False;
 
     # webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
@@ -278,6 +278,9 @@ def configure(env):
     env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE', '-DJOYDEV_ENABLED', '-DUDEV_ENABLED'])
     # include paths for different versions of SailfishSDK width different SDL2 version  
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
+
+    if( env['arch'] == "x86" ):
+        env.Append(CPPFLAGS=['-DSAILFISH_i486_GLES2'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])

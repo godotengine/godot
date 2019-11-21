@@ -37,6 +37,8 @@
 #include <linux/input.h>
 #include <unistd.h>
 
+#include "core/os/os.h"
+
 #ifdef UDEV_ENABLED
 #include <libudev.h>
 #endif
@@ -407,6 +409,8 @@ void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float
 	effect.replay.delay = 0;
 
 	if (ioctl(joy.fd, EVIOCSFF, &effect) < 0) {
+		if(OS::get_singleton()->is_stdout_verbose())
+			OS::get_singleton()->print("Fault use vibration");
 		return;
 	}
 
@@ -519,6 +523,9 @@ void JoypadLinux::process_joypads() {
 								break;
 						}
 						break;
+					default:
+					if(ev.type != EV_SYN)
+						OS::get_singleton()->print("udev event %i!\n", ev.type);
 				}
 			}
 		}
