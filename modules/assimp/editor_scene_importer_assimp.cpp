@@ -649,7 +649,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 				xform.basis.set_quat_scale(rot, scale);
 				xform.origin = pos;
 
-				xform = skeleton->get_bone_pose(skeleton_bone) * xform;
+				xform = skeleton->get_bone_pose(skeleton_bone).inverse() * xform;
 
 				rot = xform.basis.get_rotation_quat();
 				rot.normalize();
@@ -1423,22 +1423,22 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 
 	// this code parents all meshes with bones to the armature they are for
 	// GLTF2 specification relies on this and we are enforcing it for FBX.
-	if (armature && state.flat_node_map[armature]) {
-		Node *armature_parent = state.flat_node_map[armature];
-		print_verbose("Parented mesh " + node_name + " to armature " + armature_parent->get_name());
-		// static mesh handling
-		armature_parent->add_child(mesh_node);
-		// transform must be identity
-		mesh_node->set_global_transform(Transform());
-		mesh_node->set_name(node_name);
-		mesh_node->set_owner(state.root);
-	} else {
+	//if (armature && state.flat_node_map[armature]) {
+//		Node *armature_parent = state.flat_node_map[armature];
+//		print_verbose("Parented mesh " + node_name + " to armature " + armature_parent->get_name());
+//		// static mesh handling
+//		armature_parent->add_child(mesh_node);
+//		// transform must be identity
+//		//mesh_node->set_global_transform(Transform());
+//		mesh_node->set_name(node_name);
+//		mesh_node->set_owner(state.root);
+	//} else {
 		// static mesh handling
 		active_node->add_child(mesh_node);
 		mesh_node->set_global_transform(node_transform);
 		mesh_node->set_name(node_name);
 		mesh_node->set_owner(state.root);
-	}
+	//}
 
 	if (skeleton) {
 		print_verbose("Attempted to set skeleton path!");
