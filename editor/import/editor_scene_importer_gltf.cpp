@@ -2356,6 +2356,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 			const int output = s["output"];
 
 			GLTFAnimation::Interpolation interp = GLTFAnimation::INTERP_LINEAR;
+			int output_elements = 1;
 			if (s.has("interpolation")) {
 				const String &in = s["interpolation"];
 				if (in == "STEP") {
@@ -2364,8 +2365,10 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					interp = GLTFAnimation::INTERP_LINEAR;
 				} else if (in == "CATMULLROMSPLINE") {
 					interp = GLTFAnimation::INTERP_CATMULLROMSPLINE;
+					output_elements = 3;
 				} else if (in == "CUBICSPLINE") {
 					interp = GLTFAnimation::INTERP_CUBIC_SPLINE;
+					output_elements = 3;
 				}
 			}
 
@@ -2386,7 +2389,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				track->scale_track.times = Variant(times); //convert via variant
 				track->scale_track.values = Variant(scales); //convert via variant
 			} else if (path == "weights") {
-				const PoolVector<float> weights = _decode_accessor_as_floats(state, output, false);
+				PoolVector<float> weights = _decode_accessor_as_floats(state, output, false);
 
 				ERR_FAIL_INDEX_V(state.nodes[node]->mesh, state.meshes.size(), ERR_PARSE_ERROR);
 				const GLTFMesh *mesh = &state.meshes[state.nodes[node]->mesh];
@@ -2395,7 +2398,43 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 
 				track->weight_tracks.resize(wc);
 
-				const int wlen = weights.size() / wc;
+				int wlen = weights.size() / wc;
+
+				const int expected_len = times.size() * output_elements;
+				if (wlen != expected_len) {
+					ERR_PRINTS("Invalid weight data, expected " + itos(expected_len) + " weight values for each morph target, got " + itos(wlen) + " instead.");
+
+					// This section fixes an specific issue with Blender gltf 2.0 exporter with several morph targets
+					// where the exported data doesn't contain values for all tracks
+					//
+					// gltf 2.0 Specifications:
+					// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
+					// "final size will equal the number of Morph Targets times the number of animation frames."
+					//
+					// Blender exporter issue ticket:
+					// https://github.com/KhronosGroup/glTF-Blender-IO/issues/782
+
+					if (expected_len == wc * wlen) {
+						// Workaround for specific case where we have values for one track only,
+						// so we can duplicate these values to fit all tracks
+						wlen = expected_len;
+						PoolVector<float> fixed_weights;
+						fixed_weights.resize(wlen * wc);
+						PoolVector<float>::Read src = weights.read();
+						PoolVector<float>::Write dest = fixed_weights.write();
+						for (int valIndex = 0; valIndex < weights.size(); valIndex++) {
+							float val = src[valIndex];
+							for (int trackIndex = 0; trackIndex < wc; trackIndex++) {
+								dest[valIndex * wc + trackIndex] = val;
+							}
+						}
+						weights = fixed_weights;
+					} else {
+						// Other cases are not handled
+						ERR_FAIL_V(ERR_PARSE_ERROR);
+					}
+				}
+
 				PoolVector<float>::Read r = weights.read();
 				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
 					GLTFAnimation::Channel<float> cf;
