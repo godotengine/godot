@@ -139,7 +139,7 @@
 			<argument index="4" name="flags" type="int" default="0">
 			</argument>
 			<description>
-				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call as an [Array] of parameters. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
+				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the [code]target[/code] is destroyed in the game's lifecycle, the connection will be lost.
 				Examples:
@@ -147,6 +147,13 @@
 				connect("pressed", self, "_on_Button_pressed") # BaseButton signal
 				connect("text_entered", self, "_on_LineEdit_text_entered") # LineEdit signal
 				connect("hit", self, "_on_Player_hit", [ weapon_type, damage ]) # User-defined signal
+				[/codeblock]
+				An example of the relationship between [code]binds[/code] passed to [method connect] and parameters used when calling [method emit_signal]:
+				[codeblock]
+				connect("hit", self, "_on_Player_hit", [ weapon_type, damage ]) # weapon_type and damage are passed last
+				emit_signal("hit", "Dark lord", 5) # "Dark lord" and 5 are passed first
+				func _on_Player_hit(hit_by, level, weapon_type, damage):
+				    print("Hit by %s (lvl %d) with weapon %s for %d damage" % [hit_by, level, weapon_type, damage])
 				[/codeblock]
 			</description>
 		</method>
