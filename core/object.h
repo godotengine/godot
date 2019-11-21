@@ -510,6 +510,12 @@ private:
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ bool _is_locked() { return _lock_index.get() > 1; }
+#else
+	_FORCE_INLINE_ bool _is_locked() { return false; }
+#endif
+
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };

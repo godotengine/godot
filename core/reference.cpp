@@ -97,6 +97,7 @@ bool Reference::unreference() {
 				}
 			}
 		}
+		ERR_FAIL_COND_V_MSG(_is_locked() && die, false, "Reference is locked and can't be freed. You are leaking memory! This will likely cause crashes in release builds.");
 	}
 
 	return die;
