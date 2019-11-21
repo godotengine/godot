@@ -140,7 +140,7 @@ public:
 
 	std::string ToString() {
 		std::ostringstream str;
-		str << "aiVector3D(x: " << x << ", y: " << y << ", z" << z << ")";
+		str << "aiVector3D(x: " << x << ", y: " << y << ", z: " << z << ")";
 		return str.str();
 	}
 
