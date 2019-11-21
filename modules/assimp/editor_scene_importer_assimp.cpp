@@ -649,7 +649,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 				xform.basis.set_quat_scale(rot, scale);
 				xform.origin = pos;
 
-				xform = skeleton->get_bone_pose(skeleton_bone).inverse() * xform;
+				xform = skeleton->get_bone_pose(skeleton_bone) * xform;
 
 				rot = xform.basis.get_rotation_quat();
 				rot.normalize();
@@ -1401,6 +1401,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 				if (!armature) {
 					print_verbose("Configured mesh armature, will reparent later to armature");
 					armature = iterBone->mArmature;
+					ERR_CONTINUE_MSG(armature == nullptr, "Armature from assimp invalid for this element: " + AssimpUtils::get_assimp_string(iterBone->mName));
 				}
 
 				if (skeleton) {
@@ -1533,7 +1534,6 @@ void EditorSceneImporterAssimp::_generate_node(
 	String node_name = AssimpUtils::get_assimp_string(assimp_node->mName);
 	String parent_name = AssimpUtils::get_assimp_string(assimp_node->mParent->mName);
 
-	// please note
 	// duplicate bone names exist
 	// this is why we only check if the bone exists
 	// so everything else is useless but the name

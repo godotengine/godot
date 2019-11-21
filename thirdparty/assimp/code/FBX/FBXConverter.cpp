@@ -304,7 +304,7 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				std::cout << "[pivot] ======== \nscale: " << scale.ToString() << ", \nrot: " << rot.ToString() << " \npos: " << pos.ToString() << "\n======" << std::endl;
 				// link nodes in a row the old way
 				aiMatrix4x4 new_abs_transform = node->mTransformation;
-				ConvertModel(*model, node, root_node, new_abs_transform);
+				ConvertModel(*model, node, root_node, pivot_xform);
 
 				//std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
 				//ResampleAnimationsWithPivots(anims, pivot_xform);
@@ -1477,7 +1477,7 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 	bone->mName = bone_name;
 
 	// store local transform link for post processing
-	bone->mOffsetMatrix = cl->TransformLink() * absolute_transform;
+	bone->mOffsetMatrix = cl->TransformLink();
 	bone->mOffsetMatrix.Inverse();
 
 	bone_nodes.push_back(bone);
@@ -2732,10 +2732,10 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-	// aiMatrix4x4 geometric_pivot;
-	// aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	// pivot_xform = pivot_xform;
-	//pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	aiMatrix4x4 geometric_pivot;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	pivot_xform = pivot_xform;
+	pivot_xform.Decompose(def_scale, def_translate, def_rot);
 
 	KeyFrameListList joined;
 
