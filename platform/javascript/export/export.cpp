@@ -34,8 +34,13 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "main/splash.gen.h"
+#include "modules/modules_enabled.gen.h"
 #include "platform/javascript/logo.gen.h"
 #include "platform/javascript/run_icon.gen.h"
+
+#if defined(MODULE_WEBSOCKET_ENABLED) && defined(TOOLS_ENABLED)
+#include "modules/websocket/script_editor_debugger_websocket.h"
+#endif
 
 #define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
 #define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
@@ -188,6 +193,9 @@ private:
 	static void _server_thread_poll(void *data);
 
 public:
+#if defined(MODULE_WEBSOCKET_ENABLED) && defined(TOOLS_ENABLED)
+	virtual ScriptEditorDebuggerServer *create_debugger_server() { return memnew(ScriptEditorDebuggerWebSocket); };
+#endif
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
 
 	virtual void get_export_options(List<ExportOption> *r_options);

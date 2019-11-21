@@ -36,6 +36,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
+#include "modules/modules_enabled.gen.h"
 #include "servers/visual/visual_server_raster.h"
 
 #include <emscripten.h>
@@ -43,6 +44,10 @@
 #include <stdlib.h>
 
 #include "dom_keys.inc"
+
+#ifdef MODULE_WEBSOCKET_ENABLED
+#include "modules/websocket/script_debugger_websocket.h"
+#endif
 
 #define DOM_BUTTON_LEFT 0
 #define DOM_BUTTON_MIDDLE 1
@@ -873,6 +878,9 @@ void OS_JavaScript::initialize_core() {
 
 	OS_Unix::initialize_core();
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
+#ifdef MODULE_WEBSOCKET_ENABLED
+	ScriptDebuggerWebSocket::make_default();
+#endif
 }
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
