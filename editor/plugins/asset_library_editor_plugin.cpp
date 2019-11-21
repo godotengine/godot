@@ -31,6 +31,8 @@
 #include "asset_library_editor_plugin.h"
 
 #include "core/io/json.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -614,6 +616,21 @@ void EditorAssetLibrary::_notification(int p_what) {
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
 		} break;
+	}
+}
+
+void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventKey> key = p_event;
+
+	if (key.is_valid() && key->is_pressed()) {
+
+		if (key->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
+
+			filter->grab_focus();
+			filter->select_all();
+			accept_event();
+		}
 	}
 }
 
@@ -1317,6 +1334,7 @@ void EditorAssetLibrary::disable_community_support() {
 
 void EditorAssetLibrary::_bind_methods() {
 
+	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
 	ClassDB::bind_method("_http_request_completed", &EditorAssetLibrary::_http_request_completed);
 	ClassDB::bind_method("_select_asset", &EditorAssetLibrary::_select_asset);
 	ClassDB::bind_method("_select_author", &EditorAssetLibrary::_select_author);
@@ -1499,6 +1517,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = NULL;
 
 	set_process(true);
+	set_process_unhandled_input(true);
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_enable_h_scroll(true);
