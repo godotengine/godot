@@ -682,16 +682,16 @@ void OS_SDL::process_events() {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 					window_has_focus = false;
 					minimized = true;
-					if (input)
-						input->set_mouse_in_window(false);
+					// if (input)
+					// 	input->set_mouse_in_window(false);
 					break;
 				case SDL_WINDOWEVENT_ENTER:
 					if(OS::get_singleton()->is_stdout_verbose())
 						OS::get_singleton()->print("SDL_WINDOWEVENT_ENTER;\n");
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-					if (input)
-						input->set_mouse_in_window(true);
+					// if (input)
+					// 	input->set_mouse_in_window(true);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
 					if(OS::get_singleton()->is_stdout_verbose())
