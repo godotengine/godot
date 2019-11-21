@@ -374,7 +374,7 @@ highp mat4 inverse(highp mat4 m) {
 
 #endif
 
-#ifndef USE_GLES_OVER_GL
+#if !defined(USE_GLES_OVER_GL) && !defined(USE_SAILFISH_i486_GLES2)
 
 #if defined(TRANSPOSE_USED)
 

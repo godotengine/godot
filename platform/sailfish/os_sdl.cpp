@@ -699,6 +699,7 @@ void OS_SDL::process_events() {
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+					//TODO displaykeepalive_start(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_LOST:
 					if(OS::get_singleton()->is_stdout_verbose())
@@ -706,6 +707,7 @@ void OS_SDL::process_events() {
 					minimized = true;
 					window_has_focus = false;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+					//TODO  displaykeepalive_stop(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_SHOWN:
 					if(OS::get_singleton()->is_stdout_verbose())
