@@ -2494,9 +2494,9 @@ Camera *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_
 
 	const GLTFCamera &c = state.cameras[gltf_node->camera];
 	if (c.perspective) {
-		camera->set_perspective(c.fov_size, c.znear, c.znear);
+		camera->set_perspective(c.fov_size, c.znear, c.zfar);
 	} else {
-		camera->set_orthogonal(c.fov_size, c.znear, c.znear);
+		camera->set_orthogonal(c.fov_size, c.znear, c.zfar);
 	}
 
 	return camera;
