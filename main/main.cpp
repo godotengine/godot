@@ -822,6 +822,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
 
+	OS::get_singleton()->set_cmdline(execpath, main_args);
+
 	if (globals->setup(project_path, main_pack, upwards) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
@@ -948,8 +950,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (quiet_stdout)
 		_print_line_enabled = false;
-
-	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	GLOBAL_DEF("rendering/quality/driver/driver_name", "GLES3");
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES2,GLES3"));
