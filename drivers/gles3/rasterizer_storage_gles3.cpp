@@ -1853,7 +1853,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		// Very large Panoramas require way too much effort to compute irradiance so use a mipmap
 		// level that corresponds to a panorama of 1024x512
-		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::log(float(texture->width)) / Math::log(2.0f) - 10.0f, 0.0f));
+		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::floor(Math::log(float(texture->width)) / Math::log(2.0f)) - 10.0f, 0.0f));
 
 		for (int i = 0; i < 2; i++) {
 			glViewport(0, i * size, size, size);

@@ -35,7 +35,7 @@ uniform sampler2D source_dual_paraboloid; //texunit:0
 #endif
 
 #if defined(USE_SOURCE_DUAL_PARABOLOID) || defined(COMPUTE_IRRADIANCE)
-uniform int source_mip_level;
+uniform float source_mip_level;
 #endif
 
 #if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA) && !defined(USE_SOURCE_DUAL_PARABOLOID)
@@ -236,7 +236,7 @@ vec4 textureDualParaboloid(vec3 normal) {
 	if (norm.z < 0.0) {
 		norm.y = 0.5 - norm.y + 0.5;
 	}
-	return textureLod(source_dual_paraboloid, norm.xy, float(source_mip_level));
+	return textureLod(source_dual_paraboloid, norm.xy, source_mip_level);
 }
 
 #endif
