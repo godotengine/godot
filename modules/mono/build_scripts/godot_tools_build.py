@@ -74,15 +74,11 @@ def build_godot_tools_project_editor(source, target, env):
         copy_target(str(scons_target))
 
 
-def build(env_mono):
+def build(env_mono, api_sln_cmd):
     assert env_mono['tools']
 
     output_dir = Dir('#bin').abspath
     editor_tools_dir = os.path.join(output_dir, 'GodotSharp', 'Tools')
-    editor_api_dir = os.path.join(output_dir, 'GodotSharp', 'Api', 'Debug')
-
-    source_filenames = ['GodotSharp.dll', 'GodotSharpEditor.dll']
-    sources = [os.path.join(editor_api_dir, filename) for filename in source_filenames]
 
     target_filenames = [
         'GodotTools.dll', 'GodotTools.IdeConnection.dll', 'GodotTools.BuildLogger.dll',
@@ -97,7 +93,7 @@ def build(env_mono):
 
     targets = [os.path.join(editor_tools_dir, filename) for filename in target_filenames]
 
-    cmd = env_mono.CommandNoCache(targets, sources, build_godot_tools, module_dir=os.getcwd())
+    cmd = env_mono.CommandNoCache(targets, api_sln_cmd, build_godot_tools, module_dir=os.getcwd())
     env_mono.AlwaysBuild(cmd)
 
 
