@@ -307,6 +307,7 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 
 			ERR_FAIL_COND(!octant_map.has(octantkey));
 			Octant &g = *octant_map[octantkey];
+			emit_signal("cell_item_changed", Vector3(key.x, key.y, key.z), INVALID_CELL_ITEM, cell_map[key].item);
 			g.cells.erase(key);
 			g.dirty = true;
 			cell_map.erase(key);
@@ -350,6 +351,12 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	Cell c;
 	c.item = p_item;
 	c.rot = p_rot;
+
+	if (!cell_map.has(key)) {
+		emit_signal("cell_item_changed", Vector3(key.x, key.y, key.z), p_item, INVALID_CELL_ITEM);
+	} else if (p_item != cell_map[key].item) {
+		emit_signal("cell_item_changed", Vector3(key.x, key.y, key.z), p_item, cell_map[key].item);
+	}
 
 	cell_map[key] = c;
 }
@@ -904,6 +911,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_item_changed", PropertyInfo(Variant::VECTOR3, "cell") , PropertyInfo(Variant::INT, "new"), PropertyInfo(Variant::INT, "old")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
