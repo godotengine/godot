@@ -8,12 +8,13 @@
 # vkubre <v@kubre.in>, 2019.
 # Abhay Patel <abhay111patel@gmail.com>, 2019.
 # Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
+# Devashishsingh98 <devashishsingh98@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-17 04:52+0000\n"
-"Last-Translator: Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
+"Last-Translator: Devashishsingh98 <devashishsingh98@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -71,9 +72,8 @@ msgid "KiB"
 msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "MiB"
+msgstr "MIB"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -105,11 +105,11 @@ msgstr "प्रतिमा"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr "समय"
+msgstr "समय:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "मूल्य :"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -120,9 +120,8 @@ msgid "Duplicate Selected Key(s)"
 msgstr "चयनित चाबी (फ़ाइलें) डुप्लिकेट"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "चयनित फ़ाइलें हटाएं?"
+msgstr "चयनित फ़ाइलें हटाएं"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -130,31 +129,27 @@ msgstr "बेज़ियर पॉइंट तैयार करे"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "बेज़ियर पॉइंट्स को स्थानांतरित करें"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Anim डुप्लिकेट चाबी"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Delete Keys"
-msgstr "एनीमेशन को हटाने के लिए कुंजी"
+msgstr "Anim को हटाने के लिए कुंजी"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "एनीमेशन परिवर्तन निधि"
+msgstr "Anim परिवर्तन निधि"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "एनीमेशन परिवर्तन बुलावा"
+msgstr "एनीमेशन परिवर्तन संक्र्रांति"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transform"
-msgstr "एनीमेशन परिवर्तन परिणत"
+msgstr "Anim परिवर्तन परिणत"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"

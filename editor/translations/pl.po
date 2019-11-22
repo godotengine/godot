@@ -37,11 +37,12 @@
 # Rafał Wyszomirski <rawyszo@gmail.com>, 2019.
 # Myver <igormakarowicz@gmail.com>, 2019.
 # Maciej Chamera <chameramaciej@gmail.com>, 2019.
+# Cezary Stasiak <cezary.p.stasiak@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-29 12:49+0000\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.9.1\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -662,9 +663,8 @@ msgid "Scale Ratio:"
 msgstr "Współczynnik skali:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Wybierz ścieżki do skopiowania:"
+msgstr "Wybierz ścieżki do skopiowania"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -676,9 +676,8 @@ msgid "Copy"
 msgstr "Kopiuj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Wybierz węzeł"
+msgstr "Wybierz wszystkie/żadne"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -4923,7 +4922,7 @@ msgstr "Wszystko"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Brak rezultatów dla \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5222,24 +5221,20 @@ msgid "Ruler Mode"
 msgstr "Tryb linijki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Przełącz przyciąganie."
+msgstr "Przełącz inteligentne przyciąganie."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Użyj przyciągania"
+msgstr "Użyj inteligentnego przyciągania"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Przełącz przyciąganie."
+msgstr "Przełącz przyciąganie do siatki."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Przyciągaj do siatki"
+msgstr "Użyj przyciągania do siatki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5332,9 +5327,8 @@ msgid "View"
 msgstr "Widok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Pokaż siatkę"
+msgstr "Zawsze pokaż siatkę"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5601,9 +5595,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Przytrzymaj Shift aby edytować styczne indywidualnie"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Prawy Klik: Usuń Punkt"
+msgstr "Prawy klik, aby dodać punkt"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7053,12 +7046,11 @@ msgstr "\"Wolny widok\" w dół"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr "Zmiennik prędkości \"Wolnego widoku\""
+msgstr "Modyfikator prędkości swobodnego widoku"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "Zmiennik prędkości \"Wolnego widoku\""
+msgstr "Wolny modyfikator swobodnego widoku"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7330,13 +7322,12 @@ msgid "Simplification: "
 msgstr "Uproszczenie: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Wzrost (piksele): "
+msgstr "Zmniejsz (piksele): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
-msgstr "Wzrost (piksele): "
+msgstr "Zwiększ (piksele): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -8117,9 +8108,8 @@ msgid "(GLES3 only)"
 msgstr "(Tylko GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Dodaj wyjście+"
+msgstr "Dodaj wyjście"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8134,9 +8124,8 @@ msgid "Boolean"
 msgstr "Prawda/fałsz"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sampler"
-msgstr "Sample"
+msgstr "Próbnik (sampler)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9070,22 +9059,20 @@ msgid "Resources to export:"
 msgstr "Zasoby do eksportu:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtry do eksportowania plików nie będących zasobami (oddzielone "
+"Filtry do eksportowania plików/folderów nie będących zasobami (oddzielone "
 "przecinkami, np. *.json, *.txt)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtry do wykluczenia plików z projektu (rozdzielone przecinkami, np. *."
-"json, *.txt)"
+"Filtry do wykluczenia plików/folderów z projektu (rozdzielone przecinkami, "
+"np. *.json, *.txt)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10130,12 +10117,11 @@ msgstr ""
 "zostaną przywrócone do domyślnych."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"Wyłączenie \"edytowalnej instancji\" sprawi, że wszystkie właściwości węzła "
+"Włączenie \"edytowalnej instancji\" sprawi, że wszystkie właściwości węzła "
 "zostaną przywrócone do domyślnych."
 
 #: editor/scene_tree_dock.cpp
@@ -10236,7 +10222,7 @@ msgstr "Zmień typ"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Zmień nadrzędny węzeł"
+msgstr "Zmień nadrzędny węzeł na nowy"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -10475,19 +10461,16 @@ msgid "Will load an existing script file."
 msgstr "Wczytaj istniejący plik skryptu."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Nazwa klasy"
+msgstr "Nazwa klasy:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Szablon"
+msgstr "Szablon:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Wbudowany skrypt"
+msgstr "Skrypt wbudowany:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11128,7 +11111,6 @@ msgid "Add Function"
 msgstr "Dodaj funkcję"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Usuń port wejściowy"
 
@@ -11141,22 +11123,18 @@ msgid "Add Signal"
 msgstr "Dodaj sygnał"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
 msgstr "Dodaj port wejściowy"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
 msgstr "Dodaj port wyjściowy"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "Usuń port wejściowy"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
 msgstr "Usuń port wyjściowy"
 
@@ -11207,6 +11185,7 @@ msgstr "Dodaj wstępnie wczytany węzeł"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Nie można upuścić węzłów, ponieważ \"%s\" nie jest używany na tej scenie."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11217,6 +11196,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Nie można upuścić właściwości, ponieważ \"%s\" nie jest używany na tej "
+"scenie.\n"
+"Upuść trzymając \"Shift\", by skopiować samą sygnaturę."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11243,9 +11225,8 @@ msgid "Connect Nodes"
 msgstr "Podłącz węzły"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Odłącz węzły grafu"
+msgstr "Odłącz węzły"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11280,26 +11261,24 @@ msgid "Paste VisualScript Nodes"
 msgstr "Wklej węzeł VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "Nie można skopiować węzła funkcji."
+msgstr "Nie można utworzyć funkcji z węzłem funkcji."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "Nie można utworzyć funkcji węzłów z węzłów wielu funkcji."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select atleast one node with sequence port."
-msgstr ""
+msgstr "Wybierz co najmniej jeden węzeł z portem sekwencyjnym."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Spróbuj mieć tylko jedno wejście sekwencyjne w zaznaczeniu."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Zmień nazwę funkcji"
+msgstr "Utwórz funkcję"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11330,9 +11309,8 @@ msgid "Members:"
 msgstr "Członkowie:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funkcja:"
+msgstr "nazwa_funkcji"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11355,14 +11333,12 @@ msgid "Cut Nodes"
 msgstr "Wytnij Węzły"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Zmień nazwę funkcji"
+msgstr "Zmień na funkcję"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Odśwież"
+msgstr "Odśwież graf"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11582,7 +11558,7 @@ msgstr "Wymagana ikona nie jest podana w profilu eksportu."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Zatrzymaj serwer HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -11727,8 +11703,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"Zasób shape jest niezbędny do działania CollisionPolygon2D. Proszę utworzyć "
-"zasób shape!"
+"Kształt jest niezbędny do działania CollisionShape2D. Proszę utworzyć zasób "
+"Shape!"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

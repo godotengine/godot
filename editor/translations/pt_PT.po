@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-04 03:16+0000\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -639,9 +639,8 @@ msgid "Scale Ratio:"
 msgstr "Proporção de Escala:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Selecionar pistas a copiar:"
+msgstr "Selecionar Pistas a Copiar"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -653,9 +652,8 @@ msgid "Copy"
 msgstr "Copiar"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Selecionar Nenhum"
+msgstr "Selecionar Tudo/Nada"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -4906,7 +4904,7 @@ msgstr "Todos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Nenhum resultado para \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5201,24 +5199,20 @@ msgid "Ruler Mode"
 msgstr "Modo Régua"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Alternar Ajuste."
+msgstr "Alternar ajuste inteligente."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Usar Ajuste"
+msgstr "Usar Ajuste Inteligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Alternar Ajuste."
+msgstr "Alternar ajuste de grelha."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Ajuste de grelha"
+msgstr "Usar Ajuste de Grelha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5311,9 +5305,8 @@ msgid "View"
 msgstr "Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Mostrar grelha"
+msgstr "Mostrar Grelha Sempre"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5580,9 +5573,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Pressione Shift para editar tangentes individualmente"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Clique direito: Apagar Ponto"
+msgstr "Clique direito para adicionar ponto"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7033,9 +7025,8 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificador de velocidade Freelook"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "Modificador de velocidade Freelook"
+msgstr "Modificador de Velocidade Freelook"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7306,9 +7297,8 @@ msgid "Simplification: "
 msgstr "Simplificação: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Crescer (Pixeis): "
+msgstr "Encolher (Pixeis): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8092,9 +8082,8 @@ msgid "(GLES3 only)"
 msgstr "(Apenas GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Adicionar saída +"
+msgstr "Adicionar Saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8110,7 +8099,7 @@ msgstr "Lógico"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sampler"
-msgstr ""
+msgstr "Mostrador"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -8158,7 +8147,7 @@ msgstr "Definir Nome do Uniform"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Input Default Port"
-msgstr "Definir Porta de Entrada por Defeito"
+msgstr "Definir Porta de Entrada Padrão"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node to Visual Shader"
@@ -9038,22 +9027,20 @@ msgid "Resources to export:"
 msgstr "Recursos a exportar:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para exportar Ficheiros não-recursos (separados por vírgula, ex: *."
-"json, *.txt)"
+"Filtros para exportar ficheiros/pastas não-recursos\n"
+"(separados por vírgula, ex: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para excluir Ficheiros do Projeto (separados por vírgula, ex: *."
-"json, *.txt)"
+"Filtros para excluir ficheiros/pastas do projeto\n"
+"(separados por vírgula, ex: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10096,13 +10083,12 @@ msgstr ""
 "para os seus valores padrão."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"Desativar \"editable_instance\" irá reverter todas as propriedades do Nó "
-"para os seus valores padrão."
+"Ativar \"Carregar como Espaço Reservado\" vai desativar \"Filhos Editáveis\" "
+"e fazer com que todas as propriedades do nó revertam para valores padrão."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10441,19 +10427,16 @@ msgid "Will load an existing script file."
 msgstr "Vai carregar ficheiro de script existente."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Nome de classe"
+msgstr "Nome de Classe:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Modelo"
+msgstr "Modelo:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Script incorporado"
+msgstr "Script Incorporado:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11094,7 +11077,6 @@ msgid "Add Function"
 msgstr "Adicionar Função"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Remover porta de entrada"
 
@@ -11107,24 +11089,20 @@ msgid "Add Signal"
 msgstr "Adicionar Sinal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
-msgstr "Adicionar porta de entrada"
+msgstr "Adicionar Porta de Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
-msgstr "Adicionar porta de saída"
+msgstr "Adicionar Porta de Saída"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
-msgstr "Remover porta de entrada"
+msgstr "Remover Porta de Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
-msgstr "Remover porta de saída"
+msgstr "Remover Porta de Saída"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11172,7 +11150,7 @@ msgstr "Adicionar Nó de Pré-carregamento"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
+msgstr "Impossível largar nós porque o script '%s' não é usado neste cena."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11183,6 +11161,8 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Impossível largar propriedades porque o script '%s' não é usado neste cena.\n"
+"Largue com 'Shift' para copiar apenas a assinatura."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11209,9 +11189,8 @@ msgid "Connect Nodes"
 msgstr "Conectar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Desconectar Nós do gráfico"
+msgstr "Desconectar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11246,26 +11225,24 @@ msgid "Paste VisualScript Nodes"
 msgstr "Colar Nós VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "Impossível copiar o Nó Função."
+msgstr "Impossível criar função com um nó função."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "Impossível criar função de nós com nós de várias funções."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select atleast one node with sequence port."
-msgstr ""
+msgstr "Selecione pelo menos um nó com porta de sequência."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Tente ter apenas uma entrada de sequência na seleção."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Mudar nome da Função"
+msgstr "Criar Função"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11296,9 +11273,8 @@ msgid "Members:"
 msgstr "Membros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Função:"
+msgstr "function_name"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11321,14 +11297,12 @@ msgid "Cut Nodes"
 msgstr "Cortar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Mudar nome da Função"
+msgstr "Criar Função"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Atualizar"
+msgstr "Atualizar Gráfico"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11554,7 +11528,7 @@ msgstr "O ícone obrigatório não está especificado na predefinição."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Parar Servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

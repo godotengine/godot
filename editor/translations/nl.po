@@ -37,12 +37,13 @@
 # Hector Peeters <hector.peeters@gmail.com>, 2019.
 # Shawn Gyina <gyina.shawn@gmail.com>, 2019.
 # ebbe <ebbesteenhoudt@gmail.com>, 2019.
+# Tirrin <lensenjoe@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-18 18:02+0000\n"
-"Last-Translator: ebbe <ebbesteenhoudt@gmail.com>\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"Last-Translator: Tirrin <lensenjoe@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9.1-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -858,11 +859,11 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr "Eénschots"
+msgstr "Eenmalig"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Ontkoppelt het signaal na eerste keer uitzenden."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
@@ -997,13 +998,12 @@ msgid "Dependencies For:"
 msgstr "Afhankelijkheden Voor:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Scene '%s' wordt op dit moment gewijzigd.\n"
-"Wijzigingen hebben geen effect tenzij de scene herladen worden."
+"Scene '%s' wordt momenteel gewijzigd.\n"
+"Wijzigingen hebben pas effect na herladen."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1012,7 +1012,7 @@ msgid ""
 "Changes will only take effect when reloaded."
 msgstr ""
 "Resource '%s' is in gebruik.\n"
-"Wijzigingen zullen effect hebben wanneer herladen."
+"Wijzigingen hebben pas effect na herladen."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1063,7 +1063,7 @@ msgstr "Eigenaren Van:"
 msgid "Remove selected files from the project? (Can't be restored)"
 msgstr ""
 "Verwijder geselecteerde bestanden van het project? (Kan niet ongedaan "
-"worden.)"
+"gemaakt worden.)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1108,9 +1108,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "%d item(s) permanent verwijderen? (Kan niet ongedaan worden!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Afhankelijkheden"
+msgstr "Toon Afhankelijkheden"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"

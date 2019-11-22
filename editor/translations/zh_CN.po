@@ -62,8 +62,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-10-22 02:53+0000\n"
-"Last-Translator: idleman <1524328475@qq.com>\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
+"Last-Translator: Geequlim <geequlim@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -71,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.9.1-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -687,9 +687,8 @@ msgid "Copy"
 msgstr "复制"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "取消选择"
+msgstr "取消/选择 全部"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -4850,7 +4849,7 @@ msgstr "全部"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "未找到 \"%s\"。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5134,24 +5133,20 @@ msgid "Ruler Mode"
 msgstr "标尺模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "开关吸附。"
+msgstr "吸附开关。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
 msgstr "使用吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "开关吸附。"
+msgstr "开关网格吸附。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "网格吸附"
+msgstr "使用网格吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5244,9 +5239,8 @@ msgid "View"
 msgstr "视图"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "显示网格"
+msgstr "总是显示网格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5511,9 +5505,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "按住 Shift 可单独编辑切线"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "鼠标右键:删除点"
+msgstr "鼠标右键添加点"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -6958,9 +6951,8 @@ msgid "Freelook Speed Modifier"
 msgstr "自由视图速度调整"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "自由视图速度调整"
+msgstr "缓慢自由视图速度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8015,9 +8007,8 @@ msgid "(GLES3 only)"
 msgstr "只使用GLES3"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "添加输出+"
+msgstr "添加输出"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8032,9 +8023,8 @@ msgid "Boolean"
 msgstr "布尔值"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sampler"
-msgstr "音效"
+msgstr "采样（Sampler）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -8925,18 +8915,20 @@ msgid "Resources to export:"
 msgstr "导出的资源:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
-msgstr "筛选导出非资源文件（使用英文逗号分隔，如:*.json,*.txt）"
+msgstr ""
+"筛选导出非资源文件或目录\n"
+"（使用英文逗号分隔，如: *.json,*.txt docs/* ）"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
-msgstr "过滤从项目中排除文件（以逗号分隔，例如：*。json，*。txt）"
+msgstr ""
+"从项目中排除文件或目录\n"
+"（以逗号分隔，例如：*.json，*.txt, docs/*）"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -9946,11 +9938,11 @@ msgid ""
 msgstr "禁用“可编辑实例”将导致节点的所有属性恢复为其默认值。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
-msgstr "禁用“可编辑实例”将导致节点的所有属性恢复为其默认值。"
+msgstr ""
+"开启“加载为占位符”将禁用“可编辑实例”并重置该节点的所有属性恢复为其默认值。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10279,19 +10271,16 @@ msgid "Will load an existing script file."
 msgstr "将加载现有的脚本文件。"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "类名"
+msgstr "类名："
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "模板"
+msgstr "模板："
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "内置脚本"
+msgstr "内置脚本："
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -10371,7 +10360,7 @@ msgstr "性能分析"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
-msgstr "网络配置"
+msgstr "网络检视"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -10925,9 +10914,8 @@ msgid "Add Function"
 msgstr "添加函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
-msgstr "移除输入端口"
+msgstr "删除输入端口"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
@@ -10938,22 +10926,18 @@ msgid "Add Signal"
 msgstr "添加信号"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
 msgstr "添加输入端口"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
 msgstr "增加输出端口"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "移除输入端口"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
 msgstr "移除输出端口"
 
@@ -10999,7 +10983,7 @@ msgstr "添加Preload节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
+msgstr "无法放置该节点，因为脚本 '%s' 未在该场景中使用。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11036,9 +11020,8 @@ msgid "Connect Nodes"
 msgstr "连接节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "断开Graph Node连接"
+msgstr "断开连接的节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11073,9 +11056,8 @@ msgid "Paste VisualScript Nodes"
 msgstr "粘贴 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "无法复制函数节点。"
+msgstr "无法通过函数节点创建函数。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
@@ -11090,9 +11072,8 @@ msgid "Try to only have one sequence input in selection."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "重命名函数"
+msgstr "创建函数"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11123,9 +11104,8 @@ msgid "Members:"
 msgstr "成员："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "函数:"
+msgstr "函数名"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11148,14 +11128,12 @@ msgid "Cut Nodes"
 msgstr "剪切节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "重命名函数"
+msgstr "生成函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "刷新"
+msgstr "刷新图"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11363,7 +11341,7 @@ msgstr "预设中未指定必需的图标。"
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "停止HTTP服务"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

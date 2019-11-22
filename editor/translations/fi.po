@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-04 03:15+0000\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -628,9 +628,8 @@ msgid "Scale Ratio:"
 msgstr "Skaalaussuhde:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Valitse kopioitavat raidat:"
+msgstr "Valitse kopioitavat raidat"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -642,9 +641,8 @@ msgid "Copy"
 msgstr "Kopioi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Tyhjennä valinta"
+msgstr "Valitse kaikki/ei mitään"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -4889,7 +4887,7 @@ msgstr "Kaikki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Ei tuloksia haulle \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5187,22 +5185,18 @@ msgid "Ruler Mode"
 msgstr "Viivaintila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Aseta tarttuminen."
+msgstr "Aseta älykäs tarttuminen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Käytä tarttumista"
+msgstr "Käytä älykästä tarttumista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Aseta tarttuminen."
+msgstr "Aseta ruudukkoon tarttuminen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
 msgstr "Tartu ruudukkoon"
 
@@ -5297,9 +5291,8 @@ msgid "View"
 msgstr "Näytä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Näytä ruudukko"
+msgstr "Näytä aina ruudukko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5566,9 +5559,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Pidä shift pohjassa muokataksesi tangentteja yksitellen"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Oikea painallus: poista piste"
+msgstr "Lisää piste napsauttamalla oikeaa"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7024,9 +7016,8 @@ msgid "Freelook Speed Modifier"
 msgstr "Liikkumisen nopeussäädin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "Liikkumisen nopeussäädin"
+msgstr "Liikkumisen hitauskerroin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7297,9 +7288,8 @@ msgid "Simplification: "
 msgstr "Yksinkertaistus: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Suurrennus (pikseleissä): "
+msgstr "Kutista (pikseleissä): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8087,9 +8077,8 @@ msgid "(GLES3 only)"
 msgstr "(Vain GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Lisää lähtö +"
+msgstr "Lisää lähtö"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8104,9 +8093,8 @@ msgid "Boolean"
 msgstr "Totuusarvo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sampler"
-msgstr "Lisää Sample"
+msgstr "Sampleri"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9036,22 +9024,21 @@ msgid "Resources to export:"
 msgstr "Vietävät resurssit:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Suodattimet tiedostojen viemiseen jotka eivät ole resursseja (esim. *.json, "
-"*.txt)"
+"Suodattimet sellaisten tiedostojen ja kansioiden viemiseen, jotka eivät ole "
+"resursseja\n"
+"(pilkulla erotettuna, esim. *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Suodattimet tiedostoille jotka jätetään projektista pois (esim. *.json, *."
-"txt)"
+"Suodattimet tiedostoille ja kansioille, jotka jätetään projektista pois \n"
+"(pilkulla erotettuna, esim. *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10096,13 +10083,13 @@ msgstr ""
 "solmun ominaisuudet oletusarvoihin."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"\"editable_instance\" ominaisuuden poistaminen käytöstä palauttaa kaikki "
-"solmun ominaisuudet oletusarvoihin."
+"\"Lataa paikanpitäjäksi\" ominaisuuden ottaminen käyttöön poistaa "
+"\"Muokattavat alisolmut\" ominaisuuden käytöstä ja palauttaa kaikki solmun "
+"ominaisuudet oletusarvoihin."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10441,19 +10428,16 @@ msgid "Will load an existing script file."
 msgstr "Lataa olemassaolevan skriptitiedoston."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Luokan nimi"
+msgstr "Luokan nimi:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Malli"
+msgstr "Malli:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Sisäänrakennettu skripti"
+msgstr "Sisäänrakennettu skripti:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11097,7 +11081,6 @@ msgid "Add Function"
 msgstr "Lisää funktio"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Poista tuloportti"
 
@@ -11110,22 +11093,18 @@ msgid "Add Signal"
 msgstr "Lisää signaali"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
 msgstr "Lisää tuloportti"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
 msgstr "Lisää lähtöportti"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "Poista tuloportti"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
 msgstr "Poista lähtöportti"
 
@@ -11177,6 +11156,7 @@ msgstr "Lisää esiladattu solmu"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Ei voida pudottaa solmuja, koska skripti '%s' ei ole käytössä tässä skenessä."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11187,6 +11167,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Ei voida pudottaa ominaisuuksia, koska skripti '%s' ei ole käytössä tässä "
+"skenessä.\n"
+"Kopioidaksesi vain tunnisteen, pudota pitämällä 'Shift' pohjassa."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11213,9 +11196,8 @@ msgid "Connect Nodes"
 msgstr "Kytke solmut"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Erota graafin solmut"
+msgstr "Katkaise solmujen kytkennät"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11250,26 +11232,24 @@ msgid "Paste VisualScript Nodes"
 msgstr "Liitä VisualScript solmut"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "Ei voida kopioida funktiosolmua."
+msgstr "Ei voida luoda funktiota funktiosolmulla."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "Ei voi luoda solmujen funktiota useamman funktion solmuista."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select atleast one node with sequence port."
-msgstr ""
+msgstr "Valitse ainakin yksi solmu, jolla on sarjaportti."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Yritä käyttää vain yhtä sarjatuloa valinnassa."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Nimeä funktio uudelleen"
+msgstr "Luo funktio"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11300,9 +11280,8 @@ msgid "Members:"
 msgstr "Jäsenet:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funktio:"
+msgstr "function_name"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11325,14 +11304,12 @@ msgid "Cut Nodes"
 msgstr "Leikkaa solmut"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Nimeä funktio uudelleen"
+msgstr "Tee funktio"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Päivitä"
+msgstr "Päivitä graafi"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11552,7 +11529,7 @@ msgstr "Vaadittavaa ikonia ei ole määritetty esiasetuksissa."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Pysäytä HTTP-palvelin"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

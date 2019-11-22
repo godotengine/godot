@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-11 15:07+0000\n"
-"Last-Translator: Богдан Матвіїв <bomtvv@gmail.com>\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -641,9 +641,8 @@ msgid "Scale Ratio:"
 msgstr "Співвідношення масштабу:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Виберіть доріжки для копіювання:"
+msgstr "Виберіть доріжки для копіювання"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -655,9 +654,8 @@ msgid "Copy"
 msgstr "Копіювати"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Скасувати позначення"
+msgstr "Позначити все/Скасувати позначення"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -4915,7 +4913,7 @@ msgstr "Все"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Нічого не знайдено для «%s»."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5213,24 +5211,20 @@ msgid "Ruler Mode"
 msgstr "Режим вимірювання"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Увімкнути або вимкнути прив'язування."
+msgstr "Увімкнути або вимкнути кмітливе прив'язування."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "За допомогою функції прив'язки"
+msgstr "Використати кмітливе прив'язування"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Увімкнути або вимкнути прив'язування."
+msgstr "Увімкнути або вимкнути прилипання до ґратки."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Прилипання до ґратки"
+msgstr "Використати прилипання до ґратки"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5323,9 +5317,8 @@ msgid "View"
 msgstr "Перегляд"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Показати сітку"
+msgstr "Завжди показувати ґратку"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5593,9 +5586,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Утримуйте Shift, щоб змінити дотичні окремо"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Клацніть правою кнопкою миші: видалити точку"
+msgstr "Клацніть правою кнопкою миші, щоб додати точку"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7050,9 +7042,8 @@ msgid "Freelook Speed Modifier"
 msgstr "Коефіцієнт швидкості огляду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "Коефіцієнт швидкості огляду"
+msgstr "Модифікатор швидкості довільного огляду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7326,9 +7317,8 @@ msgid "Simplification: "
 msgstr "Спрощення: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Зростання (пікселі): "
+msgstr "Стискання (пікселі): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8117,9 +8107,8 @@ msgid "(GLES3 only)"
 msgstr "(лише GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Додати вихід +"
+msgstr "Додати вихід"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8135,7 +8124,7 @@ msgstr "Булеве"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sampler"
-msgstr ""
+msgstr "Зразок"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9070,22 +9059,20 @@ msgid "Resources to export:"
 msgstr "Експортовані ресурси:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Фільтри експортування файлів, які не містять ресурсів (з відокремленням "
-"комами, приклад: *.json, *.txt)"
+"Фільтри експортування файлів або тек, які не містять ресурсів\n"
+"(з відокремленням комами, приклад: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Фільтри виключення файлів з проєкту (з відокремленням комами, приклад: *."
-"json, *.txt)"
+"Фільтри виключення файлів або тек з проєкту\n"
+"(з відокремленням комами, приклад: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10131,13 +10118,12 @@ msgstr ""
 "усіх властивостей вузла."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"Вимикання «editable_instance» призведе до повернення типових значень для "
-"усіх властивостей вузла."
+"Вмикання «Завантажити як заповнювач» призведе до вимикання «Редаговані "
+"дочірні об'єкти» і повернення типових значень для усіх властивостей вузла."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10476,19 +10462,16 @@ msgid "Will load an existing script file."
 msgstr "Завантажити наявний файл скрипту."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Назва класу"
+msgstr "Назва класу:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Шаблон"
+msgstr "Шаблон:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Вбудований скрипт"
+msgstr "Вбудований скрипт:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11130,7 +11113,6 @@ msgid "Add Function"
 msgstr "Додати функцію"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Вилучити вхідний порт"
 
@@ -11143,22 +11125,18 @@ msgid "Add Signal"
 msgstr "Додати сигнал"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
 msgstr "Додати вхідний порт"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
 msgstr "Додати вихідний порт"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "Вилучити вхідний порт"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
 msgstr "Вилучити вихідний порт"
 
@@ -11209,6 +11187,8 @@ msgstr "Додати попередньо завантажений вузол"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Скидання вузлів є неможливим, оскільки у цій сцені не використовується "
+"скрипт «%s»."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11219,6 +11199,10 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Скидання властивостей неможливе, оскільки у цій сцені не використовується "
+"скрипт «%s».\n"
+"Скиньте, утримуючи натиснутою клавішу «Shift», якщо просто хочете скопіювати "
+"підпис."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11245,9 +11229,8 @@ msgid "Connect Nodes"
 msgstr "Приєднати вузли"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Роз'єднати вузли графу"
+msgstr "Від'єднати вузли"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11282,26 +11265,25 @@ msgid "Paste VisualScript Nodes"
 msgstr "Вставити вузли (Візуального скриптингу) VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "Неможливо скопіювати вузол функції."
+msgstr "Неможливо створити функцію із вузлом функції."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "Неможливо створити функцію вузлів на основі вузлів декількох функцій."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select atleast one node with sequence port."
-msgstr ""
+msgstr "ВИберіть принаймні один вузол і портом послідовності."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
 msgstr ""
+"Спробуйте зробити так, щоб у позначеному був лише один вхід послідовності."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Перейменувати функцію"
+msgstr "Створити функцію"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11332,9 +11314,8 @@ msgid "Members:"
 msgstr "Члени:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Функція:"
+msgstr "назва_функції"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11357,14 +11338,12 @@ msgid "Cut Nodes"
 msgstr "Вирізати вузли"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Перейменувати функцію"
+msgstr "Створити функцію"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Оновити"
+msgstr "Оновити граф"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11593,7 +11572,7 @@ msgstr "У шаблоні не вказано потрібної піктогр�
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Зупинити HTTP-сервер"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

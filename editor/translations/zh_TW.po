@@ -17,12 +17,13 @@
 # Bluesir Bruce <a5566740293@gmail.com>, 2019.
 # leela <53352@protonmail.com>, 2019.
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
+# SIYU FU <1002492607@qq.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-29 13:35+0000\n"
-"Last-Translator: Kenneth Lo <closer.tw@gmail.com>\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"Last-Translator: SIYU FU <1002492607@qq.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -53,7 +54,7 @@ msgstr "因該實例(instance)為空，self 無法被使用"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "此數值無法被 %s、%s 和 %s 運算。"
+msgstr "此數值無法被 %s、%s 和与%s 運算。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -73,16 +74,15 @@ msgstr "調用“%s”時："
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "乙"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "基布"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "混合"
+msgstr "MiB公司"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -106,7 +106,7 @@ msgstr "释放"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "平衡的"
+msgstr "平衡"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"

@@ -8,12 +8,13 @@
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
 # Boby Ilea <boby.ilea@gmail.com>, 2019.
+# EVOKZH <avip.ady@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-26 03:53+0000\n"
-"Last-Translator: Boby Ilea <boby.ilea@gmail.com>\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"Last-Translator: EVOKZH <avip.ady@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -22,12 +23,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.9.1-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Argument de tip invalid pentru convert(), folosiți constante TYPE_*"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -160,19 +161,16 @@ msgid "Anim Change Call"
 msgstr "Anim Schimbare apelare"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Schimbați Timpul Cadru Cheie"
+msgstr "Anim Timpul multifuncțional pentru modificarea cheii"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Anim Schimbați Tranziție"
+msgstr "Anim Tranziție multifuncțională"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Anim Schimbare transformare"
+msgstr "Anim Transformare multifuncțională"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -192,7 +190,7 @@ msgstr "Schimbă Numele Animației:"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Schimbați Bucla Animației"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -221,9 +219,8 @@ msgid "Animation Playback Track"
 msgstr "Oprește rularea animației. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Lungime Animație (în secunde)."
+msgstr "Lungime Animație (în frame-uri)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

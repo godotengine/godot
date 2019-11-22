@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-06 08:48+0000\n"
+"PO-Revision-Date: 2019-11-20 14:07+0000\n"
 "Last-Translator: Sofiane <Sofiane-77@caramail.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -80,7 +80,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -699,9 +699,8 @@ msgid "Scale Ratio:"
 msgstr "Ratio d'échelle :"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Sélectionner les pistes à copier :"
+msgstr "Sélectionner les pistes à copier"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -713,9 +712,8 @@ msgid "Copy"
 msgstr "Copier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Tout Désélectionner"
+msgstr "Tout Sélectionner/Désélectionner"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -5002,7 +5000,7 @@ msgstr "Tout"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Aucun résultats pour \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5301,22 +5299,18 @@ msgid "Ruler Mode"
 msgstr "Mode Règle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Activer/Désactiver le magnétisme."
+msgstr "Activer/Désactiver le magnétisme intelligent."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Aligner sur la grille"
+msgstr "Utiliser le magnétisme intelligent"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Activer/Désactiver le magnétisme."
+msgstr "Activer/Désactiver l'aimantation à la grille."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
 msgstr "Aimanter à la grille"
 
@@ -5411,9 +5405,8 @@ msgid "View"
 msgstr "Affichage"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Afficher la grille"
+msgstr "Toujours afficher la grille"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -5680,9 +5673,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Maintenez Maj. appuyée pour modifier les tangentes individuellement"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Clic droit : Supprimer un point"
+msgstr "Clic droit pour ajouter un point"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7148,7 +7140,6 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificateur de vitesse de la vue libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
 msgstr "Modificateur de vitesse de la vue libre"
 
@@ -7424,9 +7415,8 @@ msgid "Simplification: "
 msgstr "Simplification : "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Croissance (Pixels) : "
+msgstr "Rétrécir (Pixels) : "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8214,9 +8204,8 @@ msgid "(GLES3 only)"
 msgstr "(GLES3 seulement)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Ajouter une sortie +"
+msgstr "Ajouter une sortie"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8232,7 +8221,7 @@ msgstr "Booléen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sampler"
-msgstr ""
+msgstr "Échantillonneur"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -9172,22 +9161,20 @@ msgid "Resources to export:"
 msgstr "Ressources à exporter :"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtres d'export de fichiers non ressources (séparés par des virgules, par "
-"exemple : *.json, *.txt) :"
+"Filtres pour exporter des fichiers/dossiers non-ressources\n"
+"(séparés par des virgules, par exemple : *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtres pour exclure des fichiers du projet (séparés par des virgules, par "
-"exemple: *.json, *.txt) :"
+"Filtres pour exclure les fichiers/dossiers du projet\n"
+"(séparés par des virgules, par exemple : *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10236,13 +10223,12 @@ msgstr ""
 "propriétés du nœud."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"Désactiver \"editable_instance\" implique la remise à zéro de toutes les "
-"propriétés du nœud."
+"L'activation de \"Load As Placeholder\" désactivera \"Editable Children\" et "
+"ramènera toutes les propriétés du nœud à leur valeur par défaut."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10582,19 +10568,16 @@ msgid "Will load an existing script file."
 msgstr "Va charger un fichier de script existant."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Nom de classe"
+msgstr "Nom de la classe :"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Modèle"
+msgstr "Modèle :"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Script intégré"
+msgstr "Script intégré :"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11241,7 +11224,6 @@ msgid "Add Function"
 msgstr "Ajouter une fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Supprimer le port d'entrée"
 
@@ -11254,22 +11236,18 @@ msgid "Add Signal"
 msgstr "Ajouter un signal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
 msgstr "Ajouter un port d'entrée"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
 msgstr "Ajouter un port de sortie"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
 msgstr "Supprimer le port d'entrée"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
 msgstr "Supprimer le port de sortie"
 
@@ -11320,6 +11298,8 @@ msgstr "Ajouter un nœud préchargé"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Impossible de supprimer les nœuds car le script '% s' n'est pas utilisé dans "
+"cette scène."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11330,6 +11310,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Impossible de supprimer les propriétés car le script'%s' n'est pas utilisé "
+"dans cette scène.\n"
+"Lâchez la touche 'Shift' pour simplement copier la signature."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11356,9 +11339,8 @@ msgid "Connect Nodes"
 msgstr "Connecter nœud"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Connecter nœud"
+msgstr "Déconnecter les nœuds"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11393,26 +11375,26 @@ msgid "Paste VisualScript Nodes"
 msgstr "Coller les nœuds VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "Impossible de copier le nœud de fonction."
+msgstr "Impossible de créer une fonction avec un nœud de fonction."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
+"Impossible de créer une fonction de nœuds à partir de nœuds de plusieurs "
+"fonctions."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select atleast one node with sequence port."
-msgstr ""
+msgstr "Sélectionnez au moins un nœud avec un port de séquence."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Essayez de n'avoir qu'une seule entrée de séquence dans la sélection."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Renommer la fonction"
+msgstr "Créer une fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11443,9 +11425,8 @@ msgid "Members:"
 msgstr "Membres :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Fonctions :"
+msgstr "function_name"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11468,14 +11449,12 @@ msgid "Cut Nodes"
 msgstr "Couper les nœuds"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Renommer la fonction"
+msgstr "Faire fonction"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Rafraîchir"
+msgstr "Rafraîchir le graphique"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11709,7 +11688,7 @@ msgstr "L'icône requise n'est pas spécifiée dans le préréglage."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Arrêter le serveur HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
