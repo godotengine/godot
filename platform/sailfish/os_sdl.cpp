@@ -48,6 +48,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 // ICCCM
 #define WM_NormalState 1L // window normal state
@@ -119,12 +120,28 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
 
+	// print_verbose("What SDL2 support on device\n");
+	// SDL_Init(0);
+
+	// OS::get_singleton()->print("List video drivers: \n");
+	// std::vector<bool> drivers( SDL_GetNumVideoDrivers() );
+	// for( int i = 0; i < drivers.size(); ++i )
+	// {
+	// 	drivers[i] = (0 == SDL_VideoInit(SDL_GetVideoDriver(i)) );
+	// 	SDL_VideoQuit();
+	// 	if( !drivers[i] ) 
+	// 		continue;
+	// 	OS::get_singleton()->print( "[%i] %s\n" , i, SDL_GetVideoDriver(i) );
+	// }
+
 	// ** SDL INIT ** //
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		ERR_PRINT("SDL Initialization Failed!");
+		ERR_PRINT("SDL Initialization Failed!\n");
 		return ERR_UNAVAILABLE;
 	}
+
+	OS::get_singleton()->print( "Current vide driver is: %s\n", SDL_GetCurrentVideoDriver() );
 
 	// ** ENABLE DRAG AND DROP SUPPORT ** //
 	// no drop event in sailfish
@@ -197,7 +214,7 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	OS::get_singleton()->print("Wait libaudioresource initialization ");       
 	while (!is_audio_resource_acquired) {
-		OS::get_singleton()->print(".");
+		//OS::get_singleton()->print(".");
 		g_main_context_iteration(NULL, false);
 		// process_events();
 		// force_process_input();
@@ -1029,12 +1046,17 @@ void OS_SDL::process_events() {
 		// 	continue;
 		// }
 
-		// if (event.type == SDL_SYSWMEVENT) {
-			if(OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("SDL_Event %d;\n",event.type);
-				continue;
-			}
-		// }
+		if( event.type == SDL_DISPLAYEVENT )
+		{// its mean sreen orientation changed
+			OS::get_singleton()->print("SDL_DisplayEvent.type = %i", event.display.type);
+			// switch(event.display.type) {
+			// }
+		} 
+
+		if(OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("SDL_Event %d;\n",event.type);
+			continue;
+		}
 	}
 
 	// if (do_mouse_warp) {
