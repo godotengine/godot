@@ -1319,7 +1319,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 
 	RegenerateBoneStack(state);
 
-	// Configure indicies
+	// Configure indices
 	for (uint32_t i = 0; i < assimp_node->mNumMeshes; i++) {
 		int mesh_index = assimp_node->mMeshes[i];
 		// create list of mesh indexes

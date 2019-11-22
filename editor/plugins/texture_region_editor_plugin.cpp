@@ -430,9 +430,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
-			Vector2 draged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
-			hscroll->set_value(hscroll->get_value() - draged.x);
-			vscroll->set_value(vscroll->get_value() - draged.y);
+			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
+			hscroll->set_value(hscroll->get_value() - dragged.x);
+			vscroll->set_value(vscroll->get_value() - dragged.y);
 
 		} else if (drag) {
 

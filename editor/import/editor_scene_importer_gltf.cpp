@@ -1488,15 +1488,15 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 }
 
 EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset) {
-	int heighest = -1;
+	int highest = -1;
 	GLTFNodeIndex best_node = -1;
 
 	for (int i = 0; i < subset.size(); ++i) {
 		const GLTFNodeIndex node_i = subset[i];
 		const GLTFNode *node = state.nodes[node_i];
 
-		if (heighest == -1 || node->height < heighest) {
-			heighest = node->height;
+		if (highest == -1 || node->height < highest) {
+			highest = node->height;
 			best_node = node_i;
 		}
 	}

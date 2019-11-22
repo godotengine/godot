@@ -122,7 +122,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	int nc = 0;
 
-	List<PLData *> datas;
+	List<PLData *> data_list;
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
 
@@ -145,7 +145,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				pld.uses = 0;
 				pld.info = F->get();
 				usage[F->get().name] = pld;
-				datas.push_back(usage.getptr(F->get().name));
+				data_list.push_back(usage.getptr(F->get().name));
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear
@@ -156,7 +156,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		nc++;
 	}
 
-	for (List<PLData *>::Element *E = datas.front(); E; E = E->next()) {
+	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
 
 		if (nc == E->get()->uses) {
 			p_list->push_back(E->get()->info);

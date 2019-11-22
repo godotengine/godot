@@ -102,9 +102,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_
 }
 
 void GDScriptWorkspace::reload_all_workspace_scripts() {
-	List<String> pathes;
-	list_script_files("res://", pathes);
-	for (List<String>::Element *E = pathes.front(); E; E = E->next()) {
+	List<String> paths;
+	list_script_files("res://", paths);
+	for (List<String>::Element *E = paths.front(); E; E = E->next()) {
 		const String &path = E->get();
 		Error err;
 		String content = FileAccess::get_file_as_string(path, &err);
