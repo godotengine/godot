@@ -22,10 +22,11 @@ def can_build():
         print("pkg-config not found...")
         return False
 
+
     sdl_error = os.system("pkg-config sdl2 --modversion > /dev/null ")
     if (sdl_error):
-        print("SDL2 not found. Sailfish build disabled. Install SDL2-devel for all your targets in MerSDK ")
-        return False
+       print("SDL2 not found. Sailfish build disabled. Install SDL2-devel for all your targets in MerSDK ")
+       return False
 
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
@@ -145,8 +146,15 @@ def configure(env):
     env.Append(LINKFLAGS=['-pipe'])
 
     ## Dependencies
-
+    # try use static SDL2
     env.ParseConfig('pkg-config sdl2 --cflags --libs')
+    #env.Append(LINKFLAGS=['-Lplatform/sailfish/outputsdl/lib/', '-L/home/src1/Projects/Sailfish/godot/platform/sailfish/outputsdl/lib', '', '-lSDL2'])
+    #env.Append(LIBPATH=['/home/src1/Projects/Sailfish/godot/platform/sailfish/outputsdl/lib'])
+    #env.Append(LIBS=['SDL2'])
+    # env.Append(CPPPATH=['#platform/sailfish/outputsdl/include/SDL2'])
+    # env.ParseConfig('-L/home/src1/Projects/Sailfish/godot/platform/sailfish/outputsdl/lib -lSDL2')
+    env.Append(CPPPATH=['#platform/sailfish/SDL2-2.0.9/src'])
+    env.Append(CPPFLAGS=['-D__SAILFISH_PLATFORM__'])
     env.ParseConfig('pkg-config wayland-client --cflags --libs')
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
@@ -263,7 +271,7 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad', '#platform/sailfish/SDL_src/include', '#platform/sailfish/SDL_src/src'])
+    env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad', '#platform/sailfish/outputsdl/include', '#platform/sailfish/SDL_src/src'])
     # env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_ls -lGL'])
     env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
     env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE'])

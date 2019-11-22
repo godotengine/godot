@@ -35,13 +35,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <GLES2/gl2.h>
+// #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 #include <video/SDL_sysvideo.h>
+#include <SDL_opengles2.h>
+#include <SDL_video.h>
 #include <video/wayland/SDL_waylandwindow.h>
+#include <vector>
 
 struct ContextGL_SDL_Private {
 	SDL_GLContext gl_context;
+	int display_index;
 	OS::ScreenOrientation orientation;
 	struct qt_extended_surface *qt_ext_surface;
 	struct wl_output *output;
@@ -208,16 +212,16 @@ Error ContextGL_SDL::initialize() {
 	//  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	//  } else {
 		// Try OpenGL ES 2.0
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 	//  }
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	// SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	// SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	// SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	// SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
+	// SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	SDL_DisplayMode dm;
 	OS::get_singleton()->print("Get display mode\n");
@@ -227,38 +231,90 @@ Error ContextGL_SDL::initialize() {
 	width = dm.w;
 	height = dm.h;
 
-	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
-	ERR_FAIL_COND_V(!sdl_window, ERR_UNCONFIGURED);
+	// dm.orientation;
+
+	// SDL_GetDisplayMode()
+
+	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN ); //| SDL_WINDOW_FULLSCREEN
 
 	if( !sdl_window ) {
-		OS::get_singleton()->print("Error: SDL Window not created.\n");
+		OS::get_singleton()->print("SDL_Error \"%s\"",SDL_GetError());
 		return FAILED;
 	}
+	ERR_FAIL_COND_V(!sdl_window, ERR_UNCONFIGURED);
 
-	p->gl_context = SDL_GL_CreateContext(sdl_window);
+	p->display_index = SDL_GetWindowDisplayIndex(sdl_window);
+	OS::get_singleton()->print("DisplayIndex is %i \n", p->display_index);
+	// SDL_DisplayMode mode;
+	int orientation = SDL_GetDisplayOrientation(p->display_index);
 
+	switch(orientation) {
+		case SDL_ORIENTATION_LANDSCAPE:
+			OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE ");
+			break;
+		case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+			OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE_FLIPPED");
+			break;
+		case SDL_ORIENTATION_PORTRAIT:
+			OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT");
+			break;
+		case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+			OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT_FLIPPED");
+			break;
+		case SDL_ORIENTATION_UNKNOWN:
+			OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN");
+			break;
+	}
+
+	OS::get_singleton()->print("\nSDL_RENDER_DRIVER available:\n");
+    for( int i = 0; i < SDL_GetNumRenderDrivers(); ++i )
+    {
+        SDL_RendererInfo info;
+        SDL_GetRenderDriverInfo( i, &info );
+        OS::get_singleton()->print("[%i] %s\n",i,info.name);
+    }
+
+	print_verbose("Create GL context.\n");
+	p->gl_context = SDL_GL_CreateContext(sdl_window); //SDL_GL_GetCurrentContext();
 	if(p->gl_context == NULL) {
 		ERR_EXPLAIN("Could not obtain an OpenGL ES 2.0 context!");
 		ERR_FAIL_COND_V(p->gl_context == NULL, ERR_UNCONFIGURED);
 		return FAILED;
 	}
+
+    // p->sdl_renderer = SDL_CreateRenderer( sdl_window, -1, SDL_RENDERER_ACCELERATED );
+    // if( NULL == p->sdl_renderer )
+    // {
+    //     OS::get_singleton()->print("SDL_CreateRenderer(): %s \n" ,SDL_GetError());
+    //     return FAILED;
+    // }
+    // SDL_RendererInfo info;
+    // SDL_GetRendererInfo( p->sdl_renderer, &info );
+    // OS::get_singleton()->print("SDL_RENDER_DRIVER selected : %s \n", info.name );
+
 	//sdl_window.
-
+	print_verbose("Get SDL_WindowData.\n");
 	SDL_WindowData* wdata = (SDL_WindowData*)sdl_window->driverdata;
-
+	if( wdata == NULL )
+	{
+		OS::get_singleton()->print("SDL_WindowData is empty!");
+	}
+	print_verbose("Get SDL_VideData (waylandData).\n");
 	SDL_VideoData* sdl_videodata = wdata->waylandData;
 	// qt_extended_surface_set_content_orientation(wdata->extended_surface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+	print_verbose("Get qt_extended_surface (for setting screen orientation)\n");
 	p->qt_ext_surface = wdata->extended_surface;
+	print_verbose("Get wl_output pointer, if possible\n");
 	p->output = (struct wl_output *)sdl_window->fullscreen_mode.driverdata;
 	p->orientation = OS::SCREEN_PORTRAIT;
 	if(OS::get_singleton()->is_stdout_verbose()) 
 	{
 		if( sdl_videodata != NULL )
 		{
-			OS::get_singleton()->print("SDL videdata handled;\n");
+			OS::get_singleton()->print("SDL videodata is handled;\n");
 		}
-		OS::get_singleton()->print("Try handle wl_output;\n");
 	}
+	print_verbose("Try handle wl_output\n");
 	if(p->output)
 		wl_output_add_listener(p->output, &output_listener, p);
 	else if(OS::get_singleton()->is_stdout_verbose())
