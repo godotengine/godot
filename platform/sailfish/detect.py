@@ -101,7 +101,7 @@ def configure(env):
     elif (env["target"] == "debug"):
         env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED', '-DGLES_ENABLED'])
         env.Append(LINKFLAGS=['-rdynamic'])
-
+    env.Prepend(CCFLAGS=['-DMESA_EGL_NO_X11_HEADERS'])
     ## Architecture
 
     is64 = sys.maxsize > 2**32
