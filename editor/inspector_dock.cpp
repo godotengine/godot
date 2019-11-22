@@ -99,7 +99,7 @@ void InspectorDock::_menu_option(int p_option) {
 							if (res.is_valid()) {
 
 								if (!duplicates.has(res)) {
-									duplicates[res] = res->duplicate();
+									duplicates[res] = res->duplicate(true);
 								}
 								res = duplicates[res];
 
