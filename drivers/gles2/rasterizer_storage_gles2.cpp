@@ -5882,7 +5882,7 @@ void RasterizerStorageGLES2::initialize() {
 		GLuint depth;
 		glGenTextures(1, &depth);
 		glBindTexture(GL_TEXTURE_2D, depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, config.depth_internalformat, config.depth_type, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, 32, 32, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -5910,7 +5910,7 @@ void RasterizerStorageGLES2::initialize() {
 
 			glGenTextures(1, &depth);
 			glBindTexture(GL_TEXTURE_2D, depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 32, 32, 0, GL_DEPTH_COMPONENT16, GL_UNSIGNED_SHORT, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
