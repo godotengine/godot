@@ -213,12 +213,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, in
 		//normalized blinn always unless disabled
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
-		float cVdotH = max(dot(V, H), 0.0);
-		float cLdotH = max(dot(L, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess);
+		float blinn = pow(cNdotH, shininess) * cNdotL;
 		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+		specular_brdf_NL = blinn;
 #endif
 
 		specular += specular_brdf_NL * light_color * (1.0 / M_PI);
@@ -1094,9 +1092,9 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess);
+		float blinn = pow(cNdotH, shininess) * cNdotL;
 		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		float intensity = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+		float intensity = blinn;
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
 
