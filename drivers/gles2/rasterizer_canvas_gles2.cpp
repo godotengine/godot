@@ -51,7 +51,7 @@ void RasterizerCanvasGLES2::light_internal_free(RID p_rid) {
 }
 
 void RasterizerCanvasGLES2::_set_uniforms() {
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, false);
+	// state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX, state.uniforms.projection_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
@@ -158,7 +158,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	// set up default uniforms
 
 	Transform canvas_transform;
-	//canvas_transform.rotate( (3.1415926536f) * 0.5f );
+
 	if (storage->frame.current_rt) {
 
 		float csy = 1.0;
@@ -202,6 +202,8 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 3);
 	else
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
+#else 
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE,false);
 #endif
 	_bind_quad_buffer();
 }
@@ -2004,6 +2006,7 @@ void RasterizerCanvasGLES2::_bind_quad_buffer() {
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
+
 void RasterizerCanvasGLES2::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
