@@ -98,6 +98,8 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
+	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
