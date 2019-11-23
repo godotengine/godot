@@ -121,7 +121,8 @@ Error ContextGL_SDL::initialize() {
 	print_verbose("Create GL context.\n");
 	p->gl_context = SDL_GL_CreateContext(sdl_window); //SDL_GL_GetCurrentContext();
 	if(p->gl_context == NULL) {
-		ERR_EXPLAIN("Could not obtain an OpenGL ES 2.0 context!");
+		// ERR_EXPLAIN("Could not obtain an OpenGL ES 2.0 context!");
+		OS::get_singleton()->print("ERROR: Could not obtain an OpenGL ES 2.0 context!");
 		ERR_FAIL_COND_V(p->gl_context == NULL, ERR_UNCONFIGURED);
 		return FAILED;
 	}

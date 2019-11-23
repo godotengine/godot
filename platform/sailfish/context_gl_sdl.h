@@ -39,14 +39,12 @@
 
 #if  defined(GLES2_ENABLED)
 
-#include "drivers/gl_context/context_gl.h"
 #include "os/os.h"
 #include <SDL.h>
-#include <qt5/QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
 
 struct ContextGL_SDL_Private;
 
-class ContextGL_SDL : public ContextGL {
+class ContextGL_SDL {
 
 	ContextGL_SDL_Private *p;
 	OS::VideoMode default_video_mode;
