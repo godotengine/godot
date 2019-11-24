@@ -1142,24 +1142,33 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
-	Vector3 lv = p_linear_velocity;
+	Vector3 body_velocity = p_linear_velocity;
+	Vector3 body_velocity_normal = body_velocity.normalized();
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
-			lv[i] = 0;
+			body_velocity[i] = 0;
+		}
+	}
+
+	Vector3 current_floor_velocity = floor_velocity;
+	if (on_floor && on_floor_body.is_valid()) {
+		//this approach makes sure there is less delay between the actual body velocity and the one we saved
+		PhysicsDirectBodyState *bs = PhysicsServer::get_singleton()->body_get_direct_state(on_floor_body);
+		if (bs) {
+			current_floor_velocity = bs->get_linear_velocity();
 		}
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector3 motion = (floor_velocity + lv) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
+	Vector3 motion = (current_floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
+	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
 	colliders.clear();
 	floor_velocity = Vector3();
-
-	Vector3 lv_n = p_linear_velocity.normalized();
 
 	while (p_max_slides) {
 
@@ -1187,7 +1196,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				bool is_on_slope = false;
 				if (p_floor_direction == Vector3()) {
 					//all is a wall
 					on_wall = true;
@@ -1199,16 +1207,13 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
+							if ((body_velocity_normal + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel.slide(p_floor_direction);
 								set_global_transform(gt);
 								return Vector3();
 							}
 						}
-
-						is_on_slope = true;
-
 					} else if (Math::acos(collision.normal.dot(-p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
@@ -1216,18 +1221,12 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					}
 				}
 
-				if (p_stop_on_slope && is_on_slope) {
-					motion = motion.slide(p_floor_direction);
-					lv = lv.slide(p_floor_direction);
-				} else {
-					Vector3 n = collision.normal;
-					motion = motion.slide(n);
-					lv = lv.slide(n);
-				}
+				motion = motion.slide(collision.normal);
+				body_velocity = body_velocity.slide(collision.normal);
 
 				for (int j = 0; j < 3; j++) {
 					if (locked_axis & (1 << j)) {
-						lv[j] = 0;
+						body_velocity[j] = 0;
 					}
 				}
 			}
@@ -1239,7 +1238,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		--p_max_slides;
 	}
 
-	return lv;
+	return body_velocity;
 }
 
 Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
