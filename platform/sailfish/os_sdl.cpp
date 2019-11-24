@@ -468,7 +468,7 @@ void OS_SDL::set_window_position(const Point2 &p_position) {
 Size2 OS_SDL::get_window_size() const {
 	int w, h;
 	SDL_GetWindowSize(sdl_window, &w, &h);
-#ifdef SAILFISH_FORCE_LANDSCAPE
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	if (get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
 		get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
 		get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
@@ -593,7 +593,7 @@ unsigned int OS_SDL::get_mouse_button_state(uint32_t button_mask, bool refresh) 
 	return state;
 }
 
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 void OS_SDL::fix_touch_position(Vector2 &pos) {
 	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
 			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE) {
@@ -827,7 +827,7 @@ void OS_SDL::process_events() {
 			long long index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
 			
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 			fix_touch_position(pos);
 #endif
 			// end landscape 
@@ -899,7 +899,7 @@ void OS_SDL::process_events() {
 
 			int index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 			fix_touch_position(pos);
 #endif 
 			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);

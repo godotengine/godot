@@ -169,7 +169,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
 		Vector2 ssize = OS::get_singleton()->get_window_size();
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
 			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
 			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE)
@@ -188,7 +188,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 
 	_set_uniforms();
 	// force landscape only for final render 
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	// OS::get_singleton()->print("canvas_begin: Set orientation %i\n", OS::get_singleton()->get_screen_orientation());
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE,true);
 	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE)
@@ -2058,7 +2058,7 @@ void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_im
 	int window_h = window_size.height;
 	int window_w = window_size.width;
 	
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	// force landscape
 	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
 		OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
@@ -2071,7 +2071,7 @@ void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_im
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->system_fbo);
 
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	glViewport(0, 0, window_w, window_h);
 #else
 	glViewport(0, 0, window_size.width, window_size.height);

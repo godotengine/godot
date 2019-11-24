@@ -73,7 +73,7 @@ Error ContextGL_SDL::initialize() {
 	//  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	//  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	//  } else {
-		// Try OpenGL ES 2.0
+	// Try OpenGL ES 2.0
 	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
@@ -268,7 +268,7 @@ void ContextGL_SDL::set_ext_surface_orientation(int sdl_orientation)
 }
 
 void ContextGL_SDL::set_screen_orientation(OS::ScreenOrientation p_orientation) {
-#ifdef SAILFISH_FORCE_LANDSCAPE	
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	// if(p->qt_ext_surface)
 	// "primary" (default), "portrait", "landscape", "inverted-portrait", "inverted-landscape"
 	switch(p_orientation) {

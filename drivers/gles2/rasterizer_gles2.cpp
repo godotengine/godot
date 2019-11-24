@@ -318,7 +318,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 	} else {
 		storage->frame.current_rt = NULL;
 		storage->frame.clear_request = false;
-#ifdef SAILFISH_FORCE_LANDSCAPE
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
 			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
 			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE)
@@ -349,7 +349,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	if (p_image.is_null() || p_image->empty())
 		return;
 
-#ifdef SAILFISH_FORCE_LANDSCAPE
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	int window_w = OS::get_singleton()->get_window_size().width;
 	int window_h = OS::get_singleton()->get_window_size().height;
 
