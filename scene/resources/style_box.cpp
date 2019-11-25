@@ -81,6 +81,10 @@ Size2 StyleBox::get_center_size() const {
 	return Size2();
 }
 
+Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {
+	return p_rect;
+}
+
 void StyleBox::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("test_mask", "point", "rect"), &StyleBox::test_mask);
@@ -173,6 +177,10 @@ float StyleBoxTexture::get_style_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0.0);
 
 	return margin[p_margin];
+}
+
+Rect2 StyleBoxTexture::get_draw_rect(const Rect2 &p_rect) const {
+	return p_rect.grow_individual(expand_margin[MARGIN_LEFT], expand_margin[MARGIN_TOP], expand_margin[MARGIN_RIGHT], expand_margin[MARGIN_BOTTOM]);
 }
 
 void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
@@ -685,6 +693,19 @@ inline void adapt_values(int p_index_a, int p_index_b, int *adapted_values, cons
 	adapted_values[p_index_a] = MIN(p_max_a, adapted_values[p_index_a]);
 	adapted_values[p_index_b] = MIN(p_max_b, adapted_values[p_index_b]);
 }
+
+Rect2 StyleBoxFlat::get_draw_rect(const Rect2 &p_rect) const {
+	Rect2 draw_rect = p_rect.grow_individual(expand_margin[MARGIN_LEFT], expand_margin[MARGIN_TOP], expand_margin[MARGIN_RIGHT], expand_margin[MARGIN_BOTTOM]);
+
+	if (shadow_size > 0) {
+		Rect2 shadow_rect = draw_rect.grow(shadow_size);
+		shadow_rect.position += shadow_offset;
+		draw_rect = draw_rect.merge(shadow_rect);
+	}
+
+	return draw_rect;
+}
+
 void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	//PREPARATIONS
