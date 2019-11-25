@@ -4593,6 +4593,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 					break;
 			}
 		}
+		n_line = MIN(n_line, text.size() - 1);
 		int line_wrap_amount = times_line_wraps(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
