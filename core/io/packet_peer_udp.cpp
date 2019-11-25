@@ -37,6 +37,12 @@ void PacketPeerUDP::set_blocking_mode(bool p_enable) {
 	blocking = p_enable;
 }
 
+void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
+	broadcast = p_enabled;
+	if (_sock.is_valid() && _sock->is_open())
+		_sock->set_broadcasting_enabled(p_enabled);
+}
+
 Error PacketPeerUDP::join_multicast_group(IP_Address p_multi_address, String p_if_name) {
 
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
@@ -47,6 +53,7 @@ Error PacketPeerUDP::join_multicast_group(IP_Address p_multi_address, String p_i
 		Error err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
+		_sock->set_broadcasting_enabled(broadcast);
 	}
 	return _sock->join_multicast_group(p_multi_address, p_if_name);
 }
@@ -122,6 +129,7 @@ Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
+		_sock->set_broadcasting_enabled(broadcast);
 	}
 
 	do {
@@ -165,6 +173,7 @@ Error PacketPeerUDP::listen(int p_port, const IP_Address &p_bind_address, int p_
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
+	_sock->set_broadcasting_enabled(broadcast);
 	err = _sock->bind(p_bind_address, p_port);
 
 	if (err != OK) {
@@ -258,6 +267,7 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	ClassDB::bind_method(D_METHOD("get_packet_port"), &PacketPeerUDP::get_packet_port);
 	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
+	ClassDB::bind_method(D_METHOD("set_broadcast_enabled", "enabled"), &PacketPeerUDP::set_broadcast_enabled);
 	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
 	ClassDB::bind_method(D_METHOD("leave_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::leave_multicast_group);
 }
@@ -267,6 +277,7 @@ PacketPeerUDP::PacketPeerUDP() :
 		queue_count(0),
 		peer_port(0),
 		blocking(true),
+		broadcast(false),
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }
