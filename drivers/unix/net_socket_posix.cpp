@@ -603,15 +603,17 @@ Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP
 	return OK;
 }
 
-void NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
-	ERR_FAIL_COND(!is_open());
+Error NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	// IPv6 has no broadcast support.
-	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV6);
+	ERR_FAIL_COND_V(_ip_type == IP::TYPE_IPV6, ERR_UNAVAILABLE);
 
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_BROADCAST, SOCK_CBUF(&par), sizeof(int)) != 0) {
 		WARN_PRINT("Unable to change broadcast setting");
+		return FAILED;
 	}
+	return OK;
 }
 
 void NetSocketPosix::set_blocking_enabled(bool p_enabled) {

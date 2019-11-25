@@ -89,7 +89,7 @@ public:
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
 
-	virtual void set_broadcasting_enabled(bool p_enabled);
+	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);
 	virtual void set_ipv6_only_enabled(bool p_enabled);
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);
