@@ -1363,6 +1363,26 @@
 				Stops the function execution and returns the current suspended state to the calling function.
 				From the caller, call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state. Within the resumed function, [code]yield()[/code] returns whatever was passed to the [code]resume()[/code] function call.
 				If passed an object and a signal, the execution is resumed when the object emits the given signal. In this case, [code]yield()[/code] returns the argument passed to [code]emit_signal()[/code] if the signal takes only one argument, or an array containing all the arguments passed to [code]emit_signal()[/code] if the signal takes multiple arguments.
+				You can also use [code]yield[/code] to wait for a function to finish:
+				[codeblock]
+				func _ready -> void:
+				    yield(do_something(), "completed")
+				    yield(do_something_else(), "completed")
+				    print("All functions are done!")
+
+				func do_something():
+				    print("Something is done!")
+				
+				func do_something_else():
+				    print("Something else is done!")
+				
+				# prints:
+				# Something is done!
+				# Something else is done!
+				# All functions are done!
+				[/codeblock]
+				When yielding on a function, the [code]completed[/code] signal will be emitted automatically when the function returns. It can, therefore, be used as the [code]signal[/code] parameter of the [code]yield[/code] method to resume.
+				If you are planning on calling the same function within a loop, you should consider using [code]yield(get_tree(), "idle_frame")[/code] also.
 			</description>
 		</method>
 	</methods>
