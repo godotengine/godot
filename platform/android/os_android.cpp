@@ -43,6 +43,7 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
+#include "net_socket_android.h"
 
 #include <dlfcn.h>
 
@@ -106,6 +107,8 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+
+	NetSocketAndroid::make_default();
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {

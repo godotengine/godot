@@ -47,6 +47,7 @@
 			<description>
 				Joins the multicast group specified by [code]multicast_address[/code] using the interface identified by [code]interface_name[/code].
 				You can join the same multicast group with multiple interfaces. Use [method IP.get_local_interfaces] to know which are available.
+				Note: Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission for multicast to work.
 			</description>
 		</method>
 		<method name="leave_multicast_group">
@@ -83,6 +84,7 @@
 			</argument>
 			<description>
 				Enable or disable sending of broadcast packets (e.g. [code]set_dest_address("255.255.255.255", 4343)[/code]. This option is disabled by default.
+				Note: Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission and this option to be enabled to receive broadcast packets too.
 			</description>
 		</method>
 		<method name="set_dest_address">
