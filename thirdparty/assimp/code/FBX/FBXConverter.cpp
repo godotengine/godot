@@ -231,14 +231,14 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 			// TRS
 			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
             std::cout << "anim node name: " << node_anim->mNodeName.C_Str() << std::endl;
-            if (IsBone(node_anim->mNodeName)) {
-                std::cout << "bone animation re-sample logic" << std::endl;
-                final_matrix = transform.Inverse() * final_matrix * transform;
-                //final_matrix = transform * final_matrix;
-            }
-            else{
+//            if (IsBone(node_anim->mNodeName)) {
+//                std::cout << "bone animation re-sample logic" << std::endl;
+//                final_matrix = transform.Inverse() * final_matrix * transform;
+//                //final_matrix = transform * final_matrix;
+//            }
+//            else{
                 final_matrix = transform * final_matrix;
-            }
+//            }
 			final_matrix.Decompose(scale, rot, trans);
 
 			// now overwrite with pivot point
@@ -298,7 +298,7 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				// Handle FBX pivot data (explicitly must be done all the time)
 				aiMatrix4x4 geometric_node;
 				std::cout << "Node Pivot lookup ID: " << model->ID() << std::endl;
-				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model, geometric_node);
+				aiMatrix4x4 pivot_xform = GeneratePivotTransform(*model,geometric_node);
 
 				// formula (world_space) * (model space * inverse previous model space)
 				//
@@ -373,18 +373,56 @@ void FBXConverter::ConvertLights(const Model &model, const std::string &orig_nam
 }
 
 void FBXConverter::ConvertBones( const Model &model, const std::string &orig_name) {
+    int count = 0;
     const std::vector<const NodeAttribute *> &node_attrs = model.GetAttributes();
-    for( const NodeAttribute *attr : node_attrs)
-    {
-        const LimbNode *const limb = dynamic_cast<const LimbNode*>(attr);
-        if(limb)
-        {
-            aiBone *bone = new aiBone();
-            bones.push_back(bone);
-            bone->mName.Set(orig_name);
+    for( const NodeAttribute *attr : node_attrs) {
+        // this is the inverse bind matrix container (so where the pivot xform is stored)
+        const LimbNode *const limb = dynamic_cast<const LimbNode *>(attr);
+        if (limb) {
+            int64_t id = limb->ID();
+            if(bone_id_map.count(id))
+            {
+                continue;
+            } else {
+                aiBone *bone = new aiBone();
+                std::string name = orig_name;
+                std::cout << "valid bone added once: " << orig_name << std::endl;
+                aiMatrix4x4 geometric_transform = aiMatrix4x4();
+                aiMatrix4x4 pivot = GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_transform );
+                bone->mOffsetMatrix = pivot * geometric_transform;
+                //bone->mOffsetMatrix
+                bone->mName.Set(name);
+
+                // limb->Props()
+                // rotation order: model
+                bone_id_map.insert(std::pair<int64_t, aiBone*>(id, bone));
+                ++count;
+            }
+
 
             // todo: set Inverse Bind Matrix
         }
+    }
+
+    if(count != 0)
+    {
+        std::cout << "have a new entry!" << count << std::endl;
+    }
+
+    for( const NodeAttribute *attr : node_attrs)
+    {
+        const Skin *const skin = dynamic_cast<const Skin*>(attr);
+        if(skin)
+        {
+            // make skin... blah
+
+        }
+
+
+
+
+        // Cluster is the Indexes and Weights
+        // Skin
     }
 
 
@@ -740,11 +778,14 @@ void FBXConverter::MagicPivotAlgorithm(
 	//result = Sp.Inverse() * S * Sp * Soff * Rp.Inverse() * Rpost.Inverse() * R * Rpre * Rp * Roff * T;
 }
 
-aiMatrix4x4 FBXConverter::GeneratePivotTransform(
-		const Model &model,
-		aiMatrix4x4 &geometric_transform) {
-	const PropertyTable &props = model.Props();
-	const Model::RotOrder rot = model.RotationOrder();
+aiMatrix4x4 FBXConverter::GeneratePivotTransform( const Model& model, aiMatrix4x4 &geometric_transform ){
+    return GeneratePivotTransform(model.Props(), model.RotationOrder(), geometric_transform);
+}
+
+aiMatrix4x4 FBXConverter::GeneratePivotTransform(const PropertyTable &props, const Model::RotOrder &rot,
+                                                 aiMatrix4x4 &geometric_transform) {
+//	const PropertyTable &props = model.Props();
+//	const Model::RotOrder rot = model.RotationOrder();
 
 	bool ok = false;
 
@@ -1521,7 +1562,7 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 
 	bone->mOffsetMatrix *= absolute_transform;
 
-	bone_nodes.push_back(bone);
+//	bone_nodes.push_back(bone);
 
 
 

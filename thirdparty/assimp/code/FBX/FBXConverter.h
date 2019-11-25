@@ -132,24 +132,22 @@ private:
 
 	std::map<aiAnimation *, std::vector<aiNodeAnim *> > animation_stack;
 
-	// we must ignore aiBones from re-sampling
-	std::vector<aiBone *> bone_nodes;
 	// we must still overwrite their node counterparts though.
 
-	bool IsBone(aiString name) {
-	    if(bones.empty())
-        {
-	        std::cout << "warning: bone list is empty so can't check for bones!" << std::endl;
-        }
-		for (aiBone *bone : bones) {
-		    std::cout << "[isbone] bone name: " << bone->mName.C_Str() << std::endl;
-			if (bone->mName == name) {
-				std::cout << "[isbone] check found: " << name.C_Str() << std::endl;
-				return true;
-			}
-		}
-		return false;
-	}
+//	bool IsBone(aiString name) {
+//	    if(bones.empty())
+//        {
+//	        std::cout << "warning: bone list is empty so can't check for bones!" << std::endl;
+//        }
+//		for (aiBone *bone : bones) {
+//		    std::cout << "[isbone] bone name: " << bone->mName.C_Str() << std::endl;
+//			if (bone->mName == name) {
+//				std::cout << "[isbone] check found: " << name.C_Str() << std::endl;
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	// ------------------------------------------------------------------------------------------------
 	// find scene root and trigger recursive scene conversion
@@ -200,9 +198,10 @@ private:
     */
 	bool NeedsComplexTransformationChain(const Model &model);
 
-	aiMatrix4x4 GeneratePivotTransform(
-			const Model &model,
-			aiMatrix4x4 &geometric_transform);
+	aiMatrix4x4 GeneratePivotTransform( const Model& model, aiMatrix4x4 &geometric_transform );
+
+	aiMatrix4x4 GeneratePivotTransform(const PropertyTable &props, const Model::RotOrder &rot,
+                                       aiMatrix4x4 &geometric_transform);
 
 	void MagicPivotAlgorithm(
 			aiMatrix4x4 chain[TransformationComp_MAXIMUM],
@@ -480,7 +479,7 @@ private:
 	std::vector<aiMesh *> meshes;
 	std::vector<aiMaterial *> materials;
 	std::vector<aiAnimation *> animations;
-	std::vector<aiBone *> bones;
+	std::map<int64_t, aiBone *> bone_id_map;
 	std::vector<aiLight *> lights;
 	std::vector<aiCamera *> cameras;
 	std::vector<aiTexture *> textures;
