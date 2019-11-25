@@ -99,6 +99,7 @@ public:
 
 		GLuint depth_internalformat;
 		GLuint depth_type;
+		GLuint depth_buffer_internalformat;
 
 	} config;
 
