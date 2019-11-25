@@ -252,7 +252,7 @@ private:
 			uint64_t flags : 18;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
-			uint64_t specular_mode : 2;
+			uint64_t specular_mode : 3;
 			uint64_t invalid_key : 1;
 			uint64_t deep_parallax : 1;
 			uint64_t billboard_mode : 2;
