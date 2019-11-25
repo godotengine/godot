@@ -211,6 +211,10 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 	read_limit = p_size;
 }
 
+int HTTPClient::get_read_chunk_size() const {
+	return read_limit;
+}
+
 Error HTTPClient::poll() {
 
 	switch (status) {

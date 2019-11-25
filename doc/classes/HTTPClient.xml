@@ -170,15 +170,6 @@
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>
-		<method name="set_read_chunk_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="bytes" type="int">
-			</argument>
-			<description>
-				Sets the size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
@@ -186,6 +177,9 @@
 		</member>
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
 			The connection to use for this client.
+		</member>
+		<member name="read_chunk_size" type="int" setter="set_read_chunk_size" getter="get_read_chunk_size" default="4096">
+			The size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
 		</member>
 	</members>
 	<constants>

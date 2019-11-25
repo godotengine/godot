@@ -715,6 +715,10 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 	read_chunk_size = p_size;
 }
 
+int HTTPClient::get_read_chunk_size() const {
+	return read_chunk_size;
+}
+
 HTTPClient::HTTPClient() {
 
 	tcp_connection.instance();
@@ -818,6 +822,7 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
 	ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
 	ClassDB::bind_method(D_METHOD("set_read_chunk_size", "bytes"), &HTTPClient::set_read_chunk_size);
+	ClassDB::bind_method(D_METHOD("get_read_chunk_size"), &HTTPClient::get_read_chunk_size);
 
 	ClassDB::bind_method(D_METHOD("set_blocking_mode", "enabled"), &HTTPClient::set_blocking_mode);
 	ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
@@ -829,6 +834,7 @@ void HTTPClient::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", 0), "set_connection", "get_connection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);
 	BIND_ENUM_CONSTANT(METHOD_HEAD);

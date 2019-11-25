@@ -126,6 +126,9 @@ public:
 	void set_download_file(const String &p_file);
 	String get_download_file() const;
 
+	void set_download_chunk_size(int p_chunk_size);
+	int get_download_chunk_size() const;
+
 	void set_body_size_limit(int p_bytes);
 	int get_body_size_limit() const;
 
