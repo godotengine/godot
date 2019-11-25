@@ -109,7 +109,6 @@ class TileMapEditor : public VBoxContainer {
 
 	bool selection_active;
 	bool mouse_over;
-	bool show_tile_info;
 
 	bool flip_h;
 	bool flip_v;
@@ -218,6 +217,7 @@ protected:
 public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
 	HBoxContainer *get_toolbar_right() const { return toolbar_right; }
+	Label *get_tile_info() const { return tile_info; }
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);

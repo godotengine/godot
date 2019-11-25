@@ -52,12 +52,6 @@ void TileMapEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			bool new_show_tile_info = EditorSettings::get_singleton()->get("editors/tile_map/show_tile_info_on_hover");
-			if (new_show_tile_info != show_tile_info) {
-				show_tile_info = new_show_tile_info;
-				tile_info->set_visible(show_tile_info);
-			}
-
 			if (is_visible_in_tree()) {
 				_update_palette();
 			}
@@ -1250,14 +1244,13 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			CanvasItemEditor::get_singleton()->update_viewport();
 		}
 
-		if (show_tile_info) {
-			int tile_under = node->get_cell(over_tile.x, over_tile.y);
-			String tile_name = "none";
+		int tile_under = node->get_cell(over_tile.x, over_tile.y);
+		String tile_name = "none";
 
-			if (node->get_tileset()->has_tile(tile_under))
-				tile_name = node->get_tileset()->tile_get_name(tile_under);
-			tile_info->set_text(String::num(over_tile.x) + ", " + String::num(over_tile.y) + " [" + tile_name + "]");
-		}
+		if (node->get_tileset()->has_tile(tile_under))
+			tile_name = node->get_tileset()->tile_get_name(tile_under);
+		tile_info->show();
+		tile_info->set_text(String::num(over_tile.x) + ", " + String::num(over_tile.y) + " [" + tile_name + "]");
 
 		if (tool == TOOL_PAINTING) {
 
@@ -1925,7 +1918,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	tool = TOOL_NONE;
 	selection_active = false;
 	mouse_over = false;
-	show_tile_info = true;
 
 	flip_h = false;
 	flip_v = false;
@@ -2055,7 +2047,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	// Tile position.
 	tile_info = memnew(Label);
-	toolbar_right->add_child(tile_info);
+	tile_info->set_modulate(Color(1, 1, 1, 0.8));
+	tile_info->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	tile_info->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
+	// The tile info is only displayed after a tile has been hovered.
+	tile_info->hide();
+	CanvasItemEditor::get_singleton()->add_control_to_info_overlay(tile_info);
 
 	// Menu.
 	options = memnew(MenuButton);
@@ -2151,6 +2148,10 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->show();
 		tile_map_editor->get_toolbar()->show();
 		tile_map_editor->get_toolbar_right()->show();
+		// `tile_info` isn't shown here, as it's displayed after a tile has been hovered.
+		// Otherwise, a translucent black rectangle would be visible as there would be an
+		// empty Label in the CanvasItemEditor's info overlay.
+
 		// Change to TOOL_SELECT when TileMap node is selected, to prevent accidental movement.
 		CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 	} else {
@@ -2158,6 +2159,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->hide();
 		tile_map_editor->get_toolbar()->hide();
 		tile_map_editor->get_toolbar_right()->hide();
+		tile_map_editor->get_tile_info()->hide();
 		tile_map_editor->edit(NULL);
 	}
 }
@@ -2170,7 +2172,6 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("editors/tile_map/show_tile_ids", false);
 	EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true);
 	EDITOR_DEF("editors/tile_map/bucket_fill_preview", true);
-	EDITOR_DEF("editors/tile_map/show_tile_info_on_hover", true);
 	EDITOR_DEF("editors/tile_map/editor_side", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/tile_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
