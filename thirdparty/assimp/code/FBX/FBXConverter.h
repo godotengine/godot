@@ -132,14 +132,19 @@ private:
 
 	std::map<aiAnimation *, std::vector<aiNodeAnim *> > animation_stack;
 
-	// we must ignore aiBones from resampling
+	// we must ignore aiBones from re-sampling
 	std::vector<aiBone *> bone_nodes;
 	// we must still overwrite their node counterparts though.
 
 	bool IsBone(aiString name) {
-		for (aiBone *bone : bone_nodes) {
+	    if(bones.empty())
+        {
+	        std::cout << "warning: bone list is empty so can't check for bones!" << std::endl;
+        }
+		for (aiBone *bone : bones) {
+		    std::cout << "[isbone] bone name: " << bone->mName.C_Str() << std::endl;
 			if (bone->mName == name) {
-				std::cout << "is bone check: " << name.C_Str() << std::endl;
+				std::cout << "[isbone] check found: " << name.C_Str() << std::endl;
 				return true;
 			}
 		}
@@ -475,6 +480,7 @@ private:
 	std::vector<aiMesh *> meshes;
 	std::vector<aiMaterial *> materials;
 	std::vector<aiAnimation *> animations;
+	std::vector<aiBone *> bones;
 	std::vector<aiLight *> lights;
 	std::vector<aiCamera *> cameras;
 	std::vector<aiTexture *> textures;
@@ -520,6 +526,8 @@ private:
 	static aiNode *GetArmatureRoot(aiNode *bone_node, std::vector<aiBone *> &bone_list);
 
 	static bool IsBoneNode(const aiString &bone_name, std::vector<aiBone *> &bones);
+
+    void ConvertBones(const Model &model, const std::string &orig_name);
 };
 
 } // namespace FBX

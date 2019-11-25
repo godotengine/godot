@@ -58,6 +58,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <functional>
 #include <map>
+#include <iostream>
 
 namespace Assimp {
 namespace FBX {
@@ -158,6 +159,8 @@ const Object* LazyObject::Get(bool dieOnError)
                 object.reset(new Null(id,element,doc,name));
             }
             else if (!strcmp(classtag.c_str(),"LimbNode")) {
+                // This is an older format for bones
+                // this is what blender uses I believe
                 object.reset(new LimbNode(id,element,doc,name));
             }
         }
@@ -206,8 +209,13 @@ const Object* LazyObject::Get(bool dieOnError)
         else if (!strncmp(obtype,"AnimationCurveNode",length)) {
             object.reset(new AnimationCurveNode(id,element,name,doc));
         }
+        else if( !strncmp(obtype, "Pose", length))
+        {
+            object.reset( new FbxPose( id, element, doc, name ));
+        }
         else
         {
+            std::cout << "!important objtype: " << obtype << std::endl;
             //dumpObjectClassInfo( objtype, classtag );
             ASSIMP_LOG_WARN_F("Unsupported node from fbx: type: ", obtype, " tag: ", classtag, "name: ", name );
         }
@@ -243,6 +251,14 @@ Object::Object(uint64_t id, const Element& element, const std::string& name)
 , id(id)
 {
     // empty
+//
+//    const Scope& sc = GetRequiredScope(element);
+//
+//
+//    for( auto element : sc.Elements())
+//    {
+//        std::cout << " element: " << element.first << std::endl;
+//    }
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -159,6 +159,14 @@ protected:
 	const uint64_t id;
 };
 
+class FbxPose : public Object {
+public:
+    FbxPose(uint64_t id, const Element &element, const Document &doc, const std::string &name);
+
+    virtual ~FbxPose();
+
+};
+
 /** DOM class for generic FBX NoteAttribute blocks. NoteAttribute's just hold a property table,
  *  fixed members are added by deriving classes. */
 class NodeAttribute : public Object {

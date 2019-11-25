@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXDocument.h"
 #include "FBXImporter.h"
 #include "FBXDocumentUtil.h"
+#include <iostream>
 
 namespace Assimp {
 namespace FBX {
@@ -154,7 +155,24 @@ Null::~Null()
 LimbNode::LimbNode(uint64_t id, const Element& element, const Document& doc, const std::string& name)
 : NodeAttribute(id,element,doc,name)
 {
+    std::cout << "limb node: " << name << std::endl;
+    const Scope& sc = GetRequiredScope(element);
 
+    const Element* const TypeFlag = sc["TypeFlags"];
+
+    for( auto element : sc.Elements())
+    {
+        std::cout << "limbnode element: " << element.first << std::endl;
+    }
+
+    if(TypeFlag)
+    {
+        std::cout << "type flag: " << GetRequiredToken(*TypeFlag, 0).StringContents() << std::endl;
+    }
+
+
+
+    return;
 }
 
 

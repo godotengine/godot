@@ -52,6 +52,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXImporter.h"
 #include "FBXDocumentUtil.h"
 
+#include <iostream>
+
 namespace Assimp {
 namespace FBX {
 
@@ -74,7 +76,6 @@ Deformer::~Deformer()
 
 }
 
-
 // ------------------------------------------------------------------------------------------------
 Cluster::Cluster(uint64_t id, const Element& element, const Document& doc, const std::string& name)
 : Deformer(id,element,doc,name)
@@ -82,11 +83,29 @@ Cluster::Cluster(uint64_t id, const Element& element, const Document& doc, const
 {
     const Scope& sc = GetRequiredScope(element);
 
+//    for( auto element : sc.Elements())
+//    {
+//        std::cout << "cluster element: " << element.first << std::endl;
+//    }
+//
+//    element: Indexes
+//    element: Transform
+//    element: TransformAssociateModel
+//    element: TransformLink
+//    element: UserData
+//    element: Version
+//    element: Weights
+
+
     const Element* const Indexes = sc["Indexes"];
     const Element* const Weights = sc["Weights"];
 
     const Element& Transform = GetRequiredElement(sc,"Transform",&element);
     const Element& TransformLink = GetRequiredElement(sc,"TransformLink",&element);
+
+    // todo: check if we need this
+    //const Element& TransformAssociateModel = GetRequiredElement(sc, "TransformAssociateModel", &element);
+
 
     transform = ReadMatrix(Transform);
     transformLink = ReadMatrix(TransformLink);
@@ -133,6 +152,12 @@ Skin::Skin(uint64_t id, const Element& element, const Document& doc, const std::
 : Deformer(id,element,doc,name)
 , accuracy( 0.0f ) {
     const Scope& sc = GetRequiredScope(element);
+
+
+    for( auto element : sc.Elements())
+    {
+        std::cout << "skin element: " << element.first << std::endl;
+    }
 
     const Element* const Link_DeformAcuracy = sc["Link_DeformAcuracy"];
     if(Link_DeformAcuracy) {

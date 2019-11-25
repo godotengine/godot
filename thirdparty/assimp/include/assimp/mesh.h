@@ -255,6 +255,9 @@ struct aiVertexWeight {
 // Forward declare aiNode (pointer use only)
 struct aiNode;
 
+
+
+
 // ---------------------------------------------------------------------------
 /** @brief A single bone of a mesh.
  *
@@ -361,6 +364,21 @@ struct aiBone {
     ~aiBone() {
         delete [] mWeights;
     }
+#endif // __cplusplus
+};
+
+struct aiSkin {
+    // name of the skin
+    C_STRUCT aiString mName;
+
+    unsigned int mNumBones;
+    C_STRUCT aiBone* mBones;
+#ifdef __cplusplus
+    aiSkin() AI_NO_EXCEPT
+            : mName(),
+              mNumBones(0),
+              mBones(nullptr)
+    {}
 #endif // __cplusplus
 };
 
