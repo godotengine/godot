@@ -3431,16 +3431,18 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || _is_node_locked(canvas_item))) {
-		Transform2D xform = transform * canvas_xform * parent_xform;
+	if (show_2d_gizmos) {
+		if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || _is_node_locked(canvas_item))) {
+			Transform2D xform = transform * canvas_xform * parent_xform;
 
-		// Draw the node's position
-		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
-		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
-		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
-		viewport->draw_set_transform_matrix(simple_xform);
-		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
-		viewport->draw_set_transform_matrix(viewport->get_transform());
+			// Draw the node's position
+			Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
+			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
+			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			viewport->draw_set_transform_matrix(simple_xform);
+			viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
+			viewport->draw_set_transform_matrix(viewport->get_transform());
+		}
 	}
 }
 
@@ -4444,6 +4446,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 			viewport->update();
 		} break;
+		case SHOW_2D_GIZMOS: {
+			show_2d_gizmos = !show_2d_gizmos;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_2D_GIZMOS);
+			view_menu->get_popup()->set_item_checked(idx, show_2d_gizmos);
+			viewport->update();
+		} break;
 		case SHOW_HELPERS: {
 			show_helpers = !show_helpers;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_HELPERS);
@@ -5002,6 +5010,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_viewport"] = show_viewport;
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
+	state["show_2d_gizmos"] = show_2d_gizmos;
 	state["show_helpers"] = show_helpers;
 	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
@@ -5129,6 +5138,12 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, show_guides);
 	}
 
+	if (state.has("show_2d_gizmos")) {
+		show_2d_gizmos = state["show_2d_gizmos"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_2D_GIZMOS);
+		view_menu->get_popup()->set_item_checked(idx, show_2d_gizmos);
+	}
+
 	if (state.has("show_helpers")) {
 		show_helpers = state["show_helpers"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_HELPERS);
@@ -5230,6 +5245,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_grid = false;
 	show_origin = true;
 	show_viewport = true;
+	show_2d_gizmos = true;
 	show_helpers = false;
 	show_rulers = true;
 	show_guides = true;
@@ -5558,6 +5574,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p = view_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Always Show Grid"), KEY_G), SHOW_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_2d_gizmos", TTR("Show 2D Gizmos")), SHOW_2D_GIZMOS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show Helpers"), KEY_H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers")), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), KEY_Y), SHOW_GUIDES);

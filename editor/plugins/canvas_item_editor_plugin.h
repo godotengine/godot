@@ -113,6 +113,7 @@ private:
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
 		SHOW_GRID,
+		SHOW_2D_GIZMOS,
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		SHOW_GUIDES,
@@ -246,6 +247,7 @@ private:
 	bool show_guides;
 	bool show_origin;
 	bool show_viewport;
+	bool show_2d_gizmos;
 	bool show_helpers;
 	bool show_edit_locks;
 	float zoom;
