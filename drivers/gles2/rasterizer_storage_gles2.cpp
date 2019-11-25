@@ -5860,9 +5860,10 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	//TODO: causes huge problems with desktop video drivers. Making false for now, needs to be true to render SCREEN_TEXTURE mipmaps
 	config.render_to_mipmap_supported = false;
-// #elif SAILFISH_ENABLED
-// 	config.render_to_mipmap_supported = false;
-// 	config.multisample_supported = false;
+#elif SAILFISH_ENABLED
+	config.render_to_mipmap_supported = false;
+	config.multisample_supported = false;
+	config.support_32_bits_indices = false;
 #else
 	//check if mipmaps can be used for SCREEN_TEXTURE and Glow on Mobile and web platforms
 	config.render_to_mipmap_supported = config.extensions.has("GL_OES_fbo_render_mipmap") && config.extensions.has("GL_EXT_texture_lod");

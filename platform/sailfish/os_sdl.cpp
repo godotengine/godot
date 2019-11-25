@@ -1641,12 +1641,12 @@ static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acq
 	OS_SDL* os = (OS_SDL*) user_data;
 
 	if (acquired) {
-		print_line("\nAudiorRsource initialization finished.\n");
+		print_line("\nl1ibaudioresource initialization finished.\n");
 		// start playback
 		os->is_audio_resource_acquired = true;
 		os->start_audio_driver();
 	} else {
-		print_line("stopping audio driver");
+		print_line("stopping audio driver\n");
 		// stop playback
 		os->stop_audio_driver();
 	}
