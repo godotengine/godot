@@ -162,6 +162,24 @@ public final class PermissionsUtil {
 	}
 
 	/**
+	 * Check if the given permission is in the AndroidManifest.xml file.
+	 * @param activity the caller activity for this method.
+	 * @param permission the permession to look for in the manifest file.
+	 * @return "true" if the permission is in the manifest file of the activity, "false" otherwise.
+	 */
+	public static boolean hasManifestPermission(Godot activity, String permission) {
+		try {
+			for (String p : getManifestPermissions(activity)) {
+				if (permission.equals(p))
+					return true;
+			}
+		} catch (PackageManager.NameNotFoundException e) {
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the permissions defined in the AndroidManifest.xml file.
 	 * @param activity the caller activity for this method.
 	 * @return manifest permissions list
