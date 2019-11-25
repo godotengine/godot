@@ -47,6 +47,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 			return;
 		}
 
+		_multicast_lock_acquire = p_env->GetMethodID(cls, "multicastLockAcquire", "()V");
+		_multicast_lock_release = p_env->GetMethodID(cls, "multicastLockRelease", "()V");
 		_open_URI = p_env->GetMethodID(cls, "openURI", "(Ljava/lang/String;)I");
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
@@ -70,6 +72,20 @@ GodotIOJavaWrapper::~GodotIOJavaWrapper() {
 
 jobject GodotIOJavaWrapper::get_instance() {
 	return godot_io_instance;
+}
+
+void GodotIOJavaWrapper::multicast_lock_acquire() {
+	if (_multicast_lock_acquire) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		env->CallVoidMethod(godot_io_instance, _multicast_lock_acquire);
+	}
+}
+
+void GodotIOJavaWrapper::multicast_lock_release() {
+	if (_multicast_lock_release) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		env->CallVoidMethod(godot_io_instance, _multicast_lock_release);
+	}
 }
 
 Error GodotIOJavaWrapper::open_uri(const String &p_uri) {

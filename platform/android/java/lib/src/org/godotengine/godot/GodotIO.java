@@ -35,6 +35,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.media.*;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -54,6 +55,9 @@ public class GodotIO {
 	GodotEditText edit;
 
 	MediaPlayer mediaPlayer;
+
+	WifiManager.MulticastLock multicastLock;
+	boolean hasMulticastLock;
 
 	final int SCREEN_LANDSCAPE = 0;
 	final int SCREEN_PORTRAIT = 1;
@@ -345,6 +349,10 @@ public class GodotIO {
 		//streams = new HashMap<Integer, AssetData>();
 		streams = new SparseArray<AssetData>();
 		dirs = new SparseArray<AssetDir>();
+		hasMulticastLock = false;
+		WifiManager wifi = (WifiManager)activity.getSystemService(Context.WIFI_SERVICE);
+		multicastLock = wifi.createMulticastLock("GodotMulticastLock");
+		multicastLock.setReferenceCounted(false);
 	}
 
 	/////////////////////////
@@ -440,6 +448,22 @@ public class GodotIO {
 	/////////////////////////
 	// MISCELLANEOUS OS IO
 	/////////////////////////
+
+	public void multicastLockAcquire() {
+		try {
+			multicastLock.acquire();
+		} catch (RuntimeException e) {
+			Log.e("Godot", "Exception during multicast lock acquire: " + e);
+		}
+	}
+
+	public void multicastLockRelease() {
+		try {
+			multicastLock.release();
+		} catch (RuntimeException e) {
+			Log.e("Godot", "Exception during multicast lock release: " + e);
+		}
+	}
 
 	public int openURI(String p_uri) {
 

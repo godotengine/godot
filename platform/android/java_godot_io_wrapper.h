@@ -45,6 +45,8 @@ private:
 	jobject godot_io_instance;
 	jclass cls;
 
+	jmethodID _multicast_lock_acquire = 0;
+	jmethodID _multicast_lock_release = 0;
 	jmethodID _open_URI = 0;
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_locale = 0;
@@ -66,6 +68,8 @@ public:
 
 	jobject get_instance();
 
+	void multicast_lock_acquire();
+	void multicast_lock_release();
 	Error open_uri(const String &p_uri);
 	String get_user_data_dir();
 	String get_locale();
