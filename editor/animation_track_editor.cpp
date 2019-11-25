@@ -1728,7 +1728,7 @@ void AnimationTimelineEdit::update_values() {
 		time_icon->set_tooltip(TTR("Animation length (frames)"));
 	} else {
 		length->set_value(animation->get_length());
-		length->set_step(0.01);
+		length->set_step(0.001);
 		length->set_tooltip(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	}
@@ -1891,7 +1891,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
 	length->set_max(36000);
-	length->set_step(0.01);
+	length->set_step(0.001);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
