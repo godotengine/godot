@@ -2224,7 +2224,7 @@ Error OS_OSX::shell_open(String p_uri) {
 }
 
 String OS_OSX::get_locale() const {
-	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
+	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
 	return [locale_code UTF8String];
 }
 
