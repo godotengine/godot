@@ -154,22 +154,21 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 
 	return true;
 }
+
 void Skeleton::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	for (int i = 0; i < bones.size(); i++) {
-
 		String prep = "bones/" + itos(i) + "/";
-		// Only write out the bone properties if we dont have a skeleton defintiion, otherwise we will load them from
-		// there
+
+		// Only write out the bone properties if we do not have a skeleton definition, otherwise we will load them from there
 		if (skeleton_definition == nullptr) {
-			p_list->push_back(PropertyInfo(Variant::STRING, prep + "name"));
-			p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1"));
-			p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest"));
+			p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		}
 
-		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, prep + "bound_children"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, prep + "bound_children", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
 
@@ -337,6 +336,11 @@ void Skeleton::_notification(int p_what) {
 			}
 
 			dirty = false;
+
+#ifdef TOOLS_ENABLED
+			emit_signal("pose_updated");
+#endif // TOOLS_ENABLED
+
 		} break;
 	}
 }
@@ -575,6 +579,11 @@ int Skeleton::get_process_order(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, bones.size(), -1);
 	_update_process_order();
 	return process_order[p_idx];
+}
+
+const Vector<int> &Skeleton::get_process_order() {
+	_update_process_order();
+	return process_order;
 }
 
 void Skeleton::localize_rests() {
@@ -834,8 +843,12 @@ void Skeleton::set_skeleton_definition(Ref<SkeletonDefinition> p_definition) {
 
 	// Remove the skeleton definition first
 	skeleton_definition = Ref<SkeletonDefinition>();
-	if (p_definition == nullptr)
+	if (p_definition == nullptr) {
+#ifdef TOOLS_ENABLED
+		emit_signal("skeleton_definition_changed");
+#endif // TOOLS_ENABLED
 		return;
+	}
 
 	clear_bones();
 
@@ -876,6 +889,10 @@ void Skeleton::set_skeleton_definition(Ref<SkeletonDefinition> p_definition) {
 	}
 
 	skeleton_definition = p_definition;
+
+#ifdef TOOLS_ENABLED
+	emit_signal("skeleton_definition_changed");
+#endif // TOOLS_ENABLED
 }
 
 Ref<SkeletonDefinition> Skeleton::get_skeleton_definition() const {
@@ -932,7 +949,12 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_definition"), &Skeleton::get_skeleton_definition);
 	ClassDB::bind_method(D_METHOD("set_skeleton_definition", "skeleton_definition"), &Skeleton::set_skeleton_definition);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton_definition", PROPERTY_HINT_RESOURCE_TYPE), "set_skeleton_definition", "get_skeleton_definition");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton_definition", PROPERTY_HINT_RESOURCE_TYPE, "", PROPERTY_USAGE_NOEDITOR), "set_skeleton_definition", "get_skeleton_definition");
+
+#ifdef TOOLS_ENABLED
+	ADD_SIGNAL(MethodInfo("pose_updated"));
+	ADD_SIGNAL(MethodInfo("skeleton_definition_changed"));
+#endif // TOOLS_ENABLED
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

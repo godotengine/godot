@@ -670,6 +670,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
 	ClassDB::register_class<Curve>();
+	ClassDB::register_class<SkeletonDefinition>();
 
 	ClassDB::register_class<TextFile>();
 

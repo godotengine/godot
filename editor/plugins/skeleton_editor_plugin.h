@@ -35,12 +35,88 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/skeleton.h"
 
-class PhysicalBone;
+class EditorInspectorPluginSkeleton;
 class Joint;
-class EditorFileDialog;
+class PhysicalBone;
+class SkeletonEditorPlugin;
+class Button;
+class CheckBox;
 
-class SkeletonEditor : public Node {
-	GDCLASS(SkeletonEditor, Node);
+class BoneTransformEditor : public VBoxContainer {
+	GDCLASS(BoneTransformEditor, VBoxContainer);
+
+	EditorInspectorSection *section;
+
+	GridContainer *translation_grid;
+	GridContainer *rotation_grid;
+	GridContainer *scale_grid;
+	GridContainer *transform_grid;
+
+	EditorSpinSlider *translation[3];
+	EditorSpinSlider *rotation[3];
+	EditorSpinSlider *scale[3];
+	EditorSpinSlider *transform[12];
+
+	Rect2 background_rects[5];
+
+	Skeleton *skeleton;
+	String property;
+
+	UndoRedo *undo_redo;
+
+	Button *key_button;
+	CheckBox *enabled_checkbox;
+
+	bool keyable;
+	bool read_only;
+	bool toggle_enabled;
+	bool updating;
+
+	String label;
+
+	void create_editors();
+	void setup_spinner(EditorSpinSlider *spinner, const bool is_transform_spinner);
+
+	void _value_changed(const double p_value, const bool p_from_transform);
+
+	Transform compute_transform(const bool p_from_transform) const;
+
+	void update_enabled_checkbox();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	BoneTransformEditor(Skeleton *p_skeleton);
+
+	// Which transform target to modify
+	void set_target(const String &p_prop);
+	void set_label(const String &p_label) { label = p_label; }
+
+	void _update_properties();
+
+	// Can/cannot modify the spinner values for the Transform
+	void set_read_only(const bool p_read_only);
+
+	// Transform can be keyed, whether or not to show the button
+	void set_keyable(const bool p_keyable);
+
+	// Bone can be toggled enabled or disabled, whether or not to show the checkbox
+	void set_toggle_enabled(const bool p_enabled);
+
+	// Key Transform Button pressed
+	void _key_button_pressed();
+
+	// Bone Enabled Checkbox toggled
+	void _checkbox_toggled(const bool p_toggled);
+};
+
+class SkeletonEditor : public VBoxContainer {
+
+	GDCLASS(SkeletonEditor, VBoxContainer);
+
+	friend class SkeletonEditorPlugin;
 
 	enum Menu {
 		MENU_OPTION_CREATE_PHYSICAL_SKELETON,
@@ -54,50 +130,81 @@ class SkeletonEditor : public Node {
 				physical_bone(NULL) {}
 	};
 
+	EditorNode *editor;
+	EditorInspectorPluginSkeleton *editor_plugin;
+
 	Skeleton *skeleton;
 
-	MenuButton *options;
+	Tree *joint_tree;
+	BoneTransformEditor *rest_editor;
+	BoneTransformEditor *pose_editor;
 
+	MenuButton *options;
 	EditorFileDialog *file_dialog;
 
+	VBoxContainer *read_only_box;
+	Rect2 read_only_box_rect;
+
+	UndoRedo *undo_redo;
+
+	bool read_only;
+
 	void _on_click_option(int p_option);
-
-	friend class SkeletonEditorPlugin;
-
 	void save_skeleton_definition();
 	void _file_selected(const String &p_file);
+
+	void update_joint_tree();
+	void update_editors();
+
+	void create_editors();
+
+	void create_physical_skeleton();
+	PhysicalBone *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-	void create_physical_skeleton();
-	PhysicalBone *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
-
 public:
-	void edit(Skeleton *p_node);
+	Skeleton *get_skeleton() const { return skeleton; };
 
-	SkeletonEditor();
+	void _joint_tree_selection_changed();
+	void _joint_tree_rmb_select(const Vector2 &p_pos);
+
+	void _update_properties();
+
+	void _skeleton_definition_changed();
+
+	SkeletonEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton *skeleton);
 	~SkeletonEditor();
 };
 
-class SkeletonEditorPlugin : public EditorPlugin {
+class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginSkeleton, EditorInspectorPlugin);
 
+	friend class SkeletonEditorPlugin;
+
+	EditorNode *editor;
+
+public:
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
+};
+
+class SkeletonEditorPlugin : public EditorPlugin {
 	GDCLASS(SkeletonEditorPlugin, EditorPlugin);
 
 	EditorNode *editor;
-	SkeletonEditor *skeleton_editor;
 
 public:
-	virtual String get_name() const { return "Skeleton"; }
-	virtual bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
 	SkeletonEditorPlugin(EditorNode *p_node);
-	~SkeletonEditorPlugin();
+
+	virtual String get_name() const { return "Skeleton"; }
 };
 
 #endif // SKELETON_EDITOR_PLUGIN_H
