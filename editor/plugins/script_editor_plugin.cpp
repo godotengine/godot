@@ -2497,7 +2497,10 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
 		if (se || eh) {
-			int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			int new_index = 0;
+			if (script_list->get_item_count() > 0) {
+				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
 			_update_script_names();
@@ -2514,7 +2517,10 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
 		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
 		if (se || eh) {
-			int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			int new_index = 0;
+			if (script_list->get_item_count() > 0) {
+				new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+			}
 			tab_container->move_child(node, new_index);
 			tab_container->set_current_tab(new_index);
 			_update_script_names();
@@ -2525,7 +2531,10 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 		Vector<String> files = d["files"];
 
-		int new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+		int new_index = 0;
+		if (script_list->get_item_count() > 0) {
+			new_index = script_list->get_item_metadata(script_list->get_item_at_position(p_point));
+		}
 		int num_tabs_before = tab_container->get_child_count();
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
@@ -2551,16 +2560,20 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo())
 		return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
-		int next_tab = script_list->get_current() + 1;
-		next_tab %= script_list->get_item_count();
-		_go_to_tab(script_list->get_item_metadata(next_tab));
-		_update_script_names();
+		if (script_list->get_item_count() > 1) {
+			int next_tab = script_list->get_current() + 1;
+			next_tab %= script_list->get_item_count();
+			_go_to_tab(script_list->get_item_metadata(next_tab));
+			_update_script_names();
+		}
 	}
 	if (ED_IS_SHORTCUT("script_editor/prev_script", p_event)) {
-		int next_tab = script_list->get_current() - 1;
-		next_tab = next_tab >= 0 ? next_tab : script_list->get_item_count() - 1;
-		_go_to_tab(script_list->get_item_metadata(next_tab));
-		_update_script_names();
+		if (script_list->get_item_count() > 1) {
+			int next_tab = script_list->get_current() - 1;
+			next_tab = next_tab >= 0 ? next_tab : script_list->get_item_count() - 1;
+			_go_to_tab(script_list->get_item_metadata(next_tab));
+			_update_script_names();
+		}
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
 		_menu_option(WINDOW_MOVE_UP);
@@ -3238,7 +3251,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
 	ED_SHORTCUT("script_editor/next_script", TTR("Next script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD); // these should be KEY_GREATER and KEY_LESS but those don't work
-	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COLON);
+	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COMMA);
 	set_process_unhandled_input(true);
 
 	file_menu = memnew(MenuButton);
