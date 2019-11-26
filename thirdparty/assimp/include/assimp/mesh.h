@@ -273,6 +273,7 @@ struct aiBone {
     //! The number of vertices affected by this bone.
     //! The maximum value for this member is #AI_MAX_BONE_WEIGHTS.
     unsigned int mNumWeights;
+    bool finalized;
 
 #ifndef ASSIMP_BUILD_NO_ARMATUREPOPULATE_PROCESS
     // The bone armature node - used for skeleton conversion
@@ -307,7 +308,7 @@ struct aiBone {
     : mName()
     , mNumWeights( 0 )
     , mWeights( nullptr )
-    , mOffsetMatrix() {
+    , mOffsetMatrix(), finalized(false){
         // empty
     }
 

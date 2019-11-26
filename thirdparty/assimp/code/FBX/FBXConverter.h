@@ -134,20 +134,14 @@ private:
 
 	// we must still overwrite their node counterparts though.
 
-//	bool IsBone(aiString name) {
-//	    if(bones.empty())
-//        {
-//	        std::cout << "warning: bone list is empty so can't check for bones!" << std::endl;
-//        }
-//		for (aiBone *bone : bones) {
-//		    std::cout << "[isbone] bone name: " << bone->mName.C_Str() << std::endl;
-//			if (bone->mName == name) {
-//				std::cout << "[isbone] check found: " << name.C_Str() << std::endl;
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
+	bool IsBone(const int64_t& element_id) {
+	    if(bone_id_map.empty())
+        {
+	        std::cout << "warning: bone list is empty so can't check for bones!" << std::endl;
+        }
+
+	    return bone_id_map.count(element_id) > 0;
+	}
 
 	// ------------------------------------------------------------------------------------------------
 	// find scene root and trigger recursive scene conversion
@@ -479,7 +473,11 @@ private:
 	std::vector<aiMesh *> meshes;
 	std::vector<aiMaterial *> materials;
 	std::vector<aiAnimation *> animations;
-	std::map<int64_t, aiBone *> bone_id_map;
+	std::map<int64_t, const LimbNode*> bone_id_map;
+	// anim target mapping to allow us to lookup direct node anims.
+	std::map<const aiNodeAnim*, int64_t> anim_target_map;
+
+	//std::map<int64_t, aiSkin *> skin_id_map;
 	std::vector<aiLight *> lights;
 	std::vector<aiCamera *> cameras;
 	std::vector<aiTexture *> textures;
@@ -505,6 +503,7 @@ private:
 	// Deformer names in FBX are always unique in an FBX file.
 	std::map<const std::string, aiBone *> bone_map;
 
+
 	double anim_fps;
 
 	aiScene *const out;
@@ -526,7 +525,9 @@ private:
 
 	static bool IsBoneNode(const aiString &bone_name, std::vector<aiBone *> &bones);
 
-    void ConvertBones(const Model &model, const std::string &orig_name);
+    void FindAllBones(const Model &model);
+
+    void CacheNodeInformation(uint64_t id);
 };
 
 } // namespace FBX

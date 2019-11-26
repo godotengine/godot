@@ -139,6 +139,7 @@ void FBXConverter::ConvertRootNode() {
 	out->mRootNode->mName.Set(unique_name);
 	// populate our node animation stack lookup tool
 	GenerateAnimStack();
+	CacheNodeInformation(0L);
 	// root has ID 0
 	ConvertNodes(0L, out->mRootNode, out->mRootNode, aiMatrix4x4(), aiMatrix4x4());
 }
@@ -172,14 +173,13 @@ std::string FBXConverter::MakeUniqueNodeName(const Model *const model, const aiN
 
 void FBXConverter::GenerateAnimStack() {
 
-	for (aiAnimation *animation : animations) {
+	for (aiAnimation* animation : animations) {
 		std::vector<aiNodeAnim *> nodes;
 		for (unsigned int nodeId = 0; nodeId < animation->mNumChannels; ++nodeId) {
 			aiNodeAnim *node_anim = animation->mChannels[nodeId];
 			nodes.push_back(node_anim);
 		}
 
-		animation_stack.insert(std::pair<aiAnimation *, std::vector<aiNodeAnim *> >(animation, nodes));
 	}
 }
 
@@ -217,9 +217,6 @@ std::vector<aiNodeAnim *> FBXConverter::GetNodeAnimsFromStack(const std::string 
 void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim_list, aiMatrix4x4 transform) {
 	// resample all animations, but only sample the nodes which we are looking for from the stack.
 	for (aiNodeAnim *node_anim : node_anim_list) {
-		// we must not resample bone animations
-		//if (IsBone(node_anim->mNodeName)) continue;
-
 		// now iterate and resample animations
 		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
 			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
@@ -227,18 +224,22 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 			aiVector3D scale = node_anim->mScalingKeys[x].mValue;
 			aiVector3D trans = node_anim->mPositionKeys[x].mValue;
 
-
 			// TRS
 			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
             std::cout << "anim node name: " << node_anim->mNodeName.C_Str() << std::endl;
-//            if (IsBone(node_anim->mNodeName)) {
-//                std::cout << "bone animation re-sample logic" << std::endl;
+
+            // grab target mapping to determine if bone
+            int64_t internal_target_id = anim_target_map[node_anim];
+            std::cerr << "internal id: " << internal_target_id << std::endl;
+            if (IsBone(internal_target_id)) {
+               std::cerr << "bone animation re-sample logic" << std::endl;
 //                final_matrix = transform.Inverse() * final_matrix * transform;
 //                //final_matrix = transform * final_matrix;
-//            }
-//            else{
+            }
+            else{
+                std::cerr << "normal aiNode detected" << std::endl;
                 final_matrix = transform * final_matrix;
-//            }
+            }
 			final_matrix.Decompose(scale, rot, trans);
 
 			// now overwrite with pivot point
@@ -248,6 +249,47 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 		}
 	}
 	//}
+}
+
+void FBXConverter::CacheNodeInformation(uint64_t id)
+{
+    const std::vector<const Connection *> &conns = doc.GetConnectionsByDestinationSequenced(id, "Model");
+
+    for (const Connection *con : conns) {
+        // ignore object-property links
+        if (con->PropertyName().length()) {
+            // really important we document why this is ignored.
+            FBXImporter::LogInfo("ignoring property link - no docs on why this is ignored");
+            continue;
+        }
+
+        // convert connection source object into Object base class
+        const Object *const object = con->SourceObject();
+
+        if (nullptr == object) {
+            FBXImporter::LogError("failed to convert source object for Model link");
+            continue;
+        }
+
+        // FBX Model::Cube, Model::Bone001, etc elements
+        // This detects if we can cast the object into this model structure.
+        const Model *const model = dynamic_cast<const Model *>(object);
+
+        if (nullptr != model) {
+            std::string node_name = FixNodeName(model->Name());
+
+            // check if there will be any child nodes
+            const std::vector<const Connection *> &child_conns = doc.GetConnectionsByDestinationSequenced(model->ID(), "Model");
+
+            // recursion call - child nodes
+            CacheNodeInformation(model->ID());
+
+            // Convert bone node attributes
+            FindAllBones(*model);
+        }
+    }
+
+
 }
 
 /// then update convert clusters to the new format
@@ -313,8 +355,8 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				aiMatrix4x4 new_abs_transform = node->mTransformation;
 				ConvertModel(*model, node, root_node, node->mTransformation);
 
-//				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
-//				ResampleAnimationsWithPivots(anims, pivot_xform);
+				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
+				ResampleAnimationsWithPivots(anims, pivot_xform);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -339,7 +381,7 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				}
 
 				// Convert bone node attributes
-                ConvertBones(*model, node_name);
+                FindAllBones(*model);
 
 
 				nodes.push_back(node);
@@ -372,60 +414,26 @@ void FBXConverter::ConvertLights(const Model &model, const std::string &orig_nam
 	}
 }
 
-void FBXConverter::ConvertBones( const Model &model, const std::string &orig_name) {
+/* Finds all bones and adds them to the bone_id_map if they don't already exist */
+void FBXConverter::FindAllBones(const Model &model) {
     int count = 0;
     const std::vector<const NodeAttribute *> &node_attrs = model.GetAttributes();
     for( const NodeAttribute *attr : node_attrs) {
         // this is the inverse bind matrix container (so where the pivot xform is stored)
         const LimbNode *const limb = dynamic_cast<const LimbNode *>(attr);
         if (limb) {
-            int64_t id = limb->ID();
+            int64_t id = model.ID();
+            std::cout << "model id: " << id << std::endl;
             if(bone_id_map.count(id))
             {
                 continue;
             } else {
-                aiBone *bone = new aiBone();
-                std::string name = orig_name;
-                std::cout << "valid bone added once: " << orig_name << std::endl;
-                aiMatrix4x4 geometric_transform = aiMatrix4x4();
-                aiMatrix4x4 pivot = GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_transform );
-                bone->mOffsetMatrix = pivot * geometric_transform;
-                //bone->mOffsetMatrix
-                bone->mName.Set(name);
-
                 // limb->Props()
                 // rotation order: model
-                bone_id_map.insert(std::pair<int64_t, aiBone*>(id, bone));
-                ++count;
+                bone_id_map.insert(std::pair<int64_t, const LimbNode*>(id, limb));
             }
-
-
-            // todo: set Inverse Bind Matrix
         }
     }
-
-    if(count != 0)
-    {
-        std::cout << "have a new entry!" << count << std::endl;
-    }
-
-    for( const NodeAttribute *attr : node_attrs)
-    {
-        const Skin *const skin = dynamic_cast<const Skin*>(attr);
-        if(skin)
-        {
-            // make skin... blah
-
-        }
-
-
-
-
-        // Cluster is the Indexes and Weights
-        // Skin
-    }
-
-
 }
 
 void FBXConverter::ConvertCameras(const Model &model, const std::string &orig_name) {
@@ -1560,12 +1568,21 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 	bone->mOffsetMatrix = cl->TransformLink();
 	bone->mOffsetMatrix.Inverse();
 
-	bone->mOffsetMatrix *= absolute_transform;
+	const LimbNode* limb = bone_id_map[cl->TargetNode()->ID()];
 
-//	bone_nodes.push_back(bone);
-
-
-
+	if(limb)
+    {
+	    std::cout << "valid limb deformer node" << limb->Name() << std::endl;
+	    aiMatrix4x4 geometric_pivot;
+	    // pivot global position
+	    bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
+	    bone->mOffsetMatrix *= geometric_pivot;
+    } else
+    {
+	    std::cerr << "failed to find limb for this ID: " << cl->TargetNode()->ID() << std::endl;
+    }
+    //
+	//bone->mOffsetMatrix *= absolute_transform;
 
 	//
 	// Now calculate the aiVertexWeights
@@ -1598,10 +1615,10 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 		}
 	}
 
-	//    std::cout << "bone research: Indicies size: " << out_indices.size() << std::endl;
+	    std::cout << "bone research: Indicies size: " << out_indices.size() << std::endl;
 
-	// lookup must be populated in case something goes wrong
-	// this also allocates bones to mesh instance outside
+//	 lookup must be populated in case something goes wrong
+//	 this also allocates bones to mesh instance outside
 	local_mesh_bones.push_back(bone);
 }
 
@@ -2487,7 +2504,6 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 					std::cout << "==============================================================================================================" << std::endl;
 					std::cout << "Anim curve node: id " << node->ID() << " name: " << node->Name() << " layer: " << model_name << std::endl;
 
-					//  element->TargetProperty() ==
 					if (node->Target()->ID() == model->ID()) {
 						std::cout << "curveID: " << node->ID() << ", tgt: " << node->TargetProperty() << ", tgt name: " << node->Target()->Name() << ", tgt id: " << node->Target()->ID() << std::endl;
 						//std::cout << "this is valid target!" << std::endl;
@@ -2561,24 +2577,6 @@ void FBXConverter::ConvertAnimationStack(const AnimationStack &st) {
 			}
 		}
 	}
-
-	// try {
-	// 	aiMatrix4x4 geometric_pivot;
-	// 	for (std::pair<std::string, const AnimationCurveNode *> kvp : NodeList) {
-	// 		std::cout << "animation name: " << kvp.first << std::endl;
-	// 		GenerateNodeAnimations(node_anims,
-	// 				kvp.first,
-	// 				kvp.second,
-	// 				layer_map,
-	// 				start_time, stop_time,
-	// 				max_time,
-	// 				min_time,
-	// 				geometric_pivot);
-	// 	}
-	// } catch (std::exception &) {
-	// 	std::for_each(node_anims.begin(), node_anims.end(), Util::delete_fun<aiNodeAnim>());
-	// 	throw;
-	// }
 
 	if (node_anims.size() || morphAnimDatas.size()) {
 		if (node_anims.size()) {
@@ -2777,9 +2775,13 @@ void FBXConverter::GenerateNodeAnimations(
 			curve_node = node;
 		}
 
+
 		std::cout << "[" << node->ID() << "] valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << ", target id: " << node->TargetAsModel()->ID() << std::endl;
 
 		std::string property_type = node->TargetProperty();
+
+		// this is what we need in the aiNodeAnim :/
+		//node->Target()->ID()
 		const AnimationCurveMap &curves = node->Curves();
 
 		// //typedef std::map<std::string, const AnimationCurve *> AnimationCurveMap;
@@ -2813,6 +2815,7 @@ void FBXConverter::GenerateNodeAnimations(
 	ai_assert(curve_node->TargetAsModel());
 
 	const Model &target = *curve_node->TargetAsModel();
+
 
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
@@ -2859,9 +2862,10 @@ void FBXConverter::GenerateNodeAnimations(
 	na->mRotationKeys = out_quat;
 	na->mPositionKeys = out_translation;
 
-	//na.release();
+    aiNodeAnim *nd = na.release();
 
-	aiNodeAnim *nd = na.release();
+    // cache target mapping
+    anim_target_map[nd] = curve_node->Target()->ID();
 
 	ai_assert(nd);
 	if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
