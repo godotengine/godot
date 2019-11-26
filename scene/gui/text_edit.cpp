@@ -417,7 +417,6 @@ void TextEdit::_update_scrollbars() {
 		cursor.line_ofs = 0;
 		cursor.wrap_ofs = 0;
 		v_scroll->set_value(0);
-		v_scroll->set_max(0);
 		v_scroll->hide();
 	}
 
@@ -436,7 +435,6 @@ void TextEdit::_update_scrollbars() {
 
 		cursor.x_ofs = 0;
 		h_scroll->set_value(0);
-		h_scroll->set_max(0);
 		h_scroll->hide();
 	}
 

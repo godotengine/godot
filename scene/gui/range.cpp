@@ -100,6 +100,7 @@ void Range::set_value(double p_val) {
 	shared->emit_value_changed();
 }
 void Range::set_min(double p_min) {
+	ERR_FAIL_COND_MSG(p_min >= shared->max, "Range cannot have min value higher or equal to its max value.");
 
 	shared->min = p_min;
 	set_value(shared->val);
@@ -109,6 +110,7 @@ void Range::set_min(double p_min) {
 	update_configuration_warning();
 }
 void Range::set_max(double p_max) {
+	ERR_FAIL_COND_MSG(p_max <= shared->min, "Range cannot have max value lower or equal to its min value.");
 
 	shared->max = p_max;
 	set_value(shared->val);
