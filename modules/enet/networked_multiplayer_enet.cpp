@@ -440,6 +440,8 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 	for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 		if (E->get()) {
 			enet_peer_disconnect_now(E->get(), unique_id);
+			int *id = (int *)(E->get()->data);
+			memdelete(id);
 			peers_disconnected = true;
 		}
 	}
@@ -455,6 +457,7 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 	enet_host_destroy(host);
 	active = false;
 	incoming_packets.clear();
+	peer_map.clear();
 	unique_id = 1; // Server is 1
 	connection_status = CONNECTION_DISCONNECTED;
 }
@@ -471,16 +474,22 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 		// enet_peer_disconnect_now doesn't generate ENET_EVENT_TYPE_DISCONNECT,
 		// notify everyone else, send disconnect signal & remove from peer_map like in poll()
 
+		int *id = NULL;
 		for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
-			if (E->key() == p_peer)
+			if (E->key() == p_peer) {
+				id = (int *)(E->get()->data);
 				continue;
+			}
 
 			ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 			encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
 			encode_uint32(p_peer, &packet->data[4]);
 			enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 		}
+
+		if (id)
+			memdelete(id);
 
 		emit_signal("peer_disconnected", p_peer);
 		peer_map.erase(p_peer);
