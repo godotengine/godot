@@ -362,7 +362,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
+				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel. See also [member locked].
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -485,13 +485,16 @@
 			<return type="void">
 			</return>
 			<description>
-				Unlocks the data and prevents changes.
+				Unlocks the data and prevents changes. See also [member locked].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PoolByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
 			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
+		</member>
+		<member name="locked" type="bool" setter="set_locked" getter="is_locked" default="false">
+			If [code]true[/code], the image's data can be read and written to using [method get_pixel], [method get_pixelv], [method set_pixel], and [method set_pixelv].
 		</member>
 	</members>
 	<constants>

@@ -2379,6 +2379,19 @@ void Image::unlock() {
 	write_lock.release();
 }
 
+void Image::set_locked(bool p_locked) {
+
+	if (p_locked) {
+		lock();
+	} else {
+		unlock();
+	}
+}
+
+bool Image::is_locked() const {
+	return write_lock.ptr() != NULL;
+}
+
 Color Image::get_pixelv(const Point2 &p_src) const {
 	return get_pixel(p_src.x, p_src.y);
 }
@@ -2752,6 +2765,8 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("lock"), &Image::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &Image::unlock);
+	ClassDB::bind_method(D_METHOD("set_locked", "locked"), &Image::set_locked);
+	ClassDB::bind_method(D_METHOD("is_locked"), &Image::is_locked);
 	ClassDB::bind_method(D_METHOD("get_pixelv", "src"), &Image::get_pixelv);
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
 	ClassDB::bind_method(D_METHOD("set_pixelv", "dst", "color"), &Image::set_pixelv);
@@ -2762,6 +2777,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "locked"), "set_locked", "is_locked");
 
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);

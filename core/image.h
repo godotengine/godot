@@ -336,6 +336,8 @@ public:
 
 	void lock();
 	void unlock();
+	void set_locked(bool p_locked);
+	bool is_locked() const;
 
 	//this is used for compression
 	enum DetectChannels {
