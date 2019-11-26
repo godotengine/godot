@@ -97,6 +97,14 @@ Ref<PacketPeer> ScriptDebuggerWebSocket::get_peer() {
 	return ws_client->get_peer(1); // should not be cached.
 }
 
+bool ScriptDebuggerWebSocket::can_block() {
+#ifdef JAVASCRIPT_ENABLED
+	return false;
+#else
+	return true;
+#endif
+}
+
 ScriptDebuggerWebSocket::ScriptDebuggerWebSocket() {
 #define _SET_HINT(NAME, _VAL_, _MAX_) \
 	GLOBAL_DEF(NAME, _VAL_);          \

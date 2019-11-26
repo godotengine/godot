@@ -148,6 +148,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 
 	ERR_FAIL_COND_MSG(!_connection_is_connected(), "Script Debugger failed to connect, but being used anyway.");
 
+	// Workaround for javascript platform which does not support IO when blocking the main thread.
+	if (!connection->can_block())
+		return;
+
 	_connection_put_var("debug_enter");
 	_connection_put_var(2);
 	_connection_put_var(p_can_continue);

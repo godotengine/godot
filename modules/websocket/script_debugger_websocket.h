@@ -52,6 +52,7 @@ public:
 
 	virtual Error connect_to_host(const String &p_host, uint16_t p_port);
 	virtual bool is_connected_to_host();
+	virtual bool can_block();
 	ScriptDebuggerWebSocket();
 };
 

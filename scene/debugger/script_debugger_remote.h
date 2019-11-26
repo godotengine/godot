@@ -46,6 +46,7 @@ class ScriptDebuggerConnection : public Reference {
 	virtual Ref<PacketPeer> get_peer() = 0;
 	virtual Error connect_to_host(const String &p_host, uint16_t p_port) = 0;
 	virtual bool is_connected_to_host() = 0;
+	virtual bool can_block() { return true; }
 
 protected:
 	static ScriptDebuggerConnection *(*_create)();
