@@ -1169,23 +1169,25 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name) {
+Node *Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
-	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(p_child == this, "Can't add child '" + p_child->get_name() + "' to itself."); // adding to itself!
-	ERR_FAIL_COND_MSG(p_child->data.parent, "Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'."); //Fail if node has a parent
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
+	ERR_FAIL_NULL_V(p_child, nullptr);
+	ERR_FAIL_COND_V_MSG(p_child == this, nullptr, "Can't add child '" + p_child->get_name() + "' to itself."); // adding to itself!
+	ERR_FAIL_COND_V_MSG(p_child->data.parent, nullptr, "Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'."); //Fail if node has a parent
+	ERR_FAIL_COND_V_MSG(data.blocked > 0, nullptr, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
 	/* Validate name */
 	_validate_child_name(p_child, p_legible_unique_name);
 
 	_add_child_nocheck(p_child, p_child->data.name);
+
+	return p_child;
 }
 
-void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+Node *Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
 
-	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_NULL(p_child);
+	ERR_FAIL_NULL_V(p_node, nullptr);
+	ERR_FAIL_NULL_V(p_child, nullptr);
 
 	add_child(p_child, p_legible_unique_name);
 
@@ -1194,6 +1196,8 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 	} else {
 		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
 	}
+
+	return p_child;
 }
 
 void Node::_propagate_validate_owner() {
