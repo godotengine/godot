@@ -59,6 +59,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	OptionButton *filter_combo;
 	Tree *results_tree;
 	bool old_search;
+	String old_term;
 
 	class Runner;
 	Ref<Runner> search;
