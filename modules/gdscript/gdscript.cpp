@@ -1155,8 +1155,6 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 }
 Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-	//printf("calling %ls:%i method %ls\n", script->get_path().c_str(), -1, String(p_method).c_str());
-
 	GDScript *sptr = script.ptr();
 	while (sptr) {
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
@@ -1952,11 +1950,11 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case UNUSED_VARIABLE: {
 			CHECK_SYMBOLS(1);
-			return "The local variable '" + symbols[0] + "' is declared but never used in the block.";
+			return "The local variable '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
 		} break;
 		case SHADOWED_VARIABLE: {
 			CHECK_SYMBOLS(2);
-			return "The local variable '" + symbols[0] + "' is shadowing an already defined variable at line " + symbols[1] + ".";
+			return "The local variable '" + symbols[0] + "' is shadowing an already-defined variable at line " + symbols[1] + ".";
 		} break;
 		case UNUSED_CLASS_VARIABLE: {
 			CHECK_SYMBOLS(1);
@@ -1964,7 +1962,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case UNUSED_ARGUMENT: {
 			CHECK_SYMBOLS(2);
-			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'.";
+			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
 		} break;
 		case UNREACHABLE_CODE: {
 			CHECK_SYMBOLS(1);
