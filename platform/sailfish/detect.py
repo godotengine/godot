@@ -275,7 +275,7 @@ def configure(env):
     env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad', '#platform/sailfish/outputsdl/include', '#platform/sailfish/SDL_src/src'])
     # env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_ls -lGL'])
     env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
-    env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE', '-DSAILFISH_ENABLED', '-DJOYDEV_ENABLED', '-DUDEV_ENABLED']) 
+    env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE','-DSAILFISH_ENABLED', '-DJOYDEV_ENABLED', '-DUDEV_ENABLED']) 
     # include paths for different versions of SailfishSDK width different SDL2 version  
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 

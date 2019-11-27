@@ -120,19 +120,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
 
-	// print_verbose("What SDL2 support on device\n");
-	// SDL_Init(0);
-
-	// OS::get_singleton()->print("List video drivers: \n");
-	// std::vector<bool> drivers( SDL_GetNumVideoDrivers() );
-	// for( int i = 0; i < drivers.size(); ++i )
-	// {
-	// 	drivers[i] = (0 == SDL_VideoInit(SDL_GetVideoDriver(i)) );
-	// 	SDL_VideoQuit();
-	// 	if( !drivers[i] ) 
-	// 		continue;
-	// 	OS::get_singleton()->print( "[%i] %s\n" , i, SDL_GetVideoDriver(i) );
-	// }
 
 	// ** SDL INIT ** //
 
@@ -148,9 +135,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	//SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	//SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
 	
-// maybe contextgl wants to be in charge of creating the window
-//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
-//#if defined(OPENGL_ENABLED)
 
 	context_gl = memnew(ContextGL_SDL(sdl_display_mode, current_videomode, true));
 	context_gl->set_screen_orientation(OS::get_singleton()->get_screen_orientation());
@@ -630,53 +614,30 @@ void OS_SDL::process_events() {
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 	Vector<String> dropped_files;
 
-	//  if (!window_has_focus) {
-	// 	while (SDL_PollEvent(&event)) {
-	// 		if (event.type == SDL_WINDOWEVENT) {
-	// 			switch(event.window.event) {
-	// 			case SDL_WINDOWEVENT_FOCUS_GAINED:
-	// 			case SDL_WINDOWEVENT_ENTER:
-	// 			case SDL_WINDOWEVENT_SHOWN:
-	// 				if(OS::get_singleton()->is_stdout_verbose())
-	// 						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
-	// 				minimized = false;
-	// 				window_has_focus = true;
-	// 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-	// 			}
-	// 		}
-	// 	}
-	// 	return;
-	// }
-
 	while (SDL_PollEvent(&event)) {
 		// if(OS::get_singleton()->is_stdout_verbose()) {
 			// OS::get_singleton()->print("SDL_Event %d;\n",event.type);
 		// }
 
 		if (event.type == SDL_QUIT ) {
-			if(OS::get_singleton()->is_stdout_verbose())
-				OS::get_singleton()->print("SDL_QUIT event;\n");
+			mprint_verbose("SDL_QUIT event;\n");
 			main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 			continue;
 		}
 		if (event.type == SDL_WINDOWEVENT) {
-			if(OS::get_singleton()->is_stdout_verbose())
-				OS::get_singleton()->print("SDL WindowEvent: ");
+			mprint_verbose("SDL WindowEvent: ");
 			switch (event.window.event) {
 				case SDL_WINDOWEVENT_EXPOSED:
 					Main::force_redraw();
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_EXPOSED;\n");
+					mprint_verbose("SDL_WINDOWEVENT_EXPOSED;\n");
 					break;
 				case SDL_WINDOWEVENT_MINIMIZED:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_MINIMIZED;\n");
+					mprint_verbose("SDL_WINDOWEVENT_MINIMIZED;\n");
 					minimized = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 					break;
 				case SDL_WINDOWEVENT_LEAVE:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_LEAVE;\n");
+					mprint_verbose("SDL_WINDOWEVENT_LEAVE;\n");
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
@@ -686,59 +647,50 @@ void OS_SDL::process_events() {
 					// 	input->set_mouse_in_window(false);
 					break;
 				case SDL_WINDOWEVENT_ENTER:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_ENTER;\n");
+					mprint_verbose("SDL_WINDOWEVENT_ENTER;\n");
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 					// if (input)
 					// 	input->set_mouse_in_window(true);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
+					mprint_verbose("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 					//TODO displaykeepalive_start(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_LOST:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_LOST;\n");
+					mprint_verbose("SDL_WINDOWEVENT_FOCUS_LOST;\n");
 					minimized = true;
 					window_has_focus = false;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 					//TODO  displaykeepalive_stop(displaykeepalive);
 					break;
 				case SDL_WINDOWEVENT_SHOWN:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_SHOWN;\n");
+					mprint_verbose("SDL_WINDOWEVENT_SHOWN;\n");
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 					break;
 				case SDL_WINDOWEVENT_RESIZED:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_RESIZED;\n");
+					mprint_verbose("SDL_WINDOWEVENT_RESIZED;\n");
 					break;
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_SIZE_CHANGED;\n");
+					mprint_verbose("SDL_WINDOWEVENT_SIZE_CHANGED;\n");
 					window_size = get_window_size();
 					current_videomode.width = window_size.x;
 					current_videomode.height = window_size.y;
 					// main_loop->notification(MainLoop::NOTIFICATION_);
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_CLOSE;\n");
+					mprint_verbose("SDL_WINDOWEVENT_CLOSE;\n");
 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 					break;
 				default:
-					if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("Window %d got unknown event %d;\n",event.window.windowID, event.window.event);
+					mprint_verbose2("Window %d got unknown event %d;\n", event.window.windowID, event.window.event );
 					break;
 			}
-
 			continue; // Probably not a good pattern, but I'm not a fan of else-if in this case.
 		}
 
@@ -773,7 +725,6 @@ void OS_SDL::process_events() {
 			continue;
 		}
 
-		// Ahh, good ol' abstractions. :3
 		else if (event.type == SDL_MOUSEMOTION) {
 			last_timestamp = event.motion.timestamp;
 
@@ -1038,7 +989,6 @@ void OS_SDL::process_events() {
 		// 	continue;
 		// }
 
-		// // Allow dragging and dropping text into text inputs.
 		// if (event.type == SDL_DROPTEXT) {
 		// 	last_timestamp = event.text.timestamp;
 
@@ -1086,6 +1036,11 @@ void OS_SDL::process_events() {
 			}
 			continue;
 		} 
+
+		if( event.type == SDL_MULTIGESTURE ){
+			//mprint_verbose("SDL_Event SDL_MULTIGESTURE;\n");
+			continue;
+		}
 
 		if(OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("SDL_Event %d;\n",event.type);

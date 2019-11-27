@@ -106,20 +106,6 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 			canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_SHADOW_COLOR,light->shadow_color);*/
 		}
 	}
-
-#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE,true);
-	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE)
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 1);
-	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 2);
-	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_PORTRAIT )
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 3);
-	else
-		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
-#else 
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE,false);
-#endif
 }
 
 void RasterizerCanvasGLES2::canvas_begin() {
@@ -200,7 +186,22 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	state.uniforms.extra_matrix = Transform2D();
 
 	_set_uniforms();
-	
+
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
+	WARN_PRINT_ONCE("Force landscape enabled");
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE, true);
+	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE)
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 1);
+	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 2);
+	else if ( OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_PORTRAIT )
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 3);
+	else
+		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
+#else 
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE, false);
+#endif
+
 	_bind_quad_buffer();
 }
 
@@ -565,6 +566,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 	int command_count = p_item->commands.size();
 	Item::Command **commands = p_item->commands.ptrw();
+
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
+	// state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE, false);
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
+#endif
 
 	for (int i = 0; i < command_count; i++) {
 

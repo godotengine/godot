@@ -319,6 +319,7 @@ const bool at_light_pass = true;
 #else
 const bool at_light_pass = false;
 #endif
+
 #ifdef USE_FORCE_LANDSCAPE
 uniform int  force_landscape; 
 #endif
@@ -365,36 +366,33 @@ void main() {
 	uv = mod(uv, vec2(1.0, 1.0));
 #endif
 
+#ifdef USE_FORCE_LANDSCAPE
+	if ( force_landscape != 0 ) {
+		if ( force_landscape == 1 ) {
+		// reverse landscape
+			uv = vec2(1.0 - uv.y, uv.x);
+		} 
+		else if( force_landscape == 2 ) {
+		// landscape
+			uv = vec2(uv.y, 1.0 - uv.x);
+		}
+		else if( force_landscape == 3 ) {
+		// reverse portrait
+			uv = vec2(1.0 - uv.x, 1.0 - uv.y);
+		}
+	}
+	// normal portrait - no need modify
+#endif
+
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
-#if defined(USE_FORCE_LANDSCAPE)
-	if ( force_landscape == 1 ) {
-	// reverse landscape
-		vec2 canvas_uv = vec2(1.0 - uv.y, uv.x);
-		color *= texture2D(color_texture, canvas_uv);
-	} 
-	else if( force_landscape == 2 ) {
-	// landscape
-		vec2 canvas_uv = vec2(uv.y, 1.0 - uv.x);
-		color *= texture2D(color_texture, canvas_uv);
-	}
-	else if( force_landscape == 3 ) {
-	// reverse portrait
-		vec2 canvas_uv = vec2(1.0 - uv.x, 1.0 - uv.y);
-		color *= texture2D(color_texture, uv);
-	}
-	else if( force_landscape == 0 ) {
-	// normal portrait
-		color *= texture2D(color_texture, uv);
-	}
-#else
 	color *= texture2D(color_texture, uv);
 #endif
-#endif
+
+	
 
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
-	//screen_uv = vec2(1.0 - gl_FragCoord.y, gl_FragCoord.x);
 #endif
 
 	vec3 normal;
