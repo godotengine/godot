@@ -362,7 +362,8 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				// formula (world_space) * (model space * inverse previous model space)
 				//
 				// original formula pivot_xform * node_geometric_transform * geometric_transform
-				//world_transform *= pivot_xform;
+
+
 				node->mTransformation = (pivot_xform * geometric_node) * inverse_geometric_xform;
 
 				aiVector3D scale, pos, rot;
@@ -373,7 +374,7 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				ConvertModel(*model, node, root_node, node->mTransformation);
 
 
-				ResampleAnimationsWithPivots(model->ID(), pivot_xform);
+				//ResampleAnimationsWithPivots(model->ID(), pivot_xform);
 
 				// Geometric pivot data application
 				// resamples the node animation
@@ -1592,8 +1593,9 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 	    std::cout << "valid limb deformer node" << limb->Name() << std::endl;
 	    aiMatrix4x4 geometric_pivot;
 	    // pivot global position
-	    bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
-	    bone->mOffsetMatrix *= geometric_pivot;
+	    //bone->mOffsetMatrix *= absolute_transform;
+	    //bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
+	    //bone->mOffsetMatrix *= geometric_pivot;
     } else
     {
 	    std::cerr << "failed to find limb for this ID: " << cl->TargetNode()->ID() << std::endl;

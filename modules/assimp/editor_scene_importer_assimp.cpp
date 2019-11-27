@@ -348,7 +348,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 					state.armature_skeletons.insert(element_assimp_node, skeleton);
 				}
 			} else if (bone != NULL) {
-				continue;
+				spatial = memnew(Spatial);
 			} else if (element_assimp_node->mNumMeshes > 0) {
 				spatial = memnew(Spatial);
 			} else {
@@ -639,26 +639,26 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 			scale = _interpolate_track<Vector3>(scale_times, scale_values, time, AssetImportAnimation::INTERP_LINEAR);
 		}
 
-		if (skeleton) {
-			int skeleton_bone = skeleton->find_bone(node_name);
-			//print_verbose("Skeleton name: " + skeleton->get_name() + " bone id: " + itos(skeleton_bone));
-
-			if (skeleton_bone >= 0 && track_bone) {
-
-				Transform xform;
-				xform.basis.set_quat_scale(rot, scale);
-				xform.origin = pos;
-
-				xform = skeleton->get_bone_pose(skeleton_bone).inverse() * xform;
-
-				rot = xform.basis.get_rotation_quat();
-				rot.normalize();
-				scale = xform.basis.get_scale();
-				pos = xform.origin;
-			} else {
-				ERR_FAIL_MSG("Skeleton bone lookup failed for skeleton: " + skeleton->get_name());
-			}
-		}
+//		if (skeleton) {
+//			int skeleton_bone = skeleton->find_bone(node_name);
+//			//print_verbose("Skeleton name: " + skeleton->get_name() + " bone id: " + itos(skeleton_bone));
+//
+//			if (skeleton_bone >= 0 && track_bone) {
+//
+//				Transform xform;
+//				xform.basis.set_quat_scale(rot, scale);
+//				xform.origin = pos;
+//                // this is the pivot transform
+//				xform = skeleton->get_bone_pose(skeleton_bone).inverse() * xform;
+//
+//				rot = xform.basis.get_rotation_quat();
+//				rot.normalize();
+//				scale = xform.basis.get_scale();
+//				pos = xform.origin;
+//			} else {
+//				ERR_FAIL_MSG("Skeleton bone lookup failed for skeleton: " + skeleton->get_name());
+//			}
+//		}
 
 		animation->track_set_interpolation_type(track_idx, Animation::INTERPOLATION_LINEAR);
 		animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
@@ -765,31 +765,31 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 		Skeleton *skeleton = NULL;
 		NodePath node_path;
-		aiBone *bone = NULL;
-
-		// Import skeleton bone animation for this track
-		// Any bone will do, no point in processing more than just what is in the skeleton
-		{
-			bone = get_bone_from_stack(state, track->mNodeName);
-
-			if (bone) {
-				// get skeleton by bone
-				skeleton = state.armature_skeletons[bone->mArmature];
-
-				if (skeleton) {
-					String path = state.root->get_path_to(skeleton);
-					path += ":" + node_name;
-					node_path = path;
-
-					if (node_path != NodePath()) {
-						_insert_animation_track(state, anim, track_id, p_bake_fps, animation, ticks_per_second, skeleton,
-								node_path, node_name, bone);
-					} else {
-						print_error("Failed to find valid node path for animation");
-					}
-				}
-			}
-		}
+//		aiBone *bone = NULL;
+//
+//		// Import skeleton bone animation for this track
+//		// Any bone will do, no point in processing more than just what is in the skeleton
+//		{
+//			bone = get_bone_from_stack(state, track->mNodeName);
+//
+//			if (bone) {
+//				// get skeleton by bone
+//				skeleton = state.armature_skeletons[bone->mArmature];
+//
+//				if (skeleton) {
+//					String path = state.root->get_path_to(skeleton);
+//					path += ":" + node_name;
+//					node_path = path;
+//
+//					if (node_path != NodePath()) {
+//						_insert_animation_track(state, anim, track_id, p_bake_fps, animation, ticks_per_second, skeleton,
+//								node_path, node_name, bone);
+//					} else {
+//						print_error("Failed to find valid node path for animation");
+//					}
+//				}
+//			}
+//		}
 
 		// not a bone
 		// note this is flaky it uses node names which is unreliable
