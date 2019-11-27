@@ -214,9 +214,23 @@ std::vector<aiNodeAnim *> FBXConverter::GetNodeAnimsFromStack(const std::string 
 	return list;
 }
 
-void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim_list, aiMatrix4x4 transform) {
+void FBXConverter::ResampleAnimationsWithPivots(int64_t targetId, aiMatrix4x4 transform) {
 	// resample all animations, but only sample the nodes which we are looking for from the stack.
-	for (aiNodeAnim *node_anim : node_anim_list) {
+	for (std::pair<aiNodeAnim*, int64_t> kvp : anim_target_map) {
+	    if(kvp.second != targetId)
+        {
+	        continue;
+        }
+
+	    if(std::find(resampled_anim.begin(), resampled_anim.end(), targetId) != resampled_anim.end())
+        {
+            std::cerr << "prevented duplicate resampling" << std::endl;
+	        continue;
+        }
+
+	    std::cerr << "Resampling target " << targetId << " to pivot point." << std::endl;
+
+	    aiNodeAnim * node_anim = kvp.first;
 		// now iterate and resample animations
 		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
 			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
@@ -232,9 +246,11 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
             int64_t internal_target_id = anim_target_map[node_anim];
             std::cerr << "internal id: " << internal_target_id << std::endl;
             if (IsBone(internal_target_id)) {
-               std::cerr << "bone animation re-sample logic" << std::endl;
-//                final_matrix = transform.Inverse() * final_matrix * transform;
-//                //final_matrix = transform * final_matrix;
+               std::cerr << "bone animation re-sample logic [skipping]" << std::endl;
+               continue;
+                // Reinverse magic
+                //final_matrix = transform * final_matrix;
+                //final_matrix.Inverse();
             }
             else{
                 std::cerr << "normal aiNode detected" << std::endl;
@@ -246,6 +262,7 @@ void FBXConverter::ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_a
 			node_anim->mRotationKeys[x].mValue = rot;
 			node_anim->mScalingKeys[x].mValue = scale;
 			node_anim->mPositionKeys[x].mValue = trans;
+            resampled_anim.push_back(internal_target_id);
 		}
 	}
 	//}
@@ -355,8 +372,8 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				aiMatrix4x4 new_abs_transform = node->mTransformation;
 				ConvertModel(*model, node, root_node, node->mTransformation);
 
-				std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
-				ResampleAnimationsWithPivots(anims, pivot_xform);
+
+				ResampleAnimationsWithPivots(model->ID(), pivot_xform);
 
 				// Geometric pivot data application
 				// resamples the node animation

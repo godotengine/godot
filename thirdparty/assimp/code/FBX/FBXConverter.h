@@ -122,7 +122,7 @@ private:
 	// Animation stack used for pivot calculations
 	// very important for resampling the right node, if there are duplicates
 	void GenerateAnimStack();
-	void ResampleAnimationsWithPivots(std::vector<aiNodeAnim *> node_anim, aiMatrix4x4 transform);
+	void ResampleAnimationsWithPivots(int64_t targetId, aiMatrix4x4 transform);
 	std::vector<aiNodeAnim *> GetNodeAnimsFromStack(const std::string &node_name);
 
 	// pass into resample
@@ -475,7 +475,9 @@ private:
 	std::vector<aiAnimation *> animations;
 	std::map<int64_t, const LimbNode*> bone_id_map;
 	// anim target mapping to allow us to lookup direct node anims.
-	std::map<const aiNodeAnim*, int64_t> anim_target_map;
+	std::map<aiNodeAnim*, int64_t> anim_target_map;
+
+	std::vector<int64_t> resampled_anim;
 
 	//std::map<int64_t, aiSkin *> skin_id_map;
 	std::vector<aiLight *> lights;
