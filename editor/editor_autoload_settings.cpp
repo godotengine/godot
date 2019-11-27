@@ -120,6 +120,7 @@ void EditorAutoloadSettings::_autoload_add() {
 		autoload_add_path->get_line_edit()->set_text("");
 
 	autoload_add_name->set_text("");
+	add_autoload->set_disabled(true);
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -312,7 +313,34 @@ void EditorAutoloadSettings::_autoload_open(const String &fpath) {
 
 void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
-	autoload_add_name->set_text(p_path.get_file().get_basename());
+	// Convert the file name to PascalCase, which is the convention for classes in GDScript.
+	const String class_name = p_path.get_file().get_basename().capitalize().replace(" ", "");
+
+	// If the name collides with a built-in class, prefix the name to make it possible to add without having to edit the name.
+	// The prefix is subjective, but it provides better UX than leaving the Add button disabled :)
+	const String prefix = ClassDB::class_exists(class_name) ? "Global" : "";
+
+	autoload_add_name->set_text(prefix + class_name);
+	add_autoload->set_disabled(false);
+}
+
+void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
+
+	if (autoload_add_path->get_line_edit()->get_text() != "" && _autoload_name_is_valid(p_name, NULL)) {
+		_autoload_add();
+	}
+}
+
+void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
+
+	add_autoload->set_disabled(
+			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), NULL));
+}
+
+void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
+
+	add_autoload->set_disabled(
+			autoload_add_path->get_line_edit()->get_text() == "" || !_autoload_name_is_valid(p_name, NULL));
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -424,7 +452,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_icon("FileList", "EditorIcons"), BUTTON_OPEN);
+		item->add_button(3, get_icon("Load", "EditorIcons"), BUTTON_OPEN);
 		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
 		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
 		item->add_button(3, get_icon("Remove", "EditorIcons"), BUTTON_DELETE);
@@ -713,7 +741,9 @@ void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
 	ClassDB::bind_method("_autoload_button_pressed", &EditorAutoloadSettings::_autoload_button_pressed);
 	ClassDB::bind_method("_autoload_activated", &EditorAutoloadSettings::_autoload_activated);
+	ClassDB::bind_method("_autoload_path_text_changed", &EditorAutoloadSettings::_autoload_path_text_changed);
 	ClassDB::bind_method("_autoload_text_entered", &EditorAutoloadSettings::_autoload_text_entered);
+	ClassDB::bind_method("_autoload_text_changed", &EditorAutoloadSettings::_autoload_text_changed);
 	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
 	ClassDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
 
@@ -806,6 +836,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
 	autoload_add_path->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	autoload_add_path->get_file_dialog()->connect("file_selected", this, "_autoload_file_callback");
+	autoload_add_path->get_line_edit()->connect("text_changed", this, "_autoload_path_text_changed");
+
 	hbc->add_child(autoload_add_path);
 
 	l = memnew(Label);
@@ -815,11 +847,14 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	autoload_add_name->connect("text_entered", this, "_autoload_text_entered");
+	autoload_add_name->connect("text_changed", this, "_autoload_text_changed");
 	hbc->add_child(autoload_add_name);
 
-	Button *add_autoload = memnew(Button);
+	add_autoload = memnew(Button);
 	add_autoload->set_text(TTR("Add"));
 	add_autoload->connect("pressed", this, "_autoload_add");
+	// The button will be enabled once a valid name is entered (either automatically or manually).
+	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
 
 	tree = memnew(Tree);
