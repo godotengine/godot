@@ -3349,11 +3349,17 @@ bool String::is_valid_identifier() const {
 
 	const wchar_t *str = &operator[](0);
 
+	if (len == 1 && str[0] == '_') {
+		// Single underscores aren't valid identifiers in GDScript yet.
+		// Multiple underscores are valid identifiers though.
+		return false;
+	}
+
 	for (int i = 0; i < len; i++) {
 
 		if (i == 0) {
 			if (str[0] >= '0' && str[0] <= '9')
-				return false; // no start with number plz
+				return false; // Identifiers may not start with a number.
 		}
 
 		bool valid_char = (str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '_';

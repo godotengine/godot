@@ -65,8 +65,14 @@ void EditorAutoloadSettings::_notification(int p_what) {
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 
 	if (!p_name.is_valid_identifier()) {
-		if (r_error)
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+		if (r_error) {
+			if (p_name == "_") {
+				// Display a different error message to avoid confusion, as the other message below says `_` is allowed.
+				*r_error = TTR("Invalid name (it must not be a single underscore).");
+			} else {
+				*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+			}
+		}
 
 		return false;
 	}
