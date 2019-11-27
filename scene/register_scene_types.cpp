@@ -205,6 +205,9 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics_bone_3d.h"
+#include "scene/3d/physics_bone_compensation_3d.h"
+#include "scene/3d/physics_bone_joint_3d.h"
 #include "scene/3d/physics_joint_3d.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/proximity_group_3d.h"
@@ -460,7 +463,14 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicBody3D>();
 	ClassDB::register_class<SpringArm3D>();
 
-	ClassDB::register_class<PhysicalBone3D>();
+	ClassDB::register_class<PhysicsBoneCompensation3D>();
+	ClassDB::register_class<PhysicsBone3D>();
+	ClassDB::register_class<BonePinJoint3D>();
+	ClassDB::register_class<BoneHingeJoint3D>();
+	ClassDB::register_class<BoneSliderJoint3D>();
+	ClassDB::register_class<BoneConeTwistJoint3D>();
+	ClassDB::register_class<BoneGeneric6DOFJoint3D>();
+
 	ClassDB::register_class<SoftBody3D>();
 
 	ClassDB::register_class<SkeletonIK3D>();

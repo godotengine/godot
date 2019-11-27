@@ -37,7 +37,7 @@
 
 class EditorInspectorPluginSkeleton;
 class Joint;
-class PhysicalBone3D;
+class PhysicsBone3D;
 class Skeleton3DEditorPlugin;
 class Button;
 class CheckBox;
@@ -97,7 +97,6 @@ public:
 	void set_label(const String &p_label) { label = p_label; }
 
 	void _update_properties();
-	void _update_custom_pose_properties();
 	void _update_transform_properties(Transform p_transform);
 
 	// Can/cannot modify the spinner values for the Transform
@@ -121,14 +120,51 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	friend class Skeleton3DEditorPlugin;
 
-	enum Menu {
-		MENU_OPTION_CREATE_PHYSICAL_SKELETON
+	struct JointTree {
+		struct Node {
+			BoneId parent_id = -1;
+			BoneId bone_id = -1;
+			Vector<BoneId> children;
+
+			bool operator==(const Node &other) const { return other.bone_id == bone_id; }
+
+			Node() = default;
+
+			Node(BoneId p_bone_id) :
+					bone_id(p_bone_id) {}
+		};
+
+		Vector<Node> joints;
+
+		bool insert(BoneId p_bone_id) {
+			if (has(p_bone_id)) {
+				return false;
+			};
+			joints.push_back(p_bone_id);
+			return true;
+		}
+
+		bool has(BoneId p_bone_id) {
+			return joints.find(Node(p_bone_id)) != -1;
+		}
+
+		Node &get(BoneId p_bone_id) {
+			return joints.write[joints.find(Node(p_bone_id))];
+		}
+
+		const Node &get(BoneId p_bone_id) const {
+			return joints[joints.find(Node(p_bone_id))];
+		}
 	};
 
-	struct BoneInfo {
-		PhysicalBone3D *physical_bone = nullptr;
-		Transform relative_rest; // Relative to skeleton node
-		BoneInfo() {}
+	enum Menu {
+		RESET_POSE
+	};
+
+	enum JointTreePopupMenu {
+		CREATE_PHYSICS_BONE,
+		CREATE_PHYSICS_BONES,
+		CREATE_PHYSICS_BONES_WITH_JOINTS
 	};
 
 	EditorNode *editor;
@@ -139,10 +175,11 @@ class Skeleton3DEditor : public VBoxContainer {
 	Tree *joint_tree;
 	BoneTransformEditor *rest_editor;
 	BoneTransformEditor *pose_editor;
-	BoneTransformEditor *custom_pose_editor;
 
 	MenuButton *options;
 	EditorFileDialog *file_dialog;
+
+	PopupMenu *joint_tree_popup;
 
 	UndoRedo *undo_redo;
 
@@ -152,16 +189,21 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorFileDialog *file_export_lib;
 
 	void update_joint_tree();
-	void update_editors();
 
 	void create_editors();
 
-	void create_physical_skeleton();
-	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
+	bool construct_joint_tree(JointTree &p_out_tree, const Vector<BoneId> &p_bone_ids) const;
+
+	void create_single_bone(BoneId p_bone_id) const;
+	void create_physics_bones_for_tree(const JointTree &p_joint_tree, bool p_create_joints) const;
+	PhysicsBone3D *create_physics_bone(BoneId p_bone_id) const;
+	PhysicsBone3D *create_physics_bone(BoneId p_target_bone_id, BoneId p_other_bone_id) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+	Vector<BoneId> joint_tree_get_selected_bones() const;
 
 protected:
 	void _notification(int p_what);
@@ -177,6 +219,10 @@ public:
 	void _joint_tree_rmb_select(const Vector2 &p_pos);
 
 	void _update_properties();
+
+	void _reset_pose();
+
+	void _joint_tree_popup_selected(int p_option);
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
 	~Skeleton3DEditor();

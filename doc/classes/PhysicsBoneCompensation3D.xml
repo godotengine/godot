@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsBoneCompensation3D" inherits="Node3D" version="4.0">
+	<brief_description>
+		This node allows child [PhysicsBone3D] nodes to inherit the velocity and rotational changes of another Physics body.
+	</brief_description>
+	<description>
+		This node allows child [PhysicsBone3D] nodes to inherit the velocity and rotational changes of another physics body.
+		As an example, very often a [Skeleton3D] node is a child of some [KinematicBody3D]. Without this node, simulating [PhysicsBone3D] will not inherit velocity and rotational changes and appear to "stretch" and have exaggerated movement.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="tracking_node_path" type="NodePath" setter="set_tracking_node_path" getter="get_tracking_node_path" default="NodePath(&quot;&quot;)">
+			The path to the [PhysicsBody3D] node to track.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

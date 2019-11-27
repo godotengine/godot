@@ -110,6 +110,8 @@ public:
 	virtual void set_transform(const Transform &p_transform) override;
 	virtual Transform get_transform() const override;
 
+	virtual void teleport(const Transform &p_transform) override;
+
 	virtual void add_central_force(const Vector3 &p_force) override;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
 	virtual void add_torque(const Vector3 &p_torque) override;
@@ -311,6 +313,8 @@ public:
 
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
+
+	void teleport(const Transform &p_transform);
 
 	virtual void set_transform__bullet(const btTransform &p_global_transform) override;
 	virtual const btTransform &get_transform__bullet() const override;

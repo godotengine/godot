@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsBone3D" inherits="RigidBody3D" version="4.0">
+	<brief_description>
+		A PhysicsBone3D is a RigidBody3D that tracks or modifies a bones pose.
+	</brief_description>
+	<description>
+		A PhysicsBone3D is a RigidBody3D that tracks or modifies a bones pose.
+		When free simulate is off, the physics body tracks the bone.
+		When free simulate is on, the physics body modifies the bones pose.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bone_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the bound bone id or -1 when the [PhysicsBone3D] is loaded into the scene.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
+			The bone name from the parent [Skeleton3D] to track/modify.
+		</member>
+		<member name="bone_offset" type="Vector3" setter="set_bone_offset" getter="get_bone_offset" default="Vector3( 0, 0, 0 )">
+			The bone offset represents the bone local-space offset for the center of mass of the [PhysicsBone3D].
+			Modify this value to change the bones center of mass.
+		</member>
+		<member name="free_simulation" type="bool" setter="set_free_simulation" getter="get_free_simulation" default="false">
+			If free simulation is on, the physics bone will act as a proper rigid body and simulate. Its simulation will be propagated as a global pose override in the [Skeleton3D] for the associated bone id.
+			If free simulation is off, the physics bone will be set to kinematic mode and follow the position of the bone from the skeleton.
+		</member>
+		<member name="velocity_compensation_amount" type="float" setter="set_velocity_compensation_amount" getter="get_velocity_compensation_amount" default="1.0">
+			If this node is a child of a [PhysicsBoneCompensation3D], set the magnitude of velocity change to inherit from its tracked node.
+		</member>
+		<member name="rotation_compensation_amount" type="float" setter="set_rotation_compensation_amount" getter="get_rotation_compensation_amount" default="1.0">
+			If this node is a child of a [PhysicsBoneCompensation3D], set the magnitude of rotation change to inherit from its tracked node.
+		</member>
+		<member name="rotation_teleport_threshold_angle" type="float" setter="set_rotation_teleport_threshold_angle" getter="get_rotation_teleport_threshold_angle" default="1.74533">
+			If this node is a child of a [PhysicsBoneCompensation3D], set the threshold angle after which the bone will "teleport" and clear its velocities instead of free simulating.
+			As an example, if the tracked node of the [PhysicsBoneCompensation3D] rotates more than 180 degrees (3.14) in a single frame, you can set the value to 180 degrees (3.14) to indicate that the bone should teleport instead of simulate to that position.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -271,6 +271,10 @@ void Body3DSW::_shapes_changed() {
 
 void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
+		case PhysicsServer3D::BODY_STATE_TELEPORT: {
+			teleport(p_variant);
+			break;
+		}
 		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
 			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
@@ -359,6 +363,10 @@ Variant Body3DSW::get_state(PhysicsServer3D::BodyState p_state) const {
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
 			return can_sleep;
 		} break;
+		default: {
+			WARN_PRINT("This state " + itos(p_state) + " is not supported");
+			return Variant();
+		}
 	}
 
 	return Variant();

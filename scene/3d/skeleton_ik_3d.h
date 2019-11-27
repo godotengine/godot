@@ -52,7 +52,6 @@ class FabrikInverseKinematic {
 
 		// Bone info
 		BoneId bone = -1;
-		PhysicalBone3D *pb = nullptr;
 
 		real_t length = 0;
 		/// Positions relative to root bone

@@ -52,7 +52,8 @@ protected:
 
 	void _notification(int p_what);
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b);
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) = 0;
 
 	static void _bind_methods();
 
@@ -87,7 +88,7 @@ public:
 
 protected:
 	float params[3];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) override;
 	static void _bind_methods();
 
 public:
@@ -124,7 +125,7 @@ public:
 protected:
 	float params[PARAM_MAX];
 	bool flags[FLAG_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) override;
 	static void _bind_methods();
 
 	void _set_upper_limit(float p_limit);
@@ -186,7 +187,7 @@ protected:
 	float _get_lower_limit_angular() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) override;
 	static void _bind_methods();
 
 public:
@@ -220,7 +221,7 @@ protected:
 	float _get_twist_span() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) override;
 	static void _bind_methods();
 
 public:
@@ -301,7 +302,7 @@ protected:
 
 	int precision = 1;
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
+	virtual RID _configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) override;
 	static void _bind_methods();
 
 public:

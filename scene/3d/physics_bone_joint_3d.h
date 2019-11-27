@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physical_bone_3d_editor_plugin.h                                     */
+/*  physics_bone_joint_3d.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,51 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICAL_BONE_PLUGIN_H
-#define PHYSICAL_BONE_PLUGIN_H
+#ifndef PHYSICS_BONE_JOINT_3D_H
+#define PHYSICS_BONE_JOINT_3D_H
 
-#include "editor/editor_node.h"
+#include "scene/3d/physics_bone_3d.h"
+#include "scene/3d/physics_joint_3d.h"
 
-class PhysicalBone3DEditor : public Object {
-	GDCLASS(PhysicalBone3DEditor, Object);
+/**
+ * @author Marios Staikopoulos <marios@staik.net>
+ */
 
-	EditorNode *editor;
-	HBoxContainer *spatial_editor_hb;
-	Button *button_transform_joint;
-
-	PhysicalBone3D *selected = nullptr;
+class BonePinJoint3D : public PinJoint3D {
+	GDCLASS(BonePinJoint3D, PinJoint3D);
 
 protected:
-	static void _bind_methods();
-
-private:
-	void _on_toggle_button_transform_joint(bool p_is_pressed);
-	void _set_move_joint();
-
-public:
-	PhysicalBone3DEditor(EditorNode *p_editor);
-	~PhysicalBone3DEditor() {}
-
-	void set_selected(PhysicalBone3D *p_pb);
-
-	void hide();
-	void show();
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) override;
 };
 
-class PhysicalBone3DEditorPlugin : public EditorPlugin {
-	GDCLASS(PhysicalBone3DEditorPlugin, EditorPlugin);
+/////////////////////////////////////////////////////////////////////
 
-	EditorNode *editor;
-	PhysicalBone3D *selected = nullptr;
-	PhysicalBone3DEditor physical_bone_editor;
+class BoneHingeJoint3D : public HingeJoint3D {
+	GDCLASS(BoneHingeJoint3D, HingeJoint3D);
 
-public:
-	virtual String get_name() const override { return "PhysicalBone3D"; }
-	virtual bool handles(Object *p_object) const override { return p_object->is_class("PhysicalBone3D"); }
-	virtual void make_visible(bool p_visible) override;
-	virtual void edit(Object *p_node) override;
-
-	PhysicalBone3DEditorPlugin(EditorNode *p_editor);
+protected:
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) override;
 };
 
-#endif
+/////////////////////////////////////////////////////////////////////
+
+class BoneSliderJoint3D : public SliderJoint3D {
+	GDCLASS(BoneSliderJoint3D, SliderJoint3D);
+
+protected:
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) override;
+};
+
+/////////////////////////////////////////////////////////////////////
+
+class BoneConeTwistJoint3D : public ConeTwistJoint3D {
+	GDCLASS(BoneConeTwistJoint3D, ConeTwistJoint3D);
+
+protected:
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) override;
+};
+
+/////////////////////////////////////////////////////////////////////
+
+class BoneGeneric6DOFJoint3D : public Generic6DOFJoint3D {
+	GDCLASS(BoneGeneric6DOFJoint3D, Generic6DOFJoint3D);
+
+protected:
+	virtual void compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) override;
+};
+
+#endif // PHYSICS_BONE_JOINT_3D_H
