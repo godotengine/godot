@@ -492,7 +492,7 @@
 		<method name="new_child">
 			<return type="Node">
 			</return>
-			<argument index="0" name="scene" type="PackedScene" default="0">
+			<argument index="0" name="scene" type="PackedScene" default="null">
 			</argument>
 			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>

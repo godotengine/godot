@@ -2738,7 +2738,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("new_child", "scene", "legible_unique_name"), &Node::new_child, DEFVAL(NULL), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("new_child", "scene", "legible_unique_name"), &Node::new_child, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
