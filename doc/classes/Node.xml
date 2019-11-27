@@ -381,18 +381,6 @@
 				Returns [code]true[/code] if the [NodePath] points to a valid node and its subname points to a valid resource, e.g. [code]Area2D/CollisionShape2D:shape[/code]. Properties with a non-[Resource] type (e.g. nodes or primitive math types) are not considered resources.
 			</description>
 		</method>
-		<method name="instance_child">
-			<return type="Node">
-			</return>
-			<argument index="0" name="scene" type="PackedScene">
-			</argument>
-			<argument index="1" name="legible_unique_name" type="bool" default="false">
-			</argument>
-			<description>
-				Instantiates a node from the [code]scene[/code] as in [method PackedScene.instance] and adds the node as a child.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
-			</description>
-		</method>
 		<method name="is_a_parent_of" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -499,6 +487,18 @@
 			</argument>
 			<description>
 				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+			</description>
+		</method>
+		<method name="new_child">
+			<return type="Node">
+			</return>
+			<argument index="0" name="scene" type="PackedScene" default="0">
+			</argument>
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
+			</argument>
+			<description>
+				Instantiates and returns a new node from the [code]scene[/code] as in [method PackedScene.instance] and adds the node as a child. If the [code]scene[/code] is not valid, creates an empty node.
+				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 			</description>
 		</method>
 		<method name="print_stray_nodes">

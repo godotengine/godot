@@ -1196,10 +1196,14 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 	}
 }
 
-Node *Node::instance_child(const Ref<PackedScene> &p_scene, bool p_legible_unique_name) {
-	ERR_FAIL_COND_V_MSG(p_scene.is_null(), NULL, "Can't instance a child node from an invalid scene.");
+Node *Node::new_child(const Ref<PackedScene> &p_scene, bool p_legible_unique_name) {
+	Node *new_node;
 
-	Node *new_node = p_scene->instance();
+	if (p_scene.is_valid()) {
+		new_node = p_scene->instance();
+	} else {
+		new_node = memnew(Node);
+	}
 	add_child(new_node, p_legible_unique_name);
 
 	return new_node;
@@ -2734,7 +2738,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("instance_child", "scene", "legible_unique_name"), &Node::instance_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("new_child", "scene", "legible_unique_name"), &Node::new_child, DEFVAL(NULL), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
