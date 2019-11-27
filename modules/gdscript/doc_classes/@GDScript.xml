@@ -1365,17 +1365,17 @@
 				If passed an object and a signal, the execution is resumed when the object emits the given signal. In this case, [code]yield()[/code] returns the argument passed to [code]emit_signal()[/code] if the signal takes only one argument, or an array containing all the arguments passed to [code]emit_signal()[/code] if the signal takes multiple arguments.
 				You can also use [code]yield[/code] to wait for a function to finish:
 				[codeblock]
-				func _ready -> void:
+				func _ready():
 				    yield(do_something(), "completed")
 				    yield(do_something_else(), "completed")
 				    print("All functions are done!")
 
 				func do_something():
 				    print("Something is done!")
-				
+
 				func do_something_else():
 				    print("Something else is done!")
-				
+
 				# prints:
 				# Something is done!
 				# Something else is done!
