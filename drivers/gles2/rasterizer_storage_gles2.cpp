@@ -102,10 +102,10 @@ PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glRenderbufferStorageMultisampleEXT;
 PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT;
 #define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleEXT
 #define glFramebufferTexture2DMultisample glFramebufferTexture2DMultisampleEXT
-#  ifdef SAILFISH_ENABLED
+#ifdef SAILFISH_ENABLED
 //PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT
 //#define glGenerateMipmap glGenerateMipmapEXT
-#  endif
+#endif
 #elif defined(UWP_ENABLED)
 #include <GLES2/gl2ext.h>
 #define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleANGLE
@@ -4776,7 +4776,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 #endif
 
 	} else
-#endif // JAVASCRIPT_ENABLED 
+#endif // JAVASCRIPT_ENABLED
 	{
 		rt->multisample_active = false;
 	}
@@ -5846,7 +5846,7 @@ void RasterizerStorageGLES2::initialize() {
 #elif SAILFISH_ENABLED
 
 	void *gles2_lib = dlopen("libGLESv2.so.2", RTLD_LAZY);
-	if( gles2_lib == NULL ) {
+	if (gles2_lib == NULL) {
 		// OS::get_singleton()->print("WARNING: Cant get libGLESv2.so.2\n");
 	}
 	glRenderbufferStorageMultisampleEXT = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glRenderbufferStorageMultisampleEXT");

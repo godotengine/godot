@@ -72,9 +72,9 @@
 
 #undef CursorShape
 
-#if defined(PULSEAUDIO_ENABLED) && ! defined(DISABLE_LIBAUDIORESOURCE)
+#if defined(PULSEAUDIO_ENABLED) && !defined(DISABLE_LIBAUDIORESOURCE)
 #include <glib.h>
-static void on_audio_resource_acquired(audioresource_t*, bool, void*);
+static void on_audio_resource_acquired(audioresource_t *, bool, void *);
 #endif
 
 int OS_SDL::get_video_driver_count() const {
@@ -120,7 +120,6 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
 
-
 	// ** SDL INIT ** //
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -128,18 +127,16 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		return ERR_UNAVAILABLE;
 	}
 
-	OS::get_singleton()->print( "Current vide driver is: %s\n", SDL_GetCurrentVideoDriver() );
+	OS::get_singleton()->print("Current vide driver is: %s\n", SDL_GetCurrentVideoDriver());
 
 	// ** ENABLE DRAG AND DROP SUPPORT ** //
 	// no drop event in sailfish
 	//SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	//SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
-	
 
 	context_gl = memnew(ContextGL_SDL(sdl_display_mode, current_videomode, true));
 	context_gl->set_screen_orientation(OS::get_singleton()->get_screen_orientation());
-	if( context_gl->initialize() == FAILED )
-	{
+	if (context_gl->initialize() == FAILED) {
 		memdelete(context_gl);
 		return FAILED;
 	}
@@ -186,26 +183,25 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		cursors[i] = NULL;
 	}
 
-#if defined(PULSEAUDIO_ENABLED )
-#  if !defined(DISABLE_LIBAUDIORESOURCE)
+#if defined(PULSEAUDIO_ENABLED)
+#if !defined(DISABLE_LIBAUDIORESOURCE)
 	// initialize libaudioresource
-	audio_resource  = audioresource_init(
-		AUDIO_RESOURCE_GAME,
-		on_audio_resource_acquired,
-		this
-	);
+	audio_resource = audioresource_init(
+			AUDIO_RESOURCE_GAME,
+			on_audio_resource_acquired,
+			this);
 	audioresource_acquire(audio_resource);
 
-	OS::get_singleton()->print("Wait libaudioresource initialization ");       
+	OS::get_singleton()->print("Wait libaudioresource initialization ");
 	while (!is_audio_resource_acquired) {
 		//OS::get_singleton()->print(".");
 		g_main_context_iteration(NULL, false);
 		// process_events();
 		// force_process_input();
 	}
-#  else
+#else
 	start_audio_driver();
-#  endif
+#endif
 	//OS::get_singleton()->print("\nlibaudioresource initialization finished.\n");
 #endif
 
@@ -283,9 +279,9 @@ void OS_SDL::finalize() {
 
 	memdelete(power_manager);
 
-// #if defined(OPENGL_ENABLED || GLES_ENABLED)
+	// #if defined(OPENGL_ENABLED || GLES_ENABLED)
 	memdelete(context_gl);
-// #endif
+	// #endif
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		if (cursors[i] != NULL)
 			SDL_FreeCursor(cursors[i]);
@@ -454,8 +450,8 @@ Size2 OS_SDL::get_window_size() const {
 	SDL_GetWindowSize(sdl_window, &w, &h);
 #if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	if (get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
-		get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
-		get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
+			get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
+			get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE)
 		return Size2i(h, w);
 #endif
 	return Size2i(w, h);
@@ -601,7 +597,7 @@ void OS_SDL::fix_touch_position(Vector2 &pos) {
 		pos.y /= coef;
 	}
 }
-#endif 
+#endif
 
 void OS_SDL::process_events() {
 	SDL_Event event;
@@ -616,10 +612,10 @@ void OS_SDL::process_events() {
 
 	while (SDL_PollEvent(&event)) {
 		// if(OS::get_singleton()->is_stdout_verbose()) {
-			// OS::get_singleton()->print("SDL_Event %d;\n",event.type);
+		// OS::get_singleton()->print("SDL_Event %d;\n",event.type);
 		// }
 
-		if (event.type == SDL_QUIT ) {
+		if (event.type == SDL_QUIT) {
 			mprint_verbose("SDL_QUIT event;\n");
 			main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 			continue;
@@ -688,7 +684,7 @@ void OS_SDL::process_events() {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 					break;
 				default:
-					mprint_verbose2("Window %d got unknown event %d;\n", event.window.windowID, event.window.event );
+					mprint_verbose2("Window %d got unknown event %d;\n", event.window.windowID, event.window.event);
 					break;
 			}
 			continue; // Probably not a good pattern, but I'm not a fan of else-if in this case.
@@ -761,8 +757,7 @@ void OS_SDL::process_events() {
 		}
 
 #if defined(TOUCH_ENABLED)
-		else if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
-		{
+		else if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP) {
 			// if(OS::get_singleton()->is_stdout_verbose())
 			// 	print_line("SDL_FINGERDOW | SDL_FINGERUP");
 			// InputEvent input_event;
@@ -777,12 +772,12 @@ void OS_SDL::process_events() {
 
 			long long index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
-			
+
 #if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 			fix_touch_position(pos);
 #endif
-			// end landscape 
-			bool is_begin = event.type ==  SDL_FINGERDOWN;
+			// end landscape
+			bool is_begin = event.type == SDL_FINGERDOWN;
 
 			// if (is_begin) {
 			// 	++num_touches;
@@ -794,25 +789,24 @@ void OS_SDL::process_events() {
 			// 	if (num_touches < 0) // Defensive
 			// 		num_touches = 0;
 			// }
-			
+
 			// input_event->set_index(index);
 			input_event->set_position(pos);
 			input_event->set_pressed(is_begin);
-			
+
 			if (is_begin) {
 				if (touch.state.has(index)) // Defensive
 					break;
 				//-----
 				int get_index = MAX_TOUCHES;
-				for(int i = 0; i < MAX_TOUCHES; i++)
-				{
-					if( touch.index[i] == -1 && get_index > i )
+				for (int i = 0; i < MAX_TOUCHES; i++) {
+					if (touch.index[i] == -1 && get_index > i)
 						get_index = i;
-					else if( touch.index[i] == index )
-						if( get_index != MAX_TOUCHES - 1 )
+					else if (touch.index[i] == index)
+						if (get_index != MAX_TOUCHES - 1)
 							touch.index[i] = -1;
 				}
-				if ( get_index ==  MAX_TOUCHES )
+				if (get_index == MAX_TOUCHES)
 					break;
 				//-----
 				input_event->set_index(get_index);
@@ -823,15 +817,13 @@ void OS_SDL::process_events() {
 				if (!touch.state.has(index)) // Defensive
 					break;
 				int get_index = MAX_TOUCHES;
-				for(int i = 0; i < MAX_TOUCHES; i++)
-				{
-					if( touch.index[i] == index )
-					{
+				for (int i = 0; i < MAX_TOUCHES; i++) {
+					if (touch.index[i] == index) {
 						get_index = i;
 						break;
 					}
 				}
-				if ( get_index == MAX_TOUCHES )
+				if (get_index == MAX_TOUCHES)
 					break;
 				input_event->set_index(get_index);
 				touch.state.erase(index);
@@ -841,8 +833,7 @@ void OS_SDL::process_events() {
 			continue;
 		}
 
-		else if( event.type ==  SDL_FINGERMOTION )
-		{
+		else if (event.type == SDL_FINGERMOTION) {
 			Ref<InputEventScreenDrag> input_event;
 			input_event.instance();
 			//input_event.ID = ++event_id;
@@ -852,24 +843,21 @@ void OS_SDL::process_events() {
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
 #if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 			fix_touch_position(pos);
-#endif 
+#endif
 			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
 
 			int get_index = MAX_TOUCHES;
-			for(int i = 0; i < MAX_TOUCHES; i++)
-			{
-				if( touch.index[i] == index )
-				{
+			for (int i = 0; i < MAX_TOUCHES; i++) {
+				if (touch.index[i] == index) {
 					get_index = i;
 					break;
 				}
 			}
-			
-			if (!curr_pos_elem || get_index == MAX_TOUCHES ) 
+
+			if (!curr_pos_elem || get_index == MAX_TOUCHES)
 				break;
 
-			if (curr_pos_elem->value() != pos) 
-			{
+			if (curr_pos_elem->value() != pos) {
 				input_event->set_index(get_index);
 				input_event->set_position(pos);
 				input_event->set_relative(pos - curr_pos_elem->value());
@@ -877,7 +865,7 @@ void OS_SDL::process_events() {
 				curr_pos_elem->value() = pos;
 			}
 			continue;
-		}//*/
+		} //*/
 #endif
 
 		// else if( event.type == SDL_CONTROLLER_EVENT)
@@ -912,8 +900,8 @@ void OS_SDL::process_events() {
 			input->parse_input_event(k);
 			continue;
 			// If we're in text input mode.
-		} 
-		
+		}
+
 		else if (event.type == SDL_KEYDOWN && text_edit_mode == SDL_TRUE) {
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Keycode keycode = keysym.sym;
@@ -950,7 +938,7 @@ void OS_SDL::process_events() {
 				get_key_modifier_state(k);
 				k->set_unicode(tmp[i]);
 				k->set_pressed(true);
-				if (current_scancode != SDL_NUM_SCANCODES) 
+				if (current_scancode != SDL_NUM_SCANCODES)
 					k->set_scancode(current_scancode);
 				k->set_echo(current_echo);
 
@@ -1010,40 +998,39 @@ void OS_SDL::process_events() {
 		// 	continue;
 		// }
 
-		if( event.type == SDL_DISPLAYEVENT )
-		{// its mean sreen orientation changed
+		if (event.type == SDL_DISPLAYEVENT) { // its mean sreen orientation changed
 			//OS::get_singleton()->print("SDL_DisplayEvent.type = %i\n", event.display.event);
-			if( event.display.event == SDL_DISPLAYEVENT_ORIENTATION) { // DISPLAY event tpe
-				if(OS::get_singleton()->is_stdout_verbose())
-				switch(event.display.data1) {
-					case SDL_ORIENTATION_LANDSCAPE:
-						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE\n");
-						break;
-					case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
-						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
-						break;
-					case SDL_ORIENTATION_PORTRAIT:
-						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT\n");
-						break;
-					case SDL_ORIENTATION_PORTRAIT_FLIPPED:
-						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT_FLIPPED\n");
-						break;
-					case SDL_ORIENTATION_UNKNOWN:
-						OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN\n");
-						break;
-				}
+			if (event.display.event == SDL_DISPLAYEVENT_ORIENTATION) { // DISPLAY event tpe
+				if (OS::get_singleton()->is_stdout_verbose())
+					switch (event.display.data1) {
+						case SDL_ORIENTATION_LANDSCAPE:
+							OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE\n");
+							break;
+						case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+							OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_LANDSCAPE_FLIPPED\n");
+							break;
+						case SDL_ORIENTATION_PORTRAIT:
+							OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT\n");
+							break;
+						case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+							OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_PORTRAIT_FLIPPED\n");
+							break;
+						case SDL_ORIENTATION_UNKNOWN:
+							OS::get_singleton()->print("SDL_DisplayOrientation is SDL_ORIENTATION_UNKNOWN\n");
+							break;
+					}
 				context_gl->set_ext_surface_orientation(event.display.data1);
 			}
 			continue;
-		} 
+		}
 
-		if( event.type == SDL_MULTIGESTURE ){
+		if (event.type == SDL_MULTIGESTURE) {
 			//mprint_verbose("SDL_Event SDL_MULTIGESTURE;\n");
 			continue;
 		}
 
-		if(OS::get_singleton()->is_stdout_verbose()) {
-			OS::get_singleton()->print("SDL_Event %d;\n",event.type);
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("SDL_Event %d;\n", event.type);
 			continue;
 		}
 	}
@@ -1114,13 +1101,13 @@ Error OS_SDL::shell_open(String p_uri) {
 void OS_SDL::set_screen_orientation(ScreenOrientation p_orientation) {
 	OS::set_screen_orientation(p_orientation);
 	// NO NEED change context_gl orinetation, becuse its should store default app orinetation, as SENSOR_LANDSCAPE, SENSOR_PROTRAIT or SENSOR
-	// if(context_gl) 
+	// if(context_gl)
 	// 		context_gl->set_screen_orientation(p_orientation);
 }
 
 bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
 
-	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "s3tc" ) {
+	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "s3tc") {
 		return true;
 	}
 #if defined(__aarch64__)
@@ -1579,9 +1566,8 @@ OS::LatinKeyboardVariant OS_SDL::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
-#if defined(PULSEAUDIO_ENABLED) 
-void OS_SDL::start_audio_driver()
-{
+#if defined(PULSEAUDIO_ENABLED)
+void OS_SDL::start_audio_driver() {
 	AudioDriverManager::initialize(-1);
 }
 
@@ -1590,10 +1576,9 @@ void OS_SDL::stop_audio_driver() {
 		AudioDriverManager::get_driver(i)->finish();
 	}
 }
-#  ifndef DISABLE_LIBAUDIORESOURCE
-static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acquired, void* user_data) 
-{
-	OS_SDL* os = (OS_SDL*) user_data;
+#ifndef DISABLE_LIBAUDIORESOURCE
+static void on_audio_resource_acquired(audioresource_t *audio_resource, bool acquired, void *user_data) {
+	OS_SDL *os = (OS_SDL *)user_data;
 
 	if (acquired) {
 		print_line("\nl1ibaudioresource initialization finished.\n");
@@ -1606,28 +1591,28 @@ static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acq
 		os->stop_audio_driver();
 	}
 }
-#  endif
+#endif
 #endif
 
 OS_SDL::OS_SDL() {
 	context_gl = NULL;
 #if defined(PULSEAUDIO_ENABLED)
 	AudioDriverManager::add_driver(&driver_pulseaudio);
-#  if !defined(DISABLE_LIBAUDIORESOURCE)
+#if !defined(DISABLE_LIBAUDIORESOURCE)
 	audio_resource = NULL;
 	is_audio_resource_acquired = false;
-#  endif
+#endif
 #endif
 
-// #ifdef ALSA_ENABLED
-// 	AudioDriverManager::add_driver(&driver_alsa);
-// #endif
+	// #ifdef ALSA_ENABLED
+	// 	AudioDriverManager::add_driver(&driver_alsa);
+	// #endif
 
 	minimized = false;
 	// xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 #if defined(TOUCH_ENABLED)
-	for(int i = 0; i < MAX_TOUCHES; i ++ )
-		touch.index[i] = - 1;
+	for (int i = 0; i < MAX_TOUCHES; i++)
+		touch.index[i] = -1;
 #endif
 }
