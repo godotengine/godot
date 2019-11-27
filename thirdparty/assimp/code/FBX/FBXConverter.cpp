@@ -1593,9 +1593,9 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 	    std::cout << "valid limb deformer node" << limb->Name() << std::endl;
 	    aiMatrix4x4 geometric_pivot;
 	    // pivot global position
-	    //bone->mOffsetMatrix *= absolute_transform;
-	    //bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
-	    //bone->mOffsetMatrix *= geometric_pivot;
+	    bone->mOffsetMatrix *= absolute_transform;
+//	    bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
+//	    bone->mOffsetMatrix *= geometric_pivot;
     } else
     {
 	    std::cerr << "failed to find limb for this ID: " << cl->TargetNode()->ID() << std::endl;
