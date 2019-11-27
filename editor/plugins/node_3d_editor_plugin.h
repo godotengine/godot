@@ -251,6 +251,8 @@ public:
 		FREELOOK_FULLY_AXIS_LOCKED,
 	};
 
+	SubViewportContainer *get_subviewport_container() const;
+
 private:
 	float cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
