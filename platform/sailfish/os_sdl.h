@@ -44,6 +44,7 @@
 #include "power_sdl.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
+#include "helper_macros.h"
 #include <SDL.h>
 
 
