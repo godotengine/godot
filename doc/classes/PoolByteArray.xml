@@ -47,7 +47,7 @@
 			</return>
 			<argument index="0" name="buffer_size" type="int">
 			</argument>
-			<argument index="1" name="compression_mode" type="int" default="0">
+			<argument index="1" name="compression_mode" type="int">
 			</argument>
 			<description>
 				Returns a new [PoolByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
