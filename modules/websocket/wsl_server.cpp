@@ -283,9 +283,10 @@ int WSLServer::get_peer_port(int p_peer_id) const {
 }
 
 void WSLServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
-	ERR_FAIL_COND(!has_peer(p_peer_id));
+	Ref<WebSocketPeer> peer = get_peer(p_peer_id);
+	ERR_FAIL_COND(peer.is_null());
 
-	get_peer(p_peer_id)->close(p_code, p_reason);
+	peer->close(p_code, p_reason);
 }
 
 Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
