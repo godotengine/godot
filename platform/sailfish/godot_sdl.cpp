@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 		free(cwd);
 		return 255;
 	}
-	if(OS::get_singleton()->is_stdout_verbose()) 
+	if (OS::get_singleton()->is_stdout_verbose())
 		OS::get_singleton()->print("Begin MainLoop.\n");
 	if (Main::start())
 		os.run(); // it is actually the OS that decides how to run

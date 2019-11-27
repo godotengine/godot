@@ -37,7 +37,7 @@
 */
 #ifdef SDL_ENABLED
 
-#if  defined(GLES2_ENABLED)
+#if defined(GLES2_ENABLED)
 
 #include "os/os.h"
 #include <SDL.h>
@@ -55,6 +55,7 @@ class ContextGL_SDL {
 
 	friend struct ContextGL_SDL_Private;
 	int width, height;
+
 public:
 	virtual void release_current();
 	virtual void make_current();
@@ -66,8 +67,8 @@ public:
 
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
-	virtual SDL_Window* get_window_pointer();
-	
+	virtual SDL_Window *get_window_pointer();
+
 	void set_screen_orientation(OS::ScreenOrientation p_orientation);
 	// is SDL_DisplayOrientation value
 	void set_ext_surface_orientation(int orientation);

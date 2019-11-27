@@ -39,14 +39,13 @@
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "helper_macros.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_sdl.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
-#include "helper_macros.h"
 #include <SDL.h>
-
 
 #if defined(PULSEAUDIO_ENABLED) && !defined(DISABLE_LIBAUDIORESOURCE)
 #include <audioresource.h>
@@ -119,9 +118,9 @@ class OS_SDL : public OS_Unix {
 
 	// Current cursor shape.
 	CursorShape current_cursor;
-	SDL_Cursor* cursors[CURSOR_MAX];
+	SDL_Cursor *cursors[CURSOR_MAX];
 	// What's this for?
-	SDL_Cursor* null_cursor;
+	SDL_Cursor *null_cursor;
 
 	InputDefault *input;
 
@@ -131,9 +130,9 @@ class OS_SDL : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
-	#ifndef DISABLE_LIBAUDIORESOURCE
-	audioresource_t      *audio_resource;
-	#endif
+#ifndef DISABLE_LIBAUDIORESOURCE
+	audioresource_t *audio_resource;
+#endif
 #endif
 
 	// Atom net_wm_icon;
@@ -174,16 +173,15 @@ protected:
 
 	bool is_window_maximize_allowed();
 
-			
 #if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	void fix_touch_position(Vector2 &pos);
 #endif
 
 public:
-#if defined(PULSEAUDIO_ENABLED) 
-#  if !defined(DISABLE_LIBAUDIORESOURCE) 
+#if defined(PULSEAUDIO_ENABLED)
+#if !defined(DISABLE_LIBAUDIORESOURCE)
 	bool is_audio_resource_acquired;
-#  endif
+#endif
 	void start_audio_driver();
 	void stop_audio_driver();
 #endif

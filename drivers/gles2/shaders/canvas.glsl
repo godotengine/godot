@@ -324,7 +324,7 @@ const bool at_light_pass = false;
 #endif
 
 #ifdef USE_FORCE_LANDSCAPE
-uniform int  force_landscape; 
+uniform int force_landscape;
 #endif
 uniform bool use_default_normal;
 
@@ -370,17 +370,15 @@ void main() {
 #endif
 
 #ifdef USE_FORCE_LANDSCAPE
-	if ( force_landscape != 0 ) {
-		if ( force_landscape == 1 ) {
-		// reverse landscape
+	if (force_landscape != 0) {
+		if (force_landscape == 1) {
+			// reverse landscape
 			uv = vec2(1.0 - uv.y, uv.x);
-		} 
-		else if( force_landscape == 2 ) {
-		// landscape
+		} else if (force_landscape == 2) {
+			// landscape
 			uv = vec2(uv.y, 1.0 - uv.x);
-		}
-		else if( force_landscape == 3 ) {
-		// reverse portrait
+		} else if (force_landscape == 3) {
+			// reverse portrait
 			uv = vec2(1.0 - uv.x, 1.0 - uv.y);
 		}
 	}
@@ -391,8 +389,6 @@ void main() {
 	//default behavior, texture by color
 	color *= texture2D(color_texture, uv);
 #endif
-
-	
 
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
