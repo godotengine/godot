@@ -374,7 +374,7 @@ void FBXConverter::ConvertNodes(uint64_t id,
 				ConvertModel(*model, node, root_node, node->mTransformation);
 
 
-				//ResampleAnimationsWithPivots(model->ID(), pivot_xform);
+				ResampleAnimationsWithPivots(model->ID(), node->mTransformation);
 
 				// Geometric pivot data application
 				// resamples the node animation
