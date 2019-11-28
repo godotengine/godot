@@ -215,6 +215,7 @@ std::vector<aiNodeAnim *> FBXConverter::GetNodeAnimsFromStack(const std::string 
 }
 
 void FBXConverter::ResampleAnimationsWithPivots(int64_t targetId, aiMatrix4x4 transform) {
+
 	// resample all animations, but only sample the nodes which we are looking for from the stack.
 	for (std::pair<aiNodeAnim*, int64_t> kvp : anim_target_map) {
 	    if(kvp.second != targetId)
@@ -231,39 +232,40 @@ void FBXConverter::ResampleAnimationsWithPivots(int64_t targetId, aiMatrix4x4 tr
 	    std::cerr << "Resampling target " << targetId << " to pivot point." << std::endl;
 
 	    aiNodeAnim * node_anim = kvp.first;
-		// now iterate and resample animations
-		for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
-			aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
-			//rot = rot.Normalize();
-			aiVector3D scale = node_anim->mScalingKeys[x].mValue;
-			aiVector3D trans = node_anim->mPositionKeys[x].mValue;
 
-			// TRS
-			aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
-            std::cout << "anim node name: " << node_anim->mNodeName.C_Str() << std::endl;
+        if(node_anim->mNumPositionKeys == node_anim->mNumRotationKeys == node_anim->mNumScalingKeys) {
+            // now iterate and resample animations
+            for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
+                // todo: make this into interpolated keyframe
+                // todo: or make this import properly :D during the anim phase
+                aiQuaternion rot = node_anim->mRotationKeys[x].mValue;
+                aiVector3D scale = node_anim->mScalingKeys[x].mValue;
+                aiVector3D trans = node_anim->mPositionKeys[x].mValue;
 
-            // grab target mapping to determine if bone
-            int64_t internal_target_id = anim_target_map[node_anim];
-            std::cerr << "internal id: " << internal_target_id << std::endl;
-            if (IsBone(internal_target_id)) {
-               std::cerr << "bone animation re-sample logic [skipping]" << std::endl;
-               continue;
-                // Reinverse magic
-                //final_matrix = transform * final_matrix;
-                //final_matrix.Inverse();
-            }
-            else{
-                std::cerr << "normal aiNode detected" << std::endl;
+                // TRS
+                aiMatrix4x4 final_matrix = aiMatrix4x4(scale, rot, trans);
+                std::cout << "anim node name: " << node_anim->mNodeName.C_Str() << std::endl;
+
+                // grab target mapping to determine if bone
+                int64_t internal_target_id = anim_target_map[node_anim];
+                std::cerr << "internal id: " << internal_target_id << std::endl;
+                if (IsBone(internal_target_id)) {
+                    std::cerr << "bone animation re-sample logic [skipping]" << std::endl;
+                    continue;
+                } else {
+                    std::cerr << "normal aiNode detected" << std::endl;
+
+                }
                 final_matrix = transform * final_matrix;
-            }
-			final_matrix.Decompose(scale, rot, trans);
+                final_matrix.Decompose(scale, rot, trans);
 
-			// now overwrite with pivot point
-			node_anim->mRotationKeys[x].mValue = rot;
-			node_anim->mScalingKeys[x].mValue = scale;
-			node_anim->mPositionKeys[x].mValue = trans;
-            resampled_anim.push_back(internal_target_id);
-		}
+                // now overwrite with pivot point
+                node_anim->mRotationKeys[x].mValue = rot;
+                node_anim->mScalingKeys[x].mValue = scale;
+                node_anim->mPositionKeys[x].mValue = trans;
+                resampled_anim.push_back(internal_target_id);
+            }
+        }
 	}
 	//}
 }
@@ -366,9 +368,9 @@ void FBXConverter::ConvertNodes(uint64_t id,
 
 				node->mTransformation = (pivot_xform * geometric_node) * inverse_geometric_xform;
 
-				aiVector3D scale, pos, rot;
-				node->mTransformation.Decompose(scale, rot, pos);
-				std::cout << "[pivot] ======== \nscale: " << scale.ToString() << ", \nrot: " << rot.ToString() << " \npos: " << pos.ToString() << "\n======" << std::endl;
+//				aiVector3D scale, pos, rot;
+//				node->mTransformation.Decompose(scale, rot, pos);
+				//std::cout << "[pivot] ======== \nscale: " << scale.ToString() << ", \nrot: " << rot.ToString() << " \npos: " << pos.ToString() << "\n======" << std::endl;
 				// link nodes in a row the old way
 				aiMatrix4x4 new_abs_transform = node->mTransformation;
 				ConvertModel(*model, node, root_node, node->mTransformation);
@@ -1583,25 +1585,11 @@ void FBXConverter::ConvertCluster(const Model &model, std::vector<aiBone *> &loc
 	bone->mName = bone_name;
 
 	// store local transform link for post processing
+	bone->mOffsetMatrix = aiMatrix4x4();
+
 	bone->mOffsetMatrix = cl->TransformLink();
 	bone->mOffsetMatrix.Inverse();
-
-	const LimbNode* limb = bone_id_map[cl->TargetNode()->ID()];
-
-	if(limb)
-    {
-	    std::cout << "valid limb deformer node" << limb->Name() << std::endl;
-	    aiMatrix4x4 geometric_pivot;
-	    // pivot global position
-	    bone->mOffsetMatrix *= absolute_transform;
-//	    bone->mOffsetMatrix *= GeneratePivotTransform(limb->Props(), model.RotationOrder(), geometric_pivot);
-//	    bone->mOffsetMatrix *= geometric_pivot;
-    } else
-    {
-	    std::cerr << "failed to find limb for this ID: " << cl->TargetNode()->ID() << std::endl;
-    }
-    //
-	//bone->mOffsetMatrix *= absolute_transform;
+	bone->mOffsetMatrix *= absolute_transform;
 
 	//
 	// Now calculate the aiVertexWeights
@@ -2790,23 +2778,19 @@ void FBXConverter::GenerateNodeAnimations(
 			FBXImporter::LogWarn("target property for animation curve not set: " + node->Name());
 			continue;
 		}
+
 		if (curve_node == nullptr) {
 			curve_node = node;
 		}
 
-
 		std::cout << "[" << node->ID() << "] valid curve node: " << node->Name() << ", prop: " << node->TargetProperty() << ", target id: " << node->TargetAsModel()->ID() << std::endl;
 
 		std::string property_type = node->TargetProperty();
-
-		// this is what we need in the aiNodeAnim :/
-		//node->Target()->ID()
 		const AnimationCurveMap &curves = node->Curves();
-
-		// //typedef std::map<std::string, const AnimationCurve *> AnimationCurveMap;
-		// for (auto cake : node->Curves()) {
-		// 	std::cout << "[sub curve curve] Debug curve: " << cake.second->Name() << std::endl;
-		// }
+//
+//        for (auto cake : node->Curves()) {
+//            std::cout << "[sub curve curve] Debug curve: " << cake.second->Name() << std::endl;
+//        }
 
 		if (property_type == "Lcl Rotation") {
 			rotation.push_back(node);
@@ -2814,7 +2798,10 @@ void FBXConverter::GenerateNodeAnimations(
 			translation.push_back(node);
 		} else if (property_type == "Lcl Scaling") {
 			scaling.push_back(node);
-		}
+		} else
+        {
+		    std::cerr << "[" << node->ID() << ":" << node->Name() << "] unhandled fbx property curve: " << property_type << std::endl;
+        }
 	}
 	KeyFrameListList scalingKeys, rotationKeys, translationKeys;
 
@@ -2839,10 +2826,10 @@ void FBXConverter::GenerateNodeAnimations(
 	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
 	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
 	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
-//	aiMatrix4x4 geometric_pivot;
-//	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-//	pivot_xform = pivot_xform;
-//	pivot_xform.Decompose(def_scale, def_translate, def_rot);
+	aiMatrix4x4 geometric_pivot;
+	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
+	pivot_xform = pivot_xform;
+	pivot_xform.Decompose(def_scale,def_rot, def_translate);
 
 	KeyFrameListList joined;
 
@@ -2868,7 +2855,10 @@ void FBXConverter::GenerateNodeAnimations(
 				def_scale,
 				def_translate,
 				def_rot);
-	}
+	} else
+    {
+	    std::cerr << "[severe] No keyframes for animation: " << fixed_name << std::endl;
+    }
 
 	//std::vector<aiNodeAnim *> anims = GetNodeAnimsFromStack(node_name);
 	//ResampleAnimationsWithPivots(anims, node->mTransformation);
@@ -2883,13 +2873,12 @@ void FBXConverter::GenerateNodeAnimations(
 
     aiNodeAnim *nd = na.release();
 
-    // cache target mapping
-    anim_target_map[nd] = curve_node->Target()->ID();
-
 	ai_assert(nd);
 	if (nd->mNumPositionKeys == 0 && nd->mNumRotationKeys == 0 && nd->mNumScalingKeys == 0) {
 		delete nd;
 	} else {
+        // cache target mapping
+        anim_target_map[nd] = curve_node->Target()->ID();
 		node_anims.push_back(nd);
 	}
 }
@@ -2936,218 +2925,6 @@ bool FBXConverter::IsRedundantAnimationData(const Model &target,
 	const float epsilon = Math::getEpsilon<float>();
 	return (dyn_val - static_val).SquareLength() < epsilon;
 }
-
-aiNodeAnim *FBXConverter::GenerateRotationNodeAnim(const std::string &name,
-		const Model &target,
-		const std::vector<const AnimationCurveNode *> &curves,
-		const LayerMap &layer_map,
-		int64_t start, int64_t stop,
-		double &max_time,
-		double &min_time) {
-	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
-	na->mNodeName.Set(name);
-
-	ConvertRotationKeys(na.get(), curves, layer_map, start, stop, max_time, min_time, target.RotationOrder());
-
-	// dummy scaling key
-	na->mScalingKeys = new aiVectorKey[1];
-	na->mNumScalingKeys = 1;
-
-	na->mScalingKeys[0].mTime = 0.;
-	na->mScalingKeys[0].mValue = aiVector3D(1.0f, 1.0f, 1.0f);
-
-	// dummy position key
-	na->mPositionKeys = new aiVectorKey[1];
-	na->mNumPositionKeys = 1;
-
-	na->mPositionKeys[0].mTime = 0.;
-	na->mPositionKeys[0].mValue = aiVector3D();
-
-	return na.release();
-}
-
-aiNodeAnim *FBXConverter::GenerateScalingNodeAnim(const std::string &name,
-		const Model & /*target*/,
-		const std::vector<const AnimationCurveNode *> &curves,
-		const LayerMap &layer_map,
-		int64_t start, int64_t stop,
-		double &max_time,
-		double &min_time) {
-	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
-	na->mNodeName.Set(name);
-
-	ConvertScaleKeys(na.get(), curves, layer_map, start, stop, max_time, min_time);
-
-	// dummy rotation key
-	na->mRotationKeys = new aiQuatKey[1];
-	na->mNumRotationKeys = 1;
-
-	na->mRotationKeys[0].mTime = 0.;
-	na->mRotationKeys[0].mValue = aiQuaternion();
-
-	// dummy position key
-	na->mPositionKeys = new aiVectorKey[1];
-	na->mNumPositionKeys = 1;
-
-	na->mPositionKeys[0].mTime = 0.;
-	na->mPositionKeys[0].mValue = aiVector3D();
-
-	return na.release();
-}
-
-aiNodeAnim *FBXConverter::GenerateTranslationNodeAnim(const std::string &name,
-		const Model & /*target*/,
-		const std::vector<const AnimationCurveNode *> &curves,
-		const LayerMap &layer_map,
-		int64_t start, int64_t stop,
-		double &max_time,
-		double &min_time,
-		bool inverse) {
-	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
-	std::cout << "node name: " << name << std::endl;
-	na->mNodeName.Set(name);
-
-	ConvertTranslationKeys(na.get(), curves, layer_map, start, stop, max_time, min_time);
-
-	if (inverse) {
-		for (unsigned int i = 0; i < na->mNumPositionKeys; ++i) {
-			na->mPositionKeys[i].mValue *= -1.0f;
-		}
-	}
-
-	// dummy scaling key
-	na->mScalingKeys = new aiVectorKey[1];
-	na->mNumScalingKeys = 1;
-
-	na->mScalingKeys[0].mTime = 0.;
-	na->mScalingKeys[0].mValue = aiVector3D(1.0f, 1.0f, 1.0f);
-
-	// dummy rotation key
-	na->mRotationKeys = new aiQuatKey[1];
-	na->mNumRotationKeys = 1;
-
-	na->mRotationKeys[0].mTime = 0.;
-	na->mRotationKeys[0].mValue = aiQuaternion();
-
-	return na.release();
-}
-
-// aiNodeAnim *FBXConverter::GenerateSimpleNodeAnim(const std::string &name,
-// 		const Model &target,
-// 		NodeMap::const_iterator chain[TransformationComp_MAXIMUM],
-// 		NodeMap::const_iterator iter_end,
-// 		const LayerMap &layer_map,
-// 		int64_t start, int64_t stop,
-// 		double &max_time,
-// 		double &min_time,
-// 		aiMatrix4x4 geometric_pivot_data) {
-// 	std::unique_ptr<aiNodeAnim> na(new aiNodeAnim());
-// 	na->mNodeName.Set(name);
-
-// 	const PropertyTable &props = target.Props();
-
-// 	// we must get pivot xform
-// 	aiMatrix4x4 ignore_me;
-// 	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, ignore_me);
-// 	pivot_xform = pivot_xform; //* ignore_me;
-
-// 	aiVector3D def_scale;
-// 	aiVector3D def_translate;
-// 	aiVector3D def_rot;
-
-// 	pivot_xform.Decompose(def_scale, def_translate, def_rot);
-
-// 	KeyFrameListList scaling;
-// 	KeyFrameListList translation;
-// 	KeyFrameListList rotation;
-
-// 	// Max pivot test
-// 	KeyFrameListList geometric_scaling;
-// 	KeyFrameListList geometric_translation;
-// 	KeyFrameListList geometric_rotation;
-
-// 	if (chain[TransformationComp_Scaling] != iter_end) {
-// 		scaling = GetKeyframeList((*chain[TransformationComp_Scaling]).second, start, stop);
-// 	}
-
-// 	if (chain[TransformationComp_Translation] != iter_end) {
-// 		translation = GetKeyframeList((*chain[TransformationComp_Translation]).second, start, stop);
-// 	}
-
-// 	if (chain[TransformationComp_Rotation] != iter_end) {
-// 		rotation = GetKeyframeList((*chain[TransformationComp_Rotation]).second, start, stop);
-// 	}
-
-// 	// 3DS MAX pivot frames
-// 	if (chain[TransformationComp_GeometricScaling] != iter_end) {
-// 		std::cout << "found pivot geometric scaling " << std::endl;
-// 	}
-// 	if (chain[TransformationComp_GeometricRotation] != iter_end) {
-// 		std::cout << "found pivot geometric rotation " << std::endl;
-// 	}
-// 	if (chain[TransformationComp_GeometricTranslation] != iter_end) {
-// 		std::cout << "found pivot geometric translation " << std::endl;
-// 	}
-
-// 	// FBX SDK + Maya pivot frames
-// 	if (chain[TransformationComp_RotationOffset] != iter_end) {
-// 		std::cout << "found pivot rotation offset" << std::endl;
-// 	}
-// 	if (chain[TransformationComp_RotationPivot] != iter_end) {
-// 		std::cout << "found pivot rotation " << std::endl;
-// 	}
-// 	if (chain[TransformationComp_PreRotation] != iter_end) {
-// 		std::cout << "found pivot pre rotation" << std::endl;
-// 	}
-
-// 	if (chain[TransformationComp_PostRotation] != iter_end) {
-// 		std::cout << "found pivot post rotation " << std::endl;
-// 	}
-// 	if (chain[TransformationComp_ScalingOffset] != iter_end) {
-// 		std::cout << "found pivot scaling offset" << std::endl;
-// 	}
-// 	if (chain[TransformationComp_ScalingPivot] != iter_end) {
-// 		std::cout << "found pivot scaling" << std::endl;
-// 	}
-
-// 	KeyFrameListList joined;
-// 	joined.insert(joined.end(), scaling.begin(), scaling.end());
-// 	joined.insert(joined.end(), translation.begin(), translation.end());
-// 	joined.insert(joined.end(), rotation.begin(), rotation.end());
-
-// 	const KeyTimeList &times = GetKeyTimeList(joined);
-
-// 	aiQuatKey *out_quat = new aiQuatKey[times.size()];
-// 	aiVectorKey *out_scale = new aiVectorKey[times.size()];
-// 	aiVectorKey *out_translation = new aiVectorKey[times.size()];
-
-// 	if (times.size()) {
-// 		ConvertTransformOrder_TRStoSRT(out_quat, out_scale, out_translation,
-// 				scaling,
-// 				translation,
-// 				rotation,
-// 				times,
-// 				max_time,
-// 				min_time,
-// 				target.RotationOrder(),
-// 				def_scale,
-// 				def_translate,
-// 				def_rot);
-// 	}
-
-// 	// XXX remove duplicates / redundant keys which this operation did
-// 	// likely produce if not all three channels were equally dense.
-
-// 	na->mNumScalingKeys = static_cast<unsigned int>(times.size());
-// 	na->mNumRotationKeys = na->mNumScalingKeys;
-// 	na->mNumPositionKeys = na->mNumScalingKeys;
-
-// 	na->mScalingKeys = out_scale;
-// 	na->mRotationKeys = out_quat;
-// 	na->mPositionKeys = out_translation;
-
-// 	return na.release();
-// }
 
 FBXConverter::KeyFrameListList FBXConverter::GetKeyframeList(const std::vector<const AnimationCurveNode *> &nodes,
 		int64_t start, int64_t stop) {
@@ -3328,14 +3105,14 @@ void FBXConverter::InterpolateKeys(aiQuatKey *valOut, const KeyTimeList &keys, c
 		GetRotationMatrix(order, temp[i].mValue, m);
 		aiQuaternion quat = aiQuaternion(aiMatrix3x3(m));
 
-		// take shortest path by checking the inner product
-		// http://www.3dkingdoms.com/weekly/weekly.php?a=36
-		// if (quat.x * lastq.x + quat.y * lastq.y + quat.z * lastq.z + quat.w * lastq.w < 0) {
-		// 	quat.x = -quat.x;
-		// 	quat.y = -quat.y;
-		// 	quat.z = -quat.z;
-		// 	quat.w = -quat.w;
-		// }
+//		 take shortest path by checking the inner product
+//		 http://www.3dkingdoms.com/weekly/weekly.php?a=36
+		 if (quat.x * lastq.x + quat.y * lastq.y + quat.z * lastq.z + quat.w * lastq.w < 0) {
+		 	quat.x = -quat.x;
+		 	quat.y = -quat.y;
+		 	quat.z = -quat.z;
+		 	quat.w = -quat.w;
+		 }
 		lastq = quat;
 
 		valOut[i].mValue = quat;
@@ -3356,17 +3133,34 @@ void FBXConverter::ConvertTransformOrder_TRStoSRT(aiQuatKey *out_quat, aiVectorK
 		const aiVector3D &def_rotation) {
 	// todo refactor to use matrix transform and extract scale from caller :)
 	if (rotation.size()) {
-
 		InterpolateKeys(out_quat, times, rotation, def_rotation, maxTime, minTime, order);
-	}
+	} else
+    {
+        for (size_t i = 0; i < times.size(); ++i) {
+            out_quat[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
+            out_quat[i].mValue = EulerToQuaternion(def_rotation, order);
+        }
+    }
 
 	if (scaling.size()) {
 		InterpolateKeys(out_scale, times, scaling, def_scale, maxTime, minTime);
-	}
+	} else
+    {
+        for (size_t i = 0; i < times.size(); ++i) {
+            out_scale[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
+            out_scale[i].mValue = def_scale;
+        }
+    }
 
 	if (translation.size()) {
 		InterpolateKeys(out_translation, times, translation, def_translate, maxTime, minTime);
-	}
+	} else
+    {
+        for (size_t i = 0; i < times.size(); ++i) {
+            out_translation[i].mTime = CONVERT_FBX_TIME(times[i]) * anim_fps;
+            out_translation[i].mValue = def_translate;
+        }
+    }
 }
 
 aiQuaternion FBXConverter::EulerToQuaternion(const aiVector3D &rot, Model::RotOrder order) {

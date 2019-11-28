@@ -348,7 +348,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 					state.armature_skeletons.insert(element_assimp_node, skeleton);
 				}
 			} else if (bone != NULL) {
-				spatial = memnew(Spatial);
+				continue; // skip bones
 			} else if (element_assimp_node->mNumMeshes > 0) {
 				spatial = memnew(Spatial);
 			} else {
@@ -596,7 +596,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 	Vector<Quat> rot_values;
 	Vector<float> rot_times;
 
-	if (assimp_track->mPositionKeys) {
+	if (assimp_track->mNumPositionKeys > 0) {
 		for (size_t p = 0; p < assimp_track->mNumPositionKeys; p++) {
 			aiVector3D pos = assimp_track->mPositionKeys[p].mValue;
 			pos_values.push_back(Vector3(pos.x, pos.y, pos.z));
@@ -604,7 +604,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 		}
 	}
 
-	if (assimp_track->mRotationKeys) {
+	if (assimp_track->mNumRotationKeys > 0) {
 		for (size_t r = 0; r < assimp_track->mNumRotationKeys; r++) {
 			aiQuaternion quat = assimp_track->mRotationKeys[r].mValue;
 			rot_values.push_back(Quat(quat.x, quat.y, quat.z, quat.w).normalized());
@@ -612,7 +612,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 		}
 	}
 
-	if (assimp_track->mScalingKeys) {
+	if (assimp_track->mNumScalingKeys > 0) {
 		for (size_t sc = 0; sc < assimp_track->mNumScalingKeys; sc++) {
 			aiVector3D scale = assimp_track->mScalingKeys[sc].mValue;
 			scale_values.push_back(Vector3(scale.x, scale.y, scale.z));
@@ -626,13 +626,13 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 		Vector3 scale(1, 1, 1);
 
 		if (pos_values.size()) {
+		    // todo: test this works
 			pos = _interpolate_track<Vector3>(pos_times, pos_values, time, AssetImportAnimation::INTERP_LINEAR);
 		}
 
 		if (rot_values.size()) {
 			rot = _interpolate_track<Quat>(rot_times, rot_values, time,
-					AssetImportAnimation::INTERP_LINEAR)
-						  .normalized();
+					AssetImportAnimation::INTERP_LINEAR);
 		}
 
 		if (scale_values.size()) {
@@ -656,7 +656,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 				scale = xform.basis.get_scale();
 				pos = xform.origin;
 			} else {
-				ERR_FAIL_MSG("Skeleton bone lookup failed for skeleton: " + skeleton->get_name());
+				//ERR_FAIL_MSG("Skeleton bone lookup failed for skeleton: " + skeleton->get_name());
 			}
 		}
 

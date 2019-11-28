@@ -187,7 +187,7 @@ const AnimationCurveMap& AnimationCurveNode::Curves() const
                 DOMWarning("source object for ->AnimationCurveNode link is not an AnimationCurve", &element);
                 continue;
             }
-            std::cout << "property found " << con->PropertyName() << std::endl;
+            //std::cout << "property found " << con->PropertyName() << std::endl;
             curves[con->PropertyName()] = anim;
         }
     }

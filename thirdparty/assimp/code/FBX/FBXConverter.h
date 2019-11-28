@@ -354,46 +354,6 @@ private:
 			TransformationComp comp,
 			const std::vector<const AnimationCurveNode *> &curves);
 
-	// ------------------------------------------------------------------------------------------------
-	aiNodeAnim *GenerateRotationNodeAnim(const std::string &name,
-			const Model &target,
-			const std::vector<const AnimationCurveNode *> &curves,
-			const LayerMap &layer_map,
-			int64_t start, int64_t stop,
-			double &max_time,
-			double &min_time);
-
-	// ------------------------------------------------------------------------------------------------
-	aiNodeAnim *GenerateScalingNodeAnim(const std::string &name,
-			const Model & /*target*/,
-			const std::vector<const AnimationCurveNode *> &curves,
-			const LayerMap &layer_map,
-			int64_t start, int64_t stop,
-			double &max_time,
-			double &min_time);
-
-	// ------------------------------------------------------------------------------------------------
-	aiNodeAnim *GenerateTranslationNodeAnim(const std::string &name,
-			const Model & /*target*/,
-			const std::vector<const AnimationCurveNode *> &curves,
-			const LayerMap &layer_map,
-			int64_t start, int64_t stop,
-			double &max_time,
-			double &min_time,
-			bool inverse = false);
-
-	// ------------------------------------------------------------------------------------------------
-	// generate node anim, extracting only Rotation, Scaling and Translation from the given chain
-	// aiNodeAnim *GenerateSimpleNodeAnim(const std::string &name,
-	// 		const Model &target,
-	// 		std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator chain[TransformationComp_MAXIMUM],
-	// 		std::vector<std::pair<std::string, std::vector<const AnimationCurveNode *> > >::const_iterator iter_end,
-	// 		const LayerMap &layer_map,
-	// 		int64_t start, int64_t stop,
-	// 		double &max_time,
-	// 		double &min_time,
-	// 		aiMatrix4x4 geometric_pivot_data);
-
 	// key (time), value, mapto (component index)
 	typedef std::tuple<std::shared_ptr<KeyTimeList>, std::shared_ptr<KeyValueList>, unsigned int> KeyFrameList;
 	typedef std::vector<KeyFrameList> KeyFrameListList;
