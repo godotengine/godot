@@ -40,14 +40,6 @@ int32_t Vector3i::get_axis(int p_axis) const {
 	return operator[](p_axis);
 }
 
-int Vector3i::min_axis() const {
-	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
-}
-
-int Vector3i::max_axis() const {
-	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
-}
-
 Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {
 	return Vector3i(
 			CLAMP(x, p_min.x, p_max.x),

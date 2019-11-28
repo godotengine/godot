@@ -205,20 +205,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
+        /// <returns>The index of the highest axis.</returns>
         public Axis MaxAxis()
         {
             return x < y ? Axis.Y : Axis.X;
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's lowest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.Y"/>.
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
+        /// <returns>The index of the lowest axis.</returns>
         public Axis MinAxis()
         {
             return x < y ? Axis.X : Axis.Y;
