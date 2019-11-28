@@ -479,6 +479,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[TOOL_SELECT]->set_button_group(tg);
 	tools[TOOL_SELECT]->set_pressed(true);
 	tools[TOOL_SELECT]->connect("pressed", this, "_on_tool_clicked", varray(TOOL_SELECT));
+	tools[TOOL_SELECT]->set_shortcut(ED_SHORTCUT("tileset_editor/select", TTR("Select"), KEY_MASK_CTRL | KEY_1));
 
 	separator_bitmask = memnew(VSeparator);
 	toolbar->add_child(separator_bitmask);
@@ -500,12 +501,14 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
 	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
 	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
+	tools[SHAPE_NEW_RECTANGLE]->set_shortcut(ED_SHORTCUT("tileset_editor/new_rectangle", TTR("Create New Rectangle"), KEY_MASK_CTRL | KEY_2));
 
 	tools[SHAPE_NEW_POLYGON] = memnew(ToolButton);
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
 	tools[SHAPE_NEW_POLYGON]->set_tooltip(TTR("Create a new polygon."));
+	tools[SHAPE_NEW_POLYGON]->set_shortcut(ED_SHORTCUT("tileset_editor/new_polygon", TTR("Create New Polygon"), KEY_MASK_CTRL | KEY_3));
 
 	separator_shape_toggle = memnew(VSeparator);
 	toolbar->add_child(separator_shape_toggle);
