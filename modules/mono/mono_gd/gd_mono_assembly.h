@@ -122,6 +122,8 @@ public:
 
 	GDMonoClass *get_object_derived_class(const StringName &p_class);
 
+	static String find_assembly(const String &p_name);
+
 	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String(), const String &p_custom_bcl_dir = String());
 
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);

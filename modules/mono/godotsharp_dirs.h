@@ -56,6 +56,8 @@ String get_project_csproj_path();
 
 String get_data_editor_tools_dir();
 String get_data_editor_prebuilt_api_dir();
+#else
+String get_data_game_assemblies_dir();
 #endif
 
 String get_data_mono_etc_dir();

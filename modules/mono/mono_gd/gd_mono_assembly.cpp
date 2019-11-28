@@ -62,6 +62,13 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
 
+#if !defined(TOOLS_ENABLED)
+	String data_game_assemblies_dir = GodotSharpDirs::get_data_game_assemblies_dir();
+	if (!data_game_assemblies_dir.empty()) {
+		r_search_dirs.push_back(data_game_assemblies_dir);
+	}
+#endif
+
 	if (p_custom_config.length()) {
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(p_custom_config));
 	} else {
@@ -147,10 +154,6 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 
 	(void)user_data; // UNUSED
 
-	if (search_dirs.empty()) {
-		fill_search_dirs(search_dirs);
-	}
-
 	{
 		// If we find the assembly here, we load it with 'mono_assembly_load_from_full',
 		// which in turn invokes load hooks before returning the MonoAssembly to us.
@@ -228,6 +231,33 @@ GDMonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, cons
 	return NULL;
 }
 
+String GDMonoAssembly::find_assembly(const String &p_name) {
+
+	String path;
+
+	bool has_extension = p_name.ends_with(".dll") || p_name.ends_with(".exe");
+
+	for (int i = 0; i < search_dirs.size(); i++) {
+		const String &search_dir = search_dirs[i];
+
+		if (has_extension) {
+			path = search_dir.plus_file(p_name);
+			if (FileAccess::exists(path))
+				return path;
+		} else {
+			path = search_dir.plus_file(p_name + ".dll");
+			if (FileAccess::exists(path))
+				return path;
+
+			path = search_dir.plus_file(p_name + ".exe");
+			if (FileAccess::exists(path))
+				return path;
+		}
+	}
+
+	return String();
+}
+
 GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly) {
 
 	GDMonoAssembly *assembly = memnew(GDMonoAssembly(p_name, p_path));
@@ -263,6 +293,8 @@ void GDMonoAssembly::_wrap_mono_assembly(MonoAssembly *assembly) {
 }
 
 void GDMonoAssembly::initialize() {
+
+	fill_search_dirs(search_dirs);
 
 	mono_install_assembly_search_hook(&assembly_search_hook, NULL);
 	mono_install_assembly_refonly_search_hook(&assembly_refonly_search_hook, NULL);
