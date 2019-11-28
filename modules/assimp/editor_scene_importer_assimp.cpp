@@ -444,19 +444,24 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				//print_verbose("[Godot Glue] Imported bone" + bone_name);
 				int boneIdx = skeleton->get_bone_count();
 
-				//Transform pform = AssimpUtils::assimp_matrix_transform(bone->mNode->mTransformation);
-				Transform pose_form = AssimpUtils::assimp_matrix_transform(bone->mOffsetMatrix);
 				skeleton->add_bone(bone_name);
-				skeleton->set_bone_rest(boneIdx, pose_form);
-				skeleton->set_bone_pose(boneIdx, pose_form);
+                skeleton->set_bone_rest(boneIdx, AssimpUtils::assimp_matrix_transform(bone->mOffsetMatrix.Inverse()));
+                //skeleton->set_bone_pose(boneIdx, AssimpUtils::assimp_matrix_transform(bone->mOffsetMatrix.Inverse()));
 
-				if (parent_node != NULL) {
-					int parent_bone_id = skeleton->find_bone(AssimpUtils::get_anim_string_from_assimp(parent_node->mName));
-					int current_bone_id = boneIdx;
-					skeleton->set_bone_parent(current_bone_id, parent_bone_id);
-				}
-			}
+                // order of this is important
+                if (parent_node != NULL) {
+                    int parent_bone_id = skeleton->find_bone(AssimpUtils::get_anim_string_from_assimp(parent_node->mName));
+                    int current_bone_id = boneIdx;
+                    skeleton->set_bone_parent(current_bone_id, parent_bone_id);
+                }
+            }
 		}
+
+		for(Map<const aiNode *, Skeleton *>::Element *skeleton_kvp = state.armature_skeletons.front(); skeleton_kvp; skeleton_kvp = skeleton_kvp->next() )
+        {
+		    skeleton_kvp->get()->localize_rests();
+        }
+
 
 		print_verbose("generating mesh phase from skeletal mesh");
 
@@ -649,7 +654,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 				xform.basis.set_quat_scale(rot, scale);
 				xform.origin = pos;
                 // this is the pivot transform
-				xform = skeleton->get_bone_pose(skeleton_bone).inverse() * xform;
+				xform = skeleton->get_bone_rest(skeleton_bone).affine_inverse() * xform;
 
 				rot = xform.basis.get_rotation_quat();
 				rot.normalize();
@@ -1408,10 +1413,8 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 					int id = skeleton->find_bone(AssimpUtils::get_assimp_string(iterBone->mName));
 					if (id != -1) {
 						//print_verbose("Set bind bone: mesh: " + itos(mesh_index) + " bone index: " + itos(id));
-						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix);
-
+						Transform t = AssimpUtils::assimp_matrix_transform(iterBone->mOffsetMatrix.Inverse());
 						skin->add_bind(bind_count, t);
-						skin->set_bind_bone(bind_count, id);
 						bind_count++;
 					}
 				}

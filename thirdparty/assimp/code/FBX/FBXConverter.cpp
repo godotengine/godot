@@ -232,8 +232,12 @@ void FBXConverter::ResampleAnimationsWithPivots(int64_t targetId, aiMatrix4x4 tr
 	    std::cerr << "Resampling target " << targetId << " to pivot point." << std::endl;
 
 	    aiNodeAnim * node_anim = kvp.first;
-
-        if(node_anim->mNumPositionKeys == node_anim->mNumRotationKeys == node_anim->mNumScalingKeys) {
+        // todo: fix this crashing use interpolate key logic here (lerp only)
+        // why: this causes meshes to explode currently if we resample during import we can remove
+        // this step entirely :)
+        // flip check below to increase compat
+        //if(node_anim->mNumPositionKeys == node_anim->mNumRotationKeys == node_anim->mNumScalingKeys) {
+        if(true) {
             // now iterate and resample animations
             for (unsigned int x = 0; x < node_anim->mNumPositionKeys; ++x) {
                 // todo: make this into interpolated keyframe
@@ -2823,12 +2827,12 @@ void FBXConverter::GenerateNodeAnimations(
 	const Model &target = *curve_node->TargetAsModel();
 
 
-	aiVector3D def_scale = PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
-	aiVector3D def_translate = PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
-	aiVector3D def_rot = PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
+	aiVector3D def_scale = aiVector3D::NORMAL();//PropertyGet(target.Props(), "Lcl Scaling", aiVector3D(1.f, 1.f, 1.f));
+	aiVector3D def_translate = aiVector3D::ZERO();//PropertyGet(target.Props(), "Lcl Translation", aiVector3D(0.f, 0.f, 0.f));
+	aiVector3D def_rot = aiVector3D::ZERO(); // PropertyGet(target.Props(), "Lcl Rotation", aiVector3D(0.f, 0.f, 0.f));
 	aiMatrix4x4 geometric_pivot;
 	aiMatrix4x4 pivot_xform = GeneratePivotTransform(target, geometric_pivot);
-	pivot_xform = pivot_xform;
+	pivot_xform = pivot_xform * geometric_pivot;
 	pivot_xform.Decompose(def_scale,def_rot, def_translate);
 
 	KeyFrameListList joined;
