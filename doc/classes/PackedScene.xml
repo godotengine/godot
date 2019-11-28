@@ -56,6 +56,26 @@
 				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_INSTANCED] notification on the root node.
 			</description>
 		</method>
+		<method name="instance_as_child" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="parent" type="Node">
+			</argument>
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
+			</argument>
+			<argument index="2" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
+			</argument>
+			<description>
+				Same as [method instance], but adds the scene's root node as a child of any existing [code]parent[/code] node after the instantiation immediately with [method Node.add_child]. This ensures that any [code]onready[/code]-dependent members will get initialized so they can be referenced via code and allows for any operations to be performed that rely on a node being part of the [SceneTree] safely, such as retrieving the [member Node2D.global_transform] and the [member Node3D.global_transform].
+				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instantiated instead of its type.
+				Example usage with shooting a bullet:
+				[codeblock]
+				func shoot():
+				    var bullet = preload("bullet.tscn").instance_as_child(self)
+				    bullet.global_position = self.global_position
+				[/codeblock]
+			</description>
+		</method>
 		<method name="pack">
 			<return type="int" enum="Error">
 			</return>

@@ -221,6 +221,7 @@ public:
 
 	bool can_instance() const;
 	Node *instance(GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
+	Node *instance_as_child(Node *p_parent, bool p_legible_unique_name = false, GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
 
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
