@@ -220,6 +220,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level;
+		bool usb;
 	};
 
 	struct APKExportData {
@@ -246,17 +247,20 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				String devices;
 				List<String> args;
 				args.push_back("devices");
+				args.push_back("-l");
 				int ec;
 				OS::get_singleton()->execute(adb, args, true, NULL, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
+				Vector<bool> ldevices_usbconnection;
 				for (int i = 1; i < ds.size(); i++) {
 
 					String d = ds[i];
-					int dpos = d.find("device");
+					int dpos = d.find(" device ");
 					if (dpos == -1)
 						continue;
+					ldevices_usbconnection.push_back(d.find(" usb:") != -1);
 					d = d.substr(0, dpos).strip_edges();
 					ldevices.push_back(d);
 				}
@@ -287,6 +291,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						Device d;
 						d.id = ldevices[i];
+						d.usb = ldevices_usbconnection[i];
 						for (int j = 0; j < ea->devices.size(); j++) {
 							if (ea->devices[j].id == ldevices[i]) {
 								d.description = ea->devices[j].description;
@@ -341,7 +346,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								} else if (p.begins_with("ro.opengles.version=")) {
 									uint32_t opengl = p.get_slice("=", 1).to_int();
 									d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl)&0xFF) + "\n";
+								} else if (p.begins_with("ro.boot.serialno=")) {
+									d.description += "Serial: " + p.get_slice("=", 1).strip_edges() + "\n";
 								}
+							}
+
+							if (d.usb) {
+								d.description += "Connection: USB\n";
+							} else {
+								d.description += "Connection: " + d.id + "\n";
 							}
 
 							d.name = vendor + " " + device;
@@ -1415,7 +1428,9 @@ public:
 		}
 
 		const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-		const bool use_reverse = devices[p_device].api_level >= 21;
+		const bool use_reverse = devices[p_device].api_level >= 21 && devices[p_device].usb;
+		// Note: Reverse can still fail if device is connected by both usb and network
+		// Ideally we'd know for sure whether adb reverse would work before we build the APK
 
 		if (use_reverse)
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
@@ -1520,7 +1535,7 @@ public:
 				}
 			} else {
 
-				static const char *const msg = "--- Device API < 21; debugging over Wi-Fi ---";
+				static const char *const msg = "--- Device API < 21 or no USB connection; debugging over Wi-Fi ---";
 				EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 				print_line(String(msg).to_upper());
 			}
