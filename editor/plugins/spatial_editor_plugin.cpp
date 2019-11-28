@@ -521,7 +521,7 @@ void SpatialEditorViewport::_select_region() {
 
 		if (selected.find(item) != -1) continue;
 
-		if (_is_node_locked(Object::cast_to<Spatial>(item))) continue;
+		if (_is_node_locked(item)) continue;
 
 		Ref<EditorSpatialGizmo> seg = sp->get_gizmo();
 
