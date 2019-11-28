@@ -400,6 +400,10 @@ bool _OS::is_window_always_on_top() const {
 	return OS::get_singleton()->is_window_always_on_top();
 }
 
+bool _OS::is_window_focused() const {
+	return OS::get_singleton()->is_window_focused();
+}
+
 void _OS::set_borderless_window(bool p_borderless) {
 	OS::get_singleton()->set_borderless_window(p_borderless);
 }
@@ -1213,6 +1217,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_window_maximized"), &_OS::is_window_maximized);
 	ClassDB::bind_method(D_METHOD("set_window_always_on_top", "enabled"), &_OS::set_window_always_on_top);
 	ClassDB::bind_method(D_METHOD("is_window_always_on_top"), &_OS::is_window_always_on_top);
+	ClassDB::bind_method(D_METHOD("is_window_focused"), &_OS::is_window_focused);
 	ClassDB::bind_method(D_METHOD("request_attention"), &_OS::request_attention);
 	ClassDB::bind_method(D_METHOD("get_real_window_size"), &_OS::get_real_window_size);
 	ClassDB::bind_method(D_METHOD("center_window"), &_OS::center_window);

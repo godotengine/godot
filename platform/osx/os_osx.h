@@ -124,6 +124,7 @@ public:
 	bool maximized;
 	bool zoomed;
 	bool resizable;
+	bool window_focused;
 
 	Size2 window_size;
 	Rect2 restore_rect;
@@ -277,6 +278,7 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual bool is_window_focused() const;
 	virtual void request_attention();
 	virtual String get_joy_guid(int p_device) const;
 

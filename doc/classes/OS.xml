@@ -636,6 +636,14 @@
 				Returns [code]true[/code] if the window should always be on top of other windows.
 			</description>
 		</method>
+		<method name="is_window_focused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the window is currently focused.
+				[b]Note:[/b] Only implemented on desktop platforms. On other platforms, it will always return [code]true[/code].
+			</description>
+		</method>
 		<method name="kill">
 			<return type="int" enum="Error">
 			</return>
