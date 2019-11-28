@@ -71,12 +71,12 @@ struct Vector3 {
 		x = y = z = p_value;
 	}
 
-	_FORCE_INLINE_ int min_axis() const {
-		return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+	_FORCE_INLINE_ Vector3::Axis min_axis_index() const {
+		return x < y ? (x < z ? Vector3::AXIS_X : Vector3::AXIS_Z) : (y < z ? Vector3::AXIS_Y : Vector3::AXIS_Z);
 	}
 
-	_FORCE_INLINE_ int max_axis() const {
-		return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
+	_FORCE_INLINE_ Vector3::Axis max_axis_index() const {
+		return x < y ? (y < z ? Vector3::AXIS_Z : Vector3::AXIS_Y) : (x < z ? Vector3::AXIS_Z : Vector3::AXIS_X);
 	}
 
 	_FORCE_INLINE_ real_t length() const;

@@ -3786,7 +3786,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 					}
 
 					// Draw the warning icon.
-					int min_axis = missing_tile_texture->get_size().min_axis();
+					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
 					Vector2 icon_size;
 					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
 					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);

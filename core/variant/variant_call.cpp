@@ -1486,6 +1486,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector2, max_axis_index, sarray(), varray());
+	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector2, rotated, sarray("phi"), varray());
 	bind_method(Vector2, orthogonal, sarray(), varray());
@@ -1508,6 +1510,8 @@ static void _register_variant_builtin_methods() {
 	/* Vector2i */
 
 	bind_method(Vector2i, aspect, sarray(), varray());
+	bind_method(Vector2i, max_axis_index, sarray(), varray());
+	bind_method(Vector2i, min_axis_index, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
@@ -1547,8 +1551,8 @@ static void _register_variant_builtin_methods() {
 
 	/* Vector3 */
 
-	bind_method(Vector3, min_axis, sarray(), varray());
-	bind_method(Vector3, max_axis, sarray(), varray());
+	bind_method(Vector3, min_axis_index, sarray(), varray());
+	bind_method(Vector3, max_axis_index, sarray(), varray());
 	bind_method(Vector3, angle_to, sarray("to"), varray());
 	bind_method(Vector3, signed_angle_to, sarray("to", "axis"), varray());
 	bind_method(Vector3, direction_to, sarray("to"), varray());
@@ -1587,8 +1591,8 @@ static void _register_variant_builtin_methods() {
 
 	/* Vector3i */
 
-	bind_method(Vector3i, min_axis, sarray(), varray());
-	bind_method(Vector3i, max_axis, sarray(), varray());
+	bind_method(Vector3i, min_axis_index, sarray(), varray());
+	bind_method(Vector3i, max_axis_index, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
