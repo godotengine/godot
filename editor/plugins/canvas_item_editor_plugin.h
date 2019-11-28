@@ -375,6 +375,7 @@ private:
 	PopupMenu *anchors_popup;
 
 	ToolButton *anchor_mode_button;
+	ToolButton *arrange_button;
 
 	Button *key_loc_button;
 	Button *key_rot_button;
@@ -530,6 +531,7 @@ private:
 	void _set_anchors_and_margins_to_keep_ratio();
 
 	void _button_toggle_anchor_mode(bool p_status);
+	void _button_arrange();
 
 	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;

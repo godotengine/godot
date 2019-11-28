@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/canvas_item_arrange_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/2d/light_2d.h"
@@ -3747,6 +3748,10 @@ void CanvasItemEditor::_notification(int p_what) {
 			anchor_mode_button->set_visible(false);
 		}
 
+		// Show / Hide the arrange tool button
+		List<CanvasItem *> selection_without_lock = _get_edited_canvas_items(false, false);
+		arrange_button->set_visible(selection_without_lock.size() > 1);
+
 		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
@@ -3881,6 +3886,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_icon("Anchor", "EditorIcons"));
+		arrange_button->set_icon(get_icon("ArrangeAlignLeft", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -4341,6 +4347,16 @@ void CanvasItemEditor::_button_toggle_anchor_mode(bool p_status) {
 
 	anchors_mode = p_status;
 	viewport->update();
+}
+
+void CanvasItemEditor::_button_arrange() {
+	Vector2 pos = arrange_button->get_global_position();
+	pos.y += arrange_button->get_rect().size.y;
+
+	ArrangePanel *arrange_panel = memnew(ArrangePanel);
+	arrange_panel->set_position(pos);
+	arrange_panel->set_as_toplevel(true);
+	arrange_button->add_child(arrange_panel);
 }
 
 void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
@@ -4954,6 +4970,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_button_override_camera", "pressed"), &CanvasItemEditor::_button_override_camera);
 	ClassDB::bind_method(D_METHOD("_update_override_camera_button", "game_running"), &CanvasItemEditor::_update_override_camera_button);
 	ClassDB::bind_method("_button_toggle_anchor_mode", &CanvasItemEditor::_button_toggle_anchor_mode);
+	ClassDB::bind_method("_button_arrange", &CanvasItemEditor::_button_arrange);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_update_scrollbars", &CanvasItemEditor::_update_scrollbars);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
@@ -5591,6 +5608,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->hide();
 	anchor_mode_button->connect("toggled", this, "_button_toggle_anchor_mode");
+
+	arrange_button = memnew(ToolButton);
+	hb->add_child(arrange_button);
+	arrange_button->hide();
+	arrange_button->connect("pressed", this, "_button_arrange");
 
 	animation_hb = memnew(HBoxContainer);
 	hb->add_child(animation_hb);
