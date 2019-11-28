@@ -106,17 +106,17 @@ Basis Basis::orthonormalized() const {
 }
 
 bool Basis::is_orthogonal() const {
-	Basis id;
+	Basis identity;
 	Basis m = (*this) * transposed();
 
-	return is_equal_approx(id, m);
+	return m.is_equal_approx(identity);
 }
 
 bool Basis::is_diagonal() const {
 	return (
-			Math::is_equal_approx(elements[0][1], 0) && Math::is_equal_approx(elements[0][2], 0) &&
-			Math::is_equal_approx(elements[1][0], 0) && Math::is_equal_approx(elements[1][2], 0) &&
-			Math::is_equal_approx(elements[2][0], 0) && Math::is_equal_approx(elements[2][1], 0));
+			Math::is_zero_approx(elements[0][1]) && Math::is_zero_approx(elements[0][2]) &&
+			Math::is_zero_approx(elements[1][0]) && Math::is_zero_approx(elements[1][2]) &&
+			Math::is_zero_approx(elements[2][0]) && Math::is_zero_approx(elements[2][1]));
 }
 
 bool Basis::is_rotation() const {
@@ -557,16 +557,9 @@ void Basis::set_euler_yxz(const Vector3 &p_euler) {
 	*this = ymat * xmat * zmat;
 }
 
-bool Basis::is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon) const {
+bool Basis::is_equal_approx(const Basis &p_basis) const {
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx(a.elements[i][j], b.elements[i][j], p_epsilon))
-				return false;
-		}
-	}
-
-	return true;
+	return elements[0].is_equal_approx(p_basis.elements[0]) && elements[1].is_equal_approx(p_basis.elements[1]) && elements[2].is_equal_approx(p_basis.elements[2]);
 }
 
 bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {

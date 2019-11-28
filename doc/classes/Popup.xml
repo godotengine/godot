@@ -4,7 +4,7 @@
 		Base container control for popups and dialogs.
 	</brief_description>
 	<description>
-		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior. All popup methods ensure correct placement within the viewport.
 	</description>
 	<tutorials>
 	</tutorials>

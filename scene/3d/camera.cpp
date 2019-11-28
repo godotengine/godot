@@ -486,7 +486,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera::project_ray_origin);
 	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera::unproject_position);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position);
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);

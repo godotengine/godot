@@ -445,6 +445,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
+		press_a_key->get_ok()->set_disabled(false);
 		press_a_key->accept_event();
 	}
 }
@@ -458,6 +459,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		case INPUT_KEY: {
 
 			press_a_key_label->set_text(TTR("Press a Key..."));
+			press_a_key->get_ok()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -1530,28 +1532,33 @@ void ProjectSettingsEditor::_update_translations() {
 	Array l_filter = l_filter_all[1];
 
 	int s = names.size();
-	if (!translation_locales_list_created) {
+	bool is_short_list_when_show_all_selected = filter_mode == SHOW_ALL_LOCALES && translation_filter_treeitems.size() < s;
+	bool is_full_list_when_show_only_selected = filter_mode == SHOW_ONLY_SELECTED_LOCALES && translation_filter_treeitems.size() == s;
+	bool should_recreate_locales_list = is_short_list_when_show_all_selected || is_full_list_when_show_only_selected;
+
+	if (!translation_locales_list_created || should_recreate_locales_list) {
 
 		translation_locales_list_created = true;
 		translation_filter->clear();
 		root = translation_filter->create_item(NULL);
 		translation_filter->set_hide_root(true);
-		translation_filter_treeitems.resize(s);
-
+		translation_filter_treeitems.clear();
 		for (int i = 0; i < s; i++) {
 			String n = names[i];
 			String l = langs[i];
+			bool is_checked = l_filter.has(l);
+			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked) continue;
+
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			t->set_text(0, n);
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
-			t->set_checked(0, l_filter.has(l));
-			translation_filter_treeitems.write[i] = t;
+			t->set_checked(0, is_checked);
+			translation_filter_treeitems.push_back(t);
 		}
 	} else {
-		for (int i = 0; i < s; i++) {
-
+		for (int i = 0; i < translation_filter_treeitems.size(); i++) {
 			TreeItem *t = translation_filter_treeitems[i];
 			t->set_checked(0, l_filter.has(t->get_tooltip(0)));
 		}
@@ -1953,6 +1960,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+	press_a_key->get_ok()->set_disabled(true);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
 	press_a_key->connect("gui_input", this, "_wait_for_key");

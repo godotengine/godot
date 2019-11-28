@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		AStar class representation that uses 3d-vectors as edges.
+		An implementation of A* to find shortest paths among connected points in space.
 	</brief_description>
 	<description>
-		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting an efficiently directed path between multiple points. It enjoys widespread use due to its performance and accuracy. Godot's A* implementation make use of vectors as points.
-		You must add points manually with [method add_point] and create segments manually with [method connect_points]. So you can test if there is a path between two points with the [method are_points_connected] function, get the list of existing ids in the found path with [method get_id_path], or the points list with [method get_point_path].
+		A* (A star) is a computer algorithm that is widely used in pathfinding and graph traversal, the process of plotting short paths among vertices (points), passing through a given set of edges (segments). It enjoys widespread use due to its performance and accuracy. Godot's A* implementation uses points in three-dimensional space and Euclidean distances by default.
+		You must add points manually with [method add_point] and create segments manually with [method connect_points]. Then you can test if there is a path between two points with the [method are_points_connected] function, get a path containing indices by [method get_id_path], or one containing actual coordinates with [method get_point_path].
+		It is also possible to use non-Euclidean distances. To do so, create a class that extends [code]AStar[/code] and override methods [method _compute_cost] and [method _estimate_cost]. Both take two indices and return a length, as is shown in the following example.
+		[codeblock]
+		class MyAStar:
+		    extends AStar
+
+		    func _compute_cost(u, v):
+		        return abs(u - v)
+
+		    func _estimate_cost(u, v):
+		        return min(0, abs(u - v) - 1)
+		[/codeblock]
+		[method _estimate_cost] should return a lower bound of the distance, i.e. [code]_estimate_cost(u, v) &lt;= _compute_cost(u, v)[/code]. This serves as a hint to the algorithm because the custom [code]_compute_cost[/code] might be computation-heavy. If this is not the case, make [method _estimate_cost] return the same value as [method _compute_cost] to provide the algorithm with the most accurate information.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,6 +31,7 @@
 			</argument>
 			<description>
 				Called when computing the cost between two connected points.
+				Note that this function is hidden in the default [code]AStar[/code] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual">
@@ -30,6 +43,7 @@
 			</argument>
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [code]AStar[/code] class.
 			</description>
 		</method>
 		<method name="add_point">
@@ -57,8 +71,10 @@
 			</argument>
 			<argument index="1" name="to_id" type="int">
 			</argument>
+			<argument index="2" name="bidirectional" type="bool" default="true">
+			</argument>
 			<description>
-				Returns whether there is a connection/segment between the given points.
+				Returns whether the two given points are directly connected by a segment. If [code]bidirectional[/code] is [code]false[/code], returns whether movement from [code]id[/code] to [code]to_id[/code] is possible through this segment.
 			</description>
 		</method>
 		<method name="clear">
@@ -94,8 +110,10 @@
 			</argument>
 			<argument index="1" name="to_id" type="int">
 			</argument>
+			<argument index="2" name="bidirectional" type="bool" default="true">
+			</argument>
 			<description>
-				Deletes the segment between the given points.
+				Deletes the segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is prevented, and a unidirectional segment possibly remains.
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">

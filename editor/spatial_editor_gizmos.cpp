@@ -490,7 +490,6 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 	if (r_gizmo_handle && !hidden) {
 
 		Transform t = spatial_node->get_global_transform();
-		t.orthonormalize();
 		if (billboard_handle) {
 			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
 		}
@@ -551,7 +550,6 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 	if (selectable_icon_size > 0.0f) {
 
 		Transform t = spatial_node->get_global_transform();
-		t.orthonormalize();
 		Vector3 camera_position = p_camera->get_camera_transform().origin;
 		if (camera_position.distance_squared_to(t.origin) > 0.01) {
 			t.set_look_at(t.origin, camera_position, Vector3(0, 1, 0));
@@ -861,7 +859,6 @@ void LightSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx,
 
 	Light *light = Object::cast_to<Light>(p_gizmo->get_spatial_node());
 	Transform gt = light->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -1106,7 +1103,6 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_giz
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 
 	Transform gt = player->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -1266,7 +1262,6 @@ void CameraSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx
 	Camera *camera = Object::cast_to<Camera>(p_gizmo->get_spatial_node());
 
 	Transform gt = camera->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -3234,7 +3229,6 @@ void CollisionShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, i
 		return;
 
 	Transform gt = cs->get_global_transform();
-	gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);

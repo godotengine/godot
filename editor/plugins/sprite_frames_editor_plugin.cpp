@@ -757,7 +757,7 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 		return Variant();
 
 	Dictionary drag_data = EditorNode::get_singleton()->drag_resource(frame, p_from);
-	drag_data["frame"] = idx; // store the frame, incase we want to reorder frames inside 'drop_data_fw'
+	drag_data["frame"] = idx; // store the frame, in case we want to reorder frames inside 'drop_data_fw'
 	return drag_data;
 }
 

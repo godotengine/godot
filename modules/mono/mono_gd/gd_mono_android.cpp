@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  android_utils.cpp                                                    */
+/*  gd_mono_android.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "android_utils.h"
+#include "gd_mono_android.h"
 
-#ifdef __ANDROID__
+#if defined(ANDROID_ENABLED)
 
+#include <dlfcn.h> // dlopen, dlsym
+#include <mono/utils/mono-dl-fallback.h>
+
+#include "core/os/os.h"
+#include "core/ustring.h"
 #include "platform/android/thread_jandroid.h"
 
-namespace GDMonoUtils {
-namespace Android {
+#include "../utils/path_utils.h"
+#include "../utils/string_utils.h"
 
-String get_app_native_lib_dir() {
+namespace GDMonoAndroid {
+
+String app_native_lib_dir_cache;
+
+String determine_app_native_lib_dir() {
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	jclass activityThreadClass = env->FindClass("android/app/ActivityThread");
@@ -62,7 +71,76 @@ String get_app_native_lib_dir() {
 	return result;
 }
 
-} // namespace Android
-} // namespace GDMonoUtils
+String get_app_native_lib_dir() {
+	if (app_native_lib_dir_cache.empty())
+		app_native_lib_dir_cache = determine_app_native_lib_dir();
+	return app_native_lib_dir_cache;
+}
 
-#endif // __ANDROID__
+int gd_mono_convert_dl_flags(int flags) {
+	// from mono's runtime-bootstrap.c
+
+	int lflags = flags & MONO_DL_LOCAL ? 0 : RTLD_GLOBAL;
+
+	if (flags & MONO_DL_LAZY)
+		lflags |= RTLD_LAZY;
+	else
+		lflags |= RTLD_NOW;
+
+	return lflags;
+}
+
+void *gd_mono_android_dlopen(const char *p_name, int p_flags, char **r_err, void *p_user_data) {
+	String name = String::utf8(p_name);
+
+	if (name.ends_with(".dll.so") || name.ends_with(".exe.so")) {
+		String app_native_lib_dir = get_app_native_lib_dir();
+
+		String orig_so_name = name.get_file();
+		String so_name = "lib-aot-" + orig_so_name;
+		String so_path = path::join(app_native_lib_dir, so_name);
+
+		if (!FileAccess::exists(so_path)) {
+			if (OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("Cannot find shared library: '%s'\n", so_path.utf8().get_data());
+			return NULL;
+		}
+
+		int lflags = gd_mono_convert_dl_flags(p_flags);
+
+		void *handle = dlopen(so_path.utf8().get_data(), lflags);
+
+		if (!handle) {
+			if (OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("Failed to open shared library: '%s'. Error: '%s'\n", so_path.utf8().get_data(), dlerror());
+			return NULL;
+		}
+
+		if (OS::get_singleton()->is_stdout_verbose())
+			OS::get_singleton()->print("Successfully loaded AOT shared library: '%s'\n", so_path.utf8().get_data());
+
+		return handle;
+	}
+
+	return NULL;
+}
+
+void *gd_mono_android_dlsym(void *p_handle, const char *p_name, char **r_err, void *p_user_data) {
+	void *sym_addr = dlsym(p_handle, p_name);
+
+	if (sym_addr)
+		return sym_addr;
+
+	if (r_err)
+		*r_err = str_format_new("%s\n", dlerror());
+
+	return NULL;
+}
+
+void register_android_dl_fallback() {
+	mono_dl_fallback_register(gd_mono_android_dlopen, gd_mono_android_dlsym, NULL, NULL);
+}
+
+} // namespace GDMonoAndroid
+
+#endif

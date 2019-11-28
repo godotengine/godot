@@ -42,14 +42,14 @@ mono_configure.configure(env, env_mono)
 
 if env_mono['tools'] and env_mono['mono_glue']:
     import build_scripts.api_solution_build as api_solution_build
-    api_solution_build.build(env_mono)
+    api_sln_cmd = api_solution_build.build(env_mono)
 
 # Build GodotTools
 
 if env_mono['tools']:
     import build_scripts.godot_tools_build as godot_tools_build
     if env_mono['mono_glue']:
-        godot_tools_build.build(env_mono)
+        godot_tools_build.build(env_mono, api_sln_cmd)
     else:
         # Building without the glue sources so the Godot API solution may be missing.
         # GodotTools depends on the Godot API solution. As such, we will only build

@@ -170,7 +170,11 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 	if (p_term == "") {
 		search_box->clear();
 	} else {
-		old_search = true;
+		if (old_term == p_term)
+			old_search = true;
+		else
+			old_term = p_term;
+
 		search_box->set_text(p_term);
 		search_box->select_all();
 	}

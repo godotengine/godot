@@ -494,6 +494,7 @@ public:
 
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
+		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
 
 	};
@@ -559,6 +560,7 @@ private:
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
+		MENU_TOOL_OVERRIDE_CAMERA,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -584,9 +586,6 @@ private:
 	MenuButton *transform_menu;
 	PopupMenu *gizmos_menu;
 	MenuButton *view_menu;
-
-	ToolButton *lock_button;
-	ToolButton *unlock_button;
 
 	AcceptDialog *accept;
 
@@ -615,13 +614,16 @@ private:
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
 	void _menu_gizmo_toggled(int p_option);
+	void _update_camera_override_button(bool p_game_running);
+	void _update_camera_override_viewport(Object *p_viewport);
 
 	HBoxContainer *hbc_menu;
 
 	void _generate_selection_box();
 	UndoRedo *undo_redo;
 
-	void _instance_scene();
+	int camera_override_viewport_id;
+
 	void _init_indicators();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
@@ -716,7 +718,7 @@ public:
 	void set_can_preview(Camera *p_preview);
 
 	SpatialEditorViewport *get_editor_viewport(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx, 4, NULL);
+		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), NULL);
 		return viewports[p_idx];
 	}
 

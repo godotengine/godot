@@ -32,9 +32,6 @@
 
 #include "core/math/math_funcs.h"
 
-#define _PLANE_EQ_DOT_EPSILON 0.999
-#define _PLANE_EQ_D_EPSILON 0.0001
-
 void Plane::set_normal(const Vector3 &p_normal) {
 
 	normal = p_normal;
@@ -156,9 +153,9 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 
 /* misc */
 
-bool Plane::is_almost_like(const Plane &p_plane) const {
+bool Plane::is_equal_approx(const Plane &p_plane) const {
 
-	return (normal.dot(p_plane.normal) > _PLANE_EQ_DOT_EPSILON && Math::absd(d - p_plane.d) < _PLANE_EQ_D_EPSILON);
+	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
 }
 
 Plane::operator String() const {

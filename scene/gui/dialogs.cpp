@@ -161,7 +161,7 @@ void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 			global_pos.y = MAX(global_pos.y, 0); // Ensure title bar stays visible.
 
 			Rect2 rect = get_rect();
-			Size2 min_size = get_minimum_size();
+			Size2 min_size = get_combined_minimum_size();
 
 			if (drag_type == DRAG_MOVE) {
 				rect.position = global_pos - drag_offset;

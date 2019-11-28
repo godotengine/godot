@@ -1716,6 +1716,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 			hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -1802,7 +1803,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }

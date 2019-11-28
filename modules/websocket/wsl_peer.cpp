@@ -213,7 +213,7 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 		wslay_event_context_server_init(&(_data->ctx), &wsl_callbacks, _data);
 	else
 		wslay_event_context_client_init(&(_data->ctx), &wsl_callbacks, _data);
-	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1 << p_in_buf_size));
+	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1ULL << p_in_buf_size));
 }
 
 void WSLPeer::set_write_mode(WriteMode p_mode) {

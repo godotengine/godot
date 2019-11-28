@@ -39,6 +39,7 @@
 #include "core/variant.h"
 #include "core/variant_parser.h"
 
+#include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_utils.h"
 
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
@@ -211,7 +212,7 @@ MonoString *godot_icall_GD_var2str(MonoObject *p_var) {
 }
 
 MonoObject *godot_icall_DefaultGodotTaskScheduler() {
-	return GDMonoUtils::mono_cache.task_scheduler_handle->get_target();
+	return GDMonoCache::cached_data.task_scheduler_handle->get_target();
 }
 
 void godot_register_gd_icalls() {

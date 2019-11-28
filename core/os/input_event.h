@@ -184,7 +184,7 @@ public:
 	int get_device() const;
 
 	bool is_action(const StringName &p_action) const;
-	bool is_action_pressed(const StringName &p_action) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false) const;
 	bool is_action_released(const StringName &p_action) const;
 	float get_action_strength(const StringName &p_action) const;
 

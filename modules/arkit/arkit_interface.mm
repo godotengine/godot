@@ -37,6 +37,8 @@
 #import <ARKit/ARKit.h>
 #import <UIKit/UIKit.h>
 
+#include <dlfcn.h>
+
 #include "arkit_interface.h"
 #include "arkit_session_delegate.h"
 
@@ -53,7 +55,10 @@ void ARKitInterface::start_session() {
 	// Ignore this if we're not initialized...
 	if (initialized) {
 		print_line("Starting ARKit session");
-		ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
+
+		Class ARWorldTrackingConfigurationClass = NSClassFromString(@"ARWorldTrackingConfiguration");
+		ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfigurationClass new];
+
 		configuration.lightEstimationEnabled = light_estimation_is_enabled;
 		if (plane_detection_is_enabled) {
 			configuration.planeDetection = ARPlaneDetectionVertical | ARPlaneDetectionHorizontal;
@@ -221,7 +226,17 @@ bool ARKitInterface::initialize() {
 		print_line("initializing ARKit");
 
 		// create our ar session and delegate
-		ar_session = [ARSession new];
+		Class ARSessionClass = NSClassFromString(@"ARSession");
+		if (ARSessionClass == Nil) {
+			void *arkit_handle = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_NOW);
+			if (arkit_handle) {
+				ARSessionClass = NSClassFromString(@"ARSession");
+			} else {
+				print_line("ARKit init failed");
+				return false;
+			}
+		}
+		ar_session = [ARSessionClass new];
 		ar_delegate = [ARKitSessionDelegate new];
 		ar_delegate.arkit_interface = this;
 		ar_session.delegate = ar_delegate;

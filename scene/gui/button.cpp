@@ -174,17 +174,17 @@ void Button::_notification(int p_what) {
 					_size.width -= get_constant("hseparation") + icon_ofs_region;
 					if (!clip_text)
 						_size.width -= get_font("font")->get_string_size(xl_text).width;
-					float icon_width = icon->get_width() * _size.height / icon->get_height();
+					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
 
 					if (icon_width > _size.width) {
 						icon_width = _size.width;
-						icon_height = icon->get_height() * icon_width / icon->get_width();
+						icon_height = _icon->get_height() * icon_width / _icon->get_width();
 					}
 
 					icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, (_size.height - icon_height) / 2), Size2(icon_width, icon_height));
 				} else {
-					icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, Math::floor((valign - _icon->get_height()) / 2.0)), icon->get_size());
+					icon_region = Rect2(style->get_offset() + Point2(icon_ofs_region, Math::floor((valign - _icon->get_height()) / 2.0)), _icon->get_size());
 				}
 			}
 
@@ -221,7 +221,7 @@ void Button::_notification(int p_what) {
 			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
 
 			if (!_icon.is_null() && icon_region.size.width > 0) {
-				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), icon->get_size()), color_icon);
+				draw_texture_rect_region(_icon, icon_region, Rect2(Point2(), _icon->get_size()), color_icon);
 			}
 		} break;
 	}

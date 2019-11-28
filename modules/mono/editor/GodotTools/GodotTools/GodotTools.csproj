@@ -30,6 +30,7 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Posix" />
     <Reference Include="System" />
     <Reference Include="GodotSharp">
       <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharp.dll</HintPath>
@@ -40,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Build\MsBuildFinder.cs" />
+    <Compile Include="Export\ExportPlugin.cs" />
     <Compile Include="ExternalEditorId.cs" />
     <Compile Include="Ides\GodotIdeManager.cs" />
     <Compile Include="Ides\GodotIdeServer.cs" />
@@ -63,7 +65,6 @@
     <Compile Include="BuildInfo.cs" />
     <Compile Include="BuildTab.cs" />
     <Compile Include="BottomPanel.cs" />
-    <Compile Include="GodotSharpExport.cs" />
     <Compile Include="CsProjOperations.cs" />
     <Compile Include="Utils\CollectionExtensions.cs" />
   </ItemGroup>

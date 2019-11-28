@@ -153,6 +153,7 @@ struct Rect2 {
 
 		return true;
 	}
+	bool is_equal_approx(const Rect2 &p_rect) const;
 
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }

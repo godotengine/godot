@@ -6466,6 +6466,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 					DataType true_type = _reduce_node_type(op->arguments[1]);
 					DataType false_type = _reduce_node_type(op->arguments[2]);
+					// Check arguments[0] errors.
+					_reduce_node_type(op->arguments[0]);
 
 					// If types are equal, then the expression is of the same type
 					// If they are compatible, return the broader type
@@ -8373,6 +8375,9 @@ void GDScriptParser::_add_warning(int p_code, int p_line, const String &p_symbol
 }
 
 void GDScriptParser::_add_warning(int p_code, int p_line, const Vector<String> &p_symbols) {
+	if (GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize() && base_path.begins_with("res://addons/")) {
+		return;
+	}
 	if (tokenizer->is_ignoring_warnings() || !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
 		return;
 	}

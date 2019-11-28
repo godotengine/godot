@@ -2782,6 +2782,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="particles_is_inactive">
+			<return type="bool">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="particles_request_process">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="particles_restart">
 			<return type="void">
 			</return>
@@ -4237,6 +4253,12 @@
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
 			Multisample antialiasing is set to 16×.
+		</constant>
+		<constant name="VIEWPORT_MSAA_EXT_2X" value="5" enum="ViewportMSAA">
+			Multisample antialiasing is set to 2× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
+		</constant>
+		<constant name="VIEWPORT_MSAA_EXT_4X" value="6" enum="ViewportMSAA">
+			Multisample antialiasing is set to 4× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
 		</constant>
 		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
 			The Viewport does not render 3D but samples.

@@ -11,6 +11,7 @@
 		RayCast2D calculates intersection every physics frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between physics frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_exception">

@@ -108,6 +108,8 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 	}
 }
 
@@ -328,7 +330,7 @@ void FindReplaceBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
@@ -1443,6 +1445,9 @@ void CodeTextEditor::_update_font() {
 
 	text_editor->add_font_override("font", get_font("source", "EditorFonts"));
 
+	error->add_font_override("font", get_font("status_source", "EditorFonts"));
+	error->add_color_override("font_color", get_color("error_color", "Editor"));
+
 	Ref<Font> status_bar_font = get_font("status_source", "EditorFonts");
 	error->add_font_override("font", status_bar_font);
 	int count = status_bar->get_child_count();
@@ -1677,8 +1682,6 @@ CodeTextEditor::CodeTextEditor() {
 	error = memnew(Label);
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
-	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", this, "_error_pressed");
 	find_replace_bar->connect("error", error, "set_text");

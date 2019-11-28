@@ -33,6 +33,8 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_network_profiler.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
@@ -490,7 +492,7 @@ void ScriptEditorDebugger::_video_mem_request() {
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
 
-	Size2 ms = Control::get_minimum_size();
+	Size2 ms = MarginContainer::get_minimum_size();
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }
@@ -1232,6 +1234,42 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						}
 					}
 				}
+
+				if (camera_override == OVERRIDE_2D) {
+					CanvasItemEditor *editor = CanvasItemEditor::get_singleton();
+
+					Dictionary state = editor->get_state();
+					float zoom = state["zoom"];
+					Point2 offset = state["ofs"];
+					Transform2D transform;
+
+					transform.scale_basis(Size2(zoom, zoom));
+					transform.elements[2] = -offset * zoom;
+
+					Array msg;
+					msg.push_back("override_camera_2D:transform");
+					msg.push_back(transform);
+					ppeer->put_var(msg);
+
+				} else if (camera_override >= OVERRIDE_3D_1) {
+					int viewport_idx = camera_override - OVERRIDE_3D_1;
+					SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(viewport_idx);
+					Camera *const cam = viewport->get_camera();
+
+					Array msg;
+					msg.push_back("override_camera_3D:transform");
+					msg.push_back(cam->get_camera_transform());
+					if (cam->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
+						msg.push_back(false);
+						msg.push_back(cam->get_size());
+					} else {
+						msg.push_back(true);
+						msg.push_back(cam->get_fov());
+					}
+					msg.push_back(cam->get_znear());
+					msg.push_back(cam->get_zfar());
+					ppeer->put_var(msg);
+				}
 			}
 
 			if (error_count != last_error_count || warning_count != last_warning_count) {
@@ -1388,11 +1426,12 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
+			add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+			add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+
 			tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
 			tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 			tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
-			tabs->set_margin(MARGIN_LEFT, -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-			tabs->set_margin(MARGIN_RIGHT, EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
 			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
@@ -1446,6 +1485,7 @@ void ScriptEditorDebugger::start() {
 
 	set_process(true);
 	breaked = false;
+	camera_override = OVERRIDE_NONE;
 }
 
 void ScriptEditorDebugger::pause() {
@@ -1890,6 +1930,45 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
+ScriptEditorDebugger::CameraOverride ScriptEditorDebugger::get_camera_override() const {
+	return camera_override;
+}
+
+void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
+
+	if (p_override == OVERRIDE_2D && camera_override != OVERRIDE_2D) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_2D:set");
+			msg.push_back(true);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override != OVERRIDE_2D && camera_override == OVERRIDE_2D) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_2D:set");
+			msg.push_back(false);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override >= OVERRIDE_3D_1 && camera_override < OVERRIDE_3D_1) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_3D:set");
+			msg.push_back(true);
+			ppeer->put_var(msg);
+		}
+	} else if (p_override < OVERRIDE_3D_1 && camera_override >= OVERRIDE_3D_1) {
+		if (connection.is_valid()) {
+			Array msg;
+			msg.push_back("override_camera_3D:set");
+			msg.push_back(false);
+			ppeer->put_var(msg);
+		}
+	}
+
+	camera_override = p_override;
+}
+
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
 
 	if (connection.is_valid()) {
@@ -2164,6 +2243,9 @@ void ScriptEditorDebugger::_bind_methods() {
 
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
+	add_constant_override("margin_left", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+	add_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
 	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
 	editor = p_editor;
@@ -2175,9 +2257,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
 
-	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	tabs->set_margin(MARGIN_LEFT, -editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
-	tabs->set_margin(MARGIN_RIGHT, editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 	add_child(tabs);
 
 	{ //debugger
@@ -2522,6 +2601,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds, this);
 	p_editor->get_undo_redo()->set_property_notify_callback(_property_changeds, this);
 	live_debug = true;
+	camera_override = OVERRIDE_NONE;
 	last_path_id = false;
 	error_count = 0;
 	warning_count = 0;

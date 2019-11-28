@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-11 15:07+0000\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -638,9 +638,8 @@ msgid "Scale Ratio:"
 msgstr "Ratio de Escala:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Elegir pistas a copiar:"
+msgstr "Elegir Pistas a Copiar"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -652,9 +651,8 @@ msgid "Copy"
 msgstr "Copiar"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "No Seleccionar Ninguno"
+msgstr "Seleccionar Todo/Ninguno"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -2907,8 +2905,8 @@ msgid "Play"
 msgstr "Reproducir"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Pausar la escena"
+msgid "Pause the scene execution for debugging."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3604,6 +3602,11 @@ msgstr "Duplicando carpeta:"
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
 msgstr "Nueva Escena Heredada"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Set As Main Scene"
+msgstr "Escena Principal"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4338,6 +4341,21 @@ msgstr ""
 "no se pudieron obtener los nombres de las pistas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Anim Clips"
+msgstr "Clips de Anim:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "Clips de Audio:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "Funciones:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr "Nodo Renombrado"
@@ -4929,7 +4947,7 @@ msgstr "Todos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "No hay resultados para \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5018,12 +5036,26 @@ msgid "Grid Step:"
 msgstr "Step de Grilla:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "steps"
+msgstr "2 pasos"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr "Offset de Rotación:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Step de Rotación:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Step:"
+msgstr "Escala:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5108,6 +5140,20 @@ msgstr "Cambiar Anclas y Márgenes"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
 msgstr "Cambiar Anclas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5227,24 +5273,20 @@ msgid "Ruler Mode"
 msgstr "Modo Regla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Act/Desact. alineado."
+msgstr "Act/Desact. ajuste inteligente."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Usar Snap"
+msgstr "Usar Ajuste Inteligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Act/Desact. alineado."
+msgstr "Act/Desact. ajuste a grilla."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Snap de Grilla"
+msgstr "Usar Ajuste a Grilla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5253,6 +5295,11 @@ msgstr "Opciones de Alineado"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
 msgstr "Usar Snap de Rotación"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Scale Snap"
+msgstr "Usar Ajuste Inteligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5337,13 +5384,12 @@ msgid "View"
 msgstr "Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Mostrar la Grilla"
+msgstr "Siempre Mostrar la Grilla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr "Mostrar ayudantes"
+msgstr "Mostrar Ayudantes"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
@@ -5394,8 +5440,9 @@ msgid "Insert keys (based on mask)."
 msgstr "Insertar claves (basadas en máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -5606,9 +5653,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Mantené Shift para editar tangentes individualmente"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Click Derecho: Eliminar Punto"
+msgstr "Click derecho para agregar punto"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -7065,7 +7111,6 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
@@ -7338,9 +7383,8 @@ msgid "Simplification: "
 msgstr "Simplificación: "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "Crecer (Pixeles): "
+msgstr "Achicar (Pixeles): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8124,9 +8168,8 @@ msgid "(GLES3 only)"
 msgstr "(Sólo GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Añadir salida +"
+msgstr "Añadir Salida"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8141,9 +8184,8 @@ msgid "Boolean"
 msgstr "Booleano"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sampler"
-msgstr "Muestras"
+msgstr "Sampler"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -8275,7 +8317,8 @@ msgid "Dodge operator."
 msgstr "Operador Dodge(sobreexponer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+#, fuzzy
+msgid "HardLight operator."
 msgstr "Operador HardLight(luz fuerte)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8919,10 +8962,12 @@ msgstr ""
 "dirección de vista de la camara ( pasale los puntos asociados)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 "Expresión personalizada del lenguaje de shader de Godot, que se coloca "
 "encima del shader resultante. Puedes colocar varias definiciones de "
@@ -9053,6 +9098,12 @@ msgid "Add..."
 msgstr "Agregar..."
 
 #: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Export Path"
 msgstr "Ruta de Exportación"
 
@@ -9081,22 +9132,20 @@ msgid "Resources to export:"
 msgstr "Recursos a exportar:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para exportar archivos que no son recursos (separados por comas, ej: "
-"*.json, *.txt)"
+"Filtros para exportar archivos/carpetas que no son recursos\n"
+"(separado por comas, ej: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para excluir archivos del proyecto (separados por comas, ej: *.json, "
-"*.txt)"
+"Filtros para excluir archivos/carpetas del proyecto\n"
+"(separados por comas, ej: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -9547,18 +9596,6 @@ msgstr "Todos los Dispositivos"
 #: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Dispositivo"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Shift+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
-msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -10143,13 +10180,13 @@ msgstr ""
 "vuelvan a sus valores por defecto."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"Desactivar \"editable_instance\" causara que todas las propiedades del nodo "
-"vuelvan a sus valores por defecto."
+"Activar \"Cargar como Placeholder\" desactivará \"Hijos Editables\" y "
+"causará que todas las propiedades del nodo se reviertan a sus valores por "
+"defecto."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10490,19 +10527,16 @@ msgid "Will load an existing script file."
 msgstr "Se cargará un archivo de script existente."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Nombre de Clase"
+msgstr "Nombre de Clase:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Plantilla"
+msgstr "Plantilla:"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Script Integrado (Built-In)"
+msgstr "Script Integrado (Built-In):"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -11145,7 +11179,6 @@ msgid "Add Function"
 msgstr "Agregar Función"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
 msgstr "Eliminar puerto de entrada"
 
@@ -11158,24 +11191,20 @@ msgid "Add Signal"
 msgstr "Agregar Señal"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
-msgstr "Agregar puerto de entrada"
+msgstr "Agregar Puerto de Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
-msgstr "Añadir puerto de salida"
+msgstr "Agregar Puerto de Salida"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
-msgstr "Eliminar puerto de entrada"
+msgstr "Eliminar Puerto de Entrada"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
-msgstr "Eliminar puerto de salida"
+msgstr "Eliminar Puerto de Salida"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11224,6 +11253,7 @@ msgstr "Agregar Nodo Preload"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"No se pueden soltar nodos porque el script '%s' no es usado en esta escena."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11234,6 +11264,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"No se puede soltar propiedades porque el script '%s' no es usado en esta "
+"escena.\n"
+"Soltá manteniendo 'Shift' para solo copiar la firma."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11260,9 +11293,8 @@ msgid "Connect Nodes"
 msgstr "Conectar Nodos"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "Desconectar Nodo de Gráfico"
+msgstr "Desconectar Nodos"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11297,26 +11329,26 @@ msgid "Paste VisualScript Nodes"
 msgstr "Pegar Nodos de VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't create function with a function node."
-msgstr "No se puede copiar el nodo de función."
+msgstr "No se puede crear una función con un nodo función."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Try to only have one sequence input in selection."
-msgstr ""
+"No se puede crear una función de nodos desde nodos de múltiples funciones."
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Select at least one node with sequence port."
+msgstr "Seleccioná por lo menos un nodo con un puerto secuencia."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr "Tratá de tener solo una secuencia de entrada en la selección."
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
-msgstr "Renombrar Función"
+msgstr "Crear Función"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11347,9 +11379,8 @@ msgid "Members:"
 msgstr "Miembros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funcion:"
+msgstr "nombre_funcion"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11372,14 +11403,12 @@ msgid "Cut Nodes"
 msgstr "Cortar Nodos"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Renombrar Función"
+msgstr "Crear Función"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Refrescar"
+msgstr "Refrescar el Gráfico"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11609,7 +11638,7 @@ msgstr "El icono requerido no esta especificado en el preset."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Detener Servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -11644,7 +11673,17 @@ msgid "Using default boot splash image."
 msgstr "Usando imagen boot splash por defecto."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package short name."
+msgstr "Nombre de paquete inválido:"
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
+msgstr "Nombre único de paquete inválido."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "Nombre único de paquete inválido."
 
 #: platform/uwp/export/export.cpp
@@ -12314,6 +12353,18 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Pause the scene"
+#~ msgstr "Pausar la escena"
+
+#~ msgid "Shift+"
+#~ msgstr "Shift+"
+
+#~ msgid "Alt+"
+#~ msgstr "Alt+"
+
+#~ msgid "Control+"
+#~ msgstr "Control+"
 
 #~ msgid "Snap to Grid"
 #~ msgstr "Ajustar a la Grilla"

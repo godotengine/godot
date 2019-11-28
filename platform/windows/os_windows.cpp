@@ -556,8 +556,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			mm->set_button_mask(last_button_state);
 
-			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
-			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			POINT coords; //client coords
+			coords.x = GET_X_LPARAM(lParam);
+			coords.y = GET_Y_LPARAM(lParam);
+
+			ScreenToClient(hWnd, &coords);
+
+			mm->set_position(Vector2(coords.x, coords.y));
+			mm->set_global_position(Vector2(coords.x, coords.y));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -2982,7 +2988,7 @@ void OS_Windows::move_window_to_foreground() {
 
 Error OS_Windows::shell_open(String p_uri) {
 
-	ShellExecuteW(NULL, L"open", p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecuteW(NULL, NULL, p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	return OK;
 }
 

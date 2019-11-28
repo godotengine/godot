@@ -1866,6 +1866,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 				input->accumulate_input_event(k);
 			}
+			memfree(utf8string);
 			return;
 		}
 		memfree(utf8string);

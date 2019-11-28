@@ -68,7 +68,14 @@ void StyleBoxPreview::_sb_changed() {
 
 void StyleBoxPreview::_redraw() {
 	if (stylebox.is_valid()) {
-		preview->draw_style_box(stylebox, preview->get_rect());
+		Rect2 preview_rect = preview->get_rect();
+
+		// Re-adjust preview panel to fit all drawn content
+		Rect2 draw_rect = stylebox->get_draw_rect(preview_rect);
+		preview_rect.size -= draw_rect.size - preview_rect.size;
+		preview_rect.position -= draw_rect.position - preview_rect.position;
+
+		preview->draw_style_box(stylebox, preview_rect);
 	}
 }
 
@@ -81,6 +88,7 @@ void StyleBoxPreview::_bind_methods() {
 StyleBoxPreview::StyleBoxPreview() {
 	preview = memnew(Control);
 	preview->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
+	preview->set_clip_contents(true);
 	preview->connect("draw", this, "_redraw");
 	add_margin_child(TTR("Preview:"), preview);
 }

@@ -43,11 +43,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file Defines the StreamWriter class which writes data to
  *  a binary stream with a well-defined endianness. */
-
+#pragma once
 #ifndef AI_STREAMWRITER_H_INCLUDED
 #define AI_STREAMWRITER_H_INCLUDED
 
-#include "ByteSwapper.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
+#include <assimp/ByteSwapper.h>
 #include <assimp/IOStream.hpp>
 
 #include <memory>

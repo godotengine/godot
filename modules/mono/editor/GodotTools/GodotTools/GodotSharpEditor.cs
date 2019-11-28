@@ -1,4 +1,5 @@
 using Godot;
+using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
@@ -225,7 +226,7 @@ namespace GodotTools
 
                     bool osxAppBundleInstalled = false;
 
-                    if (OS.IsOSX())
+                    if (OS.IsOSX)
                     {
                         // The package path is '/Applications/Visual Studio Code.app'
                         const string vscodeBundleId = "com.microsoft.VSCode";
@@ -265,7 +266,7 @@ namespace GodotTools
 
                     string command;
 
-                    if (OS.IsOSX())
+                    if (OS.IsOSX)
                     {
                         if (!osxAppBundleInstalled && _vsCodePath.Empty())
                         {
@@ -415,18 +416,18 @@ namespace GodotTools
 
             string settingsHintStr = "Disabled";
 
-            if (OS.IsWindows())
+            if (OS.IsWindows)
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
-            else if (OS.IsOSX())
+            else if (OS.IsOSX)
             {
                 settingsHintStr += $",Visual Studio:{(int) ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
-            else if (OS.IsUnix())
+            else if (OS.IsUnixLike())
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
@@ -441,8 +442,9 @@ namespace GodotTools
             });
 
             // Export plugin
-            var exportPlugin = new GodotSharpExport();
+            var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
+            exportPlugin.RegisterExportSettings();
             exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();
@@ -461,7 +463,7 @@ namespace GodotTools
                 // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
                 // will be freed after EditorSettings already was, and its device polling thread
                 // will try to access the EditorSettings singleton, resulting in null dereferencing.
-                (exportPluginWeak.GetRef() as GodotSharpExport)?.Dispose();
+                (exportPluginWeak.GetRef() as ExportPlugin)?.Dispose();
 
                 exportPluginWeak.Dispose();
             }

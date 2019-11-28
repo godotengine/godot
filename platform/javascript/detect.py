@@ -24,6 +24,7 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
+        ('builtin_pcre2_with_jit', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -82,10 +83,7 @@ def configure(env):
     env['CXX'] = 'em++'
     env['LINK'] = 'emcc'
 
-    # Emscripten's ar has issues with duplicate file names, so use cc.
-    env['AR'] = 'emcc'
-    env['ARFLAGS'] = '-o'
-    # emranlib is a noop, so it's safe to use with AR=emcc.
+    env['AR'] = 'emar'
     env['RANLIB'] = 'emranlib'
 
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
@@ -126,6 +124,10 @@ def configure(env):
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
 
     ## Link flags
+
+    # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
+    # be linked explicitly.
+    env.Append(LIBS=['idbfs.js'])
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
 

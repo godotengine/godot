@@ -36,7 +36,7 @@ void EditorVCSInterface::_bind_methods() {
 
 	// Proxy end points that act as fallbacks to unavailability of a function in the VCS addon
 	ClassDB::bind_method(D_METHOD("_initialize", "project_root_path"), &EditorVCSInterface::_initialize);
-	ClassDB::bind_method(D_METHOD("_get_is_vcs_intialized"), &EditorVCSInterface::_get_is_vcs_intialized);
+	ClassDB::bind_method(D_METHOD("_is_vcs_initialized"), &EditorVCSInterface::_is_vcs_initialized);
 	ClassDB::bind_method(D_METHOD("_get_vcs_name"), &EditorVCSInterface::_get_vcs_name);
 	ClassDB::bind_method(D_METHOD("_shut_down"), &EditorVCSInterface::_shut_down);
 	ClassDB::bind_method(D_METHOD("_get_project_name"), &EditorVCSInterface::_get_project_name);
@@ -50,7 +50,7 @@ void EditorVCSInterface::_bind_methods() {
 
 	// API methods that redirect calls to the proxy end points
 	ClassDB::bind_method(D_METHOD("initialize", "project_root_path"), &EditorVCSInterface::initialize);
-	ClassDB::bind_method(D_METHOD("get_is_vcs_intialized"), &EditorVCSInterface::get_is_vcs_intialized);
+	ClassDB::bind_method(D_METHOD("is_vcs_initialized"), &EditorVCSInterface::is_vcs_initialized);
 	ClassDB::bind_method(D_METHOD("get_modified_files_data"), &EditorVCSInterface::get_modified_files_data);
 	ClassDB::bind_method(D_METHOD("stage_file", "file_path"), &EditorVCSInterface::stage_file);
 	ClassDB::bind_method(D_METHOD("unstage_file", "file_path"), &EditorVCSInterface::unstage_file);
@@ -67,7 +67,7 @@ bool EditorVCSInterface::_initialize(String p_project_root_path) {
 	return true;
 }
 
-bool EditorVCSInterface::_get_is_vcs_intialized() {
+bool EditorVCSInterface::_is_vcs_initialized() {
 
 	return false;
 }
@@ -112,9 +112,9 @@ bool EditorVCSInterface::initialize(String p_project_root_path) {
 	return is_initialized;
 }
 
-bool EditorVCSInterface::get_is_vcs_intialized() {
+bool EditorVCSInterface::is_vcs_initialized() {
 
-	return call("_get_is_vcs_intialized");
+	return call("_is_vcs_initialized");
 }
 
 Dictionary EditorVCSInterface::get_modified_files_data() {

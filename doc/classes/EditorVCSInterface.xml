@@ -34,13 +34,6 @@
 				- [code]"offset"[/code] to store the offset of the line change since the first contextual line content.
 			</description>
 		</method>
-		<method name="get_is_vcs_intialized">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
-			</description>
-		</method>
 		<method name="get_modified_files_data">
 			<return type="Dictionary">
 			</return>
@@ -82,6 +75,13 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_vcs_initialized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="shut_down">

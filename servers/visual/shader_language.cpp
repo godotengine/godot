@@ -3769,8 +3769,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 						nv.sint = -cn->values[i].sint;
 					} break;
 					case TYPE_UINT: {
-						// FIXME: This can't work on uint
-						nv.uint = -cn->values[i].uint;
+						// Intentionally wrap the unsigned int value, because GLSL does.
+						nv.uint = 0 - cn->values[i].uint;
 					} break;
 					case TYPE_FLOAT: {
 						nv.real = -cn->values[i].real;

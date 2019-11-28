@@ -126,6 +126,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the viewport is currently performing a drag operation.
 			</description>
 		</method>
 		<method name="input">

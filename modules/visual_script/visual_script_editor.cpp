@@ -1637,7 +1637,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 	for (Set<int>::Element *F = to_duplicate.front(); F; F = F->next()) {
 
-		// duplicate from the specifc function but place it into the default func as it would lack the connections
+		// duplicate from the specific function but place it into the default func as it would lack the connections
 		StringName func = _get_function_of_node(F->get());
 		Ref<VisualScriptNode> node = script->get_node(func, F->get());
 
@@ -2938,7 +2938,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 					if ((to_node_pos.x - from_node_pos.x) < 0) {
 						// to is behind from node
 						if (to_node_pos.x > (from_node_pos.x - to_node_size.x - 240))
-							new_to_node_pos.x = from_node_pos.x - to_node_size.x - 240; // approx size of construtor node + padding
+							new_to_node_pos.x = from_node_pos.x - to_node_size.x - 240; // approx size of constructor node + padding
 						else
 							new_to_node_pos.x = to_node_pos.x;
 						new_to_node_pos.y = to_node_pos.y;
@@ -2947,7 +2947,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 					} else {
 						// to is ahead of from node
 						if (to_node_pos.x < (from_node_size.x + from_node_pos.x + 240))
-							new_to_node_pos.x = from_node_size.x + from_node_pos.x + 240; // approx size of construtor node + padding
+							new_to_node_pos.x = from_node_size.x + from_node_pos.x + 240; // approx size of constructor node + padding
 						else
 							new_to_node_pos.x = to_node_pos.x;
 						new_to_node_pos.y = to_node_pos.y;
@@ -3515,6 +3515,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	}
 
 	Ref<VisualScriptNode> vnode;
+	Ref<VisualScriptPropertySet> script_prop_set;
 
 	if (p_category == String("method")) {
 
@@ -3525,8 +3526,8 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 		Ref<VisualScriptPropertySet> n;
 		n.instance();
-		n->set_property(p_text);
 		vnode = n;
+		script_prop_set = n;
 	} else if (p_category == String("get")) {
 
 		Ref<VisualScriptPropertyGet> n;
@@ -3577,6 +3578,9 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	undo_redo->add_do_method(this, "_update_graph", new_id);
 	undo_redo->add_undo_method(this, "_update_graph", new_id);
 	undo_redo->commit_action();
+
+	if (script_prop_set.is_valid())
+		script_prop_set->set_property(p_text);
 
 	port_action_new_node = new_id;
 

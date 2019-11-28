@@ -409,6 +409,8 @@ public:
 	BIND2(particles_set_process_material, RID, RID)
 	BIND2(particles_set_fixed_fps, RID, int)
 	BIND2(particles_set_fractional_delta, RID, bool)
+	BIND1R(bool, particles_is_inactive, RID)
+	BIND1(particles_request_process, RID)
 	BIND1(particles_restart, RID)
 
 	BIND2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)

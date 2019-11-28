@@ -354,12 +354,12 @@ void ComputeUVMappingProcess::ComputePlaneMapping(aiMesh* mesh,const aiVector3D&
     }
     else if (axis * base_axis_z >= angle_epsilon)   {
         FindMeshCenter(mesh, center, min, max);
-        diffu = max.y - min.y;
-        diffv = max.z - min.z;
+        diffu = max.x - min.x;
+        diffv = max.y - min.y;
 
         for (unsigned int pnt = 0; pnt < mesh->mNumVertices;++pnt)  {
             const aiVector3D& pos = mesh->mVertices[pnt];
-            out[pnt].Set((pos.y - min.y) / diffu,(pos.x - min.x) / diffv,0.0);
+            out[pnt].Set((pos.x - min.x) / diffu,(pos.y - min.y) / diffv,0.0);
         }
     }
     // slower code path in case the mapping axis is not one of the coordinate system axes

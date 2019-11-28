@@ -77,10 +77,10 @@
 			</return>
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
-			<argument index="1" name="z_depth" type="float" default="0">
+			<argument index="1" name="z_depth" type="float">
 			</argument>
 			<description>
-				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given distance into the scene away from the camera.
+				Returns the 3D point in worldspace that maps to the given 2D coordinate in the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] distance into the scene away from the camera.
 			</description>
 		</method>
 		<method name="project_ray_normal" qualifiers="const">

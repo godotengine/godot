@@ -96,13 +96,13 @@
 			[Sky] resource's custom field of view.
 		</member>
 		<member name="background_sky_orientation" type="Basis" setter="set_sky_orientation" getter="get_sky_orientation" default="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
-			[Sky] resource's rotation expressed as a [Basis]
+			[Sky] resource's rotation expressed as a [Basis].
 		</member>
 		<member name="background_sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3( 0, 0, 0 )">
-			[Sky] resource's rotation expressed as euler angles in radians
+			[Sky] resource's rotation expressed as Euler angles in radians.
 		</member>
 		<member name="background_sky_rotation_degrees" type="Vector3" setter="set_sky_rotation_degrees" getter="get_sky_rotation_degrees" default="Vector3( 0, 0, 0 )">
-			[Sky] resource's rotation expressed as euler angles in degrees
+			[Sky] resource's rotation expressed as Euler angles in degrees.
 		</member>
 		<member name="dof_blur_far_amount" type="float" setter="set_dof_blur_far_amount" getter="get_dof_blur_far_amount" default="0.1">
 			Amount of far blur.

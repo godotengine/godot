@@ -741,6 +741,8 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 		*r_error = OK;
 	}
 
+	f->close();
+	memdelete(f);
 	return ogv_stream;
 }
 

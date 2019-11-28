@@ -148,20 +148,45 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 	} else if (what == "shape")
-		for (int i = 0; i < tile_get_shape_count(id); i++)
-			tile_set_shape(id, i, p_value);
+		if (tile_get_shape_count(id) > 0) {
+			for (int i = 0; i < tile_get_shape_count(id); i++) {
+				tile_set_shape(id, i, p_value);
+			}
+		} else {
+			tile_set_shape(id, 0, p_value);
+		}
 	else if (what == "shape_offset")
-		for (int i = 0; i < tile_get_shape_count(id); i++)
-			tile_set_shape_offset(id, i, p_value);
+		if (tile_get_shape_count(id) > 0) {
+			for (int i = 0; i < tile_get_shape_count(id); i++) {
+				tile_set_shape_offset(id, i, p_value);
+			}
+		} else {
+			tile_set_shape_offset(id, 0, p_value);
+		}
 	else if (what == "shape_transform")
-		for (int i = 0; i < tile_get_shape_count(id); i++)
-			tile_set_shape_transform(id, i, p_value);
+		if (tile_get_shape_count(id) > 0) {
+			for (int i = 0; i < tile_get_shape_count(id); i++) {
+				tile_set_shape_transform(id, i, p_value);
+			}
+		} else {
+			tile_set_shape_transform(id, 0, p_value);
+		}
 	else if (what == "shape_one_way")
-		for (int i = 0; i < tile_get_shape_count(id); i++)
-			tile_set_shape_one_way(id, i, p_value);
+		if (tile_get_shape_count(id) > 0) {
+			for (int i = 0; i < tile_get_shape_count(id); i++) {
+				tile_set_shape_one_way(id, i, p_value);
+			}
+		} else {
+			tile_set_shape_one_way(id, 0, p_value);
+		}
 	else if (what == "shape_one_way_margin")
-		for (int i = 0; i < tile_get_shape_count(id); i++)
-			tile_set_shape_one_way_margin(id, i, p_value);
+		if (tile_get_shape_count(id) > 0) {
+			for (int i = 0; i < tile_get_shape_count(id); i++) {
+				tile_set_shape_one_way_margin(id, i, p_value);
+			}
+		} else {
+			tile_set_shape_one_way_margin(id, 0, p_value);
+		}
 	else if (what == "shapes")
 		_tile_set_shapes(id, p_value);
 	else if (what == "occluder")

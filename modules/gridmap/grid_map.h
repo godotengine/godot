@@ -227,11 +227,6 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-#ifndef DISABLE_DEPRECATED
-	void set_theme(const Ref<MeshLibrary> &p_theme);
-	Ref<MeshLibrary> get_theme() const;
-#endif // DISABLE_DEPRECATED
-
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
 

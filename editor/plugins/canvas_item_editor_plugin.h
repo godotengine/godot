@@ -252,6 +252,7 @@ private:
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
+	bool selected_from_canvas;
 	bool anchors_mode;
 
 	Point2 grid_offset;
@@ -364,6 +365,7 @@ private:
 	ToolButton *ungroup_button;
 
 	MenuButton *skeleton_menu;
+	ToolButton *override_camera_button;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -529,6 +531,7 @@ private:
 
 	void _button_toggle_anchor_mode(bool p_status);
 
+	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _update_zoom_label();
@@ -537,7 +540,10 @@ private:
 	void _button_zoom_plus();
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
+	void _button_override_camera(bool p_pressed);
 	void _button_tool_select(int p_index);
+
+	void _update_override_camera_button(bool p_game_running);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
@@ -622,6 +628,8 @@ public:
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
+
+	Control *get_controls_container() { return controls_vb; }
 
 	void update_viewport();
 

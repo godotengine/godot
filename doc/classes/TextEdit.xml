@@ -310,11 +310,11 @@
 			<argument index="3" name="from_column" type="int">
 			</argument>
 			<description>
-				Perform a search inside the text. Search flags can be specified in the [code]SEARCH_*[/code] enum.
-				Returns an empty [code]PoolIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [code]SEARCH_RESULT_*[/code] enum, e.g:
+				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
+				Returns an empty [code]PoolIntArray[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
 				[codeblock]
 				var result = search(key, flags, line, column)
-				if result.size() > 0:
+				if result.size() &gt; 0:
 				    # result found
 				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
 				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
@@ -513,13 +513,13 @@
 			Search from end to beginning.
 		</constant>
 		<constant name="SEARCH_RESULT_COLUMN" value="0" enum="SearchResult">
-			Used to access the result column from [member search].
+			Used to access the result column from [method search].
 		</constant>
 		<constant name="SEARCH_RESULT_LINE" value="1" enum="SearchResult">
-			Used to access the result line from [member search].
+			Used to access the result line from [method search].
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
-			Cuts (Copies and clears) the selected text.
+			Cuts (copies and clears) the selected text.
 		</constant>
 		<constant name="MENU_COPY" value="1" enum="MenuItems">
 			Copies the selected text.

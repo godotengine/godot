@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  android_utils.h                                                      */
+/*  gd_mono_android.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_UTILS_H
-#define ANDROID_UTILS_H
+#ifndef GD_MONO_ANDROID_H
+#define GD_MONO_ANDROID_H
 
-#ifdef __ANDROID__
+#if defined(ANDROID_ENABLED)
 
 #include "core/ustring.h"
 
-namespace GDMonoUtils {
-namespace Android {
+namespace GDMonoAndroid {
 
 String get_app_native_lib_dir();
 
-} // namespace Android
-} // namespace GDMonoUtils
+void register_android_dl_fallback();
 
-#endif // __ANDROID__
+} // namespace GDMonoAndroid
 
-#endif // ANDROID_UTILS_H
+#endif // ANDROID_ENABLED
+
+#endif // GD_MONO_ANDROID_H

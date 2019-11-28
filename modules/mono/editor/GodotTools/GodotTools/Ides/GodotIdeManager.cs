@@ -79,7 +79,7 @@ namespace GodotTools.Ides
                 {
                     MonoDevelop.Instance GetMonoDevelopInstance(string solutionPath)
                     {
-                        if (Utils.OS.IsOSX() && editor == ExternalEditorId.VisualStudioForMac)
+                        if (Utils.OS.IsOSX && editor == ExternalEditorId.VisualStudioForMac)
                         {
                             vsForMacInstance = vsForMacInstance ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);

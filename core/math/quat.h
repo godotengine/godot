@@ -43,6 +43,7 @@ public:
 	real_t x, y, z, w;
 
 	_FORCE_INLINE_ real_t length_squared() const;
+	bool is_equal_approx(const Quat &p_quat) const;
 	real_t length() const;
 	void normalize();
 	Quat normalized() const;

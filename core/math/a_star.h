@@ -81,24 +81,35 @@ class AStar : public Reference {
 	struct Segment {
 		union {
 			struct {
-				int32_t from;
-				int32_t to;
+				int32_t u;
+				int32_t v;
 			};
 			uint64_t key;
 		};
 
-		Point *from_point;
-		Point *to_point;
+		enum {
+			NONE = 0,
+			FORWARD = 1,
+			BACKWARD = 2,
+			BIDIRECTIONAL = FORWARD | BACKWARD
+		};
+		unsigned char direction;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() { key = 0; }
+		Segment() {
+			key = 0;
+			direction = NONE;
+		}
 		Segment(int p_from, int p_to) {
-			if (p_from > p_to) {
-				SWAP(p_from, p_to);
+			if (p_from < p_to) {
+				u = p_from;
+				v = p_to;
+				direction = FORWARD;
+			} else {
+				u = p_to;
+				v = p_from;
+				direction = BACKWARD;
 			}
-
-			from = p_from;
-			to = p_to;
 		}
 	};
 
@@ -133,8 +144,8 @@ public:
 	bool is_point_disabled(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
-	void disconnect_points(int p_id, int p_with_id);
-	bool are_points_connected(int p_id, int p_with_id) const;
+	void disconnect_points(int p_id, int p_with_id, bool bidirectional = true);
+	bool are_points_connected(int p_id, int p_with_id, bool bidirectional = true) const;
 
 	int get_point_count() const;
 	int get_point_capacity() const;

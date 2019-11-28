@@ -48,7 +48,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_MATRIX3X3_H_INC
 #define AI_MATRIX3X3_H_INC
 
-#include "defs.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
+#include <assimp/defs.h>
 
 #ifdef __cplusplus
 
@@ -65,10 +69,8 @@ template <typename T> class aiVector2t;
  *  defined thereby.
  */
 template <typename TReal>
-class aiMatrix3x3t
-{
+class aiMatrix3x3t {
 public:
-
     aiMatrix3x3t() AI_NO_EXCEPT :
         a1(static_cast<TReal>(1.0f)), a2(), a3(),
         b1(), b2(static_cast<TReal>(1.0f)), b3(),
@@ -81,8 +83,6 @@ public:
         b1(_b1), b2(_b2), b3(_b3),
         c1(_c1), c2(_c2), c3(_c3)
     {}
-
-public:
 
     // matrix multiplication.
     aiMatrix3x3t& operator *= (const aiMatrix3x3t& m);
@@ -100,8 +100,6 @@ public:
 
     template <typename TOther>
     operator aiMatrix3x3t<TOther> () const;
-
-public:
 
     // -------------------------------------------------------------------
     /** @brief Construction from a 4x4 matrix. The remaining parts
@@ -122,7 +120,6 @@ public:
     aiMatrix3x3t& Inverse();
     TReal Determinant() const;
 
-public:
     // -------------------------------------------------------------------
     /** @brief Returns a rotation matrix for a rotation around z
      *  @param a Rotation angle, in radians

@@ -369,8 +369,7 @@ public:
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("dds")) {
-					ERR_EXPLAIN("Open Asset Import: Embedded dds not implemented");
-					ERR_FAIL_COND_V(true, Ref<Image>());
+					ERR_FAIL_COND_V_MSG(true, Ref<Image>(), "Open Asset Import: Embedded dds not implemented");
 				}
 			} else {
 				Ref<Image> img;
@@ -395,7 +394,9 @@ public:
 			return Ref<Image>();
 		} else {
 			Ref<Texture> texture = ResourceLoader::load(p_path);
+			ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
 			Ref<Image> image = texture->get_data();
+			ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
 			state.path_to_image_cache.insert(p_path, image);
 			return image;
 		}

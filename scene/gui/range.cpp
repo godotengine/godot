@@ -100,7 +100,6 @@ void Range::set_value(double p_val) {
 	shared->emit_value_changed();
 }
 void Range::set_min(double p_min) {
-
 	shared->min = p_min;
 	set_value(shared->val);
 
@@ -109,7 +108,6 @@ void Range::set_min(double p_min) {
 	update_configuration_warning();
 }
 void Range::set_max(double p_max) {
-
 	shared->max = p_max;
 	set_value(shared->val);
 
@@ -173,6 +171,8 @@ void Range::set_as_ratio(double p_value) {
 }
 double Range::get_as_ratio() const {
 
+	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(get_max(), get_min()), 0.0, "Cannot get ratio when minimum and maximum value are equal.");
+
 	if (shared->exp_ratio && get_min() >= 0) {
 
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
@@ -213,6 +213,7 @@ void Range::unshare() {
 	nshared->val = shared->val;
 	nshared->step = shared->step;
 	nshared->page = shared->page;
+	nshared->exp_ratio = shared->exp_ratio;
 	nshared->allow_greater = shared->allow_greater;
 	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();

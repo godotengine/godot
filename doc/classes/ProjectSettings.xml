@@ -282,6 +282,9 @@
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
+		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
+		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>

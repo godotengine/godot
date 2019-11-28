@@ -67,7 +67,6 @@ class CollisionObject2D : public Node2D {
 	int total_subshapes;
 
 	Map<uint32_t, ShapeData> shapes;
-	Transform2D last_transform;
 	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
 
 protected:

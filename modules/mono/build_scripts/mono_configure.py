@@ -44,9 +44,33 @@ def copy_file(src_dir, dst_dir, name):
     copy(src_path, dst_dir)
 
 
+def is_desktop(platform):
+    return platform in ['windows', 'osx', 'x11', 'server', 'uwp', 'haiku']
+
+
+def is_unix_like(platform):
+    return platform in ['osx', 'x11', 'server', 'android', 'haiku']
+
+
+def module_supports_tools_on(platform):
+    return platform not in ['android', 'javascript']
+
+
+def find_wasm_src_dir(mono_root):
+    hint_dirs = [
+        os.path.join(mono_root, 'src'),
+        os.path.join(mono_root, '../src'),
+    ]
+    for hint_dir in hint_dirs:
+        if os.path.isfile(os.path.join(hint_dir, 'driver.c')):
+            return hint_dir
+    return ''
+
+
 def configure(env, env_mono):
     bits = env['bits']
     is_android = env['platform'] == 'android'
+    is_javascript = env['platform'] == 'javascript'
 
     tools_enabled = env['tools']
     mono_static = env['mono_static']
@@ -63,17 +87,21 @@ def configure(env, env_mono):
         env_mono.Append(CPPDEFINES=['NO_PENDING_EXCEPTIONS'])
 
     if is_android and not env['android_arch'] in android_arch_dirs:
-        raise RuntimeError('This module does not support for the specified \'android_arch\': ' + env['android_arch'])
+        raise RuntimeError('This module does not support the specified \'android_arch\': ' + env['android_arch'])
 
-    if is_android and tools_enabled:
-        # TODO: Implement this. We have to add the data directory to the apk, concretely the Api and Tools folders.
-        raise RuntimeError('This module does not currently support building for android with tools enabled')
+    if tools_enabled and not module_supports_tools_on(env['platform']):
+        # TODO:
+        # Android: We have to add the data directory to the apk, concretely the Api and Tools folders.
+        raise RuntimeError('This module does not currently support building for this platform with tools enabled')
 
     if is_android and mono_static:
-        # When static linking and doing something that requires libmono-native, we get a dlopen error as libmono-native seems to depend on libmonosgen-2.0
-        raise RuntimeError('Linking Mono statically is not currently supported on Android')
+        # Android: When static linking and doing something that requires libmono-native, we get a dlopen error as libmono-native seems to depend on libmonosgen-2.0
+        raise RuntimeError('Statically linking Mono is not currently supported on this platform')
 
-    if (os.getenv('MONO32_PREFIX') or os.getenv('MONO64_PREFIX')) and not mono_prefix:
+    if is_javascript:
+        mono_static = True
+
+    if not mono_prefix and (os.getenv('MONO32_PREFIX') or os.getenv('MONO64_PREFIX')):
         print("WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead")
 
     if env['platform'] == 'windows':
@@ -143,7 +171,7 @@ def configure(env, env_mono):
         mono_lib_path = ''
         mono_so_name = ''
 
-        if not mono_root and is_android:
+        if not mono_root and (is_android or is_javascript):
             raise RuntimeError("Mono installation directory not found; specify one manually with the 'mono_prefix' SCons parameter")
 
         if not mono_root and is_apple:
@@ -167,7 +195,7 @@ def configure(env, env_mono):
 
             mono_lib_path = os.path.join(mono_root, 'lib')
 
-            env.Append(LIBPATH=mono_lib_path)
+            env.Append(LIBPATH=[mono_lib_path])
             env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
             mono_lib = find_file_in_dir(mono_lib_path, mono_lib_names, prefix='lib', extension='.a')
@@ -183,7 +211,30 @@ def configure(env, env_mono):
                 if is_apple:
                     env.Append(LINKFLAGS=['-Wl,-force_load,' + mono_lib_file])
                 else:
+                    assert is_desktop(env['platform']) or is_android or is_javascript
                     env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_lib_file, '-Wl,-no-whole-archive'])
+
+                if is_javascript:
+                    env.Append(LIBS=['mono-icall-table', 'mono-native', 'mono-ilgen', 'mono-ee-interp'])
+
+                    wasm_src_dir = os.path.join(mono_root, 'src')
+                    if not os.path.isdir(wasm_src_dir):
+                        raise RuntimeError('Could not find mono wasm src directory')
+
+                    # Ideally this should be defined only for 'driver.c', but I can't fight scons for another 2 hours
+                    env_mono.Append(CPPDEFINES=['CORE_BINDINGS'])
+
+                    env_mono.add_source_files(env.modules_sources, [
+                        os.path.join(wasm_src_dir, 'driver.c'),
+                        os.path.join(wasm_src_dir, 'zlib-helper.c'),
+                        os.path.join(wasm_src_dir, 'corebindings.c')
+                    ])
+
+                    env.Append(LINKFLAGS=[
+                        '--js-library', os.path.join(wasm_src_dir, 'library_mono.js'),
+                        '--js-library', os.path.join(wasm_src_dir, 'binding_support.js'),
+                        '--js-library', os.path.join(wasm_src_dir, 'dotnet_support.js')
+                    ])
             else:
                 env.Append(LIBS=[mono_lib])
 
@@ -191,6 +242,8 @@ def configure(env, env_mono):
                 env.Append(LIBS=['iconv', 'pthread'])
             elif is_android:
                 pass # Nothing
+            elif is_javascript:
+                env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
             else:
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
 
@@ -230,19 +283,22 @@ def configure(env, env_mono):
 
         env.Append(LINKFLAGS='-rdynamic')
 
-    if not tools_enabled and not is_android:
-        if not mono_root:
-            mono_root = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
+    if not tools_enabled:
+        if is_desktop(env['platform']):
+            if not mono_root:
+                mono_root = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
 
-        make_template_dir(env, mono_root)
-    elif not tools_enabled and is_android:
-        # Compress Android Mono Config
-        from . import make_android_mono_config
-        config_file_path = os.path.join(mono_root, 'etc', 'mono', 'config')
-        make_android_mono_config.generate_compressed_config(config_file_path, 'mono_gd/')
+            make_template_dir(env, mono_root)
+        elif is_android:
+            # Compress Android Mono Config
+            from . import make_android_mono_config
+            config_file_path = os.path.join(mono_root, 'etc', 'mono', 'config')
+            make_android_mono_config.generate_compressed_config(config_file_path, 'mono_gd/')
 
-        # Copy the required shared libraries
-        copy_mono_shared_libs(env, mono_root, None)
+            # Copy the required shared libraries
+            copy_mono_shared_libs(env, mono_root, None)
+        elif is_javascript:
+            pass # No data directory for this platform
 
     if copy_mono_root:
         if not mono_root:
@@ -251,7 +307,7 @@ def configure(env, env_mono):
         if tools_enabled:
            copy_mono_root_files(env, mono_root)
         else:
-            print("Ignoring option: 'copy_mono_root'. Only available for builds with 'tools' enabled.")
+            print("Ignoring option: 'copy_mono_root'; only available for builds with 'tools' enabled.")
 
 
 def make_template_dir(env, mono_root):
@@ -262,10 +318,9 @@ def make_template_dir(env, mono_root):
 
     template_dir_name = ''
 
-    if platform in ['windows', 'osx', 'x11', 'android']:
-        template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
-    else:
-        assert False
+    assert is_desktop(platform)
+
+    template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
 
     output_dir = Dir('#bin').abspath
     template_dir = os.path.join(output_dir, template_dir_name)
@@ -278,7 +333,7 @@ def make_template_dir(env, mono_root):
     # Copy etc/mono/
 
     template_mono_config_dir = os.path.join(template_mono_root_dir, 'etc', 'mono')
-    copy_mono_etc_dir(mono_root, template_mono_config_dir, env['platform'])
+    copy_mono_etc_dir(mono_root, template_mono_config_dir, platform)
 
     # Copy the required shared libraries
 
@@ -377,6 +432,11 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
             os.makedirs(target_mono_bin_dir)
 
         copy(os.path.join(mono_root, 'bin', 'MonoPosixHelper.dll'), target_mono_bin_dir)
+
+        # For newer versions
+        btls_dll_path = os.path.join(mono_root, 'bin', 'libmono-btls-shared.dll')
+        if os.path.isfile(btls_dll_path):
+            copy(btls_dll_path, target_mono_bin_dir)
     else:
         target_mono_lib_dir = get_android_out_dir(env) if platform == 'android' else os.path.join(target_mono_root_dir, 'lib')
 
@@ -386,7 +446,7 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if platform == 'osx':
             # TODO: Make sure nothing is missing
             copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.dylib'), target_mono_lib_dir)
-        elif platform == 'x11' or platform == 'android':
+        elif is_unix_like(platform):
             lib_file_names = [lib_name + '.so' for lib_name in [
                 'libmono-btls-shared', 'libmono-ee-interp', 'libmono-native', 'libMonoPosixHelper',
                 'libmono-profiler-aot', 'libmono-profiler-coverage', 'libmono-profiler-log', 'libMonoSupportW'

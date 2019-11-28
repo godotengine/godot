@@ -30,8 +30,10 @@
 
 #include "gd_mono_method.h"
 
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
+#include "gd_mono_utils.h"
 
 #include <mono/metadata/attrdefs.h>
 
@@ -97,10 +99,6 @@ IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 		default:
 			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
-}
-
-void *GDMonoMethod::get_thunk() {
-	return mono_method_get_unmanaged_thunk(mono_method);
 }
 
 MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) {

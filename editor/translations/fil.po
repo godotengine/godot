@@ -4,11 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 # Marco Santos <enum.scima@gmail.com>, 2019.
 # Amado Wilkins <epicalert68@gmail.com>, 2019.
+# Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-10-11 15:07+0000\n"
-"Last-Translator: Marco Santos <enum.scima@gmail.com>\n"
+"PO-Revision-Date: 2019-11-21 14:24+0000\n"
+"Last-Translator: Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
 "Language: fil\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -312,7 +313,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Magpasok Ang Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -356,7 +357,7 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
-msgstr ""
+msgstr "Lumikha"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
@@ -448,7 +449,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "Walang laman ang Clipboard"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -502,11 +503,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Segundo"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -515,7 +516,7 @@ msgstr ""
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "I-edit"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
@@ -624,7 +625,7 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Kopya"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
@@ -684,11 +685,11 @@ msgstr ""
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Palitan"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Palitan ang Lahat"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
@@ -717,7 +718,7 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Mga Babala"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
@@ -753,7 +754,7 @@ msgstr ""
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Maglagay"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -764,7 +765,7 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Alisin"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
@@ -812,7 +813,7 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Isara"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
@@ -869,7 +870,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr ""
+msgstr "I-edit..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
@@ -881,7 +882,7 @@ msgstr ""
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Baguhin"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
@@ -890,17 +891,17 @@ msgstr ""
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Mga Paborito:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Kamakailan:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Paghahanap:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
@@ -2243,11 +2244,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "Hindi"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "Oo"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -2767,7 +2768,7 @@ msgid "Play"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
+msgid "Pause the scene execution for debugging."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3430,6 +3431,10 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "Set As Main Scene"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -4142,6 +4147,18 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Anim Clips"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Audio Clips"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Functions"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr ""
@@ -4809,11 +4826,23 @@ msgid "Grid Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "steps"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4895,6 +4924,20 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5030,6 +5073,10 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Scale Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5172,7 +5219,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8004,7 +8051,7 @@ msgid "Dodge operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+msgid "HardLight operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8592,9 +8639,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8700,6 +8748,12 @@ msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9136,18 +9190,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -10843,7 +10885,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11148,7 +11190,15 @@ msgid "Using default boot splash image."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+msgid "Invalid package short name."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid package publisher display name."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

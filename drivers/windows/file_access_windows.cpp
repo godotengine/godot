@@ -96,7 +96,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	if (p_mode_flags == READ) {
 		WIN32_FIND_DATAW d;
 		HANDLE f = FindFirstFileW(path.c_str(), &d);
-		if (f) {
+		if (f != INVALID_HANDLE_VALUE) {
 			String fname = d.cFileName;
 			if (fname != String()) {
 

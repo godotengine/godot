@@ -39,12 +39,13 @@
 # Micila Micillotto <micillotto@gmail.com>, 2019.
 # Mirko Soppelsa <miknsop@gmail.com>, 2019.
 # No <kingofwizards.kw7@gmail.com>, 2019.
+# StarFang208 <polaritymanx@yahoo.it>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-04 03:15+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2019-11-20 14:07+0000\n"
+"Last-Translator: StarFang208 <polaritymanx@yahoo.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -664,9 +665,8 @@ msgid "Scale Ratio:"
 msgstr "Fattore di scalatura:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Seleziona le tracce da copiare:"
+msgstr "Seleziona le tracce da copiare"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -678,9 +678,8 @@ msgid "Copy"
 msgstr "Copia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Seleziona Nulla"
+msgstr "Seleziona Tutto/Nulla"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -2935,8 +2934,8 @@ msgid "Play"
 msgstr "Esegui"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Metti in pausa la scena"
+msgid "Pause the scene execution for debugging."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3631,6 +3630,11 @@ msgstr "Duplicando cartella:"
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
 msgstr "Nuova scena ereditata"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Set As Main Scene"
+msgstr "Scena Principale"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4365,6 +4369,21 @@ msgstr ""
 "impossibile recuperare i nomi delle tracce."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Anim Clips"
+msgstr "Clip Anim:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "Clip Audio:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "Funzioni:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr "Nodo Rinominato"
@@ -5045,12 +5064,26 @@ msgid "Grid Step:"
 msgstr "Step Griglia:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "steps"
+msgstr "2 passaggi"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr "Offset Rotazione:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Step Rotazione:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Step:"
+msgstr "Scala:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5135,6 +5168,20 @@ msgstr "Cambia Ancore e Margini"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
 msgstr "Cambia Ancore"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5282,6 +5329,11 @@ msgid "Use Rotation Snap"
 msgstr "Usa lo Snap di Rotazione"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Scale Snap"
+msgstr "Usa lo Snap"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr "Snap Relativo"
 
@@ -5421,8 +5473,9 @@ msgid "Insert keys (based on mask)."
 msgstr "Inserisci chiavi (in base alla maschera)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8313,7 +8366,8 @@ msgid "Dodge operator."
 msgstr "Operatore schivata."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+#, fuzzy
+msgid "HardLight operator."
 msgstr "Operatore HardLight"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8953,10 +9007,12 @@ msgstr ""
 "superfice e direzione della telecamera (passa gli input associati ad essa)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 "L'espresione Custom Godot Shader Language è piazzata al di sopra dello "
 "shader risultante. Puoi posizionare varie definizioni di fuzioni e chiamarle "
@@ -9085,6 +9141,12 @@ msgstr "Presets"
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
 msgstr "Aggiungi..."
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9580,18 +9642,6 @@ msgstr "Tutti i Dispositivi"
 #: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Dispositivo"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Shift+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
-msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -11334,7 +11384,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11675,7 +11725,17 @@ msgid "Using default boot splash image."
 msgstr "Utilizzando l'immagine di splash di avvio predefinita."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package short name."
+msgstr "Nome del pacchetto non valido:"
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
+msgstr "Nome univoco del pacchetto non valido."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "Nome univoco del pacchetto non valido."
 
 #: platform/uwp/export/export.cpp
@@ -12348,6 +12408,18 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Pause the scene"
+#~ msgstr "Metti in pausa la scena"
+
+#~ msgid "Shift+"
+#~ msgstr "Shift+"
+
+#~ msgid "Alt+"
+#~ msgstr "Alt+"
+
+#~ msgid "Control+"
+#~ msgstr "Control+"
 
 #~ msgid "Snap to Grid"
 #~ msgstr "Snap alla griglia"

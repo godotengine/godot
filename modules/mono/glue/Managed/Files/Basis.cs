@@ -654,6 +654,11 @@ namespace Godot
             return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);
         }
 
+        public bool IsEqualApprox(Basis other)
+        {
+            return Row0.IsEqualApprox(other.Row0) && Row1.IsEqualApprox(other.Row1) && Row2.IsEqualApprox(other.Row2);
+        }
+
         public override int GetHashCode()
         {
             return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();

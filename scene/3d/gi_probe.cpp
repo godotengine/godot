@@ -386,11 +386,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 
 	for (int i = 0; i < p_at_node->get_child_count(); i++) {
-
 		Node *child = p_at_node->get_child(i);
-		if (!child->get_owner())
-			continue; //maybe a helper
-
 		_find_meshes(child, plot_meshes);
 	}
 }
