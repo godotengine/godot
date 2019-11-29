@@ -1,4 +1,5 @@
-/* Copyright (c) 2016  Jean-Marc Valin */
+/* Copyright (c) 2008-2011 Xiph.Org Foundation
+   Written by Jean-Marc Valin */
 /*
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -24,27 +25,26 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef VQ_SSE_H
-#define VQ_SSE_H
-
-#if defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT)
-#define OVERRIDE_OP_PVQ_SEARCH
-
-opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
-
-#if defined(OPUS_X86_PRESUME_SSE2)
-#define op_pvq_search(x, iy, K, N, arch) \
-    (op_pvq_search_sse2(x, iy, K, N, arch))
-
-#else
-
-extern opus_val16 (*const OP_PVQ_SEARCH_IMPL[OPUS_ARCHMASK + 1])(
-      celt_norm *_X, int *iy, int K, int N, int arch);
-
-#  define op_pvq_search(X, iy, K, N, arch) \
-    ((*OP_PVQ_SEARCH_IMPL[(arch) & OPUS_ARCHMASK])(X, iy, K, N, arch))
-
-#endif
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
-#endif
+#include "opus_types.h"
+#include <stdio.h>
+
+int main(void)
+{
+   opus_int16 i = 1;
+   i <<= 14;
+   if (i>>14 != 1)
+   {
+      fprintf(stderr, "opus_int16 isn't 16 bits\n");
+      return 1;
+   }
+   if (sizeof(opus_int16)*2 != sizeof(opus_int32))
+   {
+      fprintf(stderr, "16*2 != 32\n");
+      return 1;
+   }
+   return 0;
+}

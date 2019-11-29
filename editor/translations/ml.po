@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 # christy james <jkuttu@gmail.com>, 2018.
 # Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
+# Anvar Nazar <anvarnasar@ymail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-17 04:52+0000\n"
-"Last-Translator: Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"Last-Translator: Anvar Nazar <anvarnasar@ymail.com>\n"
 "Language-Team: Malayalam <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ml/>\n"
 "Language: ml\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -48,201 +49,201 @@ msgstr "അടിസ്ഥാന തരം% sഇനു അസാധുവായ 
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "'%s' അടിസ്ഥാന തരത്തിൻറെ '%s' എന്ന സൂചിക ശരിയല്ല"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "'%s' നിർമിക്കുവാൻ കിട്ടിയ വിവരങ്ങൾ തെറ്റാണ്"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "'%s' വിളിച്ചപ്പോൾ:"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "ബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "കിലോബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "മെഗാബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "ജിഗാബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "ടെറാബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "പീറ്റാബൈറ്റ്"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "എക്സിബൈറ്റ്"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr ""
+msgstr "സൗജന്യം"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "സമതുലിതം"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "കണ്ണാടി"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "സമയം:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "വില:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "സൂചിക ഇവിടെയിടുക"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "സൂചികകളുടെ പകർപ്പെടുക്കുക"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "സൂചികകൾ നീക്കം ചെയ്യുക"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "ബെസിയർ ബിന്ദു ചേർക്കുക"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "ബെസിയർ ബിന്ദു നീക്കുക"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "ചലനസൂചികകൾ പകർത്തുക"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "ചലനസൂചികകൾ കളയുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "ചലനസൂചികയുടെ സമയം മാറ്റുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "സംക്രമണം ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "പരിവർത്തനം ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "ചലന തിരസൂചനയുടെ വില മാറ്റുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "മാറ്റം വിളി ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr ""
+msgstr "പല മാറ്റം തിരസൂചനയുടെ സമയം ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr ""
+msgstr "പലമാറ്റ സംക്രമണം ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr ""
+msgstr "പലമാറ്റ പരിവർത്തനം ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
-msgstr ""
+msgstr "പലമാറ്റ ചാവിത്തിരയുടെ വില ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr ""
+msgstr "പലമാറ്റ വിളി ചലിപ്പിക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr ""
+msgstr "ചലനത്തിൻറെ നേരം മാറ്റുക"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "ചലനാവർത്തനം മാറ്റുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "ഗുണം നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "ത്രിമാന പരിവർത്തനം നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "വിളി രീതി നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "ബെസിയർ വളവ് നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "ശബ്ദം പാടുന്നത് നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "ചലനം ഓടുന്നത് നോക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr ""
+msgstr "ചലന നേരം (തിരകൾ)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr ""
+msgstr "ചലന നേരം (ഞൊടികൾ)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "വഴി ചേർക്കുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "ചലനം ചുറ്റൽ"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "പ്രവൃത്തികൾ:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "ശബ്ദരേഖകൾ:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "ചലനരേഖകൾ:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "നോക്കലിൻറെ വഴി മാറ്റുക"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "ഈ വഴി ഓ(ണോ/ഫോ) ആക്കുക."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -2763,7 +2764,7 @@ msgid "Play"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
+msgid "Pause the scene execution for debugging."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3425,6 +3426,10 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "Set As Main Scene"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -4137,6 +4142,21 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Anim Clips"
+msgstr "ചലനരേഖകൾ:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "ശബ്ദരേഖകൾ:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "പ്രവൃത്തികൾ:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr ""
@@ -4803,11 +4823,23 @@ msgid "Grid Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "steps"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4888,6 +4920,20 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5023,6 +5069,10 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Scale Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5165,7 +5215,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -7992,7 +8042,7 @@ msgid "Dodge operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+msgid "HardLight operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8579,9 +8629,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8687,6 +8738,12 @@ msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9123,18 +9180,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -10826,7 +10871,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11131,7 +11176,15 @@ msgid "Using default boot splash image."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+msgid "Invalid package short name."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid package publisher display name."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

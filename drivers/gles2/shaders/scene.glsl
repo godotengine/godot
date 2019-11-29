@@ -1547,155 +1547,157 @@ FRAGMENT_SHADER_CODE
 #endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef BASE_PASS
-	//none
+	{
+		// IBL precalculations
+		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+		vec3 f0 = F0(metallic, specular, albedo);
+		vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
 
 #ifdef AMBIENT_LIGHT_DISABLED
-	ambient_light = vec3(0.0, 0.0, 0.0);
+		ambient_light = vec3(0.0, 0.0, 0.0);
 #else
 
 #ifdef USE_RADIANCE_MAP
 
-	vec3 ref_vec = reflect(-eye_position, N);
-	ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
+		vec3 ref_vec = reflect(-eye_position, N);
+		ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
 
-	ref_vec.z *= -1.0;
+		ref_vec.z *= -1.0;
 
-	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
-	{
-		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
-		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).xyz * bg_energy;
+		specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
+#ifndef USE_LIGHTMAP
+		{
+			vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
+			vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, 4.0).xyz * bg_energy;
+			env_ambient *= 1.0 - F;
 
-		ambient_light = mix(ambient_color.rgb, env_ambient, ambient_sky_contribution);
-	}
+			ambient_light = mix(ambient_color.rgb, env_ambient, ambient_sky_contribution);
+		}
+#endif
 
 #else
 
-	ambient_light = ambient_color.rgb;
-	specular_light = bg_color.rgb * bg_energy;
+		ambient_light = ambient_color.rgb;
+		specular_light = bg_color.rgb * bg_energy;
 
 #endif
-
 #endif // AMBIENT_LIGHT_DISABLED
-	ambient_light *= ambient_energy;
+		ambient_light *= ambient_energy;
 
 #if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
 
-	vec4 ambient_accum = vec4(0.0);
-	vec4 reflection_accum = vec4(0.0);
+		vec4 ambient_accum = vec4(0.0);
+		vec4 reflection_accum = vec4(0.0);
 
 #ifdef USE_REFLECTION_PROBE1
 
-	reflection_process(reflection_probe1,
+		reflection_process(reflection_probe1,
 #ifdef USE_VERTEX_LIGHTING
-			refprobe1_reflection_normal_blend.rgb,
+				refprobe1_reflection_normal_blend.rgb,
 #ifndef USE_LIGHTMAP
-			refprobe1_ambient_normal,
+				refprobe1_ambient_normal,
 #endif
-			refprobe1_reflection_normal_blend.a,
+				refprobe1_reflection_normal_blend.a,
 #else
-			normal_interp, vertex_interp, refprobe1_local_matrix,
-			refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
+				normal_interp, vertex_interp, refprobe1_local_matrix,
+				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
 #endif
-			refprobe1_exterior, refprobe1_intensity, refprobe1_ambient, roughness,
-			ambient_light, specular_light, reflection_accum, ambient_accum);
+				refprobe1_exterior, refprobe1_intensity, refprobe1_ambient, roughness,
+				ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #endif // USE_REFLECTION_PROBE1
 
 #ifdef USE_REFLECTION_PROBE2
 
-	reflection_process(reflection_probe2,
+		reflection_process(reflection_probe2,
 #ifdef USE_VERTEX_LIGHTING
-			refprobe2_reflection_normal_blend.rgb,
+				refprobe2_reflection_normal_blend.rgb,
 #ifndef USE_LIGHTMAP
-			refprobe2_ambient_normal,
+				refprobe2_ambient_normal,
 #endif
-			refprobe2_reflection_normal_blend.a,
+				refprobe2_reflection_normal_blend.a,
 #else
-			normal_interp, vertex_interp, refprobe2_local_matrix,
-			refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
+				normal_interp, vertex_interp, refprobe2_local_matrix,
+				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 #endif
-			refprobe2_exterior, refprobe2_intensity, refprobe2_ambient, roughness,
-			ambient_light, specular_light, reflection_accum, ambient_accum);
+				refprobe2_exterior, refprobe2_intensity, refprobe2_ambient, roughness,
+				ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #endif // USE_REFLECTION_PROBE2
 
-	if (reflection_accum.a > 0.0) {
-		specular_light = reflection_accum.rgb / reflection_accum.a;
-	}
+		if (reflection_accum.a > 0.0) {
+			specular_light = reflection_accum.rgb / reflection_accum.a;
+		}
 
 #ifndef USE_LIGHTMAP
-	if (ambient_accum.a > 0.0) {
-		ambient_light = ambient_accum.rgb / ambient_accum.a;
-	}
+		if (ambient_accum.a > 0.0) {
+			ambient_light = ambient_accum.rgb / ambient_accum.a;
+		}
 #endif
 
 #endif // defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
 
-	// environment BRDF approximation
-
-	{
+		// environment BRDF approximation
+		{
 
 #if defined(DIFFUSE_TOON)
-		//simplify for toon, as
-		specular_light *= specular * metallic * albedo * 2.0;
+			//simplify for toon, as
+			specular_light *= specular * metallic * albedo * 2.0;
 #else
 
-		// scales the specular reflections, needs to be be computed before lighting happens,
-		// but after environment and reflection probes are added
-		//TODO: this curve is not really designed for gammaspace, should be adjusted
-		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
-		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
+			// scales the specular reflections, needs to be be computed before lighting happens,
+			// but after environment and reflection probes are added
+			//TODO: this curve is not really designed for gammaspace, should be adjusted
+			const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+			const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+			vec4 r = roughness * c0 + c1;
+			float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+			vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+			specular_light *= env.x * F + env.y;
 
 #endif
-	}
+		}
 
 #ifdef USE_LIGHTMAP
-	//ambient light will come entirely from lightmap is lightmap is used
-	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+		//ambient light will come entirely from lightmap is lightmap is used
+		ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE
-	{
-		vec3 cone_dirs[12] = vec3[](
-				vec3(0.0, 0.0, 1.0),
-				vec3(0.866025, 0.0, 0.5),
-				vec3(0.267617, 0.823639, 0.5),
-				vec3(-0.700629, 0.509037, 0.5),
-				vec3(-0.700629, -0.509037, 0.5),
-				vec3(0.267617, -0.823639, 0.5),
-				vec3(0.0, 0.0, -1.0),
-				vec3(0.866025, 0.0, -0.5),
-				vec3(0.267617, 0.823639, -0.5),
-				vec3(-0.700629, 0.509037, -0.5),
-				vec3(-0.700629, -0.509037, -0.5),
-				vec3(0.267617, -0.823639, -0.5));
+		{
+			vec3 cone_dirs[12] = vec3[](
+					vec3(0.0, 0.0, 1.0),
+					vec3(0.866025, 0.0, 0.5),
+					vec3(0.267617, 0.823639, 0.5),
+					vec3(-0.700629, 0.509037, 0.5),
+					vec3(-0.700629, -0.509037, 0.5),
+					vec3(0.267617, -0.823639, 0.5),
+					vec3(0.0, 0.0, -1.0),
+					vec3(0.866025, 0.0, -0.5),
+					vec3(0.267617, 0.823639, -0.5),
+					vec3(-0.700629, 0.509037, -0.5),
+					vec3(-0.700629, -0.509037, -0.5),
+					vec3(0.267617, -0.823639, -0.5));
 
-		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
-		vec4 captured = vec4(0.0);
-		float sum = 0.0;
-		for (int i = 0; i < 12; i++) {
-			float amount = max(0.0, dot(local_normal, cone_dirs[i])); //not correct, but creates a nice wrap around effect
-			captured += lightmap_captures[i] * amount;
-			sum += amount;
+			vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
+			vec4 captured = vec4(0.0);
+			float sum = 0.0;
+			for (int i = 0; i < 12; i++) {
+				float amount = max(0.0, dot(local_normal, cone_dirs[i])); //not correct, but creates a nice wrap around effect
+				captured += lightmap_captures[i] * amount;
+				sum += amount;
+			}
+
+			captured /= sum;
+
+			if (lightmap_capture_sky) {
+				ambient_light = mix(ambient_light, captured.rgb, captured.a);
+			} else {
+				ambient_light = captured.rgb;
+			}
 		}
-
-		captured /= sum;
-
-		if (lightmap_capture_sky) {
-			ambient_light = mix(ambient_light, captured.rgb, captured.a);
-		} else {
-			ambient_light = captured.rgb;
-		}
-	}
 #endif
-
+	}
 #endif //BASE PASS
 
 //

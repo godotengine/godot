@@ -432,6 +432,11 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
             os.makedirs(target_mono_bin_dir)
 
         copy(os.path.join(mono_root, 'bin', 'MonoPosixHelper.dll'), target_mono_bin_dir)
+
+        # For newer versions
+        btls_dll_path = os.path.join(mono_root, 'bin', 'libmono-btls-shared.dll')
+        if os.path.isfile(btls_dll_path):
+            copy(btls_dll_path, target_mono_bin_dir)
     else:
         target_mono_lib_dir = get_android_out_dir(env) if platform == 'android' else os.path.join(target_mono_root_dir, 'lib')
 

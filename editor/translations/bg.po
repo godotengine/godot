@@ -2889,8 +2889,8 @@ msgid "Play"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Преустановяване на сцената"
+msgid "Pause the scene execution for debugging."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3581,6 +3581,11 @@ msgstr ""
 #, fuzzy
 msgid "New Inherited Scene"
 msgstr "Нов скрипт"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Set As Main Scene"
+msgstr "Изберете главна сцена"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4366,6 +4371,20 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Anim Clips"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "Добавяне на нови пътечки."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "Отиди на Ред"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
 msgid "Node Renamed"
@@ -5061,6 +5080,14 @@ msgid "Grid Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "steps"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Rotation Offset:"
 msgstr "Изместване при Завъртане:"
@@ -5068,6 +5095,11 @@ msgstr "Изместване при Завъртане:"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Съпка при Завъртане:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Step:"
+msgstr "Мащаб:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5154,6 +5186,20 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5305,6 +5351,10 @@ msgid "Use Rotation Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Scale Snap"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr ""
 
@@ -5452,7 +5502,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8439,7 +8489,7 @@ msgid "Dodge operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+msgid "HardLight operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9033,9 +9083,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9143,6 +9194,12 @@ msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9602,18 +9659,6 @@ msgstr "Устройство"
 #: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Устройство"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
-msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -11402,7 +11447,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11718,7 +11763,17 @@ msgstr "Неуспешно създаване на папка."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
+msgid "Invalid package short name."
+msgstr "невалидно име на Група."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid package unique name."
+msgstr "невалидно име на Група."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "невалидно име на Група."
 
 #: platform/uwp/export/export.cpp
@@ -12293,6 +12348,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Pause the scene"
+#~ msgstr "Преустановяване на сцената"
 
 #, fuzzy
 #~ msgid "Methods:"

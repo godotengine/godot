@@ -128,7 +128,7 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light *p_light) {
 	li->ubo_data.shadow_distance_mult = (p_light->radius_cache * 1.1);
 
 	glBindBuffer(GL_UNIFORM_BUFFER, li->ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightInternal::UBOData), &li->ubo_data);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightInternal::UBOData), &li->ubo_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -326,6 +326,12 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
+#ifndef GLES_OVER_GL
+	// Orphan the buffers to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
+
 	uint32_t buffer_ofs = 0;
 
 	//vertex
@@ -416,6 +422,12 @@ void RasterizerCanvasGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count
 
 	glBindVertexArray(data.polygon_buffer_pointer_array);
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+
+#ifndef GLES_OVER_GL
+	// Orphan the buffers to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
 
 	uint32_t buffer_ofs = 0;
 
@@ -508,6 +520,11 @@ void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
+	//TODO the below call may need to be replaced with: glBufferSubData(GL_ARRAY_BUFFER, 0, p_points * stride * 4 * sizeof(float), &b[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, p_points * stride * 4, &b[0]);
 	glBindVertexArray(data.polygon_buffer_quad_arrays[version]);
 	glDrawArrays(prim[p_points], 0, p_points);
@@ -1882,7 +1899,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	state.canvas_item_ubo_data.time = storage->frame.time[0];
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	state.canvas_texscreen_used = false;
@@ -2109,6 +2126,8 @@ void RasterizerCanvasGLES3::initialize() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size, NULL, GL_DYNAMIC_DRAW); //allocate max size
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		data.polygon_index_buffer_size = index_size;
 	}
 
 	store_transform(Transform(), state.canvas_item_ubo_data.projection_matrix);

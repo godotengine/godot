@@ -251,7 +251,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and attempts to access it will result in an "Attempt to call &lt;method&gt; on a null instance." error.
+				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
 				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
@@ -295,7 +295,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Similar to [method get_node], but does not raise an error if [code]path[/code] does not point to a valid [Node].
+				Similar to [method get_node], but does not log an error if [code]path[/code] does not point to a valid [Node].
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">

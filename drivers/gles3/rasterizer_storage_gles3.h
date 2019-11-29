@@ -388,6 +388,7 @@ public:
 
 		RID panorama;
 		GLuint radiance;
+		GLuint irradiance;
 		int radiance_size;
 	};
 

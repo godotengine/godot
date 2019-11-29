@@ -88,14 +88,13 @@ void EditorProfiler::clear() {
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
 	variables->clear();
-	//activate->set_pressed(false);
 	plot_sigs.clear();
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
 
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
-	cursor_metric_edit->set_max(0);
+	cursor_metric_edit->set_max(100); // Doesn't make much sense, but we can't have min == max. Doesn't hurt.
 	cursor_metric_edit->set_value(0);
 	updating_frame = false;
 	hover_metric = -1;

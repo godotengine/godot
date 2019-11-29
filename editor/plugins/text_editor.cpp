@@ -713,7 +713,7 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	bookmarks_menu->set_name(TTR("Bookmarks"));
+	bookmarks_menu->set_name("Bookmarks");
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();

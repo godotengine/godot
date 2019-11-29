@@ -8,12 +8,13 @@
 # vkubre <v@kubre.in>, 2019.
 # Abhay Patel <abhay111patel@gmail.com>, 2019.
 # Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
+# Devashishsingh98 <devashishsingh98@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-17 04:52+0000\n"
-"Last-Translator: Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>\n"
+"PO-Revision-Date: 2019-11-01 19:50+0000\n"
+"Last-Translator: Devashishsingh98 <devashishsingh98@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -71,9 +72,8 @@ msgid "KiB"
 msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "MiB"
+msgstr "MIB"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -105,11 +105,11 @@ msgstr "प्रतिमा"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr "समय"
+msgstr "समय:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "मूल्य :"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -120,9 +120,8 @@ msgid "Duplicate Selected Key(s)"
 msgstr "चयनित चाबी (फ़ाइलें) डुप्लिकेट"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "चयनित फ़ाइलें हटाएं?"
+msgstr "चयनित फ़ाइलें हटाएं"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -130,31 +129,27 @@ msgstr "बेज़ियर पॉइंट तैयार करे"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "बेज़ियर पॉइंट्स को स्थानांतरित करें"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Anim डुप्लिकेट चाबी"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Delete Keys"
-msgstr "एनीमेशन को हटाने के लिए कुंजी"
+msgstr "Anim को हटाने के लिए कुंजी"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "एनीमेशन परिवर्तन निधि"
+msgstr "Anim परिवर्तन निधि"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "एनीमेशन परिवर्तन बुलावा"
+msgstr "एनीमेशन परिवर्तन संक्र्रांति"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transform"
-msgstr "एनीमेशन परिवर्तन परिणत"
+msgstr "Anim परिवर्तन परिणत"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
@@ -2873,7 +2868,7 @@ msgid "Play"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
+msgid "Pause the scene execution for debugging."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3550,6 +3545,10 @@ msgstr "प्रतिलिपि"
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "Set As Main Scene"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -4289,6 +4288,20 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Anim Clips"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "ट्रैक जोड़ें"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "कार्यों:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr ""
@@ -4967,11 +4980,23 @@ msgid "Grid Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "steps"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Step:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5056,6 +5081,20 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5199,6 +5238,10 @@ msgid "Use Rotation Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Scale Snap"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr ""
 
@@ -5338,7 +5381,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8243,7 +8286,7 @@ msgid "Dodge operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+msgid "HardLight operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8836,9 +8879,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8944,6 +8988,12 @@ msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9386,18 +9436,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -11123,7 +11161,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11434,7 +11472,17 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
+msgid "Invalid package short name."
+msgstr "गलत फॉण्ट का आकार |"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid package unique name."
+msgstr "गलत फॉण्ट का आकार |"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "गलत फॉण्ट का आकार |"
 
 #: platform/uwp/export/export.cpp

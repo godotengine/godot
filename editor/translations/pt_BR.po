@@ -12,7 +12,7 @@
 # Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017, 2018, 2019.
 # João Victor Lima <victordevtb@outlook.com>, 2018.
 # João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
-# Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
+# Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016, 2019.
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Lucas Silva <lucasb.hpp@gmail.com>, 2018.
 # Luiz G. Correia <luizgabriell2.0@gmail.com>, 2017.
@@ -71,12 +71,13 @@
 # Perrottacooking <perrottacooking@gmail.com>, 2019.
 # Wow Bitch <hahaj@itmailr.com>, 2019.
 # Alan Tavares <alan1tavares@gmail.com>, 2019.
+# Rafael Silveira <res883@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-10-11 15:07+0000\n"
-"Last-Translator: Alan Tavares <alan1tavares@gmail.com>\n"
+"PO-Revision-Date: 2019-11-20 14:07+0000\n"
+"Last-Translator: Joaquim Ferreira <joaquimferreira1996@bol.com.br>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -84,7 +85,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -696,9 +697,8 @@ msgid "Scale Ratio:"
 msgstr "Razão de Escala:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Selecionar trilhas para copiar:"
+msgstr "Selecionar Trilhas para Copiar"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -710,9 +710,8 @@ msgid "Copy"
 msgstr "Copiar"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Remover Seleção"
+msgstr "Selecionar Todos/Nenhum"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -751,7 +750,6 @@ msgid "Replaced %d occurrence(s)."
 msgstr "%d ocorrência(s) substituída(s)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d match."
 msgstr "%d correspondência."
 
@@ -2136,15 +2134,15 @@ msgstr "Incoming RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "RSET recebido"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "RPC enviado"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "RSET enviado"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2953,8 +2951,8 @@ msgid "Play"
 msgstr "Tocar"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Pausar a cena"
+msgid "Pause the scene execution for debugging."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3644,6 +3642,11 @@ msgstr "Duplicando pasta:"
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
 msgstr "Nova Cena Herdada"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Set As Main Scene"
+msgstr "Cena Principal"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4377,6 +4380,21 @@ msgstr ""
 "possível obter os nomes das trilhas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Anim Clips"
+msgstr "Clipes de Animação:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "Clipes de Áudio:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "Funções:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr "Nó Renomeado"
@@ -4969,7 +4987,7 @@ msgstr "Todos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Sem resultados para \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5058,12 +5076,26 @@ msgid "Grid Step:"
 msgstr "Passo de grade:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "steps"
+msgstr "2 passos"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr "Deslocamento de rotação:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Passo de Rotação:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Step:"
+msgstr "Escala:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5149,6 +5181,20 @@ msgstr "Alterar Âncoras e Margens"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
 msgstr "Alterar Âncoras"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5297,6 +5343,11 @@ msgid "Use Rotation Snap"
 msgstr "Usar Snap de Rotação"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Scale Snap"
+msgstr "Usar Snap"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr "Snap Relativo"
 
@@ -5436,8 +5487,9 @@ msgid "Insert keys (based on mask)."
 msgstr "Inserir Chaves (baseado na máscara)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8119,7 +8171,7 @@ msgstr "Alterar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
-msgstr ""
+msgstr "Modificado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8329,7 +8381,8 @@ msgid "Dodge operator."
 msgstr "Operador de desvio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
+#, fuzzy
+msgid "HardLight operator."
 msgstr "Operador HardLight"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9004,9 +9057,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9120,6 +9174,12 @@ msgstr "Predefinições"
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
 msgstr "Adicionar..."
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9619,18 +9679,6 @@ msgstr "Todos os dispositivos"
 #: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Dispositivo"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Shift+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
-msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -11430,7 +11478,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11674,10 +11722,13 @@ msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
+"A compilação do projeto Android falhou, verifique a saída pelo erro.\n"
+"Alternativamente, visite docs.godotengine.org para ver a documentação de "
+"compilação do Android."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
-msgstr ""
+msgstr "Nenhuma compilação apk gerada em: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -11722,7 +11773,7 @@ msgstr "Ícone necessário não especificado na predefinição."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Parar Servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -11757,7 +11808,17 @@ msgid "Using default boot splash image."
 msgstr "Usando imagem boot splash padrão."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package short name."
+msgstr "Nome de pacote inválido:"
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
+msgstr "Nome único de pacote inválido."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "Nome único de pacote inválido."
 
 #: platform/uwp/export/export.cpp
@@ -12136,7 +12197,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "Um SpotLight com um ângulo maior que 90 graus não pode criar sombras."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -12244,6 +12305,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"O WorldEnvironment requer que sua propriedade \"Environment\" contenha um "
+"Ambiente para ter um efeito visível."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -12311,7 +12374,7 @@ msgstr "Escolha uma cor da tela."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -12432,6 +12495,18 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "Pause the scene"
+#~ msgstr "Pausar a cena"
+
+#~ msgid "Shift+"
+#~ msgstr "Shift+"
+
+#~ msgid "Alt+"
+#~ msgstr "Alt+"
+
+#~ msgid "Control+"
+#~ msgstr "Control+"
 
 #~ msgid "Snap to Grid"
 #~ msgstr "Encaixar na grade"

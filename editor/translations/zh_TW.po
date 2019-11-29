@@ -17,12 +17,13 @@
 # Bluesir Bruce <a5566740293@gmail.com>, 2019.
 # leela <53352@protonmail.com>, 2019.
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
+# SIYU FU <1002492607@qq.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-29 13:35+0000\n"
-"Last-Translator: Kenneth Lo <closer.tw@gmail.com>\n"
+"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"Last-Translator: SIYU FU <1002492607@qq.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -53,7 +54,7 @@ msgstr "因該實例(instance)為空，self 無法被使用"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "此數值無法被 %s、%s 和 %s 運算。"
+msgstr "此數值無法被 %s、%s 和与%s 運算。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -73,16 +74,15 @@ msgstr "調用“%s”時："
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "乙"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "基布"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "混合"
+msgstr "MiB公司"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -106,7 +106,7 @@ msgstr "释放"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "平衡的"
+msgstr "平衡"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -3003,8 +3003,8 @@ msgid "Play"
 msgstr "運行"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "暫停此場景"
+msgid "Pause the scene execution for debugging."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3702,6 +3702,11 @@ msgstr "複製資料夾:"
 #, fuzzy
 msgid "New Inherited Scene"
 msgstr "從現有場景中建立…"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Set As Main Scene"
+msgstr "選取主要場景"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4477,6 +4482,21 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Anim Clips"
+msgstr "動畫剪輯："
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Audio Clips"
+msgstr "音訊剪輯:"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Functions"
+msgstr "函數："
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
 msgid "Node Renamed"
@@ -5176,12 +5196,26 @@ msgid "Grid Step:"
 msgstr "網格大小:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "steps"
+msgstr "2步"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr "旋轉偏移量:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "旋轉步驟:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Step:"
+msgstr "縮放:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5270,6 +5304,20 @@ msgstr "改變錨點和邊距"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
 msgstr "改變錨點"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5419,6 +5467,11 @@ msgstr "吸附選項"
 #, fuzzy
 msgid "Use Rotation Snap"
 msgstr "使用旋轉吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Use Scale Snap"
+msgstr "使用吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5574,7 +5627,7 @@ msgstr "插入幀 (現有軌道)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
@@ -8589,8 +8642,9 @@ msgid "Dodge operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
-msgstr ""
+#, fuzzy
+msgid "HardLight operator."
+msgstr "縮放(比例):"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -9186,9 +9240,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"Custom Godot Shader Language expression, which placed on top of the resulted "
-"shader. You can place various function definitions inside and call it later "
-"in the Expressions. You can also declare varyings, uniforms and constants."
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9296,6 +9351,12 @@ msgstr "預設"
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
 msgstr "添加…"
+
+#: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9762,18 +9823,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr ""
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -11584,7 +11633,7 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select atleast one node with sequence port."
+msgid "Select at least one node with sequence port."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11903,7 +11952,17 @@ msgstr "無法新增資料夾"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
+msgid "Invalid package short name."
+msgstr "不能使用的名稱。"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid package unique name."
+msgstr "不能使用的名稱。"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package publisher display name."
 msgstr "不能使用的名稱。"
 
 #: platform/uwp/export/export.cpp
@@ -12464,6 +12523,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Pause the scene"
+#~ msgstr "暫停此場景"
 
 #, fuzzy
 #~ msgid "Snap to Grid"

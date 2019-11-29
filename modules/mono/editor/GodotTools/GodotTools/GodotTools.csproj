@@ -30,6 +30,7 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Posix" />
     <Reference Include="System" />
     <Reference Include="GodotSharp">
       <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharp.dll</HintPath>

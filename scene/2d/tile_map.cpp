@@ -1233,8 +1233,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		}
 #endif
 
-		int16_t x = decode_uint16(&local[0]);
-		int16_t y = decode_uint16(&local[2]);
+		uint16_t x = decode_uint16(&local[0]);
+		uint16_t y = decode_uint16(&local[2]);
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v & (1 << 29);
 		bool flip_v = v & (1 << 30);

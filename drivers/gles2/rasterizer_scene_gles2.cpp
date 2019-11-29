@@ -2342,9 +2342,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (accum_pass) { //accum pass force pass
 				blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_ADD;
-				if (rebind_light && light && light->light_ptr->negative) {
-					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				if (light && light->light_ptr->negative) {
 					blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_SUB;
 				}
 			}
@@ -2704,7 +2702,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector3) * 8, vertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 8, vertices, GL_DYNAMIC_DRAW);
 
 	// bind sky vertex array....
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, 0);

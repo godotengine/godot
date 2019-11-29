@@ -38,23 +38,22 @@ silk_float silk_schur_FLP(                  /* O    returns residual energy     
 )
 {
     opus_int   k, n;
-    double C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
-    double Ctmp1, Ctmp2, rc_tmp;
+    silk_float C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
+    silk_float Ctmp1, Ctmp2, rc_tmp;
 
-    celt_assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
+    silk_assert( order==6||order==8||order==10||order==12||order==14||order==16 );
 
     /* Copy correlations */
-    k = 0;
-    do {
+    for( k = 0; k < order+1; k++ ) {
         C[ k ][ 0 ] = C[ k ][ 1 ] = auto_corr[ k ];
-    } while( ++k <= order );
+    }
 
     for( k = 0; k < order; k++ ) {
         /* Get reflection coefficient */
         rc_tmp = -C[ k + 1 ][ 0 ] / silk_max_float( C[ 0 ][ 1 ], 1e-9f );
 
         /* Save the output */
-        refl_coef[ k ] = (silk_float)rc_tmp;
+        refl_coef[ k ] = rc_tmp;
 
         /* Update correlations */
         for( n = 0; n < order - k; n++ ) {
@@ -66,5 +65,6 @@ silk_float silk_schur_FLP(                  /* O    returns residual energy     
     }
 
     /* Return residual energy */
-    return (silk_float)C[ 0 ][ 1 ];
+    return C[ 0 ][ 1 ];
 }
+

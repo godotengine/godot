@@ -262,10 +262,6 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	header.channels = channel_infos;
 	header.pixel_types = pixel_types;
 	header.requested_pixel_types = requested_pixel_types;
-	// TODO DEBUG REMOVE
-	for (int i = 0; i < 4; ++i) {
-		print_line(String("requested_pixel_types{0}: {1}").format(varray(i, requested_pixel_types[i])));
-	}
 
 	CharString utf8_filename = p_path.utf8();
 	const char *err;

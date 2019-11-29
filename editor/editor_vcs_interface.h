@@ -48,7 +48,7 @@ protected:
 
 	// Implemented by addons as end points for the proxy functions
 	bool _initialize(String p_project_root_path);
-	bool _get_is_vcs_intialized();
+	bool _is_vcs_initialized();
 	Dictionary _get_modified_files_data();
 	void _stage_file(String p_file_path);
 	void _unstage_file(String p_file_path);
@@ -66,7 +66,7 @@ public:
 
 	// Proxy functions to the editor for use
 	bool initialize(String p_project_root_path);
-	bool get_is_vcs_intialized();
+	bool is_vcs_initialized();
 	Dictionary get_modified_files_data();
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);

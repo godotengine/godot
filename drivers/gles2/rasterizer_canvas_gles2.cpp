@@ -291,6 +291,10 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 void RasterizerCanvasGLES2::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const float *p_weights, const int *p_bones) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
 
 	uint32_t buffer_ofs = 0;
 
@@ -339,6 +343,11 @@ void RasterizerCanvasGLES2::_draw_polygon(const int *p_indices, int p_index_coun
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
+
 	if (storage->config.support_32_bits_indices) { //should check for
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 		glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
@@ -358,6 +367,10 @@ void RasterizerCanvasGLES2::_draw_polygon(const int *p_indices, int p_index_coun
 void RasterizerCanvasGLES2::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
 
 	uint32_t buffer_ofs = 0;
 
@@ -435,6 +448,10 @@ void RasterizerCanvasGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
 	glBufferSubData(GL_ARRAY_BUFFER, 0, p_points * stride * 4 * sizeof(float), buffer_data);
 
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), NULL);
@@ -749,6 +766,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					WARN_PRINT("NinePatch without texture not supported yet in GLES2 backend, skipping.");
 					continue;
 				}
+				if (tex->width == 0 || tex->height == 0) {
+					WARN_PRINT("Cannot set empty texture to NinePatch.");
+					continue;
+				}
 
 				Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 
@@ -883,7 +904,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				}
 
 				glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
-				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * (16 + 16) * 2, buffer);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (16 + 16) * 2, buffer, GL_DYNAMIC_DRAW);
 
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.ninepatch_elements);
 
@@ -2034,6 +2055,8 @@ void RasterizerCanvasGLES2::initialize() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size, NULL, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		data.polygon_index_buffer_size = index_size;
 	}
 
 	// ninepatch buffers

@@ -107,7 +107,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal == "") {
 			return "";
 		};
-		return plocal + path.substr((sep + 1), path.size() - (sep + 1));
+		return plocal + path.substr(sep, path.size() - sep);
 	};
 }
 
@@ -525,6 +525,8 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		set(key, value);
 	}
 
+	f->close();
+	memdelete(f);
 	return OK;
 }
 

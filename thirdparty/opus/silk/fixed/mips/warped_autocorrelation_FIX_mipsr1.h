@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define QS  14
 
 /* Autocorrelations for a warped frequency axis */
-#define OVERRIDE_silk_warped_autocorrelation_FIX_c
-void silk_warped_autocorrelation_FIX_c(
+#define OVERRIDE_silk_warped_autocorrelation_FIX
+void silk_warped_autocorrelation_FIX(
           opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
           opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
     const opus_int16                *input,                                 /* I    Input data to correlate                                                     */

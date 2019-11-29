@@ -113,9 +113,6 @@ public:
 	NSOpenGLContext *context;
 
 	bool layered_window;
-	bool waiting_for_vsync;
-	NSCondition *vsync_condition;
-	CVDisplayLinkRef displayLink;
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];

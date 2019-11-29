@@ -727,6 +727,7 @@ static Dictionary _get_builtin_script_templates() {
 	templates["no_comments.gd"] =
 			"extends %BASE%\n"
 			"\n"
+			"\n"
 			"func _ready()%VOID_RETURN%:\n"
 			"%TS%pass\n";
 

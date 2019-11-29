@@ -159,7 +159,7 @@ protected:
 	//bind helpers
 	Dictionary _get_range_config(int p_column) {
 		Dictionary d;
-		double min, max, step;
+		double min = 0.0, max = 0.0, step = 0.0;
 		get_range_config(p_column, min, max, step);
 		d["min"] = min;
 		d["max"] = max;

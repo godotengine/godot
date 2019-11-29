@@ -75,10 +75,10 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 }
 
 void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualServerCanvas::Item> &canvas_item_owner) {
-	while (ysort_owner && ysort_owner->sort_y) {
+	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
-	}
+	} while (ysort_owner && ysort_owner->sort_y);
 }
 
 void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
@@ -362,7 +362,9 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
 
-			_mark_ysort_dirty(item_owner, canvas_item_owner);
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
+			}
 		}
 
 		canvas_item->parent = RID();
@@ -382,7 +384,9 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
 
-			_mark_ysort_dirty(item_owner, canvas_item_owner);
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
+			}
 
 		} else {
 
@@ -399,9 +403,7 @@ void VisualServerCanvas::canvas_item_set_visible(RID p_item, bool p_visible) {
 
 	canvas_item->visible = p_visible;
 
-	if (canvas_item->parent.is_valid() && canvas_item_owner.owns(canvas_item->parent)) {
-		_mark_ysort_dirty(canvas_item_owner.get(canvas_item->parent), canvas_item_owner);
-	}
+	_mark_ysort_dirty(canvas_item, canvas_item_owner);
 }
 void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
 
@@ -1382,7 +1384,9 @@ bool VisualServerCanvas::free(RID p_rid) {
 				Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
 
-				_mark_ysort_dirty(item_owner, canvas_item_owner);
+				if (item_owner->sort_y) {
+					_mark_ysort_dirty(item_owner, canvas_item_owner);
+				}
 			}
 		}
 

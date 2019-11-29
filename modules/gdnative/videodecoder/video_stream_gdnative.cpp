@@ -123,9 +123,12 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 
 		godot_vector2 vec = interface->get_texture_size(data_struct);
 		texture_size = *(Vector2 *)&vec;
+		// Only do memset if num_channels > 0 otherwise it will crash.
+		if (num_channels > 0) {
+			pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
+			memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+		}
 
-		pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
-		memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
 		pcm_write_idx = -1;
 		samples_decoded = 0;
 
@@ -146,7 +149,8 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->update(data_struct, p_delta);
 
-	if (mix_callback) {
+	// Don't mix if there's no audio (num_channels == 0).
+	if (mix_callback && num_channels > 0) {
 		if (pcm_write_idx >= 0) {
 			// Previous remains
 			int mixed = mix_callback(mix_udata, pcm + pcm_write_idx * num_channels, samples_decoded);
