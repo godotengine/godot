@@ -22,6 +22,7 @@ namespace GodotTools.Export
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
 
             GlobalDef("mono/export/include_scripts_content", false);
+            GlobalDef("mono/export/export_assemblies_inside_pck", true);
 
             GlobalDef("mono/export/aot/enabled", false);
             GlobalDef("mono/export/aot/full_aot", false);
@@ -130,21 +131,38 @@ namespace GodotTools.Export
                 internal_GetExportedAssemblyDependencies(projectDllName, projectDllSrcPath, buildConfig, platformBclDir, dependencies);
             }
 
-            string apiConfig = isDebug ? "Debug" : "Release";
-            string resAssembliesDir = Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, apiConfig);
-
-            foreach (var dependency in dependencies)
-            {
-                string dependSrcPath = dependency.Value;
-                string dependDstPath = Path.Combine(resAssembliesDir, dependSrcPath.GetFile());
-                AddFile(dependSrcPath, dependDstPath);
-            }
-
-            // Mono specific export template extras (data dir)
             string outputDataDir = null;
 
             if (PlatformHasTemplateDir(platform))
                 outputDataDir = ExportDataDirectory(features, platform, isDebug, outputDir);
+
+            string apiConfig = isDebug ? "Debug" : "Release";
+            string resAssembliesDir = Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, apiConfig);
+
+            bool assembliesInsidePck = (bool) ProjectSettings.GetSetting("mono/export/export_assemblies_inside_pck") || outputDataDir == null;
+
+            if (!assembliesInsidePck)
+            {
+                string outputDataGameAssembliesDir = Path.Combine(outputDataDir, "Assemblies");
+                if (!Directory.Exists(outputDataGameAssembliesDir))
+                    Directory.CreateDirectory(outputDataGameAssembliesDir);
+            }
+
+            foreach (var dependency in dependencies)
+            {
+                string dependSrcPath = dependency.Value;
+
+                if (assembliesInsidePck)
+                {
+                    string dependDstPath = Path.Combine(resAssembliesDir, dependSrcPath.GetFile());
+                    AddFile(dependSrcPath, dependDstPath);
+                }
+                else
+                {
+                    string dependDstPath = Path.Combine(outputDataDir, "Assemblies", dependSrcPath.GetFile());
+                    File.Copy(dependSrcPath, dependDstPath);
+                }
+            }
 
             // AOT
 

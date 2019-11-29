@@ -108,6 +108,10 @@ public:
 
 	String data_editor_tools_dir;
 	String data_editor_prebuilt_api_dir;
+#else
+	// Equivalent of res_assemblies_dir, but in the data directory rather than in 'res://'.
+	// Only defined on export templates. Used when exporting assemblies outside of PCKs.
+	String data_game_assemblies_dir;
 #endif
 
 	String data_mono_etc_dir;
@@ -205,6 +209,7 @@ private:
 		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+		data_game_assemblies_dir = data_dir_root.plus_file("Assemblies");
 #endif
 
 #ifdef WINDOWS_ENABLED
@@ -215,6 +220,10 @@ private:
 		if (!DirAccess::exists(data_mono_root_dir)) {
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
 			data_mono_lib_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/lib");
+		}
+
+		if (!DirAccess::exists(data_game_assemblies_dir)) {
+			data_game_assemblies_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Assemblies");
 		}
 #endif
 
@@ -294,6 +303,10 @@ String get_data_editor_tools_dir() {
 
 String get_data_editor_prebuilt_api_dir() {
 	return _GodotSharpDirs::get_singleton().data_editor_prebuilt_api_dir;
+}
+#else
+String get_data_game_assemblies_dir() {
+	return _GodotSharpDirs::get_singleton().data_game_assemblies_dir;
 }
 #endif
 
