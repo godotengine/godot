@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/editor_log.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor_log.h"
@@ -43,6 +44,7 @@
 #include "editor_settings.h"
 #include "main/performance.h"
 #include "property_editor.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -822,8 +824,26 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		//OUT
 		for (int i = 0; i < p_data.size(); i++) {
+			Array output = p_data[i];
+			ERR_FAIL_COND_MSG(output.size() < 2, "Malformed output message from script debugger.");
 
-			String t = p_data[i];
+			String str = output[0];
+			ScriptDebuggerRemote::MessageType type = (ScriptDebuggerRemote::MessageType)(int)(output[1]);
+
+			EditorLog::MessageType msg_type;
+			switch (type) {
+				case ScriptDebuggerRemote::MESSAGE_TYPE_LOG: {
+					msg_type = EditorLog::MSG_TYPE_STD;
+				} break;
+				case ScriptDebuggerRemote::MESSAGE_TYPE_ERROR: {
+					msg_type = EditorLog::MSG_TYPE_ERROR;
+				} break;
+				default: {
+					WARN_PRINTS("Unhandled script debugger message type: " + itos(type));
+					msg_type = EditorLog::MSG_TYPE_STD;
+				} break;
+			}
+
 			//LOG
 
 			if (!EditorNode::get_log()->is_visible()) {
@@ -833,7 +853,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					}
 				}
 			}
-			EditorNode::get_log()->add_message(t);
+
+			EditorNode::get_log()->add_message(str, msg_type);
 		}
 
 	} else if (p_msg == "performance") {
