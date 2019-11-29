@@ -2342,6 +2342,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
+	// No edited scene -> This can happen?
 	if (!EditorNode::get_singleton()->get_edited_scene()) {
 
 		menu->clear();
@@ -2356,51 +2357,68 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		return;
 	}
 
+	// Standard Menu
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
-
 	if (selection.size() == 0)
 		return;
 
+	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
 	menu->clear();
 
-	Ref<Script> existing_script;
-	bool exisiting_script_removable = true;
-	if (selection.size() == 1) {
+	if (selection.size() == 1 && profile_allow_editing) {
 
-		Node *selected = selection[0];
+		// Sub-Ressources Section
+		subresources.clear();
+		menu_subresources->clear();
+		menu_subresources->set_size(Size2(1, 1));
 
-		if (profile_allow_editing) {
-			subresources.clear();
-			menu_subresources->clear();
-			menu_subresources->set_size(Size2(1, 1));
-			_add_children_to_popup(selection.front()->get(), 0);
-			if (menu->get_item_count() > 0)
-				menu->add_separator();
+		_add_children_to_popup(selection.front()->get(), 0);
 
-			menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
-			menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
+		if (menu->get_item_count() > 0) {
+			menu->add_separator();
 		}
-		menu->add_icon_shortcut(get_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
+
+		// Node Manipulation Section
+		menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
+		menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
+		menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
+		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+		menu->add_icon_shortcut(get_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 		menu->add_separator();
-
-		existing_script = selected->get_script();
-
-		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
-			exisiting_script_removable = false;
-		}
 	}
 
+	// Collapse/Expand Section
+	menu->add_icon_shortcut(get_icon("AnimationTrackGroup", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_all"), TOOL_EXPAND_ALL);
+	menu->add_icon_shortcut(get_icon("AnimationTrackList", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/collapse_all"), TOOL_COLLAPSE_ALL);
+	menu->add_icon_shortcut(get_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/collapse_all_inactive"), TOOL_COLLAPSE_INACTIVE); // Only works for first selected item. TODO: FIX!
+	menu->add_icon_shortcut(get_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_collapse_descendants"), TOOL_EXPAND_COLLAPSE_DESCENDANTS);
+	menu->add_separator();
+
+	// Script Section
 	if (profile_allow_script_editing) {
+
 		bool add_separator = false;
+		Ref<Script> existing_script;
+		bool exisiting_script_removable = true;
+
+		if (selection.size() == 1) {
+			Node *selected = selection[0];
+			existing_script = selected->get_script();
+
+			if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
+				exisiting_script_removable = false;
+			}
+		}
 
 		if (full_selection.size() == 1) {
 			add_separator = true;
 			menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+
 			if (existing_script.is_valid()) {
 				menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
 		}
+
 		if (existing_script.is_valid() && exisiting_script_removable) {
 			add_separator = true;
 			menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
@@ -2424,14 +2442,19 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 	}
 
+	// TreeItem Manipulation Section
 	if (profile_allow_editing) {
+
 		if (full_selection.size() == 1) {
 			menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+			menu->add_separator();
+		} else if (selection.size() > 1) {
+			// this should be in the same section as the usual single item rename
+			menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
+			menu->add_separator();
 		}
-		menu->add_icon_shortcut(get_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 
 		if (scene_tree->get_selected() != edited_scene) {
-			menu->add_separator();
 			menu->add_icon_shortcut(get_icon("MoveUp", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
 			menu->add_icon_shortcut(get_icon("MoveDown", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
 			menu->add_icon_shortcut(get_icon("Duplicate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
@@ -2440,60 +2463,53 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			if (selection.size() == 1) {
 				menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 			}
+			menu->add_separator();
 		}
 	}
-	if (selection.size() == 1) {
 
-		if (profile_allow_editing) {
-			menu->add_separator();
-			menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
-			menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
-		}
-		if (full_selection.size() == 1) {
-			menu->add_separator();
-			menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
-		}
+	// Is-External Section
+	if (selection.size() == 1 && selection[0]->get_filename() != "") {
 
-		bool is_external = (selection[0]->get_filename() != "");
-		if (is_external) {
-			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
-			bool is_top_level = selection[0]->get_owner() == NULL;
-			if (is_inherited && is_top_level) {
-				menu->add_separator();
-				if (profile_allow_editing) {
-					menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
-				}
-				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
-			} else if (!is_top_level) {
-				menu->add_separator();
-				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
-				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
-				if (profile_allow_editing) {
-					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
-					menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
-					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
-				}
-				menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN);
-				if (profile_allow_editing) {
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
-				}
+		bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
+		bool is_top_level = selection[0]->get_owner() == NULL;
+
+		if (is_inherited && is_top_level) {
+			if (profile_allow_editing) {
+				menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
 			}
+			menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
+			menu->add_separator();
+		} else if (!is_top_level) {
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection[0]);
+			bool placeholder = selection[0]->get_scene_instance_load_placeholder();
+
+			if (profile_allow_editing) {
+				menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+				menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+				menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
+			}
+
+			menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open in Editor"), TOOL_SCENE_OPEN);
+
+			if (profile_allow_editing) {
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load As Placeholder")), placeholder);
+			}
+			menu->add_separator();
 		}
 	}
 
-	if (profile_allow_editing && selection.size() > 1) {
-		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
-		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
-	}
-	menu->add_separator();
+	// Information Section
+	menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
 	menu->add_icon_item(get_icon("Help", "EditorIcons"), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
+	menu->add_separator();
 
+	// Destructive operation section
 	if (profile_allow_editing) {
-		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
 	}
+
+	// Menu setup
 	menu->set_size(Size2(1, 1));
 	menu->set_position(p_menu_pos);
 	menu->popup();
