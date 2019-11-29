@@ -228,6 +228,7 @@ public:
 	void set_custom_draw(int p_column, Object *p_object, const StringName &p_callback);
 
 	void set_collapsed(bool p_collapsed);
+	void set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self);
 	bool is_collapsed();
 
 	void set_custom_minimum_height(int p_height);

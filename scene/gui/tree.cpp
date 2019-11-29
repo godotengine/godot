@@ -350,6 +350,28 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 	tree->emit_signal("item_collapsed", this);
 }
 
+void TreeItem::set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self) {
+
+	if (!tree) {
+		return;
+	}
+
+	if (p_skip_self || p_ignore_active && this->is_active()) {
+		// Ignore current item, collapse recursively all children.
+		TreeItem *c = get_children();
+		while (c) {
+			c->set_collapsed_recursive(p_collapsed, p_ignore_active, false);
+			c = c->get_next();
+		}
+	} else {
+		// Set collapsed state on self and all children recursively.
+		const Variant arg_collapsed[] = { Variant(p_collapsed) };
+		const Variant *args[] = { arg_collapsed };
+		Variant::CallError error;
+		call_recursive("set_collapsed", args, 1, error);
+	}
+}
+
 bool TreeItem::is_collapsed() {
 
 	return collapsed;
@@ -829,6 +851,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_draw", "column", "object", "callback"), &TreeItem::set_custom_draw);
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
+	ClassDB::bind_method(D_METHOD("set_collapsed_recursive", "enable", "ignore_active", "ignore_self"), &TreeItem::set_collapsed_recursive);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
 
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_height", "height"), &TreeItem::set_custom_minimum_height);
