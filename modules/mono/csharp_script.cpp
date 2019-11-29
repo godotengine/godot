@@ -128,7 +128,8 @@ void CSharpLanguage::init() {
 	print_line("Run this binary with '--generate-mono-glue path/to/modules/mono/glue'");
 #endif
 
-	gdmono->initialize_load_assemblies();
+	if (gdmono->is_runtime_initialized())
+		gdmono->initialize_load_assemblies();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&_editor_init_callback);
