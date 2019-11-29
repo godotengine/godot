@@ -54,11 +54,15 @@ namespace Godot
             }
         }
 
-        public Vector2 this[int rowIndex]
+        /// <summary>
+        /// Access whole columns in the form of Vector2. The third column is the origin vector.
+        /// </summary>
+        /// <param name="column">Which column vector.</param>
+        public Vector2 this[int column]
         {
             get
             {
-                switch (rowIndex)
+                switch (column)
                 {
                     case 0:
                         return x;
@@ -72,7 +76,7 @@ namespace Godot
             }
             set
             {
-                switch (rowIndex)
+                switch (column)
                 {
                     case 0:
                         x = value;
@@ -89,38 +93,22 @@ namespace Godot
             }
         }
 
-        public real_t this[int rowIndex, int columnIndex]
+        /// <summary>
+        /// Access matrix elements in column-major order. The third column is the origin vector.
+        /// </summary>
+        /// <param name="column">Which column, the matrix horizontal position.</param>
+        /// <param name="row">Which row, the matrix vertical position.</param>
+        public real_t this[int column, int row]
         {
             get
             {
-                switch (rowIndex)
-                {
-                    case 0:
-                        return x[columnIndex];
-                    case 1:
-                        return y[columnIndex];
-                    case 2:
-                        return origin[columnIndex];
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
+                return this[column][row];
             }
             set
             {
-                switch (rowIndex)
-                {
-                    case 0:
-                        x[columnIndex] = value;
-                        return;
-                    case 1:
-                        y[columnIndex] = value;
-                        return;
-                    case 2:
-                        origin[columnIndex] = value;
-                        return;
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
+                Vector2 columnVector = this[column];
+                columnVector[row] = value;
+                this[column] = columnVector;
             }
         }
 
