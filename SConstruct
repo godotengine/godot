@@ -202,7 +202,7 @@ if (env_base["use_precise_math_checks"]):
     env_base.Append(CPPDEFINES=['PRECISE_MATH_CHECKS'])
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
+    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DEBUG_MEMORY_MARKING','DISABLE_FORCED_INLINE'])
 
     # The two options below speed up incremental builds, but reduce the certainty that all files
     # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
