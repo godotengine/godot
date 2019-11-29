@@ -60,7 +60,10 @@ class SceneTreeDock : public VBoxContainer {
 
 		TOOL_NEW,
 		TOOL_INSTANCE,
-		TOOL_EXPAND_COLLAPSE,
+		TOOL_EXPAND_ALL,
+		TOOL_COLLAPSE_ALL,
+		TOOL_COLLAPSE_INACTIVE,
+		TOOL_EXPAND_COLLAPSE_DESCENDANTS,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -121,7 +124,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
-	void _node_collapsed(Object *p_obj);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
@@ -159,9 +161,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
-
-	bool _is_collapsed_recursive(TreeItem *p_item) const;
-	void _set_collapsed_recursive(TreeItem *p_item, bool p_collapsed);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
