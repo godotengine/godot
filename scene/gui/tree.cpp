@@ -356,7 +356,7 @@ void TreeItem::set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, b
 		return;
 	}
 
-	if (p_skip_self || p_ignore_active && this->is_active()) {
+	if (p_skip_self || (p_ignore_active && this->is_active())) {
 		// Ignore current item, collapse recursively all children.
 		TreeItem *c = get_children();
 		while (c) {
