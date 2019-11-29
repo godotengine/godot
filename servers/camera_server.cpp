@@ -35,6 +35,8 @@
 ////////////////////////////////////////////////////////
 // CameraServer
 
+CameraServer::CreateFunc CameraServer::create_func = NULL;
+
 void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
 	ClassDB::bind_method(D_METHOD("get_feed_count"), &CameraServer::get_feed_count);

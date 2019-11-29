@@ -63,6 +63,10 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String architectures;
 		String linker_flags;
 		String cpp_code;
+		String modules_buildfile;
+		String modules_fileref;
+		String modules_buildphase;
+		String modules_buildgrp;
 	};
 
 	struct ExportArchitecture {
@@ -178,6 +182,7 @@ public:
 		return list;
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual void add_module_code(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 
@@ -263,6 +268,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/arkit"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/camera"), false));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/game_center"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/in_app_purchases"), false));
@@ -311,6 +318,14 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].find("$binary") != -1) {
 			strnew += lines[i].replace("$binary", p_config.binary_name) + "\n";
+		} else if (lines[i].find("$modules_buildfile") != -1) {
+			strnew += lines[i].replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
+		} else if (lines[i].find("$modules_fileref") != -1) {
+			strnew += lines[i].replace("$modules_fileref", p_config.modules_fileref) + "\n";
+		} else if (lines[i].find("$modules_buildphase") != -1) {
+			strnew += lines[i].replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
+		} else if (lines[i].find("$modules_buildgrp") != -1) {
+			strnew += lines[i].replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
 		} else if (lines[i].find("$name") != -1) {
 			strnew += lines[i].replace("$name", p_config.pkg_name) + "\n";
 		} else if (lines[i].find("$info") != -1) {
@@ -837,6 +852,22 @@ Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<Edit
 	return enabled_archs;
 }
 
+void EditorExportPlatformIOS::add_module_code(const Ref<EditorExportPreset> &p_preset, EditorExportPlatformIOS::IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid) {
+	if ((bool)p_preset->get("capabilities/" + p_name)) {
+		//add module static library
+		print_line("ADDING MODULE: " + p_name);
+
+		p_config_data.modules_buildfile += p_gid + " /* libgodot_" + p_name + "_module.a in Frameworks */ = {isa = PBXBuildFile; fileRef = " + p_fid + " /* libgodot_" + p_name + "_module.a */; };\n\t\t";
+		p_config_data.modules_fileref += p_fid + " /* libgodot_" + p_name + "_module.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot_" + p_name + "_module ; path = \"libgodot_" + p_name + "_module.a\"; sourceTree = \"<group>\"; };\n\t\t";
+		p_config_data.modules_buildphase += p_gid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
+		p_config_data.modules_buildgrp += p_fid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
+	} else {
+		//add stub function for disabled module
+		p_config_data.cpp_code += "void register_" + p_name + "_types() { /*stub*/ };\n";
+		p_config_data.cpp_code += "void unregister_" + p_name + "_types() { /*stub*/ };\n";
+	}
+}
+
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -934,7 +965,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		_get_additional_plist_content(),
 		String(" ").join(_get_preset_architectures(p_preset)),
 		_get_linker_flags(),
-		_get_cpp_code()
+		_get_cpp_code(),
+		"",
+		"",
+		"",
+		""
 	};
 
 	DirAccess *tmp_app_path = DirAccess::create_for_path(dest_dir);
@@ -949,6 +984,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_CANT_OPEN;
 	}
 
+	add_module_code(p_preset, config_data, "arkit", "F9B95E6E2391205500AF0000", "F9C95E812391205C00BF0000");
+	add_module_code(p_preset, config_data, "camera", "F9B95E6E2391205500AF0001", "F9C95E812391205C00BF0001");
+
+	//export rest of the files
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
@@ -988,6 +1027,20 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			is_execute = true;
 #endif
 			file = "godot_ios.a";
+		} else if (file.begins_with("libgodot_arkit")) {
+			if ((bool)p_preset->get("capabilities/arkit") && file.ends_with(String(p_debug ? "debug" : "release") + ".fat.a")) {
+				file = "libgodot_arkit_module.a";
+			} else {
+				ret = unzGoToNextFile(src_pkg_zip);
+				continue; //ignore!
+			}
+		} else if (file.begins_with("libgodot_camera")) {
+			if ((bool)p_preset->get("capabilities/camera") && file.ends_with(String(p_debug ? "debug" : "release") + ".fat.a")) {
+				file = "libgodot_camera_module.a";
+			} else {
+				ret = unzGoToNextFile(src_pkg_zip);
+				continue; //ignore!
+			}
 		}
 		if (file == project_file) {
 			project_file_data = data;

@@ -65,6 +65,7 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -97,6 +98,7 @@ static MessageQueue *message_queue = NULL;
 
 // Initialized in setup2()
 static AudioServer *audio_server = NULL;
+static CameraServer *camera_server = NULL;
 static ARVRServer *arvr_server = NULL;
 static PhysicsServer *physics_server = NULL;
 static Physics2DServer *physics_2d_server = NULL;
@@ -1318,6 +1320,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 	register_module_types();
 
+	camera_server = CameraServer::create();
+
 	initialize_physics();
 	register_server_singletons();
 
@@ -2140,6 +2144,10 @@ void Main::cleanup() {
 	if (audio_server) {
 		audio_server->finish();
 		memdelete(audio_server);
+	}
+
+	if (camera_server) {
+		memdelete(camera_server);
 	}
 
 	OS::get_singleton()->finalize();
