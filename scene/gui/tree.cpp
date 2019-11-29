@@ -372,6 +372,26 @@ void TreeItem::set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, b
 	}
 }
 
+void TreeItem::toggle_collapsed_all_descendants() {
+	if (is_collapsed()) {
+		// Expand recursively.
+		set_collapsed_recursive(false, false, false);
+	} else {
+		// Collapse/Expand all children.
+		bool child_expanded = false;
+		TreeItem *c = get_children();
+		while (c) {
+			if (!c->is_collapsed()) {
+				child_expanded = true;
+				break;
+			}
+			c = c->get_next();
+		}
+
+		set_collapsed_recursive(child_expanded, false, true);
+	}
+}
+
 bool TreeItem::is_collapsed() {
 
 	return collapsed;
@@ -852,6 +872,7 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
 	ClassDB::bind_method(D_METHOD("set_collapsed_recursive", "enable", "ignore_active", "ignore_self"), &TreeItem::set_collapsed_recursive);
+	ClassDB::bind_method(D_METHOD("toggle_collapsed_all_descendants"), &TreeItem::toggle_collapsed_all_descendants);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
 
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_height", "height"), &TreeItem::set_custom_minimum_height);
@@ -1766,10 +1787,17 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			return -1;
 		}
 
+		// Clicked on folding arrow
 		if (!p_item->disable_folding && !hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
-
-			if (p_item->children)
-				p_item->set_collapsed(!p_item->is_collapsed());
+			// No point in collapsing if there are no children.
+			if (p_item->get_children()) {
+				// ALT or equivalent is held, change collapse behavior.
+				if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+					p_item->toggle_collapsed_all_descendants();
+				} else {
+					p_item->set_collapsed(!p_item->is_collapsed());
+				}
+			}
 
 			return -1; //handled!
 		}
@@ -1818,7 +1846,12 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		}
 
 		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_children()) {
-			p_item->set_collapsed(!p_item->is_collapsed());
+			// ALT or equivalent is held, change collapse behavior.
+			if (Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+				p_item->toggle_collapsed_all_descendants();
+			} else {
+				p_item->set_collapsed(!p_item->is_collapsed());
+			}
 			return -1; //collapse/uncollapse because nothing can be done with item
 		}
 

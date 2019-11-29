@@ -229,6 +229,7 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	void set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self);
+	void toggle_collapsed_all_descendants();
 	bool is_collapsed();
 
 	void set_custom_minimum_height(int p_height);
