@@ -247,6 +247,7 @@ public:
 	bool is_selectable(int p_column) const;
 
 	bool is_selected(int p_column);
+	bool is_active();
 	void select(int p_column);
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);

@@ -501,6 +501,26 @@ bool TreeItem::is_selected(int p_column) {
 	return cells[p_column].selectable && cells[p_column].selected;
 }
 
+bool TreeItem::is_active() {
+
+	TreeItem *selected = tree->get_selected();
+	if (!selected) {
+		return false;
+	} else if (selected == this) {
+		return true;
+	}
+
+	TreeItem *c = this->get_children();
+	while (c) {
+		if (c->is_active()) {
+			return true;
+		}
+		c = c->get_next();
+	}
+
+	return false;
+}
+
 void TreeItem::set_as_cursor(int p_column) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -828,6 +848,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selectable", "column"), &TreeItem::is_selectable);
 
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
+	ClassDB::bind_method(D_METHOD("is_active"), &TreeItem::is_active);
 	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
 
