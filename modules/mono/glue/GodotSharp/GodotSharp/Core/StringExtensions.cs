@@ -264,7 +264,8 @@ namespace Godot
                     instanceIndex++;
                     toIndex++;
                 }
-            } else
+            }
+            else
             {
                 while (true)
                 {
