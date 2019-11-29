@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
+"PO-Revision-Date: 2019-11-25 04:05+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -2908,7 +2908,7 @@ msgstr "Uruchom"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Zapauzuj wykonywanie sceny, żeby debugować."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3601,9 +3601,8 @@ msgid "New Inherited Scene"
 msgstr "Nowa scena dziedzicząca"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Scena główna"
+msgstr "Ustaw jako główną scenę"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4336,19 +4335,16 @@ msgstr ""
 "uzyskać nazw ścieżek."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Klipy animacji:"
+msgstr "Klipy animacji"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Klipy dźwiękowe:"
+msgstr "Klipy dźwiękowe"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funkcje:"
+msgstr "Funkcje"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5032,12 +5028,11 @@ msgstr "Krok siatki:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Główna linia co każde:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "2 kroki"
+msgstr "kroki"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5048,9 +5043,8 @@ msgid "Rotation Step:"
 msgstr "Krok obrotu:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Skala:"
+msgstr "Krok skali:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5143,6 +5137,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Przejmij kamerę gry\n"
+"Zastępuje kamerę gry kamerą z widoku edytora."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5150,6 +5146,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Przejmij kamerę gry\n"
+"Brak uruchomionej instancji gry."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5293,9 +5291,8 @@ msgid "Use Rotation Snap"
 msgstr "Użyj kroków obrotu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Użyj inteligentnego przyciągania"
+msgstr "Użyj przyciągania skali"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5436,7 +5433,6 @@ msgid "Insert keys (based on mask)."
 msgstr "Wstaw klucze (w oparciu o maskę)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -8311,9 +8307,8 @@ msgid "Dodge operator."
 msgstr "Operator uniku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "Operator twardego światła"
+msgstr "Operator twardego światła."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -8953,7 +8948,6 @@ msgstr ""
 "kierunku widoku kamery (podaj tu powiązane wejście)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
@@ -9092,6 +9086,8 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Kiedy zaznaczone, profil będzie dostępny do szybkiego wdrażania.\n"
+"Tylko jeden profil na platformę może być zaznaczony jako uruchamiany."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -11320,7 +11316,6 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr "Nie można utworzyć funkcji węzłów z węzłów wielu funkcji."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Select at least one node with sequence port."
 msgstr "Wybierz co najmniej jeden węzeł z portem sekwencyjnym."
 
@@ -11645,18 +11640,16 @@ msgid "Using default boot splash image."
 msgstr "Używam domyślnego obrazka powitalnego."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Niepoprawna nazwa paczki:"
+msgstr "Niepoprawna krótka nazwa paczki."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr "Niewłaściwa unikalna nazwa paczki."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Niewłaściwa unikalna nazwa paczki."
+msgstr "Niepoprawna wyświetlana nazwa wydawcy paczki."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."

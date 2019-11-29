@@ -67,12 +67,13 @@
 # Romain Paquet <titou.paquet@gmail.com>, 2019.
 # Xavier Sellier <contact@binogure-studio.com>, 2019.
 # Sofiane <Sofiane-77@caramail.fr>, 2019.
+# Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-20 14:07+0000\n"
-"Last-Translator: Sofiane <Sofiane-77@caramail.fr>\n"
+"PO-Revision-Date: 2019-11-29 14:49+0000\n"
+"Last-Translator: Camille Mohr-Daurat <pouleyketchoup@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -2975,7 +2976,7 @@ msgstr "Jouer"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Suspend l'exécution de la scène pour le débogage."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3674,9 +3675,8 @@ msgid "New Inherited Scene"
 msgstr "Nouvelle scène héritée"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Scène principale"
+msgstr "Définir comme scène principale"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4414,19 +4414,16 @@ msgstr ""
 "impossible de récupérer les noms des pistes."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Clips d'animation :"
+msgstr "Clips d'animation"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Clips audio :"
+msgstr "Clips audio"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Fonctions :"
+msgstr "Fonctions"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5111,12 +5108,11 @@ msgstr "Pas de la grille :"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Ligne primaire toutes les :"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "2 étapes"
+msgstr "étapes"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5127,9 +5123,8 @@ msgid "Rotation Step:"
 msgstr "Pas de la rotation :"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Échelle :"
+msgstr "Pas de l'échelle :"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5221,6 +5216,9 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Remplacement de la Caméra du Jeu\n"
+"Remplace la caméra du jeu par la caméra de la fenêtre d'affichage de "
+"l'editeur."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5228,6 +5226,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Remplacement de la Caméra du Jeu\n"
+"Aucune instance de jeu en cours d'exécution."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5371,9 +5371,8 @@ msgid "Use Rotation Snap"
 msgstr "Rotation alignée"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Utiliser le magnétisme intelligent"
+msgstr "Utiliser le magnétisme d'échelle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5514,7 +5513,6 @@ msgid "Insert keys (based on mask)."
 msgstr "Insérer des clés (en fonction du masque)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -8407,9 +8405,8 @@ msgid "Dodge operator."
 msgstr "Opérateur d'évitement."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "Opérateur HardLight"
+msgstr "Opérateur de lumière forte."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -8425,7 +8422,7 @@ msgstr "Opérateur d'écran."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr "Opérateur SoftLight."
+msgstr "Opérateur de lumière douce."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color constant."
@@ -9194,6 +9191,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Si cette option est activée, le pré-réglage sera disponible pour le "
+"déploiement en un clic.\n"
+"Un seul pré-réglage par plateforme peut être marqué comme exécutable."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -11775,18 +11775,16 @@ msgid "Using default boot splash image."
 msgstr "Impossible de lire l'image de démarrage."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Nom de paquet invalide :"
+msgstr "Nom abrégé du paquet invalide."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
-msgstr "Nom unique de paquet invalide."
+msgstr "Nom unique du paquet invalide."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Nom unique de paquet invalide."
+msgstr "Nom d'affichage d'éditeur du paquet invalide."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."

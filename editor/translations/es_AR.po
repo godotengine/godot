@@ -12,12 +12,13 @@
 # Andrés S <andres.segovia.dev@gmail.com>, 2019.
 # Florencia Menéndez <mariaflormz2@gmail.com>, 2019.
 # roger <616steam@gmail.com>, 2019.
+# Francisco José Carllinni <panchopepe@protonmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2019-11-29 14:49+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -45,7 +46,9 @@ msgstr "Entrada inválida %i (no se transmitió) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self no puede ser usado ya que la instancia es nula (no pasó)"
+msgstr ""
+"self no puede ser usado ya que la instancia es nula (la referencia no fue "
+"pasada)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -502,7 +505,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr "Advertencia: Se esta editando una animación importada"
+msgstr "Advertencia: Se está editando una animación importada"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -1324,7 +1327,7 @@ msgstr "Abrir Layout de Bus de Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr "No hay ningún archivo `%s'."
+msgstr "No hay ningún archivo '%s'."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -2886,7 +2889,7 @@ msgstr "Q&A"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr "Issue Tracker"
+msgstr "Registro de problemas"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2906,7 +2909,7 @@ msgstr "Reproducir"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Pausar la ejecución de la escena para depurar."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3604,9 +3607,8 @@ msgid "New Inherited Scene"
 msgstr "Nueva Escena Heredada"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Escena Principal"
+msgstr "Seleccionar Como Escena Principal"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4341,19 +4343,16 @@ msgstr ""
 "no se pudieron obtener los nombres de las pistas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Clips de Anim:"
+msgstr "Clips de Anim"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Clips de Audio:"
+msgstr "Clips de Audio"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funciones:"
+msgstr "Funciones"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5037,12 +5036,11 @@ msgstr "Step de Grilla:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Línea Principal Cada:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "2 pasos"
+msgstr "pasos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5053,9 +5051,8 @@ msgid "Rotation Step:"
 msgstr "Step de Rotación:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Escala:"
+msgstr "Escala temporal:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5147,6 +5144,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Reemplazar Cámara del Juego\n"
+"Reemplaza la cámara del juego con la cámara del viewport del editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5154,6 +5153,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Reemplazar Cámara del Juego\n"
+"No hay ninguna instancia de juego ejecutándose."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5297,9 +5298,8 @@ msgid "Use Rotation Snap"
 msgstr "Usar Snap de Rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Usar Ajuste Inteligente"
+msgstr "Usar Snap a la Escala"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5440,7 +5440,6 @@ msgid "Insert keys (based on mask)."
 msgstr "Insertar claves (basadas en máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -8317,9 +8316,8 @@ msgid "Dodge operator."
 msgstr "Operador Dodge(sobreexponer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "Operador HardLight(luz fuerte)"
+msgstr "Operador HardLight(luz fuerte)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -8962,17 +8960,16 @@ msgstr ""
 "dirección de vista de la camara ( pasale los puntos asociados)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
 "it later in the Expressions. You can also declare varyings, uniforms and "
 "constants."
 msgstr ""
-"Expresión personalizada del lenguaje de shader de Godot, que se coloca "
-"encima del shader resultante. Puedes colocar varias definiciones de "
-"funciones dentro y llamarlas más tarde en las Expresiones. También puedes "
-"declarar varyings, uniforms y constantes."
+"Expresión personalizada del lenguaje de shaders de Godot, que se coloca "
+"encima del shader resultante. Podés colocar varias definiciones de funciones "
+"dentro y llamarlas más tarde en las Expresiones. También podés declarar "
+"varyings, uniforms y constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9102,6 +9099,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Si se selecciona, la plantilla va a estar disponible para su uso en un "
+"lanzamiento de “un click”.\n"
+"Sólo se puede marcar como ejecutable una plantilla por plataforma."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9891,7 +9891,7 @@ msgstr "Archivo..."
 
 #: editor/property_editor.cpp
 msgid "Dir..."
-msgstr "Dir..."
+msgstr "Directorio..."
 
 #: editor/property_editor.cpp
 msgid "Assign"
@@ -10107,7 +10107,7 @@ msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
-msgstr "Restablecer Script"
+msgstr "Quitar Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10295,7 +10295,7 @@ msgstr "Convertir en Raíz de Escena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
-msgstr "Mergear Desde Escena"
+msgstr "Incorporar Desde Escena"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
@@ -11338,9 +11338,8 @@ msgstr ""
 "No se puede crear una función de nodos desde nodos de múltiples funciones."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Select at least one node with sequence port."
-msgstr "Seleccioná por lo menos un nodo con un puerto secuencia."
+msgstr "Seleccioná por lo menos un nodo con puerto secuencia."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
@@ -11673,18 +11672,16 @@ msgid "Using default boot splash image."
 msgstr "Usando imagen boot splash por defecto."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Nombre de paquete inválido:"
+msgstr "Nombre corto de paquete inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr "Nombre único de paquete inválido."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Nombre único de paquete inválido."
+msgstr "Nombre de paquete de publisher inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."

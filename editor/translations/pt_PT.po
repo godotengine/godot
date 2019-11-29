@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-01 19:50+0000\n"
+"PO-Revision-Date: 2019-11-29 14:49+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -2895,7 +2895,7 @@ msgstr "Executar"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Pausar a execução da cena para depuração."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3588,9 +3588,8 @@ msgid "New Inherited Scene"
 msgstr "Nova Cena Herdada"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Cena principal"
+msgstr "Definir Como Cena Principal"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4167,7 +4166,7 @@ msgstr "Selecionar e mover pontos, criar pontos com RMB."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr "Habilita a grelha snap and show."
+msgstr "Ativar ajuste e mostrar a grelha."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4320,19 +4319,16 @@ msgstr ""
 "de recolher nome das faixas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Clips Anim:"
+msgstr "Clips Anim"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Clips Áudio:"
+msgstr "Clips Áudio"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funções:"
+msgstr "Funções"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5012,12 +5008,11 @@ msgstr "Passo da grelha:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Linha Primária Cada:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "2 passos"
+msgstr "passos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5028,9 +5023,8 @@ msgid "Rotation Step:"
 msgstr "Passo da rotação:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Escala:"
+msgstr "Passo de Escala:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5122,6 +5116,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Sobreposição de Câmara de Jogo\n"
+"Sobrepõe câmara de jogo com câmara do editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5129,6 +5125,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Sobreposição de Câmara de Jogo\n"
+"Nenhuma instância de jogo em execução."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5268,16 +5266,15 @@ msgstr "Opções de Ajuste"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr "Usar Ajuste de rotação"
+msgstr "Usar Ajuste de Rotação"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Usar Ajuste Inteligente"
+msgstr "Usar Ajuste de Escala"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr "Ajuste relativo"
+msgstr "Ajuste Relativo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
@@ -5414,7 +5411,6 @@ msgid "Insert keys (based on mask)."
 msgstr "Inserir chaves (baseado na máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -5696,7 +5692,7 @@ msgstr "Falhou o desempacotamento UV, a Malha pode não ser múltipla?"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr "Nenhuma Malha para depurar."
+msgstr "Nenhuma malha para depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6548,7 +6544,7 @@ msgstr "Continuar"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
-msgstr "Manter depurador aberto"
+msgstr "Manter Depurador Aberto"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with External Editor"
@@ -7104,7 +7100,7 @@ msgstr "Ajustar Nós ao Fundo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "Não foi encontrado um chão sólido para encaixar a seleção."
+msgstr "Não foi encontrado um chão sólido para ajustar a seleção."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7175,7 +7171,7 @@ msgstr "Transformar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "Alinhar Objetos ao Chão"
+msgstr "Ajustar Objetos ao Chão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7228,15 +7224,15 @@ msgstr "Configuração do Ajuste"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "Ajuste de translação:"
+msgstr "Ajuste de Translação:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "Ajuste de rotação (graus):"
+msgstr "Ajuste de Rotação (graus):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr "Ajuste de escala (%):"
+msgstr "Ajuste de Escala (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
@@ -7493,11 +7489,11 @@ msgstr "Nenhum"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr "Ajuste de pixel"
+msgstr "Ajuste de Pixel"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr "Ajuste de grelha"
+msgstr "Ajuste de Grelha"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -7585,7 +7581,7 @@ msgstr "Verificar item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr "Item verificado"
+msgstr "Item Marcado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Radio Item"
@@ -7593,7 +7589,7 @@ msgstr "Item Rádio"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Radio Item"
-msgstr "Item Rádio marcado"
+msgstr "Item Rádio Marcado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
@@ -7854,7 +7850,7 @@ msgstr "Manter polígono dentro da região Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr "Ativar o snap and show grid (configurável através do Inspector)."
+msgstr "Ativar ajuste e mostrar a grelha (configurável através do Inspetor)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -8285,9 +8281,8 @@ msgid "Dodge operator."
 msgstr "Operador Desvio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "Operador HardLight"
+msgstr "Operador HardLight."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -8924,7 +8919,6 @@ msgstr ""
 "da câmara (passa entradas associadas)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
@@ -8933,7 +8927,7 @@ msgid ""
 msgstr ""
 "Expressão personalizada em Linguagem Godot Shader, colocada sobre o shader "
 "resultante. Pode colocar várias definições de função e chamá-las depois nas "
-"Expressões. Pode também declarar variantes, uniformes e constantes."
+"Expressões. Também pode declarar variantes, uniformes e constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9060,6 +9054,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Se marcada, a predefinição estará disponível para uso em distribuição um-"
+"clique.\n"
+"Apenas uma predefinição por plataforma pode ser marcada como executável."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9175,7 +9172,7 @@ msgstr "Gerir Modelos de Exportação"
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
-msgstr "Exportar com depuração"
+msgstr "Exportar com Depuração"
 
 #: editor/project_manager.cpp
 msgid "The path does not exist."
@@ -9691,7 +9688,7 @@ msgstr "Evento Ação de Entrada movido"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
-msgstr "Sobrepor por característica"
+msgstr "Sobrepor por Característica"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Translation"
@@ -9739,7 +9736,7 @@ msgstr "Geral"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr "Sobrepor por..."
+msgstr "Sobrepor Por..."
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
@@ -11081,7 +11078,7 @@ msgstr "Definir tipo de variável"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
-msgstr "Sobrepõe-se a função incorporada."
+msgstr "Sobrepõe-se a função incorporada existente."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new function."
@@ -11284,7 +11281,6 @@ msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr "Impossível criar função de nós com nós de várias funções."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Select at least one node with sequence port."
 msgstr "Selecione pelo menos um nó com porta de sequência."
 
@@ -11615,18 +11611,16 @@ msgid "Using default boot splash image."
 msgstr "A usar imagem padrão de inicialização."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Nome de pacote inválido:"
+msgstr "Nome curto de pacote inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr "Nome único de pacote inválido."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Nome único de pacote inválido."
+msgstr "Nome de autor de pacote inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."

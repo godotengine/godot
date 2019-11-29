@@ -58,12 +58,13 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-11-01 19:50+0000\n"
-"Last-Translator: Geequlim <geequlim@gmail.com>\n"
+"PO-Revision-Date: 2019-11-29 14:49+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -86,11 +87,11 @@ msgstr "解码的字节不足，或无效的格式。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "表达式中有无效输入 %i (未通过)"
+msgstr "表达式中的输入 %i 无效（未传递）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self无法使用因为实例为空(未通过)"
+msgstr "self 无法使用，因为实例为空（未传递）"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -98,11 +99,11 @@ msgstr "操作符 %s 的操作数 %s 和 %s 无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "类型 %s (基类 %s)  的索引无效"
+msgstr "将 %s 类型作为 %s 基础类型的索引无效"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "命名的索引 '%s' 对基类 %s 无效"
+msgstr "将 '%s' 作为 %s 基础类型的具名索引无效"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -110,7 +111,7 @@ msgstr "构造 '%s' 的参数无效"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "对'%s'的调用 :"
+msgstr "调用 '%s' 时："
 
 #: core/ustring.cpp
 msgid "B"
@@ -118,27 +119,27 @@ msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr "KB"
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr "MB"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr "GB"
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr "TB"
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr "PB"
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr "EB"
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -146,7 +147,7 @@ msgstr "自由"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "平衡的"
+msgstr "平衡"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -162,15 +163,15 @@ msgstr "值："
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "此处插入帧"
+msgstr "此处插入关键帧"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "复制已选帧"
+msgstr "复制所选关键帧"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "删除已选帧"
+msgstr "删除所选关键帧"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -182,15 +183,15 @@ msgstr "移动贝塞尔顶点"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "动画复制关键帧"
+msgstr "复制动画关键帧"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "动画删除关键帧"
+msgstr "删除动画关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "修改动画关键帧的时长"
+msgstr "修改动画关键帧的时间"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -206,11 +207,11 @@ msgstr "修改动画关键帧的值"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "修改回调"
+msgstr "修改动画回调"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr "修改多个动画关键帧的时长"
+msgstr "修改多个动画关键帧的时间"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
@@ -673,9 +674,8 @@ msgid "Scale Ratio:"
 msgstr "缩放比率："
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "选择要复制的轨道："
+msgstr "选择要复制的轨道"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -2870,7 +2870,7 @@ msgstr "播放"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "暂停运行场景，以便进行调试。"
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3546,9 +3546,8 @@ msgid "New Inherited Scene"
 msgstr "新继承的场景"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "主场景"
+msgstr "设为主场景"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4267,19 +4266,16 @@ msgid ""
 msgstr "动画播放器没有合法的根节点路径，因此无法获取轨道名称。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "动画剪辑："
+msgstr "动画剪辑"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "音频剪辑："
+msgstr "音频剪辑"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "函数:"
+msgstr "函数"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4955,12 +4951,11 @@ msgstr "网格大小:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "主线间隔："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "2步"
+msgstr "步"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -4971,9 +4966,8 @@ msgid "Rotation Step:"
 msgstr "旋转步长:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "缩放："
+msgstr "缩放步长："
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5061,6 +5055,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"游戏相机覆盖\n"
+"使用编辑器视图相机覆盖游戏相机。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5068,6 +5064,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"游戏相机覆盖\n"
+"没有正在运行的游戏实例。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5205,9 +5203,8 @@ msgid "Use Rotation Snap"
 msgstr "使用旋转吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "使用吸附"
+msgstr "使用缩放吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5348,15 +5345,14 @@ msgid "Insert keys (based on mask)."
 msgstr "插入帧（基于遮罩）。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
-"当对象位移变化，按缩放比例旋转（基于蒙版）时自动插入关键帧。\n"
-"关键帧键只会添加到现有轨道，不会创建新轨道。\n"
+"当对象位移、旋转、缩放（基于蒙版）时自动插入关键帧。\n"
+"关键帧只会添加到现有轨道，不会创建新轨道。\n"
 "第一次必须手动插入关键帧。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7277,9 +7273,8 @@ msgid "Simplification: "
 msgstr "简单化： "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels): "
-msgstr "扩展（像素）： "
+msgstr "收缩（像素）： "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -8179,7 +8174,7 @@ msgstr "颜色运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Grayscale function."
-msgstr "灰度功能。"
+msgstr "灰度函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
@@ -8191,11 +8186,11 @@ msgstr "将RGB向量转换为等效的HSV向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
-msgstr "棕褐色功能。"
+msgstr "棕褐色函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
-msgstr "烧录运算符。"
+msgstr "加深运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Darken operator."
@@ -8203,20 +8198,19 @@ msgstr "变暗运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Difference operator."
-msgstr "差异运算符。"
+msgstr "差值运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Dodge operator."
-msgstr "Dodge 运算符。"
+msgstr "减淡运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "HardLight 操作"
+msgstr "强光运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr "Lighten运算."
+msgstr "变亮运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
@@ -8224,15 +8218,15 @@ msgstr "叠加运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
-msgstr "屏幕操作符。"
+msgstr "滤色运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr "SoftLight 操作符."
+msgstr "柔光运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color constant."
-msgstr "颜色常量."
+msgstr "颜色常量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color uniform."
@@ -8824,15 +8818,14 @@ msgid ""
 msgstr "根据表面法线和相机视图方向的点积返回衰减（将相关输入传递给它）。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
 "it later in the Expressions. You can also declare varyings, uniforms and "
 "constants."
 msgstr ""
-"自定义的Godot着色器语言表达式，位于生成的着色器顶部。您可以在其中放置各种函数"
-"定义，然后在表达式中调用它。您还可以声明变化，统一和常量。"
+"自定义的 Godot 着色器语言表达式，会被放到最终的着色器开头。您可以在其中放置各"
+"种函数定义，然后在表达式中调用。您还可以声明 varying、uniform 和常量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -8948,6 +8941,8 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"选中时，可以在一键部署中使用该预设。\n"
+"每个平台只可以有一个可执行的预设。"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -11045,6 +11040,8 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"无法放置该属性，因为脚本 '%s' 未在该场景中使用。\n"
+"放置时按住 'Shift' 键可以仅复制签名。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11116,11 +11113,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
-msgstr ""
+msgstr "选择至少一个拥有顺序端口的节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "请选择单一的顺序输入。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
@@ -11427,18 +11424,16 @@ msgid "Using default boot splash image."
 msgstr "使用默认启动图片。"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "无效的包名称："
+msgstr "无效的包短名称。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr "包名唯一性无效。"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "包名唯一性无效。"
+msgstr "发布者显示名称无效。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
