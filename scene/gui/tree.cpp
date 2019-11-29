@@ -3961,6 +3961,12 @@ bool Tree::get_allow_reselect() const {
 	return allow_reselect;
 }
 
+void Tree::set_collapsed_all(bool p_collapsed, bool p_ignore_active) {
+
+	get_root()->set_collapsed_recursive(p_collapsed, p_ignore_active, false);
+	ensure_cursor_is_visible();
+}
+
 void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &Tree::_range_click_timeout);
@@ -4019,6 +4025,8 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &Tree::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &Tree::get_allow_reselect);
+
+	ClassDB::bind_method(D_METHOD("set_collapsed_all", "collapsed", "ignore_active"), &Tree::set_collapsed_all);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");

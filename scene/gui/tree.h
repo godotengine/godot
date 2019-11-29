@@ -605,6 +605,8 @@ public:
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
 
+	void set_collapsed_all(bool p_collapsed, bool p_ignore_active);
+
 	Tree();
 	~Tree();
 };
