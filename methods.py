@@ -67,8 +67,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if hasattr(version, 'patch'):
-        f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
+    f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
