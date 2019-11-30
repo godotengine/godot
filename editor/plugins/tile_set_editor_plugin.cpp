@@ -1529,13 +1529,15 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						shape_anchor.y *= (size.y + spacing);
 					}
 					const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+					Transform2D xform = workspace->get_transform();
 					shape_anchor += current_tile_region.position;
 					if (tools[TOOL_SELECT]->is_pressed()) {
 						if (mb.is_valid()) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								if (edit_mode != EDITMODE_PRIORITY && current_shape.size() > 0) {
 									for (int i = 0; i < current_shape.size(); i++) {
-										if ((current_shape[i] - mb->get_position()).length_squared() <= grab_threshold) {
+										const real_t distance = xform.xform(current_shape[i]).distance_to(xform.xform(mb->get_position()));
+										if (distance < grab_threshold) {
 											dragging_point = i;
 											workspace->update();
 											return;
@@ -1634,7 +1636,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								pos = snap_point(pos);
 								if (creating_shape) {
 									if (current_shape.size() > 0) {
-										if ((pos - current_shape[0]).length_squared() <= grab_threshold) {
+										const real_t distance = xform.xform(current_shape[0]).distance_to(xform.xform(pos));
+										if (distance <= grab_threshold) {
 											if (current_shape.size() > 2) {
 												close_shape(shape_anchor);
 												workspace->update();
@@ -1685,7 +1688,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								}
 							} else if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								if (creating_shape) {
-									if ((current_shape[0] - current_shape[1]).length_squared() <= grab_threshold) {
+									const real_t distance = xform.xform(current_shape[0]).distance_to(xform.xform(current_shape[1]));
+									if (distance <= grab_threshold) {
 										current_shape.set(0, snap_point(shape_anchor));
 										current_shape.set(1, snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
 										current_shape.set(2, snap_point(shape_anchor + current_tile_region.size));
