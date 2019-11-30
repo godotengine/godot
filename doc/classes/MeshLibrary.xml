@@ -4,7 +4,7 @@
 		Library of meshes.
 	</brief_description>
 	<description>
-		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. This resource is used in [GridMap].
+		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. Each item can also include collision and navigation shapes. This resource is used in [GridMap].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,7 +22,8 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Create a new item in the library, supplied as an ID.
+				Creates a new item in the library with the given ID.
+				You can get an unused ID from [method get_last_unused_item_id].
 			</description>
 		</method>
 		<method name="find_item_by_name" qualifiers="const">
@@ -31,13 +32,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the first item with the given name.
 			</description>
 		</method>
 		<method name="get_item_list" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
 			<description>
-				Returns the list of items.
+				Returns the list of item IDs in use.
 			</description>
 		</method>
 		<method name="get_item_mesh" qualifiers="const">
@@ -46,7 +48,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the mesh of the item.
+				Returns the item's mesh.
 			</description>
 		</method>
 		<method name="get_item_name" qualifiers="const">
@@ -55,7 +57,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the name of the item.
+				Returns the item's name.
 			</description>
 		</method>
 		<method name="get_item_navmesh" qualifiers="const">
@@ -64,6 +66,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the item's navigation mesh.
 			</description>
 		</method>
 		<method name="get_item_navmesh_transform" qualifiers="const">
@@ -72,6 +75,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the transform applied to the item's navigation mesh.
 			</description>
 		</method>
 		<method name="get_item_preview" qualifiers="const">
@@ -90,6 +94,8 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns an item's collision shapes.
+				The array consists of each [Shape] followed by its [Transform].
 			</description>
 		</method>
 		<method name="get_last_unused_item_id" qualifiers="const">
@@ -128,6 +134,7 @@
 			</argument>
 			<description>
 				Sets the item's name.
+				This name is shown in the editor. It can also be used to look up the item later using [method find_item_by_name].
 			</description>
 		</method>
 		<method name="set_item_navmesh">
@@ -138,6 +145,7 @@
 			<argument index="1" name="navmesh" type="NavigationMesh">
 			</argument>
 			<description>
+				Sets the item's navigation mesh.
 			</description>
 		</method>
 		<method name="set_item_navmesh_transform">
@@ -148,6 +156,7 @@
 			<argument index="1" name="navmesh" type="Transform">
 			</argument>
 			<description>
+				Sets the transform to apply to the item's navigation mesh.
 			</description>
 		</method>
 		<method name="set_item_preview">
@@ -158,6 +167,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
+				Sets a texture to use as the item's preview icon in the editor.
 			</description>
 		</method>
 		<method name="set_item_shapes">
@@ -168,6 +178,8 @@
 			<argument index="1" name="shapes" type="Array">
 			</argument>
 			<description>
+				Sets an item's collision shapes.
+				The array should consist of [Shape] objects, each followed by a [Transform] that will be applied to it. For shapes that should not have a transform, use [constant Transform.IDENTITY].
 			</description>
 		</method>
 	</methods>
