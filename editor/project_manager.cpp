@@ -878,7 +878,8 @@ public:
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
+		l->set_text(TTR("- Higher visual quality\n- All features available\n- Incompatible with older hardware\n- Not recommended for web games"));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		rshb->add_child(memnew(VSeparator));
@@ -892,12 +893,17 @@ public:
 		rs_button->set_meta("driver_name", "GLES2");
 		rvb->add_child(rs_button);
 		l = memnew(Label);
-		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
+		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web games"));
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
 		l = memnew(Label);
-		l->set_text(TTR("Renderer can be changed later, but scenes may need to be adjusted."));
+		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
+		// Add some extra spacing to separate it from the list above and the buttons below.
+		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
 		l->set_align(Label::ALIGN_CENTER);
+		l->set_valign(Label::VALIGN_CENTER);
+		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
 
 		fdialog = memnew(FileDialog);
