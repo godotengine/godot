@@ -502,7 +502,7 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]a[/code] and [code]b[/code] are approximately equal to each other.
+				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
 			</description>
 		</method>
 		<method name="is_inf">
@@ -538,7 +538,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]s[/code] is zero or almost zero.
+				Returns [code]true[/code] if [code]s[/code] is zero or almost zero.
 			</description>
 		</method>
 		<method name="len">

@@ -112,6 +112,7 @@
 			<argument index="0" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="orthonormalized">

@@ -135,6 +135,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized">

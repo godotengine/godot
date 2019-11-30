@@ -122,6 +122,7 @@
 			<argument index="0" name="plane" type="Plane">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_point_over">
