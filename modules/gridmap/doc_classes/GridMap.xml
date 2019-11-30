@@ -4,10 +4,10 @@
 		Node for 3D tile-based maps.
 	</brief_description>
 	<description>
-		GridMap lets you place meshes on a grid interactively. It works both from the editor and can help you create in-game level editors.
-		GridMaps use a [MeshLibrary] which contain a list of tiles: meshes with materials plus optional collisions and extra elements.
-		A GridMap contains a collection of cells. Each grid cell refers to a [MeshLibrary] item. All cells in the map have the same dimensions.
-		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
+		GridMap lets you place meshes on a grid interactively. It works both from the editor and from scripts, which can help you create in-game level editors.
+		GridMaps use a [MeshLibrary] which contains a list of tiles. Each tile is a mesh with materials plus optional collision and navigation shapes.
+		A GridMap contains a collection of cells. Each grid cell refers to a tile in the [MeshLibrary]. All cells in the map have the same dimensions.
+		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
@@ -72,6 +72,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+				Returns an individual bit on the [member collision_layer].
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -80,20 +81,21 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
+				Returns an individual bit on the [member collision_mask].
 			</description>
 		</method>
 		<method name="get_meshes">
 			<return type="Array">
 			</return>
 			<description>
-				Array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
+				Returns an array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Array of [Vector3] with the non-empty cell coordinates in the grid map.
+				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
 			</description>
 		</method>
 		<method name="make_baked_meshes">
@@ -116,6 +118,7 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
+				Returns the position of a grid cell in the GridMap's local coordinate space.
 			</description>
 		</method>
 		<method name="resource_changed">
@@ -140,9 +143,9 @@
 			<argument index="4" name="orientation" type="int" default="0">
 			</argument>
 			<description>
-				Set the mesh index for the cell referenced by its grid-based X, Y and Z coordinates.
-				A negative item index will clear the cell.
-				Optionally, the item's orientation can be passed.
+				Sets the mesh index for the cell referenced by its grid-based X, Y and Z coordinates.
+				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
+				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
 			</description>
 		</method>
 		<method name="set_clip">
@@ -167,6 +170,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+				Sets an individual bit on the [member collision_layer].
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -177,6 +181,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+				Sets an individual bit on the [member collision_mask].
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
@@ -185,6 +190,8 @@
 			<argument index="0" name="pos" type="Vector3">
 			</argument>
 			<description>
+				Returns the coordinates of the grid cell containing the given point.
+				[code]pos[/code] should be in the GridMap's local coordinate space.
 			</description>
 		</method>
 	</methods>
@@ -202,13 +209,19 @@
 			The size of each octant measured in number of cells. This applies to all three axis.
 		</member>
 		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale" default="1.0">
+			The scale of the cell items.
+			This does not affect the size of the grid cells themselves, only the items in them. This can be used to make cell items overlap their neighbors.
 		</member>
 		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3( 2, 2, 2 )">
 			The dimensions of the grid's cells.
+			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this GridMap is in.
+			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this GridMap detects collisions in.
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
@@ -222,6 +235,7 @@
 			<argument index="0" name="cell_size" type="Vector3">
 			</argument>
 			<description>
+				Emitted when [member cell_size] changes.
 			</description>
 		</signal>
 	</signals>
