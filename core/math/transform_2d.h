@@ -186,17 +186,23 @@ Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 }
 
 void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
-	elements[0][0] = Math::cos(p_rot) * p_scale.x;
-	elements[1][1] = Math::cos(p_rot) * p_scale.y;
-	elements[1][0] = -Math::sin(p_rot) * p_scale.y;
-	elements[0][1] = Math::sin(p_rot) * p_scale.x;
+	real_t sine = Math::sin(p_rot);
+	real_t cosi = Math::cos(p_rot);
+	elements[0][0] = cosi;
+	elements[0][1] = sine;
+	elements[1][0] = -sine;
+	elements[1][1] = cosi;
+	elements[0] *= p_scale.x;
+	elements[1] *= p_scale.y;
 }
 
 void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew) {
-	elements[0][0] = Math::cos(p_rot) * p_scale.x;
-	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
-	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
-	elements[0][1] = Math::sin(p_rot) * p_scale.x;
+	elements[0][0] = Math::cos(p_rot);
+	elements[0][1] = Math::sin(p_rot);
+	elements[1][0] = -Math::sin(p_rot + p_skew);
+	elements[1][1] = Math::cos(p_rot + p_skew);
+	elements[0] *= p_scale.x;
+	elements[1] *= p_scale.y;
 }
 
 Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
