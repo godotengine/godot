@@ -348,7 +348,7 @@ public:
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
 	bool erase(const Element *p_I) {
-		if (_data) {
+		if (_data && p_I) {
 			bool ret = _data->erase(p_I);
 
 			if (_data->size_cache == 0) {
