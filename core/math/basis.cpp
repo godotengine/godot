@@ -321,6 +321,19 @@ Vector3 Basis::get_scale() const {
 	return det_sign * get_scale_abs();
 }
 
+void Basis::set_scale(const Vector3 &p_scale) {
+	Vector3 delta_scale = p_scale / get_scale();
+	rows[0][0] *= delta_scale.x;
+	rows[1][0] *= delta_scale.x;
+	rows[2][0] *= delta_scale.x;
+	rows[0][1] *= delta_scale.y;
+	rows[1][1] *= delta_scale.y;
+	rows[2][1] *= delta_scale.y;
+	rows[0][2] *= delta_scale.z;
+	rows[1][2] *= delta_scale.z;
+	rows[2][2] *= delta_scale.z;
+}
+
 // Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
 // Returns the rotation-reflection matrix via reference argument, and scaling information is returned as a Vector3.
 // This (internal) function is too specific and named too ugly to expose to users, and probably there's no need to do so.

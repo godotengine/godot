@@ -148,6 +148,13 @@
 				Introduce an additional scaling specified by the given 3D scaling factor.
 			</description>
 		</method>
+		<method name="set_scale">
+			<return type="void" />
+			<argument index="0" name="scale" type="Vector3" />
+			<description>
+				Sets the scale of this [Basis]. Each component of the scale becomes the length of each basis vector.
+			</description>
+		</method>
 		<method name="slerp" qualifiers="const">
 			<return type="Basis" />
 			<argument index="0" name="to" type="Basis" />

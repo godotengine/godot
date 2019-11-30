@@ -118,10 +118,9 @@ Size2 Transform2D::get_scale() const {
 }
 
 void Transform2D::set_scale(const Size2 &p_scale) {
-	columns[0].normalize();
-	columns[1].normalize();
-	columns[0] *= p_scale.x;
-	columns[1] *= p_scale.y;
+	Size2 delta_scale = p_scale / get_scale();
+	columns[0] *= delta_scale.x;
+	columns[1] *= delta_scale.y;
 }
 
 void Transform2D::scale(const Size2 &p_scale) {
