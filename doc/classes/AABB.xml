@@ -182,6 +182,7 @@
 			<argument index="0" name="aabb" type="AABB">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="merge">
@@ -190,7 +191,7 @@
 			<argument index="0" name="with" type="AABB">
 			</argument>
 			<description>
-				Returns a larger AABB that contains this AABB and [code]with[/code].
+				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
 		</method>
 	</methods>
