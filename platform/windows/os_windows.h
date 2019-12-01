@@ -31,7 +31,6 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "camera_win.h"
 #include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
@@ -175,7 +174,6 @@ class OS_Windows : public OS {
 	ContextGL_Windows *gl_context;
 #endif
 	VisualServer *visual_server;
-	CameraWindows *camera_server;
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;

@@ -596,9 +596,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	///@TODO implement a subclass for Linux and instantiate that instead
-	camera_server = memnew(CameraServer);
-
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
@@ -831,8 +828,6 @@ void OS_X11::finalize() {
 	xi.state.clear();
 
 	memdelete(input);
-
-	memdelete(camera_server);
 
 	cursors_cache.clear();
 	visual_server->finish();
