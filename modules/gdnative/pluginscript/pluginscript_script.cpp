@@ -251,7 +251,19 @@ Error PluginScript::reload(bool p_keep_state) {
 			(godot_string *)&_path,
 			(godot_string *)&_source,
 			(godot_error *)&err);
+// Manifest's attributes must be explicitly freed
+#define FREE_SCRIPT_MANIFEST(manifest)                    \
+	{                                                     \
+		godot_string_name_destroy(&manifest.name);        \
+		godot_string_name_destroy(&manifest.base);        \
+		godot_dictionary_destroy(&manifest.member_lines); \
+		godot_array_destroy(&manifest.methods);           \
+		godot_array_destroy(&manifest.signals);           \
+		godot_array_destroy(&manifest.properties);        \
+	}
+
 	if (err) {
+		FREE_SCRIPT_MANIFEST(manifest);
 		// TODO: GDscript uses `ScriptDebugger` here to jump into the parsing error
 		return err;
 	}
@@ -269,6 +281,7 @@ Error PluginScript::reload(bool p_keep_state) {
 				_ref_base_parent = res;
 			} else {
 				String name = *(StringName *)&manifest.name;
+				FREE_SCRIPT_MANIFEST(manifest);
 				ERR_FAIL_V_MSG(ERR_PARSE_ERROR, _path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
 			}
 		}
@@ -317,13 +330,6 @@ Error PluginScript::reload(bool p_keep_state) {
 			_methods_rpc_mode[pi.name] = MultiplayerAPI::RPCMode(int(var));
 		}
 	}
-	// Manifest's attributes must be explicitly freed
-	godot_string_name_destroy(&manifest.name);
-	godot_string_name_destroy(&manifest.base);
-	godot_dictionary_destroy(&manifest.member_lines);
-	godot_array_destroy(&manifest.methods);
-	godot_array_destroy(&manifest.signals);
-	godot_array_destroy(&manifest.properties);
 
 #ifdef TOOLS_ENABLED
 /*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
@@ -331,7 +337,10 @@ Error PluginScript::reload(bool p_keep_state) {
         _update_placeholder(E->get());
     }*/
 #endif
+
+	FREE_SCRIPT_MANIFEST(manifest);
 	return OK;
+#undef FREE_SCRIPT_MANIFEST
 }
 
 void PluginScript::get_script_method_list(List<MethodInfo> *r_methods) const {
