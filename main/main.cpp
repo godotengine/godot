@@ -2090,6 +2090,11 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
+	if (script_debugger) {
+		// Flush any remaining messages
+		script_debugger->idle_poll();
+	}
+
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
