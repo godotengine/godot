@@ -1565,6 +1565,7 @@ void CodeTextEditor::goto_next_bookmark() {
 			if (bline > line) {
 				text_editor->unfold_line(bline);
 				text_editor->cursor_set_line(bline);
+				text_editor->center_viewport_to_cursor();
 				return;
 			}
 		}
@@ -1589,6 +1590,7 @@ void CodeTextEditor::goto_prev_bookmark() {
 			if (bline < line) {
 				text_editor->unfold_line(bline);
 				text_editor->cursor_set_line(bline);
+				text_editor->center_viewport_to_cursor();
 				return;
 			}
 		}
