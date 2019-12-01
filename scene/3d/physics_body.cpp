@@ -2161,6 +2161,9 @@ void PhysicalBone::_notification(int p_what) {
 			update_bone_id();
 			reset_to_rest_position();
 			_reset_physics_simulation_state();
+			if (!joint.is_valid() && joint_data) {
+				_reload_joint();
+			}
 			break;
 		case NOTIFICATION_EXIT_TREE:
 			if (parent_skeleton) {
@@ -2169,7 +2172,10 @@ void PhysicalBone::_notification(int p_what) {
 				}
 			}
 			parent_skeleton = NULL;
-			update_bone_id();
+			if (joint.is_valid()) {
+				PhysicsServer::get_singleton()->free(joint);
+				joint = RID();
+			}
 			break;
 		case NOTIFICATION_TRANSFORM_CHANGED:
 			if (Engine::get_singleton()->is_editor_hint()) {
