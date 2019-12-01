@@ -970,6 +970,8 @@ void LineEdit::undo() {
 	undo_stack_pos = undo_stack_pos->prev();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
+	cached_width = op.cached_width;
+	window_pos = op.window_pos;
 	set_cursor_position(op.cursor_pos);
 
 	if (expand_to_text_length)
@@ -988,6 +990,8 @@ void LineEdit::redo() {
 	undo_stack_pos = undo_stack_pos->next();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
+	cached_width = op.cached_width;
+	window_pos = op.window_pos;
 	set_cursor_position(op.cursor_pos);
 
 	if (expand_to_text_length)
@@ -1169,6 +1173,10 @@ void LineEdit::delete_char() {
 
 	set_cursor_position(get_cursor_position() - 1);
 
+	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
+		window_pos = CLAMP(window_pos - 1, 0, text.length() - 1);
+	}
+
 	_text_changed();
 }
 
@@ -1194,6 +1202,10 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	if (window_pos > cursor_pos) {
 
 		window_pos = cursor_pos;
+	}
+
+	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
+		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, text.length() - 1);
 	}
 
 	if (!text_changed_dirty) {
@@ -1677,7 +1689,9 @@ void LineEdit::_clear_undo_stack() {
 void LineEdit::_create_undo_state() {
 	TextOperation op;
 	op.text = text;
+	op.cached_width = cached_width;
 	op.cursor_pos = cursor_pos;
+	op.window_pos = window_pos;
 	undo_stack.push_back(op);
 }
 
