@@ -226,9 +226,6 @@
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
-		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
-			Deprecated, use [member mesh_library] instead.
-		</member>
 	</members>
 	<signals>
 		<signal name="cell_size_changed">
