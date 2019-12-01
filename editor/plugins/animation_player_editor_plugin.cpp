@@ -86,7 +86,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (!player->is_valid()) {
-				// Reset timeline when the player has been stopped externally
+				// Reset timeline when the player has been stopped externally.
 				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
