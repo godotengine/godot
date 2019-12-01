@@ -823,7 +823,7 @@ void LineEdit::_notification(int p_what) {
 				int yofs = y_ofs + (caret_height - font->get_height()) / 2;
 				drawer.draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
 
-				if (char_ofs == cursor_pos && draw_caret) {
+				if (char_ofs == cursor_pos && draw_caret && !using_placeholder) {
 					if (ime_text.length() == 0) {
 #ifdef TOOLS_ENABLED
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
@@ -866,12 +866,27 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
-			if (char_ofs == cursor_pos && draw_caret) { // May be at the end.
+			if ((char_ofs == cursor_pos || using_placeholder) && draw_caret) { // May be at the end, or placeholder.
 				if (ime_text.length() == 0) {
+					int caret_x_ofs = x_ofs;
+					if (using_placeholder) {
+						switch (align) {
+							case ALIGN_LEFT:
+							case ALIGN_FILL: {
+								caret_x_ofs = style->get_offset().x;
+							} break;
+							case ALIGN_CENTER: {
+								caret_x_ofs = ofs_max / 2;
+							} break;
+							case ALIGN_RIGHT: {
+								caret_x_ofs = ofs_max;
+							} break;
+						}
+					}
 #ifdef TOOLS_ENABLED
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
 #else
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
 #endif
 				}
 			}
