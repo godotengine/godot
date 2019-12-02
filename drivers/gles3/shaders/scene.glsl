@@ -1256,6 +1256,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_attenuation = vec3(omni_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
+#ifdef USE_SHADOW
 	if (omni_lights[idx].light_params.w > 0.5) {
 		// there is a shadowmap
 
@@ -1300,6 +1301,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 #endif
 		light_attenuation *= mix(omni_lights[idx].shadow_color_contact.rgb, vec3(1.0), shadow);
 	}
+#endif //USE_SHADOW
 #endif //SHADOWS_DISABLED
 	light_compute(normal, normalize(light_rel_vec), eye_vec, binormal, tangent, omni_lights[idx].light_color_energy.rgb, light_attenuation, albedo, transmission, omni_lights[idx].light_params.z * p_blob_intensity, roughness, metallic, specular, rim * omni_attenuation, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
 }
@@ -1318,6 +1320,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_attenuation = vec3(spot_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
+#ifdef USE_SHADOW
 	if (spot_lights[idx].light_params.w > 0.5) {
 		//there is a shadowmap
 		highp vec4 splane = (spot_lights[idx].shadow_matrix * vec4(vertex, 1.0));
@@ -1334,6 +1337,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 #endif
 		light_attenuation *= mix(spot_lights[idx].shadow_color_contact.rgb, vec3(1.0), shadow);
 	}
+#endif //USE_SHADOW
 #endif //SHADOWS_DISABLED
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, binormal, tangent, spot_lights[idx].light_color_energy.rgb, light_attenuation, albedo, transmission, spot_lights[idx].light_params.z * p_blob_intensity, roughness, metallic, specular, rim * spot_attenuation, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
