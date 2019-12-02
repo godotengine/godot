@@ -846,7 +846,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		time_vals.push_back(err[2]);
 		time_vals.push_back(err[3]);
 		bool e;
-		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
+		String time = String("%d:%02d:%02d.%03d").sprintf(time_vals, &e);
 
 		// Rest of the error data.
 		String method = err[4];
