@@ -38,7 +38,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Whether or not the animation is currently playing backwards. This is set when calling [method play].
+				Returns [code]true[/code] if the animation is played backwards, otherwise returns [code]false[/code]. This is set when [method play] is called.
 			</description>
 		</method>
 	</methods>
