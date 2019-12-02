@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTERCSVTRANSLATION_H
-#define RESOURCEIMPORTERCSVTRANSLATION_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -53,5 +52,3 @@ public:
 
 	ResourceImporterCSVTranslation();
 };
-
-#endif // RESOURCEIMPORTERCSVTRANSLATION_H

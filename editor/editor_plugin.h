@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_PLUGIN_H
-#define EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/io/config_file.h"
 #include "core/undo_redo.h"
@@ -280,5 +279,3 @@ public:
 		creation_funcs[creation_func_count++] = p_func;
 	}
 };
-
-#endif

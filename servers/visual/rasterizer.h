@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_H
-#define RASTERIZER_H
+#pragma once
 
 #include "core/math/camera_matrix.h"
 #include "servers/visual_server.h"
@@ -1120,5 +1119,3 @@ public:
 
 	virtual ~Rasterizer() {}
 };
-
-#endif // RASTERIZER_H

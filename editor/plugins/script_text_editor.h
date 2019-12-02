@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_TEXT_EDITOR_H
-#define SCRIPT_TEXT_EDITOR_H
+#pragma once
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
@@ -236,5 +235,3 @@ public:
 	ScriptTextEditor();
 	~ScriptTextEditor();
 };
-
-#endif // SCRIPT_TEXT_EDITOR_H

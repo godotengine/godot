@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_2D_EDITOR_PLUGIN_H
-#define PATH_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -131,5 +130,3 @@ public:
 	Path2DEditorPlugin(EditorNode *p_node);
 	~Path2DEditorPlugin();
 };
-
-#endif // PATH_2D_EDITOR_PLUGIN_H

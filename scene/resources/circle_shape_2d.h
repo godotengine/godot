@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CIRCLE_SHAPE_2D_H
-#define CIRCLE_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/shape_2d.h"
 
@@ -53,5 +52,3 @@ public:
 
 	CircleShape2D();
 };
-
-#endif // CIRCLE_SHAPE_2D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_HAIKU_H
-#define CONTEXT_GL_HAIKU_H
+#pragma once
 
 #if defined(OPENGL_ENABLED)
 
@@ -58,5 +57,4 @@ public:
 	~ContextGL_Haiku();
 };
 
-#endif
 #endif

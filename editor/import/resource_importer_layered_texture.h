@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_LAYERED_TEXTURE_H
-#define RESOURCE_IMPORTER_LAYERED_TEXTURE_H
+#pragma once
 
 #include "core/image.h"
 #include "core/io/resource_importer.h"
@@ -88,4 +87,3 @@ public:
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();
 };
-#endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H

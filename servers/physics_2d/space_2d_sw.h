@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPACE_2D_SW_H
-#define SPACE_2D_SW_H
+#pragma once
 
 #include "area_2d_sw.h"
 #include "area_pair_2d_sw.h"
@@ -205,5 +204,3 @@ public:
 	Space2DSW();
 	~Space2DSW();
 };
-
-#endif // SPACE_2D_SW_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INPUT_MAP_H
-#define INPUT_MAP_H
+#pragma once
 
 #include "core/object.h"
 #include "core/os/input_event.h"
@@ -87,5 +86,3 @@ public:
 
 	InputMap();
 };
-
-#endif // INPUT_MAP_H

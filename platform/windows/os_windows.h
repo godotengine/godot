@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_WINDOWS_H
-#define OS_WINDOWS_H
+#pragma once
 
 #include "context_gl_windows.h"
 #include "core/os/input.h"
@@ -435,5 +434,3 @@ public:
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 };
-
-#endif

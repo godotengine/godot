@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MATERIAL_EDITOR_PLUGIN_H
-#define MATERIAL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/property_editor.h"
 #include "scene/resources/primitive_meshes.h"
@@ -124,5 +123,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
-
-#endif // MATERIAL_EDITOR_PLUGIN_H

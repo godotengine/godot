@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_LOG_H
-#define EDITOR_LOG_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -87,5 +86,3 @@ public:
 	EditorLog();
 	~EditorLog();
 };
-
-#endif // EDITOR_LOG_H

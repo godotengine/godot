@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#pragma once
 
 #ifdef X11_ENABLED
 
@@ -80,5 +79,4 @@ public:
 
 #endif
 
-#endif
 #endif

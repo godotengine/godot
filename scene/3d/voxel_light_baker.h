@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOXEL_LIGHT_BAKER_H
-#define VOXEL_LIGHT_BAKER_H
+#pragma once
 
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/multimesh.h"
@@ -187,5 +186,3 @@ public:
 	Transform get_to_cell_space_xform() const;
 	VoxelLightBaker();
 };
-
-#endif // VOXEL_LIGHT_BAKER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POSITION_3D_H
-#define POSITION_3D_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 
@@ -40,5 +39,3 @@ class Position3D : public Spatial {
 public:
 	Position3D();
 };
-
-#endif // POSITION_3D_H

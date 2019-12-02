@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VERSION_CONTROL_EDITOR_PLUGIN_H
-#define VERSION_CONTROL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
@@ -142,5 +141,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(VersionControlEditorPlugin::ChangeType);
-
-#endif // !VERSION_CONTROL_EDITOR_PLUGIN_H

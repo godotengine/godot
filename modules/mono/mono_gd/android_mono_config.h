@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_MONO_CONFIG_H
-#define ANDROID_MONO_CONFIG_H
+#pragma once
 
 #ifdef ANDROID_ENABLED
 
@@ -39,5 +38,3 @@
 String get_godot_android_mono_config();
 
 #endif // ANDROID_ENABLED
-
-#endif // ANDROID_MONO_CONFIG_H

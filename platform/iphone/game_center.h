@@ -30,8 +30,7 @@
 
 #ifdef GAME_CENTER_ENABLED
 
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
+#pragma once
 
 #include "core/object.h"
 
@@ -70,7 +69,5 @@ public:
 	GameCenter();
 	~GameCenter();
 };
-
-#endif
 
 #endif

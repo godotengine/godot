@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MANAGED_TYPE_H
-#define MANAGED_TYPE_H
+#pragma once
 
 #include <mono/metadata/object.h>
 
@@ -54,5 +53,3 @@ struct ManagedType {
 			type_class(p_type_class) {
 	}
 };
-
-#endif // MANAGED_TYPE_H

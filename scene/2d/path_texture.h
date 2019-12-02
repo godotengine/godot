@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_TEXTURE_H
-#define PATH_TEXTURE_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -60,5 +59,3 @@ public:
 
 	PathTexture();
 };
-
-#endif // PATH_TEXTURE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_PROPERTIES_H
-#define EDITOR_PROPERTIES_H
+#pragma once
 
 #include "editor/create_dialog.h"
 #include "editor/editor_inspector.h"
@@ -626,5 +625,3 @@ public:
 	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 	virtual void parse_end();
 };
-
-#endif // EDITOR_PROPERTIES_H

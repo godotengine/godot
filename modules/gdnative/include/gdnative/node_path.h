@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NODE_PATH_H
-#define GODOT_NODE_PATH_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -85,5 +84,3 @@ godot_node_path godot_node_path_get_as_property_path(const godot_node_path *p_se
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_NODE_PATH_H

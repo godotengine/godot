@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSG_H
-#define CSG_H
+#pragma once
 
 #include "core/map.h"
 #include "core/math/aabb.h"
@@ -232,5 +231,3 @@ struct CSGBrushOperation {
 	static void _collision_callbacks(void *ud, int p_face_b);
 	void merge_brushes(Operation p_operation, const CSGBrush &p_A, const CSGBrush &p_B, CSGBrush &result, float p_snap = 0.001);
 };
-
-#endif // CSG_H

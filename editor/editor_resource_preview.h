@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORRESOURCEPREVIEW_H
-#define EDITORRESOURCEPREVIEW_H
+#pragma once
 
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -116,5 +115,3 @@ public:
 	EditorResourcePreview();
 	~EditorResourcePreview();
 };
-
-#endif // EDITORRESOURCEPREVIEW_H

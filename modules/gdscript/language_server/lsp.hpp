@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_LSP_H
-#define GODOT_LSP_H
+#pragma once
 
 #include "core/class_db.h"
 #include "core/list.h"
@@ -1658,5 +1657,3 @@ static String marked_documentation(const String &p_bbcode) {
 }
 
 } // namespace lsp
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIALOGS_H
-#define DIALOGS_H
+#pragma once
 
 #include "box_container.h"
 #include "scene/gui/button.h"
@@ -165,5 +164,3 @@ public:
 	Button *get_cancel();
 	ConfirmationDialog();
 };
-
-#endif

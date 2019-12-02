@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FUNC_REF_H
-#define FUNC_REF_H
+#pragma once
 
 #include "core/reference.h"
 
@@ -50,5 +49,3 @@ public:
 	bool is_valid() const;
 	FuncRef();
 };
-
-#endif // FUNC_REF_H

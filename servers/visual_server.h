@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SERVER_H
-#define VISUAL_SERVER_H
+#pragma once
 
 #include "core/image.h"
 #include "core/math/bsp_tree.h"
@@ -1099,5 +1098,3 @@ VARIANT_ENUM_CAST(VisualServer::TextureType);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer
-
-#endif

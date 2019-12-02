@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REMOTE_TRANSFORM_2D_H
-#define REMOTE_TRANSFORM_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -75,5 +74,3 @@ public:
 
 	RemoteTransform2D();
 };
-
-#endif // REMOTE_TRANSFORM_2D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIR_ACCESS_H
-#define DIR_ACCESS_H
+#pragma once
 
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -147,5 +146,3 @@ struct DirAccessRef {
 		if (f) memdelete(f);
 	}
 };
-
-#endif

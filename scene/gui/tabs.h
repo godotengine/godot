@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TABS_H
-#define TABS_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -171,5 +170,3 @@ public:
 
 VARIANT_ENUM_CAST(Tabs::TabAlign);
 VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
-
-#endif // TABS_H

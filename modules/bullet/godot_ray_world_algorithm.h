@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_RAY_WORLD_ALGORITHM_H
-#define GODOT_RAY_WORLD_ALGORITHM_H
+#pragma once
 
 #include <BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h>
 #include <BulletCollision/CollisionDispatch/btCollisionCreateFunc.h>
@@ -82,5 +81,3 @@ public:
 		}
 	};
 };
-
-#endif // GODOT_RAY_WORLD_ALGORITHM_H

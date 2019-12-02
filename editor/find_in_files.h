@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FIND_IN_FILES_H
-#define FIND_IN_FILES_H
+#pragma once
 
 #include "core/hash_map.h"
 #include "scene/gui/dialogs.h"
@@ -200,5 +199,3 @@ private:
 	LineEdit *_replace_line_edit;
 	Button *_replace_all_button;
 };
-
-#endif // FIND_IN_FILES_H

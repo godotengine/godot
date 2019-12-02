@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -237,5 +236,3 @@ PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) con
 	}
 	return array;
 }
-
-#endif // TRANSFORM_H

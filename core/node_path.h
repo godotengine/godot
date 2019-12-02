@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NODE_PATH_H
-#define NODE_PATH_H
+#pragma once
 
 #include "core/string_name.h"
 #include "core/ustring.h"
@@ -105,5 +104,3 @@ public:
 	NodePath();
 	~NodePath();
 };
-
-#endif

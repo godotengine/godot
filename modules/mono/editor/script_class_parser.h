@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_CLASS_PARSER_H
-#define SCRIPT_CLASS_PARSER_H
+#pragma once
 
 #include "core/ustring.h"
 #include "core/variant.h"
@@ -106,5 +105,3 @@ public:
 
 	Vector<ClassDecl> get_classes();
 };
-
-#endif // SCRIPT_CLASS_PARSER_H

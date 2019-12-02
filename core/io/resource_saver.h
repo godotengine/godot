@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_SAVER_H
-#define RESOURCE_SAVER_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -89,5 +88,3 @@ public:
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };
-
-#endif

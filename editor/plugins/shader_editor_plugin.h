@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_EDITOR_PLUGIN_H
-#define SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
@@ -167,5 +166,3 @@ public:
 	ShaderEditorPlugin(EditorNode *p_node);
 	~ShaderEditorPlugin();
 };
-
-#endif

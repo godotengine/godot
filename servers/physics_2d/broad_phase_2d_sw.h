@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_2D_SW_H
-#define BROAD_PHASE_2D_SW_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
@@ -68,5 +67,3 @@ public:
 
 	virtual ~BroadPhase2DSW();
 };
-
-#endif // BROAD_PHASE_2D_SW_H

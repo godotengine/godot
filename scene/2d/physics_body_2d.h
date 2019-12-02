@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_BODY_2D_H
-#define PHYSICS_BODY_2D_H
+#pragma once
 
 #include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
@@ -382,5 +381,3 @@ public:
 
 	KinematicCollision2D();
 };
-
-#endif // PHYSICS_BODY_2D_H

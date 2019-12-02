@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVA_GODOT_LIB_JNI_H
-#define JAVA_GODOT_LIB_JNI_H
+#pragma once
 
 #include <android/log.h>
 #include <jni.h>
@@ -68,5 +67,3 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIEnv *env, jclass clazz);
 }
-
-#endif /* !JAVA_GODOT_LIB_JNI_H */

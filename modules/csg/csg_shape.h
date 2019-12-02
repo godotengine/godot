@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSG_SHAPE_H
-#define CSG_SHAPE_H
+#pragma once
 
 #define CSGJS_HEADER_ONLY
 
@@ -436,5 +435,3 @@ public:
 
 VARIANT_ENUM_CAST(CSGPolygon::Mode)
 VARIANT_ENUM_CAST(CSGPolygon::PathRotation)
-
-#endif // CSG_SHAPE_H

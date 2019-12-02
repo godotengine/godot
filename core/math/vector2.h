@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VECTOR2_H
-#define VECTOR2_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
@@ -335,5 +334,3 @@ struct Vector2i {
 
 typedef Vector2i Size2i;
 typedef Vector2i Point2i;
-
-#endif // VECTOR2_H

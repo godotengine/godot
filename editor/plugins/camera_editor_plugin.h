@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_EDITOR_PLUGIN_H
-#define CAMERA_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -71,5 +70,3 @@ public:
 	CameraEditorPlugin(EditorNode *p_node);
 	~CameraEditorPlugin();
 };
-
-#endif // CAMERA_EDITOR_PLUGIN_H

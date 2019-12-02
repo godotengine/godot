@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PRIMITIVE_MESHES_H
-#define PRIMITIVE_MESHES_H
+#pragma once
 
 #include "scene/resources/mesh.h"
 
@@ -336,5 +335,3 @@ protected:
 public:
 	PointMesh();
 };
-
-#endif

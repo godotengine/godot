@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_PACK_H
-#define FILE_ACCESS_PACK_H
+#pragma once
 
 #include "core/list.h"
 #include "core/map.h"
@@ -228,5 +227,3 @@ public:
 	DirAccessPack();
 	~DirAccessPack();
 };
-
-#endif // FILE_ACCESS_PACK_H

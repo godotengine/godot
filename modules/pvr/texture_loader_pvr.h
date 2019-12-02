@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_LOADER_PVR_H
-#define TEXTURE_LOADER_PVR_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
@@ -44,5 +43,3 @@ public:
 	ResourceFormatPVR();
 	virtual ~ResourceFormatPVR() {}
 };
-
-#endif // TEXTURE_LOADER_PVR_H

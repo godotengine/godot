@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
-#define AUDIO_STREAM_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -89,5 +88,3 @@ public:
 	AudioStreamEditorPlugin(EditorNode *p_node);
 	~AudioStreamEditorPlugin();
 };
-
-#endif // AUDIO_STREAM_EDITOR_PLUGIN_H

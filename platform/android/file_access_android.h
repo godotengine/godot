@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_ANDROID_H
-#define FILE_ACCESS_ANDROID_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include <android/asset_manager.h>
@@ -78,5 +77,3 @@ public:
 	FileAccessAndroid();
 	~FileAccessAndroid();
 };
-
-#endif // FILE_ACCESS_ANDROID_H

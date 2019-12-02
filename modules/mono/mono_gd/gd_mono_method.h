@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_METHOD_H
-#define GD_MONO_METHOD_H
+#pragma once
 
 #include "gd_mono.h"
 #include "gd_mono_header.h"
@@ -93,5 +92,3 @@ public:
 	GDMonoMethod(StringName p_name, MonoMethod *p_method);
 	~GDMonoMethod();
 };
-
-#endif // GD_MONO_METHOD_H

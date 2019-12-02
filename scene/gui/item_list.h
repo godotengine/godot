@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ITEMLIST_H
-#define ITEMLIST_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
@@ -238,5 +237,3 @@ public:
 
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
-
-#endif // ITEMLIST_H

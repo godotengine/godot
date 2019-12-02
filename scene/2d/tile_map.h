@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_MAP_H
-#define TILE_MAP_H
+#pragma once
 
 #include "core/self_list.h"
 #include "core/vset.h"
@@ -354,5 +353,3 @@ public:
 VARIANT_ENUM_CAST(TileMap::Mode);
 VARIANT_ENUM_CAST(TileMap::HalfOffset);
 VARIANT_ENUM_CAST(TileMap::TileOrigin);
-
-#endif // TILE_MAP_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_UNIX_H
-#define FILE_ACCESS_UNIX_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include "core/os/memory.h"
@@ -88,5 +87,4 @@ public:
 	virtual ~FileAccessUnix();
 };
 
-#endif
 #endif

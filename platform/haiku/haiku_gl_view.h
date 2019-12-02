@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HAIKU_GL_VIEW_H
-#define HAIKU_GL_VIEW_H
+#pragma once
 
 #include <kernel/image.h> // needed for image_id
 
@@ -41,5 +40,3 @@ public:
 	virtual void AttachedToWindow(void);
 	virtual void Draw(BRect updateRect);
 };
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIMESH_H
-#define MULTIMESH_H
+#pragma once
 
 #include "scene/resources/mesh.h"
 #include "servers/visual_server.h"
@@ -124,5 +123,3 @@ public:
 VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
 VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
 VARIANT_ENUM_CAST(MultiMesh::CustomDataFormat);
-
-#endif // MULTI_MESH_H

@@ -30,8 +30,7 @@
 
 #ifdef COREMIDI_ENABLED
 
-#ifndef MIDI_DRIVER_COREMIDI_H
-#define MIDI_DRIVER_COREMIDI_H
+#pragma once
 
 #include "core/os/midi_driver.h"
 #include "core/vector.h"
@@ -59,4 +58,3 @@ public:
 };
 
 #endif // MIDI_DRIVER_COREMIDI_H
-#endif // COREMIDI_ENABLED

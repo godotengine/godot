@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HAIKU_APPLICATION_H
-#define HAIKU_APPLICATION_H
+#pragma once
 
 #include <kernel/image.h> // needed for image_id
 
@@ -39,5 +38,3 @@ class HaikuApplication : public BApplication {
 public:
 	HaikuApplication();
 };
-
-#endif

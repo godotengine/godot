@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_COLLISION_DISPATCHER_H
-#define GODOT_COLLISION_DISPATCHER_H
+#pragma once
 
 #include "core/int_types.h"
 
@@ -49,4 +48,3 @@ public:
 	virtual bool needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 	virtual bool needsResponse(const btCollisionObject *body0, const btCollisionObject *body1);
 };
-#endif

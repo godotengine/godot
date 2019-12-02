@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CANVAS_H
-#define CANVAS_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -44,5 +43,3 @@ public:
 	Canvas();
 	~Canvas();
 };
-
-#endif // CANVAS_H

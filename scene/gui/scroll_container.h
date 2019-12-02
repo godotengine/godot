@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCROLL_CONTAINER_H
-#define SCROLL_CONTAINER_H
+#pragma once
 
 #include "container.h"
 
@@ -101,5 +100,3 @@ public:
 
 	ScrollContainer();
 };
-
-#endif

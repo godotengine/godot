@@ -30,8 +30,7 @@
 
 #ifdef WINMIDI_ENABLED
 
-#ifndef MIDI_DRIVER_WINMIDI_H
-#define MIDI_DRIVER_WINMIDI_H
+#pragma once
 
 #include "core/os/midi_driver.h"
 #include "core/vector.h"
@@ -58,4 +57,3 @@ public:
 };
 
 #endif // MIDI_DRIVER_WINMIDI_H
-#endif // WINMIDI_ENABLED

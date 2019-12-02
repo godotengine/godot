@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_REGION_EDITOR_PLUGIN_H
-#define TEXTURE_REGION_EDITOR_PLUGIN_H
+#pragma once
 
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
@@ -166,5 +165,3 @@ public:
 
 	TextureRegionEditorPlugin(EditorNode *p_node);
 };
-
-#endif // TEXTURE_REGION_EDITOR_PLUGIN_H

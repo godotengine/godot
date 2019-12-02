@@ -32,8 +32,7 @@
 
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+#pragma once
 
 #include "core/error_list.h"
 #include "core/os/os.h"
@@ -71,5 +70,4 @@ public:
 	~ContextGL_Windows();
 };
 
-#endif
 #endif

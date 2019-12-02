@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STEP_2D_SW_H
-#define STEP_2D_SW_H
+#pragma once
 
 #include "space_2d_sw.h"
 
@@ -46,5 +45,3 @@ public:
 	void step(Space2DSW *p_space, real_t p_delta, int p_iterations);
 	Step2DSW();
 };
-
-#endif // STEP_2D_SW_H

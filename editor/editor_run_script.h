@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_SCRIPT_H
-#define EDITOR_RUN_SCRIPT_H
+#pragma once
 
 #include "core/reference.h"
 #include "editor_plugin.h"
@@ -52,5 +51,3 @@ public:
 	void set_editor(EditorNode *p_editor);
 	EditorScript();
 };
-
-#endif // EDITOR_RUN_SCRIPT_H

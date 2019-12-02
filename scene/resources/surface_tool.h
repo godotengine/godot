@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SURFACE_TOOL_H
-#define SURFACE_TOOL_H
+#pragma once
 
 #include "scene/resources/mesh.h"
 
@@ -142,5 +141,3 @@ public:
 
 	SurfaceTool();
 };
-
-#endif

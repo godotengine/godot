@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_PROTOCAL_SERVER_H
-#define GDSCRIPT_PROTOCAL_SERVER_H
+#pragma once
 
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
@@ -89,5 +88,3 @@ public:
 	GDScriptLanguageProtocol();
 	~GDScriptLanguageProtocol();
 };
-
-#endif

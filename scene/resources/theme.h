@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THEME_H
-#define THEME_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/resource.h"
@@ -135,5 +134,3 @@ public:
 	Theme();
 	~Theme();
 };
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJECT_H
-#define OBJECT_H
+#pragma once
 
 #include "core/hash_map.h"
 #include "core/list.h"
@@ -806,5 +805,3 @@ public:
 
 //needed by macros
 #include "core/class_db.h"
-
-#endif

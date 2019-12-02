@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLOBAL_CONFIG_H
-#define GLOBAL_CONFIG_H
+#pragma once
 
 #include "core/object.h"
 #include "core/os/thread_safe.h"
@@ -165,5 +164,3 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
-
-#endif

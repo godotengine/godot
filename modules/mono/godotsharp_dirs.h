@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOTSHARP_DIRS_H
-#define GODOTSHARP_DIRS_H
+#pragma once
 
 #include "core/ustring.h"
 
@@ -68,5 +67,3 @@ String get_data_mono_bin_dir();
 #endif
 
 } // namespace GodotSharpDirs
-
-#endif // GODOTSHARP_DIRS_H

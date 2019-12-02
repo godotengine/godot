@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPATIAL_EDITOR_PLUGIN_H
-#define SPATIAL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -809,5 +808,3 @@ public:
 	EditorSpatialGizmoPlugin();
 	virtual ~EditorSpatialGizmoPlugin();
 };
-
-#endif

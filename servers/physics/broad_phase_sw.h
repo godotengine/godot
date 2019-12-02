@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_SW_H
-#define BROAD_PHASE_SW_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/math_funcs.h"
@@ -69,5 +68,3 @@ public:
 
 	virtual ~BroadPhaseSW();
 };
-
-#endif // BROAD_PHASE__SW_H

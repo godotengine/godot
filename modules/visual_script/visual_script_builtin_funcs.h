@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SCRIPT_BUILTIN_FUNCS_H
-#define VISUAL_SCRIPT_BUILTIN_FUNCS_H
+#pragma once
 
 #include "visual_script.h"
 
@@ -150,5 +149,3 @@ public:
 VARIANT_ENUM_CAST(VisualScriptBuiltinFunc::BuiltinFunc)
 
 void register_visual_script_builtin_func_node();
-
-#endif // VISUAL_SCRIPT_BUILTIN_FUNCS_H

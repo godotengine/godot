@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CYLINDER_SHAPE_H
-#define CYLINDER_SHAPE_H
+#pragma once
 
 #include "scene/resources/shape.h"
 
@@ -53,5 +52,3 @@ public:
 
 	CylinderShape();
 };
-
-#endif // CYLINDER_SHAPE_H

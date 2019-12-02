@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORAUDIOBUSES_H
-#define EDITORAUDIOBUSES_H
+#pragma once
 
 #include "editor/editor_file_dialog.h"
 #include "editor_plugin.h"
@@ -280,5 +279,3 @@ public:
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
 	~AudioBusesEditorPlugin();
 };
-
-#endif // EDITORAUDIOBUSES_H

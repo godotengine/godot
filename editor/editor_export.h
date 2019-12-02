@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_EXPORT_H
-#define EDITOR_EXPORT_H
+#pragma once
 
 #include "core/os/dir_access.h"
 #include "core/resource.h"
@@ -459,5 +458,3 @@ public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
 	EditorExportTextSceneToBinaryPlugin();
 };
-
-#endif // EDITOR_IMPORT_EXPORT_H

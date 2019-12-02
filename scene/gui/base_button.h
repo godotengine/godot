@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BASE_BUTTON_H
-#define BASE_BUTTON_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -150,5 +149,3 @@ public:
 	Array _get_buttons();
 	ButtonGroup();
 };
-
-#endif

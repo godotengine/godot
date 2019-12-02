@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_DIR_DIALOG_H
-#define EDITOR_DIR_DIALOG_H
+#pragma once
 
 #include "core/os/dir_access.h"
 #include "editor/editor_file_system.h"
@@ -67,5 +66,3 @@ public:
 	void reload(const String &p_path = "");
 	EditorDirDialog();
 };
-
-#endif // EDITOR_DIR_DIALOG_H

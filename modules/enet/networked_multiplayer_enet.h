@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_ENET_H
-#define NETWORKED_MULTIPLAYER_ENET_H
+#pragma once
 
 #include "core/io/compression.h"
 #include "core/io/networked_multiplayer_peer.h"
@@ -169,5 +168,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);
-
-#endif // NETWORKED_MULTIPLAYER_ENET_H

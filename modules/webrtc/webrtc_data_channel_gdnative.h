@@ -30,8 +30,7 @@
 
 #ifdef WEBRTC_GDNATIVE_ENABLED
 
-#ifndef WEBRTC_DATA_CHANNEL_GDNATIVE_H
-#define WEBRTC_DATA_CHANNEL_GDNATIVE_H
+#pragma once
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_data_channel.h"
@@ -76,5 +75,3 @@ public:
 };
 
 #endif // WEBRTC_DATA_CHANNEL_GDNATIVE_H
-
-#endif // WEBRTC_GDNATIVE_ENABLED

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_PRELOADER_EDITOR_PLUGIN_H
-#define RESOURCE_PRELOADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -104,5 +103,3 @@ public:
 	ResourcePreloaderEditorPlugin(EditorNode *p_node);
 	~ResourcePreloaderEditorPlugin();
 };
-
-#endif // RESOURCE_PRELOADER_EDITOR_PLUGIN_H

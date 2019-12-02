@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_BUFFERED_H
-#define FILE_ACCESS_BUFFERED_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include "core/pool_vector.h"
@@ -90,5 +89,3 @@ public:
 	FileAccessBuffered();
 	virtual ~FileAccessBuffered();
 };
-
-#endif

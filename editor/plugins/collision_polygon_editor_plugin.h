@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_POLYGON_EDITOR_PLUGIN_H
-#define COLLISION_POLYGON_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -115,5 +114,3 @@ public:
 	Polygon3DEditorPlugin(EditorNode *p_node);
 	~Polygon3DEditorPlugin();
 };
-
-#endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

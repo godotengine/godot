@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CRASH_HANDLER_X11_H
-#define CRASH_HANDLER_X11_H
+#pragma once
 
 class CrashHandler {
 
@@ -44,5 +43,3 @@ public:
 	CrashHandler();
 	~CrashHandler();
 };
-
-#endif // CRASH_HANDLER_X11_H

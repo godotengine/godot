@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HASHFUNCS_H
-#define HASHFUNCS_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -169,5 +168,3 @@ struct HashMapComparatorDefault {
 		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
 	}
 };
-
-#endif

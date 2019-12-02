@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_DUMMY_H
-#define RASTERIZER_DUMMY_H
+#pragma once
 
 #include "core/math/camera_matrix.h"
 #include "core/self_list.h"
@@ -811,5 +810,3 @@ public:
 	RasterizerDummy() {}
 	~RasterizerDummy() {}
 };
-
-#endif // RASTERIZER_DUMMY_H

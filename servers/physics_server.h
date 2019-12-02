@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_SERVER_H
-#define PHYSICS_SERVER_H
+#pragma once
 
 #include "core/object.h"
 #include "core/resource.h"
@@ -840,5 +839,3 @@ VARIANT_ENUM_CAST(PhysicsServer::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer::G6DOFJointAxisFlag);
 VARIANT_ENUM_CAST(PhysicsServer::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer::ProcessInfo);
-
-#endif

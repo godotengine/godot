@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_UWP_H
-#define POWER_UWP_H
+#pragma once
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -52,5 +51,3 @@ public:
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
-
-#endif // POWER_UWP_H

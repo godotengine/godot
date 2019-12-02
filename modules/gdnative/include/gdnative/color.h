@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_COLOR_H
-#define GODOT_COLOR_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,5 +115,3 @@ godot_bool GDAPI godot_color_operator_less(const godot_color *p_self, const godo
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_COLOR_H

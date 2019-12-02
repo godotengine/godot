@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_GDSCRIPT_H
-#define TEST_GDSCRIPT_H
+#pragma once
 
 #include "core/os/main_loop.h"
 
@@ -44,5 +43,3 @@ enum TestType {
 
 MainLoop *test(TestType p_type);
 } // namespace TestGDScript
-
-#endif // TEST_GDSCRIPT_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SCRIPT_H
-#define VISUAL_SCRIPT_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "core/script_language.h"
@@ -623,5 +622,3 @@ static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
 	node.instance();
 	return node;
 }
-
-#endif // VISUAL_SCRIPT_H

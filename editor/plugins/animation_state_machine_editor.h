@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_STATE_MACHINE_EDITOR_H
-#define ANIMATION_STATE_MACHINE_EDITOR_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -186,5 +185,3 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeStateMachineEditor();
 };
-
-#endif // ANIMATION_STATE_MACHINE_EDITOR_H

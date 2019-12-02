@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_FUNCTIONS_H
-#define GDSCRIPT_FUNCTIONS_H
+#pragma once
 
 #include "core/variant.h"
 
@@ -134,5 +133,3 @@ public:
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
 };
-
-#endif // GDSCRIPT_FUNCTIONS_H

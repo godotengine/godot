@@ -49,8 +49,7 @@ subject to the following restrictions:
 Written by: Marcus Hennix
 */
 
-#ifndef CONE_TWIST_JOINT_SW_H
-#define CONE_TWIST_JOINT_SW_H
+#pragma once
 
 #include "servers/physics/joints/jacobian_entry_sw.h"
 #include "servers/physics/joints_sw.h"
@@ -138,5 +137,3 @@ public:
 	void set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::ConeTwistJointParam p_param) const;
 };
-
-#endif // CONE_TWIST_JOINT_SW_H

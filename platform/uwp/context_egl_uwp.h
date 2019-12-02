@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_EGL_UWP_H
-#define CONTEXT_EGL_UWP_H
+#pragma once
 
 #include <wrl.h>
 
@@ -82,5 +81,3 @@ public:
 	ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver);
 	~ContextEGL_UWP();
 };
-
-#endif // CONTEXT_EGL_UWP_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODY_SW_H
-#define BODY_SW_H
+#pragma once
 
 #include "area_sw.h"
 #include "collision_object_sw.h"
@@ -471,5 +470,3 @@ public:
 		body = NULL;
 	}
 };
-
-#endif // BODY__SW_H

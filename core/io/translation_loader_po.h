@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSLATION_LOADER_PO_H
-#define TRANSLATION_LOADER_PO_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
@@ -45,5 +44,3 @@ public:
 
 	TranslationLoaderPO();
 };
-
-#endif // TRANSLATION_LOADER_PO_H

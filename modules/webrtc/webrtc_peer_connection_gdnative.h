@@ -30,8 +30,7 @@
 
 #ifdef WEBRTC_GDNATIVE_ENABLED
 
-#ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
-#define WEBRTC_PEER_CONNECTION_GDNATIVE_H
+#pragma once
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_peer_connection.h"
@@ -69,5 +68,3 @@ public:
 };
 
 #endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
-
-#endif // WEBRTC_GDNATIVE_ENABLED

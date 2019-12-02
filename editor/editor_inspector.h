@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_INSPECTOR_H
-#define EDITOR_INSPECTOR_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
@@ -384,5 +383,3 @@ public:
 
 	EditorInspector();
 };
-
-#endif // INSPECTOR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLANE_H
-#define GODOT_PLANE_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,5 +98,3 @@ void GDAPI godot_plane_set_d(godot_plane *p_self, const godot_real p_d);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_PLANE_H

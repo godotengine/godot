@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_H
-#define RESOURCE_IMPORTER_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 
@@ -129,5 +128,3 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };
-
-#endif // RESOURCE_IMPORTER_H

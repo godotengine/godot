@@ -31,8 +31,7 @@
 #include "core/rid.h"
 #include "scene/resources/material.h"
 
-#ifndef PARTICLES_MATERIAL_H
-#define PARTICLES_MATERIAL_H
+#pragma once
 
 class ParticlesMaterial : public Material {
 
@@ -309,5 +308,3 @@ public:
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
 VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
-
-#endif // PARTICLES_MATERIAL_H

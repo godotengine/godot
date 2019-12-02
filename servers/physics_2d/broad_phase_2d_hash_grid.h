@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_2D_HASH_GRID_H
-#define BROAD_PHASE_2D_HASH_GRID_H
+#pragma once
 
 #include "broad_phase_2d_sw.h"
 #include "core/map.h"
@@ -190,5 +189,3 @@ public:
 	BroadPhase2DHashGrid();
 	~BroadPhase2DHashGrid();
 };
-
-#endif // BROAD_PHASE_2D_HASH_GRID_H

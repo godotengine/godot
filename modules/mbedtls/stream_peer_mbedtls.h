@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_OPEN_SSL_H
-#define STREAM_PEER_OPEN_SSL_H
+#pragma once
 
 #include "core/io/stream_peer_ssl.h"
 #include "ssl_context_mbedtls.h"
@@ -76,5 +75,3 @@ public:
 	StreamPeerMbedTLS();
 	~StreamPeerMbedTLS();
 };
-
-#endif // STREAM_PEER_SSL_H

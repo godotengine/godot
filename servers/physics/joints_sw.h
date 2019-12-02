@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOINTS_SW_H
-#define JOINTS_SW_H
+#pragma once
 
 #include "body_sw.h"
 #include "constraint_sw.h"
@@ -42,5 +41,3 @@ public:
 			ConstraintSW(p_body_ptr, p_body_count) {
 	}
 };
-
-#endif // JOINTS_SW_H

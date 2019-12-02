@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SHADER_NODES_H
-#define VISUAL_SHADER_NODES_H
+#pragma once
 
 #include "scene/resources/visual_shader.h"
 
@@ -1694,5 +1693,3 @@ public:
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparsionType)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
-
-#endif // VISUAL_SHADER_NODES_H

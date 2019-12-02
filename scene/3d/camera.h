@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 #include "scene/3d/spatial_velocity_tracker.h"
@@ -239,4 +238,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(ClippedCamera::ProcessMode);
-#endif

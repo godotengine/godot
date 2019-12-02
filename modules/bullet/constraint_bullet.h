@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONSTRAINT_BULLET_H
-#define CONSTRAINT_BULLET_H
+#pragma once
 
 #include "bullet_utilities.h"
 #include "rid_bullet.h"
@@ -69,4 +68,3 @@ public:
 
 	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }
 };
-#endif

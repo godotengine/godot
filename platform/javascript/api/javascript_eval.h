@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVASCRIPT_EVAL_H
-#define JAVASCRIPT_EVAL_H
+#pragma once
 
 #include "core/object.h"
 
@@ -49,5 +48,3 @@ public:
 	JavaScript();
 	~JavaScript();
 };
-
-#endif // JAVASCRIPT_EVAL_H

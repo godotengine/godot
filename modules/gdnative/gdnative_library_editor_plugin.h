@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDNATIVE_LIBRARY_EDITOR_PLUGIN_H
-#define GDNATIVE_LIBRARY_EDITOR_PLUGIN_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -111,4 +110,3 @@ public:
 	GDNativeLibraryEditorPlugin(EditorNode *p_node);
 };
 #endif
-#endif // GDNATIVE_LIBRARY_EDITOR_PLUGIN_H

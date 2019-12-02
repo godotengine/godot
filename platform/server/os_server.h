@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_SERVER_H
-#define OS_SERVER_H
+#pragma once
 
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
@@ -129,5 +128,3 @@ public:
 
 	OS_Server();
 };
-
-#endif

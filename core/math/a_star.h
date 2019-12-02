@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ASTAR_H
-#define ASTAR_H
+#pragma once
 
 #include "core/oa_hash_map.h"
 #include "core/reference.h"
@@ -203,5 +202,3 @@ public:
 	AStar2D();
 	~AStar2D();
 };
-
-#endif // ASTAR_H

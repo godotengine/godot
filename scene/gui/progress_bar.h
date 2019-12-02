@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROGRESS_BAR_H
-#define PROGRESS_BAR_H
+#pragma once
 
 #include "scene/gui/range.h"
 
@@ -50,5 +49,3 @@ public:
 	Size2 get_minimum_size() const;
 	ProgressBar();
 };
-
-#endif // PROGRESS_BAR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_PATH_H
-#define EDITOR_PATH_H
+#pragma once
 
 #include "editor_data.h"
 #include "scene/gui/menu_button.h"
@@ -56,5 +55,3 @@ public:
 
 	EditorPath(EditorHistory *p_history);
 };
-
-#endif // EDITOR_PATH_H

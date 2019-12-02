@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
+#pragma once
 
 #include <stddef.h>
 
@@ -356,5 +355,3 @@ struct _GlobalLock {
 #ifndef FALLTHROUGH
 #define FALLTHROUGH
 #endif
-
-#endif // TYPEDEFS_H

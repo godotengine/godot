@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVEARVR_H
-#define GODOT_NATIVEARVR_H
+#pragma once
 
 #include <gdnative/gdnative.h>
 
@@ -88,5 +87,3 @@ godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* !GODOT_NATIVEARVR_H */

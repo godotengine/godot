@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GENERIC_6DOF_JOINT_BULLET_H
-#define GENERIC_6DOF_JOINT_BULLET_H
+#pragma once
 
 #include "joint_bullet.h"
 
@@ -72,5 +71,3 @@ public:
 	void set_precision(int p_precision);
 	int get_precision() const;
 };
-
-#endif

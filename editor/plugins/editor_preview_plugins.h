@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPREVIEWPLUGINS_H
-#define EDITORPREVIEWPLUGINS_H
+#pragma once
 
 #include "editor/editor_resource_preview.h"
 
@@ -175,4 +174,3 @@ public:
 	EditorFontPreviewPlugin();
 	~EditorFontPreviewPlugin();
 };
-#endif // EDITORPREVIEWPLUGINS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_NATIVE_LIBRARY_EDITOR_H
-#define GD_NATIVE_LIBRARY_EDITOR_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
@@ -59,4 +58,3 @@ public:
 };
 
 #endif
-#endif // GD_NATIVE_LIBRARY_EDITOR_H

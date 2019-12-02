@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_QUAT_H
-#define GODOT_QUAT_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,5 +113,3 @@ void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_QUAT_H

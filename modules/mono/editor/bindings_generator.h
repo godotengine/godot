@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BINDINGS_GENERATOR_H
-#define BINDINGS_GENERATOR_H
+#pragma once
 
 #include "core/class_db.h"
 #include "core/string_builder.h"
@@ -657,5 +656,3 @@ public:
 };
 
 #endif
-
-#endif // BINDINGS_GENERATOR_H

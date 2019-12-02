@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSHARP_GC_HANDLE_H
-#define CSHARP_GC_HANDLE_H
+#pragma once
 
 #include <mono/jit/jit.h>
 
@@ -72,5 +71,3 @@ public:
 	MonoGCHandle(uint32_t p_handle, HandleType p_handle_type);
 	~MonoGCHandle();
 };
-
-#endif // CSHARP_GC_HANDLE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POLYGON_2D_H
-#define POLYGON_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -147,5 +146,3 @@ public:
 
 	Polygon2D();
 };
-
-#endif // POLYGON_2D_H

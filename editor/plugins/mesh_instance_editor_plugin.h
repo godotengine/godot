@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -100,5 +99,3 @@ public:
 	MeshInstanceEditorPlugin(EditorNode *p_node);
 	~MeshInstanceEditorPlugin();
 };
-
-#endif // MESH_EDITOR_PLUGIN_H

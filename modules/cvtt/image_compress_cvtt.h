@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_COMPRESS_CVTT_H
-#define IMAGE_COMPRESS_CVTT_H
+#pragma once
 
 #include "core/image.h"
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source);
 void image_decompress_cvtt(Image *p_image);
-
-#endif // IMAGE_COMPRESS_CVTT_H

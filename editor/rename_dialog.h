@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENAME_DIALOG_H
-#define RENAME_DIALOG_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
@@ -114,5 +113,3 @@ public:
 	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = NULL);
 	~RenameDialog(){};
 };
-
-#endif

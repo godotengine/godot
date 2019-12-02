@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAY_SHAPE_H
-#define RAY_SHAPE_H
+#pragma once
 #include "scene/resources/shape.h"
 
 class RayShape : public Shape {
@@ -53,4 +52,3 @@ public:
 
 	RayShape();
 };
-#endif // RAY_SHAPE_H

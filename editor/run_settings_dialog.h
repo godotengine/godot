@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RUN_SETTINGS_DIALOG_H
-#define RUN_SETTINGS_DIALOG_H
+#pragma once
 
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -66,5 +65,3 @@ public:
 
 	RunSettingsDialog();
 };
-
-#endif // RUN_SETTINGS_DIALOG_H

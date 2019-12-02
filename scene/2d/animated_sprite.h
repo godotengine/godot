@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATED_SPRITE_H
-#define ANIMATED_SPRITE_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
@@ -201,5 +200,3 @@ public:
 	virtual String get_configuration_warning() const;
 	AnimatedSprite();
 };
-
-#endif // ANIMATED_SPRITE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HEIGHT_MAP_SHAPE_H
-#define HEIGHT_MAP_SHAPE_H
+#pragma once
 
 #include "scene/resources/shape.h"
 
@@ -58,5 +57,3 @@ public:
 
 	HeightMapShape();
 };
-
-#endif /* !HEIGHT_MAP_SHAPE_H */

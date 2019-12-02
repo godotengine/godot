@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THEME_EDITOR_PLUGIN_H
-#define THEME_EDITOR_PLUGIN_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
@@ -115,5 +114,3 @@ public:
 
 	ThemeEditorPlugin(EditorNode *p_node);
 };
-
-#endif // THEME_EDITOR_PLUGIN_H

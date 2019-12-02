@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_SAVER_PNG_H
-#define RESOURCE_SAVER_PNG_H
+#pragma once
 
 #include "core/image.h"
 #include "core/io/resource_saver.h"
@@ -44,5 +43,3 @@ public:
 
 	ResourceSaverPNG();
 };
-
-#endif // RESOURCE_SAVER_PNG_H

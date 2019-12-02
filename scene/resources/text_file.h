@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTFILE_H
-#define TEXTFILE_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -51,5 +50,3 @@ public:
 	void set_file_path(const String &p_path) { path = p_path; }
 	Error load_text(const String &p_path);
 };
-
-#endif // TEXTFILE_H

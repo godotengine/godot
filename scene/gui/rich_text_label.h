@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RICH_TEXT_LABEL_H
-#define RICH_TEXT_LABEL_H
+#pragma once
 
 #include "rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
@@ -503,5 +502,3 @@ public:
 VARIANT_ENUM_CAST(RichTextLabel::Align);
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
-
-#endif // RICH_TEXT_LABEL_H

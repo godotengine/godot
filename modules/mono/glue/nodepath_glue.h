@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NODEPATH_GLUE_H
-#define NODEPATH_GLUE_H
+#pragma once
 
 #ifdef MONO_GLUE_ENABLED
 
@@ -64,5 +63,3 @@ MonoBoolean godot_icall_NodePath_is_empty(NodePath *p_ptr);
 void godot_register_nodepath_icalls();
 
 #endif // MONO_GLUE_ENABLED
-
-#endif // NODEPATH_GLUE_H

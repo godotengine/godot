@@ -31,8 +31,7 @@
 // note, swapped java and godot around in the file name so all the java
 // wrappers are together
 
-#ifndef JAVA_GODOT_WRAPPER_H
-#define JAVA_GODOT_WRAPPER_H
+#pragma once
 
 #include <android/log.h>
 #include <jni.h>
@@ -91,5 +90,3 @@ public:
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
 };
-
-#endif /* !JAVA_GODOT_WRAPPER_H */

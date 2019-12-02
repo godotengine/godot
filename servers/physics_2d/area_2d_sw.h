@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AREA_2D_SW_H
-#define AREA_2D_SW_H
+#pragma once
 
 #include "collision_object_2d_sw.h"
 #include "core/self_list.h"
@@ -198,5 +197,3 @@ void Area2DSW::remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape, u
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
 }
-
-#endif // AREA_2D_SW_H

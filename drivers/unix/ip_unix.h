@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IP_UNIX_H
-#define IP_UNIX_H
+#pragma once
 
 #include "core/io/ip.h"
 
@@ -50,4 +49,3 @@ public:
 };
 
 #endif
-#endif // IP_UNIX_H

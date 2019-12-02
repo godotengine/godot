@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#pragma once
 
 #import <ARKit/ARKit.h>
 #import <UIKit/UIKit.h>
@@ -46,5 +45,3 @@ class ARKitInterface;
 - (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
 - (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
 @end
-
-#endif /* !ARKIT_SESSION_DELEGATE_H */

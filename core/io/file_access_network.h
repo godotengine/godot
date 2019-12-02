@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_NETWORK_H
-#define FILE_ACCESS_NETWORK_H
+#pragma once
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
@@ -167,5 +166,3 @@ public:
 	FileAccessNetwork();
 	~FileAccessNetwork();
 };
-
-#endif // FILE_ACCESS_NETWORK_H

@@ -30,8 +30,7 @@
 
 #ifdef COREAUDIO_ENABLED
 
-#ifndef AUDIO_DRIVER_COREAUDIO_H
-#define AUDIO_DRIVER_COREAUDIO_H
+#pragma once
 
 #include "servers/audio_server.h"
 
@@ -120,7 +119,5 @@ public:
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio();
 };
-
-#endif
 
 #endif

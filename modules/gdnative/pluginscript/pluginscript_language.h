@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLUGINSCRIPT_LANGUAGE_H
-#define PLUGINSCRIPT_LANGUAGE_H
+#pragma once
 
 // Godot imports
 #include "core/io/resource_loader.h"
@@ -128,5 +127,3 @@ public:
 	PluginScriptLanguage(const godot_pluginscript_language_desc *desc);
 	virtual ~PluginScriptLanguage();
 };
-
-#endif // PLUGINSCRIPT_LANGUAGE_H

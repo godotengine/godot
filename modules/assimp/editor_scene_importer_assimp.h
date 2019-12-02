@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_ASSIMP_H
-#define EDITOR_SCENE_IMPORTER_ASSIMP_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 #include "core/bind/core_bind.h"
@@ -145,5 +144,4 @@ public:
 
 	void RegenerateBoneStack(ImportState &state, aiMesh *mesh);
 };
-#endif
 #endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_SVG_H
-#define IMAGE_LOADER_SVG_H
+#pragma once
 
 #include "core/io/image_loader.h"
 #include "core/ustring.h"
@@ -69,5 +68,3 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderSVG();
 };
-
-#endif

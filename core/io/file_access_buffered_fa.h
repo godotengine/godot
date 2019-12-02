@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_BUFFERED_FA_H
-#define FILE_ACCESS_BUFFERED_FA_H
+#pragma once
 
 #include "core/io/file_access_buffered.h"
 
@@ -155,5 +154,3 @@ public:
 
 	};
 };
-
-#endif // FILE_ACCESS_BUFFERED_FA_H

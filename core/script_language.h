@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_LANGUAGE_H
-#define SCRIPT_LANGUAGE_H
+#pragma once
 
 #include "core/io/multiplayer_api.h"
 #include "core/map.h"
@@ -466,5 +465,3 @@ public:
 	ScriptDebugger();
 	virtual ~ScriptDebugger() { singleton = NULL; }
 };
-
-#endif

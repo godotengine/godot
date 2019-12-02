@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_GLES3_H
-#define SHADER_GLES3_H
+#pragma once
 
 #include "core/hash_map.h"
 #include "core/map.h"
@@ -388,5 +387,3 @@ void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
 	else
 		new_conditional_version.version &= ~(1 << p_which);
 }
-
-#endif

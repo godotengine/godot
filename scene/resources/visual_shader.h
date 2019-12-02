@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SHADER_H
-#define VISUAL_SHADER_H
+#pragma once
 
 #include "core/string_builder.h"
 #include "scene/gui/control.h"
@@ -472,5 +471,3 @@ public:
 
 	VisualShaderNodeGlobalExpression();
 };
-
-#endif // VISUAL_SHADER_H

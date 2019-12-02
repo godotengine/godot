@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_OBJECT_H
-#define COLLISION_OBJECT_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 #include "scene/resources/shape.h"
@@ -115,5 +114,3 @@ public:
 	CollisionObject();
 	~CollisionObject();
 };
-
-#endif // COLLISION_OBJECT__H

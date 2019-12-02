@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DISJOINT_SET_H
-#define DISJOINT_SET_H
+#pragma once
 
 #include "core/map.h"
 #include "core/vector.h"
@@ -151,5 +150,3 @@ void DisjointSet<T, C, AL>::get_members(Vector<T> &out_members, T representative
 		}
 	}
 }
-
-#endif

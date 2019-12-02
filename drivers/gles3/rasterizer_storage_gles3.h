@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSTORAGEGLES3_H
-#define RASTERIZERSTORAGEGLES3_H
+#pragma once
 
 #include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
@@ -1470,5 +1469,3 @@ public:
 
 	RasterizerStorageGLES3();
 };
-
-#endif // RASTERIZERSTORAGEGLES3_H

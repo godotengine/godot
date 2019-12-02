@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSG_GIZMOS_H
-#define CSG_GIZMOS_H
+#pragma once
 
 #include "csg_shape.h"
 #include "editor/editor_plugin.h"
@@ -60,5 +59,3 @@ class EditorPluginCSG : public EditorPlugin {
 public:
 	EditorPluginCSG(EditorNode *p_editor);
 };
-
-#endif // CSG_GIZMOS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RID_GLUE_H
-#define RID_GLUE_H
+#pragma once
 
 #ifdef MONO_GLUE_ENABLED
 
@@ -49,5 +48,3 @@ uint32_t godot_icall_RID_get_id(RID *p_ptr);
 void godot_register_rid_icalls();
 
 #endif // MONO_GLUE_ENABLED
-
-#endif // RID_GLUE_H

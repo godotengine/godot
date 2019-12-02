@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPRITE_EDITOR_PLUGIN_H
-#define SPRITE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -113,5 +112,3 @@ public:
 	SpriteEditorPlugin(EditorNode *p_node);
 	~SpriteEditorPlugin();
 };
-
-#endif // SPRITE_EDITOR_PLUGIN_H

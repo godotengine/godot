@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STRING_GLUE_H
-#define STRING_GLUE_H
+#pragma once
 
 #ifdef MONO_GLUE_ENABLED
 
@@ -52,5 +51,3 @@ MonoString *godot_icall_String_sha256_text(MonoString *p_str);
 void godot_register_string_icalls();
 
 #endif // MONO_GLUE_ENABLED
-
-#endif // STRING_GLUE_H

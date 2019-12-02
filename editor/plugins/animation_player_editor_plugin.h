@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_PLAYER_EDITOR_PLUGIN_H
-#define ANIMATION_PLAYER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -268,5 +267,3 @@ public:
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();
 };
-
-#endif // ANIMATION_PLAYER_EDITOR_PLUGIN_H

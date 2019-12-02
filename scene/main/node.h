@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include "core/class_db.h"
 #include "core/map.h"
@@ -456,5 +455,3 @@ public:
 VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
 typedef Set<Node *, Node::Comparator> NodeSet;
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERGLES2_H
-#define RASTERIZERGLES2_H
+#pragma once
 
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
@@ -72,5 +71,3 @@ public:
 	RasterizerGLES2();
 	~RasterizerGLES2();
 };
-
-#endif // RASTERIZERGLES2_H

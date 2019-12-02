@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPACE_2D_H
-#define SPACE_2D_H
+#pragma once
 
 #include "core/resource.h"
 #include "servers/physics_2d_server.h"
@@ -52,5 +51,3 @@ public:
 	Space2D();
 	~Space2D();
 };
-
-#endif // SPACE_2D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_TRANSFORM2D_H
-#define GODOT_TRANSFORM2D_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,5 +104,3 @@ godot_rect2 GDAPI godot_transform2d_xform_inv_rect2(const godot_transform2d *p_s
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_TRANSFORM2D_H

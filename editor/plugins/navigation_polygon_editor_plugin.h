@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
-#define NAVIGATIONPOLYGONEDITORPLUGIN_H
+#pragma once
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation_polygon.h"
@@ -68,5 +67,3 @@ class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 public:
 	NavigationPolygonEditorPlugin(EditorNode *p_node);
 };
-
-#endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DICTIONARY_PROPERTY_EDIT_H
-#define DICTIONARY_PROPERTY_EDIT_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -61,5 +60,3 @@ public:
 
 	DictionaryPropertyEdit();
 };
-
-#endif // DICTIONARY_PROPERTY_EDIT_H

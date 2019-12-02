@@ -32,8 +32,7 @@
 Adapted to Godot from the Bullet library.
 */
 
-#ifndef PIN_JOINT_SW_H
-#define PIN_JOINT_SW_H
+#pragma once
 
 #include "servers/physics/joints/jacobian_entry_sw.h"
 #include "servers/physics/joints_sw.h"
@@ -92,5 +91,3 @@ public:
 	PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b);
 	~PinJointSW();
 };
-
-#endif // PIN_JOINT_SW_H

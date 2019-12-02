@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RANDOM_PCG_H
-#define RANDOM_PCG_H
+#pragma once
 
 #include <math.h>
 
@@ -132,5 +131,3 @@ public:
 	float random(float p_from, float p_to);
 	real_t random(int p_from, int p_to) { return (real_t)random((real_t)p_from, (real_t)p_to); }
 };
-
-#endif // RANDOM_PCG_H

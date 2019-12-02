@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LANG_TABLE_H
-#define LANG_TABLE_H
+#pragma once
 
 //#include <windows.h>
 
@@ -189,5 +188,3 @@ static const _WinLocale _win_locales[] = {
 	{ "zh_TW", LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL },
 	{ 0, 0, 0 },
 };
-
-#endif // LANG_TABLE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINE_SHAPE_2D_H
-#define LINE_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/shape_2d.h"
 
@@ -58,5 +57,3 @@ public:
 
 	LineShape2D();
 };
-
-#endif // LINE_SHAPE_2D_H

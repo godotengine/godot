@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_OWNER_BULLET_H
-#define SHAPE_OWNER_BULLET_H
+#pragma once
 
 #include "rid_bullet.h"
 
@@ -51,4 +50,3 @@ public:
 	virtual void remove_shape_full(class ShapeBullet *p_shape) = 0;
 	virtual ~ShapeOwnerBullet() {}
 };
-#endif

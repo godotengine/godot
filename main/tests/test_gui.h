@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_GUI_H
-#define TEST_GUI_H
+#pragma once
 
 #include "core/os/main_loop.h"
 
@@ -37,5 +36,3 @@ namespace TestGUI {
 
 MainLoop *test();
 }
-
-#endif

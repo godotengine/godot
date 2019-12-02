@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_3D_H
-#define AUDIO_STREAM_PLAYER_3D_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 #include "scene/3d/spatial_velocity_tracker.h"
@@ -217,4 +216,3 @@ public:
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::AttenuationModel)
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::OutOfRangeMode)
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::DopplerTracking)
-#endif // AUDIO_STREAM_PLAYER_3D_H

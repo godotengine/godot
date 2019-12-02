@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ERROR_LIST_H
-#define ERROR_LIST_H
+#pragma once
 
 /** Error List. Please never compare an error against FAILED
  * Either do result != OK , or !result. This way, Error fail
@@ -89,5 +88,3 @@ enum Error {
 	ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
 	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
 };
-
-#endif

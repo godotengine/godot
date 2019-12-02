@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REF_PTR_H
-#define REF_PTR_H
+#pragma once
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
  * This class exists to workaround a limitation in C++ but keep the design OK.
@@ -58,5 +57,3 @@ public:
 	RefPtr();
 	~RefPtr();
 };
-
-#endif // REF_PTR_H

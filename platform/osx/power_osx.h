@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_OSX_H
-#define POWER_OSX_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -55,5 +54,3 @@ public:
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
-
-#endif // POWER_OSX_H

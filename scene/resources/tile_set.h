@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_SET_H
-#define TILE_SET_H
+#pragma once
 
 #include "core/array.h"
 #include "core/resource.h"
@@ -267,5 +266,3 @@ public:
 VARIANT_ENUM_CAST(TileSet::AutotileBindings);
 VARIANT_ENUM_CAST(TileSet::BitmaskMode);
 VARIANT_ENUM_CAST(TileSet::TileMode);
-
-#endif // TILE_SET_H

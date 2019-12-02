@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_RB_RESAMPLER_H
-#define AUDIO_RB_RESAMPLER_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -174,5 +173,3 @@ public:
 	AudioRBResampler();
 	~AudioRBResampler();
 };
-
-#endif // AUDIO_RB_RESAMPLER_H

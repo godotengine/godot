@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LISTENER_H
-#define LISTENER_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 #include "scene/main/viewport.h"
@@ -74,5 +73,3 @@ public:
 	Listener();
 	~Listener();
 };
-
-#endif

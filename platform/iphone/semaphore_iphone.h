@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEMAPHORE_IPHONE_H
-#define SEMAPHORE_IPHONE_H
+#pragma once
 
 struct cgsem {
 	int pipefd[2];
@@ -55,5 +54,3 @@ public:
 
 	~SemaphoreIphone();
 };
-
-#endif // SEMAPHORE_IPHONE_H

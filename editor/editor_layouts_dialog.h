@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_LAYOUTS_DIALOG_H
-#define EDITOR_LAYOUTS_DIALOG_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -56,5 +55,3 @@ public:
 
 	void set_name_line_enabled(bool p_enabled);
 };
-
-#endif // EDITOR_LAYOUTS_DIALOG_H

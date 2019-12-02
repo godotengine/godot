@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_ETC1_H
-#define IMAGE_ETC1_H
+#pragma once
 
 void _register_etc_compress_func();
-
-#endif // IMAGE_ETC_H

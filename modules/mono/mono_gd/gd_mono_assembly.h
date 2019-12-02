@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_ASSEMBLY_H
-#define GD_MONO_ASSEMBLY_H
+#pragma once
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -131,5 +130,3 @@ public:
 	GDMonoAssembly(const String &p_name, const String &p_path = String());
 	~GDMonoAssembly();
 };
-
-#endif // GD_MONO_ASSEMBLY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OCTREE_H
-#define OCTREE_H
+#pragma once
 
 #include "core/list.h"
 #include "core/map.h"
@@ -1374,5 +1373,3 @@ Octree<T, use_pairs, AL>::Octree(real_t p_unit_size) {
 	pair_callback_userdata = NULL;
 	unpair_callback_userdata = NULL;
 }
-
-#endif

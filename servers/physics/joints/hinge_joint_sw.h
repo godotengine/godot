@@ -32,8 +32,7 @@
 Adapted to Godot from the Bullet library.
 */
 
-#ifndef HINGE_JOINT_SW_H
-#define HINGE_JOINT_SW_H
+#pragma once
 
 #include "servers/physics/joints/jacobian_entry_sw.h"
 #include "servers/physics/joints_sw.h"
@@ -113,5 +112,3 @@ public:
 	HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, const Transform &frameB);
 	HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);
 };
-
-#endif // HINGE_JOINT_SW_H

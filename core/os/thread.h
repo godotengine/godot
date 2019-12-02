@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_H
-#define THREAD_H
+#pragma once
 
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -76,5 +75,3 @@ public:
 
 	virtual ~Thread();
 };
-
-#endif

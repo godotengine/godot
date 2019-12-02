@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ITEM_LIST_EDITOR_PLUGIN_H
-#define ITEM_LIST_EDITOR_PLUGIN_H
+#pragma once
 
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_inspector.h"
@@ -251,5 +250,3 @@ public:
 	ItemListEditorPlugin(EditorNode *p_node);
 	~ItemListEditorPlugin();
 };
-
-#endif // ITEM_LIST_EDITOR_PLUGIN_H

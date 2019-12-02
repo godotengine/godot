@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVA_CLASS_WRAPPER_H
-#define JAVA_CLASS_WRAPPER_H
+#pragma once
 
 #include "core/reference.h"
 #include <android/log.h>
@@ -224,5 +223,3 @@ public:
 
 	JavaClassWrapper(jobject p_activity = NULL);
 };
-
-#endif // JAVA_CLASS_WRAPPER_H

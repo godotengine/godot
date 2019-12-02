@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRADIENT_H
-#define GRADIENT_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -125,5 +124,3 @@ public:
 
 	int get_points_count() const;
 };
-
-#endif // GRADIENT_H

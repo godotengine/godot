@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMMEDIATE_GEOMETRY_H
-#define IMMEDIATE_GEOMETRY_H
+#pragma once
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/mesh.h"
@@ -69,5 +68,3 @@ public:
 	ImmediateGeometry();
 	~ImmediateGeometry();
 };
-
-#endif // IMMEDIATE_GEOMETRY_H

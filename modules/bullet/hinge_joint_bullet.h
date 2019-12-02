@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HINGE_JOINT_BULLET_H
-#define HINGE_JOINT_BULLET_H
+#pragma once
 
 #include "joint_bullet.h"
 
@@ -54,4 +53,3 @@ public:
 	void set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer::HingeJointFlag p_flag) const;
 };
-#endif

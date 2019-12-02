@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_H
-#define GD_MONO_H
+#pragma once
 
 #include "core/io/config_file.h"
 
@@ -334,5 +333,3 @@ public:
 	_GodotSharp();
 	~_GodotSharp();
 };
-
-#endif // GD_MONO_H

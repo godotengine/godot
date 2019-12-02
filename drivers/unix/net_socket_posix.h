@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_UNIX_H
-#define NET_SOCKET_UNIX_H
+#pragma once
 
 #include "core/io/net_socket.h"
 
@@ -101,5 +100,3 @@ public:
 	NetSocketPosix();
 	~NetSocketPosix();
 };
-
-#endif

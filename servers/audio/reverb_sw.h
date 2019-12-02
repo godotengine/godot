@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REVERB_SW_H
-#define REVERB_SW_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -84,5 +83,3 @@ public:
 	ReverbSW();
 	~ReverbSW();
 };
-
-#endif

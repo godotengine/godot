@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_STRING_H
-#define TEST_STRING_H
+#pragma once
 
 #include "core/os/main_loop.h"
 #include "core/ustring.h"
@@ -38,5 +37,3 @@ namespace TestString {
 
 MainLoop *test();
 }
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WSLSERVER_H
-#define WSLSERVER_H
+#pragma once
 
 #ifndef JAVASCRIPT_ENABLED
 
@@ -98,5 +97,3 @@ public:
 };
 
 #endif // JAVASCRIPT_ENABLED
-
-#endif // WSLSERVER_H

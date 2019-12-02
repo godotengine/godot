@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLUGINSCRIPT_INSTANCE_H
-#define PLUGINSCRIPT_INSTANCE_H
+#pragma once
 
 // Godot imports
 #include "core/script_language.h"
@@ -86,5 +85,3 @@ public:
 	bool init(PluginScript *p_script, Object *p_owner);
 	virtual ~PluginScriptInstance();
 };
-
-#endif // PLUGINSCRIPT_INSTANCE_H

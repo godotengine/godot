@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_SW_H
-#define SHAPE_SW_H
+#pragma once
 
 #include "core/math/bsp_tree.h"
 #include "core/math/geometry.h"
@@ -479,5 +478,3 @@ struct _ShapeTestConvexBSPSW {
 		shape->project_range(p_normal, transform, r_min, r_max);
 	}
 };
-
-#endif // SHAPESW_H

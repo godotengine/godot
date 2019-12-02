@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBRTC_PEER_CONNECTION_H
-#define WEBRTC_PEER_CONNECTION_H
+#pragma once
 
 #include "core/io/packet_peer.h"
 #include "modules/webrtc/webrtc_data_channel.h"
@@ -71,4 +70,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);
-#endif // WEBRTC_PEER_CONNECTION_H

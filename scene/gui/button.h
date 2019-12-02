@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BUTTON_H
-#define BUTTON_H
+#pragma once
 
 #include "scene/gui/base_button.h"
 
@@ -85,5 +84,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Button::TextAlign);
-
-#endif

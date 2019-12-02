@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERVIEWPORT_H
-#define VISUALSERVERVIEWPORT_H
+#pragma once
 
 #include "core/self_list.h"
 #include "rasterizer.h"
@@ -204,5 +203,3 @@ public:
 	VisualServerViewport();
 	virtual ~VisualServerViewport() {}
 };
-
-#endif // VISUALSERVERVIEWPORT_H

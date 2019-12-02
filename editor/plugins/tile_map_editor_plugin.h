@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_MAP_EDITOR_PLUGIN_H
-#define TILE_MAP_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -250,5 +249,3 @@ public:
 	TileMapEditorPlugin(EditorNode *p_node);
 	~TileMapEditorPlugin();
 };
-
-#endif // TILE_MAP_EDITOR_PLUGIN_H

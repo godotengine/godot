@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PRINT_STRING_H
-#define PRINT_STRING_H
+#pragma once
 
 #include "core/ustring.h"
 
@@ -59,5 +58,3 @@ extern bool _print_error_enabled;
 extern void print_line(String p_string);
 extern void print_error(String p_string);
 extern void print_verbose(String p_string);
-
-#endif

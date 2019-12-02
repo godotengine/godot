@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SUB_SCENE_H
-#define EDITOR_SUB_SCENE_H
+#pragma once
 
 #include "editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
@@ -67,5 +66,3 @@ public:
 	void clear();
 	EditorSubScene();
 };
-
-#endif // EDITOR_SUB_SCENE_H

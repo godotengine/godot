@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TOUCH_SCREEN_BUTTON_H
-#define TOUCH_SCREEN_BUTTON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/bit_map.h"
@@ -111,5 +110,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(TouchScreenButton::VisibilityMode);
-
-#endif // TOUCH_SCREEN_BUTTON_H

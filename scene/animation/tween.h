@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TWEEN_H
-#define TWEEN_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -196,5 +195,3 @@ public:
 VARIANT_ENUM_CAST(Tween::TweenProcessMode);
 VARIANT_ENUM_CAST(Tween::TransitionType);
 VARIANT_ENUM_CAST(Tween::EaseType);
-
-#endif

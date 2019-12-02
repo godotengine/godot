@@ -30,8 +30,7 @@
 
 #ifdef STOREKIT_ENABLED
 
-#ifndef IN_APP_STORE_H
-#define IN_APP_STORE_H
+#pragma once
 
 #include "core/object.h"
 
@@ -62,7 +61,5 @@ public:
 	InAppStore();
 	~InAppStore();
 };
-
-#endif
 
 #endif

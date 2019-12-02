@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TOOL_BUTTON_H
-#define TOOL_BUTTON_H
+#pragma once
 
 #include "scene/gui/button.h"
 
@@ -39,5 +38,3 @@ class ToolButton : public Button {
 public:
 	ToolButton();
 };
-
-#endif // TOOL_BUTTON_H

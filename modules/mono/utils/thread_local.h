@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_LOCAL_H
-#define THREAD_LOCAL_H
+#pragma once
 
 #ifdef HAVE_CXX11_THREAD_LOCAL
 #define _THREAD_LOCAL_(m_t) thread_local m_t
@@ -173,5 +172,3 @@ private:
 	if (_recursion_flag_)                                 \
 		return;                                           \
 	FlagScopeGuard _recursion_guard_(_recursion_flag_);
-
-#endif // THREAD_LOCAL_H

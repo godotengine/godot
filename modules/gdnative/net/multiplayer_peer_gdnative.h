@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_PEER_GDNATIVE_H
-#define MULTIPLAYER_PEER_GDNATIVE_H
+#pragma once
 
 #include "core/io/networked_multiplayer_peer.h"
 #include "modules/gdnative/gdnative.h"
@@ -73,5 +72,3 @@ public:
 
 	virtual ConnectionStatus get_connection_status() const;
 };
-
-#endif // MULTIPLAYER_PEER_GDNATIVE_H

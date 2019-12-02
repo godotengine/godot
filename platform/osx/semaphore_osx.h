@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEMAPHORE_OSX_H
-#define SEMAPHORE_OSX_H
+#pragma once
 
 struct cgsem {
 	int pipefd[2];
@@ -55,5 +54,3 @@ public:
 
 	~SemaphoreOSX();
 };
-
-#endif // SEMAPHORE_OSX_H

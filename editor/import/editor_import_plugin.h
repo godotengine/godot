@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_IMPORT_PLUGIN_H
-#define EDITOR_IMPORT_PLUGIN_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -54,5 +53,3 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = NULL);
 };
-
-#endif //EDITOR_IMPORT_PLUGIN_H

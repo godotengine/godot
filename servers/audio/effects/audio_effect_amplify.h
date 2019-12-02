@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTAMPLIFY_H
-#define AUDIOEFFECTAMPLIFY_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -62,5 +61,3 @@ public:
 
 	AudioEffectAmplify();
 };
-
-#endif // AUDIOEFFECTAMPLIFY_H

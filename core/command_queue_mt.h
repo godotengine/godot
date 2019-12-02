@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COMMAND_QUEUE_MT_H
-#define COMMAND_QUEUE_MT_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
@@ -487,5 +486,3 @@ public:
 #undef DECL_PUSH_AND_RET
 #undef CMD_SYNC_TYPE
 #undef DECL_CMD_SYNC
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPEN_SIMPLEX_NOISE_H
-#define OPEN_SIMPLEX_NOISE_H
+#pragma once
 
 #include "core/image.h"
 #include "core/reference.h"
@@ -90,5 +89,3 @@ public:
 protected:
 	static void _bind_methods();
 };
-
-#endif // OPEN_SIMPLEX_NOISE_H

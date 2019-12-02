@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_H
-#define IMAGE_H
+#pragma once
 
 #include "core/color.h"
 #include "core/math/rect2.h"
@@ -372,5 +371,3 @@ VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)
 VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::AlphaMode)
-
-#endif

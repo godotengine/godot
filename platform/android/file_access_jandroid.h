@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_JANDROID_H
-#define FILE_ACCESS_JANDROID_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include "java_godot_lib_jni.h"
@@ -80,5 +79,3 @@ public:
 	FileAccessJAndroid();
 	~FileAccessJAndroid();
 };
-
-#endif // FILE_ACCESS_JANDROID_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOINT_BULLET_H
-#define JOINT_BULLET_H
+#pragma once
 
 #include "constraint_bullet.h"
 #include "servers/physics_server.h"
@@ -49,4 +48,3 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const = 0;
 };
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_EFFECT_PITCH_SHIFT_H
-#define AUDIO_EFFECT_PITCH_SHIFT_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -125,5 +124,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(AudioEffectPitchShift::FFT_Size);
-
-#endif // AUDIO_EFFECT_PITCH_SHIFT_H

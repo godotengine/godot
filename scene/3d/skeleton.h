@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_H
-#define SKELETON_H
+#pragma once
 
 #include "core/rid.h"
 #include "scene/3d/spatial.h"
@@ -221,5 +220,3 @@ public:
 	Skeleton();
 	~Skeleton();
 };
-
-#endif

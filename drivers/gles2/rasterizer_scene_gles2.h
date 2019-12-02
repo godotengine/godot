@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSCENEGLES2_H
-#define RASTERIZERSCENEGLES2_H
+#pragma once
 
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles2.h"
@@ -767,5 +766,3 @@ public:
 	void finalize();
 	RasterizerSceneGLES2();
 };
-
-#endif // RASTERIZERSCENEGLES2_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HAIKU_DIRECT_WINDOW_H
-#define HAIKU_DIRECT_WINDOW_H
+#pragma once
 
 #include <kernel/image.h> // needed for image_id
 
@@ -85,5 +84,3 @@ public:
 	inline Point2i GetLastMousePosition() { return last_mouse_position; };
 	inline int GetLastButtonMask() { return last_button_mask; };
 };
-
-#endif

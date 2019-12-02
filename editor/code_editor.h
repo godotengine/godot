@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CODE_EDITOR_H
-#define CODE_EDITOR_H
+#pragma once
 
 #include "editor/editor_plugin.h"
 #include "scene/gui/check_box.h"
@@ -253,5 +252,3 @@ public:
 
 	CodeTextEditor();
 };
-
-#endif // CODE_EDITOR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COMPRESSION_H
-#define COMPRESSION_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -55,5 +54,3 @@ public:
 
 	Compression();
 };
-
-#endif // COMPRESSION_H

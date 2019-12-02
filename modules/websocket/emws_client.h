@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWSCLIENT_H
-#define EMWSCLIENT_H
+#pragma once
 
 #ifdef JAVASCRIPT_ENABLED
 
@@ -63,5 +62,3 @@ public:
 };
 
 #endif // JAVASCRIPT_ENABLED
-
-#endif // EMWSCLIENT_H

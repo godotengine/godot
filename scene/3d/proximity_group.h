@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROXIMITY_GROUP_H
-#define PROXIMITY_GROUP_H
+#pragma once
 
 #include "spatial.h"
 
@@ -83,5 +82,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(ProximityGroup::DispatchMode);
-
-#endif

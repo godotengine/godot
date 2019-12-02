@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPRING_ARM_H
-#define SPRING_ARM_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 
@@ -67,5 +66,3 @@ public:
 private:
 	void process_spring();
 };
-
-#endif

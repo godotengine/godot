@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADERCOMPILERGLES3_H
-#define SHADERCOMPILERGLES3_H
+#pragma once
 
 #include "core/pair.h"
 #include "servers/visual/shader_language.h"
@@ -99,5 +98,3 @@ public:
 
 	ShaderCompilerGLES3();
 };
-
-#endif // SHADERCOMPILERGLES3_H

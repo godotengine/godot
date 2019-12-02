@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_COMPRESS_SQUISH_H
-#define IMAGE_COMPRESS_SQUISH_H
+#pragma once
 
 #include "core/image.h"
 
@@ -37,5 +36,3 @@
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source);
 #endif
 void image_decompress_squish(Image *p_image);
-
-#endif // IMAGE_COMPRESS_SQUISH_H

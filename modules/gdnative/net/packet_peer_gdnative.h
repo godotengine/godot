@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PACKET_PEER_GDNATIVE_H
-#define PACKET_PEER_GDNATIVE_H
+#pragma once
 
 #include "core/io/packet_peer.h"
 #include "modules/gdnative/gdnative.h"
@@ -55,5 +54,3 @@ public:
 	virtual int get_max_packet_size() const;
 	virtual int get_available_packet_count() const;
 };
-
-#endif // PACKET_PEER_GDNATIVE_H

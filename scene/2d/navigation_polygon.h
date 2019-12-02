@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_POLYGON_H
-#define NAVIGATION_POLYGON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -113,5 +112,3 @@ public:
 
 	NavigationPolygonInstance();
 };
-
-#endif // NAVIGATIONPOLYGON_H

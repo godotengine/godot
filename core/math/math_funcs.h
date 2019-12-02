@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MATH_FUNCS_H
-#define MATH_FUNCS_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
@@ -485,5 +484,3 @@ public:
 		return p_target;
 	}
 };
-
-#endif // MATH_FUNCS_H

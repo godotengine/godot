@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_IPHONE_H
-#define POWER_IPHONE_H
+#pragma once
 
 #include <os/os.h>
 
@@ -49,5 +48,3 @@ public:
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
-
-#endif // POWER_IPHONE_H

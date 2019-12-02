@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLUGINSCRIPT_SCRIPT_H
-#define PLUGINSCRIPT_SCRIPT_H
+#pragma once
 
 // Godot imports
 #include "core/script_language.h"
@@ -125,5 +124,3 @@ public:
 	void init(PluginScriptLanguage *language);
 	virtual ~PluginScript();
 };
-
-#endif // PLUGINSCRIPT_SCRIPT_H

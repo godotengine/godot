@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SETTINGS_H
-#define EDITOR_SETTINGS_H
+#pragma once
 
 #include "core/object.h"
 
@@ -214,5 +213,3 @@ Variant _EDITOR_GET(const String &p_setting);
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
 Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path);
-
-#endif // EDITOR_SETTINGS_H

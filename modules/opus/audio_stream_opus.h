@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_OPUS_H
-#define AUDIO_STREAM_OPUS_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
@@ -138,5 +137,3 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
-#endif // AUDIO_STREAM_OPUS_H

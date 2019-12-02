@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INPUT_DEFAULT_H
-#define INPUT_DEFAULT_H
+#pragma once
 
 #include "core/os/input.h"
 
@@ -276,5 +275,3 @@ public:
 	virtual void release_pressed_events();
 	InputDefault();
 };
-
-#endif // INPUT_DEFAULT_H

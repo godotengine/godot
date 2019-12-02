@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PORTAL_H
-#define PORTAL_H
+#pragma once
 
 #include "scene/3d/visual_instance.h"
 
@@ -84,5 +83,4 @@ public:
 	~Portal();
 };
 
-#endif
 #endif

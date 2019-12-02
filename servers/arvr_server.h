@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_SERVER_H
-#define ARVR_SERVER_H
+#pragma once
 
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
@@ -188,5 +187,3 @@ public:
 
 VARIANT_ENUM_CAST(ARVRServer::TrackerType);
 VARIANT_ENUM_CAST(ARVRServer::RotationMode);
-
-#endif

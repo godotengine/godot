@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LABEL_H
-#define LABEL_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -147,5 +146,3 @@ public:
 
 VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
-
-#endif

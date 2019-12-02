@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_EDITOR_PLUGIN_H
-#define PARTICLES_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -96,5 +95,3 @@ public:
 	Particles2DEditorPlugin(EditorNode *p_node);
 	~Particles2DEditorPlugin();
 };
-
-#endif // PARTICLES_2D_EDITOR_PLUGIN_H

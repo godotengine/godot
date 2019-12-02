@@ -31,8 +31,7 @@
 // Circular dependency between Vector3 and Basis :/
 #include "core/math/vector3.h"
 
-#ifndef QUAT_H
-#define QUAT_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -230,5 +229,3 @@ bool Quat::operator==(const Quat &p_quat) const {
 bool Quat::operator!=(const Quat &p_quat) const {
 	return x != p_quat.x || y != p_quat.y || z != p_quat.z || w != p_quat.w;
 }
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ROOM_BOUNDS_H
-#define ROOM_BOUNDS_H
+#pragma once
 
 #include "core/math/bsp_tree.h"
 #include "core/resource.h"
@@ -59,4 +58,3 @@ public:
 };
 
 #endif
-#endif // ROOM_H

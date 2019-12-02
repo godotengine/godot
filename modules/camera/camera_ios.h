@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAIOS_H
-#define CAMERAIOS_H
+#pragma once
 
 #include "servers/camera_server.h"
 
@@ -41,5 +40,3 @@ public:
 
 	void update_feeds();
 };
-
-#endif /* CAMERAIOS_H */

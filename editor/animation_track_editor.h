@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_TRACK_EDITOR_H
-#define ANIMATION_TRACK_EDITOR_H
+#pragma once
 
 #include "editor/editor_data.h"
 #include "editor/editor_spin_slider.h"
@@ -528,5 +527,3 @@ public:
 	AnimationTrackEditor();
 	~AnimationTrackEditor();
 };
-
-#endif // ANIMATION_TRACK_EDITOR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_H
-#define FILE_ACCESS_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/os/memory.h"
@@ -195,5 +194,3 @@ struct FileAccessRef {
 		if (f) memdelete(f);
 	}
 };
-
-#endif

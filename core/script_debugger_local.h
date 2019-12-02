@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_LOCAL_H
-#define SCRIPT_DEBUGGER_LOCAL_H
+#pragma once
 
 #include "core/list.h"
 #include "core/script_language.h"
@@ -63,5 +62,3 @@ public:
 
 	ScriptDebuggerLocal();
 };
-
-#endif // SCRIPT_DEBUGGER_LOCAL_H

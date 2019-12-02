@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVESCRIPT_H
-#define GODOT_NATIVESCRIPT_H
+#pragma once
 
 #include <gdnative/gdnative.h>
 
@@ -245,6 +244,4 @@ void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

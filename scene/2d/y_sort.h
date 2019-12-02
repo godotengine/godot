@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef Y_SORT_H
-#define Y_SORT_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -43,5 +42,3 @@ public:
 	bool is_sort_enabled() const;
 	YSort();
 };
-
-#endif // Y_SORT_H

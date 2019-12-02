@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_H
-#define EDITOR_QUICK_OPEN_H
+#pragma once
 
 #include "core/pair.h"
 #include "editor_file_system.h"
@@ -69,5 +68,3 @@ public:
 	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_add_dirs = false, bool p_dontclear = false);
 	EditorQuickOpen();
 };
-
-#endif // EDITOR_QUICK_OPEN_H

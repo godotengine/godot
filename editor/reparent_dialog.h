@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REPARENT_DIALOG_H
-#define REPARENT_DIALOG_H
+#pragma once
 
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
@@ -62,5 +61,3 @@ public:
 	ReparentDialog();
 	~ReparentDialog();
 };
-
-#endif

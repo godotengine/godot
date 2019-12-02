@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INTERPOLATED_CAMERA_H
-#define INTERPOLATED_CAMERA_H
+#pragma once
 
 #include "scene/3d/camera.h"
 
@@ -59,5 +58,3 @@ public:
 
 	InterpolatedCamera();
 };
-
-#endif // INTERPOLATED_CAMERA_H

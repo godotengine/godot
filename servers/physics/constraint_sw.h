@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONSTRAINT_SW_H
-#define CONSTRAINT_SW_H
+#pragma once
 
 #include "body_sw.h"
 
@@ -81,5 +80,3 @@ public:
 
 	virtual ~ConstraintSW() {}
 };
-
-#endif // CONSTRAINT__SW_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODY_PAIR_SW_H
-#define BODY_PAIR_SW_H
+#pragma once
 
 #include "body_sw.h"
 #include "constraint_sw.h"
@@ -93,5 +92,3 @@ public:
 	BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B);
 	~BodyPairSW();
 };
-
-#endif // BODY_PAIR__SW_H

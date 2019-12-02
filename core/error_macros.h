@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ERROR_MACROS_H
-#define ERROR_MACROS_H
+#pragma once
 
 #include "core/typedefs.h"
 /**
@@ -440,5 +439,3 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 			warning_shown = true;                                                                                                                                \
 		}                                                                                                                                                        \
 	}
-
-#endif

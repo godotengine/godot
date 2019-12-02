@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONSTRAINT_2D_SW_H
-#define CONSTRAINT_2D_SW_H
+#pragma once
 
 #include "body_2d_sw.h"
 
@@ -76,5 +75,3 @@ public:
 
 	virtual ~Constraint2DSW() {}
 };
-
-#endif // CONSTRAINT_2D_SW_H

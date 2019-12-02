@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SERVER_RASTER_H
-#define VISUAL_SERVER_RASTER_H
+#pragma once
 
 #include "core/math/octree.h"
 #include "servers/visual/rasterizer.h"
@@ -719,5 +718,3 @@ public:
 #undef BIND9
 #undef BIND10
 };
-
-#endif

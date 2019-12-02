@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#pragma once
 
 #include "core/os/input_event.h"
 #include "core/reference.h"
@@ -80,5 +79,3 @@ public:
 	MainLoop();
 	virtual ~MainLoop();
 };
-
-#endif

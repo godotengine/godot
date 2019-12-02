@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREADED_ARRAY_PROCESSOR_H
-#define THREADED_ARRAY_PROCESSOR_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/os/os.h"
@@ -106,5 +105,3 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 }
 
 #endif
-
-#endif // THREADED_ARRAY_PROCESSOR_H

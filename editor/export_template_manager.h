@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EXPORT_TEMPLATE_MANAGER_H
-#define EXPORT_TEMPLATE_MANAGER_H
+#pragma once
 
 #include "editor/editor_settings.h"
 #include "scene/gui/dialogs.h"
@@ -91,5 +90,3 @@ public:
 
 	ExportTemplateManager();
 };
-
-#endif // EXPORT_TEMPLATE_MANAGER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_OBJECT_BULLET_H
-#define COLLISION_OBJECT_BULLET_H
+#pragma once
 
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
@@ -259,5 +258,3 @@ public:
 private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);
 };
-
-#endif

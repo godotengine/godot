@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRAPH_NODE_H
-#define GRAPH_NODE_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -163,5 +162,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(GraphNode::Overlay)
-
-#endif // GRAPH_NODE_H

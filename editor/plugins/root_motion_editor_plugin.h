@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ROOT_MOTION_EDITOR_PLUGIN_H
-#define ROOT_MOTION_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
@@ -68,5 +67,3 @@ public:
 	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
 	virtual void parse_end();
 };
-
-#endif // ROOT_MOTION_EDITOR_PLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_EDITOR_PLUGIN_H
-#define SKELETON_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -92,5 +91,3 @@ public:
 	SkeletonEditorPlugin(EditorNode *p_node);
 	~SkeletonEditorPlugin();
 };
-
-#endif // SKELETON_EDITOR_PLUGIN_H

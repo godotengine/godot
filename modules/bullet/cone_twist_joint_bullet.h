@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONE_TWIST_JOINT_BULLET_H
-#define CONE_TWIST_JOINT_BULLET_H
+#pragma once
 
 #include "joint_bullet.h"
 
@@ -50,4 +49,3 @@ public:
 	void set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::ConeTwistJointParam p_param) const;
 };
-#endif

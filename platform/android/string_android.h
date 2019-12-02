@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STRING_ANDROID_H
-#define STRING_ANDROID_H
+#pragma once
 #include "core/ustring.h"
 #include "thread_jandroid.h"
 #include <jni.h>
@@ -54,5 +53,3 @@ static inline String jstring_to_string(jstring source, JNIEnv *env = NULL) {
 	}
 	return result;
 }
-
-#endif // STRING_ANDROID_H

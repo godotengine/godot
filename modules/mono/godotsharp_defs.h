@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOTSHARP_DEFS_H
-#define GODOTSHARP_DEFS_H
+#pragma once
 
 #define BINDINGS_NAMESPACE "Godot"
 #define BINDINGS_NAMESPACE_COLLECTIONS BINDINGS_NAMESPACE ".Collections"
@@ -44,5 +43,3 @@
 
 #define BINDINGS_CLASS_NATIVECALLS "NativeCalls"
 #define BINDINGS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"
-
-#endif // GODOTSHARP_DEFS_H

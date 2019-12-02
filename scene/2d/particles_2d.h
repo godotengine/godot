@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_H
-#define PARTICLES_2D_H
+#pragma once
 
 #include "core/rid.h"
 #include "scene/2d/node_2d.h"
@@ -123,5 +122,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Particles2D::DrawOrder)
-
-#endif // PARTICLES_2D_H

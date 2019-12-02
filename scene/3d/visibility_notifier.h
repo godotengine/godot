@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISIBILITY_NOTIFIER_H
-#define VISIBILITY_NOTIFIER_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 
@@ -97,5 +96,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisibilityEnabler::Enabler);
-
-#endif // VISIBILITY_NOTIFIER_H

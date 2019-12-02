@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#pragma once
 
 #include "core/resource.h"
 #include "core/self_list.h"
@@ -653,5 +652,3 @@ VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
 VARIANT_ENUM_CAST(SpatialMaterial::DistanceFadeMode)
 
 //////////////////////
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INPUT_H
-#define INPUT_H
+#pragma once
 
 #include "core/object.h"
 #include "core/os/main_loop.h"
@@ -142,5 +141,3 @@ public:
 
 VARIANT_ENUM_CAST(Input::MouseMode);
 VARIANT_ENUM_CAST(Input::CursorShape);
-
-#endif // INPUT_H

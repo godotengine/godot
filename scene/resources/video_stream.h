@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -84,5 +83,3 @@ public:
 
 	VideoStream() {}
 };
-
-#endif

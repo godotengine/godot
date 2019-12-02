@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_RID_H
-#define GODOT_RID_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,5 +69,3 @@ godot_bool GDAPI godot_rid_operator_less(const godot_rid *p_self, const godot_ri
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_RID_H

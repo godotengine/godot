@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSHARP_PROJECT_H
-#define CSHARP_PROJECT_H
+#pragma once
 
 #include "core/ustring.h"
 
@@ -41,5 +40,3 @@ bool generate_api_solution(const String &p_solution_dir, const String &p_core_pr
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include);
 
 } // namespace CSharpProject
-
-#endif // CSHARP_PROJECT_H

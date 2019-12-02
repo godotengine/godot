@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_NODE_H
-#define EDITOR_NODE_H
+#pragma once
 
 #include "core/print_string.h"
 #include "editor/audio_stream_preview.h"
@@ -928,5 +927,3 @@ struct EditorProgressBG {
 	}
 	~EditorProgressBG() { EditorNode::progress_end_task_bg(task); }
 };
-
-#endif // EDITOR_NODE_H

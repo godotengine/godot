@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_GLTF_H
-#define EDITOR_SCENE_IMPORTER_GLTF_H
+#pragma once
 
 #include "editor/import/resource_importer_scene.h"
 #include "scene/3d/skeleton.h"
@@ -413,5 +412,3 @@ public:
 
 	EditorSceneImporterGLTF();
 };
-
-#endif // EDITOR_SCENE_IMPORTER_GLTF_H

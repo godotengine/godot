@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INPUT_EVENT_H
-#define INPUT_EVENT_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 #include "core/os/copymem.h"
@@ -616,5 +615,3 @@ public:
 
 	InputEventMIDI();
 };
-
-#endif

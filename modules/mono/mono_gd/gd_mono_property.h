@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_PROPERTY_H
-#define GD_MONO_PROPERTY_H
+#pragma once
 
 #include "gd_mono.h"
 #include "gd_mono_header.h"
@@ -76,5 +75,3 @@ public:
 	GDMonoProperty(MonoProperty *p_mono_property, GDMonoClass *p_owner);
 	~GDMonoProperty();
 };
-
-#endif // GD_MONO_PROPERTY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_FEED_H
-#define CAMERA_FEED_H
+#pragma once
 
 #include "core/image.h"
 #include "core/math/transform_2d.h"
@@ -111,5 +110,3 @@ public:
 
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
-
-#endif /* !CAMERA_FEED_H */

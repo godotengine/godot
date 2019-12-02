@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARALLAX_BACKGROUND_H
-#define PARALLAX_BACKGROUND_H
+#pragma once
 
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/node_2d.h"
@@ -84,5 +83,3 @@ public:
 
 	ParallaxBackground();
 };
-
-#endif // PARALLAX_BACKGROUND_H

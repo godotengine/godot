@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef USTRING_H
-#define USTRING_H
+#pragma once
 
 #include "core/array.h"
 #include "core/cowdata.h"
@@ -435,5 +434,3 @@ String RTR(const String &);
 
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
-
-#endif // USTRING_H

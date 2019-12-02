@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_UTILS_H
-#define PATH_UTILS_H
+#pragma once
 
 #include "core/string_builder.h"
 #include "core/ustring.h"
@@ -58,5 +57,3 @@ String abspath(const String &p_path);
 String realpath(const String &p_path);
 
 } // namespace path
-
-#endif // PATH_UTILS_H

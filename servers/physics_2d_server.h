@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_2D_SERVER_H
-#define PHYSICS_2D_SERVER_H
+#pragma once
 
 #include "core/object.h"
 #include "core/reference.h"
@@ -695,5 +694,3 @@ VARIANT_ENUM_CAST(Physics2DServer::DampedStringParam);
 //VARIANT_ENUM_CAST( Physics2DServer::ObjectType );
 VARIANT_ENUM_CAST(Physics2DServer::AreaBodyStatus);
 VARIANT_ENUM_CAST(Physics2DServer::ProcessInfo);
-
-#endif

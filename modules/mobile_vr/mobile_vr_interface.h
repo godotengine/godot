@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MOBILE_VR_INTERFACE_H
-#define MOBILE_VR_INTERFACE_H
+#pragma once
 
 #include "servers/arvr/arvr_interface.h"
 #include "servers/arvr/arvr_positional_tracker.h"
@@ -147,5 +146,3 @@ public:
 	MobileVRInterface();
 	~MobileVRInterface();
 };
-
-#endif // !MOBILE_VR_INTERFACE_H

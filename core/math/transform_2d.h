@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSFORM_2D_H
-#define TRANSFORM_2D_H
+#pragma once
 
 #include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
 #include "core/pool_vector.h"
@@ -230,5 +229,3 @@ PoolVector<Vector2> Transform2D::xform_inv(const PoolVector<Vector2> &p_array) c
 	}
 	return array;
 }
-
-#endif // TRANSFORM_2D_H

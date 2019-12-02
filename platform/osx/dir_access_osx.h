@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIR_ACCESS_OSX_H
-#define DIR_ACCESS_OSX_H
+#pragma once
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
@@ -50,4 +49,3 @@ protected:
 };
 
 #endif //UNIX ENABLED
-#endif

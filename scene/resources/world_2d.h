@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_2D_H
-#define WORLD_2D_H
+#pragma once
 
 #include "core/project_settings.h"
 #include "core/resource.h"
@@ -74,5 +73,3 @@ public:
 	World2D();
 	~World2D();
 };
-
-#endif // WORLD_2D_H

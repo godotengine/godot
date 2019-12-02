@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTCOMPRESSOR_H
-#define AUDIOEFFECTCOMPRESSOR_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -90,5 +89,3 @@ public:
 
 	AudioEffectCompressor();
 };
-
-#endif // AUDIOEFFECTCOMPRESSOR_H

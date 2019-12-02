@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPRITE_H
-#define SPRITE_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
@@ -125,5 +124,3 @@ public:
 	Sprite();
 	~Sprite();
 };
-
-#endif // SPRITE_H

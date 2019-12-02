@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_MODULE_TYPES_H
-#define REGISTER_MODULE_TYPES_H
+#pragma once
 
 //
 
 void register_module_types();
 void unregister_module_types();
-
-#endif

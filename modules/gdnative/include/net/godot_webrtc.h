@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVEWEBRTC_H
-#define GODOT_NATIVEWEBRTC_H
+#pragma once
 
 #include <gdnative/gdnative.h>
 
@@ -117,6 +116,4 @@ void GDAPI godot_net_bind_webrtc_data_channel(godot_object *p_obj, const godot_n
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

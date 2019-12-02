@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SETTINGS_CONFIG_DIALOG_H
-#define SETTINGS_CONFIG_DIALOG_H
+#pragma once
 
 #include "editor/editor_sectioned_inspector.h"
 #include "editor_inspector.h"
@@ -110,5 +109,3 @@ public:
 	EditorSettingsDialog();
 	~EditorSettingsDialog();
 };
-
-#endif // SETTINGS_CONFIG_DIALOG_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_RECT2_H
-#define GODOT_RECT2_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,5 +97,3 @@ void GDAPI godot_rect2_set_size(godot_rect2 *p_self, const godot_vector2 *p_size
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_RECT2_H

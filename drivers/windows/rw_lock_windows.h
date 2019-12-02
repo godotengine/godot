@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RWLOCKWINDOWS_H
-#define RWLOCKWINDOWS_H
+#pragma once
 
 #if defined(WINDOWS_ENABLED)
 
@@ -60,5 +59,3 @@ public:
 };
 
 #endif
-
-#endif // RWLOCKWINDOWS_H

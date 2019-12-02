@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_DRIVER_WASAPI_H
-#define AUDIO_DRIVER_WASAPI_H
+#pragma once
 
 #ifdef WASAPI_ENABLED
 
@@ -127,4 +126,3 @@ public:
 };
 
 #endif // AUDIO_DRIVER_WASAPI_H
-#endif

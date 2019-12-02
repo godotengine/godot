@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_GENERATOR_H
-#define NAVIGATION_MESH_GENERATOR_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "scene/3d/navigation_mesh.h"
@@ -63,5 +62,3 @@ public:
 	void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node);
 	void clear(Ref<NavigationMesh> p_nav_mesh);
 };
-
-#endif // NAVIGATION_MESH_GENERATOR_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RID_BULLET_H
-#define RID_BULLET_H
+#pragma once
 
 #include "core/rid.h"
 
@@ -50,4 +49,3 @@ public:
 	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer *p_physicsServer) { physicsServer = p_physicsServer; }
 	_FORCE_INLINE_ BulletPhysicsServer *get_physics_server() const { return physicsServer; }
 };
-#endif

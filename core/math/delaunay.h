@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DELAUNAY_H
-#define DELAUNAY_H
+#pragma once
 
 #include "core/math/rect2.h"
 
@@ -171,5 +170,3 @@ public:
 		return triangles;
 	}
 };
-
-#endif // DELAUNAY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#pragma once
 
 #include "core/error_list.h"
 
@@ -46,5 +45,3 @@ public:
 
 	virtual ~Semaphore();
 };
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_TYPE_CACHE_H
-#define FILE_TYPE_CACHE_H
+#pragma once
 
 #include "core/object.h"
 
@@ -53,5 +52,3 @@ public:
 
 	FileTypeCache();
 };
-
-#endif // FILE_TYPE_CACHE_H

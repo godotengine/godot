@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_OCTREE_H
-#define BROAD_PHASE_OCTREE_H
+#pragma once
 
 #include "broad_phase_sw.h"
 #include "core/math/octree.h"
@@ -69,5 +68,3 @@ public:
 	static BroadPhaseSW *_create();
 	BroadPhaseOctree();
 };
-
-#endif // BROAD_PHASE_OCTREE_H

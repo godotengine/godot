@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_ANDROID_H
-#define OS_ANDROID_H
+#pragma once
 
 #include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
@@ -205,5 +204,3 @@ public:
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
 	~OS_Android();
 };
-
-#endif

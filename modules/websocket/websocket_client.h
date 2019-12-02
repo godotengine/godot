@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_CLIENT_H
-#define WEBSOCKET_CLIENT_H
+#pragma once
 
 #include "core/crypto/crypto.h"
 #include "core/error_list.h"
@@ -76,5 +75,3 @@ public:
 	WebSocketClient();
 	~WebSocketClient();
 };
-
-#endif // WEBSOCKET_CLIENT_H

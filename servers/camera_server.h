@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_SERVER_H
-#define CAMERA_SERVER_H
+#pragma once
 
 #include "core/object.h"
 #include "core/os/thread_safe.h"
@@ -111,5 +110,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(CameraServer::FeedImage);
-
-#endif /* CAMERA_SERVER_H */

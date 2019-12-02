@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
-#define VISUAL_SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -349,5 +348,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
-
-#endif // VISUAL_SHADER_EDITOR_PLUGIN_H

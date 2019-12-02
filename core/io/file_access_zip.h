@@ -30,8 +30,7 @@
 
 #ifdef MINIZIP_ENABLED
 
-#ifndef FILE_ACCESS_ZIP_H
-#define FILE_ACCESS_ZIP_H
+#pragma once
 
 #include "core/io/file_access_pack.h"
 #include "core/map.h"
@@ -120,5 +119,3 @@ public:
 };
 
 #endif // FILE_ACCESS_ZIP_H
-
-#endif // MINIZIP_ENABLED

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_PARSER_H
-#define GDSCRIPT_PARSER_H
+#pragma once
 
 #include "core/map.h"
 #include "core/object.h"
@@ -690,5 +689,3 @@ public:
 	GDScriptParser();
 	~GDScriptParser();
 };
-
-#endif // GDSCRIPT_PARSER_H

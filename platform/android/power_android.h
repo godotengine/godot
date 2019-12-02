@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_ANDROID_H
-#define POWER_ANDROID_H
+#pragma once
 
 #include "core/os/os.h"
 
@@ -76,5 +75,3 @@ public:
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
-
-#endif // POWER_ANDROID_H

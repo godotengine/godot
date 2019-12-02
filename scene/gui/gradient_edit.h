@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRADIENT_EDIT_H
-#define GRADIENT_EDIT_H
+#pragma once
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
@@ -70,5 +69,3 @@ public:
 	GradientEdit();
 	virtual ~GradientEdit();
 };
-
-#endif // GRADIENT_EDIT_H

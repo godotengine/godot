@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AABB_H
-#define AABB_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/plane.h"
@@ -363,5 +362,3 @@ void AABB::grow_by(real_t p_amount) {
 	size.y += 2.0 * p_amount;
 	size.z += 2.0 * p_amount;
 }
-
-#endif // AABB_H

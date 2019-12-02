@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOTSHARP_EXPORT_H
-#define GODOTSHARP_EXPORT_H
+#pragma once
 
 #include "core/dictionary.h"
 #include "core/error_list.h"
@@ -46,5 +45,3 @@ Error get_exported_assembly_dependencies(const String &p_project_dll_name,
 		const String &p_custom_lib_dir, Dictionary &r_dependencies);
 
 } // namespace GodotSharpExport
-
-#endif // GODOTSHARP_EXPORT_H

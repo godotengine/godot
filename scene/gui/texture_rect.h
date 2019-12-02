@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_FRAME_H
-#define TEXTURE_FRAME_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -84,4 +83,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(TextureRect::StretchMode);
-#endif // TEXTURE_FRAME_H

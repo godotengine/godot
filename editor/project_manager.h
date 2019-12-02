@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_MANAGER_H
-#define PROJECT_MANAGER_H
+#pragma once
 
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
@@ -163,5 +162,3 @@ public:
 	ProjectListFilter();
 	void clear();
 };
-
-#endif // PROJECT_MANAGER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PIN_JOINT_BULLET_H
-#define PIN_JOINT_BULLET_H
+#pragma once
 
 #include "joint_bullet.h"
 
@@ -57,4 +56,3 @@ public:
 	Vector3 getPivotInA();
 	Vector3 getPivotInB();
 };
-#endif

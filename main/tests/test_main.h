@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_MAIN_H
-#define TEST_MAIN_H
+#pragma once
 
 #include "core/list.h"
 #include "core/ustring.h"
 
 const char **tests_get_names();
 MainLoop *test_main(String p_test, const List<String> &p_args);
-
-#endif

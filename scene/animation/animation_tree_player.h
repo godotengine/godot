@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_TREE_PLAYER_H
-#define ANIMATION_TREE_PLAYER_H
+#pragma once
 
 #include "animation_player.h"
 #include "scene/3d/skeleton.h"
@@ -483,5 +482,3 @@ public:
 
 VARIANT_ENUM_CAST(AnimationTreePlayer::NodeType);
 VARIANT_ENUM_CAST(AnimationTreePlayer::AnimationProcessMode);
-
-#endif // ANIMATION_TREE_PLAYER_H

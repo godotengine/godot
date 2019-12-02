@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_TRANSFORM_H
-#define GODOT_TRANSFORM_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,5 +106,3 @@ godot_aabb GDAPI godot_transform_xform_inv_aabb(const godot_transform *p_self, c
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_TRANSFORM_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POPUP_H
-#define POPUP_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -86,5 +85,3 @@ public:
 	virtual Size2 get_minimum_size() const;
 	PopupPanel();
 };
-
-#endif

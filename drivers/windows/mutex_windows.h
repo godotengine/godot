@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MUTEX_WINDOWS_H
-#define MUTEX_WINDOWS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -57,7 +56,5 @@ public:
 	MutexWindows();
 	~MutexWindows();
 };
-
-#endif
 
 #endif

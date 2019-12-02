@@ -29,8 +29,7 @@
 /*************************************************************************/
 
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYPAD_LINUX_H
-#define JOYPAD_LINUX_H
+#pragma once
 
 #ifdef JOYDEV_ENABLED
 #include "core/os/mutex.h"
@@ -99,4 +98,3 @@ private:
 };
 
 #endif
-#endif // JOYPAD_LINUX_H

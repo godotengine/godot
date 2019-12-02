@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_STB_VORBIS_H
-#define AUDIO_STREAM_STB_VORBIS_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "servers/audio/audio_stream.h"
@@ -110,5 +109,3 @@ public:
 	AudioStreamOGGVorbis();
 	virtual ~AudioStreamOGGVorbis();
 };
-
-#endif

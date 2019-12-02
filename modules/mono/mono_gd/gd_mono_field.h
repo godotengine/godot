@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDMONOFIELD_H
-#define GDMONOFIELD_H
+#pragma once
 
 #include "gd_mono.h"
 #include "gd_mono_header.h"
@@ -74,5 +73,3 @@ public:
 	GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner);
 	~GDMonoField();
 };
-
-#endif // GDMONOFIELD_H

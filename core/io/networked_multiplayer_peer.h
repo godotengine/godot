@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_PEER_H
-#define NETWORKED_MULTIPLAYER_PEER_H
+#pragma once
 
 #include "core/io/packet_peer.h"
 
@@ -79,5 +78,3 @@ public:
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::TransferMode)
 VARIANT_ENUM_CAST(NetworkedMultiplayerPeer::ConnectionStatus)
-
-#endif // NetworkedMultiplayerPeer_H

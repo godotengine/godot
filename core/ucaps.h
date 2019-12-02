@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UCAPS_H
-#define UCAPS_H
+#pragma once
 
 //satan invented unicode?
 #define CAPS_LEN 666
@@ -1413,4 +1412,3 @@ static int _find_lower(int ch) {
 
 	return ch;
 }
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#pragma once
 
 #include "core/error_list.h"
 #include "core/os/thread.h"
@@ -59,5 +58,3 @@ public:
 
 	static void cleanup();
 };
-
-#endif // MAIN_H

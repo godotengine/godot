@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NOISE_TEXTURE_H
-#define NOISE_TEXTURE_H
+#pragma once
 
 #include "open_simplex_noise.h"
 
@@ -102,5 +101,3 @@ public:
 	NoiseTexture();
 	virtual ~NoiseTexture();
 };
-
-#endif // NOISE_TEXTURE_H

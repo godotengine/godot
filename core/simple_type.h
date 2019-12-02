@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SIMPLE_TYPE_H
-#define SIMPLE_TYPE_H
+#pragma once
 
 /* Batch of specializations to obtain the actual simple type */
 
@@ -50,5 +49,3 @@ struct GetSimpleTypeT<T const> {
 
 	typedef T type_t;
 };
-
-#endif

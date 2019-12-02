@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_INTERFACE_H
-#define ARKIT_INTERFACE_H
+#pragma once
 
 #include "servers/arvr/arvr_interface.h"
 #include "servers/arvr/arvr_positional_tracker.h"
@@ -121,5 +120,3 @@ public:
 	ARKitInterface();
 	~ARKitInterface();
 };
-
-#endif /* !ARKIT_INTERFACE_H */

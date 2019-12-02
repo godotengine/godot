@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REFLECTIONPROBE_H
-#define REFLECTIONPROBE_H
+#pragma once
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/sky.h"
@@ -110,5 +109,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
-
-#endif // REFLECTIONPROBE_H

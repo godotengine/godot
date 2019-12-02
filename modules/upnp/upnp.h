@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_UPNP_H
-#define GODOT_UPNP_H
+#pragma once
 
 #include "core/reference.h"
 
@@ -122,5 +121,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(UPNP::UPNPResult)
-
-#endif // GODOT_UPNP_H

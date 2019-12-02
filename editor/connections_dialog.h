@@ -32,8 +32,7 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 
-#ifndef CONNECTIONS_DIALOG_H
-#define CONNECTIONS_DIALOG_H
+#pragma once
 
 #include "core/undo_redo.h"
 #include "editor/editor_inspector.h"
@@ -173,5 +172,3 @@ public:
 	ConnectionsDock(EditorNode *p_editor = NULL);
 	~ConnectionsDock();
 };
-
-#endif

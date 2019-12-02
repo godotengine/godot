@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SLIDER_JOINT_BULLET_H
-#define SLIDER_JOINT_BULLET_H
+#pragma once
 
 #include "joint_bullet.h"
 
@@ -118,4 +117,3 @@ public:
 	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
 };
-#endif

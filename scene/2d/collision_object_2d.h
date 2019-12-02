@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_OBJECT_2D_H
-#define COLLISION_OBJECT_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
@@ -122,5 +121,3 @@ public:
 	CollisionObject2D();
 	~CollisionObject2D();
 };
-
-#endif // COLLISION_OBJECT_2D_H

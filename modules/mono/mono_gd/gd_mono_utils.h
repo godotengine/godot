@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONOUTILS_H
-#define GD_MONOUTILS_H
+#pragma once
 
 #include <mono/metadata/threads.h>
 
@@ -152,5 +151,3 @@ void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
 #define GD_MONO_END_RUNTIME_INVOKE \
 	_runtime_invoke_count_ref -= 1;
-
-#endif // GD_MONOUTILS_H

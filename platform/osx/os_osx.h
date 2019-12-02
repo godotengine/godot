@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_OSX_H
-#define OS_OSX_H
+#pragma once
 
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
@@ -319,5 +318,3 @@ private:
 	void set_native_window_position(const Point2 &p_position);
 	Point2 get_screens_origin() const;
 };
-
-#endif

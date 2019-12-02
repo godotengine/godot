@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POOL_ALLOCATOR_H
-#define POOL_ALLOCATOR_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -147,5 +146,3 @@ public:
 
 	virtual ~PoolAllocator();
 };
-
-#endif

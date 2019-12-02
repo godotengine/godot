@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BSP_TREE_H
-#define BSP_TREE_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/face3.h"
@@ -153,7 +152,5 @@ struct PtrToArg<const BSP_Tree &> {
 		return s;
 	}
 };
-
-#endif
 
 #endif

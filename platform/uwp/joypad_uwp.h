@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOYPAD_UWP_H
-#define JOYPAD_UWP_H
+#pragma once
 
 #include "main/input_default.h"
 
@@ -88,5 +87,3 @@ private:
 	void joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };
-
-#endif

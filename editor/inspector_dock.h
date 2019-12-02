@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef INSPECTOR_DOCK_H
-#define INSPECTOR_DOCK_H
+#pragma once
 
 #include "editor/animation_track_editor.h"
 #include "editor/connections_dialog.h"
@@ -134,5 +133,3 @@ public:
 	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
 	~InspectorDock();
 };
-
-#endif

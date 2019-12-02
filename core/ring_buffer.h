@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
+#pragma once
 
 #include "core/vector.h"
 
@@ -220,5 +219,3 @@ public:
 	};
 	~RingBuffer<T>(){};
 };
-
-#endif

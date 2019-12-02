@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_AABB_H
-#define GODOT_AABB_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,5 +113,3 @@ godot_bool GDAPI godot_aabb_operator_equal(const godot_aabb *p_self, const godot
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_AABB_H

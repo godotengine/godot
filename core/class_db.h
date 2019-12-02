@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CLASS_DB_H
-#define CLASS_DB_H
+#pragma once
 
 #include "core/method_bind.h"
 #include "core/object.h"
@@ -402,5 +401,3 @@ public:
 #define BIND_VMETHOD(m_method)
 
 #endif
-
-#endif // CLASS_DB_H

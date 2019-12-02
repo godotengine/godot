@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_GDNATIVE_H
-#define GODOT_GDNATIVE_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -289,5 +288,3 @@ bool GDAPI godot_is_instance_valid(const godot_object *p_object);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_C_H

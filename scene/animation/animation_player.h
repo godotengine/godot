@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_PLAYER_H
-#define ANIMATION_PLAYER_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/3d/skeleton.h"
@@ -370,5 +369,3 @@ public:
 
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
-
-#endif

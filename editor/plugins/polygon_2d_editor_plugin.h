@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POLYGON_2D_EDITOR_PLUGIN_H
-#define POLYGON_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/gui/scroll_container.h"
@@ -171,5 +170,3 @@ class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 public:
 	Polygon2DEditorPlugin(EditorNode *p_node);
 };
-
-#endif // POLYGON_2D_EDITOR_PLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_2D_H
-#define MESH_INSTANCE_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -59,5 +58,3 @@ public:
 
 	MeshInstance2D();
 };
-
-#endif // MESH_INSTANCE_2D_H

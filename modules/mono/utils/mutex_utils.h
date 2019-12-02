@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MUTEX_UTILS_H
-#define MUTEX_UTILS_H
+#pragma once
 
 #include "core/error_macros.h"
 #include "core/os/mutex.h"
@@ -63,5 +62,3 @@ public:
 #define SCOPED_MUTEX_LOCK(m_mutex) ScopedMutexLock GD_UNIQUE_NAME(__scoped_mutex_lock__)(m_mutex);
 
 // TODO: Add version that receives a lambda instead, once C++11 is allowed
-
-#endif // MUTEX_UTILS_H

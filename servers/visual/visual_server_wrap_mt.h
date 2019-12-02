@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SERVER_WRAP_MT_H
-#define VISUAL_SERVER_WRAP_MT_H
+#pragma once
 
 #include "core/command_queue_mt.h"
 #include "core/os/thread.h"
@@ -632,5 +631,3 @@ public:
 #undef DEBUG_SYNC
 #endif
 #undef SYNC_DEBUG
-
-#endif

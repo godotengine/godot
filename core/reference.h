@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REFERENCE_H
-#define REFERENCE_H
+#pragma once
 
 #include "core/class_db.h"
 #include "core/object.h"
@@ -391,5 +390,3 @@ struct GetTypeInfo<const Ref<T> &> {
 };
 
 #endif // DEBUG_METHODS_ENABLED
-
-#endif // REFERENCE_H

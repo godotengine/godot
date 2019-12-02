@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXT_EDIT_H
-#define TEXT_EDIT_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
@@ -789,5 +788,3 @@ public:
 	void set_text_editor(TextEdit *p_text_editor);
 	TextEdit *get_text_editor();
 };
-
-#endif // TEXT_EDIT_H

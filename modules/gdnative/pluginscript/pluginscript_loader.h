@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PYTHONSCRIPT_PY_LOADER_H
-#define PYTHONSCRIPT_PY_LOADER_H
+#pragma once
 
 // Godot imports
 #include "core/io/resource_loader.h"
@@ -60,5 +59,3 @@ public:
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const RES &p_resource) const;
 };
-
-#endif // PYTHONSCRIPT_PY_LOADER_H

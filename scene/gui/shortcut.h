@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHORTCUT_H
-#define SHORTCUT_H
+#pragma once
 
 #include "core/os/input_event.h"
 #include "core/resource.h"
@@ -53,5 +52,3 @@ public:
 
 	ShortCut();
 };
-
-#endif // SHORTCUT_H

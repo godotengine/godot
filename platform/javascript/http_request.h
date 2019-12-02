@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HTTP_REQUEST_H
-#define HTTP_REQUEST_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,5 +70,3 @@ extern void godot_xhr_get_response(int p_xhr_id, void *r_dst, int p_len);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* HTTP_REQUEST_H */

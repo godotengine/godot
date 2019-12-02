@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_FILE_SERVER_H
-#define EDITOR_FILE_SERVER_H
+#pragma once
 
 #include "core/io/file_access_network.h"
 #include "core/io/packet_peer.h"
@@ -81,5 +80,3 @@ public:
 	EditorFileServer();
 	~EditorFileServer();
 };
-
-#endif // EDITOR_FILE_SERVER_H

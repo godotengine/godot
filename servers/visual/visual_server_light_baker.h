@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERLIGHTBAKER_H
-#define VISUALSERVERLIGHTBAKER_H
+#pragma once
 
 #include "servers/visual_server.h"
 
@@ -48,5 +47,3 @@ public:
 
 	VisualServerLightBaker();
 };
-
-#endif // VISUALSERVERLIGHTBAKER_H

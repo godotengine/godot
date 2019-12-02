@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RICH_TEXT_EFFECT_H
-#define RICH_TEXT_EFFECT_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -85,5 +84,3 @@ public:
 
 	Variant get_value_or(String p_key, Variant p_default_value);
 };
-
-#endif // RICH_TEXT_EFFECT_H

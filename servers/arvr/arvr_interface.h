@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_INTERFACE_H
-#define ARVR_INTERFACE_H
+#pragma once
 
 #include "core/math/camera_matrix.h"
 #include "core/os/thread_safe.h"
@@ -122,5 +121,3 @@ public:
 VARIANT_ENUM_CAST(ARVRInterface::Capabilities);
 VARIANT_ENUM_CAST(ARVRInterface::Eyes);
 VARIANT_ENUM_CAST(ARVRInterface::Tracking_status);
-
-#endif

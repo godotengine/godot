@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMPORT_UTILS_IMPORTER_ASSIMP_H
-#define IMPORT_UTILS_IMPORTER_ASSIMP_H
+#pragma once
 
 #include "core/io/image_loader.h"
 #include "import_state.h"
@@ -445,5 +444,3 @@ public:
 		return false;
 	}
 };
-
-#endif // IMPORT_UTILS_IMPORTER_ASSIMP_H

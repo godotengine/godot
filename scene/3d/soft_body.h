@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_PHYSICS_BODY_H
-#define SOFT_PHYSICS_BODY_H
+#pragma once
 
 #include "scene/3d/mesh_instance.h"
 
@@ -197,5 +196,3 @@ private:
 	int _get_pinned_point(int p_point_index, PinnedPoint *&r_point) const;
 	int _has_pinned_point(int p_point_index) const;
 };
-
-#endif // SOFT_PHYSICS_BODY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/math/rect2.h"
@@ -770,5 +769,3 @@ public:
 	CameraTexture();
 	~CameraTexture();
 };
-
-#endif

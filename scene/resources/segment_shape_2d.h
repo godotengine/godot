@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEGMENT_SHAPE_2D_H
-#define SEGMENT_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/shape_2d.h"
 
@@ -82,5 +81,3 @@ public:
 
 	RayShape2D();
 };
-
-#endif // SEGMENT_SHAPE_2D_H

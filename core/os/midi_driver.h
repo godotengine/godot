@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MIDI_DRIVER_H
-#define MIDI_DRIVER_H
+#pragma once
 
 #include "core/typedefs.h"
 #include "core/variant.h"
@@ -56,5 +55,3 @@ public:
 	MIDIDriver();
 	virtual ~MIDIDriver() {}
 };
-
-#endif

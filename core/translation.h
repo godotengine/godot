@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRANSLATION_H
-#define TRANSLATION_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -117,5 +116,3 @@ public:
 
 	TranslationServer();
 };
-
-#endif // TRANSLATION_H

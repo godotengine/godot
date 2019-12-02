@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_AUTOLOAD_SETTINGS_H
-#define EDITOR_AUTOLOAD_SETTINGS_H
+#pragma once
 
 #include "scene/gui/tree.h"
 
@@ -105,5 +104,3 @@ public:
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();
 };
-
-#endif

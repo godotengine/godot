@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_DUMMY_H
-#define THREAD_DUMMY_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
@@ -85,5 +84,3 @@ public:
 
 	static void make_default();
 };
-
-#endif

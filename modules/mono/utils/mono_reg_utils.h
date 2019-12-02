@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MONO_REG_UTILS_H
-#define MONO_REG_UTILS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -51,5 +50,3 @@ String find_msbuild_tools_path();
 } // namespace MonoRegUtils
 
 #endif // WINDOWS_ENABLED
-
-#endif // MONO_REG_UTILS_H

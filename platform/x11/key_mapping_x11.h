@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef KEY_MAPPING_X11_H
-#define KEY_MAPPING_X11_H
+#pragma once
 
 #include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
@@ -49,5 +48,3 @@ public:
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
 };
-
-#endif

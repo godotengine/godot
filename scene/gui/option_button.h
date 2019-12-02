@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPTION_BUTTON_H
-#define OPTION_BUTTON_H
+#pragma once
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
@@ -93,5 +92,3 @@ public:
 	OptionButton();
 	~OptionButton();
 };
-
-#endif

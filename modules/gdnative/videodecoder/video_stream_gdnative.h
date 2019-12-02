@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIDEO_STREAM_GDNATIVE_H
-#define VIDEO_STREAM_GDNATIVE_H
+#pragma once
 
 #include "../gdnative.h"
 #include "core/os/file_access.h"
@@ -204,5 +203,3 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
-#endif

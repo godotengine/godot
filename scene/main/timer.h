@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -84,5 +83,3 @@ private:
 };
 
 VARIANT_ENUM_CAST(Timer::TimerProcessMode);
-
-#endif // TIMER_H

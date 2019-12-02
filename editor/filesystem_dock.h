@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILESYSTEM_DOCK_H
-#define FILESYSTEM_DOCK_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -307,5 +306,3 @@ public:
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
 };
-
-#endif // SCENES_DOCK_H

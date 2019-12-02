@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#pragma once
 
 #include "core/array.h"
 #include "core/list.h"
@@ -88,5 +87,3 @@ public:
 	Dictionary();
 	~Dictionary();
 };
-
-#endif // DICTIONARY_H

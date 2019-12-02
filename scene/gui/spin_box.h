@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPIN_BOX_H
-#define SPIN_BOX_H
+#pragma once
 
 #include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
@@ -90,5 +89,3 @@ public:
 
 	SpinBox();
 };
-
-#endif // SPIN_BOX_H

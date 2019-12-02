@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ABSTRACT_POLYGON_2D_EDITOR_H
-#define ABSTRACT_POLYGON_2D_EDITOR_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -164,5 +163,3 @@ public:
 	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
 	~AbstractPolygon2DEditorPlugin();
 };
-
-#endif // ABSTRACT_POLYGON_2D_EDITOR_H

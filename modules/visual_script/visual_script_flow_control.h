@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SCRIPT_FLOW_CONTROL_H
-#define VISUAL_SCRIPT_FLOW_CONTROL_H
+#pragma once
 
 #include "visual_script.h"
 
@@ -269,5 +268,3 @@ public:
 };
 
 void register_visual_script_flow_control_nodes();
-
-#endif // VISUAL_SCRIPT_FLOW_CONTROL_H

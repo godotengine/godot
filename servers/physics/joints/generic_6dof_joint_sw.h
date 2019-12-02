@@ -32,8 +32,7 @@
 Adapted to Godot from the Bullet library.
 */
 
-#ifndef GENERIC_6DOF_JOINT_SW_H
-#define GENERIC_6DOF_JOINT_SW_H
+#pragma once
 
 #include "servers/physics/joints/jacobian_entry_sw.h"
 #include "servers/physics/joints_sw.h"
@@ -397,5 +396,3 @@ public:
 	void set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value);
 	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
 };
-
-#endif // GENERIC_6DOF_JOINT_SW_H

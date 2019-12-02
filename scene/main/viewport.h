@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIEWPORT_H
-#define VIEWPORT_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 #include "scene/main/node.h"
@@ -566,5 +565,3 @@ VARIANT_ENUM_CAST(Viewport::Usage);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
-
-#endif

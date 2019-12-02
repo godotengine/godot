@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIMESH_EDITOR_PLUGIN_H
-#define MULTIMESH_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -99,5 +98,3 @@ public:
 	MultiMeshEditorPlugin(EditorNode *p_node);
 	~MultiMeshEditorPlugin();
 };
-
-#endif // MULTIMESH_EDITOR_PLUGIN_H

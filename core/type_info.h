@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GET_TYPE_INFO_H
-#define GET_TYPE_INFO_H
+#pragma once
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -289,5 +288,3 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 #define CLASS_INFO(m_type)
 
 #endif // DEBUG_METHODS_ENABLED
-
-#endif // GET_TYPE_INFO_H

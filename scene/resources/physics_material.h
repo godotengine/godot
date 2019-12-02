@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef physics_material_override_H
-#define physics_material_override_H
+#pragma once
 
 #include "core/resource.h"
 #include "servers/physics_server.h"
@@ -71,5 +70,3 @@ public:
 
 	PhysicsMaterial();
 };
-
-#endif // physics_material_override_H

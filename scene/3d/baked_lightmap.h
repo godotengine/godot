@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_INDIRECT_LIGHT_H
-#define BAKED_INDIRECT_LIGHT_H
+#pragma once
 
 #include "multimesh_instance.h"
 #include "scene/3d/light.h"
@@ -210,5 +209,3 @@ public:
 VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
 VARIANT_ENUM_CAST(BakedLightmap::BakeMode);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
-
-#endif // BAKED_INDIRECT_LIGHT_H

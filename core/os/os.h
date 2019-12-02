@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/engine.h"
 #include "core/image.h"
@@ -533,5 +532,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(OS::PowerState);
-
-#endif

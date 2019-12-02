@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIDEO_PLAYER_H
-#define VIDEO_PLAYER_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
@@ -123,5 +122,3 @@ public:
 	VideoPlayer();
 	~VideoPlayer();
 };
-
-#endif // VIDEO_PLAYER_H

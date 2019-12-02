@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_TREE_EDITOR_PLUGIN_H
-#define ANIMATION_TREE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -112,5 +111,3 @@ public:
 	AnimationTreeEditorPlugin(EditorNode *p_node);
 	~AnimationTreeEditorPlugin();
 };
-
-#endif // ANIMATION_TREE_EDITOR_PLUGIN_H

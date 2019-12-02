@@ -30,8 +30,7 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#ifndef AUDIO_DRIVER_PULSEAUDIO_H
-#define AUDIO_DRIVER_PULSEAUDIO_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -126,5 +125,3 @@ public:
 };
 
 #endif // AUDIO_DRIVER_PULSEAUDIO_H
-
-#endif // PULSEAUDIO_ENABLED

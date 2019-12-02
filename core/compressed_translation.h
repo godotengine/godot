@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COMPRESSED_TRANSLATION_H
-#define COMPRESSED_TRANSLATION_H
+#pragma once
 
 #include "core/translation.h"
 
@@ -88,5 +87,3 @@ public:
 
 	PHashTranslation();
 };
-
-#endif // COMPRESSED_TRANSLATION_H

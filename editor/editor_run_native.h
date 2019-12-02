@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_NATIVE_H
-#define EDITOR_RUN_NATIVE_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
@@ -71,5 +70,3 @@ public:
 
 	EditorRunNative();
 };
-
-#endif // EDITOR_RUN_NATIVE_H

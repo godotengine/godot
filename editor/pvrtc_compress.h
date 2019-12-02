@@ -28,11 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PVRTC_COMPRESS_H
-#define PVRTC_COMPRESS_H
+#pragma once
 
 #include "core/image.h"
 
 void _pvrtc_register_compressors();
-
-#endif // PVRTC_COMPRESS_H

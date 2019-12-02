@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_INTERNAL_CALL_H
-#define EDITOR_INTERNAL_CALL_H
+#pragma once
 
 void register_editor_internal_calls();
-
-#endif // EDITOR_INTERNAL_CALL_H

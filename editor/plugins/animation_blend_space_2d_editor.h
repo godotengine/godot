@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_BLEND_SPACE_2D_EDITOR_H
-#define ANIMATION_BLEND_SPACE_2D_EDITOR_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -147,5 +146,3 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace2DEditor();
 };
-
-#endif // ANIMATION_BLEND_SPACE_2D_EDITOR_H

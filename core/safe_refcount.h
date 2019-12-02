@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SAFE_REFCOUNT_H
-#define SAFE_REFCOUNT_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/typedefs.h"
@@ -207,5 +206,3 @@ public:
 		count = p_value;
 	}
 };
-
-#endif

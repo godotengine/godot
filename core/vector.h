@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 /**
  * @class Vector
@@ -155,5 +154,3 @@ bool Vector<T>::push_back(const T &p_elem) {
 
 	return false;
 }
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PACKED_DATA_CONTAINER_H
-#define PACKED_DATA_CONTAINER_H
+#pragma once
 
 #include "core/resource.h"
 
@@ -102,5 +101,3 @@ public:
 
 	PackedDataContainerRef();
 };
-
-#endif // PACKED_DATA_CONTAINER_H

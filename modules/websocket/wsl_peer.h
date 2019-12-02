@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WSLPEER_H
-#define WSLPEER_H
+#pragma once
 
 #ifndef JAVASCRIPT_ENABLED
 
@@ -117,5 +116,3 @@ public:
 };
 
 #endif // JAVASCRIPT_ENABLED
-
-#endif // LSWPEER_H

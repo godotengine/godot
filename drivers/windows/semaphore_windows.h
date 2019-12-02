@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEMAPHORE_WINDOWS_H
-#define SEMAPHORE_WINDOWS_H
+#pragma once
 
 #include "core/os/semaphore.h"
 
@@ -54,5 +53,4 @@ public:
 	~SemaphoreWindows();
 };
 
-#endif
 #endif

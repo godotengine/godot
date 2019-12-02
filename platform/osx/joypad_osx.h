@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOYPADOSX_H
-#define JOYPADOSX_H
+#pragma once
 
 #ifdef MACOS_10_0_4
 #include <IOKit/hidsystem/IOHIDUsageTables.h>
@@ -120,5 +119,3 @@ public:
 	JoypadOSX();
 	~JoypadOSX();
 };
-
-#endif // JOYPADOSX_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODY_PAIR_2D_SW_H
-#define BODY_PAIR_2D_SW_H
+#pragma once
 
 #include "body_2d_sw.h"
 #include "constraint_2d_sw.h"
@@ -92,5 +91,3 @@ public:
 	BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B);
 	~BodyPair2DSW();
 };
-
-#endif // BODY_PAIR_2D_SW_H

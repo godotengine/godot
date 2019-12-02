@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RECT2_H
-#define RECT2_H
+#pragma once
 
 #include "core/math/vector2.h" // also includes math_funcs and ustring
 
@@ -391,5 +390,3 @@ struct Rect2i {
 			size(p_size) {
 	}
 };
-
-#endif // RECT2_H

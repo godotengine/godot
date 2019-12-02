@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_INTERNALS_H
-#define GD_MONO_INTERNALS_H
+#pragma once
 
 #include <mono/jit/jit.h>
 
@@ -48,5 +47,3 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged);
 void unhandled_exception(MonoException *p_exc);
 
 } // namespace GDMonoInternals
-
-#endif // GD_MONO_INTERNALS_H

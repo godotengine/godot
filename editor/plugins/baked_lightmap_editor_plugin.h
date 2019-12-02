@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_LIGHTMAP_EDITOR_PLUGIN_H
-#define BAKED_LIGHTMAP_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -65,5 +64,3 @@ public:
 	BakedLightmapEditorPlugin(EditorNode *p_node);
 	~BakedLightmapEditorPlugin();
 };
-
-#endif // BAKED_LIGHTMAP_EDITOR_PLUGIN_H

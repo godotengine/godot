@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef METHOD_PTRCALL_H
-#define METHOD_PTRCALL_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 #include "core/typedefs.h"
@@ -455,4 +454,3 @@ struct PtrToArg<const PoolVector<Face3> &> {
 };
 
 #endif // METHOD_PTRCALL_H
-#endif

@@ -32,8 +32,7 @@
 Adapted to Godot from the Bullet library.
 */
 
-#ifndef JACOBIAN_ENTRY_SW_H
-#define JACOBIAN_ENTRY_SW_H
+#pragma once
 
 /*
 Bullet Continuous Collision Detection and Physics Library
@@ -165,5 +164,3 @@ public:
 	//Optimization: can be stored in the w/last component of one of the vectors
 	real_t m_Adiag;
 };
-
-#endif // JACOBIAN_ENTRY_SW_H

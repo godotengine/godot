@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRID_THEME_H
-#define GRID_THEME_H
+#pragma once
 
 #include "core/map.h"
 #include "core/resource.h"
@@ -96,5 +95,3 @@ public:
 	MeshLibrary();
 	~MeshLibrary();
 };
-
-#endif // CUBE_GRID_THEME_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_INSTANCE_H
-#define VISUAL_INSTANCE_H
+#pragma once
 
 #include "core/math/face3.h"
 #include "core/rid.h"
@@ -145,5 +144,3 @@ public:
 
 VARIANT_ENUM_CAST(GeometryInstance::Flags);
 VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
-
-#endif

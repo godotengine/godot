@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTDELAY_H
-#define AUDIOEFFECTDELAY_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -131,5 +130,3 @@ public:
 
 	AudioEffectDelay();
 };
-
-#endif // AUDIOEFFECTDELAY_H

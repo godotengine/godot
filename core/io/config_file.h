@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONFIG_FILE_H
-#define CONFIG_FILE_H
+#pragma once
 
 #include "core/ordered_hash_map.h"
 #include "core/os/file_access.h"
@@ -73,5 +72,3 @@ public:
 
 	ConfigFile();
 };
-
-#endif // CONFIG_FILE_H

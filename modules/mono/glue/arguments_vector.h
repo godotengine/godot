@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARGUMENTS_VECTOR_H
-#define ARGUMENTS_VECTOR_H
+#pragma once
 
 #include "core/os/memory.h"
 
@@ -64,5 +63,3 @@ public:
 		}
 	}
 };
-
-#endif // ARGUMENTS_VECTOR_H

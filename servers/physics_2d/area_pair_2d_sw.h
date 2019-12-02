@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AREA_PAIR_2D_SW_H
-#define AREA_PAIR_2D_SW_H
+#pragma once
 
 #include "area_2d_sw.h"
 #include "body_2d_sw.h"
@@ -66,5 +65,3 @@ public:
 	Area2Pair2DSW(Area2DSW *p_area_a, int p_shape_a, Area2DSW *p_area_b, int p_shape_b);
 	~Area2Pair2DSW();
 };
-
-#endif // AREA_PAIR_2D_SW_H

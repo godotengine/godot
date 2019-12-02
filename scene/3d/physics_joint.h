@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_JOINT_H
-#define PHYSICS_JOINT_H
+#pragma once
 
 #include "scene/3d/physics_body.h"
 #include "scene/3d/spatial.h"
@@ -339,5 +338,3 @@ public:
 
 VARIANT_ENUM_CAST(Generic6DOFJoint::Param);
 VARIANT_ENUM_CAST(Generic6DOFJoint::Flag);
-
-#endif // PHYSICS_JOINT_H

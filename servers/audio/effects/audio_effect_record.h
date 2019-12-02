@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTRECORD_H
-#define AUDIOEFFECTRECORD_H
+#pragma once
 
 #include "core/io/marshalls.h"
 #include "core/os/file_access.h"
@@ -106,5 +105,3 @@ public:
 
 	AudioEffectRecord();
 };
-
-#endif // AUDIOEFFECTRECORD_H

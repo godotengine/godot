@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIR_ACCESS_JANDROID_H
-#define DIR_ACCESS_JANDROID_H
+#pragma once
 
 #include "core/os/dir_access.h"
 #include "java_godot_lib_jni.h"
@@ -85,5 +84,3 @@ public:
 	DirAccessJAndroid();
 	~DirAccessJAndroid();
 };
-
-#endif // DIR_ACCESS_JANDROID_H

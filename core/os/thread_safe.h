@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_SAFE_H
-#define THREAD_SAFE_H
+#pragma once
 
 #include "core/os/mutex.h"
 
@@ -76,7 +75,5 @@ public:
 #define _THREAD_SAFE_METHOD_
 #define _THREAD_SAFE_LOCK_
 #define _THREAD_SAFE_UNLOCK_
-
-#endif
 
 #endif

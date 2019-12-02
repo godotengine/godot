@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_PROTOCOL_H
-#define MULTIPLAYER_PROTOCOL_H
+#pragma once
 
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/reference.h"
@@ -169,5 +168,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
-
-#endif // MULTIPLAYER_PROTOCOL_H

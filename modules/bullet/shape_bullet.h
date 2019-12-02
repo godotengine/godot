@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_BULLET_H
-#define SHAPE_BULLET_H
+#pragma once
 
 #include "core/math/geometry.h"
 #include "core/variant.h"
@@ -253,4 +252,3 @@ public:
 private:
 	void setup(real_t p_length, bool p_slips_on_slope);
 };
-#endif

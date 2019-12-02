@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TRIANGLE_MESH_H
-#define TRIANGLE_MESH_H
+#pragma once
 
 #include "core/math/face3.h"
 #include "core/reference.h"
@@ -102,5 +101,3 @@ public:
 	void create(const PoolVector<Vector3> &p_faces);
 	TriangleMesh();
 };
-
-#endif // TRIANGLE_MESH_H

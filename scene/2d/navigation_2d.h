@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_2D_H
-#define NAVIGATION_2D_H
+#pragma once
 
 #include "scene/2d/navigation_polygon.h"
 #include "scene/2d/node_2d.h"
@@ -170,5 +169,3 @@ public:
 
 	Navigation2D();
 };
-
-#endif // NAVIGATION_2D_H

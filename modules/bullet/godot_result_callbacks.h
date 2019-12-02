@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_RESULT_CALLBACKS_H
-#define GODOT_RESULT_CALLBACKS_H
+#pragma once
 
 #include "servers/physics_server.h"
 
@@ -232,4 +231,3 @@ struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
 
 	virtual void addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorldOnB, btScalar depth);
 };
-#endif // GODOT_RESULT_CALLBACKS_H

@@ -30,8 +30,7 @@
 
 #ifdef ALSAMIDI_ENABLED
 
-#ifndef MIDI_DRIVER_ALSAMIDI_H
-#define MIDI_DRIVER_ALSAMIDI_H
+#pragma once
 
 #include "core/os/midi_driver.h"
 #include "core/os/mutex.h"
@@ -66,4 +65,3 @@ public:
 };
 
 #endif // MIDI_DRIVER_ALSAMIDI_H
-#endif // ALSAMIDI_ENABLED

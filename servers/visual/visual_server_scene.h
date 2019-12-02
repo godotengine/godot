@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERSCENE_H
-#define VISUALSERVERSCENE_H
+#pragma once
 
 #include "servers/visual/rasterizer.h"
 
@@ -550,5 +549,3 @@ public:
 	VisualServerScene();
 	virtual ~VisualServerScene();
 };
-
-#endif // VISUALSERVERSCENE_H

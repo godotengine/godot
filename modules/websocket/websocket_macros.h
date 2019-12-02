@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKETMACTOS_H
-#define WEBSOCKETMACTOS_H
+#pragma once
 
 #define WSC_IN_BUF "network/limits/websocket_client/max_in_buffer_kb"
 #define WSC_IN_PKT "network/limits/websocket_client/max_in_packets"
@@ -71,4 +70,3 @@ public:\
 protected:\
 /* clang-format on */
 
-#endif // WEBSOCKETMACTOS_H

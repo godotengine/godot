@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_CACHE_H
-#define GD_MONO_CACHE_H
+#pragma once
 
 #include "gd_mono_header.h"
 #include "gd_mono_method_thunk.h"
@@ -200,5 +199,3 @@ _FORCE_INLINE_ bool tools_godot_api_check() {
 #else
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(float)
 #endif
-
-#endif // GD_MONO_CACHE_H

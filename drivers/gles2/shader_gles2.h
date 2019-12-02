@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_GLES2_H
-#define SHADER_GLES2_H
+#pragma once
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -264,5 +263,3 @@ void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 	else
 		new_conditional_version.version &= ~(1 << p_which);
 }
-
-#endif

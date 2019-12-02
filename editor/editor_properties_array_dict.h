@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_PROPERTIES_ARRAY_DICT_H
-#define EDITOR_PROPERTIES_ARRAY_DICT_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
@@ -150,5 +149,3 @@ public:
 	virtual void update_property();
 	EditorPropertyDictionary();
 };
-
-#endif // EDITOR_PROPERTIES_ARRAY_DICT_H

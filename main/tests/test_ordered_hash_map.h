@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_ORDERED_HASH_MAP_H
-#define TEST_ORDERED_HASH_MAP_H
+#pragma once
 
 namespace TestOrderedHashMap {
 
 MainLoop *test();
 }
-
-#endif

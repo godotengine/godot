@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSCENEGLES3_H
-#define RASTERIZERSCENEGLES3_H
+#pragma once
 
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles3.h"
@@ -875,5 +874,3 @@ public:
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();
 };
-
-#endif // RASTERIZERSCENEGLES3_H

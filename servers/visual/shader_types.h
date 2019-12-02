@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADERTYPES_H
-#define SHADERTYPES_H
+#pragma once
 
 #include "core/ordered_hash_map.h"
 #include "servers/visual_server.h"
@@ -58,5 +57,3 @@ public:
 
 	ShaderTypes();
 };
-
-#endif // SHADERTYPES_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVENET_H
-#define GODOT_NATIVENET_H
+#pragma once
 
 #include <gdnative/gdnative.h>
 
@@ -117,5 +116,3 @@ void GDAPI godot_net_bind_multiplayer_peer(godot_object *p_obj, const godot_net_
 
 // WebRTC Bindings
 #include "net/godot_webrtc.h"
-
-#endif /* GODOT_NATIVENET_H */

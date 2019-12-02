@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORT_STATE_H
-#define EDITOR_SCENE_IMPORT_STATE_H
+#pragma once
 
 #include "core/bind/core_bind.h"
 #include "core/io/resource_importer.h"
@@ -126,5 +125,3 @@ struct RecursiveState {
 	aiBone *bone = NULL;
 };
 } // namespace AssimpImporter
-
-#endif // EDITOR_SCENE_IMPORT_STATE_H

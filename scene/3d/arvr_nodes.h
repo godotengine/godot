@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_NODES_H
-#define ARVR_NODES_H
+#pragma once
 
 #include "scene/3d/camera.h"
 #include "scene/3d/spatial.h"
@@ -172,5 +171,3 @@ public:
 	ARVROrigin();
 	~ARVROrigin();
 };
-
-#endif /* ARVR_NODES_H */

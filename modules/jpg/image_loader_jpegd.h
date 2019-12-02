@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#pragma once
 
 #include "core/io/image_loader.h"
 
@@ -40,5 +39,3 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderJPG();
 };
-
-#endif

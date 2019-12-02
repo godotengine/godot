@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_EDITOR_DEBUGGER_H
-#define SCRIPT_EDITOR_DEBUGGER_H
+#pragma once
 
 #include "core/io/packet_peer.h"
 #include "core/io/tcp_server.h"
@@ -288,5 +287,3 @@ public:
 	ScriptEditorDebugger(EditorNode *p_editor = NULL);
 	~ScriptEditorDebugger();
 };
-
-#endif // SCRIPT_EDITOR_DEBUGGER_H

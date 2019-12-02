@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_H
-#define IMAGE_LOADER_H
+#pragma once
 
 #include "core/image.h"
 #include "core/io/resource_loader.h"
@@ -78,5 +77,3 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
-#endif

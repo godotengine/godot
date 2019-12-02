@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_ARRAY_H
-#define GODOT_ARRAY_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -143,5 +142,3 @@ void GDAPI godot_array_shuffle(godot_array *p_self);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_ARRAY_H

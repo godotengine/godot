@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VOICE_RB_SW_H
-#define VOICE_RB_SW_H
+#pragma once
 
 #include "core/os/os.h"
 #include "servers/audio_server.h"
@@ -137,5 +136,3 @@ public:
 
 	VoiceRBSW() { read_pos = write_pos = 0; }
 };
-
-#endif // VOICE_RB_SW_H

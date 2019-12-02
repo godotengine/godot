@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_HELP_SEARCH_H
-#define EDITOR_HELP_SEARCH_H
+#pragma once
 
 #include "core/ordered_hash_map.h"
 #include "editor/code_editor.h"
@@ -153,5 +152,3 @@ public:
 
 	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags);
 };
-
-#endif // EDITOR_HELP_SEARCH_H

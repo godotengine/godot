@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_PHYSICS_2D_H
-#define TEST_PHYSICS_2D_H
+#pragma once
 
 #include "core/os/main_loop.h"
 
@@ -37,5 +36,3 @@ namespace TestPhysics2D {
 
 MainLoop *test();
 }
-
-#endif // TEST_PHYSICS_2D_H

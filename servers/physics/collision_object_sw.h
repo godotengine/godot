@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_OBJECT_SW_H
-#define COLLISION_OBJECT_SW_H
+#pragma once
 
 #include "broad_phase_sw.h"
 #include "core/self_list.h"
@@ -160,5 +159,3 @@ public:
 
 	virtual ~CollisionObjectSW() {}
 };
-
-#endif // COLLISION_OBJECT_SW_H

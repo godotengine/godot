@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_MESH_H
-#define NAVIGATION_MESH_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
@@ -223,5 +222,3 @@ public:
 	NavigationMeshInstance();
 	~NavigationMeshInstance();
 };
-
-#endif // NAVIGATION_MESH_H

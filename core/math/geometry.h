@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GEOMETRY_H
-#define GEOMETRY_H
+#pragma once
 
 #include "core/math/delaunay.h"
 #include "core/math/face3.h"
@@ -1027,5 +1026,3 @@ private:
 	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
 	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
-
-#endif

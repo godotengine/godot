@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_TEXT_DOCUMENT_H
-#define GDSCRIPT_TEXT_DOCUMENT_H
+#pragma once
 
 #include "core/os/file_access.h"
 #include "core/reference.h"
@@ -71,5 +70,3 @@ public:
 	GDScriptTextDocument();
 	virtual ~GDScriptTextDocument();
 };
-
-#endif

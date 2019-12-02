@@ -31,8 +31,7 @@
 // note, swapped java and godot around in the file name so all the java
 // wrappers are together
 
-#ifndef JAVA_GODOT_IO_WRAPPER_H
-#define JAVA_GODOT_IO_WRAPPER_H
+#pragma once
 
 #include <android/log.h>
 #include <jni.h>
@@ -84,5 +83,3 @@ public:
 	void pause_video();
 	void stop_video();
 };
-
-#endif /* !JAVA_GODOT_IO_WRAPPER_H */

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_H
-#define GDSCRIPT_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -523,5 +522,3 @@ public:
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const RES &p_resource) const;
 };
-
-#endif // GDSCRIPT_H

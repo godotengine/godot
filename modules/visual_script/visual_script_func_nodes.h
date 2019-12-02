@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUAL_SCRIPT_FUNC_NODES_H
-#define VISUAL_SCRIPT_FUNC_NODES_H
+#pragma once
 
 #include "visual_script.h"
 
@@ -361,5 +360,3 @@ public:
 };
 
 void register_visual_script_func_nodes();
-
-#endif // VISUAL_SCRIPT_FUNC_NODES_H

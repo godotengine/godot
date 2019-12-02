@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_2D_H
-#define AUDIO_STREAM_PLAYER_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_stream.h"
@@ -134,5 +133,3 @@ public:
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();
 };
-
-#endif

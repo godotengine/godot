@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LIGHT_H
-#define LIGHT_H
+#pragma once
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/texture.h"
@@ -222,5 +221,3 @@ public:
 	SpotLight() :
 			Light(VisualServer::LIGHT_SPOT) {}
 };
-
-#endif

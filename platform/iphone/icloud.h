@@ -30,8 +30,7 @@
 
 #ifdef ICLOUD_ENABLED
 
-#ifndef ICLOUD_H
-#define ICLOUD_H
+#pragma once
 
 #include "core/object.h"
 
@@ -59,7 +58,5 @@ public:
 	ICloud();
 	~ICloud();
 };
-
-#endif
 
 #endif

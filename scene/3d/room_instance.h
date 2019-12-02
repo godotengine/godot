@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ROOM_INSTANCE_H
-#define ROOM_INSTANCE_H
+#pragma once
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/room.h"
@@ -78,4 +77,3 @@ public:
 	~Room();
 };
 #endif
-#endif // ROOM_INSTANCE_H

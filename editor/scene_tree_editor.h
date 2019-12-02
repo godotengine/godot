@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_TREE_EDITOR_H
-#define SCENE_TREE_EDITOR_H
+#pragma once
 
 #include "core/undo_redo.h"
 #include "editor_data.h"
@@ -185,5 +184,3 @@ public:
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };
-
-#endif

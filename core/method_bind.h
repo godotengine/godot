@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef METHOD_BIND_H
-#define METHOD_BIND_H
+#pragma once
 
 #include "core/list.h"
 #include "core/method_ptrcall.h"
@@ -403,5 +402,3 @@ MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, i
 class __UnexistingClass;
 
 #include "method_bind.gen.inc"
-
-#endif

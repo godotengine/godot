@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_GDNATIVE_H
-#define STREAM_PEER_GDNATIVE_H
+#pragma once
 
 #include "core/io/stream_peer.h"
 #include "modules/gdnative/gdnative.h"
@@ -57,5 +56,3 @@ public:
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 	int get_available_bytes() const;
 };
-
-#endif // STREAM_PEER_GDNATIVE_H

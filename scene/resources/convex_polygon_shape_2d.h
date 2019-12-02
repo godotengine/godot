@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONVEX_POLYGON_SHAPE_2D_H
-#define CONVEX_POLYGON_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/shape_2d.h"
 
@@ -54,5 +53,3 @@ public:
 
 	ConvexPolygonShape2D();
 };
-
-#endif // CONVEX_POLYGON_SHAPE_2D_H

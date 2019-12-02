@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef API_GENERATOR_H
-#define API_GENERATOR_H
+#pragma once
 
 #include "core/typedefs.h"
 #include "core/ustring.h"
 
 Error generate_c_api(const String &p_path);
-
-#endif // API_GENERATOR_H

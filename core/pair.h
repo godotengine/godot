@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PAIR_H
-#define PAIR_H
+#pragma once
 
 template <class F, class S>
 struct Pair {
@@ -65,5 +64,3 @@ struct PairSort {
 		return A.first < B.first;
 	}
 };
-
-#endif // PAIR_H

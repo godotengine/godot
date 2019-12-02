@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_JSON_RPC_H
-#define GODOT_JSON_RPC_H
+#pragma once
 
 #include "core/object.h"
 #include "core/variant.h"
@@ -66,5 +65,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(JSONRPC::ErrorCode);
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POOL_VECTOR_H
-#define POOL_VECTOR_H
+#pragma once
 
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
@@ -644,5 +643,3 @@ void PoolVector<T>::invert() {
 		w[s - i - 1] = temp;
 	}
 }
-
-#endif // POOL_VECTOR_H

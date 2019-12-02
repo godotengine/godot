@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_DRIVER_ANDROID_H
-#define AUDIO_DRIVER_ANDROID_H
+#pragma once
 
 #include "servers/audio_server.h"
 
@@ -75,5 +74,3 @@ public:
 
 	AudioDriverAndroid();
 };
-
-#endif // AUDIO_DRIVER_ANDROID_H

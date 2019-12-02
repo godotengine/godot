@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECT_H
-#define AUDIOEFFECT_H
+#pragma once
 
 #include "core/math/audio_frame.h"
 #include "core/resource.h"
@@ -49,5 +48,3 @@ public:
 	virtual Ref<AudioEffectInstance> instance() = 0;
 	AudioEffect();
 };
-
-#endif // AUDIOEFFECT_H

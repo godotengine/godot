@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSTORAGEGLES2_H
-#define RASTERIZERSTORAGEGLES2_H
+#pragma once
 
 #include "core/pool_vector.h"
 #include "core/self_list.h"
@@ -1310,5 +1309,3 @@ public:
 
 	RasterizerStorageGLES2();
 };
-
-#endif // RASTERIZERSTORAGEGLES2_H

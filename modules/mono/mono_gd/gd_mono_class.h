@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_CLASS_H
-#define GD_MONO_CLASS_H
+#pragma once
 
 #include <mono/metadata/debug-helpers.h>
 
@@ -156,5 +155,3 @@ public:
 
 	~GDMonoClass();
 };
-
-#endif // GD_MONO_CLASS_H

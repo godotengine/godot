@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTURE_LOADER_DUMMY_H
-#define TEXTURE_LOADER_DUMMY_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
@@ -43,5 +42,3 @@ public:
 
 	virtual ~ResourceFormatDummyTexture() {}
 };
-
-#endif // TEXTURE_LOADER_DUMMY_H

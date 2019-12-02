@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_EXPORT_SETTINGS_H
-#define PROJECT_EXPORT_SETTINGS_H
+#pragma once
 
 #include "core/os/dir_access.h"
 #include "core/os/thread.h"
@@ -181,5 +180,3 @@ public:
 	ProjectExportDialog();
 	~ProjectExportDialog();
 };
-
-#endif // PROJECT_EXPORT_SETTINGS_H

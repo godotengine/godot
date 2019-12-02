@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_HELP_H
-#define EDITOR_HELP_H
+#pragma once
 
 #include "editor/code_editor.h"
 #include "editor/doc/doc_data.h"
@@ -209,5 +208,3 @@ public:
 	void set_text(const String &p_text);
 	EditorHelpBit();
 };
-
-#endif // EDITOR_HELP_H

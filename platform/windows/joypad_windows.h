@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOYPAD_WINDOWS_H
-#define JOYPAD_WINDOWS_H
+#pragma once
 
 #include "os_windows.h"
 
@@ -145,5 +144,3 @@ private:
 	XInputGetState_t xinput_get_state;
 	XInputSetState_t xinput_set_state;
 };
-
-#endif // JOYPAD_WINDOWS_H

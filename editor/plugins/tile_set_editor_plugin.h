@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TILE_SET_EDITOR_PLUGIN_H
-#define TILE_SET_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
@@ -294,5 +293,3 @@ public:
 
 	TileSetEditorPlugin(EditorNode *p_node);
 };
-
-#endif // TILE_SET_EDITOR_PLUGIN_H

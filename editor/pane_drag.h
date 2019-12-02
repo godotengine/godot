@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PANE_DRAG_H
-#define PANE_DRAG_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -48,5 +47,3 @@ protected:
 public:
 	PaneDrag();
 };
-
-#endif // PANE_DRAG_H

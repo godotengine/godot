@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BROAD_PHASE_2D_BASIC_H
-#define BROAD_PHASE_2D_BASIC_H
+#pragma once
 
 #include "core/map.h"
 #include "space_2d_sw.h"
@@ -102,5 +101,3 @@ public:
 	static BroadPhase2DSW *_create();
 	BroadPhase2DBasic();
 };
-
-#endif // BROAD_PHASE_2D_BASIC_H

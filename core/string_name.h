@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STRING_NAME_H
-#define STRING_NAME_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/safe_refcount.h"
@@ -165,5 +164,3 @@ public:
 };
 
 StringName _scs_create(const char *p_chr);
-
-#endif // STRING_NAME_H

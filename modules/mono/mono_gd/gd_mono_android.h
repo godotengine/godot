@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_ANDROID_H
-#define GD_MONO_ANDROID_H
+#pragma once
 
 #if defined(ANDROID_ENABLED)
 
@@ -44,5 +43,3 @@ void register_android_dl_fallback();
 } // namespace GDMonoAndroid
 
 #endif // ANDROID_ENABLED
-
-#endif // GD_MONO_ANDROID_H

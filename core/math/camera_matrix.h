@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_MATRIX_H
-#define CAMERA_MATRIX_H
+#pragma once
 
 #include "core/math/rect2.h"
 #include "core/math/transform.h"
@@ -104,5 +103,3 @@ Vector3 CameraMatrix::xform(const Vector3 &p_vec3) const {
 	real_t w = matrix[0][3] * p_vec3.x + matrix[1][3] * p_vec3.y + matrix[2][3] * p_vec3.z + matrix[3][3];
 	return ret / w;
 }
-
-#endif

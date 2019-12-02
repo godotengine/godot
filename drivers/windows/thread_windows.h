@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef THREAD_WINDOWS_H
-#define THREAD_WINDOWS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -62,7 +61,5 @@ public:
 
 	~ThreadWindows();
 };
-
-#endif
 
 #endif

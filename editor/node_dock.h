@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NODE_DOCK_H
-#define NODE_DOCK_H
+#pragma once
 
 #include "connections_dialog.h"
 #include "groups_editor.h"
@@ -64,5 +63,3 @@ public:
 
 	NodeDock();
 };
-
-#endif // NODE_DOCK_H

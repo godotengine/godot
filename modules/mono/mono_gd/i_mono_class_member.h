@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef I_MONO_CLASS_MEMBER_H
-#define I_MONO_CLASS_MEMBER_H
+#pragma once
 
 #include "gd_mono_header.h"
 
@@ -66,5 +65,3 @@ public:
 	virtual bool has_attribute(GDMonoClass *p_attr_class) = 0;
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) = 0;
 };
-
-#endif // I_MONO_CLASS_MEMBER_H

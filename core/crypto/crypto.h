@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CRYPTO_H
-#define CRYPTO_H
+#pragma once
 
 #include "core/reference.h"
 #include "core/resource.h"
@@ -101,5 +100,3 @@ public:
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const RES &p_resource) const;
 };
-
-#endif // CRYPTO_H

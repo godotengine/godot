@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IP_H
-#define IP_H
+#pragma once
 
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
@@ -105,5 +104,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(IP::Type);
-
-#endif // IP_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SIGNAL_AWAITER_UTILS_H
-#define SIGNAL_AWAITER_UTILS_H
+#pragma once
 
 #include "core/reference.h"
 #include "mono_gc_handle.h"
@@ -67,5 +66,3 @@ public:
 	SignalAwaiterHandle(MonoObject *p_managed);
 	~SignalAwaiterHandle();
 };
-
-#endif // SIGNAL_AWAITER_UTILS_H

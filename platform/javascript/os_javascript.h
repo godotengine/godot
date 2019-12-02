@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_JAVASCRIPT_H
-#define OS_JAVASCRIPT_H
+#pragma once
 
 #include "audio_driver_javascript.h"
 #include "drivers/unix/os_unix.h"
@@ -165,5 +164,3 @@ public:
 
 	OS_JavaScript(int p_argc, char *p_argv[]);
 };
-
-#endif

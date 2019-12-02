@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PNG_DRIVER_COMMON_H
-#define PNG_DRIVER_COMMON_H
+#pragma once
 
 #include "core/image.h"
 #include "core/pool_vector.h"
@@ -44,5 +43,3 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image);
 Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer);
 
 } // namespace PNGDriverCommon
-
-#endif

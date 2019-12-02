@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPTEXPRESSION_H
-#define VISUALSCRIPTEXPRESSION_H
+#pragma once
 
 #include "visual_script.h"
 #include "visual_script_builtin_funcs.h"
@@ -289,5 +288,3 @@ public:
 };
 
 void register_visual_script_expression_node();
-
-#endif // VISUALSCRIPTEXPRESSION_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#pragma once
 
 #include "core/io/ip.h"
 #include "core/reference.h"
@@ -77,5 +76,3 @@ public:
 	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
 	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
 };
-
-#endif // NET_SOCKET_H

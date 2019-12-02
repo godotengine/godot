@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_LOADER_H
-#define RESOURCE_LOADER_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "core/resource.h"
@@ -200,5 +199,3 @@ public:
 	static void initialize();
 	static void finalize();
 };
-
-#endif

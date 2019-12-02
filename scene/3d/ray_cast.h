@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAY_CAST_H
-#define RAY_CAST_H
+#pragma once
 
 #include "scene/3d/spatial.h"
 
@@ -102,5 +101,3 @@ public:
 
 	RayCast();
 };
-
-#endif // RAY_CAST_H

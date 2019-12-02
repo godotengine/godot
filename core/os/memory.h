@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#pragma once
 
 #include "core/error_macros.h"
 #include "core/safe_refcount.h"
@@ -205,5 +204,3 @@ struct _GlobalNilClass {
 
 	static _GlobalNil _nil;
 };
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MARSHALLS_H
-#define MARSHALLS_H
+#pragma once
 
 #include "core/reference.h"
 #include "core/typedefs.h"
@@ -201,5 +200,3 @@ public:
 
 Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = NULL, bool p_allow_objects = false);
 Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects = false);
-
-#endif

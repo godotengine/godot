@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CORE_BIND_H
-#define CORE_BIND_H
+#pragma once
 
 #include "core/image.h"
 #include "core/io/compression.h"
@@ -817,5 +816,3 @@ public:
 
 	_JSON();
 };
-
-#endif // CORE_BIND_H

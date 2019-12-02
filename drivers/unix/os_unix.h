@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_UNIX_H
-#define OS_UNIX_H
+#pragma once
 
 #ifdef UNIX_ENABLED
 
@@ -108,7 +107,5 @@ public:
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 	virtual ~UnixTerminalLogger();
 };
-
-#endif
 
 #endif

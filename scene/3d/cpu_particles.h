@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_H
-#define CPU_PARTICLES_H
+#pragma once
 
 #include "core/rid.h"
 #include "scene/3d/visual_instance.h"
@@ -293,5 +292,3 @@ VARIANT_ENUM_CAST(CPUParticles::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles::Parameter)
 VARIANT_ENUM_CAST(CPUParticles::Flags)
 VARIANT_ENUM_CAST(CPUParticles::EmissionShape)
-
-#endif // CPU_PARTICLES_H

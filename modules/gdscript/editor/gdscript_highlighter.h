@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#pragma once
 
 #include "scene/gui/text_edit.h"
 
@@ -68,5 +67,3 @@ public:
 	virtual String get_name() const;
 	virtual List<String> get_supported_languages();
 };
-
-#endif // GDSCRIPT_HIGHLIGHTER_H

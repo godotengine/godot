@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_X11_H
-#define OS_X11_H
+#pragma once
 
 #include "context_gl_x11.h"
 #include "core/os/input.h"
@@ -327,5 +326,3 @@ public:
 	void update_real_mouse_position();
 	OS_X11();
 };
-
-#endif

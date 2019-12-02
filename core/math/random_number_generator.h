@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RANDOM_NUMBER_GENERATOR_H
-#define RANDOM_NUMBER_GENERATOR_H
+#pragma once
 
 #include "core/math/random_pcg.h"
 #include "core/reference.h"
@@ -67,5 +66,3 @@ public:
 
 	RandomNumberGenerator();
 };
-
-#endif // RANDOM_NUMBER_GENERATOR_H

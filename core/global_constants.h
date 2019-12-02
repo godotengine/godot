@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLOBAL_CONSTANTS_H
-#define GLOBAL_CONSTANTS_H
+#pragma once
 
 #include "core/string_name.h"
 
@@ -40,5 +39,3 @@ public:
 	static const char *get_global_constant_name(int p_idx);
 	static int get_global_constant_value(int p_idx);
 };
-
-#endif // GLOBAL_CONSTANTS_H

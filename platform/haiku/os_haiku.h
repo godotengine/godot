@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_HAIKU_H
-#define OS_HAIKU_H
+#pragma once
 
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
@@ -123,5 +122,3 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_cache_path() const;
 };
-
-#endif

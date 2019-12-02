@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGINSCRIPT_H
-#define GODOT_PLUGINSCRIPT_H
+#pragma once
 
 #include <gdnative/gdnative.h>
 #include <nativescript/godot_nativescript.h>
@@ -168,5 +167,3 @@ void GDAPI godot_pluginscript_register_language(const godot_pluginscript_languag
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_PLUGINSCRIPT_H

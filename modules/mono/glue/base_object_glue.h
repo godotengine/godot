@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BASE_OBJECT_GLUE_H
-#define BASE_OBJECT_GLUE_H
+#pragma once
 
 #ifdef MONO_GLUE_ENABLED
 
@@ -67,5 +66,3 @@ MonoString *godot_icall_Object_ToString(Object *p_ptr);
 void godot_register_object_icalls();
 
 #endif // MONO_GLUE_ENABLED
-
-#endif // BASE_OBJECT_GLUE_H

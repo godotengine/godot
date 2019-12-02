@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLANE_SHAPE_H
-#define PLANE_SHAPE_H
+#pragma once
 
 #include "scene/resources/shape.h"
 
@@ -50,4 +49,3 @@ public:
 
 	PlaneShape();
 };
-#endif // PLANE_SHAPE_H

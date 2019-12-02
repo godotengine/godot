@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_CACHE_H
-#define ANIMATION_CACHE_H
+#pragma once
 
 #include "scene/3d/skeleton.h"
 #include "scene/resources/animation.h"
@@ -88,5 +87,3 @@ public:
 
 	AnimationCache();
 };
-
-#endif // ANIMATION_CACHE_H

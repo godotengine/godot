@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SET_H
-#define SET_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -633,5 +632,3 @@ public:
 		clear();
 	}
 };
-
-#endif

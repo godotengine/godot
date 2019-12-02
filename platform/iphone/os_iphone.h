@@ -30,8 +30,7 @@
 
 #ifdef IPHONE_ENABLED
 
-#ifndef OS_IPHONE_H
-#define OS_IPHONE_H
+#pragma once
 
 #include "core/os/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -203,5 +202,3 @@ public:
 };
 
 #endif // OS_IPHONE_H
-
-#endif

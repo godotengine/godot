@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTERCSV_H
-#define RESOURCEIMPORTERCSV_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -53,5 +52,3 @@ public:
 
 	ResourceImporterCSV();
 };
-
-#endif // RESOURCEIMPORTERCSV_H

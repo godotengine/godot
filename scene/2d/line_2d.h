@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINE2D_H
-#define LINE2D_H
+#pragma once
 
 #include "node_2d.h"
 
@@ -132,5 +131,3 @@ private:
 	float _sharp_limit;
 	int _round_precision;
 };
-
-#endif // LINE2D_H

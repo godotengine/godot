@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAPSULE_SHAPE_2D_H
-#define CAPSULE_SHAPE_2D_H
+#pragma once
 
 #include "scene/resources/shape_2d.h"
 
@@ -59,5 +58,3 @@ public:
 
 	CapsuleShape2D();
 };
-
-#endif // CAPSULE_SHAPE_2D_H

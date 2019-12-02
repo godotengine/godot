@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOINTS_2D_H
-#define JOINTS_2D_H
+#pragma once
 
 #include "node_2d.h"
 
@@ -142,5 +141,3 @@ public:
 
 	DampedSpringJoint2D();
 };
-
-#endif // JOINTS_2D_H

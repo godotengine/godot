@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_TOKENIZER_H
-#define GDSCRIPT_TOKENIZER_H
+#pragma once
 
 #include "core/pair.h"
 #include "core/string_name.h"
@@ -297,5 +296,3 @@ public:
 #endif // DEBUG_ENABLED
 	GDScriptTokenizerBuffer();
 };
-
-#endif // GDSCRIPT_TOKENIZER_H

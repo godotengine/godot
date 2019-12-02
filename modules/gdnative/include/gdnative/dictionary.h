@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_DICTIONARY_H
-#define GODOT_DICTIONARY_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,5 +104,3 @@ godot_variant GDAPI godot_dictionary_get_with_default(const godot_dictionary *p_
 #ifdef __cplusplus
 }
 #endif
-
-#endif // GODOT_DICTIONARY_H

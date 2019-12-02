@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BOX_SHAPE_H
-#define BOX_SHAPE_H
+#pragma once
 
 #include "scene/resources/shape.h"
 
@@ -51,5 +50,3 @@ public:
 
 	BoxShape();
 };
-
-#endif // BOX_SHAPE_H

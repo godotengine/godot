@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UNDO_REDO_H
-#define UNDO_REDO_H
+#pragma once
 
 #include "core/object.h"
 #include "core/resource.h"
@@ -133,5 +132,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(UndoRedo::MergeMode);
-
-#endif // UNDO_REDO_H

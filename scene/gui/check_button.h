@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CHECK_BUTTON_H
-#define CHECK_BUTTON_H
+#pragma once
 
 #include "scene/gui/button.h"
 /**
@@ -48,5 +47,3 @@ public:
 	CheckButton();
 	~CheckButton();
 };
-
-#endif

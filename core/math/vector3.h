@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
@@ -469,5 +468,3 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }
-
-#endif // VECTOR3_H

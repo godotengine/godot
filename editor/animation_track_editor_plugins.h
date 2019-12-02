@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_TRACK_EDITOR_PLUGINS_H
-#define ANIMATION_TRACK_EDITOR_PLUGINS_H
+#pragma once
 
 #include "editor/animation_track_editor.h"
 
@@ -170,5 +169,3 @@ public:
 	virtual AnimationTrackEdit *create_audio_track_edit();
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object);
 };
-
-#endif // ANIMATION_TRACK_EDITOR_PLUGINS_H

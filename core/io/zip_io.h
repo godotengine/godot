@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ZIP_IO_H
-#define ZIP_IO_H
+#pragma once
 
 #include "core/os/file_access.h"
 
@@ -54,5 +53,3 @@ voidpf zipio_alloc(voidpf opaque, uInt items, uInt size);
 void zipio_free(voidpf opaque, voidpf address);
 
 zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file);
-
-#endif // ZIP_IO_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_H
-#define WORLD_H
+#pragma once
 
 #include "core/resource.h"
 #include "scene/resources/environment.h"
@@ -84,5 +83,3 @@ public:
 	World();
 	~World();
 };
-
-#endif // WORLD_H

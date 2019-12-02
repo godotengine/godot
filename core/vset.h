@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VSET_H
-#define VSET_H
+#pragma once
 
 #include "core/typedefs.h"
 #include "core/vector.h"
@@ -141,5 +140,3 @@ public:
 		return _data[p_index];
 	}
 };
-
-#endif // VSET_H

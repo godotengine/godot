@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIDEO_STREAM_WEBM_H
-#define VIDEO_STREAM_WEBM_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "scene/resources/video_stream.h"
@@ -133,5 +132,3 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
-#endif // VIDEO_STREAM_WEBM_H

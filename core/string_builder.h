@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STRING_BUILDER_H
-#define STRING_BUILDER_H
+#pragma once
 
 #include "core/ustring.h"
 
@@ -84,5 +83,3 @@ public:
 		string_length = 0;
 	}
 };
-
-#endif // STRING_BUILDER_H

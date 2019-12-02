@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_GLUE_H
-#define GD_GLUE_H
+#pragma once
 
 #ifdef MONO_GLUE_ENABLED
 
@@ -82,5 +81,3 @@ MonoObject *godot_icall_DefaultGodotTaskScheduler();
 void godot_register_gd_icalls();
 
 #endif // MONO_GLUE_ENABLED
-
-#endif // GD_GLUE_H

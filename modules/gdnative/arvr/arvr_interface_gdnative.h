@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_INTERFACE_GDNATIVE_H
-#define ARVR_INTERFACE_GDNATIVE_H
+#pragma once
 
 #include "modules/gdnative/gdnative.h"
 #include "servers/arvr/arvr_interface.h"
@@ -87,5 +86,3 @@ public:
 	virtual void process();
 	virtual void notification(int p_what);
 };
-
-#endif // ARVR_INTERFACE_GDNATIVE_H

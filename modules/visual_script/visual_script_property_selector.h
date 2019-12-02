@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
-#define VISUALSCRIPT_PROPERTYSELECTOR_H
+#pragma once
 
 #include "editor/editor_help.h"
 #include "editor/property_editor.h"
@@ -88,5 +87,3 @@ public:
 
 	VisualScriptPropertySelector();
 };
-
-#endif // VISUALSCRIPT_PROPERTYSELECTOR_H

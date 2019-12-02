@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PANEL_H
-#define PANEL_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -44,5 +43,3 @@ public:
 	Panel();
 	~Panel();
 };
-
-#endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_VCS_INTERFACE_H
-#define EDITOR_VCS_INTERFACE_H
+#pragma once
 
 #include "core/object.h"
 #include "core/ustring.h"
@@ -79,5 +78,3 @@ public:
 	EditorVCSInterface();
 	virtual ~EditorVCSInterface();
 };
-
-#endif // !EDITOR_VCS_INTERFACE_H
