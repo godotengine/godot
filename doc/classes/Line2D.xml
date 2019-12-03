@@ -66,6 +66,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
+			If [code]true[/code], the line's border will be anti-aliased.
+		</member>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
 			Controls the style of the line's first point. Use [code]LINE_CAP_*[/code] constants.
 		</member>

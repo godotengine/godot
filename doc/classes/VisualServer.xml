@@ -411,6 +411,8 @@
 			</argument>
 			<argument index="9" name="normal_map" type="RID">
 			</argument>
+			<argument index="10" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>

@@ -471,6 +471,75 @@ void RasterizerCanvasGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count
 	glBindVertexArray(0);
 }
 
+void RasterizerCanvasGLES3::_draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+
+	glBindVertexArray(data.polygon_buffer_pointer_array);
+	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+
+#ifndef GLES_OVER_GL
+	// Orphan the buffers to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
+
+	uint32_t buffer_ofs = 0;
+
+	//vertex
+	glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
+	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
+	buffer_ofs += sizeof(Vector2) * p_vertex_count;
+	//color
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
+	if (p_singlecolor) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		Color m = *p_colors;
+		glVertexAttrib4f(VS::ARRAY_COLOR, m.r, m.g, m.b, m.a);
+	} else if (!p_colors) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+	} else {
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		glEnableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false, sizeof(Color), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
+		buffer_ofs += sizeof(Color) * p_vertex_count;
+	}
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
+	if (p_uvs) {
+
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
+		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+
+	} else {
+		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
+	}
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
+	//bind the indices buffer.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
+
+	//draw the triangles.
+	glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
+
+	storage->frame.canvas_draw_commands++;
+
+	glBindVertexArray(0);
+}
+
 void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs) {
 
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
@@ -824,7 +893,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 				if (polygon->antialiased) {
 					glEnable(GL_LINE_SMOOTH);
-					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					_draw_generic_indices(GL_LINE_STRIP, polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
 					glDisable(GL_LINE_SMOOTH);
 				}
 #endif
