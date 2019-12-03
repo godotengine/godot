@@ -691,13 +691,16 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
-		String line = code_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
+		// Strip edges to remove spaces or tabs.
+		// Also replace any tabs by spaces, since we can't print tabs in the menu.
+		String line = code_editor->get_text_edit()->get_line(bookmark_list[i]).replace("\t", "  ").strip_edges();
+
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - `" + line + "`");
 		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
 	}
 }
@@ -841,13 +844,16 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_separator();
 
 	for (int i = 0; i < breakpoint_list.size(); i++) {
-		String line = code_editor->get_text_edit()->get_line(breakpoint_list[i]).strip_edges();
+		// Strip edges to remove spaces or tabs.
+		// Also replace any tabs by spaces, since we can't print tabs in the menu.
+		String line = code_editor->get_text_edit()->get_line(breakpoint_list[i]).replace("\t", "  ").strip_edges();
+
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
 			line = line.substr(0, 50);
 		}
 
-		breakpoints_menu->add_item(String::num((int)breakpoint_list[i] + 1) + " - \"" + line + "\"");
+		breakpoints_menu->add_item(String::num((int)breakpoint_list[i] + 1) + " - `" + line + "`");
 		breakpoints_menu->set_item_metadata(breakpoints_menu->get_item_count() - 1, breakpoint_list[i]);
 	}
 }
