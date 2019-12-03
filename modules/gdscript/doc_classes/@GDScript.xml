@@ -336,11 +336,12 @@
 			<description>
 				Rounds [code]s[/code] to the closest smaller integer and returns it.
 				[codeblock]
-				# a is 2
+				# a is 2.0
 				a = floor(2.99)
-				# a is -3
+				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
+				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(s)[/code] directly.
 			</description>
 		</method>
 		<method name="fmod">
