@@ -5099,7 +5099,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							if (!expr)
 								return ERR_PARSE_ERROR;
 
-							if (expr->type != Node::TYPE_CONSTANT) {
+							if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
 								_set_error("Expected constant expression after '='");
 								return ERR_PARSE_ERROR;
 							}
