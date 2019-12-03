@@ -1158,7 +1158,7 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 		case END_SQUARE: et = etOpenSquare; break;
 		case END_ROUND: et = etOpenRound; break;
 	}
-	ClipperOffset co;
+	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
