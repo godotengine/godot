@@ -479,9 +479,8 @@ void RasterizerCanvasGLES3::_draw_generic_indices(GLuint p_primitive, const int 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 #ifndef GLES_OVER_GL
-	// Orphan the buffers to avoid CPU/GPU sync points caused by glBufferSubData
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	glBufferData(GL_ARRAY_BUFFER, data.polygon_buffer_size, NULL, GL_DYNAMIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
 #endif
 
 	uint32_t buffer_ofs = 0;
@@ -532,6 +531,10 @@ void RasterizerCanvasGLES3::_draw_generic_indices(GLuint p_primitive, const int 
 
 	//bind the indices buffer.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
+#ifndef GLES_OVER_GL
+	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer_size, NULL, GL_DYNAMIC_DRAW);
+#endif
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 
 	//draw the triangles.
