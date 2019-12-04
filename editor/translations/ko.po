@@ -974,7 +974,7 @@ msgid "Resource"
 msgstr "리소스"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "경로"
 
@@ -1444,7 +1444,8 @@ msgid "Node Name:"
 msgstr "노드 이름:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "이름"
 
@@ -9387,6 +9388,11 @@ msgstr "프로젝트 매니저"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "프로젝트"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "수정됨"
 
 #: editor/project_manager.cpp
 msgid "Scan"

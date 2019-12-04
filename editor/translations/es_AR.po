@@ -982,7 +982,7 @@ msgid "Resource"
 msgstr "Recursos"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Ruta"
 
@@ -1455,7 +1455,8 @@ msgid "Node Name:"
 msgstr "Nombre de Nodo:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nombre"
 
@@ -9512,6 +9513,11 @@ msgstr "Gestor de Proyectos"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Proyectos"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "Modificado/s"
 
 #: editor/project_manager.cpp
 msgid "Scan"

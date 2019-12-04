@@ -68,12 +68,13 @@
 # Xavier Sellier <contact@binogure-studio.com>, 2019.
 # Sofiane <Sofiane-77@caramail.fr>, 2019.
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
+# Pierre Stempin <pierre.stempin@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-29 14:49+0000\n"
-"Last-Translator: Camille Mohr-Daurat <pouleyketchoup@gmail.com>\n"
+"PO-Revision-Date: 2019-12-03 14:05+0000\n"
+"Last-Translator: Pierre Stempin <pierre.stempin@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1040,7 +1041,7 @@ msgid "Resource"
 msgstr "Ressource"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Chemin"
 
@@ -1515,7 +1516,8 @@ msgid "Node Name:"
 msgstr "Nom de nœud :"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nom"
 
@@ -6298,7 +6300,7 @@ msgstr "Déplacer de points"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
-msgstr "Contrôle : Tourner"
+msgstr "Ctrl : Tourner"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
@@ -9051,7 +9053,6 @@ msgstr ""
 "et de la direction de la caméra (transmettez-lui les entrées associées)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
@@ -9606,6 +9607,11 @@ msgstr "Gestionnaire de projets"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "Projets"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "Modifié"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -11436,7 +11442,6 @@ msgstr ""
 "fonctions."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Select at least one node with sequence port."
 msgstr "Sélectionnez au moins un nœud avec un port de séquence."
 

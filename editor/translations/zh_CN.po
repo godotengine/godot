@@ -1008,7 +1008,7 @@ msgid "Resource"
 msgstr "资源"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "路径"
 
@@ -1475,7 +1475,8 @@ msgid "Node Name:"
 msgstr "节点名称:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "名称"
 
@@ -9325,6 +9326,11 @@ msgstr "项目管理器"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "工程"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "已修改"
 
 #: editor/project_manager.cpp
 msgid "Scan"

@@ -993,7 +993,7 @@ msgid "Resource"
 msgstr "リソース"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "パス"
 
@@ -1465,7 +1465,8 @@ msgid "Node Name:"
 msgstr "ノード名:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "名前"
 
@@ -9515,6 +9516,11 @@ msgstr "プロジェクトマネージャー"
 #: editor/project_manager.cpp
 msgid "Projects"
 msgstr "プロジェクト"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "変更された箇所"
 
 #: editor/project_manager.cpp
 msgid "Scan"

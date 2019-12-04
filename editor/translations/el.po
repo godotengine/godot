@@ -982,7 +982,7 @@ msgid "Resource"
 msgstr "Πόρος"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Διαδρομή"
 
@@ -1457,7 +1457,8 @@ msgid "Node Name:"
 msgstr "Όνομα κόμβου:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Όνομα"
 
@@ -9591,6 +9592,10 @@ msgstr "Διαχειριστής"
 #, fuzzy
 msgid "Projects"
 msgstr "Έργο"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"

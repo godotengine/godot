@@ -76,7 +76,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-11-20 14:07+0000\n"
+"PO-Revision-Date: 2019-12-03 14:05+0000\n"
 "Last-Translator: Joaquim Ferreira <joaquimferreira1996@bol.com.br>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -1037,7 +1037,7 @@ msgid "Resource"
 msgstr "Recurso"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Caminho"
 
@@ -1509,7 +1509,8 @@ msgid "Node Name:"
 msgstr "Nome do nó:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nome"
 
@@ -2130,7 +2131,7 @@ msgstr "Nó"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr "Incoming RPC"
+msgstr "RPC recebido"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
@@ -2952,7 +2953,7 @@ msgstr "Tocar"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Pausar a execução da cena para depuração."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3043,6 +3044,14 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
+"Isso irá configurar seu projeto para compilações customizadas do Android "
+"instalando o modelo de origem para \"res://android/build\".\n"
+"Em seguida, você pode aplicar modificações e compilar seu próprio APK "
+"customizado na exportação (Adicionando módulos, alterando o AndroidManifest."
+"xml, etc.).\n"
+"Note que para fazer uma compilação customizada, em vez de usar APKs pre-"
+"compilados, a opção \"Usar compilação customizada\" deve estar ativa nas "
+"predefinições de exportação do Android."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4390,9 +4399,8 @@ msgid "Audio Clips"
 msgstr "Clipes de Áudio:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funções:"
+msgstr "Funções"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5077,7 +5085,7 @@ msgstr "Passo de grade:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Linha Primária a Cada:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5188,6 +5196,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Substituir Câmera do Jogo\n"
+"Substitui a câmera do jogo com a câmera de visualização do editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5195,6 +5205,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Substituir Câmera do Jogo\n"
+"Nenhuma instância de jogo em execução."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7810,7 +7822,7 @@ msgstr "Filtrar Arquivos..."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
-msgstr ""
+msgstr "Atribua um recurso TileSet a este TileMap para usar seus tiles."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -7948,6 +7960,8 @@ msgstr "Exibir nomes de mosaico (segure a tecla Alt)"
 msgid ""
 "Add or select a texture on the left panel to edit the tiles bound to it."
 msgstr ""
+"Adicione ou selecione uma textura no painel esquerdo para editar os tiles "
+"vinculados."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
@@ -8135,7 +8149,7 @@ msgstr "Nenhum nome fornecido"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
-msgstr ""
+msgstr "Nenhum arquivo adicionado ao palco"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8144,11 +8158,11 @@ msgstr "Comunidade"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
-msgstr ""
+msgstr "Extensão VCS não inicializado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
-msgstr ""
+msgstr "Sistema de Controle de Versionamento"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8157,7 +8171,7 @@ msgstr "Capitalizar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
-msgstr ""
+msgstr "Área Temporária"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8200,7 +8214,7 @@ msgstr "Salvar Tudo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Add a commit message"
-msgstr ""
+msgstr "Adicione uma mensagem de confirmação"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8214,7 +8228,7 @@ msgstr "Estado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "View file diffs before committing them to the latest version"
-msgstr ""
+msgstr "Ver aquivos diff antes do commit para a última versão"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -8223,7 +8237,7 @@ msgstr "Nenhum arquivo selecionado!"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect changes in file diff"
-msgstr ""
+msgstr "Detectar mudanças no arquivo diff"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -8761,14 +8775,12 @@ msgid "Multiplies scalar by scalar."
 msgstr "Multiplica escalar por escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the remainder of the two scalars."
-msgstr "Retorna o resto de dois escalares."
+msgstr "Retorna o resto dos dois escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Subtracts scalar from scalar."
-msgstr "Subtrai escalar de escalar."
+msgstr "Subtrai o escalar do escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8781,9 +8793,8 @@ msgid "Scalar uniform."
 msgstr "Alterar Uniforme Escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Perform the cubic texture lookup."
-msgstr "Faça a pesquisa da textura cúbica."
+msgstr "Execute a pesquisa de textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8852,14 +8863,12 @@ msgid "Calculates the transpose of a transform."
 msgstr "(Somente em GLES3) Calcula a transposta da transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Multiplies transform by transform."
-msgstr "Multiplica transform por transform."
+msgstr "Multiplica a transformação por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Multiplies vector by transform."
-msgstr "Multiplica vetor por transform."
+msgstr "Multiplica vetor por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -9062,50 +9071,64 @@ msgid ""
 "it later in the Expressions. You can also declare varyings, uniforms and "
 "constants."
 msgstr ""
+"Expressão customizada da Godot Shader Language, que é colocada em cima do "
+"shader resultante. Você pode colocar várias definições de funções dentro e "
+"chamá-lo posteriormente nas Expressões. Você também pode declarar variações, "
+"uniformes e constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr ""
+msgstr "(Apenas modo Fragmento/Luz) Função derivada escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr ""
+msgstr "(Apenas modo Fragmento/Luz) Função derivada de vetor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Vetor) Derivada em 'x' usando diferenciação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
 "differencing."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Escalar) Derivada em 'x' usando diferenciação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Vetor) Derivada em 'y' usando diferenciação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
 "differencing."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Escalar) Derivada em 'y' usando diferenciação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Vetor) Soma da derivada absoluta em 'x' e 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
+"(Apenas modo Fragmento/Luz) (Escalar) Soma da derivada absoluta em 'x' e 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -9180,6 +9203,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Se marcada, a predefinição estará disponível para uso na implantação em um "
+"clique.\n"
+"Somente uma predefinição por plataforma pode ser marcada como executável."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9461,7 +9487,7 @@ msgstr "Importar Projeto Existente"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
-msgstr ""
+msgstr "Erro: O Projeto está ausente no sistema de arquivos."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -9593,6 +9619,11 @@ msgstr "Gerenciador de Projetos"
 #, fuzzy
 msgid "Projects"
 msgstr "Projeto"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Last Modified"
+msgstr "Modificado"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9950,7 +9981,7 @@ msgstr "Idiomas:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
-msgstr "AutoLoad"
+msgstr "Carregamento Automático"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
@@ -10244,7 +10275,7 @@ msgstr "Deletar Nó(s) de Shader Graph(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr ""
+msgstr "Deletar nó \"%s\" e seus filhos?"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10746,9 +10777,8 @@ msgid "Profiler"
 msgstr "Profilador"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "Exportar Perfil"
+msgstr "Perfis de rede"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -10951,9 +10981,8 @@ msgid "GDNativeLibrary"
 msgstr "GDNativeLibrary"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Enabled GDNative Singleton"
-msgstr "Singleton GDBNative ativado"
+msgstr "Singleton GDNative ativado"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
@@ -10974,7 +11003,7 @@ msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Esperado string de comprimento 1 (a caractere)."
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -11138,7 +11167,7 @@ msgstr "Métodos de filtragem"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr ""
+msgstr "Atribua um recurso MeshLibrary a este GridMap para usar seus meshes."
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11396,6 +11425,7 @@ msgstr "Adicionar Nó de Pré-carregamento"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Não é possível descartar nós porque o script '% s' não é usado nesta cena."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11406,6 +11436,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Não é possível descartar as propriedades porque o script '% s' não é usado "
+"nesta cena.\n"
+"Solte segurando 'Shift' para copiar apenas a assinatura."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11476,14 +11509,15 @@ msgstr "Não é possível copiar o nó de função."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
 msgstr ""
+"Não é possível criar uma função de nós a partir de nós de múltiplas funções."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
-msgstr ""
+msgstr "Selecione pelo menos um nó com porta de sequência."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Tente ter apenas uma entrada de sequência na seleção."
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11677,10 +11711,14 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
+"Compilação personalizada requer um caminho do Android SDK válido para as "
+"Configurações do Editor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
+"Caminho SDK do Android inválido para a compilação personalizada nas "
+"Configurações do Editor."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -11704,6 +11742,9 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Tentando compilar a partir de um modelo compilado personalizado, mas nenhuma "
+"informação de versão para ele existe. Por favor, reinstale pelo menu "
+"'Projeto'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11712,6 +11753,10 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"Diferença de versão da compilação do Android:\n"
+"   Modelo instalado: %s\n"
+"   Versão do Godot: %s\n"
+"Por favor reinstale o modelo de compilação do Android pelo menu 'Projeto'."
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
@@ -12406,6 +12451,9 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"A Dica não será exibida quando o controle de Filtro do Mouse estiver "
+"definido como \"Ignorar\". Para resolver, defina o Filtro do Mouse como "
+"\"Parar\" ou \"Continuar\"."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
