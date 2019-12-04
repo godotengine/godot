@@ -65,7 +65,7 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
 
-        public static bool IsWindows => _isWindows.Value;
+        public static bool IsWindows => _isWindows.Value || IsUWP;
         public static bool IsOSX => _isOSX.Value;
         public static bool IsX11 => _isX11.Value;
         public static bool IsServer => _isServer.Value;

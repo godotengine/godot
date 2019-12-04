@@ -206,6 +206,8 @@ def configure(env, env_mono):
             env_mono.Append(CPPDEFINES=['_REENTRANT'])
 
             if mono_static:
+                env.Append(LINKFLAGS=['-rdynamic'])
+
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
 
                 if is_apple:
@@ -281,8 +283,6 @@ def configure(env, env_mono):
             libs_output_dir = get_android_out_dir(env) if is_android else '#bin'
             copy_file(mono_lib_path, libs_output_dir, 'lib' + mono_so_name + sharedlib_ext)
 
-        env.Append(LINKFLAGS='-rdynamic')
-
     if not tools_enabled:
         if is_desktop(env['platform']):
             if not mono_root:
@@ -292,7 +292,8 @@ def configure(env, env_mono):
         elif is_android:
             # Compress Android Mono Config
             from . import make_android_mono_config
-            config_file_path = os.path.join(mono_root, 'etc', 'mono', 'config')
+            module_dir = os.getcwd()
+            config_file_path = os.path.join(module_dir, 'build_scripts', 'mono_android_config.xml')
             make_android_mono_config.generate_compressed_config(config_file_path, 'mono_gd/')
 
             # Copy the required shared libraries
