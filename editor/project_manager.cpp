@@ -2466,9 +2466,9 @@ ProjectManager::ProjectManager() {
 	sort_label->set_text(TTR("Sort:"));
 	sort_filters->add_child(sort_label);
 	Vector<String> sort_filter_titles;
-	sort_filter_titles.push_back("Name");
-	sort_filter_titles.push_back("Path");
-	sort_filter_titles.push_back("Last Modified");
+	sort_filter_titles.push_back(TTR("Name"));
+	sort_filter_titles.push_back(TTR("Path"));
+	sort_filter_titles.push_back(TTR("Last Modified"));
 	project_order_filter = memnew(ProjectListFilter);
 	project_order_filter->add_filter_option();
 	project_order_filter->_setup_filters(sort_filter_titles);
@@ -2696,7 +2696,7 @@ void ProjectListFilter::_setup_filters(Vector<String> options) {
 
 	filter_option->clear();
 	for (int i = 0; i < options.size(); i++)
-		filter_option->add_item(TTR(options[i]));
+		filter_option->add_item(options[i]);
 }
 
 void ProjectListFilter::_search_text_changed(const String &p_newtext) {
