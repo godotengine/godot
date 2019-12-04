@@ -1065,6 +1065,9 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	// form. If not found, we fall back to a near match (another locale with
 	// same language code).
 
+	// Note: ResourceLoader::_path_remap reproduces this locale near matching
+	// logic, so be sure to propagate changes there when changing things here.
+
 	StringName res;
 	String lang = get_language_code(locale);
 	bool near_match = false;
