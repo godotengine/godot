@@ -125,11 +125,19 @@ namespace GodotTools.Export
 
             dependencies[projectDllName] = projectDllSrcPath;
 
+            if (platform == OS.Platforms.Android)
             {
-                string platformBclDir = DeterminePlatformBclDir(platform);
+                string godotAndroidExtProfileDir = GetBclProfileDir("godot_android_ext");
+                string monoAndroidAssemblyPath = Path.Combine(godotAndroidExtProfileDir, "Mono.Android.dll");
 
-                internal_GetExportedAssemblyDependencies(projectDllName, projectDllSrcPath, buildConfig, platformBclDir, dependencies);
+                if (!File.Exists(monoAndroidAssemblyPath))
+                    throw new FileNotFoundException("Assembly not found: 'Mono.Android'", monoAndroidAssemblyPath);
+
+                dependencies["Mono.Android"] = monoAndroidAssemblyPath;
             }
+
+            var initialDependencies = dependencies.Duplicate();
+            internal_GetExportedAssemblyDependencies(initialDependencies, buildConfig, DeterminePlatformBclDir(platform), dependencies);
 
             string outputDataDir = null;
 
@@ -579,6 +587,12 @@ namespace GodotTools.Export
             return null;
         }
 
+        private static string GetBclProfileDir(string profile)
+        {
+            string templatesDir = Internal.FullTemplatesDir;
+            return Path.Combine(templatesDir, "bcl", profile);
+        }
+
         private static string DeterminePlatformBclDir(string platform)
         {
             string templatesDir = Internal.FullTemplatesDir;
@@ -590,10 +604,36 @@ namespace GodotTools.Export
                 platformBclDir = Path.Combine(templatesDir, "bcl", profile);
 
                 if (!File.Exists(Path.Combine(platformBclDir, "mscorlib.dll")))
+                {
+                    if (PlatformRequiresCustomBcl(platform))
+                        throw new FileNotFoundException($"Missing BCL (Base Class Library) for platform: {platform}");
+
                     platformBclDir = null; // Use the one we're running on
+                }
             }
 
             return platformBclDir;
+        }
+
+        /// <summary>
+        /// Determines whether the BCL bundled with the Godot editor can be used for the target platform,
+        /// or if it requires a custom BCL that must be distributed with the export templates.
+        /// </summary>
+        private static bool PlatformRequiresCustomBcl(string platform)
+        {
+            if (new[] {OS.Platforms.Android, OS.Platforms.HTML5}.Contains(platform))
+                return true;
+
+            // The 'net_4_x' BCL is not compatible between Windows and the other platforms.
+            // We use the names 'net_4_x_win' and 'net_4_x' to differentiate between the two.
+
+            bool isWinOrUwp = new[]
+            {
+                OS.Platforms.Windows,
+                OS.Platforms.UWP
+            }.Contains(platform);
+
+            return OS.IsWindows ? !isWinOrUwp : isWinOrUwp;
         }
 
         private static string DeterminePlatformBclProfile(string platform)
@@ -602,6 +642,7 @@ namespace GodotTools.Export
             {
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
+                    return "net_4_x_win";
                 case OS.Platforms.OSX:
                 case OS.Platforms.X11:
                 case OS.Platforms.Server:
@@ -627,7 +668,7 @@ namespace GodotTools.Export
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_GetExportedAssemblyDependencies(string projectDllName, string projectDllSrcPath,
+        private static extern void internal_GetExportedAssemblyDependencies(Godot.Collections.Dictionary<string, string> initialDependencies,
             string buildConfig, string customBclDir, Godot.Collections.Dictionary<string, string> dependencies);
     }
 }

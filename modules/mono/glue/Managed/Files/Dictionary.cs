@@ -80,6 +80,11 @@ namespace Godot.Collections
             disposed = true;
         }
 
+        public Dictionary Duplicate(bool deep = false)
+        {
+            return new Dictionary(godot_icall_Dictionary_Duplicate(GetPtr(), deep));
+        }
+
         // IDictionary
 
         public ICollection Keys
@@ -235,6 +240,9 @@ namespace Godot.Collections
         internal extern static bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Dictionary_Duplicate(IntPtr ptr, bool deep);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -311,6 +319,11 @@ namespace Godot.Collections
         internal IntPtr GetPtr()
         {
             return objectDict.GetPtr();
+        }
+
+        public Dictionary<TKey, TValue> Duplicate(bool deep = false)
+        {
+            return new Dictionary<TKey, TValue>(objectDict.Duplicate(deep));
         }
 
         // IDictionary<TKey, TValue>

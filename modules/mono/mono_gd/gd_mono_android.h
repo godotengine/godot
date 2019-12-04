@@ -39,7 +39,11 @@ namespace GDMonoAndroid {
 
 String get_app_native_lib_dir();
 
-void register_android_dl_fallback();
+void initialize();
+
+void register_internal_calls();
+
+void cleanup();
 
 } // namespace GDMonoAndroid
 

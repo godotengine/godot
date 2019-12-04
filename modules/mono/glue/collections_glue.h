@@ -59,6 +59,8 @@ MonoBoolean godot_icall_Array_Contains(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index);
 
+Array *godot_icall_Array_Duplicate(Array *ptr, MonoBoolean deep);
+
 int godot_icall_Array_IndexOf(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Insert(Array *ptr, int index, MonoObject *item);
@@ -98,6 +100,8 @@ void godot_icall_Dictionary_Clear(Dictionary *ptr);
 MonoBoolean godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
 MonoBoolean godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
+
+Dictionary *godot_icall_Dictionary_Duplicate(Dictionary *ptr, MonoBoolean deep);
 
 MonoBoolean godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
 

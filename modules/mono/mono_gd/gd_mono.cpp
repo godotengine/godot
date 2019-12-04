@@ -330,7 +330,7 @@ void GDMono::initialize() {
 #endif
 
 #if defined(ANDROID_ENABLED)
-	GDMonoAndroid::register_android_dl_fallback();
+	GDMonoAndroid::initialize();
 #endif
 
 	GDMonoAssembly::initialize();
@@ -363,6 +363,9 @@ void GDMono::initialize() {
 	}
 #endif
 
+	// NOTE: Internal calls must be registered after the Mono runtime initialization.
+	// Otherwise registration fails with the error: 'assertion 'hash != NULL' failed'.
+
 	root_domain = gd_initialize_mono_runtime();
 	ERR_FAIL_NULL_MSG(root_domain, "Mono: Failed to initialize runtime.");
 
@@ -375,6 +378,10 @@ void GDMono::initialize() {
 	runtime_initialized = true;
 
 	print_verbose("Mono: Runtime initialized");
+
+#if defined(ANDROID_ENABLED)
+	GDMonoAndroid::register_internal_calls();
+#endif
 
 	// mscorlib assembly MUST be present at initialization
 	bool corlib_loaded = _load_corlib_assembly();
@@ -1252,6 +1259,10 @@ GDMono::~GDMono() {
 		print_verbose("Mono: Runtime cleanup...");
 
 		mono_jit_cleanup(root_domain);
+
+#if defined(ANDROID_ENABLED)
+		GDMonoAndroid::cleanup();
+#endif
 
 		print_verbose("Mono: Finalized");
 
