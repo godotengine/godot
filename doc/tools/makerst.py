@@ -14,7 +14,7 @@ GODOT_DOCS_PATTERN = re.compile(r'^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-
 
 
 def print_error(error, state):  # type: (str, State) -> None
-    print(error)
+    print("ERROR: {}".format(error))
     state.errored = True
 
 
@@ -982,7 +982,11 @@ def make_enum(t, state):  # type: (str, State) -> str
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
-    print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
+    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
+    if "{}.{}".format(c, e) != "Vector3.Axis":
+        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
     return t
 
 
