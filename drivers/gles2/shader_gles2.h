@@ -118,10 +118,12 @@ private:
 		uint32_t code_version;
 		bool ok;
 		Version() {
-			code_version = 0;
+			id = 0;
+			vert_id = 0;
 			frag_id = 0;
-			ok = false;
 			uniform_location = NULL;
+			code_version = 0;
+			ok = false;
 		}
 	};
 
