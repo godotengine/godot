@@ -4752,19 +4752,21 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case CLEAR_GUIDES: {
 
-			if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_") || EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
+			Node *const root = EditorNode::get_singleton()->get_edited_scene();
+
+			if (root && (root->has_meta("_edit_horizontal_guides_") || root->has_meta("_edit_vertical_guides_"))) {
 				undo_redo->create_action(TTR("Clear Guides"));
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
-					Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
+				if (root->has_meta("_edit_horizontal_guides_")) {
+					Array hguides = root->get_meta("_edit_horizontal_guides_");
 
-					undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", Array());
-					undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+					undo_redo->add_do_method(root, "set_meta", "_edit_horizontal_guides_", Array());
+					undo_redo->add_undo_method(root, "set_meta", "_edit_horizontal_guides_", hguides);
 				}
-				if (EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
-					Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
+				if (root->has_meta("_edit_vertical_guides_")) {
+					Array vguides = root->get_meta("_edit_vertical_guides_");
 
-					undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", Array());
-					undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+					undo_redo->add_do_method(root, "set_meta", "_edit_vertical_guides_", Array());
+					undo_redo->add_undo_method(root, "set_meta", "_edit_vertical_guides_", vguides);
 				}
 				undo_redo->add_undo_method(viewport, "update");
 				undo_redo->commit_action();
