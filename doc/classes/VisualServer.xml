@@ -2606,6 +2606,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="multimesh_create">
+			<return type="RID">
+			</return>
+			<description>
+				Creates a new multimesh on the VisualServer and returns an [RID] handle.
+				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
+			</description>
+		</method>
 		<method name="multimesh_get_aabb" qualifiers="const">
 			<return type="AABB">
 			</return>
