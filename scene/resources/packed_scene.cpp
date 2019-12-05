@@ -397,6 +397,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	if (p_owner->get_scene_inherited_state().is_null() && (p_node == p_owner || (p_node->get_owner() == p_owner && (p_node->get_parent() == p_owner || p_node->get_parent()->get_owner() == p_owner)))) {
 		//do not save index, because it belongs to saved scene and scene is not inherited
 		nd.index = -1;
+	} else if (p_node == p_owner) {
+		//This (hopefully) happens if the node is a scene root, so its index is irrelevant.
+		nd.index = -1;
 	} else {
 		//part of an inherited scene, or parent is from an instanced scene
 		nd.index = p_node->get_index();
