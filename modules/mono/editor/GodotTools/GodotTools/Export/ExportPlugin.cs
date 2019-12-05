@@ -209,23 +209,25 @@ namespace GodotTools.Export
             string TemplateDirName() => $"data.mono.{platform}.{bits}.{target}";
 
             string templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
+            bool validTemplatePathFound = true;
 
             if (!Directory.Exists(templateDirPath))
             {
-                templateDirPath = null;
+                validTemplatePathFound = false;
 
                 if (isDebug)
                 {
                     target = "debug"; // Support both 'release_debug' and 'debug' for the template data directory name
                     templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
+                    validTemplatePathFound = true;
 
                     if (!Directory.Exists(templateDirPath))
-                        templateDirPath = null;
+                        validTemplatePathFound = false;
                 }
             }
 
-            if (templateDirPath == null)
-                throw new FileNotFoundException("Data template directory not found");
+            if (!validTemplatePathFound)
+                throw new FileNotFoundException("Data template directory not found", templateDirPath);
 
             string outputDataDir = Path.Combine(outputDir, DataDirName);
 
