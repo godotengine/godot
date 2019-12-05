@@ -792,11 +792,6 @@ static const char *locale_renames[][2] = {
 	{ NULL, NULL }
 };
 
-static String get_trimmed_locale(const String &p_locale) {
-
-	return p_locale.substr(0, 2);
-}
-
 ///////////////////////////////////////////////
 
 PoolVector<String> Translation::_get_messages() const {
@@ -846,7 +841,7 @@ void Translation::set_locale(const String &p_locale) {
 	String univ_locale = TranslationServer::standardize_locale(p_locale);
 
 	if (!TranslationServer::is_locale_valid(univ_locale)) {
-		String trimmed_locale = get_trimmed_locale(univ_locale);
+		String trimmed_locale = TranslationServer::get_language_code(univ_locale);
 
 		ERR_FAIL_COND_MSG(!TranslationServer::is_locale_valid(trimmed_locale), "Invalid locale: " + trimmed_locale + ".");
 
@@ -945,12 +940,29 @@ String TranslationServer::standardize_locale(const String &p_locale) {
 	return univ_locale;
 }
 
+String TranslationServer::get_language_code(const String &p_locale) {
+
+	ERR_FAIL_COND_V_MSG(p_locale.length() < 2, p_locale, "Invalid locale '" + p_locale + "'.");
+	// Most language codes are two letters, but some are three,
+	// so we have to look for a regional code separator ('_' or '-')
+	// to extract the left part.
+	// For example we get 'nah_MX' as input and should return 'nah'.
+	int split = p_locale.find("_");
+	if (split == -1) {
+		split = p_locale.find("-");
+	}
+	if (split == -1) { // No separator, so the locale is already only a language code.
+		return p_locale;
+	}
+	return p_locale.left(split);
+}
+
 void TranslationServer::set_locale(const String &p_locale) {
 
 	String univ_locale = standardize_locale(p_locale);
 
 	if (!is_locale_valid(univ_locale)) {
-		String trimmed_locale = get_trimmed_locale(univ_locale);
+		String trimmed_locale = get_language_code(univ_locale);
 		print_verbose(vformat("Unsupported locale '%s', falling back to '%s'.", p_locale, trimmed_locale));
 
 		if (!is_locale_valid(trimmed_locale)) {
@@ -1039,10 +1051,12 @@ void TranslationServer::clear() {
 
 StringName TranslationServer::translate(const StringName &p_message) const {
 
-	//translate using locale
+	// Match given message against the translation catalog for the project locale.
 
 	if (!enabled)
 		return p_message;
+
+	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
 
 	// Locale can be of the form 'll_CC', i.e. language code and regional code,
 	// e.g. 'en_US', 'en_GB', etc. It might also be simply 'll', e.g. 'en'.
@@ -1051,67 +1065,78 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	// form. If not found, we fall back to a near match (another locale with
 	// same language code).
 
+	// Note: ResourceLoader::_path_remap reproduces this locale near matching
+	// logic, so be sure to propagate changes there when changing things here.
+
 	StringName res;
+	String lang = get_language_code(locale);
 	bool near_match = false;
-	const CharType *lptr = &locale[0];
 
 	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
-
 		const Ref<Translation> &t = E->get();
-		ERR_FAIL_COND_V(t.is_null(), StringName(""));
+		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
-		if (lptr[0] != l[0] || lptr[1] != l[1])
-			continue; // Language code does not match.
 
 		bool exact_match = (l == locale);
-		if (!exact_match && near_match)
-			continue; // Only near-match once, but keep looking for exact matches.
+		if (!exact_match) {
+			if (near_match) {
+				continue; // Only near-match once, but keep looking for exact matches.
+			}
+			if (get_language_code(l) != lang) {
+				continue; // Language code does not match.
+			}
+		}
 
 		StringName r = t->get_message(p_message);
-
-		if (!r)
+		if (!r) {
 			continue;
-
+		}
 		res = r;
 
-		if (exact_match)
+		if (exact_match) {
 			break;
-		else
+		} else {
 			near_match = true;
+		}
 	}
 
 	if (!res && fallback.length() >= 2) {
 		// Try again with the fallback locale.
-		const CharType *fptr = &fallback[0];
+		String fallback_lang = get_language_code(fallback);
 		near_match = false;
-		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
+		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 			const Ref<Translation> &t = E->get();
-			ERR_FAIL_COND_V(t.is_null(), StringName(""));
+			ERR_FAIL_COND_V(t.is_null(), p_message);
 			String l = t->get_locale();
-			if (fptr[0] != l[0] || fptr[1] != l[1])
-				continue; // Language code does not match.
 
 			bool exact_match = (l == fallback);
-			if (!exact_match && near_match)
-				continue; // Only near-match once, but keep looking for exact matches.
+			if (!exact_match) {
+				if (near_match) {
+					continue; // Only near-match once, but keep looking for exact matches.
+				}
+				if (get_language_code(l) != fallback_lang) {
+					continue; // Language code does not match.
+				}
+			}
 
 			StringName r = t->get_message(p_message);
-
-			if (!r)
+			if (!r) {
 				continue;
-
+			}
 			res = r;
 
-			if (exact_match)
+			if (exact_match) {
 				break;
-			else
+			} else {
 				near_match = true;
+			}
 		}
 	}
 
-	if (!res)
+	if (!res) {
 		return p_message;
+	}
 
 	return res;
 }
