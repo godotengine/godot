@@ -22,7 +22,7 @@
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
 			</return>
 			<description>
-				Returns the hand holding this controller, if known. See [code]TRACKER_*[/code] constants in [ARVRPositionalTracker].
+				Returns the hand holding this controller, if known. See [enum ARVRPositionalTracker.TrackerHand].
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
@@ -61,7 +61,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the button at index [code]button[/code] is pressed.
+				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoystickList], in particular the [code]JOY_VR_*[/code] constants.
 			</description>
 		</method>
 	</methods>
@@ -73,7 +73,8 @@
 			When a controller is turned off, its slot is freed. This ensures controllers will keep the same ID even when controllers with lower IDs are turned off.
 		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
+			The degree to which the controller vibrates. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
+			This is a useful property to animate if you want the controller to vibrate for a limited duration.
 		</member>
 	</members>
 	<signals>
