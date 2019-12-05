@@ -4759,13 +4759,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (root->has_meta("_edit_horizontal_guides_")) {
 					Array hguides = root->get_meta("_edit_horizontal_guides_");
 
-					undo_redo->add_do_method(root, "set_meta", "_edit_horizontal_guides_", Array());
+					undo_redo->add_do_method(root, "remove_meta", "_edit_horizontal_guides_");
 					undo_redo->add_undo_method(root, "set_meta", "_edit_horizontal_guides_", hguides);
 				}
 				if (root->has_meta("_edit_vertical_guides_")) {
 					Array vguides = root->get_meta("_edit_vertical_guides_");
 
-					undo_redo->add_do_method(root, "set_meta", "_edit_vertical_guides_", Array());
+					undo_redo->add_do_method(root, "remove_meta", "_edit_vertical_guides_");
 					undo_redo->add_undo_method(root, "set_meta", "_edit_vertical_guides_", vguides);
 				}
 				undo_redo->add_undo_method(viewport, "update");
