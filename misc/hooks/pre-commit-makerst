@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Git pre-commit hook that checks the class reference syntax using makerst.py.
+
+doc/tools/makerst.py doc/classes modules --dry-run
