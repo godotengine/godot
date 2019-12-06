@@ -82,7 +82,8 @@ def build(env_mono, api_sln_cmd):
 
     target_filenames = [
         'GodotTools.dll', 'GodotTools.IdeConnection.dll', 'GodotTools.BuildLogger.dll',
-        'GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll'
+        'GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll',
+        'JetBrains.Annotations.dll', 'Newtonsoft.Json.dll'
     ]
 
     if env_mono['target'] == 'debug':

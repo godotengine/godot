@@ -72,6 +72,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.None:
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
+                case ExternalEditorId.Rider:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
