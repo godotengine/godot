@@ -41,8 +41,8 @@
 			<argument index="1" name="texture" type="Texture" default="null">
 			</argument>
 			<description>
-				Begin drawing (And optionally pass a texture override). When done call end(). For more information on how this works, search for glBegin() glEnd() references.
-			For the type of primitive, use the [Mesh].[code]PRIMITIVE_*[/code] enumerations.
+				Begin drawing (and optionally pass a texture override). When done call [method end]. For more information on how this works, search for [code]glBegin()[/code] and [code]glEnd()[/code] references.
+				For the type of primitive, see the [enum Mesh.PrimitiveType] enum.
 			</description>
 		</method>
 		<method name="clear">

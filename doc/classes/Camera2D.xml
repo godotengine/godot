@@ -103,7 +103,7 @@
 	</methods>
 	<members>
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode" default="1">
-			The Camera2D's anchor point. See [code]ANCHOR_MODE_*[/code] constants.
+			The Camera2D's anchor point. See [enum AnchorMode] constants.
 		</member>
 		<member name="current" type="bool" setter="_set_current" getter="is_current" default="false">
 			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.

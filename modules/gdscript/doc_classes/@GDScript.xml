@@ -208,7 +208,7 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
-				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum [code]TYPE_*[/code] in [@GlobalScope].
+				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the [enum Variant.Type] values.
 				[codeblock]
 				a = Vector2(1, 0)
 				# Prints 1
@@ -1217,7 +1217,7 @@
 			<argument index="0" name="what" type="Variant">
 			</argument>
 			<description>
-				Returns the internal type of the given Variant object, using the [code]TYPE_*[/code] enum in [@GlobalScope].
+				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
@@ -1233,7 +1233,7 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Checks that [code]json[/code] is valid JSON data. Returns empty string if valid. Returns error message if not valid.
+				Checks that [code]json[/code] is valid JSON data. Returns an empty string if valid, or an error message otherwise.
 				[codeblock]
 				j = to_json([1, 2, 3])
 				v = validate_json(j)

@@ -22,7 +22,7 @@
 			<argument index="0" name="side" type="int" enum="CubeMap.Side">
 			</argument>
 			<description>
-				Returns an [Image] for a side of the [CubeMap] using one of the [code]SIDE_*[/code] constants or an integer 0-5.
+				Returns an [Image] for a side of the [CubeMap] using one of the [enum Side] constants.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -40,19 +40,19 @@
 			<argument index="1" name="image" type="Image">
 			</argument>
 			<description>
-				Sets an [Image] for a side of the [CubeMap] using one of the [code]SIDE_*[/code] constants or an integer 0-5.
+				Sets an [Image] for a side of the [CubeMap] using one of the [enum Side] constants.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="7">
-			The render flags for the [CubeMap]. See the [code]FLAG_*[/code] constants for details.
+			The render flags for the [CubeMap]. See the [enum Flags] constants for details.
 		</member>
 		<member name="lossy_storage_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality" default="0.7">
-			The lossy storage quality of the [CubeMap] if the storage mode is set to STORAGE_COMPRESS_LOSSY.
+			The lossy storage quality of the [CubeMap] if the storage mode is set to [constant STORAGE_COMPRESS_LOSSY].
 		</member>
 		<member name="storage_mode" type="int" setter="set_storage" getter="get_storage" enum="CubeMap.Storage" default="0">
-			The [CubeMap]'s storage mode. See [code]STORAGE_*[/code] constants.
+			The [CubeMap]'s storage mode. See [enum Storage] constants.
 		</member>
 	</members>
 	<constants>

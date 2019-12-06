@@ -57,7 +57,7 @@
 			Bus on which this audio is playing.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
-			If the audio configuration has more than two speakers, this sets the target channels. See [code]MIX_TARGET_*[/code] constants.
+			If the audio configuration has more than two speakers, this sets the target channels. See [enum MixTarget] constants.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			Changes the pitch and the tempo of the audio.

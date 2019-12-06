@@ -789,7 +789,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasLightMode">
 			</argument>
 			<description>
-				The mode of the light, see [code]CANVAS_LIGHT_MODE_*[/code] constants.
+				The mode of the light, see [enum CanvasLightMode] constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_scale">
@@ -843,7 +843,7 @@
 			<argument index="1" name="filter" type="int" enum="VisualServer.CanvasLightShadowFilter">
 			</argument>
 			<description>
-				Sets the canvas light's shadow's filter, see [code]CANVAS_LIGHT_SHADOW_FILTER_*[/code] constants.
+				Sets the canvas light's shadow's filter, see [enum CanvasLightShadowFilter] constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_gradient_length">
@@ -926,7 +926,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasOccluderPolygonCullMode">
 			</argument>
 			<description>
-				Sets an occluder polygons cull mode. See [code]CANVAS_OCCLUDER_POLYGON_CULL_MODE_*[/code] constants.
+				Sets an occluder polygons cull mode. See [enum CanvasOccluderPolygonCullMode] constants.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape">
@@ -1332,7 +1332,7 @@
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo">
 			</argument>
 			<description>
-				Returns a certain information, see [code]RENDER_INFO_*[/code] for options.
+				Returns a certain information, see [enum RenderInfo] for options.
 			</description>
 		</method>
 		<method name="get_test_cube">
@@ -2308,7 +2308,7 @@
 			</return>
 			<argument index="0" name="mesh" type="RID">
 			</argument>
-			<argument index="1" name="primtive" type="int" enum="VisualServer.PrimitiveType">
+			<argument index="1" name="primitive" type="int" enum="VisualServer.PrimitiveType">
 			</argument>
 			<argument index="2" name="arrays" type="Array">
 			</argument>
@@ -2317,7 +2317,7 @@
 			<argument index="4" name="compress_format" type="int" default="97280">
 			</argument>
 			<description>
-				Adds a surface generated from the Arrays to a mesh. See [code]PRIMITIVE_TYPE_*[/code] constants for types.
+				Adds a surface generated from the Arrays to a mesh. See [enum PrimitiveType] constants for types.
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -3665,7 +3665,7 @@
 			<argument index="1" name="info" type="int" enum="VisualServer.ViewportRenderInfo">
 			</argument>
 			<description>
-				Returns a viewport's render information. For options, see the [code]VIEWPORT_RENDER_INFO*[/code] constants.
+				Returns a viewport's render information. For options, see the [enum ViewportRenderInfo] constants.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">

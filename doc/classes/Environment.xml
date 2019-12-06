@@ -45,7 +45,7 @@
 			Global contrast value of the rendered scene (default value is 1).
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enable" getter="is_adjustment_enabled" default="false">
-			Enables the adjustment_* options provided by this resource. If [code]false[/code], adjustments modifications will have no effect on the rendered scene.
+			Enables the [code]adjustment_*[/code] options provided by this resource. If [code]false[/code], adjustments modifications will have no effect on the rendered scene.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
 			Global color saturation value of the rendered scene (default value is 1).

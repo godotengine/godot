@@ -41,7 +41,7 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align" default="0">
-			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [code]ALIGN_*[/code] constants.
+			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [enum Align] constants.
 		</member>
 		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
 			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
@@ -67,7 +67,7 @@
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
 		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign" default="0">
-			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [code]VALIGN_*[/code] constants.
+			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [enum VAlign] constants.
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			Restricts the number of characters to display. Set to -1 to disable.

@@ -54,7 +54,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
-				Executes a given action as defined in the[code]MENU_*[/code] enum.
+				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="select">
@@ -84,7 +84,7 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
-			Text alignment as defined in the [code]ALIGN_*[/code] enum.
+			Text alignment as defined in the [enum Align] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
 			If [code]true[/code], the caret (visual cursor) blinks.
