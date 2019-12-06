@@ -289,7 +289,7 @@
 			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master, or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:

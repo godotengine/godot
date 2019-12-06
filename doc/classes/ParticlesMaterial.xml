@@ -157,7 +157,7 @@
 			Particles will be emitted at positions determined by sampling this texture at a random position. Used with [constant EMISSION_SHAPE_POINTS] and [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticlesMaterial.EmissionShape" default="0">
-			Particles will be emitted inside this region. Use [code]EMISSION_SHAPE_*[/code] constants for values.
+			Particles will be emitted inside this region. Use [enum EmissionShape] constants for values.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_SPHERE].

@@ -66,7 +66,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the index of the longest axis of the [AABB] (according to [Vector3]::AXIS* enum).
+				Returns the index of the longest axis of the [AABB] (according to [Vector3]'s [code]AXIS_*[/code] constants).
 			</description>
 		</method>
 		<method name="get_longest_axis_size">

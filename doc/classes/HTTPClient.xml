@@ -79,7 +79,7 @@
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns a [code]STATUS_*[/code] enum constant. Need to call [method poll] in order to get status updates.
+				Returns a [enum Status] constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
@@ -143,7 +143,7 @@
 			</argument>
 			<description>
 				Sends a request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblock]
 				var fields = {"username" : "user", "password" : "pass"}
@@ -166,7 +166,7 @@
 			</argument>
 			<description>
 				Sends a raw request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>

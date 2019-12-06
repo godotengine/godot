@@ -656,7 +656,7 @@
 			<argument index="1" name="mode" type="int" enum="Animation.UpdateMode">
 			</argument>
 			<description>
-				Sets the update mode ([code]UPDATE_*[/code]) of a value track.
+				Sets the update mode (see [enum UpdateMode]) of a value track.
 			</description>
 		</method>
 	</methods>

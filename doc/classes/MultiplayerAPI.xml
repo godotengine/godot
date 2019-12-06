@@ -92,7 +92,7 @@
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master, or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.

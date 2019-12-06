@@ -47,7 +47,7 @@
 			</argument>
 			<description>
 				Creates a new surface.
-				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. See [Mesh] for details. (As a note, when using indices, it is recommended to only use points, lines or triangles). [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
+				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant ARRAY_INDEX] if it is used.
 				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
 				Godot uses clockwise winding order for front faces of triangle primitive modes.

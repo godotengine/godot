@@ -21,7 +21,10 @@
 			<argument index="0" name="info" type="Dictionary">
 			</argument>
 			<description>
-				Adds a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see [code]TYPE_*[/code] in [@GlobalScope]), and optionally hint:[int](see [code]PROPERTY_HINT_*[/code] in [@GlobalScope]), hint_string:[String].
+				Adds a custom property info to a property. The dictionary must contain:
+				- [code]name[/code]: [String] (the name of the property)
+				- [code]type[/code]: [int] (see [enum Variant.Type])
+				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
 				[b]Example:[/b]
 				[codeblock]
 				editor_settings.set("category/property_name", 0)
