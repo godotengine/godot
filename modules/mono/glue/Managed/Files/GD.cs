@@ -93,22 +93,22 @@ namespace Godot
 
         public static void PrintErr(params object[] what)
         {
-            godot_icall_GD_printerr(Array.ConvertAll(what, x => x.ToString()));
+            godot_icall_GD_printerr(Array.ConvertAll(what, x => x?.ToString()));
         }
 
         public static void PrintRaw(params object[] what)
         {
-            godot_icall_GD_printraw(Array.ConvertAll(what, x => x.ToString()));
+            godot_icall_GD_printraw(Array.ConvertAll(what, x => x?.ToString()));
         }
 
         public static void PrintS(params object[] what)
         {
-            godot_icall_GD_prints(Array.ConvertAll(what, x => x.ToString()));
+            godot_icall_GD_prints(Array.ConvertAll(what, x => x?.ToString()));
         }
 
         public static void PrintT(params object[] what)
         {
-            godot_icall_GD_printt(Array.ConvertAll(what, x => x.ToString()));
+            godot_icall_GD_printt(Array.ConvertAll(what, x => x?.ToString()));
         }
 
         public static float Randf()
