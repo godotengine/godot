@@ -219,7 +219,7 @@ void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> 
 
 Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_get_supported_architectures() {
 	Vector<ExportArchitecture> archs;
-	archs.push_back(ExportArchitecture("armv7", true));
+	archs.push_back(ExportArchitecture("armv7", false)); // Disabled by default, not included in official templates.
 	archs.push_back(ExportArchitecture("arm64", true));
 	return archs;
 }
