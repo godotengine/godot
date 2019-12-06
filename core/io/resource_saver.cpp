@@ -40,6 +40,10 @@ int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = 0;
 
+bool ResourceFormatSaver::recognize_path(const String &p_path) const {
+	return FileAccess::exists(p_path);
+}
+
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
 	if (get_script_instance() && get_script_instance()->has_method("save")) {

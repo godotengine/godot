@@ -553,6 +553,11 @@ void CSGShape::_notification(int p_what) {
 	}
 }
 
+Ref<Mesh> CSGShape::get_calculated_mesh() {
+	_update_shape();
+	return root_mesh;
+}
+
 void CSGShape::set_operation(Operation p_operation) {
 
 	operation = p_operation;
@@ -597,6 +602,7 @@ Array CSGShape::get_meshes() const {
 }
 void CSGShape::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("get_calculated_mesh"), &CSGShape::get_calculated_mesh);
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape::_update_shape);
 	ClassDB::bind_method(D_METHOD("is_root_shape"), &CSGShape::is_root_shape);
 

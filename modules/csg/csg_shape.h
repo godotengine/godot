@@ -119,6 +119,8 @@ protected:
 public:
 	Array get_meshes() const;
 
+	Ref<Mesh> get_calculated_mesh();
+
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
@@ -201,6 +203,7 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+	Ref<Mesh> get_calculated_mesh();
 };
 
 class CSGSphere : public CSGPrimitive {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_saver.h                                                     */
+/*  editor_saver_plugin.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,69 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_SAVER_H
-#define RESOURCE_SAVER_H
+#ifndef EDITOR_IMPORT_PLUGIN_H
+#define EDITOR_IMPORT_PLUGIN_H
 
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
-#include "core/resource.h"
 
-class ResourceFormatSaver : public Reference {
-	GDCLASS(ResourceFormatSaver, Reference);
+class EditorSaverPlugin : public ResourceSaver {
+	GDCLASS(EditorSaverPlugin, ResourceSaver);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	virtual bool recognize(const RES &p_resource) const;
-	virtual bool recognize_path(const String &p_path) const;
-	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
-
-	virtual ~ResourceFormatSaver() {}
+	EditorSaverPlugin();
+	// virtual String get_importer_name() const;
+	// virtual String get_visible_name() const;
+	// virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	// virtual String get_preset_name(int p_idx) const;
+	// virtual int get_preset_count() const;
+	// virtual String get_save_extension() const;
+	// virtual String get_resource_type() const;
+	// virtual float get_priority() const;
+	// virtual int get_import_order() const;
+	// virtual void get_import_options(List<ImportOption> *r_options, int p_preset) const;
+	// virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Error save(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = NULL);
 };
 
-typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
-
-class ResourceSaver : public Reference {
-	GDCLASS(ResourceSaver, Reference);
-	enum {
-		MAX_SAVERS = 64
-	};
-
-	static Ref<ResourceFormatSaver> saver[MAX_SAVERS];
-	static int saver_count;
-	static bool timestamp_on_save;
-	static ResourceSavedCallback save_callback;
-
-	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
-
-public:
-	enum SaverFlags {
-
-		FLAG_RELATIVE_PATHS = 1,
-		FLAG_BUNDLE_RESOURCES = 2,
-		FLAG_CHANGE_PATH = 4,
-		FLAG_OMIT_EDITOR_PROPERTIES = 8,
-		FLAG_SAVE_BIG_ENDIAN = 16,
-		FLAG_COMPRESS = 32,
-		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
-	};
-
-	static Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	static void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions);
-	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
-	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
-
-	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
-	static bool get_timestamp_on_save() { return timestamp_on_save; }
-
-	static void set_save_callback(ResourceSavedCallback p_callback);
-
-	static bool add_custom_resource_format_saver(String script_path);
-	static void remove_custom_resource_format_saver(String script_path);
-	static void add_custom_savers();
-	static void remove_custom_savers();
-};
-
-#endif
+#endif //EDITOR_IMPORT_PLUGIN_H

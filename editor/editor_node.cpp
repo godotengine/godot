@@ -52,6 +52,7 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
 
+#include "core/io/resource_exporter.h"
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
@@ -60,7 +61,6 @@
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
 #include "editor/import/editor_import_collada.h"
-#include "editor/import/editor_scene_importer_gltf.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -130,6 +130,7 @@
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/pvrtc_compress.h"
 #include "editor/register_exporters.h"
+#include "editor/saver/resource_saver_scene.h"
 #include "editor/script_editor_debugger.h"
 
 #include <stdio.h>
@@ -5636,14 +5637,14 @@ EditorNode::EditorNode() {
 			import_obj2.instance();
 			import_scene->add_importer(import_obj2);
 
-			Ref<EditorSceneImporterGLTF> import_gltf;
-			import_gltf.instance();
-			import_scene->add_importer(import_gltf);
-
 			Ref<EditorSceneImporterESCN> import_escn;
 			import_escn.instance();
 			import_scene->add_importer(import_escn);
 		}
+
+		Ref<ResourceExporterScene> export_scene;
+		export_scene.instance();
+		ResourceFormatExporter::get_singleton()->add_exporter(export_scene);
 
 		Ref<ResourceImporterBitMap> import_bitmap;
 		import_bitmap.instance();

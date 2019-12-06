@@ -85,6 +85,7 @@ if env['tools']:
     SConscript('fileserver/SCsub')
     SConscript('icons/SCsub')
     SConscript('import/SCsub')
+    SConscript('saver/SCsub')
     SConscript('plugins/SCsub')
 
     lib = env.add_library("editor", env.editor_sources)
