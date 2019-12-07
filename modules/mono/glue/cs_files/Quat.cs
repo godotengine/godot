@@ -192,7 +192,7 @@ namespace Godot
             return new Vector3(q.x, q.y, q.z);
         }
 
-        // Constructors 
+        // Constructors
         public Quat(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -306,9 +306,9 @@ namespace Godot
 
         public override bool Equals(object obj)
         {
-            if (obj is Vector2)
+            if (obj is Quat)
             {
-                return Equals((Vector2)obj);
+                return Equals((Quat)obj);
             }
 
             return false;
