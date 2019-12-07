@@ -6,9 +6,9 @@
 		The [PCKPacker] is used to create packages in application runtime.
 		[codeblock]
 		var packer = PCKPacker.new()
-		packer.pck_start("test.pck", 0)
+		packer.pck_start("test.pck")
 		packer.add_file("res://text.txt", "text.txt")
-		packer.flush(false)
+		packer.flush()
 		[/codeblock]
 		The above [PCKPacker] creates package [b]test.pck[/b], then adds a file named [b]text.txt[/b] in the root of the package.
 	</description>
@@ -29,7 +29,7 @@
 		<method name="flush">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="verbose" type="bool">
+			<argument index="0" name="verbose" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -39,7 +39,7 @@
 			</return>
 			<argument index="0" name="pck_name" type="String">
 			</argument>
-			<argument index="1" name="alignment" type="int">
+			<argument index="1" name="alignment" type="int" default="0">
 			</argument>
 			<description>
 			</description>
