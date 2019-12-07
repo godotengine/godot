@@ -907,9 +907,9 @@ void EditorFileDialog::update_filters() {
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0);
+			String flt = filters[i].get_slice(";", 0).strip_edges();
 			if (i > 0)
-				all_filters += ",";
+				all_filters += ", ";
 			all_filters += flt;
 		}
 
