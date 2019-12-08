@@ -40,6 +40,14 @@
 				Generate a [TriangleMesh] from the mesh.
 			</description>
 		</method>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+				Returns the smallest [AABB] enclosing this mesh. Not affected by [code]custom_aabb[/code].
+				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
+			</description>
+		</method>
 		<method name="get_faces" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
