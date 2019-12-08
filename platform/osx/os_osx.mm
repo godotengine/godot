@@ -221,12 +221,8 @@ static bool mouse_down_control = false;
 
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
-			[OS_OSX::singleton->context update];
-
-			//Force window resize ???
-			NSRect frame = [OS_OSX::singleton->window_object frame];
-			[OS_OSX::singleton->window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
-			[OS_OSX::singleton->window_object setFrame:frame display:YES];
+			//Force window resize event
+			[self windowDidResize:notification];
 		}
 	}
 }
