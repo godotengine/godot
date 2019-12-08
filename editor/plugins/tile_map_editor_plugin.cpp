@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "tile_map_editor_plugin.h"
-
 #include "canvas_item_editor_plugin.h"
 #include "core/math/math_funcs.h"
 #include "core/os/input.h"
@@ -180,6 +179,9 @@ void TileMapEditor::_menu_option(int p_option) {
 				CanvasItemEditor::get_singleton()->update_viewport();
 			}
 		} break;
+		case OPTION_UPDATE_BITMASK:{
+			node->update_bitmask_region();
+		}
 	}
 	_update_button_tool();
 }
@@ -2067,6 +2069,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 	p->add_separator();
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);
+	p->add_item(TTR("Update Bitmask"), OPTION_UPDATE_BITMASK);
 	p->connect("id_pressed", this, "_menu_option");
 
 	rotate_left_button = memnew(ToolButton);

@@ -65,7 +65,8 @@ class TileMapEditor : public VBoxContainer {
 		OPTION_COPY,
 		OPTION_ERASE_SELECTION,
 		OPTION_FIX_INVALID,
-		OPTION_CUT
+		OPTION_CUT,
+		OPTION_UPDATE_BITMASK
 	};
 
 	TileMap *node;
