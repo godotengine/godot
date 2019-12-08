@@ -203,8 +203,11 @@ if env["builtin_bullet"]:
         env_bullet.Prepend(CPPPATH=[thirdparty_dir])
     if env["target"] == "debug" or env["target"] == "release_debug":
         env_bullet.Append(CPPDEFINES=["DEBUG"])
+<<<<<<< HEAD
 
     env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD"])
+=======
+>>>>>>> ff90327146... Enable Bullet DEBUG on debug builds.
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
