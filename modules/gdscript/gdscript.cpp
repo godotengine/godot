@@ -1124,17 +1124,39 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 }
 
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
-
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 
 		for (Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.front(); E; E = E->next()) {
-
 			MethodInfo mi;
+			GDScriptFunction * func_ptr =  E->get();
 			mi.name = E->key();
+
 			mi.flags |= METHOD_FLAG_FROM_SCRIPT;
-			for (int i = 0; i < E->get()->get_argument_count(); i++)
-				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
+
+			// Get the arguments of the current method
+			for (int i = 0; i < func_ptr->get_argument_count(); i++) {
+				String arg_name = func_ptr->get_argument_name(i);
+				PropertyInfo arg;
+				arg.name = func_ptr->get_argument_name(i);
+				arg.type = func_ptr->get_argument_type(i).builtin_type;
+				
+				mi.arguments.push_back(arg);
+			}
+			// Get the default args for the current method
+			for(int i = 0; i < func_ptr->get_default_argument_count(); i++) {
+				if(mi.name == "my_func") {
+					func_ptr->get_default_argument(i);
+					print_line(itos(func_ptr->get_default_argument_addr(i)));
+				}
+				mi.default_arguments.push_back(func_ptr->get_default_argument_addr(i));
+			}
+
+			// Set the return type for the current method
+			PropertyInfo arg;
+			arg.type = func_ptr->get_return_type().builtin_type;
+			mi.return_val =  arg;
+			
 			p_list->push_back(mi);
 		}
 		sptr = sptr->_base;
