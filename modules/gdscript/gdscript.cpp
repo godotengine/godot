@@ -1136,26 +1136,16 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 			// Get the arguments of the current method
 			for (int i = 0; i < func_ptr->get_argument_count(); i++) {
-				String arg_name = func_ptr->get_argument_name(i);
-				PropertyInfo arg;
-				arg.name = func_ptr->get_argument_name(i);
-				arg.type = func_ptr->get_argument_type(i).builtin_type;
-				
-				mi.arguments.push_back(arg);
+				mi.arguments.push_back(PropertyInfo(func_ptr->get_argument_type(i).builtin_type, func_ptr->get_argument_name(i)));
 			}
+			// TODO: return the default arg values rather than their types
 			// Get the default args for the current method
 			for(int i = 0; i < func_ptr->get_default_argument_count(); i++) {
-				if(mi.name == "my_func") {
-					func_ptr->get_default_argument(i);
-					print_line(itos(func_ptr->get_default_argument_addr(i)));
-				}
-				mi.default_arguments.push_back(func_ptr->get_default_argument_addr(i));
+				mi.default_arguments.push_back(func_ptr->get_default_argument(i));
 			}
-
+			// TODO: find a better name to pass to PropertyInfo
 			// Set the return type for the current method
-			PropertyInfo arg;
-			arg.type = func_ptr->get_return_type().builtin_type;
-			mi.return_val =  arg;
+			mi.return_val =  PropertyInfo(func_ptr->get_return_type().builtin_type, "");
 			
 			p_list->push_back(mi);
 		}
