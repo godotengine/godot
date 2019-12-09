@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsShapeQueryResult" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		Result of a shape query in Physics2DServer.
+		Result of a 3D shape query in [PhysicsServer].
 	</brief_description>
 	<description>
+		The result of a 3D shape query in [PhysicsServer]. See also [PhysicsShapeQueryParameters].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +13,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of objects that intersected with the shape.
 			</description>
 		</method>
 		<method name="get_result_object" qualifiers="const">
@@ -20,6 +22,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the [Object] that intersected with the shape at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_result_object_id" qualifiers="const">
@@ -28,6 +31,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the instance ID of the [Object] that intersected with the shape at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_result_object_shape" qualifiers="const">
@@ -36,6 +40,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the child index of the object's [Shape] that intersected with the shape at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_result_rid" qualifiers="const">
@@ -44,6 +49,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the [RID] of the object that intersected with the shape at index [code]idx[/code].
 			</description>
 		</method>
 	</methods>
