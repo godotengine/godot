@@ -1182,6 +1182,19 @@ void CodeTextEditor::move_lines_down() {
 	text_editor->update();
 }
 
+void CodeTextEditor::_delete_line(int p_line) {
+	// this is currently intended to be called within delete_lines()
+	// so `begin_complex_operation` is ommitted here
+	text_editor->set_line(p_line, "");
+	if (p_line == 0 && text_editor->get_line_count() > 1) {
+		text_editor->cursor_set_line(1);
+		text_editor->cursor_set_column(0);
+	}
+	text_editor->backspace_at_cursor();
+	text_editor->unfold_line(p_line);
+	text_editor->cursor_set_line(p_line);
+}
+
 void CodeTextEditor::delete_lines() {
 	text_editor->begin_complex_operation();
 	if (text_editor->is_selection_active()) {
@@ -1189,22 +1202,13 @@ void CodeTextEditor::delete_lines() {
 		int from_line = text_editor->get_selection_from_line();
 		int count = Math::abs(to_line - from_line) + 1;
 
-		text_editor->cursor_set_line(to_line, false);
-		while (count) {
-			text_editor->set_line(text_editor->cursor_get_line(), "");
-			text_editor->backspace_at_cursor();
-			count--;
-			if (count)
-				text_editor->unfold_line(from_line);
+		text_editor->cursor_set_line(from_line, false);
+		for (int i = 0; i < count; i++) {
+			_delete_line(from_line);
 		}
-		text_editor->cursor_set_line(from_line - 1);
 		text_editor->deselect();
 	} else {
-		int line = text_editor->cursor_get_line();
-		text_editor->set_line(text_editor->cursor_get_line(), "");
-		text_editor->backspace_at_cursor();
-		text_editor->unfold_line(line);
-		text_editor->cursor_set_line(line);
+		_delete_line(text_editor->cursor_get_line());
 	}
 	text_editor->end_complex_operation();
 }
