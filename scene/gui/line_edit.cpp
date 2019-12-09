@@ -704,7 +704,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			bool using_placeholder = text.empty();
+			bool using_placeholder = text.empty() && ime_text.empty();
 			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
 
 			switch (align) {
