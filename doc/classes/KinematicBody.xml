@@ -18,6 +18,7 @@
 			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
 			</description>
 		</method>
 		<method name="get_floor_velocity" qualifiers="const">
@@ -136,6 +137,7 @@
 			<argument index="1" name="lock" type="bool">
 			</argument>
 			<description>
+				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
 			</description>
 		</method>
 		<method name="test_move">
