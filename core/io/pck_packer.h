@@ -54,7 +54,7 @@ class PCKPacker : public Reference {
 	Vector<File> files;
 
 public:
-	Error pck_start(const String &p_file, int p_alignment);
+	Error pck_start(const String &p_file, int p_alignment = 0);
 	Error add_file(const String &p_file, const String &p_src);
 	Error flush(bool p_verbose = false);
 
