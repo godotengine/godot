@@ -348,7 +348,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/icon_and_font_color", 0);
 	hints["interface/theme/icon_and_font_color"] = PropertyInfo(Variant::INT, "interface/theme/icon_and_font_color", PROPERTY_HINT_ENUM, "Auto,Dark,Light", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/theme/base_color", Color(0.2, 0.23, 0.31));
+	_initial_set("interface/theme/base_color", Color(0.40, 0.40, 0.40));
 	hints["interface/theme/base_color"] = PropertyInfo(Variant::COLOR, "interface/theme/base_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/theme/accent_color", Color(0.41, 0.61, 0.91));
 	hints["interface/theme/accent_color"] = PropertyInfo(Variant::COLOR, "interface/theme/accent_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
@@ -482,13 +482,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Completion
 	_initial_set("text_editor/completion/idle_parse_delay", 2.0);
 	hints["text_editor/completion/idle_parse_delay"] = PropertyInfo(Variant::REAL, "text_editor/completion/idle_parse_delay", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
-	_initial_set("text_editor/completion/auto_brace_complete", true);
+	_initial_set("text_editor/completion/auto_brace_complete", false);
 	_initial_set("text_editor/completion/code_complete_delay", 0.3);
 	hints["text_editor/completion/code_complete_delay"] = PropertyInfo(Variant::REAL, "text_editor/completion/code_complete_delay", PROPERTY_HINT_RANGE, "0.01, 5, 0.01");
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/callhint_tooltip_offset", Vector2());
 	_initial_set("text_editor/completion/complete_file_paths", true);
-	_initial_set("text_editor/completion/add_type_hints", false);
+	_initial_set("text_editor/completion/add_type_hints", true);
 	_initial_set("text_editor/completion/use_single_quotes", false);
 
 	// Help
