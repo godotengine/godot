@@ -1091,6 +1091,9 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	save.step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+	if (editor_run.get_status() == EditorRun::STATUS_PLAY) {
+		_menu_option_confirm(RUN_STOP, true);
+	}
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
