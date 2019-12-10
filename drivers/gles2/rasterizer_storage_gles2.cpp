@@ -4914,7 +4914,11 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 				bool used_depth = false;
 				if (j == 0 && i == 0) { //use always
-					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+					if (config.support_depth_texture) {
+						glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+					} else {
+						glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+					}
 					used_depth = true;
 				}
 
