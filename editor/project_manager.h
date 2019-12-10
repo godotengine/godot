@@ -31,10 +31,10 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
-#include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
@@ -52,8 +52,6 @@ class ProjectManager : public Control {
 	Button *rename_btn;
 	Button *run_btn;
 
-	EditorAssetLibrary *asset_library;
-
 	ProjectListFilter *project_filter;
 	ProjectListFilter *project_order_filter;
 
@@ -65,7 +63,6 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
-	ConfirmationDialog *open_templates;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
@@ -79,7 +76,6 @@ class ProjectManager : public Control {
 
 	bool importing;
 
-	void _open_asset_library();
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();

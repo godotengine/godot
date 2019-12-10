@@ -45,6 +45,7 @@
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
@@ -1785,16 +1786,9 @@ void ProjectManager::_notification(int p_what) {
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
 		case NOTIFICATION_RESIZED: {
-
-			if (open_templates->is_visible()) {
-				open_templates->popup_centered_minsize();
-			}
+			// Asset Library template handling was here.
 		} break;
 		case NOTIFICATION_READY: {
-
-			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
-				open_templates->popup_centered_minsize();
-
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
 				// to search without having to reach for their mouse
@@ -2340,7 +2334,6 @@ void ProjectManager::_on_filter_option_changed() {
 }
 
 void ProjectManager::_bind_methods() {
-
 	ClassDB::bind_method("_open_selected_projects_ask", &ProjectManager::_open_selected_projects_ask);
 	ClassDB::bind_method("_open_selected_projects", &ProjectManager::_open_selected_projects);
 	ClassDB::bind_method(D_METHOD("_global_menu_action"), &ProjectManager::_global_menu_action, DEFVAL(Variant()));
@@ -2365,15 +2358,9 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_unhandled_input", &ProjectManager::_unhandled_input);
 	ClassDB::bind_method("_install_project", &ProjectManager::_install_project);
 	ClassDB::bind_method("_files_dropped", &ProjectManager::_files_dropped);
-	ClassDB::bind_method("_open_asset_library", &ProjectManager::_open_asset_library);
 	ClassDB::bind_method("_confirm_update_settings", &ProjectManager::_confirm_update_settings);
 	ClassDB::bind_method("_update_project_buttons", &ProjectManager::_update_project_buttons);
 	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"), &ProjectManager::_scan_multiple_folders);
-}
-
-void ProjectManager::_open_asset_library() {
-	asset_library->disable_community_support();
-	tabs->set_current_tab(1);
 }
 
 ProjectManager::ProjectManager() {
@@ -2562,15 +2549,6 @@ ProjectManager::ProjectManager() {
 
 	tree_vb->add_spacer();
 
-	if (StreamPeerSSL::is_available()) {
-		asset_library = memnew(EditorAssetLibrary(true));
-		asset_library->set_name(TTR("Templates"));
-		tabs->add_child(asset_library);
-		asset_library->connect("install_asset", this, "_install_project");
-	} else {
-		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
-	}
-
 	HBoxContainer *settings_hb = memnew(HBoxContainer);
 	settings_hb->set_alignment(BoxContainer::ALIGN_END);
 	settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
@@ -2677,12 +2655,6 @@ ProjectManager::ProjectManager() {
 
 	dialog_error = memnew(AcceptDialog);
 	gui_base->add_child(dialog_error);
-
-	open_templates = memnew(ConfirmationDialog);
-	open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
-	open_templates->connect("confirmed", this, "_open_asset_library");
-	add_child(open_templates);
 }
 
 ProjectManager::~ProjectManager() {
