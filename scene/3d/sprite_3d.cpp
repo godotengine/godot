@@ -552,6 +552,7 @@ void Sprite3D::set_region(bool p_region) {
 
 	region = p_region;
 	_queue_update();
+	_change_notify("region_enabled");
 }
 
 bool Sprite3D::is_region() const {
@@ -566,6 +567,7 @@ void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
 	if (region && changed) {
 		_queue_update();
 	}
+	_change_notify("region_rect");
 }
 
 Rect2 Sprite3D::get_region_rect() const {

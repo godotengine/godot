@@ -132,11 +132,6 @@ public:
 	void _region_draw();
 	void _region_input(const Ref<InputEvent> &p_input);
 	void _scroll_changed(float);
-	bool is_stylebox();
-	bool is_atlas_texture();
-	bool is_ninepatch();
-	Sprite3D *get_sprite_3d();
-	Sprite *get_sprite();
 
 	void edit(Object *p_obj);
 	TextureRegionEditor(EditorNode *p_editor);
@@ -145,7 +140,7 @@ public:
 class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
-	bool manually_hidden;
+	bool was_shown;
 	Button *texture_region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
@@ -153,7 +148,7 @@ class TextureRegionEditorPlugin : public EditorPlugin {
 protected:
 	static void _bind_methods();
 
-	void _editor_visiblity_changed();
+	void _clear_was_shown();
 
 public:
 	virtual String get_name() const { return "TextureRegion"; }

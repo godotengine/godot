@@ -621,19 +621,28 @@ void TextureRegionEditor::apply_rect(const Rect2 &p_rect) {
 }
 
 void TextureRegionEditor::_update_rect() {
-	if (node_sprite)
-		rect = node_sprite->get_region_rect();
-	else if (node_sprite_3d)
-		rect = node_sprite_3d->get_region_rect();
-	else if (node_ninepatch) {
+	if (node_sprite) {
+		if (node_sprite->is_region()) {
+			rect = node_sprite->get_region_rect();
+		} else {
+			rect = Rect2(Vector2(), node_sprite->get_texture()->get_size());
+		}
+	} else if (node_sprite_3d) {
+		if (node_sprite_3d->is_region()) {
+			rect = node_sprite_3d->get_region_rect();
+		} else {
+			rect = Rect2(Vector2(), node_sprite_3d->get_texture()->get_size());
+		}
+	} else if (node_ninepatch) {
 		rect = node_ninepatch->get_region_rect();
 		if (rect == Rect2()) {
 			rect = Rect2(Vector2(), node_ninepatch->get_texture()->get_size());
 		}
-	} else if (obj_styleBox.is_valid())
+	} else if (obj_styleBox.is_valid()) {
 		rect = obj_styleBox->get_region_rect();
-	else if (atlas_tex.is_valid())
+	} else if (atlas_tex.is_valid()) {
 		rect = atlas_tex->get_region();
+	}
 }
 
 void TextureRegionEditor::_update_autoslice() {
@@ -761,27 +770,6 @@ void TextureRegionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_rect"), &TextureRegionEditor::_update_rect);
 }
 
-bool TextureRegionEditor::is_stylebox() {
-	return obj_styleBox.is_valid();
-}
-
-bool TextureRegionEditor::is_atlas_texture() {
-
-	return atlas_tex.is_valid();
-}
-
-bool TextureRegionEditor::is_ninepatch() {
-	return node_ninepatch != NULL;
-}
-
-Sprite3D *TextureRegionEditor::get_sprite_3d() {
-	return node_sprite_3d;
-}
-
-Sprite *TextureRegionEditor::get_sprite() {
-	return node_sprite;
-}
-
 void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite)
 		node_sprite->remove_change_receptor(this);
@@ -802,6 +790,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		if (Object::cast_to<AtlasTexture>(p_obj))
 			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
 		p_obj->add_change_receptor(this);
+		rect = Rect2(0, 0, 1, 1);
 		_edit_region();
 	} else {
 		node_sprite = NULL;
@@ -811,19 +800,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		atlas_tex = Ref<AtlasTexture>(NULL);
 	}
 	edit_draw->update();
-	if ((node_sprite && !node_sprite->is_region()) || (node_sprite_3d && !node_sprite_3d->is_region())) {
-		set_process(true);
-	}
-	if (!p_obj) {
-		set_process(false);
-	}
 }
 
 void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 
-	if (!is_visible())
-		return;
-	if (p_prop == StringName("atlas") || p_prop == StringName("texture"))
+	if (p_prop == StringName("atlas") || p_prop == StringName("texture") || p_prop == StringName("region") || p_prop == StringName("region_rect") || p_prop == StringName("region_enabled"))
 		_edit_region();
 }
 
@@ -851,7 +832,6 @@ void TextureRegionEditor::_edit_region() {
 	if (cache_map.has(texture->get_rid())) {
 		autoslice_cache = cache_map[texture->get_rid()];
 		autoslice_is_dirty = false;
-		return;
 	} else {
 		if (is_visible() && snap_mode == SNAP_AUTOSLICE) {
 			_update_autoslice();
@@ -860,8 +840,14 @@ void TextureRegionEditor::_edit_region() {
 		}
 	}
 
+	bool rect_was_unconfigured = (rect == Rect2());
+
 	_update_rect();
 	edit_draw->update();
+
+	if (!rect_was_unconfigured && rect == Rect2() && editor->are_bottom_panels_hidden()) {
+		editor->make_bottom_panel_item_visible(this);
+	}
 }
 
 Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
@@ -1021,25 +1007,25 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
-void TextureRegionEditorPlugin::_editor_visiblity_changed() {
-	manually_hidden = !region_editor->is_visible_in_tree();
-}
-
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region());
-		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
+		if (texture_region_button->is_pressed() || was_shown) {
 			editor->make_bottom_panel_item_visible(region_editor);
 		}
 	} else {
-		if (region_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
-			manually_hidden = false;
-		}
 		texture_region_button->hide();
+		if (region_editor->is_visible_in_tree()) {
+			was_shown = true;
+			call_deferred("_clear_was_shown");
+			editor->hide_bottom_panel();
+		}
 		region_editor->edit(NULL);
 	}
+}
+
+void TextureRegionEditorPlugin::_clear_was_shown() {
+	was_shown = false;
 }
 
 Dictionary TextureRegionEditorPlugin::get_state() const {
@@ -1083,17 +1069,16 @@ void TextureRegionEditorPlugin::set_state(const Dictionary &p_state) {
 }
 
 void TextureRegionEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_editor_visiblity_changed"), &TextureRegionEditorPlugin::_editor_visiblity_changed);
+	ClassDB::bind_method(D_METHOD("_clear_was_shown"), &TextureRegionEditorPlugin::_clear_was_shown);
 }
 
 TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
-	manually_hidden = false;
 	editor = p_node;
+	was_shown = false;
 
 	region_editor = memnew(TextureRegionEditor(p_node));
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
-	region_editor->connect("visibility_changed", this, "_editor_visiblity_changed");
 
 	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->hide();

@@ -215,6 +215,8 @@ void Sprite::set_region(bool p_region) {
 
 	region = p_region;
 	update();
+
+	_change_notify("region_enabled");
 }
 
 bool Sprite::is_region() const {
