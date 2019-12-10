@@ -5807,6 +5807,13 @@ void RasterizerStorageGLES2::initialize() {
 	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
+#ifdef JAVASCRIPT_ENABLED
+	// no way of detecting 32 or 16 bit support for renderbuffer, so default to 32
+	// if the implementation doesn't support 32, it should just quietly use 16 instead
+	// https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/
+	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT;
+	config.depth_type = GL_UNSIGNED_INT;
+#else
 	// on mobile check for 24 bit depth support for RenderBufferStorage
 	if (config.extensions.has("GL_OES_depth24")) {
 		config.depth_buffer_internalformat = _DEPTH_COMPONENT24_OES;
@@ -5815,6 +5822,7 @@ void RasterizerStorageGLES2::initialize() {
 		config.depth_buffer_internalformat = GL_DEPTH_COMPONENT16;
 		config.depth_type = GL_UNSIGNED_SHORT;
 	}
+#endif
 #endif
 
 #ifndef GLES_OVER_GL
