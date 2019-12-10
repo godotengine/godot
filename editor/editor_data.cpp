@@ -727,7 +727,7 @@ uint64_t EditorData::get_edited_scene_version() const {
 	return edited_scene[current_edited_scene].version;
 }
 uint64_t EditorData::get_scene_version(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), 0);
 	return edited_scene[p_idx].version;
 }
 

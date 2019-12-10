@@ -4438,7 +4438,6 @@ int TextEdit::get_line_wrap_index_at_col(int p_line, int p_column) const {
 }
 
 void TextEdit::cursor_set_column(int p_col, bool p_adjust_viewport) {
-
 	if (p_col < 0)
 		p_col = 0;
 
@@ -7141,6 +7140,7 @@ TextEdit::TextEdit() {
 	max_chars = 0;
 	clear();
 	wrap_enabled = false;
+	wrap_at = 0;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
 	syntax_highlighter = NULL;

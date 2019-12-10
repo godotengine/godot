@@ -349,16 +349,15 @@ private:
 
 	void _path_selected(const String &p_path) {
 
-		String p = p_path;
-		String sp = p.simplify_path();
+		String sp = p_path.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _install_path_selected(const String &p_path) {
-		String p = p_path;
-		String sp = p.simplify_path();
+
+		String sp = p_path.simplify_path();
 		install_path->set_text(sp);
 		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");

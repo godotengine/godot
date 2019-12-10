@@ -403,7 +403,6 @@ void SpriteFramesEditor::_up_pressed() {
 	sel = to_move;
 	sel -= 1;
 
-	Ref<Texture> r = frames->get_frame(edited_anim, to_move);
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move - 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move));
@@ -428,7 +427,6 @@ void SpriteFramesEditor::_down_pressed() {
 	sel = to_move;
 	sel += 1;
 
-	Ref<Texture> r = frames->get_frame(edited_anim, to_move);
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move + 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move));

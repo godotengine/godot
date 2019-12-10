@@ -115,7 +115,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 		if (tokenizer.get_token() == GDScriptTokenizer::TK_EOF) {
 			break;
 		} else if (tokenizer.get_token() == GDScriptTokenizer::TK_CONSTANT) {
-			Variant const_val = tokenizer.get_token_constant();
+			const Variant &const_val = tokenizer.get_token_constant();
 			if (const_val.get_type() == Variant::STRING) {
 				String path = const_val;
 				bool exists = fs->file_exists(path);

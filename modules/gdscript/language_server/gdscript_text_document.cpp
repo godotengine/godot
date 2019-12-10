@@ -281,8 +281,6 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
-	Dictionary params = p_params["textDocument"];
-	String path = params["uri"];
 	Array arr;
 	return arr;
 }

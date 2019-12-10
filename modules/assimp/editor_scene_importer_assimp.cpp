@@ -364,8 +364,6 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				}
 			} else if (bone != NULL) {
 				continue;
-			} else if (element_assimp_node->mNumMeshes > 0) {
-				spatial = memnew(Spatial);
 			} else {
 				spatial = memnew(Spatial);
 			}
@@ -393,16 +391,11 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				ERR_FAIL_COND_V_MSG(parent_node == NULL, state.root,
 						"Parent node invalid even though lookup successful, out of ram?")
 
-				if (parent_node && spatial != state.root) {
+				if (spatial != state.root) {
 					parent_node->add_child(spatial);
 					spatial->set_owner(state.root);
-				} else if (spatial == state.root) {
+				} else {
 					// required - think about it root never has a parent yet is valid, anything else without a parent is not valid.
-				} else // Safety for instances
-				{
-					WARN_PRINT(
-							"Failed to find parent node instance after lookup, serious warning report to godot with model");
-					memdelete(spatial); // this node is broken
 				}
 			} else if (spatial != state.root) {
 				// if the ainode is not in the tree
@@ -477,10 +470,11 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 		for (Map<const aiNode *, Spatial *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
 			const aiNode *assimp_node = key_value_pair->key();
 			Spatial *mesh_template = key_value_pair->value();
-			Node *parent_node = mesh_template->get_parent();
 
 			ERR_CONTINUE(assimp_node == NULL);
 			ERR_CONTINUE(mesh_template == NULL);
+
+			Node *parent_node = mesh_template->get_parent();
 
 			if (mesh_template == state.root) {
 				continue;
@@ -1009,7 +1003,6 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 			}
 		}
 
-		const String mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mName);
 		aiString mat_name;
 		if (AI_SUCCESS == ai_material->Get(AI_MATKEY_NAME, mat_name)) {
 			mat->set_name(AssimpUtils::get_assimp_string(mat_name));
@@ -1495,7 +1488,6 @@ void EditorSceneImporterAssimp::_generate_node(
 
 	ERR_FAIL_COND(assimp_node == NULL);
 	state.nodes.push_back(assimp_node);
-	String node_name = AssimpUtils::get_assimp_string(assimp_node->mName);
 	String parent_name = AssimpUtils::get_assimp_string(assimp_node->mParent->mName);
 
 	// please note
