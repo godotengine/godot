@@ -1290,7 +1290,7 @@ public:
 		if (!instance->get_variable(variable, p_outputs[0])) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = RTR("VariableGet not found in script: ") + "'" + String(variable) + "'";
-			return false;
+			return 0;
 		}
 		return 0;
 	}

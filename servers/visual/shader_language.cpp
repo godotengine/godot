@@ -2912,7 +2912,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			tk = _get_token();
 			if (tk.type == TK_PARENTHESIS_OPEN) {
 				//a function
-				StringName name = identifier;
+				const StringName &name = identifier;
 
 				OperatorNode *func = alloc_node<OperatorNode>();
 				func->op = OP_CALL;

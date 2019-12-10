@@ -49,7 +49,6 @@ void DependencyEditor::_searched(const String &p_path) {
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());

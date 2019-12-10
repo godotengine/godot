@@ -129,9 +129,6 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	uint8_t room_needed = sizeof(Message);
 
 	if ((buffer_end + room_needed) >= buffer_size) {
-		String type;
-		if (ObjectDB::get_instance(p_id))
-			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");

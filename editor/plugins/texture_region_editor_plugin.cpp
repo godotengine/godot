@@ -150,7 +150,7 @@ void TextureRegionEditor::_region_draw() {
 		int next = (i + 1) % 4;
 
 		Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-		ofs *= 1.4144 * (select_handle->get_size().width / 2);
+		ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
 
 		edit_draw->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, color, 2);
 
