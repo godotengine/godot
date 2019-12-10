@@ -5,6 +5,8 @@ Import('env_modules')
 
 env_arkit = env_modules.Clone()
 
-# Add source files
-env_arkit.add_source_files(env.modules_sources, "*.cpp")
-env_arkit.add_source_files(env.modules_sources, "*.mm")
+# (iOS) Build as separate static library
+modules_sources = []
+env_arkit.add_source_files(modules_sources, "*.cpp")
+env_arkit.add_source_files(modules_sources, "*.mm")
+mod_lib = env_modules.add_library('#bin/libgodot_arkit_module' + env['LIBSUFFIX'], modules_sources)

@@ -1025,7 +1025,7 @@ msgid "Resource"
 msgstr "รีซอร์ส"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "ตำแหน่ง"
 
@@ -1508,7 +1508,8 @@ msgid "Node Name:"
 msgstr "ชื่อโหนด:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "ชื่อ"
 
@@ -9818,6 +9819,10 @@ msgstr "ตัวจัดการโปรเจกต์"
 #, fuzzy
 msgid "Projects"
 msgstr "โปรเจกต์"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"

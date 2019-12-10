@@ -68,7 +68,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.AreaParameter">
 			</argument>
 			<description>
-				Returns an area parameter value. A list of available parameters is on the [code]AREA_PARAM_*[/code] constants.
+				Returns an area parameter value. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -194,7 +194,7 @@
 			</argument>
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
-				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
+				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
 				2: [RID] of the object that entered/exited the area.
 				3: Instance ID of the object that entered/exited the area.
 				4: The shape index of the object that entered/exited the area.
@@ -221,7 +221,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the value for an area parameter. A list of available parameters is on the [code]AREA_PARAM_*[/code] constants.
+				Sets the value for an area parameter. A list of available parameters is on the [enum AreaParameter] constants.
 			</description>
 		</method>
 		<method name="area_set_ray_pickable">
@@ -292,7 +292,7 @@
 			<argument index="1" name="mode" type="int" enum="PhysicsServer.AreaSpaceOverrideMode">
 			</argument>
 			<description>
-				Sets the space override mode for the area. The modes are described in the constants [code]AREA_SPACE_OVERRIDE_*[/code].
+				Sets the space override mode for the area. The modes are described in the [enum AreaSpaceOverrideMode] constants.
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -426,7 +426,7 @@
 			<argument index="1" name="init_sleeping" type="bool" default="false">
 			</argument>
 			<description>
-				Creates a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
+				Creates a physics body. The first parameter can be any value from [enum BodyMode] constants, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -500,7 +500,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
 			</argument>
 			<description>
-				Returns the value of a body parameter. A list of available parameters is on the [code]BODY_PARAM_*[/code] constants.
+				Returns the value of a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -715,7 +715,7 @@
 			<argument index="1" name="mode" type="int" enum="PhysicsServer.BodyMode">
 			</argument>
 			<description>
-				Sets the body mode, from one of the constants BODY_MODE*.
+				Sets the body mode, from one of the [enum BodyMode] constants.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
@@ -739,7 +739,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a body parameter. A list of available parameters is on the [code]BODY_PARAM_*[/code] constants.
+				Sets a body parameter. A list of available parameters is on the [enum BodyParameter] constants.
 			</description>
 		</method>
 		<method name="body_set_ray_pickable">
@@ -812,7 +812,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets a body state (see BODY_STATE* constants).
+				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
@@ -823,7 +823,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.ConeTwistJointParam">
 			</argument>
 			<description>
-				Gets a cone_twist_joint parameter (see CONE_TWIST_JOINT* constants).
+				Gets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
 			</description>
 		</method>
 		<method name="cone_twist_joint_set_param">
@@ -836,7 +836,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a cone_twist_joint parameter (see CONE_TWIST_JOINT* constants).
+				Sets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
 			</description>
 		</method>
 		<method name="free_rid">
@@ -858,7 +858,7 @@
 			<argument index="2" name="flag" type="int" enum="PhysicsServer.G6DOFJointAxisFlag">
 			</argument>
 			<description>
-				Gets a generic_6_DOF_joint flag (see G6DOF_JOINT_FLAG* constants).
+				Gets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_param">
@@ -871,7 +871,7 @@
 			<argument index="2" name="param" type="int" enum="PhysicsServer.G6DOFJointAxisParam">
 			</argument>
 			<description>
-				Gets a generic_6_DOF_joint parameter (see G6DOF_JOINT* constants without the G6DOF_JOINT_FLAG*).
+				Gets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">
@@ -886,7 +886,7 @@
 			<argument index="3" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets a generic_6_DOF_joint flag (see G6DOF_JOINT_FLAG* constants).
+				Sets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_param">
@@ -901,7 +901,7 @@
 			<argument index="3" name="value" type="float">
 			</argument>
 			<description>
-				Sets a generic_6_DOF_joint parameter (see G6DOF_JOINT* constants without the G6DOF_JOINT_FLAG*).
+				Sets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
 			</description>
 		</method>
 		<method name="get_process_info">
@@ -921,7 +921,7 @@
 			<argument index="1" name="flag" type="int" enum="PhysicsServer.HingeJointFlag">
 			</argument>
 			<description>
-				Gets a hinge_joint flag (see HINGE_JOINT_FLAG* constants).
+				Gets a hinge_joint flag (see [enum HingeJointFlag] constants).
 			</description>
 		</method>
 		<method name="hinge_joint_get_param" qualifiers="const">
@@ -932,7 +932,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.HingeJointParam">
 			</argument>
 			<description>
-				Gets a hinge_joint parameter (see HINGE_JOINT* constants without the HINGE_JOINT_FLAG*).
+				Gets a hinge_joint parameter (see [enum HingeJointParam]).
 			</description>
 		</method>
 		<method name="hinge_joint_set_flag">
@@ -945,7 +945,7 @@
 			<argument index="2" name="enabled" type="bool">
 			</argument>
 			<description>
-				Sets a hinge_joint flag (see HINGE_JOINT_FLAG* constants).
+				Sets a hinge_joint flag (see [enum HingeJointFlag] constants).
 			</description>
 		</method>
 		<method name="hinge_joint_set_param">
@@ -958,7 +958,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a hinge_joint parameter (see HINGE_JOINT* constants without the HINGE_JOINT_FLAG*).
+				Sets a hinge_joint parameter (see [enum HingeJointParam] constants).
 			</description>
 		</method>
 		<method name="joint_create_cone_twist">
@@ -1091,7 +1091,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.PinJointParam">
 			</argument>
 			<description>
-				Gets a pin_joint parameter (see PIN_JOINT* constants).
+				Gets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
 		</method>
 		<method name="pin_joint_set_local_a">
@@ -1126,7 +1126,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a pin_joint parameter (see PIN_JOINT* constants).
+				Sets a pin_joint parameter (see [enum PinJointParam] constants).
 			</description>
 		</method>
 		<method name="set_active">
@@ -1144,7 +1144,7 @@
 			<argument index="0" name="type" type="int" enum="PhysicsServer.ShapeType">
 			</argument>
 			<description>
-				Creates a shape of type [code]SHAPE_*[/code]. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
+				Creates a shape of a type from [enum ShapeType]. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
@@ -1162,7 +1162,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Returns the type of shape (see [code]SHAPE_*[/code] constants).
+				Returns the type of shape (see [enum ShapeType] constants).
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1184,7 +1184,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.SliderJointParam">
 			</argument>
 			<description>
-				Gets a slider_joint parameter (see SLIDER_JOINT* constants).
+				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
 		<method name="slider_joint_set_param">
@@ -1197,7 +1197,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Gets a slider_joint parameter (see SLIDER_JOINT* constants).
+				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
 			</description>
 		</method>
 		<method name="space_create">
@@ -1257,7 +1257,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets the value for a space parameter. A list of available parameters is on the [code]SPACE_PARAM_*[/code] constants.
+				Sets the value for a space parameter. A list of available parameters is on the [enum SpaceParameter] constants.
 			</description>
 		</method>
 	</methods>
@@ -1509,7 +1509,7 @@
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
-			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
+			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
 		</constant>
 		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
 			Constant to set/get the linear dampening factor of an area.

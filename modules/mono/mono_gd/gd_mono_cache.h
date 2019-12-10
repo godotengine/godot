@@ -42,20 +42,20 @@ struct CachedData {
 	// corlib classes
 
 	// Let's use the no-namespace format for these too
-	GDMonoClass *class_MonoObject;
-	GDMonoClass *class_bool;
-	GDMonoClass *class_int8_t;
-	GDMonoClass *class_int16_t;
-	GDMonoClass *class_int32_t;
-	GDMonoClass *class_int64_t;
-	GDMonoClass *class_uint8_t;
-	GDMonoClass *class_uint16_t;
-	GDMonoClass *class_uint32_t;
-	GDMonoClass *class_uint64_t;
-	GDMonoClass *class_float;
-	GDMonoClass *class_double;
-	GDMonoClass *class_String;
-	GDMonoClass *class_IntPtr;
+	GDMonoClass *class_MonoObject; // object
+	GDMonoClass *class_bool; // bool
+	GDMonoClass *class_int8_t; // sbyte
+	GDMonoClass *class_int16_t; // short
+	GDMonoClass *class_int32_t; // int
+	GDMonoClass *class_int64_t; // long
+	GDMonoClass *class_uint8_t; // byte
+	GDMonoClass *class_uint16_t; // ushort
+	GDMonoClass *class_uint32_t; // uint
+	GDMonoClass *class_uint64_t; // ulong
+	GDMonoClass *class_float; // float
+	GDMonoClass *class_double; // double
+	GDMonoClass *class_String; // string
+	GDMonoClass *class_IntPtr; // System.IntPtr
 
 	GDMonoClass *class_System_Collections_IEnumerable;
 	GDMonoClass *class_System_Collections_IDictionary;

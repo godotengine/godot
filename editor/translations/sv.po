@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-13 09:05+0000\n"
+"PO-Revision-Date: 2019-11-25 04:05+0000\n"
 "Last-Translator: Mattias Münster <mattiasmun@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -1010,7 +1010,7 @@ msgid "Resource"
 msgstr "Resurs"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Sökväg"
 
@@ -1501,7 +1501,8 @@ msgid "Node Name:"
 msgstr "Node Namn:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Namn"
 
@@ -4481,9 +4482,8 @@ msgid "Audio Clips"
 msgstr "Ljudklipp:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funktioner:"
+msgstr "Funktioner"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -9689,6 +9689,10 @@ msgstr "Projektledare"
 #, fuzzy
 msgid "Projects"
 msgstr "Projekt"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"

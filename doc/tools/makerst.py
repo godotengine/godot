@@ -14,7 +14,7 @@ GODOT_DOCS_PATTERN = re.compile(r'^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-
 
 
 def print_error(error, state):  # type: (str, State) -> None
-    print(error)
+    print("ERROR: {}".format(error))
     state.errored = True
 
 
@@ -148,6 +148,8 @@ class State:
                 setter = property.get("setter") or None  # Use or None so '' gets turned into None.
                 getter = property.get("getter") or None
                 default_value = property.get("default") or None
+                if default_value is not None:
+                    default_value = escape_rst(default_value)
                 overridden = property.get("override") or False
 
                 property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value, overridden)
@@ -622,6 +624,40 @@ def make_class_list(class_list, columns):  # type: (List[str], int) -> None
     f.close()
 
 
+def escape_rst(text, until_pos=-1):  # type: (str) -> str
+    # Escape \ character, otherwise it ends up as an escape character in rst
+    pos = 0
+    while True:
+        pos = text.find('\\', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\\\\" + text[pos + 1:]
+        pos += 2
+
+    # Escape * character to avoid interpreting it as emphasis
+    pos = 0
+    while True:
+        pos = text.find('*', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\*" + text[pos + 1:]
+        pos += 2
+
+    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
+    pos = 0
+    while True:
+        pos = text.find('_', pos, until_pos)
+        if pos == -1:
+            break
+        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
+            text = text[:pos] + "\_" + text[pos + 1:]
+            pos += 2
+        else:
+            pos += 1
+
+    return text
+
+
 def rstize_text(text, state):  # type: (str, State) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -677,36 +713,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
             pos += 2
 
     next_brac_pos = text.find('[')
-
-    # Escape \ character, otherwise it ends up as an escape character in rst
-    pos = 0
-    while True:
-        pos = text.find('\\', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\\\\" + text[pos + 1:]
-        pos += 2
-
-    # Escape * character to avoid interpreting it as emphasis
-    pos = 0
-    while True:
-        pos = text.find('*', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\*" + text[pos + 1:]
-        pos += 2
-
-    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
-    pos = 0
-    while True:
-        pos = text.find('_', pos, next_brac_pos)
-        if pos == -1:
-            break
-        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
-            text = text[:pos] + "\_" + text[pos + 1:]
-            pos += 2
-        else:
-            pos += 1
+    text = escape_rst(text, next_brac_pos)
 
     # Handle [tags]
     inside_code = False
@@ -975,7 +982,11 @@ def make_enum(t, state):  # type: (str, State) -> str
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
-    print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
+    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
+    if "{}.{}".format(c, e) != "Vector3.Axis":
+        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
     return t
 
 

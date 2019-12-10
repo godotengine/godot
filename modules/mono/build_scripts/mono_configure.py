@@ -120,9 +120,9 @@ def configure(env, env_mono):
         env.Append(LIBPATH=mono_lib_path)
         env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
-        if mono_static:
-            lib_suffix = Environment()['LIBSUFFIX']
+        lib_suffix = Environment()['LIBSUFFIX']
 
+        if mono_static:
             if env.msvc:
                 mono_static_lib_name = 'libmono-static-sgen'
             else:
@@ -144,13 +144,13 @@ def configure(env, env_mono):
                 env.Append(LIBS=['psapi'])
                 env.Append(LIBS=['version'])
         else:
-            mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension='.lib')
+            mono_lib_name = find_file_in_dir(mono_lib_path, mono_lib_names, extension=lib_suffix)
 
             if not mono_lib_name:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_lib_name + Environment()['LIBSUFFIX'])
+                env.Append(LINKFLAGS=mono_lib_name + lib_suffix)
             else:
                 env.Append(LIBS=[mono_lib_name])
 
@@ -206,6 +206,8 @@ def configure(env, env_mono):
             env_mono.Append(CPPDEFINES=['_REENTRANT'])
 
             if mono_static:
+                env.Append(LINKFLAGS=['-rdynamic'])
+
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
 
                 if is_apple:
@@ -281,8 +283,6 @@ def configure(env, env_mono):
             libs_output_dir = get_android_out_dir(env) if is_android else '#bin'
             copy_file(mono_lib_path, libs_output_dir, 'lib' + mono_so_name + sharedlib_ext)
 
-        env.Append(LINKFLAGS='-rdynamic')
-
     if not tools_enabled:
         if is_desktop(env['platform']):
             if not mono_root:
@@ -292,7 +292,8 @@ def configure(env, env_mono):
         elif is_android:
             # Compress Android Mono Config
             from . import make_android_mono_config
-            config_file_path = os.path.join(mono_root, 'etc', 'mono', 'config')
+            module_dir = os.getcwd()
+            config_file_path = os.path.join(module_dir, 'build_scripts', 'mono_android_config.xml')
             make_android_mono_config.generate_compressed_config(config_file_path, 'mono_gd/')
 
             # Copy the required shared libraries
@@ -426,15 +427,17 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
     platform = env['platform']
 
     if platform == 'windows':
+        src_mono_bin_dir = os.path.join(mono_root, 'bin')
         target_mono_bin_dir = os.path.join(target_mono_root_dir, 'bin')
 
         if not os.path.isdir(target_mono_bin_dir):
             os.makedirs(target_mono_bin_dir)
 
-        copy(os.path.join(mono_root, 'bin', 'MonoPosixHelper.dll'), target_mono_bin_dir)
+        mono_posix_helper_name = find_file_in_dir(src_mono_bin_dir, ['MonoPosixHelper', 'libMonoPosixHelper'], extension='.dll')
+        copy(os.path.join(src_mono_bin_dir, mono_posix_helper_name + '.dll'), os.path.join(target_mono_bin_dir, 'MonoPosixHelper.dll'))
 
         # For newer versions
-        btls_dll_path = os.path.join(mono_root, 'bin', 'libmono-btls-shared.dll')
+        btls_dll_path = os.path.join(src_mono_bin_dir, 'libmono-btls-shared.dll')
         if os.path.isfile(btls_dll_path):
             copy(btls_dll_path, target_mono_bin_dir)
     else:

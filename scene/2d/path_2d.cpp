@@ -173,16 +173,10 @@ void PathFollow2D::_update_transform() {
 	if (path_length == 0) {
 		return;
 	}
-	float bounded_offset = offset;
-	if (loop)
-		bounded_offset = Math::fposmod(bounded_offset, path_length);
-	else
-		bounded_offset = CLAMP(bounded_offset, 0, path_length);
-
-	Vector2 pos = c->interpolate_baked(bounded_offset, cubic);
+	Vector2 pos = c->interpolate_baked(offset, cubic);
 
 	if (rotate) {
-		float ahead = bounded_offset + lookahead;
+		float ahead = offset + lookahead;
 
 		if (loop && ahead >= path_length) {
 			// If our lookahead will loop, we need to check if the path is closed.
@@ -206,7 +200,7 @@ void PathFollow2D::_update_transform() {
 			// This will happen at the end of non-looping or non-closed paths.
 			// We'll try a look behind instead, in order to get a meaningful angle.
 			tangent_to_curve =
-					(pos - c->interpolate_baked(bounded_offset - lookahead, cubic)).normalized();
+					(pos - c->interpolate_baked(offset - lookahead, cubic)).normalized();
 		} else {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}

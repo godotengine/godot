@@ -1023,7 +1023,7 @@ msgid "Resource"
 msgstr "Ресурс"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Пут"
 
@@ -1510,7 +1510,8 @@ msgid "Node Name:"
 msgstr "Име чвора:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Име"
 
@@ -9864,6 +9865,10 @@ msgstr "Менаџер пројекта"
 #, fuzzy
 msgid "Projects"
 msgstr "Пројекат"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"

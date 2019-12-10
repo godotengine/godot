@@ -45,6 +45,8 @@
 			<return type="void">
 			</return>
 			<description>
+				Shuts down system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -119,6 +121,7 @@
 				[codeblock]
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], true, output)
 				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="find_scancode_from_string" qualifiers="const">
@@ -159,6 +162,7 @@
 			<description>
 				Returns an array of MIDI device names.
 				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_current_video_driver" qualifiers="const">
@@ -224,6 +228,7 @@
 			</return>
 			<description>
 				With this function you can get the list of dangerous permissions that have been granted to the Android application.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="get_ime_selection" qualifiers="const">
@@ -232,6 +237,7 @@
 			<description>
 				Returns the IME cursor position (the currently-edited portion of the string) relative to the characters in the composition string.
 				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME cursor position.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_ime_text" qualifiers="const">
@@ -240,6 +246,7 @@
 			<description>
 				Returns the IME intermediate composition string.
 				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME composition string.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -248,6 +255,7 @@
 			<description>
 				Returns the current latin keyboard variant as a String.
 				Possible return values are: [code]"QWERTY"[/code], [code]"AZERTY"[/code], [code]"QZERTY"[/code], [code]"DVORAK"[/code], [code]"NEO"[/code], [code]"COLEMAK"[/code] or [code]"ERROR"[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Returns [code]"QWERTY"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
@@ -262,6 +270,7 @@
 			</return>
 			<description>
 				Returns the model name of the current device.
+				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -275,14 +284,16 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of battery left in the device as a percentage.
+				Returns the amount of battery left in the device as a percentage. Returns [code]-1[/code] if power state is unknown.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_seconds_left">
 			<return type="int">
 			</return>
 			<description>
-				Returns an estimate of the time left in seconds before the device runs out of battery.
+				Returns an estimate of the time left in seconds before the device runs out of battery. Returns [code]-1[/code] if power state is unknown.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_state">
@@ -290,6 +301,7 @@
 			</return>
 			<description>
 				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -297,6 +309,7 @@
 			</return>
 			<description>
 				Returns the project's process ID.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -345,6 +358,7 @@
 				 xxhdpi - 480 dpi
 				xxxhdpi - 640 dpi
 				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_screen_position" qualifiers="const">
@@ -393,6 +407,7 @@
 			</argument>
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_system_time_msecs" qualifiers="const">
@@ -519,6 +534,7 @@
 			</argument>
 			<description>
 				Add a new item with text "label" to global menu. Use "_dock" menu to add item to the macOS dock icon menu.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
@@ -528,6 +544,7 @@
 			</argument>
 			<description>
 				Add a separator between items. Separators also occupy an index.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_clear">
@@ -537,6 +554,7 @@
 			</argument>
 			<description>
 				Clear the global menu, in effect removing all items.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="global_menu_remove_item">
@@ -548,6 +566,7 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the global menu. Note that the indexes of items after the removed item are going to be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -644,6 +663,7 @@
 			<description>
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="move_window_to_foreground">
@@ -651,6 +671,7 @@
 			</return>
 			<description>
 				Moves the window to the front.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="native_video_is_playing">
@@ -658,6 +679,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if native video is playing.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_pause">
@@ -665,6 +687,7 @@
 			</return>
 			<description>
 				Pauses native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_play">
@@ -680,7 +703,7 @@
 			</argument>
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
-				[b]Note:[/b] This method is only implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
+				[b]Note:[/b] This method is implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
 			</description>
 		</method>
 		<method name="native_video_stop">
@@ -688,6 +711,7 @@
 			</return>
 			<description>
 				Stops native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_unpause">
@@ -695,6 +719,7 @@
 			</return>
 			<description>
 				Resumes native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="open_midi_inputs">
@@ -702,6 +727,7 @@
 			</return>
 			<description>
 				Initialises the singleton for the system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -743,6 +769,7 @@
 			</return>
 			<description>
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="request_permission">
@@ -759,6 +786,7 @@
 			</return>
 			<description>
 				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -769,6 +797,7 @@
 			<description>
 				Sets the game's icon using an [Image] resource.
 				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
+				[b]Note:[/b] This method is implemented on HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_ime_active">
@@ -781,6 +810,7 @@
 				If active IME handles key events before the application and creates an composition string and suggestion list.
 				Application can retrieve the composition status by using [method get_ime_selection] and [method get_ime_text] functions.
 				Completed composition string is committed when input is finished.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -790,6 +820,7 @@
 			</argument>
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -800,7 +831,7 @@
 			<description>
 				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
 				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
-				[b]Note:[/b] This method is only implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -828,6 +859,7 @@
 			</argument>
 			<description>
 				Sets whether the window should always be on top.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_window_title">
@@ -838,6 +870,7 @@
 			<description>
 				Sets the window title to the specified string.
 				[b]Note:[/b] This should be used sporadically. Don't set this every frame, as that will negatively affect performance on some window managers.
+				[b]Note:[/b] This method is implemented on HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="shell_open">
@@ -850,6 +883,7 @@
 				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">
@@ -859,6 +893,7 @@
 			</argument>
 			<description>
 				Shows the virtual keyboard if the platform has one. The [code]existing_text[/code] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
 	</methods>
@@ -893,6 +928,9 @@
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
 			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
+		<member name="vsync_via_compositor" type="bool" setter="set_vsync_via_compositor" getter="is_vsync_via_compositor_enabled" default="false">
+			If [code]true[/code] and [code]vsync_enabled[/code] is true, the operating system's window compositor will be used for vsync when the compositor is enabled and the game is in windowed mode.
+		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
 			If [code]true[/code], removes the window frame.
 			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
@@ -910,6 +948,7 @@
 			If [code]true[/code], the window background is transparent and window frame is removed.
 			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
 			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
+			[b]Note:[/b] This property is implemented on Linux, macOS and Windows.
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

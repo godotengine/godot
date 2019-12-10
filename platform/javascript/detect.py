@@ -131,6 +131,13 @@ def configure(env):
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
 
+    # This needs to be defined for Emscripten using 'fastcomp' (default pre-1.39.0)
+    # and undefined if using 'upstream'. And to make things simple, earlier
+    # Emscripten versions didn't include 'fastcomp' in their path, so we check
+    # against the presence of 'upstream' to conditionally add the flag.
+    if not "upstream" in em_config['EMSCRIPTEN_ROOT']:
+        env.Append(LINKFLAGS=['-s', 'BINARYEN_TRAP_MODE=\'clamp\''])
+
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
     # us since we don't know requirements at compile-time.

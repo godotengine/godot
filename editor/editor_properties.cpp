@@ -979,8 +979,6 @@ void EditorPropertyEasing::_draw_easing() {
 	RID ci = easing_draw->get_canvas_item();
 
 	Size2 s = easing_draw->get_size();
-	Rect2 r(Point2(), s);
-	r = r.grow(3);
 
 	const int points = 48;
 

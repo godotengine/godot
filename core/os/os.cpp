@@ -572,6 +572,14 @@ bool OS::is_vsync_enabled() const {
 	return _use_vsync;
 }
 
+void OS::set_vsync_via_compositor(bool p_enable) {
+	_vsync_via_compositor = p_enable;
+}
+
+bool OS::is_vsync_via_compositor_enabled() const {
+	return _vsync_via_compositor;
+}
+
 OS::PowerState OS::get_power_state() {
 	return POWERSTATE_UNKNOWN;
 }

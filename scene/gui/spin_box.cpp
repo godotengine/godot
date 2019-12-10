@@ -211,6 +211,10 @@ void SpinBox::_notification(int p_what) {
 
 		_adjust_width_for_icon(get_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+
+		call_deferred("minimum_size_changed");
+		get_line_edit()->call_deferred("minimum_size_changed");
 	}
 }
 

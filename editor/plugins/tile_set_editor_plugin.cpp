@@ -2535,7 +2535,7 @@ void TileSetEditor::draw_grid_snap() {
 				if (i == 0 && snap_offset.y != 0) {
 					last_p = snap_offset.y;
 				}
-				if (snap_separation.x != 0) {
+				if (snap_separation.y != 0) {
 					if (i != 0) {
 						workspace->draw_rect(Rect2(0, last_p, s.width, snap_separation.y), grid_color);
 						last_p += snap_separation.y;

@@ -144,7 +144,7 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
-			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
+			The alignment of all tabs in the tab container. See the [enum TabAlign] constants for details.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.

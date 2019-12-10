@@ -396,7 +396,7 @@
 			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
 			</argument>
 			<description>
-				Sets the given column's cell mode to [code]mode[/code]. See [code]CELL_MODE_*[/code] constants.
+				Sets the given column's cell mode to [code]mode[/code]. See [enum TreeCellMode] constants.
 			</description>
 		</method>
 		<method name="set_checked">

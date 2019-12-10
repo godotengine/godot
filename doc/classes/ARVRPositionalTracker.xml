@@ -15,7 +15,7 @@
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
 			</return>
 			<description>
-				Returns the hand holding this tracker, if known. See [code]TRACKER_*[/code] constants.
+				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
 			</description>
 		</method>
 		<method name="get_joy_id" qualifiers="const">

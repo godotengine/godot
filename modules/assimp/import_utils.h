@@ -309,9 +309,7 @@ public:
 			if (r_found) {
 				return;
 			}
-			if (r_found == false) {
-				find_texture_path(r_p_path, dir, r_path, r_found, "." + exts[i]);
-			}
+			find_texture_path(r_p_path, dir, r_path, r_found, "." + exts[i]);
 		}
 	}
 
@@ -322,9 +320,7 @@ public:
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
 		ERR_FAIL_COND(map_mode == NULL);
-		aiTextureMapMode tex_mode = aiTextureMapMode::aiTextureMapMode_Wrap;
-
-		tex_mode = map_mode[0];
+		aiTextureMapMode tex_mode = map_mode[0];
 
 		int32_t flags = Texture::FLAGS_DEFAULT;
 		if (tex_mode == aiTextureMapMode_Wrap) {

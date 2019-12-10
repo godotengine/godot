@@ -19,6 +19,7 @@
 		1FE926A11FBBF86D00F53A6F /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE9268F1FBBF77F00F53A6F /* CoreAudio.framework */; };
 		E360193721F32F38009258C1 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E360193621F32F37009258C1 /* CoreVideo.framework */; };
 		DEADBEEF2F582BE20003B888 /* $binary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.a */; };
+		$modules_buildfile
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
 		1FF4C1851F584E3F00A41E41 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1841F584E3F00A41E41 /* GameKit.framework */; };
 		1FF4C1871F584E5600A41E41 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1861F584E5600A41E41 /* StoreKit.framework */; };
@@ -45,6 +46,7 @@
 		1FE926951FBBF7C400F53A6F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		1FE926961FBBF7D400F53A6F /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		DEADBEEF1F582BE20003B888 /* $binary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot; path = "$binary.a"; sourceTree = "<group>"; };
+		$modules_fileref
 		1FF4C1841F584E3F00A41E41 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		1FF4C1861F584E5600A41E41 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1FF4C1881F584E7600A41E41 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -89,6 +91,7 @@
 				D0BCFE3E18AEBDA2004A7AAE /* GLKit.framework in Frameworks */,
 				D0BCFE3818AEBDA2004A7AAE /* Foundation.framework in Frameworks */,
 				DEADBEEF2F582BE20003B888 /* $binary.a */,
+				$modules_buildphase
 				$additional_pbx_frameworks_build
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -138,6 +141,7 @@
 				D0BCFE3D18AEBDA2004A7AAE /* GLKit.framework */,
 				D0BCFE3F18AEBDA2004A7AAE /* OpenGLES.framework */,
 				DEADBEEF1F582BE20003B888 /* $binary.a */,
+				$modules_buildgrp
 				$additional_pbx_frameworks_refs
 			);
 			name = Frameworks;
@@ -427,6 +431,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -452,6 +457,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $identifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";

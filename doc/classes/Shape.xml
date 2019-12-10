@@ -13,6 +13,7 @@
 	</methods>
 	<members>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
+			The collision margin for the shape.
 		</member>
 	</members>
 	<constants>

@@ -4147,7 +4147,11 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 	ReflectionAtlas *reflection_atlas = reflection_atlas_owner.getornull(p_reflection_atlas);
 
-	if (shadow_atlas && shadow_atlas->size) {
+	bool use_shadows = shadow_atlas && shadow_atlas->size;
+
+	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SHADOW, use_shadows);
+
+	if (use_shadows) {
 		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 		glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
@@ -4521,15 +4525,15 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	if (state.directional_light_count == 0) {
 		directional_light = NULL;
-		_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, sky, false, false, false, false, shadow_atlas != NULL);
+		_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, sky, false, false, false, false, use_shadows);
 	} else {
 		for (int i = 0; i < state.directional_light_count; i++) {
 			directional_light = directional_lights[i];
 			if (i > 0) {
 				glEnable(GL_BLEND);
 			}
-			_setup_directional_light(i, p_cam_transform.affine_inverse(), shadow_atlas != NULL && shadow_atlas->size > 0);
-			_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, sky, false, false, false, i > 0, shadow_atlas != NULL);
+			_setup_directional_light(i, p_cam_transform.affine_inverse(), use_shadows);
+			_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, sky, false, false, false, i > 0, use_shadows);
 		}
 	}
 
@@ -4607,12 +4611,12 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	if (state.directional_light_count == 0) {
 		directional_light = NULL;
-		_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, false, shadow_atlas != NULL);
+		_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, false, use_shadows);
 	} else {
 		for (int i = 0; i < state.directional_light_count; i++) {
 			directional_light = directional_lights[i];
-			_setup_directional_light(i, p_cam_transform.affine_inverse(), shadow_atlas != NULL && shadow_atlas->size > 0);
-			_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, i > 0, shadow_atlas != NULL);
+			_setup_directional_light(i, p_cam_transform.affine_inverse(), use_shadows);
+			_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, sky, false, true, false, i > 0, use_shadows);
 		}
 	}
 

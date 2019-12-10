@@ -935,6 +935,8 @@ Array mono_array_to_Array(MonoArray *p_array) {
 	return ret;
 }
 
+// TODO: Use memcpy where possible
+
 MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
 	PoolIntArray::Read r = p_array.read();
 

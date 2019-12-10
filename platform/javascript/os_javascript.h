@@ -35,7 +35,6 @@
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 
 #include <emscripten/html5.h>
@@ -66,8 +65,6 @@ class OS_JavaScript : public OS_Unix {
 	bool idb_available;
 	int64_t sync_wait_time;
 	int64_t last_sync_check_time;
-
-	CameraServer *camera_server;
 
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 

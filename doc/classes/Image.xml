@@ -90,7 +90,7 @@
 			<argument index="2" name="lossy_quality" type="float">
 			</argument>
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [code]COMPRESS_*[/code] constants.
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum CompressSource] constants.
 			</description>
 		</method>
 		<method name="convert">
@@ -99,7 +99,7 @@
 			<argument index="0" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Converts the image's format. See [code]FORMAT_*[/code] constants.
+				Converts the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="copy_from">
@@ -123,7 +123,7 @@
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -140,7 +140,7 @@
 			<argument index="4" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -165,7 +165,7 @@
 			<return type="int" enum="Image.AlphaMode">
 			</return>
 			<description>
-				Returns ALPHA_BLEND if the image has data for alpha values. Returns ALPHA_BIT if all the alpha values are below a certain threshold or the maximum value. Returns ALPHA_NONE if no data for alpha values is found.
+				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are below a certain threshold or the maximum value. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
 		<method name="expand_x2_hq2x">
@@ -225,7 +225,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Returns the image's format. See [code]FORMAT_*[/code] constants.
+				Returns the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -491,7 +491,7 @@
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PoolByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
-			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
+			Holds all of the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
 	<constants>

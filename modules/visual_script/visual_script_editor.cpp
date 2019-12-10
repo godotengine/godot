@@ -3464,6 +3464,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		ofs = ofs.snapped(Vector2(snap, snap));
 	}
 	ofs /= EDSCALE;
+	ofs /= graph->get_zoom();
 
 	Set<int> vn;
 

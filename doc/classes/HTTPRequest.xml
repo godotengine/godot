@@ -67,7 +67,7 @@
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns the current status of the underlying [HTTPClient]. See [code]STATUS_*[/code] enum on [HTTPClient].
+				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
 			</description>
 		</method>
 		<method name="request">

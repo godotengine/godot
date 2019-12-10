@@ -38,12 +38,14 @@
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given [code]layer[/code] in the [member cull_mask] is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_frustum" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the camera's frustum planes in world-space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
 			</description>
 		</method>
 		<method name="is_position_behind" qualifiers="const">
@@ -109,6 +111,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disables the given [code]layer[/code] in the [member cull_mask].
 			</description>
 		</method>
 		<method name="set_frustum">
@@ -123,6 +126,7 @@
 			<argument index="3" name="z_far" type="float">
 			</argument>
 			<description>
+				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units.
 			</description>
 		</method>
 		<method name="set_orthogonal">
@@ -135,7 +139,7 @@
 			<argument index="2" name="z_far" type="float">
 			</argument>
 			<description>
-				Sets the camera projection to orthogonal mode, by specifying a width and the [code]near[/code] and [code]far[/code] clip planes in worldspace units. (As a hint, 2D games often use this projection, with values specified in pixels)
+				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [code]size[/code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
 			</description>
 		</method>
 		<method name="set_perspective">
@@ -148,7 +152,7 @@
 			<argument index="2" name="z_far" type="float">
 			</argument>
 			<description>
-				Sets the camera projection to perspective mode, by specifying a [code]fov[/code] angle in degrees (FOV means Field of View), and the [code]near[/code] and [code]far[/code] clip planes in world-space units.
+				Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [code]fov[/code] (field of view) angle in degrees, and the [code]z_near[/code] and [code]z_far[/code] clip planes in world-space units.
 			</description>
 		</method>
 		<method name="unproject_position" qualifiers="const">
@@ -169,7 +173,7 @@
 			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking" default="0">
-			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
+			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.
@@ -181,6 +185,7 @@
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 		</member>
 		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2( 0, 0 )">
+			The camera's frustum offset. This can be changed from the default to create "tilted frustum" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-shearing[/url].
 		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal (X) offset of the camera viewport.
@@ -218,13 +223,13 @@
 			Preserves the vertical aspect ratio; also known as Hor+ scaling. This is usually the best option for projects running in landscape mode, as wider aspect ratios will automatically benefit from a wider horizontal FOV.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
-			Disables Doppler effect simulation (default).
+			Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default).
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Simulate Doppler effect by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Simulate Doppler effect by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
 	</constants>
 </class>

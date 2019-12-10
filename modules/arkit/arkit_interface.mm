@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "camera_ios.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "scene/resources/surface_tool.h"

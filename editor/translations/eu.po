@@ -3,18 +3,19 @@
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Julen Irazoki <rktzbkr.julen@gmail.com>, 2019.
+# Osoitz <oelkoro@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-08-15 10:23+0000\n"
-"Last-Translator: Julen Irazoki <rktzbkr.julen@gmail.com>\n"
+"PO-Revision-Date: 2019-12-03 14:05+0000\n"
+"Last-Translator: Osoitz <oelkoro@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
 "Language: eu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -25,8 +26,7 @@ msgstr ""
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
-"Ez daude byte nahikoa byte-ak dekodetzeko, edota formatua ez da zuzena."
+msgstr "Ez daude byte nahikoa byteak deskodetzeko, edo formatua ez da zuzena."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -940,7 +940,7 @@ msgid "Resource"
 msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr ""
 
@@ -1405,7 +1405,8 @@ msgid "Node Name:"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr ""
 
@@ -9094,6 +9095,10 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Projects"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
 msgstr ""
 
 #: editor/project_manager.cpp

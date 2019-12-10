@@ -143,6 +143,7 @@
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="merge">
@@ -151,7 +152,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns a larger Rect2 that contains this Rect2 and [code]b[/code].
+				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
 			</description>
 		</method>
 	</methods>

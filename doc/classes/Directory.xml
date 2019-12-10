@@ -33,7 +33,7 @@
 			</argument>
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="copy">
@@ -45,7 +45,7 @@
 			</argument>
 			<description>
 				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
@@ -145,7 +145,7 @@
 			</argument>
 			<description>
 				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
@@ -155,7 +155,7 @@
 			</argument>
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]0K[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="open">
@@ -165,7 +165,7 @@
 			</argument>
 			<description>
 				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="remove">
@@ -175,7 +175,7 @@
 			</argument>
 			<description>
 				Deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="rename">
@@ -187,7 +187,7 @@
 			</argument>
 			<description>
 				Renames (move) the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 	</methods>

@@ -266,7 +266,6 @@ public:
 				else
 					undo_redo->create_action(TTR("Anim Change Call"));
 
-				Variant prev = animation->track_get_key_value(track, key);
 				setting = true;
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
 				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);

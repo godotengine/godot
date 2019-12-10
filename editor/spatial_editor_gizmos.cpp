@@ -202,6 +202,9 @@ void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard
 }
 
 void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard) {
+	if (p_lines.empty()) {
+		return;
+	}
 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
@@ -4190,8 +4193,19 @@ void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	const Spatial *node_body_a = Object::cast_to<Spatial>(joint->get_node(joint->get_node_a()));
-	const Spatial *node_body_b = Object::cast_to<Spatial>(joint->get_node(joint->get_node_b()));
+	Spatial *node_body_a = NULL;
+	if (!joint->get_node_a().is_empty()) {
+		node_body_a = Object::cast_to<Spatial>(joint->get_node(joint->get_node_a()));
+	}
+
+	Spatial *node_body_b = NULL;
+	if (!joint->get_node_b().is_empty()) {
+		node_body_b = Object::cast_to<Spatial>(joint->get_node(joint->get_node_b()));
+	}
+
+	if (!node_body_a && !node_body_b) {
+		return;
+	}
 
 	Ref<Material> common_material = get_material("joint_material", p_gizmo);
 	Ref<Material> body_a_material = get_material("joint_body_a_material", p_gizmo);

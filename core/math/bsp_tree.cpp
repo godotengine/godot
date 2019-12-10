@@ -192,14 +192,14 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 #ifdef DEBUG_ENABLED
 			int plane_count = planes.size();
 			uint16_t plane = nodesptr[idx].plane;
-			ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, false);
+			ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, 0);
 #endif
 
 			idx = planesptr[nodesptr[idx].plane].is_point_over(point) ? nodes[idx].over : nodes[idx].under;
 
 #ifdef DEBUG_ENABLED
 
-			ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, false);
+			ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, 0);
 #endif
 		}
 

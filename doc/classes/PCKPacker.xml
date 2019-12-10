@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PCKPacker" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
+		Creates packages that can be loaded into a running project.
 	</brief_description>
 	<description>
-		The [PCKPacker] is used to create packages in application runtime.
+		The [PCKPacker] is used to create packages that can be loaded into a running project using [method ProjectSettings.load_resource_pack].
 		[codeblock]
 		var packer = PCKPacker.new()
-		packer.pck_start("test.pck", 0)
+		packer.pck_start("test.pck")
 		packer.add_file("res://text.txt", "text.txt")
-		packer.flush(false)
+		packer.flush()
 		[/codeblock]
-		The above [PCKPacker] creates package [b]test.pck[/b], then adds a file named [b]text.txt[/b] in the root of the package.
+		The above [PCKPacker] creates package [code]test.pck[/code], then adds a file named [code]text.txt[/code] at the root of the package.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -29,9 +30,10 @@
 		<method name="flush">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="verbose" type="bool">
+			<argument index="0" name="verbose" type="bool" default="false">
 			</argument>
 			<description>
+				Writes the files specified using all [method add_file] calls since the last flush. If [code]verbose[/code] is [code]true[/code], a list of files added will be printed to the console for easier debugging.
 			</description>
 		</method>
 		<method name="pck_start">
@@ -39,9 +41,10 @@
 			</return>
 			<argument index="0" name="pck_name" type="String">
 			</argument>
-			<argument index="1" name="alignment" type="int">
+			<argument index="1" name="alignment" type="int" default="0">
 			</argument>
 			<description>
+				Creates a new PCK file with the name [code]pck_name[/code]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [code]pck_name[/code] (even though it's not required).
 			</description>
 		</method>
 	</methods>

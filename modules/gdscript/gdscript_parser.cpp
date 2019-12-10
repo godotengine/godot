@@ -3349,7 +3349,12 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after expression.");
+					// Attempt to guess a better error message if the user "retypes" a variable
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON && tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						_set_error("Unexpected ':=', use '=' instead. Expected end of statement after expression.");
+					} else {
+						_set_error(String() + "Expected end of statement after expression, got " + tokenizer->get_token_name(tokenizer->get_token()) + " instead");
+					}
 					return;
 				}
 

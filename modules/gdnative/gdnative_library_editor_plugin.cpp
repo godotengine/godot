@@ -224,7 +224,6 @@ void GDNativeLibraryEditor::_erase_entry(const String &platform, const String &e
 		if (List<String>::Element *E = platforms[platform].entries.find(entry)) {
 
 			String target = platform + "." + entry;
-			Ref<ConfigFile> config = library->get_config_file();
 
 			platforms[platform].entries.erase(E);
 			_set_target_value("entry", target, "");

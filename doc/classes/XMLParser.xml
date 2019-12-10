@@ -84,7 +84,7 @@
 			<return type="int" enum="XMLParser.NodeType">
 			</return>
 			<description>
-				Gets the type of the current node. Compare with [code]NODE_*[/code] constants.
+				Gets the type of the current node. Compare with [enum NodeType] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">

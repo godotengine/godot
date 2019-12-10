@@ -173,6 +173,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -228,6 +229,7 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -269,6 +271,7 @@ void HTTPClient::close() {
 
 	connection.unref();
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
 
 		IP::get_singleton()->erase_resolve_item(resolving);
@@ -468,6 +471,12 @@ Error HTTPClient::poll() {
 
 							response_headers.push_back(header);
 						}
+					}
+
+					// This is a HEAD request, we wont receive anything.
+					if (head_request) {
+						body_size = 0;
+						body_left = 0;
 					}
 
 					if (body_size != -1 || chunked) {
@@ -724,6 +733,7 @@ HTTPClient::HTTPClient() {
 	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	conn_port = -1;
 	body_size = -1;
 	chunked = false;

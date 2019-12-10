@@ -314,7 +314,7 @@
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See enum [code]CURSOR_*[/code] for the list of shapes.
+				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
 				[code]image[/code]'s size must be lower than 256×256.
 				[code]hotspot[/code] must be within [code]image[/code]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.

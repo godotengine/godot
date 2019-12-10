@@ -1006,7 +1006,7 @@ msgid "Resource"
 msgstr "משאב"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "נתיב"
 
@@ -1483,7 +1483,8 @@ msgid "Node Name:"
 msgstr "שם המפרק:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "שם"
 
@@ -9608,6 +9609,10 @@ msgstr "מנהל המיזמים"
 #, fuzzy
 msgid "Projects"
 msgstr "מיזם"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"

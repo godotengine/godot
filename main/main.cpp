@@ -65,6 +65,7 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -97,6 +98,7 @@ static MessageQueue *message_queue = NULL;
 
 // Initialized in setup2()
 static AudioServer *audio_server = NULL;
+static CameraServer *camera_server = NULL;
 static ARVRServer *arvr_server = NULL;
 static PhysicsServer *physics_server = NULL;
 static Physics2DServer *physics_2d_server = NULL;
@@ -257,6 +259,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --position <X>,<Y>               Request window position.\n");
 	OS::get_singleton()->print("  --low-dpi                        Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
+	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -397,6 +401,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Vector<String> breakpoints;
 	bool use_custom_res = true;
 	bool force_res = false;
+	bool saw_vsync_via_compositor_override = false;
 #ifdef TOOLS_ENABLED
 	bool found_project = false;
 #endif
@@ -588,6 +593,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get() == "--enable-vsync-via-compositor") {
+
+			video_mode.vsync_via_compositor = true;
+			saw_vsync_via_compositor_override = true;
+		} else if (I->get() == "--disable-vsync-via-compositor") {
+
+			video_mode.vsync_via_compositor = false;
+			saw_vsync_via_compositor_override = true;
 #endif
 		} else if (I->get() == "--profiling") { // enable profiling
 
@@ -1007,6 +1020,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	video_mode.use_vsync = GLOBAL_DEF_RST("display/window/vsync/use_vsync", true);
 	OS::get_singleton()->_use_vsync = video_mode.use_vsync;
 
+	if (!saw_vsync_via_compositor_override) {
+		// If one of the command line options to enable/disable vsync via the
+		// window compositor ("--enable-vsync-via-compositor" or
+		// "--disable-vsync-via-compositor") was present then it overrides the
+		// project setting.
+		video_mode.vsync_via_compositor = GLOBAL_DEF("display/window/vsync/vsync_via_compositor", false);
+	}
+
+	OS::get_singleton()->_vsync_via_compositor = video_mode.vsync_via_compositor;
+
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
 
@@ -1317,6 +1340,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_platform_apis();
 	register_module_types();
+
+	camera_server = CameraServer::create();
 
 	initialize_physics();
 	register_server_singletons();
@@ -2090,6 +2115,11 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
+	if (script_debugger) {
+		// Flush any remaining messages
+		script_debugger->idle_poll();
+	}
+
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2135,6 +2165,10 @@ void Main::cleanup() {
 	if (audio_server) {
 		audio_server->finish();
 		memdelete(audio_server);
+	}
+
+	if (camera_server) {
+		memdelete(camera_server);
 	}
 
 	OS::get_singleton()->finalize();

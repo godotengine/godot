@@ -433,10 +433,10 @@
 			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
-			A combination of EASE_IN and EASE_OUT. The interpolation is slowest at both ends.
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
-			A combination of EASE_IN and EASE_OUT. The interpolation is fastest at both ends.
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>

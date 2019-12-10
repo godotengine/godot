@@ -907,25 +907,25 @@ void EditorFileDialog::update_filters() {
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0);
+			String flt = filters[i].get_slice(";", 0).strip_edges();
 			if (i > 0)
-				all_filters += ",";
+				all_filters += ", ";
 			all_filters += flt;
 		}
 
 		if (max_filters < filters.size())
 			all_filters += ", ...";
 
-		filter->add_item(TTR("All Recognized") + " ( " + all_filters + " )");
+		filter->add_item(TTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length())
-			filter->add_item(desc + " ( " + flt + " )");
+			filter->add_item(desc + " (" + flt + ")");
 		else
-			filter->add_item("( " + flt + " )");
+			filter->add_item("(" + flt + ")");
 	}
 
 	filter->add_item(TTR("All Files (*)"));

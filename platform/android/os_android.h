@@ -39,7 +39,6 @@
 #include "main/input_default.h"
 //#include "power_android.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 
 class GodotJavaWrapper;
@@ -78,8 +77,6 @@ private:
 	bool use_16bits_fbo;
 
 	VisualServer *visual_server;
-
-	CameraServer *camera_server;
 
 	mutable String data_dir_cache;
 

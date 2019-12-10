@@ -423,7 +423,7 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	input_handled = false;
 
-	Ref<InputEvent> ev = p_event;
+	const Ref<InputEvent> &ev = p_event;
 
 	MainLoop::input_event(ev);
 

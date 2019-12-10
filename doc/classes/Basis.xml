@@ -102,6 +102,7 @@
 			<argument index="1" name="epsilon" type="float" default="0.00001">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="orthonormalized">

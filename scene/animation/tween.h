@@ -101,6 +101,12 @@ private:
 		int args;
 		Variant arg[5];
 		int uid;
+		InterpolateData() {
+			active = false;
+			finish = false;
+			call_deferred = false;
+			uid = 0;
+		}
 	};
 
 	String autoplay;
