@@ -1128,25 +1128,11 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					d["@subpath"] = cp;
 					d["@path"] = p->get_path();
 
-					p = base.ptr();
-
-					while (p) {
-
-						for (Set<StringName>::Element *E = p->members.front(); E; E = E->next()) {
-
-							Variant value;
-							if (ins->get(E->get(), value)) {
-
-								String k = E->get();
-								if (!d.has(k)) {
-									d[k] = value;
-								}
-							}
+					for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
+						if (!d.has(E->key())) {
+							d[E->key()] = ins->members[E->get().index];
 						}
-
-						p = p->_base;
 					}
-
 					r_ret = d;
 				}
 			}
