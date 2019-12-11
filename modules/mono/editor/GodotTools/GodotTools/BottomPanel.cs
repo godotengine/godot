@@ -34,7 +34,7 @@ namespace GodotTools
 
             for (int i = 0; i < buildTabs.GetChildCount(); i++)
             {
-                var tab = (BuildTab) buildTabs.GetChild(i);
+                var tab = (BuildTab)buildTabs.GetChild(i);
 
                 if (tab == null)
                     continue;
@@ -120,7 +120,7 @@ namespace GodotTools
             if (currentTab < 0 || currentTab >= buildTabs.GetTabCount())
                 throw new InvalidOperationException("No tab selected");
 
-            var buildTab = (BuildTab) buildTabs.GetChild(currentTab);
+            var buildTab = (BuildTab)buildTabs.GetChild(currentTab);
             buildTab.WarningsVisible = pressed;
             buildTab.UpdateIssuesList();
         }
@@ -132,7 +132,7 @@ namespace GodotTools
             if (currentTab < 0 || currentTab >= buildTabs.GetTabCount())
                 throw new InvalidOperationException("No tab selected");
 
-            var buildTab = (BuildTab) buildTabs.GetChild(currentTab);
+            var buildTab = (BuildTab)buildTabs.GetChild(currentTab);
             buildTab.ErrorsVisible = pressed;
             buildTab.UpdateIssuesList();
         }
@@ -193,7 +193,7 @@ namespace GodotTools
 
             int selectedItem = selectedItems[0];
 
-            var buildTab = (BuildTab) buildTabs.GetTabControl(selectedItem);
+            var buildTab = (BuildTab)buildTabs.GetTabControl(selectedItem);
 
             OS.ShellOpen(Path.Combine(buildTab.BuildInfo.LogsDirPath, BuildManager.MsBuildLogFileName));
         }
@@ -249,14 +249,14 @@ namespace GodotTools
 
             var editorBaseControl = editorInterface.GetBaseControl();
 
-            SizeFlagsVertical = (int) SizeFlags.ExpandFill;
+            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
             SetAnchorsAndMarginsPreset(LayoutPreset.Wide);
 
             panelTabs = new TabContainer
             {
                 TabAlign = TabContainer.TabAlignEnum.Left,
                 RectMinSize = new Vector2(0, 228) * EditorScale,
-                SizeFlagsVertical = (int) SizeFlags.ExpandFill
+                SizeFlagsVertical = (int)SizeFlags.ExpandFill
             };
             panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
             panelTabs.AddStyleboxOverride("tab_fg", editorBaseControl.GetStylebox("DebuggerTabFG", "EditorStyles"));
@@ -268,11 +268,11 @@ namespace GodotTools
                 panelBuildsTab = new VBoxContainer
                 {
                     Name = "Builds".TTR(),
-                    SizeFlagsHorizontal = (int) SizeFlags.ExpandFill
+                    SizeFlagsHorizontal = (int)SizeFlags.ExpandFill
                 };
                 panelTabs.AddChild(panelBuildsTab);
 
-                var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int) SizeFlags.ExpandFill};
+                var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
                 panelBuildsTab.AddChild(toolBarHBox);
 
                 var buildProjectBtn = new Button
@@ -320,12 +320,12 @@ namespace GodotTools
 
                 var hsc = new HSplitContainer
                 {
-                    SizeFlagsHorizontal = (int) SizeFlags.ExpandFill,
-                    SizeFlagsVertical = (int) SizeFlags.ExpandFill
+                    SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
+                    SizeFlagsVertical = (int)SizeFlags.ExpandFill
                 };
                 panelBuildsTab.AddChild(hsc);
 
-                buildTabsList = new ItemList {SizeFlagsHorizontal = (int) SizeFlags.ExpandFill};
+                buildTabsList = new ItemList { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
                 buildTabsList.Connect("item_selected", this, nameof(_BuildTabsItemSelected));
                 buildTabsList.Connect("nothing_selected", this, nameof(_BuildTabsNothingSelected));
                 hsc.AddChild(buildTabsList);
@@ -333,7 +333,7 @@ namespace GodotTools
                 buildTabs = new TabContainer
                 {
                     TabAlign = TabContainer.TabAlignEnum.Left,
-                    SizeFlagsHorizontal = (int) SizeFlags.ExpandFill,
+                    SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
                     TabsVisible = false
                 };
                 hsc.AddChild(buildTabs);

@@ -64,7 +64,7 @@ namespace GodotTools.Ides
 
         private void LaunchIde()
         {
-            var editor = (ExternalEditorId) GodotSharpEditor.Instance.GetEditorInterface()
+            var editor = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
                 .GetEditorSettings().GetSetting("mono/editor/external_editor");
 
             switch (editor)
