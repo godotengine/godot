@@ -279,8 +279,8 @@ def configure(env):
     # include paths for different versions of SailfishSDK width different SDL2 version  
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 
-    if( env['arch'] == "x86" ):
-        env.Append(CPPFLAGS=['-DSAILFISH_i486_GLES2'])
+    # if( env['arch'] == "x86" ):
+    #     env.Append(CPPFLAGS=['-DSAILFISH_i486_GLES2'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
