@@ -42,7 +42,7 @@
 
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;
-	Ref<MonoGCHandle> delegate_handle;
+	MonoGCHandleData delegate_handle;
 	GDMonoMethod *delegate_invoke;
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -60,7 +60,7 @@ public:
 	ObjectID get_object() const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
-	_FORCE_INLINE_ MonoDelegate *get_delegate() { return (MonoDelegate *)delegate_handle->get_target(); }
+	_FORCE_INLINE_ MonoDelegate *get_delegate() { return (MonoDelegate *)delegate_handle.get_target(); }
 
 	void set_delegate(MonoDelegate *p_delegate);
 
@@ -71,9 +71,7 @@ public:
 	static constexpr CompareEqualFunc compare_less_func_ptr = &ManagedCallable::compare_less;
 
 	ManagedCallable(MonoDelegate *p_delegate);
-#ifdef GD_MONO_HOT_RELOAD
 	~ManagedCallable();
-#endif
 };
 
 #endif // MANAGED_CALLABLE_H

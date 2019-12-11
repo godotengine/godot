@@ -240,7 +240,7 @@ class CSharpInstance : public ScriptInstance {
 	bool destructing_script_instance = false;
 
 	Ref<CSharpScript> script;
-	Ref<MonoGCHandle> gchandle;
+	MonoGCHandleData gchandle;
 
 	Vector<Callable> event_signal_callables;
 
@@ -258,7 +258,7 @@ class CSharpInstance : public ScriptInstance {
 
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
-	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle);
+	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
 	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
@@ -326,8 +326,14 @@ struct CSharpScriptBinding {
 	bool inited;
 	StringName type_name;
 	GDMonoClass *wrapper_class;
-	Ref<MonoGCHandle> gchandle;
+	MonoGCHandleData gchandle;
 	Object *owner;
+
+	CSharpScriptBinding() :
+			inited(false),
+			wrapper_class(NULL),
+			owner(NULL) {
+	}
 };
 
 class ManagedCallableMiddleman : public Object {
@@ -414,8 +420,8 @@ public:
 	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const { return godotsharp_editor; }
 #endif
 
-	static void release_script_gchandle(Ref<MonoGCHandle> &p_gchandle);
-	static void release_script_gchandle(MonoObject *p_expected_obj, Ref<MonoGCHandle> &p_gchandle);
+	static void release_script_gchandle(MonoGCHandleData &p_gchandle);
+	static void release_script_gchandle(MonoObject *p_expected_obj, MonoGCHandleData &p_gchandle);
 
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);

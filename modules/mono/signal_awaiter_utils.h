@@ -40,7 +40,7 @@ Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signa
 
 class SignalAwaiterCallable : public CallableCustom {
 	ObjectID target_id;
-	Ref<MonoGCHandle> awaiter_handle;
+	MonoGCHandleData awaiter_handle;
 	StringName signal;
 
 public:
@@ -64,6 +64,7 @@ public:
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	SignalAwaiterCallable(Object *p_target, MonoObject *p_awaiter, const StringName &p_signal);
+	~SignalAwaiterCallable();
 };
 
 class EventSignalCallable : public CallableCustom {

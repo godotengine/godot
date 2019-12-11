@@ -92,6 +92,11 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
+uint32_t new_strong_gchandle(MonoObject *p_object);
+uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
+uint32_t new_weak_gchandle(MonoObject *p_object);
+void free_gchandle(uint32_t p_gchandle);
+
 void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
 
 bool mono_delegate_equal(MonoDelegate *p_a, MonoDelegate *p_b);

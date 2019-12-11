@@ -156,7 +156,7 @@ struct CachedData {
 
 	// End of MarshalUtils methods
 
-	Ref<MonoGCHandle> task_scheduler_handle;
+	Ref<MonoGCHandleRef> task_scheduler_handle;
 
 	bool corlib_cache_updated;
 	bool godot_api_cache_updated;

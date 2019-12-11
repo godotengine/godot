@@ -86,10 +86,9 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 		}
 	}
 
-	Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
-	ERR_FAIL_COND_V(gchandle.is_null(), NULL);
+	MonoGCHandleData &gchandle = script_binding.gchandle;
 
-	MonoObject *target = gchandle->get_target();
+	MonoObject *target = gchandle.get_target();
 
 	if (target)
 		return target;
@@ -106,7 +105,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
 	ERR_FAIL_NULL_V(mono_object, NULL);
 
-	gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
+	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
 	// Tie managed to unmanaged
 	Reference *ref = Object::cast_to<Reference>(unmanaged);
@@ -154,6 +153,22 @@ MonoThread *get_current_thread() {
 
 bool is_thread_attached() {
 	return mono_domain_get() != NULL;
+}
+
+uint32_t new_strong_gchandle(MonoObject *p_object) {
+	return mono_gchandle_new(p_object, /* pinned: */ false);
+}
+
+uint32_t new_strong_gchandle_pinned(MonoObject *p_object) {
+	return mono_gchandle_new(p_object, /* pinned: */ true);
+}
+
+uint32_t new_weak_gchandle(MonoObject *p_object) {
+	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
+}
+
+void free_gchandle(uint32_t p_gchandle) {
+	mono_gchandle_free(p_gchandle);
 }
 
 void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc) {

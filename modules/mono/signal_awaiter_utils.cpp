@@ -114,8 +114,15 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 		mono_array_setref(signal_args, i, boxed);
 	}
 
+	MonoObject *awaiter = awaiter_handle.get_target();
+
+	if (!awaiter) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		return;
+	}
+
 	MonoException *exc = NULL;
-	CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback).invoke(awaiter_handle->get_target(), signal_args, &exc);
+	CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback).invoke(awaiter, signal_args, &exc);
 
 	if (exc) {
 		GDMonoUtils::set_pending_exception(exc);
@@ -127,8 +134,12 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 
 SignalAwaiterCallable::SignalAwaiterCallable(Object *p_target, MonoObject *p_awaiter, const StringName &p_signal) :
 		target_id(p_target->get_instance_id()),
-		awaiter_handle(MonoGCHandle::create_strong(p_awaiter)),
+		awaiter_handle(MonoGCHandleData::new_strong_handle(p_awaiter)),
 		signal(p_signal) {
+}
+
+SignalAwaiterCallable::~SignalAwaiterCallable() {
+	awaiter_handle.release();
 }
 
 bool EventSignalCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -159,7 +170,6 @@ String EventSignalCallable::get_as_text() const {
 	String class_name = owner->get_class();
 	Ref<Script> script = owner->get_script();
 	if (script.is_valid() && script->get_path().is_resource_file()) {
-
 		class_name += "(" + script->get_path().get_file() + ")";
 	}
 	StringName signal = event_signal->field->get_name();
