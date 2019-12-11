@@ -2329,18 +2329,19 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	}
 
 	ERR_FAIL_COND(!m);
-
-	_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
+	int subpass_index = 0;
+	_add_geometry_with_material(p_geometry, p_instance, p_owner, m, subpass_index, p_depth_pass, p_shadow_pass);
 
 	while (m->next_pass.is_valid()) {
 		m = storage->material_owner.getornull(m->next_pass);
 		if (!m || !m->shader || !m->shader->valid)
 			break;
-		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
+		subpass_index++;
+		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, subpass_index, p_depth_pass, p_shadow_pass);
 	}
 }
 
-void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_shadow_pass) {
+void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, int subpass_index, bool p_depth_pass, bool p_shadow_pass) {
 
 	bool has_base_alpha = (p_material->shader->spatial.uses_alpha && !p_material->shader->spatial.uses_alpha_scissor) || p_material->shader->spatial.uses_screen_texture || p_material->shader->spatial.uses_depth_texture;
 	bool has_blend_alpha = p_material->shader->spatial.blend_mode != RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX;
@@ -2403,6 +2404,8 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		e->geometry->index = current_geometry_index++;
 	}
 
+	e->sort_key |= uint64_t(subpass_index) << RenderList::SORT_KEY_SUBPASS;
+
 	if (!p_depth_pass && directional_light && (directional_light->light_ptr->cull_mask & e->instance->layer_mask) == 0) {
 		e->sort_key |= SORT_KEY_NO_DIRECTIONAL_FLAG;
 	}
@@ -2432,7 +2435,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 			e->sort_key |= SORT_KEY_LIGHTMAP_CAPTURE_FLAG;
 		}
 
-		e->sort_key |= (uint64_t(p_material->render_priority) + 128) << RenderList::SORT_KEY_PRIORITY_SHIFT;
+		e->sort_key |= uint64_t(p_material->render_priority + 128) << RenderList::SORT_KEY_PRIORITY_SHIFT;
 	}
 
 	/*

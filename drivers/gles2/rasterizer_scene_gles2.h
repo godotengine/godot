@@ -592,11 +592,10 @@ public:
 			union {
 				struct {
 					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
-
 					uint64_t geometry_index : 14;
 					uint64_t instancing : 1;
 					uint64_t skeleton : 1;
-					uint64_t shader_index : 10;
+					uint64_t shader_index : 8;
 					uint64_t material_index : 10;
 					uint64_t light_index : 8;
 					uint64_t light_type2 : 1; // if 1==0 : nolight/directional, else omni/spot
@@ -604,6 +603,7 @@ public:
 					uint64_t refprobe_0_index : 8;
 					uint64_t light_type1 : 1; //no light, directional is 0, omni spot is 1
 					uint64_t light_mode : 2; // LightMode enum
+					uint64_t subpass_index : 2;
 				};
 
 				uint64_t sort_key;
@@ -727,7 +727,7 @@ public:
 	RenderList render_list;
 
 	void _add_geometry(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass);
-	void _add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, bool p_depth_pass, bool p_shadow_pass);
+	void _add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, int subpass_index, bool p_depth_pass, bool p_shadow_pass);
 
 	void _copy_texture_to_buffer(GLuint p_texture, GLuint p_buffer);
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass);

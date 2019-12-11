@@ -1003,7 +1003,8 @@ void RasterizerSceneGLES2::_add_geometry(RasterizerStorageGLES2::Geometry *p_geo
 
 	ERR_FAIL_COND(!material);
 
-	_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
+	int subpass_index = 0;
+	_add_geometry_with_material(p_geometry, p_instance, p_owner, material, subpass_index, p_depth_pass, p_shadow_pass);
 
 	while (material->next_pass.is_valid()) {
 		material = storage->material_owner.getornull(material->next_pass);
@@ -1011,11 +1012,11 @@ void RasterizerSceneGLES2::_add_geometry(RasterizerStorageGLES2::Geometry *p_geo
 		if (!material || !material->shader || !material->shader->valid) {
 			break;
 		}
-
-		_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
+		subpass_index++;
+		_add_geometry_with_material(p_geometry, p_instance, p_owner, material, subpass_index, p_depth_pass, p_shadow_pass);
 	}
 }
-void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, bool p_depth_pass, bool p_shadow_pass) {
+void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, int subpass_index, bool p_depth_pass, bool p_shadow_pass) {
 
 	bool has_base_alpha = (p_material->shader->spatial.uses_alpha && !p_material->shader->spatial.uses_alpha_scissor) || p_material->shader->spatial.uses_screen_texture || p_material->shader->spatial.uses_depth_texture;
 	bool has_blend_alpha = p_material->shader->spatial.blend_mode != RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_MIX;
@@ -1072,6 +1073,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	e->use_accum_ptr = &e->use_accum;
 	e->instancing = (e->instance->base_type == VS::INSTANCE_MULTIMESH) ? 1 : 0;
 	e->front_facing = false;
+	e->subpass_index = subpass_index;
 
 	if (e->geometry->last_pass != render_pass) {
 		e->geometry->last_pass = render_pass;

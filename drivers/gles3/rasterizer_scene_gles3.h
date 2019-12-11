@@ -672,11 +672,15 @@ public:
 			DEFAULT_MAX_LIGHTS = 4096,
 			DEFAULT_MAX_REFLECTIONS = 1024,
 
-			SORT_KEY_PRIORITY_SHIFT = 56,
+			//priority (64-57)
+			SORT_KEY_PRIORITY_SHIFT = 57,
 			SORT_KEY_PRIORITY_MASK = 0xFF,
-			//depth layer for opaque (56-52)
-			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
+			//depth layer for opaque (56-53)
+			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 53,
 			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
+			//sub pass index(52-51)
+			SORT_KEY_SUBPASS = 51,
+			SORT_KEY_SUBPASS_MASK = 7,
 //64 bits unsupported in MSVC
 #define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 49)
 #define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 48)
@@ -686,13 +690,13 @@ public:
 #define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 44)
 			SORT_KEY_SHADING_SHIFT = 44,
 			SORT_KEY_SHADING_MASK = 63,
-			//44-28 material index
+			//43-28 material index
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 28,
-			//28-8 geometry index
+			//27-8 geometry index
 			SORT_KEY_GEOMETRY_INDEX_SHIFT = 8,
 			//bits 5-7 geometry type
 			SORT_KEY_GEOMETRY_TYPE_SHIFT = 5,
-			//bits 0-5 for flags
+			//bits 0-4 for flags
 			SORT_KEY_OPAQUE_PRE_PASS = 8,
 			SORT_KEY_CULL_DISABLED_FLAG = 4,
 			SORT_KEY_SKELETON_FLAG = 2,
@@ -841,7 +845,7 @@ public:
 
 	_FORCE_INLINE_ void _add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, bool p_depth_pass, bool p_shadow_pass);
 
-	_FORCE_INLINE_ void _add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_shadow_pass);
+	_FORCE_INLINE_ void _add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, int subpass_index, bool p_depth_pass, bool p_shadow_pass);
 
 	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
