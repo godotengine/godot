@@ -149,9 +149,8 @@ void Vector<T>::append_array(const Vector<T> &p_other) {
 template <class T>
 bool Vector<T>::push_back(const T &p_elem) {
 
-	Error err = resize(size() + 1);
+	Error err = _cowdata.insert(size(), p_elem);
 	ERR_FAIL_COND_V(err, true);
-	set(size() - 1, p_elem);
 
 	return false;
 }

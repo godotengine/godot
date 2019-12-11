@@ -56,6 +56,42 @@ class CowData {
 private:
 	mutable T *_ptr;
 
+	class ElementBackup {
+		const T &original;
+		bool empty;
+		uint8_t backup[sizeof(T)];
+
+	public:
+		_FORCE_INLINE_ void make_backup() {
+			if (__has_trivial_copy(T)) {
+				memcpy(&backup, &original, sizeof(T));
+			} else {
+				memnew_placement(&backup, T(original));
+			}
+			empty = false;
+		}
+
+		_FORCE_INLINE_ const T *get_original_ptr() {
+			return reinterpret_cast<const T *>(&original);
+		}
+
+		_FORCE_INLINE_ const T &get_value() {
+			CRASH_COND(empty);
+			return *reinterpret_cast<T *>(backup);
+		}
+
+		_FORCE_INLINE_ const bool is_empty() { return empty; }
+
+		_FORCE_INLINE_ ElementBackup(const T &p_original) :
+				original(p_original),
+				empty(true) {}
+		_FORCE_INLINE_ ~ElementBackup() {
+			if (!empty && !__has_trivial_destructor(T)) {
+				reinterpret_cast<T *>(backup)->~T();
+			}
+		}
+	};
+
 	// internal helpers
 
 	_FORCE_INLINE_ uint32_t *_get_refcount() const {
@@ -154,7 +190,7 @@ public:
 		return _get_data()[p_index];
 	}
 
-	Error resize(int p_size);
+	Error resize(int p_size, ElementBackup *r_elem_backup = NULL);
 
 	_FORCE_INLINE_ void remove(int p_index) {
 
@@ -172,10 +208,17 @@ public:
 	Error insert(int p_pos, const T &p_val) {
 
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
-		resize(size() + 1);
+
+		ElementBackup eb(p_val);
+		resize(size() + 1, &eb);
+
 		for (int i = (size() - 1); i > p_pos; i--)
 			set(i, get(i - 1));
-		set(p_pos, p_val);
+		if (unlikely(!eb.is_empty())) {
+			set(p_pos, eb.get_value());
+		} else {
+			set(p_pos, p_val);
+		}
 
 		return OK;
 	};
@@ -248,7 +291,7 @@ void CowData<T>::_copy_on_write() {
 }
 
 template <class T>
-Error CowData<T>::resize(int p_size) {
+Error CowData<T>::resize(int p_size, ElementBackup *r_elem_backup) {
 
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -280,6 +323,13 @@ Error CowData<T>::resize(int p_size) {
 			_ptr = (T *)ptr;
 
 		} else {
+			if (unlikely(r_elem_backup)) {
+				const T *original = r_elem_backup->get_original_ptr();
+				if (unlikely(original >= _ptr && original < _ptr + size())) {
+					r_elem_backup->make_backup();
+				}
+			}
+
 			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
 			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
 			_ptr = (T *)(_ptrnew);
