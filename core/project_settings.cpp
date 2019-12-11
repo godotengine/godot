@@ -86,6 +86,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		// DirAccess::get_current_dir() is not guaranteed to return a path that with a trailing '/',
 		// so we must make sure we have it as well in order to compare with 'res_path'.
 		cwd = cwd.plus_file("");
+		cwd = cwd.substr(0, cwd.length() - 1);
 
 		if (!cwd.begins_with(res_path)) {
 			return p_path;
