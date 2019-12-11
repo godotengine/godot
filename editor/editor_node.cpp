@@ -630,7 +630,7 @@ void EditorNode::_editor_select_next() {
 		} else {
 			editor++;
 		}
-	} while (main_editor_buttons[editor]->is_visible());
+	} while (!main_editor_buttons[editor]->is_visible());
 
 	_editor_select(editor);
 }
@@ -645,7 +645,7 @@ void EditorNode::_editor_select_prev() {
 		} else {
 			editor--;
 		}
-	} while (main_editor_buttons[editor]->is_visible());
+	} while (!main_editor_buttons[editor]->is_visible());
 
 	_editor_select(editor);
 }
