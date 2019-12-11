@@ -35,6 +35,9 @@
 #import "servers/audio_server.h"
 
 #import <OpenGLES/EAGLDrawable.h>
+#import <QuartzCore/QuartzCore.h>
+
+static GLView *_instance = NULL;
 
 bool gles3_available = true;
 int gl_view_base_fb;
@@ -72,12 +75,12 @@ OS::VideoMode _get_video_mode() {
 
 @interface GLView ()
 
-@property(nonatomic, strong) CADisplayLink *displayLink;
-@property(nonatomic, strong) NSTimer *animationTimer;
-@property(nonatomic, assign) BOOL useCADisplayLink;
+@property (nonatomic, strong) CADisplayLink *displayLink;
+@property (nonatomic, strong) NSTimer *animationTimer;
+@property (nonatomic, assign) BOOL useCADisplayLink;
 
-@property(nonatomic, assign, getter=isActive) BOOL active;
-@property(nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
+@property (nonatomic, assign, getter=isActive) BOOL active;
+@property (nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
 
 @end
 
@@ -94,8 +97,6 @@ OS::VideoMode _get_video_mode() {
 	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
 	GLuint depthRenderbuffer;
 }
-
-@synthesize animationInterval = _animationInterval;
 
 // Implement this to override the default layer class (which is [CALayer class]).
 // We do this so that our view will be backed by a layer that is capable of OpenGL ES rendering.
@@ -148,21 +149,21 @@ OS::VideoMode _get_video_mode() {
 		NSLog(@"Setting up an OpenGL ES 2.0 context.");
 		if (!context) {
 			NSLog(@"Failed to create OpenGL ES 2.0 context!");
-			return nil;
+			return NO;
 		}
 	}
 
 	if (![EAGLContext setCurrentContext:context]) {
 		NSLog(@"Failed to set EAGLContext!");
-		return nil;
+		return NO;
 	}
 	if (![self createFramebuffer]) {
 		NSLog(@"Failed to create frame buffer!");
-		return nil;
+		return NO;
 	}
 
 	// Default the animation interval to 1/60th of a second.
-	animationInterval = 1.0 / 60.0;
+	self.animationInterval = 1.0 / 60.0;
 
 	self.multipleTouchEnabled = YES;
 	self.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -177,6 +178,8 @@ OS::VideoMode _get_video_mode() {
 			   selector:@selector(keyboardHidden:)
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
+
+	return YES;
 }
 
 - (void)dealloc {
@@ -290,11 +293,6 @@ OS::VideoMode _get_video_mode() {
 			// We could potentially check the display link's maximumFPS here.
 			// If it supports 120 we could force the preferredFPS to that.
 			// Currently that the's only way to drive a game at 120Hz
-		} else {
-			// DEPRECATED: 
-			// Approximate frame rate: assumes device refreshes at 60 fps.
-			// Note that newer iOS devices are 120Hz screens
-			self.displayLink.frameInterval = 1;
 		}
 
 		// Setup DisplayLink in main thread
@@ -326,7 +324,7 @@ OS::VideoMode _get_video_mode() {
 }
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-	_animationInterval = interval;
+	self.animationInterval = interval;
 	// Reset the timers the timers if we're currently rendering
 	if (self.isActive) {
 		[self stopAnimation];
@@ -335,28 +333,29 @@ OS::VideoMode _get_video_mode() {
 }
 
 - (NSTimeInterval)animationInterval {
-	return _animationInterval;
+	return self.animationInterval;
 }
 
 - (void)drawView {
 
-	if (!active) {
+	if (!self.isActive) {
 		printf("draw view not active!\n");
 		return;
-	};
-	if (useCADisplayLink) {
+	}
+
+	if (self.useCADisplayLink) {
 		// Pause the CADisplayLink to avoid recursion
-		[displayLink setPaused:YES];
+		[self.displayLink setPaused:YES];
 
 		// Process all input events
 		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
 			;
 
 		// We are good to go, resume the CADisplayLink
-		[displayLink setPaused:NO];
+		[self.displayLink setPaused:NO];
 	}
 
-	if (!active) {
+	if (!self.isActive) {
 		printf("draw view not active!\n");
 		return;
 	}

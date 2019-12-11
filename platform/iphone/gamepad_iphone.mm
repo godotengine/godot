@@ -109,7 +109,7 @@
 	// Remove this index to prevent reuse
 	[self.availablePlayerIndices removeObjectAtIndex:0];
 
-	return index.integerValue;
+	return (GCControllerPlayerIndex)index.integerValue;
 }
 
 - (int)getJoyIdForController:(GCController *)controller {

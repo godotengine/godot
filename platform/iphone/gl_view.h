@@ -44,9 +44,6 @@
 
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;
 @property (nonatomic, assign) NSTimeInterval animationInterval;
-@property (nonatomic, assign) BOOL useCADisplayLink;
-@property(nonatomic, assign, getter=isActive) BOOL active;
-@property(nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
 
 - (void)startAnimation;
 - (void)stopAnimation;
