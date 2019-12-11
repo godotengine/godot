@@ -1259,6 +1259,11 @@ HBoxContainer *GraphEdit::get_zoom_hbox() {
 	return zoom_hb;
 }
 
+void GraphEdit::set_controls_visibility(bool visible)
+{
+	zoom_hb->set_visible(visible);
+}
+
 void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("connect_node", "from", "from_port", "to", "to_port"), &GraphEdit::connect_node);
@@ -1307,6 +1312,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_connections_layer_draw"), &GraphEdit::_connections_layer_draw);
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
+	ClassDB::bind_method(D_METHOD("set_controls_visibility", "visible"), &GraphEdit::set_controls_visibility);
 
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 

@@ -222,6 +222,8 @@ public:
 
 	HBoxContainer *get_zoom_hbox();
 
+	void set_controls_visibility(bool visible);
+
 	GraphEdit();
 };
 
