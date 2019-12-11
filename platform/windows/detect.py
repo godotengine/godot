@@ -151,14 +151,14 @@ def setup_msvc_auto(env):
         env['bits'] = '64'
     else:
         env['bits'] = '32'
-    print(" Found MSVC version %s, arch %s, bits=%s" % (env['MSVC_VERSION'], env['TARGET_ARCH'], env['bits']))
+    print("Found MSVC version %s, arch %s, bits=%s" % (env['MSVC_VERSION'], env['TARGET_ARCH'], env['bits']))
     if env['TARGET_ARCH'] in ('amd64', 'x86_64'):
         env["x86_libtheora_opt_vc"] = False
 
 def setup_mingw(env):
     """Set up env for use with mingw"""
     # Nothing to do here
-    print("Using Mingw")
+    print("Using MinGW")
     pass
 
 def configure_msvc(env, manual_msvc_config):
@@ -294,7 +294,10 @@ def configure_mingw(env):
     ## Compiler configuration
 
     if (os.name == "nt"):
-        env['ENV']['TMP'] = os.environ['TMP']  # way to go scons, you can be so stupid sometimes
+        # Force splitting libmodules.a in multiple chunks to work around
+        # issues reaching the linker command line size limit, which also
+        # seem to induce huge slowdown for 'ar' (GH-30892).
+        env['split_libmodules'] = True
     else:
         env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
