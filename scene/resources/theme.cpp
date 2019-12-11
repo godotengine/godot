@@ -720,7 +720,10 @@ void Theme::clear() {
 		while ((K = icon_map.next(K))) {
 			const StringName *L = NULL;
 			while ((L = icon_map[*K].next(L))) {
-				icon_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+				Ref<Texture> icon = icon_map[*K][*L];
+				if (icon.is_valid()) {
+					icon->disconnect("changed", this, "_emit_theme_changed");
+				}
 			}
 		}
 	}
@@ -730,7 +733,10 @@ void Theme::clear() {
 		while ((K = style_map.next(K))) {
 			const StringName *L = NULL;
 			while ((L = style_map[*K].next(L))) {
-				style_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+				Ref<StyleBox> style = style_map[*K][*L];
+				if (style.is_valid()) {
+					style->disconnect("changed", this, "_emit_theme_changed");
+				}
 			}
 		}
 	}
@@ -740,7 +746,10 @@ void Theme::clear() {
 		while ((K = font_map.next(K))) {
 			const StringName *L = NULL;
 			while ((L = font_map[*K].next(L))) {
-				font_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+				Ref<Font> font = font_map[*K][*L];
+				if (font.is_valid()) {
+					font->disconnect("changed", this, "_emit_theme_changed");
+				}
 			}
 		}
 	}
