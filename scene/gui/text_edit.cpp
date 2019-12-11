@@ -6524,6 +6524,10 @@ void TextEdit::_update_completion_candidates() {
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+
+	String s_lower = s.to_lower();
 
 	for (List<ScriptCodeCompletionOption>::Element *E = completion_sources.front(); E; E = E->next()) {
 		ScriptCodeCompletionOption &option = E->get();
@@ -6538,30 +6542,67 @@ void TextEdit::_update_completion_candidates() {
 			option.insert_text = option.insert_text.quote(quote);
 		}
 
-		if (option.display.begins_with(s)) {
+		if (option.display.length() == 0) {
+			continue;
+		} else if (s.length() == 0) {
 			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(option);
+		} else {
+
+			// This code works the same as:
+			/*
+			if (option.display.begins_with(s)) {
+				completion_options.push_back(option);
+			} else if (option.display.to_lower().begins_with(s.to_lower())) {
+				completion_options_casei.push_back(option);
+			} else if (s.is_subsequence_of(option.display)) {
+				completion_options_subseq.push_back(option);
+			} else if (s.is_subsequence_ofi(option.display)) {
+				completion_options_subseq_casei.push_back(option);
+			}
+			*/
+			// But is more performant due to being inlined and looping over the characters only once
+
+			String display_lower = option.display.to_lower();
+
+			const CharType *ssq = &s[0];
+			const CharType *ssq_lower = &s_lower[0];
+
+			const CharType *tgt = &option.display[0];
+			const CharType *tgt_lower = &display_lower[0];
+
+			const CharType *ssq_last_tgt = NULL;
+			const CharType *ssq_lower_last_tgt = NULL;
+
+			for (; *tgt; tgt++, tgt_lower++) {
+				if (*ssq == *tgt) {
+					ssq++;
+					ssq_last_tgt = tgt;
+				}
+				if (*ssq_lower == *tgt_lower) {
+					ssq_lower++;
+					ssq_lower_last_tgt = tgt;
+				}
+			}
+
+			if (!*ssq) { // Matched the whole subsequence in s
+				if (ssq_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options.push_back(option);
+				} else {
+					completion_options_subseq.push_back(option);
+				}
+			} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower
+				if (ssq_lower_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+					completion_options_casei.push_back(option);
+				} else {
+					completion_options_subseq_casei.push_back(option);
+				}
+			}
 		}
 	}
 
 	completion_options.append_array(completion_options_casei);
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_of(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_ofi(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
+	completion_options.append_array(completion_options_subseq);
+	completion_options.append_array(completion_options_subseq_casei);
 
 	if (completion_options.size() == 0) {
 		// No options to complete, cancel.
