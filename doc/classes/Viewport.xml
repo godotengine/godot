@@ -310,6 +310,13 @@
 				Emitted when the size of the viewport is changed, whether by [method set_size_override], resize of window, or some other means.
 			</description>
 		</signal>
+		<signal name="gui_focus_changed">
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+				Emitted when a Control node grabs keyboard focus.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
