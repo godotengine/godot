@@ -70,8 +70,8 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	if (data) {
 		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
 		if (script_binding.inited) {
-			Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
-			if (gchandle.is_valid()) {
+			MonoGCHandleData &gchandle = script_binding.gchandle;
+			if (!gchandle.is_released()) {
 				CSharpLanguage::release_script_gchandle(p_obj, gchandle);
 			}
 		}
@@ -117,8 +117,8 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 		if (data) {
 			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
-				Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
-				if (gchandle.is_valid()) {
+				MonoGCHandleData &gchandle = script_binding.gchandle;
+				if (!gchandle.is_released()) {
 					CSharpLanguage::release_script_gchandle(p_obj, gchandle);
 				}
 			}

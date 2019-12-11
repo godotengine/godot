@@ -44,8 +44,8 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	const ManagedCallable *a = static_cast<const ManagedCallable *>(p_a);
 	const ManagedCallable *b = static_cast<const ManagedCallable *>(p_b);
 
-	MonoDelegate *delegate_a = (MonoDelegate *)a->delegate_handle->get_target();
-	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle->get_target();
+	MonoDelegate *delegate_a = (MonoDelegate *)a->delegate_handle.get_target();
+	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle.get_target();
 
 	if (!delegate_a || !delegate_b) {
 		if (!delegate_a && !delegate_b)
@@ -66,7 +66,7 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 uint32_t ManagedCallable::hash() const {
 	// hmm
 	uint32_t hash = delegate_invoke->get_name().hash();
-	return hash_djb2_one_64(delegate_handle.ptr()->handle, hash);
+	return hash_djb2_one_64(delegate_handle.handle, hash);
 }
 
 String ManagedCallable::get_as_text() const {
@@ -92,12 +92,12 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 #ifdef GD_MONO_HOT_RELOAD
 	// Lost during hot-reload
 	ERR_FAIL_NULL(delegate_invoke);
-	ERR_FAIL_COND(delegate_handle.is_null());
+	ERR_FAIL_COND(delegate_handle.is_released());
 #endif
 
 	ERR_FAIL_COND(delegate_invoke->get_parameters_count() < p_argcount);
 
-	MonoObject *delegate = delegate_handle->get_target();
+	MonoObject *delegate = delegate_handle.get_target();
 
 	MonoException *exc = NULL;
 	MonoObject *ret = delegate_invoke->invoke(delegate, p_arguments, &exc);
@@ -111,7 +111,7 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 }
 
 void ManagedCallable::set_delegate(MonoDelegate *p_delegate) {
-	delegate_handle = MonoGCHandle::create_strong((MonoObject *)p_delegate);
+	delegate_handle = MonoGCHandleData::new_strong_handle((MonoObject *)p_delegate);
 	MonoMethod *delegate_invoke_raw = mono_get_delegate_invoke(mono_object_get_class((MonoObject *)p_delegate));
 	const StringName &delegate_invoke_name = CSharpLanguage::get_singleton()->get_string_names().delegate_invoke_method_name;
 	delegate_invoke = memnew(GDMonoMethod(delegate_invoke_name, delegate_invoke_raw)); // TODO: Use pooling for this GDMonoMethod instances
@@ -132,12 +132,14 @@ ManagedCallable::ManagedCallable(MonoDelegate *p_delegate) {
 #endif
 }
 
-#ifdef GD_MONO_HOT_RELOAD
 ManagedCallable::~ManagedCallable() {
+#ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(instances_mutex);
 		instances.remove(&self_instance);
 		instances_pending_reload.erase(this);
 	}
-}
 #endif
+
+	delegate_handle.release();
+}
