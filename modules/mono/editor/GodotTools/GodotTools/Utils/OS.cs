@@ -157,6 +157,8 @@ namespace GodotTools.Utils
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
+                if (IsWindows && process.Id>0) 
+                    User32Dll.AllowSetForegroundWindow(process.Id); // allows application to focus itself
             }
         }
     }

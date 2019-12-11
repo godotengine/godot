@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using GodotTools.Ides;
+using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
@@ -189,6 +191,7 @@ namespace GodotTools
             "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss"
         };
 
+        [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
             var editor = (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor");
@@ -202,6 +205,12 @@ namespace GodotTools
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
+                case ExternalEditorId.Rider:
+                {
+                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line);
+                    return Error.Ok;
+                }        
                 case ExternalEditorId.MonoDevelop:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
@@ -306,6 +315,7 @@ namespace GodotTools
             return Error.Ok;
         }
 
+        [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
             return (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
@@ -419,18 +429,21 @@ namespace GodotTools
             if (OS.IsWindows)
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
             }
             else if (OS.IsOSX)
             {
                 settingsHintStr += $",Visual Studio:{(int) ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
             }
             else if (OS.IsUnixLike())
             {
                 settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
             }
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
@@ -448,6 +461,7 @@ namespace GodotTools
             exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();
+            RiderPathManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
