@@ -616,9 +616,10 @@
 				Loads a resource from the filesystem located at [code]path[/code].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing [b]Copy Path[/b].
 				[codeblock]
-				# Load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory.
 				var main = load("res://main.tscn")
 				[/codeblock]
+				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 			</description>
 		</method>
 		<method name="log">
@@ -786,7 +787,7 @@
 				Returns a resource from the filesystem that is loaded during script parsing.
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
-				# Load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory.
 				var main = preload("res://main.tscn")
 				[/codeblock]
 			</description>
