@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CommandFlag" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_object_checker">
+			<return type="void">
+			</return>
+			<argument index="0" name="obj" type="Object">
+			</argument>
+			<argument index="1" name="func" type="String">
+			</argument>
+			<argument index="2" name="err_msg" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_checkers">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="needs_argument" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="description" type="String">
+			</argument>
+			<argument index="1" name="category" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flags">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="String">
+			</argument>
+			<argument index="1" name="short_flag" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="argument_name" type="String" setter="set_argument_name" getter="get_argument_name" default="&quot;&quot;">
+		</member>
+		<member name="category" type="String" setter="set_category" getter="get_category" default="&quot;&quot;">
+		</member>
+		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
+		</member>
+		<member name="flag" type="String" setter="set_flag" getter="get_flag" default="&quot;&quot;">
+		</member>
+		<member name="short_flag" type="String" setter="set_short_flag" getter="get_short_flag" default="&quot;&quot;">
+		</member>
+		<member name="show_in_help" type="bool" setter="set_show_in_help" getter="get_show_in_help" default="true">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

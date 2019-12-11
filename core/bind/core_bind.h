@@ -143,6 +143,8 @@ public:
 		MONTH_DECEMBER
 	};
 
+	CommandParser *get_command_parser() const;
+
 	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
 	void global_menu_add_separator(const String &p_menu);
 	void global_menu_remove_item(const String &p_menu, int p_idx);
@@ -238,6 +240,7 @@ public:
 
 	String get_name() const;
 	Vector<String> get_cmdline_args();
+	Vector<String> get_project_args();
 
 	String get_locale() const;
 	String get_latin_keyboard_variant() const;

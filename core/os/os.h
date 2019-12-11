@@ -31,6 +31,7 @@
 #ifndef OS_H
 #define OS_H
 
+#include "core/cli_parser.h"
 #include "core/engine.h"
 #include "core/image.h"
 #include "core/io/logger.h"
@@ -47,7 +48,6 @@ class OS {
 
 	static OS *singleton;
 	String _execpath;
-	List<String> _cmdline;
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
@@ -67,6 +67,8 @@ class OS {
 	void *_stack_bottom;
 
 	CompositeLogger *_logger;
+
+	CommandParser *_command_parser;
 
 	bool restart_on_exit;
 	List<String> restart_commandline;
@@ -141,10 +143,14 @@ protected:
 	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
+	void delete_command_parser();
+
 public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	CommandParser *get_command_parser() { return _command_parser; };
 
 	virtual void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta){};
 	virtual void global_menu_add_separator(const String &p_menu){};
@@ -279,7 +285,8 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
 	virtual String get_name() const = 0;
-	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual List<String> get_cmdline_args() const { return _command_parser->get_args(); }
+	virtual List<String> get_project_args() const { return _command_parser->get_project_args(); }
 	virtual String get_model_name() const;
 
 	virtual MainLoop *get_main_loop() const = 0;
