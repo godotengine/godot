@@ -423,6 +423,8 @@ void main() {
 #define projection_matrix local_projection_matrix
 #define world_transform world_matrix
 
+	float point_size = 1.0;
+
 	{
 		/* clang-format off */
 
@@ -431,6 +433,7 @@ VERTEX_SHADER_CODE
 		/* clang-format on */
 	}
 
+	gl_PointSize = point_size;
 	vec4 outvec = vertex;
 
 	// use local coordinates

@@ -149,6 +149,8 @@ void main() {
 	uv = uv_attrib;
 #endif
 
+	float point_size = 1.0;
+
 	{
 		vec2 src_vtx = outvec.xy;
 		/* clang-format off */
@@ -157,6 +159,8 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+	gl_PointSize = point_size;
 
 #if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix_instance * outvec;

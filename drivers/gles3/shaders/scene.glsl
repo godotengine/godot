@@ -432,6 +432,8 @@ void main() {
 	}
 #endif
 
+	float point_size = 1.0;
+
 	highp mat4 modelview = camera_inverse_matrix * world_matrix;
 	{
 		/* clang-format off */
@@ -440,6 +442,8 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+	gl_PointSize = point_size;
 
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)

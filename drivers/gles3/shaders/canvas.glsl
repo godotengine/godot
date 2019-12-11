@@ -150,6 +150,7 @@ void main() {
 
 #define extra_matrix extra_matrix_instance
 
+	float point_size = 1.0;
 	//for compatibility with the fragment shader we need to use uv here
 	vec2 uv = uv_interp;
 	{
@@ -160,6 +161,7 @@ VERTEX_SHADER_CODE
 		/* clang-format on */
 	}
 
+	gl_PointSize = point_size;
 	uv_interp = uv;
 
 #ifdef USE_NINEPATCH
