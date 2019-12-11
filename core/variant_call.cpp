@@ -1187,31 +1187,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			default: return Variant();
 		}
 
-	} else if (p_argcount > 1) {
-
-		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
-
-		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
-			const _VariantCall::ConstructData &cd = E->get();
-
-			if (cd.arg_count != p_argcount)
-				continue;
-
-			//validate parameters
-			for (int i = 0; i < cd.arg_count; i++) {
-				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
-					r_error.argument = i;
-					r_error.expected = cd.arg_types[i];
-					return Variant();
-				}
-			}
-
-			Variant v;
-			cd.func(v, p_args);
-			return v;
-		}
-
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
 		return *p_args[0]; //copy construct
 	} else if (p_argcount == 1 && (!p_strict || Variant::can_convert(p_args[0]->type, p_type))) {
@@ -1267,6 +1242,30 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
 			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
 			default: return Variant();
+		}
+	} else if (p_argcount >= 1) {
+
+		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
+
+		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
+			const _VariantCall::ConstructData &cd = E->get();
+
+			if (cd.arg_count != p_argcount)
+				continue;
+
+			//validate parameters
+			for (int i = 0; i < cd.arg_count; i++) {
+				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
+					r_error.argument = i;
+					r_error.expected = cd.arg_types[i];
+					return Variant();
+				}
+			}
+
+			Variant v;
+			cd.func(v, p_args);
+			return v;
 		}
 	}
 	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
