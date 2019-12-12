@@ -51,10 +51,6 @@ class ContextGL_OSX {
 	NSOpenGLContext *context;
 
 public:
-	bool waiting_for_vsync;
-	NSCondition *vsync_condition;
-	CVDisplayLinkRef displayLink;
-
 	void release_current();
 
 	void make_current();
