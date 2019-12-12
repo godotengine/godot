@@ -18,7 +18,7 @@ namespace Godot
             int pos = 0;
             int slices = 1;
 
-            while ((pos = instance.Find(splitter, pos)) >= 0)
+            while ((pos = instance.Find(splitter, true, pos)) >= 0)
             {
                 slices++;
                 pos += splitter.Length;
@@ -325,17 +325,17 @@ namespace Godot
         // <summary>
         // Find the first occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
         // </summary>
-        public static int Find(this string instance, string what, int from = 0)
+        public static int Find(this string instance, string what, bool caseSensitive = true, int from = 0)
         {
-            return instance.IndexOf(what, StringComparison.OrdinalIgnoreCase);
+            return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         // <summary>
         // Find the last occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
         // </summary>
-        public static int FindLast(this string instance, string what)
+        public static int FindLast(this string instance, string what, bool caseSensitive = true, int from = 0)
         {
-            return instance.LastIndexOf(what, StringComparison.OrdinalIgnoreCase);
+            return instance.LastIndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         // <summary>
@@ -343,7 +343,7 @@ namespace Godot
         // </summary>
         public static int FindN(this string instance, string what, int from = 0)
         {
-            return instance.IndexOf(what, StringComparison.Ordinal);
+            return instance.IndexOf(what, from, StringComparison.OrdinalIgnoreCase);
         }
 
         // <summary>
@@ -928,7 +928,7 @@ namespace Godot
 
             while (true)
             {
-                int end = instance.Find(divisor, from);
+                int end = instance.Find(divisor, true, from);
                 if (end < 0)
                     end = len;
                 if (allowEmpty || end > from)
