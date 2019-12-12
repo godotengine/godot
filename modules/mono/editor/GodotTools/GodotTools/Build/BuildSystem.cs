@@ -46,7 +46,7 @@ namespace GodotTools.Build
             {
                 if (OS.IsWindows)
                 {
-                    return (BuildManager.BuildTool) EditorSettings.GetSetting("mono/builds/build_tool")
+                    return (BuildManager.BuildTool)EditorSettings.GetSetting("mono/builds/build_tool")
                            == BuildManager.BuildTool.MsBuildMono;
                 }
 
@@ -55,7 +55,7 @@ namespace GodotTools.Build
         }
 
         private static bool PrintBuildOutput =>
-            (bool) EditorSettings.GetSetting("mono/builds/print_build_output");
+            (bool)EditorSettings.GetSetting("mono/builds/print_build_output");
 
         private static Process LaunchBuild(string solution, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
         {
@@ -90,7 +90,7 @@ namespace GodotTools.Build
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
 
-            var process = new Process {StartInfo = startInfo};
+            var process = new Process { StartInfo = startInfo };
 
             process.Start();
 

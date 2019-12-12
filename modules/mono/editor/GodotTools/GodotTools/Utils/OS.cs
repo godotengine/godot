@@ -75,7 +75,7 @@ namespace GodotTools.Utils
         public static bool IsHTML5 => _isHTML5.Value;
 
         private static bool? _isUnixCache;
-        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android};
+        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android };
 
         public static bool IsUnixLike()
         {
@@ -113,10 +113,10 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                select Path.Combine(dir, name)
+                    select Path.Combine(dir, name)
                 into path
-                from ext in windowsExts
-                select path + ext).FirstOrDefault(File.Exists);
+                    from ext in windowsExts
+                    select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix(string name)
@@ -157,7 +157,7 @@ namespace GodotTools.Utils
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-                if (IsWindows && process.Id>0) 
+                if (IsWindows && process.Id > 0)
                     User32Dll.AllowSetForegroundWindow(process.Id); // allows application to focus itself
             }
         }

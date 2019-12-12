@@ -26,7 +26,7 @@ namespace GodotTools.Core
 
             path = path.Replace('\\', '/');
 
-            string[] parts = path.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
@@ -44,7 +44,7 @@ namespace GodotTools.Core
 
         public static string CsvEscape(this string value, char delimiter = ',')
         {
-            bool hasSpecialChar = value.IndexOfAny(new char[] {'\"', '\n', '\r', delimiter}) != -1;
+            bool hasSpecialChar = value.IndexOfAny(new char[] { '\"', '\n', '\r', delimiter }) != -1;
 
             if (hasSpecialChar)
                 return "\"" + value.Replace("\"", "\"\"") + "\"";
@@ -54,8 +54,8 @@ namespace GodotTools.Core
 
         public static string ToSafeDirName(this string dirName, bool allowDirSeparator)
         {
-            var invalidChars = new List<string> {":", "*", "?", "\"", "<", ">", "|"};
-            
+            var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
+
             if (allowDirSeparator)
             {
                 // Directory separators are allowed, but disallow ".." to avoid going up the filesystem

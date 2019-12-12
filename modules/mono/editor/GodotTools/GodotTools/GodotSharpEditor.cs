@@ -44,7 +44,7 @@ namespace GodotTools
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = (string) ProjectSettings.GetSetting("application/config/name");
+                string name = (string)ProjectSettings.GetSetting("application/config/name");
                 if (name.Empty())
                     name = "UnnamedProject";
 
@@ -61,7 +61,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "Release", "Tools"}
+                        Configs = new List<string> { "Debug", "Release", "Tools" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -110,20 +110,20 @@ namespace GodotTools
 
         private void _RemoveCreateSlnMenuOption()
         {
-            menuPopup.RemoveItem(menuPopup.GetItemIndex((int) MenuOptions.CreateSln));
+            menuPopup.RemoveItem(menuPopup.GetItemIndex((int)MenuOptions.CreateSln));
             bottomPanelBtn.Show();
         }
 
         private void _ShowAboutDialog()
         {
-            bool showOnStart = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             aboutDialogCheckBox.Pressed = showOnStart;
             aboutDialog.PopupCenteredMinsize();
         }
 
         private void _ToggleAboutDialogOnStart(bool enabled)
         {
-            bool showOnStart = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             if (showOnStart != enabled)
                 editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
         }
@@ -160,7 +160,7 @@ namespace GodotTools
 
             if (what == NotificationReady)
             {
-                bool showInfoDialog = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+                bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
                 if (showInfoDialog)
                 {
                     aboutDialog.PopupExclusive = true;
@@ -194,7 +194,7 @@ namespace GodotTools
         [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editor = (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
 
             switch (editor)
             {
@@ -318,7 +318,7 @@ namespace GodotTools
         [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
+            return (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
         }
 
         public override bool Build()
@@ -346,7 +346,7 @@ namespace GodotTools
 
             bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
+            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -356,7 +356,7 @@ namespace GodotTools
 
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
-                menuPopup.AddItem("About C# support".TTR(), (int) MenuOptions.AboutCSharp);
+                menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.WindowTitle = "Important: C# support is not feature-complete";
@@ -379,7 +379,7 @@ namespace GodotTools
                 var aboutLabel = new Label();
                 aboutHBox.AddChild(aboutLabel);
                 aboutLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
-                aboutLabel.SizeFlagsVertical = (int) Control.SizeFlags.ExpandFill;
+                aboutLabel.SizeFlagsVertical = (int)Control.SizeFlags.ExpandFill;
                 aboutLabel.Autowrap = true;
                 aboutLabel.Text =
                     "C# support in Godot Engine is in late alpha stage and, while already usable, " +
@@ -394,7 +394,7 @@ namespace GodotTools
                 EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
+                aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
                 aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }
@@ -407,7 +407,7 @@ namespace GodotTools
             else
             {
                 bottomPanelBtn.Hide();
-                menuPopup.AddItem("Create C# solution".TTR(), (int) MenuOptions.CreateSln);
+                menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
             }
 
             menuPopup.Connect("id_pressed", this, nameof(_MenuOptionPressed));
@@ -428,22 +428,22 @@ namespace GodotTools
 
             if (OS.IsWindows)
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
+                settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
             else if (OS.IsOSX)
             {
-                settingsHintStr += $",Visual Studio:{(int) ExternalEditorId.VisualStudioForMac}" +
-                                   $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
+                settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
+                                   $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
             else if (OS.IsUnixLike())
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider:{(int) ExternalEditorId.Rider}";
+                settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary

@@ -26,8 +26,8 @@ namespace GodotTools.ProjectEditor
             mainGroup.SetProperty("BaseIntermediateOutputPath", "obj");
 
             GenAssemblyInfoFile(root, dir, CoreApiProjectName,
-                new[] {"[assembly: InternalsVisibleTo(\"" + EditorApiProjectName + "\")]"},
-                new[] {"System.Runtime.CompilerServices"});
+                new[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProjectName + "\")]" },
+                new[] { "System.Runtime.CompilerServices" });
 
             foreach (var item in compileItems)
             {

@@ -19,7 +19,7 @@ namespace GodotTools.Build
         public static string FindMsBuild()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (BuildManager.BuildTool) editorSettings.GetSetting("mono/builds/build_tool");
+            var buildTool = (BuildManager.BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
             if (OS.IsWindows)
             {
@@ -136,11 +136,11 @@ namespace GodotTools.Build
             string vsWherePath = Environment.GetEnvironmentVariable(Internal.GodotIs32Bits() ? "ProgramFiles" : "ProgramFiles(x86)");
             vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
 
-            var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
+            var vsWhereArgs = new[] { "-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild" };
 
             var outputArray = new Godot.Collections.Array<string>();
             int exitCode = Godot.OS.Execute(vsWherePath, vsWhereArgs,
-                blocking: true, output: (Godot.Collections.Array) outputArray);
+                blocking: true, output: (Godot.Collections.Array)outputArray);
 
             if (exitCode != 0)
                 return string.Empty;

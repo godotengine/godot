@@ -39,10 +39,10 @@ namespace GodotTools.Internals
             foreach (var classDeclDict in classesArray)
             {
                 classesList.Add(new ClassDecl(
-                    (string) classDeclDict["name"],
-                    (string) classDeclDict["namespace"],
-                    (bool) classDeclDict["nested"],
-                    (int) classDeclDict["base_count"]
+                    (string)classDeclDict["name"],
+                    (string)classDeclDict["namespace"],
+                    (bool)classDeclDict["nested"],
+                    (int)classDeclDict["base_count"]
                 ));
             }
 
