@@ -47,6 +47,9 @@
 #include <assimp/Logger.hpp>
 #include <string>
 
+// NOTE: this is from godot master core
+
+
 using namespace AssimpImporter;
 
 #define AI_PROPERTIES aiTextureType_UNKNOWN, 0
