@@ -1898,9 +1898,20 @@ void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, cons
 			}
 
 			state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES2::WORLD_MATRIX, instance->xform_cache);
-			if (cull != instance->cull_cache) {
 
-				cull = instance->cull_cache;
+			VS::CanvasOccluderPolygonCullMode transformed_cull_cache = instance->cull_cache;
+
+			if (transformed_cull_cache != VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED &&
+					(p_light_xform.basis_determinant() * instance->xform_cache.basis_determinant()) < 0) {
+				transformed_cull_cache =
+						transformed_cull_cache == VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE ?
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE :
+								VS::CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE;
+			}
+
+			if (cull != transformed_cull_cache) {
+
+				cull = transformed_cull_cache;
 				switch (cull) {
 					case VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED: {
 
