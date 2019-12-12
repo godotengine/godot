@@ -2729,8 +2729,6 @@ void PhysicalBone::_stop_physics_simulation() {
 		return;
 	}
 	PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_STATIC);
-	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
-	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
 	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
