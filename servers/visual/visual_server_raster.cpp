@@ -238,7 +238,11 @@ void VisualServerRaster::call_set_use_vsync(bool p_enable) {
 }
 
 bool VisualServerRaster::is_low_end() const {
-	return VSG::rasterizer->is_low_end();
+	// FIXME: Commented out when rebasing vulkan branch on master,
+	// causes a crash, it seems rasterizer is not initialized yet the
+	// first time it's called.
+	//return VSG::rasterizer->is_low_end();
+	return false;
 }
 VisualServerRaster::VisualServerRaster() {
 
