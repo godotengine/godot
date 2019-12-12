@@ -281,6 +281,8 @@ void EditorQuickOpen::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_text_changed"), &EditorQuickOpen::_text_changed);
 	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorQuickOpen::_confirmed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"), &EditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(D_METHOD("popup_dialog", "base", "enable_multi", "add_dirs", "dontclear"), &EditorQuickOpen::popup_dialog);
+	ClassDB::bind_method(D_METHOD("selected"), &EditorQuickOpen::get_selected);
 
 	ADD_SIGNAL(MethodInfo("quick_open"));
 }
