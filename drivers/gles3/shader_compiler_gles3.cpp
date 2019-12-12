@@ -913,7 +913,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
 	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "point_size";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
@@ -970,7 +970,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
-	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
 
 	//builtins
