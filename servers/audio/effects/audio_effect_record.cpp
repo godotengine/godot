@@ -192,10 +192,11 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 		}
 
 		ensure_thread_stopped();
+		recording_active = true;
 		current_instance->init();
+	} else {
+		recording_active = false;
 	}
-
-	recording_active = p_record;
 }
 
 bool AudioEffectRecord::is_recording_active() const {
