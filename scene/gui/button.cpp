@@ -190,6 +190,13 @@ void Button::_notification(int p_what) {
 
 			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_constant("hseparation"), 0) : Point2();
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
+			if (_internal_margin[MARGIN_LEFT] > 0) {
+				text_clip -= _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+			}
+			if (_internal_margin[MARGIN_RIGHT] > 0) {
+				text_clip -= _internal_margin[MARGIN_RIGHT] + get_constant("hseparation");
+			}
+
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
 
 			switch (align) {
