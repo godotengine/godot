@@ -68,7 +68,10 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		if (p_take_over) {
 
 			ResourceCache::lock->write_lock();
-			ResourceCache::resources.get(p_path)->set_name("");
+			Resource **res = ResourceCache::resources.getptr(p_path);
+			if (res) {
+				(*res)->set_name("");
+			}
 			ResourceCache::lock->write_unlock();
 		} else {
 			ResourceCache::lock->read_lock();
