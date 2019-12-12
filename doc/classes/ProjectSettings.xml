@@ -348,7 +348,7 @@
 		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function parameter is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when a member variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="" default="true">

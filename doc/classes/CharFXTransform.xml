@@ -11,17 +11,6 @@
 		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
-		<method name="get_value_or">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="String">
-			</argument>
-			<argument index="1" name="default_value" type="Variant">
-			</argument>
-			<description>
-				Returns the value for [code]key[/code] in the [member env] [Dictionary], or [code]default_value[/code] if [code]key[/code] isn't defined in [member env]. If the value's type doesn't match [code]default_value[/code]'s type, this method will return [code]default_value[/code].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="absolute_index" type="int" setter="set_absolute_index" getter="get_absolute_index" default="0">
