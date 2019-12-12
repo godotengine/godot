@@ -32,21 +32,6 @@
 
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-// DisplayLinkCallback is called from our DisplayLink OS thread informing us right before
-// a screen update is required. We can use it to work around the broken vsync.
-static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *now, const CVTimeStamp *outputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext) {
-	ContextGL_OSX *gl_ctx = (ContextGL_OSX *)displayLinkContext;
-
-	// Set flag so we know we can output our next frame and signal our conditional lock
-	// if we're not doing vsync this will be ignored
-	[gl_ctx->vsync_condition lock];
-	gl_ctx->waiting_for_vsync = false;
-	[gl_ctx->vsync_condition signal];
-	[gl_ctx->vsync_condition unlock];
-
-	return kCVReturnSuccess;
-}
-
 void ContextGL_OSX::release_current() {
 
 	[NSOpenGLContext clearCurrentContext];
@@ -79,31 +64,17 @@ int ContextGL_OSX::get_window_height() {
 
 void ContextGL_OSX::swap_buffers() {
 
-	if (use_vsync) {
-		// Wait until our DisplayLink callback unsets our flag...
-		[vsync_condition lock];
-		while (waiting_for_vsync)
-			[vsync_condition wait];
-
-		// Make sure we wait again next frame around
-		waiting_for_vsync = true;
-
-		[vsync_condition unlock];
-	}
-
 	[context flushBuffer];
 }
 
 void ContextGL_OSX::set_use_vsync(bool p_use) {
-	// CGLCPSwapInterval broke in OSX 10.14 and it seems Apple is not interested in fixing
-	// it as OpenGL is now deprecated and Metal solves this differently.
-	// Following SDLs example we're working around this using DisplayLink
-	// When vsync is enabled we set a flag "waiting_for_vsync" to true.
-	// This flag is set to false when DisplayLink informs us our display is about to refresh.
 
-	///TODO Maybe pause/unpause display link?
-	use_vsync = p_use;
-	waiting_for_vsync = p_use;
+	CGLContextObj ctx = CGLGetCurrentContext();
+	if (ctx) {
+		GLint swapInterval = p_use ? 1 : 0;
+		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
+		use_vsync = p_use;
+	}
 }
 
 bool ContextGL_OSX::is_using_vsync() const {
@@ -186,15 +157,6 @@ Error ContextGL_OSX::initialize() {
 
 	[context makeCurrentContext];
 
-	// setup our display link, this will inform us when a refresh is needed
-	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
-	CVDisplayLinkSetOutputCallback(displayLink, &DisplayLinkCallback, this);
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, context.CGLContextObj, pixelFormat.CGLPixelFormatObj);
-	CVDisplayLinkStart(displayLink);
-
-	// initialise a conditional lock object
-	vsync_condition = [[NSCondition alloc] init];
-
 	return OK;
 }
 
@@ -205,12 +167,6 @@ ContextGL_OSX::ContextGL_OSX(id p_view, bool p_opengl_3_context) {
 	use_vsync = false;
 }
 
-ContextGL_OSX::~ContextGL_OSX() {
-
-	if (displayLink) {
-		CVDisplayLinkRelease(displayLink);
-	}
-	[vsync_condition release];
-}
+ContextGL_OSX::~ContextGL_OSX() {}
 
 #endif

@@ -1524,7 +1524,11 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 #endif
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
-		[window_view setWantsBestResolutionOpenGLSurface:NO];
+#if defined(OPENGL_ENABLED)
+		if (video_driver_index == VIDEO_DRIVER_GLES2) {
+			[window_view setWantsBestResolutionOpenGLSurface:NO];
+		}
+#endif
 	}
 
 	[window_object setContentView:window_view];
@@ -2957,14 +2961,6 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 void OS_OSX::_set_use_vsync(bool p_enable) {
-	// FIXME: Commented out during rebase of vulkan branch on master.
-	/*
-	CGLContextObj ctx = CGLGetCurrentContext();
-	if (ctx) {
-		GLint swapInterval = p_enable ? 1 : 0;
-		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
-	}
-	*/
 #if defined(OPENGL_ENABLED)
 	if (video_driver_index == VIDEO_DRIVER_GLES2) {
 		if (context_gles2)
