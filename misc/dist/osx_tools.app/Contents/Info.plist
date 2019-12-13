@@ -24,6 +24,10 @@
 	<string>godot</string>
 	<key>CFBundleVersion</key>
 	<string>3.2</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required to capture audio.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to capture video.</string>
 	<key>NSRequiresAquaSystemAppearance</key>
     	<false />
 	<key>NSHumanReadableCopyright</key>
