@@ -8,21 +8,6 @@
 - License: BSD-3-Clause
 
 
-## b2d_convexdecomp
-
-- Upstream: https://github.com/erincatto/Box2D/tree/master/Contributions/Utilities/ConvexDecomposition
-- Version: git (25615e0, 2015) with modifications
-- License: zlib
-
-The files were adapted to Godot by removing the dependency on b2Math (replacing
-it by b2Glue.h) and commenting out some verbose printf calls.
-Upstream code has not changed in 10 years, no need to keep track of changes.
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
-
-
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3

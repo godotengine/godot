@@ -97,8 +97,6 @@ void Geometry::MeshData::optimize_vertices() {
 	vertices = new_vertices;
 }
 
-Vector<Vector<Vector2> > (*Geometry::_decompose_func)(const Vector<Vector2> &p_polygon) = NULL;
-
 struct _FaceClassify {
 
 	struct _Link {

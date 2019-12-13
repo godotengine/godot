@@ -853,15 +853,6 @@ public:
 		return triangles;
 	}
 
-	static Vector<Vector<Vector2> > (*_decompose_func)(const Vector<Vector2> &p_polygon);
-	static Vector<Vector<Vector2> > decompose_polygon(const Vector<Vector2> &p_polygon) {
-
-		if (_decompose_func)
-			return _decompose_func(p_polygon);
-
-		return Vector<Vector<Vector2> >();
-	}
-
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
 		if (c < 3)

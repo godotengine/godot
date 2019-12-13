@@ -115,12 +115,6 @@ Comment: Open Asset Import Library (assimp)
 Copyright: 2006-2016, assimp team
 License: BSD-3-clause
 
-Files: ./thirdparty/b2d_convexdecomp/
-Comment: Box2D (ConvexDecomp)
-Copyright: 2007, Eric Jordan
- 2006-2009, Erin Catto
-License: Zlib
-
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2013, Erwin Coumans
