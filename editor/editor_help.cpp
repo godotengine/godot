@@ -185,11 +185,11 @@ void EditorHelp::_class_desc_resized() {
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 
 	String t = p_type;
-	if (t == "")
+	if (t.empty())
 		t = "void";
-	bool can_ref = (t != "int" && t != "real" && t != "bool" && t != "void") || p_enum != String();
+	bool can_ref = (t != "void") || !p_enum.empty();
 
-	if (p_enum != String()) {
+	if (!p_enum.empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -200,7 +200,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	const Color type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->push_color(type_color);
 	if (can_ref) {
-		if (p_enum == "") {
+		if (p_enum.empty()) {
 			class_desc->push_meta("#" + t); //class
 		} else {
 			class_desc->push_meta("$" + p_enum); //class
