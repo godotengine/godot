@@ -652,12 +652,12 @@ const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Recently Updated",
-	"Least Recently Updated",
-	"Name (A-Z)",
-	"Name (Z-A)",
-	"License (A-Z)", // "cost" stores the SPDX license name in the Godot Asset Library.
-	"License (Z-A)", // "cost" stores the SPDX license name in the Godot Asset Library.
+	TTRC("Recently Updated"),
+	TTRC("Least Recently Updated"),
+	TTRC("Name (A-Z)"),
+	TTRC("Name (Z-A)"),
+	TTRC("License (A-Z)"), // "cost" stores the SPDX license name in the Godot Asset Library.
+	TTRC("License (Z-A)"), // "cost" stores the SPDX license name in the Godot Asset Library.
 };
 
 const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
@@ -1383,7 +1383,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
 	sort = memnew(OptionButton);
 	for (int i = 0; i < SORT_MAX; i++) {
-		sort->add_item(sort_text[i]);
+		sort->add_item(TTRGET(sort_text[i]));
 	}
 
 	search_hb2->add_child(sort);
