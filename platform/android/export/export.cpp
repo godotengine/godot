@@ -1984,10 +1984,13 @@ public:
 
 			build_command = build_path.plus_file(build_command);
 
+			String package_name = get_package_name(p_preset->get("package/unique_name"));
+
 			List<String> cmdline;
 			cmdline.push_back("build");
-			cmdline.push_back("-p");
-			cmdline.push_back(build_path);
+			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
+			cmdline.push_back("-p"); // argument to specify the start directory.
+			cmdline.push_back(build_path); // start directory.
 			/*{ used for debug
 				int ec;
 				String pipe;
