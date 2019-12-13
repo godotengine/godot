@@ -126,7 +126,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform around given axis by phi. The axis must be a normalized vector.
+				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
@@ -135,16 +135,17 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scales the transform by the specified 3D scaling factors.
+				Scales the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="ofs" type="Vector3">
+			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
-				Translates the transform by the specified offset.
+				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
 		<method name="xform">
