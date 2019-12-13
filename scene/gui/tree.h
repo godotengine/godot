@@ -535,6 +535,7 @@ public:
 	TreeItem *get_item_at_position(const Point2 &p_pos) const;
 	int get_column_at_position(const Point2 &p_pos) const;
 	int get_drop_section_at_position(const Point2 &p_pos) const;
+	int get_button_id_at_position(const Point2 &p_pos) const;
 
 	void clear();
 
