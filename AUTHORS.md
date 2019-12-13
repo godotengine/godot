@@ -29,6 +29,7 @@ name is available.
 
     Aaron Franke (aaronfranke)
     Alexander Holland (AlexHolly)
+    Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
@@ -61,6 +62,7 @@ name is available.
     DualMatrix
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
+    Eoin O'Neill (Eoin-ONeill-Yokai)
     Eric Lasota (elasota)
     Erik Selecký (rxlecky)
     est31
@@ -76,6 +78,7 @@ name is available.
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hanif Bin Ariffin (hbina)
+    Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
     Hiroshi Ogawa (hi-ogawa)
     homer666
@@ -101,6 +104,7 @@ name is available.
     Leon Krause (eska014)
     Lucien Menassol (Kanabenki)
     m4nu3lf
+    Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
@@ -164,5 +168,6 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
+    Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe
