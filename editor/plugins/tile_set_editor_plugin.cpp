@@ -1176,6 +1176,31 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 	}
 }
 
+int TileSetEditor::get_grabbed_point(const Vector2 &p_mouse_pos, real_t p_grab_threshold) {
+	Transform2D xform = workspace->get_transform();
+
+	int grabbed_point = -1;
+	real_t min_distance = 1e10;
+
+	for (int i = 0; i < current_shape.size(); i++) {
+		const real_t distance = xform.xform(current_shape[i]).distance_to(xform.xform(p_mouse_pos));
+		if (distance < p_grab_threshold && distance < min_distance) {
+			min_distance = distance;
+			grabbed_point = i;
+		}
+	}
+
+	return grabbed_point;
+}
+
+bool TileSetEditor::is_within_grabbing_distance_of_first_point(const Vector2 &p_pos, real_t p_grab_threshold) {
+	Transform2D xform = workspace->get_transform();
+
+	const real_t distance = xform.xform(current_shape[0]).distance_to(xform.xform(p_pos));
+
+	return distance < p_grab_threshold;
+}
+
 void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 	if (tileset.is_null() || !get_current_texture().is_valid())
@@ -1528,18 +1553,19 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						shape_anchor.x *= (size.x + spacing);
 						shape_anchor.y *= (size.y + spacing);
 					}
+
 					const real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 					shape_anchor += current_tile_region.position;
 					if (tools[TOOL_SELECT]->is_pressed()) {
 						if (mb.is_valid()) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								if (edit_mode != EDITMODE_PRIORITY && current_shape.size() > 0) {
-									for (int i = 0; i < current_shape.size(); i++) {
-										if ((current_shape[i] - mb->get_position()).length_squared() <= grab_threshold) {
-											dragging_point = i;
-											workspace->update();
-											return;
-										}
+									int grabbed_point = get_grabbed_point(mb->get_position(), grab_threshold);
+
+									if (grabbed_point >= 0) {
+										dragging_point = grabbed_point;
+										workspace->update();
+										return;
 									}
 								}
 								if ((tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) && current_tile_region.has_point(mb->get_position())) {
@@ -1633,13 +1659,12 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								Vector2 pos = mb->get_position();
 								pos = snap_point(pos);
 								if (creating_shape) {
-									if (current_shape.size() > 0) {
-										if ((pos - current_shape[0]).length_squared() <= grab_threshold) {
-											if (current_shape.size() > 2) {
-												close_shape(shape_anchor);
-												workspace->update();
-												return;
-											}
+									if (current_shape.size() > 2) {
+
+										if (is_within_grabbing_distance_of_first_point(mb->get_position(), grab_threshold)) {
+											close_shape(shape_anchor);
+											workspace->update();
+											return;
 										}
 									}
 									current_shape.push_back(pos);
@@ -1685,12 +1710,15 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								}
 							} else if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								if (creating_shape) {
-									if ((current_shape[0] - current_shape[1]).length_squared() <= grab_threshold) {
+
+									// if the first two corners are within grabbing distance of one another, expand the rect to fill the tile
+									if (is_within_grabbing_distance_of_first_point(current_shape[1], grab_threshold)) {
 										current_shape.set(0, snap_point(shape_anchor));
 										current_shape.set(1, snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
 										current_shape.set(2, snap_point(shape_anchor + current_tile_region.size));
 										current_shape.set(3, snap_point(shape_anchor + Vector2(0, current_tile_region.size.y)));
 									}
+
 									close_shape(shape_anchor);
 									workspace->update();
 									return;

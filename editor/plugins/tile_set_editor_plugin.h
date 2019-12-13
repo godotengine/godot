@@ -244,6 +244,8 @@ private:
 	void update_workspace_tile_mode();
 	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);
+	int get_grabbed_point(const Vector2 &p_mouse_pos, real_t grab_threshold);
+	bool is_within_grabbing_distance_of_first_point(const Vector2 &p_pos, real_t p_grab_threshold);
 
 	int get_current_tile() const;
 	void set_current_tile(int p_id);
