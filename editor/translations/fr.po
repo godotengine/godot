@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-03 14:05+0000\n"
+"PO-Revision-Date: 2019-12-09 11:36+0000\n"
 "Last-Translator: Pierre Stempin <pierre.stempin@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -9609,9 +9609,8 @@ msgid "Projects"
 msgstr "Projets"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Last Modified"
-msgstr "Modifié"
+msgstr "Dernière modification"
 
 #: editor/project_manager.cpp
 msgid "Scan"

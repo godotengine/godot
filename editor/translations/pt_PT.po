@@ -14,12 +14,13 @@
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
 # ssantos <ssantos@web.de>, 2018, 2019.
+# Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-29 14:49+0000\n"
-"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
+"PO-Revision-Date: 2019-12-09 11:37+0000\n"
+"Last-Translator: Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
@@ -9468,9 +9469,8 @@ msgid "Projects"
 msgstr "Projetos"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Last Modified"
-msgstr "Modificado"
+msgstr "Última modificação"
 
 #: editor/project_manager.cpp
 msgid "Scan"

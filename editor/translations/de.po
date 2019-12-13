@@ -47,12 +47,13 @@
 # Linux User <no-ads@mail.de>, 2019.
 # David May <wasser@gmail.com>, 2019.
 # Draco Drache <jan.holger.te@gmail.com>, 2019.
+# Jonas <dotchucknorris@gmx.de>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-25 04:04+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2019-12-12 09:05+0000\n"
+"Last-Translator: Jonas <dotchucknorris@gmx.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -4979,7 +4980,7 @@ msgstr "Alle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr "Keine Ergebnisse für „%s“."
+msgstr "Keine Ergebnisse für \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5086,7 +5087,7 @@ msgstr "Rotationsabstand:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Step:"
-msgstr "Skalierungsabschnitte:"
+msgstr "Skalierungsschritte:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -9563,9 +9564,8 @@ msgid "Projects"
 msgstr "Projekte"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Last Modified"
-msgstr "Bearbeitet"
+msgstr "Zuletzt bearbeitet"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -11694,7 +11694,7 @@ msgstr "Benötigtes Icon wurde nicht in der Vorlage festgelegt."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr "HTTP-Server stoppen"
+msgstr "HTTP Server Anhalten"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

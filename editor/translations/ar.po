@@ -30,12 +30,13 @@
 # PhoenixHO <oussamahaddouche0@gmail.com>, 2019.
 # orcstudio <orcstudio@orcstudio.org>, 2019.
 # Rachid Graphicos <graphicos1d@gmail.com>, 2019.
+# traveller010 <manar.bushnaq.001@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-04 03:15+0000\n"
-"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2019-12-12 09:06+0000\n"
+"Last-Translator: traveller010 <manar.bushnaq.001@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -182,29 +183,24 @@ msgid "Anim Change Call"
 msgstr "نداء تغيير التحريك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "تغيير وقت الإطار الرئيسي للحركة"
+msgstr "وقت الإطار متعدد التغييرات للرسم المتحرك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "تغيير المقطع الإنتقالي"
+msgstr "المراحل الانتقالية للرسم المتحرك متعدد التغييرات"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "تحويل تغيير التحريك"
+msgstr "التَحَوّل متعدد التغيير للرسوم المتحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "تغيير قيمة الإطار الأساسي للحركة"
+msgstr "قيمة الإطار متعدد التغييرات للرسم المتحرك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "نداء تغيير التحريك"
+msgstr "استدعاء الرسوم المتحركة متعددة التغيير"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -443,9 +439,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "لا يمكن إضافة مقطع جديد بدون جذر"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "إضافة مسار"
+msgstr "إضافة مسار لمنحنى بريزير"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -517,12 +512,12 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "تحذير: تعديل رسوم متحركة مستوردة"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "حدد مشغل حركة من شجرة المشهد لكي تعدل الحركة."
+msgstr "إختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -533,9 +528,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "قم بتجميع المقاطع حسب العقد (Nodes) أو إظهارهم كقائمة بسيطة."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "خطوة أو خطوات: "
+msgstr "إنطباق أو محاذاة:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -655,9 +649,8 @@ msgid "Scale Ratio:"
 msgstr "نسبة التكبير:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "حدد مقاطع لنسخ:"
+msgstr "إختر المقاطع المراد نسخها"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -669,9 +662,8 @@ msgid "Copy"
 msgstr "أنسخ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "تحديد الوضع"
+msgstr "إختر الكل/لا شيء"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -711,12 +703,11 @@ msgstr "إستبُدل %d حادثة(حوادث)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "تطابق %d."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "لا مطابقة"
+msgstr "%d تطابقات."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -741,7 +732,7 @@ msgstr "المحدد فقط"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "معياري"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -768,21 +759,18 @@ msgid "Line and column numbers."
 msgstr "أرقام الخط و العمود."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "الطريقة في العقدة المستهدفة يجب أن تكون محدّدة!"
+msgstr "يجب تحديد الدالة في العقدة المستهدفة."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"لم يتم العثور على الطريقة المستهدفة! حدّد طريقة سليمة أو أرفق كود لإستهداف "
-"العقدة."
+"لم يتم العثور على الدالة المستهدفة. حدّد دالة سليمة أو أرفق كود للعقدة "
+"المستهدفة."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "صلها بالعقدة:"
 
@@ -791,14 +779,12 @@ msgid "Connect to Script:"
 msgstr "الإتصال بالمخطوطة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "الإشارات:"
+msgstr "من إشارة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "العقدة لا تحتوي على هندسة."
+msgstr "لا يحتوي المشهد علي اي برنامج نصي."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -836,7 +822,7 @@ msgstr "مؤجل"
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "تأخير الإشارة وتخزينها في قائمة الانتظار و تشغيلها فقط في وقت الفراغ."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -844,12 +830,11 @@ msgstr "لقطة واحدة"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "فصل الإشارة بعد انبعاثها الأول."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "قم بوصل الإشارة: "
+msgstr "إشارة غير قادر على الاتصال"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -873,7 +858,7 @@ msgstr "وصل"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Signal:"
-msgstr "الإشارات:"
+msgstr "إشارة:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -897,14 +882,12 @@ msgid "Disconnect"
 msgstr "قطع الاتصال"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "قم بوصل الإشارة: "
+msgstr "قم بوصل الإشارة إلى الدالة"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "قم بتعديل الإتصال: "
+msgstr "تعديل الإتصال:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -980,22 +963,20 @@ msgid "Dependencies For:"
 msgstr "تابعة لـ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "المشهد '%s' هو حالياً جاري تعديله.\n"
-"التغييرات لن تحصل حتي يتم إعادة التشغيل."
+"ستسري التغييرات فقط عند إعادة التحميل."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "المورد '%s' قيد الإستخدام.\n"
-"التغييرات ستظهر بعد إعادة التشغيل."
+" ستسري التغييرات فقط عند إعادة التحميل."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1042,9 +1023,8 @@ msgid "Owners Of:"
 msgstr "ملاك:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "إمسح الملفات المحددة من المشروع؟ (لا رجعة)"
+msgstr "إمسح الملفات المختارة من المشروع؟ (لا يمكن استعادتها)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1088,9 +1068,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "إمسح نهائيا  %d عنصر(عناصر)؟ (بلا رجعة!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "التبعيات"
+msgstr "إظهار التبعيات"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1181,12 +1160,10 @@ msgid "License"
 msgstr "الرخصة"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "ترخيص الطرف الثالث"
+msgstr "تراخيص الجهات الخارجية"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
@@ -1211,9 +1188,8 @@ msgid "Licenses"
 msgstr "تراخيص"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
+msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1281,9 +1257,8 @@ msgid "Delete Bus Effect"
 msgstr "مسح تأثير البيوس"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "بيوس الصوت، سحب وإسقاط لإعادة الترتيب."
+msgstr "إسحب وأسقط لإعادة الترتيب."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1356,7 +1331,7 @@ msgstr "إفتح نسق بيوس الصوت"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "لا يوجد ملف 's%'."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1413,9 +1388,8 @@ msgid "Valid characters:"
 msgstr "الأحرف الصالحة:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "إسم غير صالح، يجب أن لا يتصادم مع أسم فصل خاص بالمحرك."
+msgstr "إسم غير صالح، يجب أن لا يتصادم مع أسم فئة خاصة بالمحرك."
 
 #: editor/editor_autoload_settings.cpp
 #, fuzzy

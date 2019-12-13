@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-11-21 14:24+0000\n"
+"PO-Revision-Date: 2019-12-12 09:05+0000\n"
 "Last-Translator: Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
@@ -657,7 +657,7 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Pumunta sa Linya"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
@@ -817,7 +817,7 @@ msgstr "Isara"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Ikabit"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
@@ -837,7 +837,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Ikabit..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp

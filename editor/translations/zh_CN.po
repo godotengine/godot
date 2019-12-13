@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-11-29 14:49+0000\n"
+"PO-Revision-Date: 2019-12-13 09:38+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -248,7 +248,7 @@ msgstr "3D变换轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "调用方法轨道"
+msgstr "方法调用轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -1238,23 +1238,23 @@ msgstr "添加效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "重命名音频总线（Audio Bus）"
+msgstr "重命名音频总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "修改音频Bus音量"
+msgstr "修改音频总线音量"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "切换音频独奏"
+msgstr "开关音频总线独奏"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "切换音频静音"
+msgstr "开关音频总线静音"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "切换音频旁通效果"
+msgstr "开关音频总线旁通效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
@@ -1290,7 +1290,7 @@ msgstr "旁通"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr "音频总线选项"
+msgstr "总线选项"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1311,11 +1311,11 @@ msgstr "音频"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "添加音频总线（Audio Bus）"
+msgstr "添加音频总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "不能删除主音频总线!"
+msgstr "不能删除主音频总线！"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
@@ -1335,7 +1335,7 @@ msgstr "移动音频总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "将音频Bus布局保存为..."
+msgstr "音频总线布局另存为..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -1343,7 +1343,7 @@ msgstr "新布局的位置..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "打开音频Bus布局"
+msgstr "打开音频总线布局"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
@@ -1355,11 +1355,11 @@ msgstr "布局"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "无效文件,不存在音频总线布局。"
+msgstr "无效文件，不是音频总线布局。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr "添加Bus"
+msgstr "添加总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
@@ -1381,7 +1381,7 @@ msgstr "另存为"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "将音频Bus布局保存为..."
+msgstr "将该音频总线布局保存到文件。"
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -1397,7 +1397,7 @@ msgstr "创建一个新的总线布局。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr "名称非法:。"
+msgstr "名称无效。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -1482,7 +1482,7 @@ msgstr "名称"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "单独（Singleton）"
+msgstr "单例"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1743,7 +1743,7 @@ msgstr "选择此文件夹"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr "拷贝路径"
+msgstr "复制路径"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Open in File Manager"
@@ -2691,7 +2691,7 @@ msgstr "工具"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
-msgstr "单一资源浏览器..."
+msgstr "孤立资源浏览器..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -3297,7 +3297,7 @@ msgstr "卸载"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr "(安装)"
+msgstr "（已安装）"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3310,11 +3310,11 @@ msgstr "开发构建下官方导出模板不可用。"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr "(丢失)"
+msgstr "（缺失）"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr "(当前)"
+msgstr "（当前）"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
@@ -3916,7 +3916,7 @@ msgstr "编辑资源剪贴板"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
-msgstr "拷贝资源"
+msgstr "复制资源"
 
 #: editor/inspector_dock.cpp
 msgid "Make Built-In"
@@ -4354,7 +4354,7 @@ msgstr "复制动画"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
-msgstr "没有需要拷贝的动画！"
+msgstr "没有需要复制的动画！"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
@@ -4439,7 +4439,7 @@ msgstr "方向"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
-msgstr "穿过"
+msgstr "过去"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
@@ -5226,7 +5226,7 @@ msgstr "设置吸附..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr "吸附到父级"
+msgstr "吸附到父节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
@@ -5242,7 +5242,7 @@ msgstr "吸附到节点中心位置"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Other Nodes"
-msgstr "吸附到其他node节点"
+msgstr "吸附到其它节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
@@ -5366,7 +5366,7 @@ msgstr "插入关键帧（已有轨道）"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
-msgstr "拷贝姿势"
+msgstr "复制姿势"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
@@ -6275,7 +6275,7 @@ msgstr "AnimationPlayer 路径无效"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
-msgstr "清理当前文件"
+msgstr "清除最近打开文件列表"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close and save changes?"
@@ -6409,7 +6409,7 @@ msgstr "软重载脚本"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
-msgstr "拷贝脚本路径"
+msgstr "复制脚本路径"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Previous"
@@ -6462,7 +6462,7 @@ msgstr "单步跳过"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
-msgstr "跳过"
+msgstr "暂停"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
@@ -6947,7 +6947,7 @@ msgstr "视图环境"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "Gizmos（可视化调试工具）"
+msgstr "查看控制器"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7130,7 +7130,7 @@ msgstr "4个视口"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr "Gizmos（小工具）"
+msgstr "控制器"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
@@ -7207,7 +7207,7 @@ msgstr "发布(Post)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Nameless gizmo"
-msgstr "未命名的Gizmo"
+msgstr "无名控制器"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -9328,9 +9328,8 @@ msgid "Projects"
 msgstr "工程"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Last Modified"
-msgstr "已修改"
+msgstr "修改时间"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9401,7 +9400,7 @@ msgstr "重命名输入事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Action deadzone"
-msgstr "改变操作隔离区"
+msgstr "改变动作盲区"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
@@ -9599,7 +9598,7 @@ msgstr "常规"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr "重写的......"
+msgstr "覆盖......"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
@@ -9615,11 +9614,11 @@ msgstr "动作:"
 
 #: editor/project_settings_editor.cpp
 msgid "Action"
-msgstr "动作（``Action``）"
+msgstr "动作"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
-msgstr "隔离区"
+msgstr "盲区"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
@@ -10108,7 +10107,7 @@ msgstr "将分支保存为场景"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
-msgstr "拷贝节点路径"
+msgstr "复制节点路径"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -10216,7 +10215,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "节点名称非法，不允许包含以下字符:"
+msgstr "节点名称无效，不允许包含以下字符："
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -10404,15 +10403,15 @@ msgstr "编辑下一个实例"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
-msgstr "堆栈帧（Stack Frames）"
+msgstr "栈帧"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr "性能分析"
+msgstr "性能分析器"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
-msgstr "网络检视"
+msgstr "网络分析器"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -11207,7 +11206,7 @@ msgstr "迭代器失效： "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr "属性名称非法。"
+msgstr "属性名称索引无效。"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
