@@ -946,18 +946,29 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	{
 		const Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			if (E->get().setter) {
+			const GDScript::MemberInfo *member = &E->get();
+			if (member->setter) {
 				const Variant *val = &p_value;
 				Variant::CallError err;
-				call(E->get().setter, &val, 1, err);
+				call(member->setter, &val, 1, err);
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				}
 			} else {
-				if (!E->get().data_type.is_type(p_value)) {
-					return false; // Type mismatch
+				if (!member->data_type.is_type(p_value)) {
+					// Try conversion
+					Variant::CallError ce;
+					const Variant *value = &p_value;
+					Variant converted = Variant::construct(member->data_type.builtin_type, &value, 1, ce);
+					if (ce.error == Variant::CallError::CALL_OK) {
+						members.write[member->index] = converted;
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					members.write[member->index] = p_value;
 				}
-				members.write[E->get().index] = p_value;
 			}
 			return true;
 		}
