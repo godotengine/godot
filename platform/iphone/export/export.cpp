@@ -114,54 +114,14 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			return false;
 		}
 
-		int segments = 0;
-		bool first = true;
 		for (int i = 0; i < pname.length(); i++) {
 			CharType c = pname[i];
-			if (first && c == '.') {
-				if (r_error) {
-					*r_error = TTR("Identifier segments must be of non-zero length.");
-				}
-				return false;
-			}
-			if (c == '.') {
-				segments++;
-				first = true;
-				continue;
-			}
-			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-')) {
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '.')) {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
 				}
 				return false;
 			}
-			if (first && (c >= '0' && c <= '9')) {
-				if (r_error) {
-					*r_error = TTR("A digit cannot be the first character in a Identifier segment.");
-				}
-				return false;
-			}
-			if (first && c == '-') {
-				if (r_error) {
-					*r_error = vformat(TTR("The character '%s' cannot be the first character in a Identifier segment."), String::chr(c));
-				}
-				return false;
-			}
-			first = false;
-		}
-
-		if (segments == 0) {
-			if (r_error) {
-				*r_error = TTR("The Identifier must have at least one '.' separator.");
-			}
-			return false;
-		}
-
-		if (first) {
-			if (r_error) {
-				*r_error = TTR("Identifier segments must be of non-zero length.");
-			}
-			return false;
 		}
 
 		return true;
