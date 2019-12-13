@@ -233,14 +233,23 @@ void EditorSettingsDialog::_update_shortcuts() {
 			section->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
 		}
 
-		if (shortcut_filter.is_subsequence_ofi(sc->get_name()) || shortcut_filter.is_subsequence_ofi(sc->get_as_text())) {
+		// Don't match unassigned shortcuts when searching for assigned keys in search results.
+		// This prevents all unassigned shortcuts from appearing when searching a string like "no".
+		if (shortcut_filter.is_subsequence_ofi(sc->get_name()) || (sc->get_as_text() != "None" && shortcut_filter.is_subsequence_ofi(sc->get_as_text()))) {
 			TreeItem *item = shortcuts->create_item(section);
 
 			item->set_text(0, sc->get_name());
 			item->set_text(1, sc->get_as_text());
+
 			if (!sc->is_shortcut(original) && !(sc->get_shortcut().is_null() && original.is_null())) {
 				item->add_button(1, get_icon("Reload", "EditorIcons"), 2);
 			}
+
+			if (sc->get_as_text() == "None") {
+				// Fade out unassigned shortcut labels for easier visual grepping.
+				item->set_custom_color(1, get_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+			}
+
 			item->add_button(1, get_icon("Edit", "EditorIcons"), 0);
 			item->add_button(1, get_icon("Close", "EditorIcons"), 1);
 			item->set_tooltip(0, E->get());
