@@ -3642,6 +3642,11 @@ msgid "Select Template File"
 msgstr "要刪除選中檔案?"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "管理輸出範本"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr ""
 
@@ -5128,6 +5133,32 @@ msgstr "下載出現錯誤"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Asset已在下載中"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "授權條款"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "授權條款"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9340,6 +9371,15 @@ msgstr "當改變時更新"
 #, fuzzy
 msgid "Runnable"
 msgstr "啟用"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "新增訊號"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 #, fuzzy

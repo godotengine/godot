@@ -3566,6 +3566,11 @@ msgid "Select Template File"
 msgstr "حدد ملف القالب"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "إدارة قوالب التصدير"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "‌تصدير مدير القوالب"
 
@@ -5041,6 +5046,32 @@ msgstr "خطأ في التحميل"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "تحميل هذا الأصل قيد التنفيذ أصلاً!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "الرخصة"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "الرخصة"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9272,6 +9303,15 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "أضف مدخله"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
 msgstr ""
 
 #: editor/project_export.cpp

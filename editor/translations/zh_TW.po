@@ -3620,6 +3620,11 @@ msgid "Select Template File"
 msgstr "選擇範本檔案"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "管理輸出模板"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "導出範本管理器"
 
@@ -5086,6 +5091,32 @@ msgstr "下載錯誤"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "此資源文檔正在下載中!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "授權"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "授權"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9307,6 +9338,15 @@ msgstr "視覺著色器模式已更改"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "可運行的"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "添加輸入"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"

@@ -3515,6 +3515,11 @@ msgid "Select Template File"
 msgstr "Pilih berkas templat"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Memuat Ekspor Template-template."
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Manajer Templat Ekspor"
 
@@ -4904,6 +4909,32 @@ msgstr "Unduhan Gagal"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Unduhan untuk aset ini sedang diproses!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Lisensi"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Lisensi"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9037,6 +9068,15 @@ msgid "Runnable"
 msgstr "Dapat dijalankan"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Tambah port masukan"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
 msgstr "Hapus entri penambalan '%s' dari daftar?"
 
@@ -12946,9 +12986,6 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 
 #~ msgid "Re-Importing"
 #~ msgstr "Mengimpor ulang"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "Memuat Ekspor Template-template."
 
 #~ msgid "Pick New Name and Location For:"
 #~ msgstr "Tentukan Nama dan Lokasi Baru untuk:"

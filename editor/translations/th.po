@@ -3598,6 +3598,11 @@ msgid "Select Template File"
 msgstr "เลือกไฟล์แม่แบบ"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "กำลังโหลดแม่แบบส่งออก"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "จัดการแม่แบบส่งออก"
 
@@ -5081,6 +5086,32 @@ msgstr "ดาวน์โหลดผิดพลาด"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "กำลังดาวน์โหลดไฟล์นี้อยู่แล้ว!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "สัญญาอนุญาต"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "สัญญาอนุญาต"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9384,6 +9415,15 @@ msgid "Runnable"
 msgstr "รันได้"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "เพิ่มอินพุต"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
+
+#: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
 msgstr "ลบแพตช์ '%s' จากรายชื่อ?"
 
@@ -13610,9 +13650,6 @@ msgstr ""
 
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "นำเข้ารีซอร์สที่แก้ไขอีกครั้ง"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "กำลังโหลดแม่แบบส่งออก"
 
 #~ msgid ""
 #~ "\n"

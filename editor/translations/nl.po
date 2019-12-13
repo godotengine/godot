@@ -3545,6 +3545,11 @@ msgid "Select Template File"
 msgstr "Selecteer sjabloonbestand"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Beheer Export Templates"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Export Sjabloon Manager"
 
@@ -4977,6 +4982,32 @@ msgstr "Download Fout"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Download voor dit onderdeel is al bezig!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Licentie"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Licentie"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9296,6 +9327,15 @@ msgstr "Shader Wijzigingen"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Uitvoerbaar"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Voeg invoer toe"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"

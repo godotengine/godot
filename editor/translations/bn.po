@@ -3730,6 +3730,11 @@ msgstr "নির্বাচিত ফাইলসমূহ অপসারণ 
 
 #: editor/export_template_manager.cpp
 #, fuzzy
+msgid "Godot Export Templates"
+msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Export Template Manager"
 msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
@@ -5256,6 +5261,32 @@ msgstr "নীচে"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "এই অ্যাসেটটি ইতমধ্যে ডাউনলোড হচ্ছে!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "লাইসেন্স"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "লাইসেন্স"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9616,6 +9647,15 @@ msgstr "পরিবর্তনসমূহ হাল-নাগাদ করু
 #, fuzzy
 msgid "Runnable"
 msgstr "সক্রিয় করুন"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "ইনপুট যোগ করুন"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -14004,9 +14044,6 @@ msgstr ""
 
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "পুন-ইম্পোর্টে রিসোর্স-সমূহ পরিবর্তিত হয়েছে"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
 #, fuzzy
 #~ msgid ""

@@ -3628,6 +3628,11 @@ msgid "Select Template File"
 msgstr "Selectează fișierul șablon"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Administrează Șabloanele de Export"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Exportă Managerul de Șabloane"
 
@@ -5106,6 +5111,32 @@ msgstr "Eroare Descărcare"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Descărcarea acestui asset rulează deja!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Licență"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Licență"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9348,6 +9379,15 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Adaugă Intrare(Input)"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
 msgstr ""
 
 #: editor/project_export.cpp

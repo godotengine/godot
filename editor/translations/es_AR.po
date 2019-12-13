@@ -3529,6 +3529,11 @@ msgid "Select Template File"
 msgstr "Elegir Archivo de Plantilla"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Cargando Plantillas de Exportación"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Gestor de Plantillas de Exportación"
 
@@ -4924,6 +4929,32 @@ msgstr "Error de Descarga"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "La descarga de este asset ya está en progreso!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Licencia"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Licencia"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9042,6 +9073,15 @@ msgstr "Cambiar Modo de Visual Shader"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Ejecutable"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Agregar puerto de entrada"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -13345,9 +13385,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "Reimportar Recursos Cambiados"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "Cargando Plantillas de Exportación"
 
 #~ msgid ""
 #~ "\n"

@@ -3679,6 +3679,11 @@ msgstr "Velg malfil"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
+msgid "Godot Export Templates"
+msgstr "Håndter Eksportmaler"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Export Template Manager"
 msgstr "Eksporter Mal-Manager"
 
@@ -5191,6 +5196,32 @@ msgstr "Nedlastningserror"
 #, fuzzy
 msgid "Download for this asset is already in progress!"
 msgstr "Nedlastning for denne asset'en er allerede i gang!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Lisens"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Lisens"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -9456,6 +9487,15 @@ msgstr "Forandre"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Kjørbar"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Legg til Input"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"

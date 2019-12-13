@@ -3542,6 +3542,11 @@ msgid "Select Template File"
 msgstr "Seleccioneu un Fitxer de Plantilla"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Carregant Plantilles d'Exportació"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Gestor de Plantilles d'Exportació"
 
@@ -4949,6 +4954,32 @@ msgstr "Error en la Baixada"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Ja s'està baixant aquest actiu!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Llicència"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Llicència"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9219,6 +9250,15 @@ msgstr "El mode Visual Shader ha canviat"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Executable"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Afegeix una Entrada"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -13595,9 +13635,6 @@ msgstr "Les constants no es poden modificar."
 
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "ReImporta Recursos Modificats"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "Carregant Plantilles d'Exportació"
 
 #, fuzzy
 #~ msgid ""

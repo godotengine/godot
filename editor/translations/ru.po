@@ -3555,6 +3555,11 @@ msgid "Select Template File"
 msgstr "Выбрать файл шаблона"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Godot Export Templates"
+msgstr "Загрузка шаблонов экспорта"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Менеджер шаблонов экспорта"
 
@@ -4947,6 +4952,32 @@ msgstr "Ошибка Загрузки"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
 msgstr "Загрузка этого шаблона уже идёт!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (A-Z)"
+msgstr "Лицензия"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "License (Z-A)"
+msgstr "Лицензия"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9080,6 +9111,15 @@ msgstr "Режим Визуального Шейдера был изменен"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Активный"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Add initial export..."
+msgstr "Добавить входной порт"
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -13367,9 +13407,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "Переимпортировать изменённые ресурсы"
-
-#~ msgid "Loading Export Templates"
-#~ msgstr "Загрузка шаблонов экспорта"
 
 #~ msgid ""
 #~ "\n"
