@@ -509,7 +509,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 
 			if (tk == TK_IDENTIFIER) {
 				String name = value;
-				int at_level = type_curly_stack;
+				int at_level = curly_stack;
 
 				ClassDecl class_decl;
 
@@ -582,7 +582,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 						if (full_name.length())
 							full_name += ".";
 						full_name += class_decl.name;
-						OS::get_singleton()->print("Ignoring generic class declaration: %s\n", class_decl.name.utf8().get_data());
+						OS::get_singleton()->print("Ignoring generic class declaration: %s\n", full_name.utf8().get_data());
 					}
 				}
 			}
