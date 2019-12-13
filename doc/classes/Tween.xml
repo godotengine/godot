@@ -34,9 +34,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -60,9 +60,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -137,9 +137,9 @@
 			</argument>
 			<argument index="4" name="duration" type="float">
 			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
@@ -161,9 +161,9 @@
 			</argument>
 			<argument index="4" name="duration" type="float">
 			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
@@ -292,9 +292,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -318,9 +318,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>

@@ -81,7 +81,8 @@ struct ScopedLocalRef {
 	ScopedLocalRef &operator=(const ScopedLocalRef &) = delete;
 
 	ScopedLocalRef(JNIEnv *p_env, T p_local_ref) :
-			env(p_env), local_ref(p_local_ref) {
+			env(p_env),
+			local_ref(p_local_ref) {
 	}
 
 	~ScopedLocalRef() {

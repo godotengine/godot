@@ -28,6 +28,8 @@
 		</constant>
 		<constant name="SOURCE_DEPTH" value="4" enum="Source">
 		</constant>
+		<constant name="SOURCE_PORT" value="5" enum="Source">
+		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">

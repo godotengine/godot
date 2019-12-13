@@ -202,7 +202,7 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 	} else if (dy < 0) {
 		const float global_bottom = get_global_position().y + get_size().y * get_global_transform().get_scale().y;
 		const float viewport_height = get_viewport_rect().size.y;
-		const float limit = global_bottom > viewport_height ? global_bottom - viewport_height: 0;
+		const float limit = global_bottom > viewport_height ? global_bottom - viewport_height : 0;
 		dy = -MIN(-dy, limit);
 	}
 	set_position(get_position() + Vector2(0, dy));
