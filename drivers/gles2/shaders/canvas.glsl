@@ -110,7 +110,7 @@ void main() {
 	vec2 uv;
 
 #ifdef USE_INSTANCING
-	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 extra_matrix_instance = extra_matrix * TRANSPOSE_FUNC_NAME(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
 	color *= instance_color;
 
 #ifdef USE_INSTANCE_CUSTOM
@@ -195,7 +195,7 @@ VERTEX_SHADER_CODE
 			bone_transform += b * bone_weights[i];
 		}
 
-		mat4 bone_matrix = skeleton_transform * transpose(bone_transform) * skeleton_transform_inverse;
+		mat4 bone_matrix = skeleton_transform * TRANSPOSE_FUNC_NAME(bone_transform) * skeleton_transform_inverse;
 
 		outvec = bone_matrix * outvec;
 	}

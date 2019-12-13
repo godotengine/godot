@@ -27,21 +27,29 @@ def can_build():
     if (sdl_error):
        print("SDL2 not found. Sailfish build disabled. Install SDL2-devel for all your targets in MerSDK ")
        return False
+    else:
+        print("SDL2-devel is found")
 
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
         print("libaudioresource-devel not found. Install libaudioresource-devel for all your targets in MerSDK")
         return False;
+    else:
+        print("libaudioresource-devel is found")
 
     glib_error = os.system("pkg-config glib-2.0 --modversion > /dev/null")
     if(glib_error):
         print("glib2-devel not found. Install glib2-devel for all your targets in MerSDK")
         return False;
+    else:
+        print("glib2-devel is found")
 
     udev_error = os.system("pkg-config libudev --modversion > /dev/null")
     if(udev_error):
         print("libudev-devel not found. Install libudev-devel for all your targets in MerSDK")
         return False;
+    else:
+        print("libudev-devel is found")
 
     # webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
     # if(webp_error):
@@ -59,7 +67,7 @@ def get_opts():
         BoolVariable('use_sanitizer', 'Use LLVM compiler address sanitizer', False),
         BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
-        BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
+        BoolVariable('udev', 'Use udev for gamepad connection callbacks', True),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'no', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
         BoolVariable('touch', 'Enable touch events', True),
@@ -279,8 +287,8 @@ def configure(env):
     # include paths for different versions of SailfishSDK width different SDL2 version  
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 
-    # if( env['arch'] == "x86" ):
-    #     env.Append(CPPFLAGS=['-DSAILFISH_i486_GLES2'])
+    if( env['arch'] == "x86" ): 
+        env.Append(CPPFLAGS=['-DSAILFISH_i486_GLES2'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])

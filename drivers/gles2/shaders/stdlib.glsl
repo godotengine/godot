@@ -374,17 +374,23 @@ highp mat4 inverse(highp mat4 m) {
 
 #endif
 
-#if !defined(USE_GLES_OVER_GL) && !defined(USE_SAILFISH_i486_GLES2)
+#if defined(USE_SAILFISH_i486_GLES2)
+#define TRANSPOSE_FUNC_NAME transpose_custom
+#else
+#define TRANSPOSE_FUNC_NAME transpose
+#endif
+
+#if !defined(USE_GLES_OVER_GL)
 
 #if defined(TRANSPOSE_USED)
 
-highp mat2 transpose(highp mat2 m) {
+highp mat2 TRANSPOSE_FUNC_NAME(highp mat2 m) {
 	return mat2(
 			vec2(m[0].x, m[1].x),
 			vec2(m[0].y, m[1].y));
 }
 
-highp mat3 transpose(highp mat3 m) {
+highp mat3 TRANSPOSE_FUNC_NAME(highp mat3 m) {
 	return mat3(
 			vec3(m[0].x, m[1].x, m[2].x),
 			vec3(m[0].y, m[1].y, m[2].y),
@@ -393,7 +399,7 @@ highp mat3 transpose(highp mat3 m) {
 
 #endif
 
-highp mat4 transpose(highp mat4 m) {
+highp mat4 TRANSPOSE_FUNC_NAME(highp mat4 m) {
 	return mat4(
 			vec4(m[0].x, m[1].x, m[2].x, m[3].x),
 			vec4(m[0].y, m[1].y, m[2].y, m[3].y),

@@ -331,7 +331,7 @@ void main() {
 				instance_xform_row_1,
 				instance_xform_row_2,
 				vec4(0.0, 0.0, 0.0, 1.0));
-		world_matrix = world_matrix * transpose(m);
+		world_matrix = world_matrix * TRANSPOSE_FUNC_NAME(m);
 	}
 
 #endif
@@ -398,7 +398,7 @@ void main() {
 					texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
 					vec4(0.0, 0.0, 0.0, 1.0));
 
-			bone_transform += transpose(b) * bone_weights[i];
+			bone_transform += TRANSPOSE_FUNC_NAME(b) * bone_weights[i];
 		}
 	}
 

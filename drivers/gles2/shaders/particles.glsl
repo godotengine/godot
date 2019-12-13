@@ -166,7 +166,7 @@ void main() {
 		out_color = color;
 		out_velocity_active = velocity_active;
 		out_custom = custom;
-		xform = transpose(mat4(xform_1, xform_2, xform_3, vec4(vec3(0.0), 1.0)));
+		xform = TRANSPOSE_FUNC_NAME(mat4(xform_1, xform_2, xform_3, vec4(vec3(0.0), 1.0)));
 	}
 
 	if (shader_active) {
@@ -222,7 +222,7 @@ VERTEX_SHADER_CODE
 		xform = mat4(0.0);
 	}
 
-	xform = transpose(xform);
+	xform = TRANSPOSE_FUNC_NAME(xform);
 
 	out_velocity_active.a = mix(0.0, 1.0, shader_active);
 
