@@ -253,9 +253,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	TreeItem *patch_add = patches->create_item(patch_root);
 	patch_add->set_metadata(0, patchlist.size());
 	if (patchlist.size() == 0)
-		patch_add->set_text(0, "Add initial export...");
+		patch_add->set_text(0, TTR("Add initial export..."));
 	else
-		patch_add->set_text(0, "Add previous patches...");
+		patch_add->set_text(0, TTR("Add previous patches..."));
 
 	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
 
