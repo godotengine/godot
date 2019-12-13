@@ -8185,7 +8185,9 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						}
 #endif // DEBUG_ENABLED
 
+						bool type_match = check_types;
 						if (check_types && !_is_type_compatible(lh_type, rh_type)) {
+							type_match = false;
 							// Try supertype test
 							if (_is_type_compatible(rh_type, lh_type)) {
 								_mark_line_as_unsafe(op->line);
@@ -8197,23 +8199,27 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 											op->line);
 									return;
 								}
-								// Replace assignment with implicit conversion
-								BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
-								convert->line = op->line;
-								convert->function = GDScriptFunctions::TYPE_CONVERT;
+								if (op->op == OperatorNode::OP_ASSIGN) {
+									// Replace assignment with implicit conversion
+									BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+									convert->line = op->line;
+									convert->function = GDScriptFunctions::TYPE_CONVERT;
 
-								ConstantNode *tgt_type = alloc_node<ConstantNode>();
-								tgt_type->line = op->line;
-								tgt_type->value = (int)lh_type.builtin_type;
+									ConstantNode *tgt_type = alloc_node<ConstantNode>();
+									tgt_type->line = op->line;
+									tgt_type->value = (int)lh_type.builtin_type;
 
-								OperatorNode *convert_call = alloc_node<OperatorNode>();
-								convert_call->line = op->line;
-								convert_call->op = OperatorNode::OP_CALL;
-								convert_call->arguments.push_back(convert);
-								convert_call->arguments.push_back(op->arguments[1]);
-								convert_call->arguments.push_back(tgt_type);
+									OperatorNode *convert_call = alloc_node<OperatorNode>();
+									convert_call->line = op->line;
+									convert_call->op = OperatorNode::OP_CALL;
+									convert_call->arguments.push_back(convert);
+									convert_call->arguments.push_back(op->arguments[1]);
+									convert_call->arguments.push_back(tgt_type);
 
-								op->arguments.write[1] = convert_call;
+									op->arguments.write[1] = convert_call;
+
+									type_match = true; // Since we are converting, the type is matching
+								}
 #ifdef DEBUG_ENABLED
 								if (lh_type.builtin_type == Variant::INT && rh_type.builtin_type == Variant::REAL) {
 									_add_warning(GDScriptWarning::NARROWING_CONVERSION, op->line);
@@ -8226,6 +8232,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							_mark_line_as_unsafe(op->line);
 						}
 #endif // DEBUG_ENABLED
+						op->datatype.has_type = type_match;
 					} break;
 					case OperatorNode::OP_CALL:
 					case OperatorNode::OP_PARENT_CALL: {

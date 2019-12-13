@@ -1144,7 +1144,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						GDScriptDataType assign_type = _gdtype_from_datatype(on->arguments[0]->get_datatype());
 
-						if (assign_type.has_type && !on->arguments[1]->get_datatype().has_type) {
+						if (assign_type.has_type && !on->datatype.has_type) {
 							// Typed assignment
 							switch (assign_type.kind) {
 								case GDScriptDataType::BUILTIN: {
