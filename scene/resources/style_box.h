@@ -149,11 +149,13 @@ class StyleBoxFlat : public StyleBox {
 
 	Color bg_color;
 	Color shadow_color;
+	Color inner_shadow_color;
 	Color border_color;
 
 	int border_width[4];
 	int expand_margin[4];
 	int corner_radius[4];
+	int inner_shadow_width[4];
 
 	bool draw_center;
 	bool blend_border;
@@ -162,6 +164,7 @@ class StyleBoxFlat : public StyleBox {
 	int corner_detail;
 	int shadow_size;
 	Point2 shadow_offset;
+	
 	int aa_size;
 
 protected:
@@ -219,6 +222,12 @@ public:
 
 	void set_shadow_offset(const Point2 &p_offset);
 	Point2 get_shadow_offset() const;
+
+	void set_inner_shadow_color(const Color &p_color);
+	Color get_inner_shadow_color() const;
+
+	void set_inner_shadow_width(Margin p_margin, int p_width);
+	int get_inner_shadow_width(Margin p_margin) const;
 
 	//ANTI_ALIASING
 	void set_anti_aliased(const bool &p_anti_aliased);
