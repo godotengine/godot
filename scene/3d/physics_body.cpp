@@ -1554,6 +1554,14 @@ bool PhysicalBone::JointData::_get(const StringName &p_name, Variant &r_ret) con
 void PhysicalBone::JointData::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
+void PhysicalBone::apply_central_impulse(const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
+}
+
+void PhysicalBone::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
+}
+
 bool PhysicalBone::PinJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
 	if (JointData::_set(p_name, p_value, j)) {
 		return true;
@@ -2216,6 +2224,9 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 }
 
 void PhysicalBone::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicalBone::apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &PhysicalBone::apply_impulse);
+
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &PhysicalBone::_direct_state_changed);
 
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone::set_joint_type);
