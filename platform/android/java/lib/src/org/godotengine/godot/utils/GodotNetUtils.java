@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  net_socket.h                                                         */
+/*  GodotNetUtils.java                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,54 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+package org.godotengine.godot.utils;
 
-#include "core/io/ip.h"
-#include "core/reference.h"
+import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.util.Log;
 
-class NetSocket : public Reference {
+import org.godotengine.godot.Godot;
 
-protected:
-	static NetSocket *(*_create)();
+/**
+ * This class handles Android-specific networking functions.
+ * For now, it only provides access to WifiManager.MulticastLock, which is needed on some devices
+ * to receive broadcast and multicast packets.
+ */
+public class GodotNetUtils {
 
-public:
-	static NetSocket *create();
+	/* A single, reference counted, multicast lock, or null if permission CHANGE_WIFI_MULTICAST_STATE is missing */
+	private WifiManager.MulticastLock multicastLock;
 
-	enum PollType {
-		POLL_TYPE_IN,
-		POLL_TYPE_OUT,
-		POLL_TYPE_IN_OUT
-	};
+	public GodotNetUtils(Godot p_activity) {
+		if (PermissionsUtil.hasManifestPermission(p_activity, "android.permission.CHANGE_WIFI_MULTICAST_STATE")) {
+			WifiManager wifi = (WifiManager)p_activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+			multicastLock = wifi.createMulticastLock("GodotMulticastLock");
+			multicastLock.setReferenceCounted(true);
+		}
+	}
 
-	enum Type {
-		TYPE_NONE,
-		TYPE_TCP,
-		TYPE_UDP,
-	};
+	/**
+	 * Acquire the multicast lock. This is required on some devices to receive broadcast/multicast packets.
+	 * This is done automatically by Godot when enabling broadcast or joining a multicast group on a socket.
+	 */
+	public void multicastLockAcquire() {
+		if (multicastLock == null)
+			return;
+		try {
+			multicastLock.acquire();
+		} catch (RuntimeException e) {
+			Log.e("Godot", "Exception during multicast lock acquire: " + e);
+		}
+	}
 
-	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
-	virtual void close() = 0;
-	virtual Error bind(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error listen(int p_max_pending) = 0;
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error poll(PollType p_type, int timeout) const = 0;
-	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
-	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
-	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
-
-	virtual bool is_open() const = 0;
-	virtual int get_available_bytes() const = 0;
-
-	virtual Error set_broadcasting_enabled(bool p_enabled) = 0; // Returns OK if the socket option has been set successfully.
-	virtual void set_blocking_enabled(bool p_enabled) = 0;
-	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
-	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
-	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
-	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
-	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
-};
-
-#endif // NET_SOCKET_H
+	/**
+	 * Release the multicast lock.
+	 * This is done automatically by Godot when the lock is no longer needed by a socket.
+	 */
+	public void multicastLockRelease() {
+		if (multicastLock == null)
+			return;
+		try {
+			multicastLock.release();
+		} catch (RuntimeException e) {
+			Log.e("Godot", "Exception during multicast lock release: " + e);
+		}
+	}
+}

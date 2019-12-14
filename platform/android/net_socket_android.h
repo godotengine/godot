@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  net_socket.h                                                         */
+/*  net_socket_android.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,54 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#ifndef NET_SOCKET_ANDROID_H
+#define NET_SOCKET_ANDROID_H
 
-#include "core/io/ip.h"
-#include "core/reference.h"
+#include "drivers/unix/net_socket_posix.h"
 
-class NetSocket : public Reference {
+#include <jni.h>
+
+/**
+ * Specialized NetSocket implementation for Android.
+ *
+ * Some devices requires Android-specific code to acquire a MulticastLock
+ * before sockets are allowed to receive broadcast and multicast packets.
+ * This implementation calls into Java code and automatically acquire/release
+ * the lock when broadcasting is enabled/disabled on a socket, or that socket
+ * joins/leaves a multicast group.
+ */
+class NetSocketAndroid : public NetSocketPosix {
+
+private:
+	static jobject net_utils;
+	static jclass cls;
+	static jmethodID _multicast_lock_acquire;
+	static jmethodID _multicast_lock_release;
+
+	bool wants_broadcast;
+	int multicast_groups;
+
+	static void multicast_lock_acquire();
+	static void multicast_lock_release();
 
 protected:
-	static NetSocket *(*_create)();
+	static NetSocket *_create_func();
 
 public:
-	static NetSocket *create();
+	static void make_default();
+	static void setup(jobject p_net_utils);
 
-	enum PollType {
-		POLL_TYPE_IN,
-		POLL_TYPE_OUT,
-		POLL_TYPE_IN_OUT
-	};
+	virtual void close();
 
-	enum Type {
-		TYPE_NONE,
-		TYPE_TCP,
-		TYPE_UDP,
-	};
+	virtual Error set_broadcasting_enabled(bool p_enabled);
+	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name);
+	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name);
 
-	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
-	virtual void close() = 0;
-	virtual Error bind(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error listen(int p_max_pending) = 0;
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port) = 0;
-	virtual Error poll(PollType p_type, int timeout) const = 0;
-	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
-	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
-	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
-	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
-
-	virtual bool is_open() const = 0;
-	virtual int get_available_bytes() const = 0;
-
-	virtual Error set_broadcasting_enabled(bool p_enabled) = 0; // Returns OK if the socket option has been set successfully.
-	virtual void set_blocking_enabled(bool p_enabled) = 0;
-	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
-	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
-	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
-	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
-	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) = 0;
+	NetSocketAndroid();
+	~NetSocketAndroid();
 };
 
-#endif // NET_SOCKET_H
+#endif

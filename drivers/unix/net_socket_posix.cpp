@@ -333,9 +333,10 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 		set_ipv6_only_enabled(ip_type != IP::TYPE_ANY);
 	}
 
-	if (protocol == IPPROTO_UDP && ip_type != IP::TYPE_IPV6) {
-		// Enable broadcasting for UDP sockets if it's not IPv6 only (IPv6 has no broadcast option).
-		set_broadcasting_enabled(true);
+	if (protocol == IPPROTO_UDP) {
+		// Make sure to disable broadcasting for UDP sockets.
+		// Depending on the OS, this option might or might not be enabled by default. Let's normalize it.
+		set_broadcasting_enabled(false);
 	}
 
 	_is_stream = p_sock_type == TYPE_TCP;
@@ -603,15 +604,18 @@ Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP
 	return OK;
 }
 
-void NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
-	ERR_FAIL_COND(!is_open());
+Error NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	// IPv6 has no broadcast support.
-	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV6);
+	if (_ip_type == IP::TYPE_IPV6)
+		return ERR_UNAVAILABLE;
 
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_BROADCAST, SOCK_CBUF(&par), sizeof(int)) != 0) {
 		WARN_PRINT("Unable to change broadcast setting");
+		return FAILED;
 	}
+	return OK;
 }
 
 void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
