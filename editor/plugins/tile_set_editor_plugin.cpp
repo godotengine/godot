@@ -637,8 +637,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tile_names_visible = false;
 
 	// Config scale.
-	max_scale = 10.0f;
-	min_scale = 0.1f;
+	max_scale = 16.0f;
+	min_scale = 0.01f;
 	scale_ratio = 1.2f;
 }
 
