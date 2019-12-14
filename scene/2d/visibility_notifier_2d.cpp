@@ -319,8 +319,6 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 
 	if (!visible)
 		_change_node_state(p_node, true);
-	//changed to one shot, not needed
-	//p_node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,"_node_removed");
 	nodes.erase(p_node);
 }
 
