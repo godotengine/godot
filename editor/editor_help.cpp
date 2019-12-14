@@ -798,7 +798,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop();
 				class_desc->push_font(doc_code_font);
 				String e = E->key();
-				if (e.get_slice_count(".")) {
+				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
 					e = e.get_slice(".", 1);
 				}
 
