@@ -43,6 +43,11 @@ T unbox(MonoObject *p_obj) {
 	return *(T *)mono_object_unbox(p_obj);
 }
 
+template <typename T>
+T *unbox_addr(MonoObject *p_obj) {
+	return (T *)mono_object_unbox(p_obj);
+}
+
 #define BOX_DOUBLE(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(double), &x)
 #define BOX_FLOAT(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(float), &x)
 #define BOX_INT64(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(int64_t), &x)

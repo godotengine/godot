@@ -14,7 +14,7 @@ GODOT_DOCS_PATTERN = re.compile(r'^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-
 
 
 def print_error(error, state):  # type: (str, State) -> None
-    print(error)
+    print("ERROR: {}".format(error))
     state.errored = True
 
 
@@ -148,6 +148,8 @@ class State:
                 setter = property.get("setter") or None  # Use or None so '' gets turned into None.
                 getter = property.get("getter") or None
                 default_value = property.get("default") or None
+                if default_value is not None:
+                    default_value = escape_rst(default_value)
                 overridden = property.get("override") or False
 
                 property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value, overridden)
@@ -435,21 +437,30 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Signals
     if len(class_def.signals) > 0:
         f.write(make_heading('Signals', '-'))
+        index = 0
+
         for signal in class_def.signals.values():
-            #f.write(".. _class_{}_{}:\n\n".format(class_name, signal.name))
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _class_{}_signal_{}:\n\n".format(class_name, signal.name))
             _, signature = make_method_signature(class_def, signal, False, state)
             f.write("- {}\n\n".format(signature))
 
-            if signal.description is None or signal.description.strip() == '':
-                continue
-            f.write(rstize_text(signal.description.strip(), state))
-            f.write("\n\n")
+            if signal.description is not None and signal.description.strip() != '':
+                f.write(rstize_text(signal.description.strip(), state) + '\n\n')
+
+            index += 1
 
     # Enums
     if len(class_def.enums) > 0:
         f.write(make_heading('Enumerations', '-'))
+        index = 0
+
         for e in class_def.enums.values():
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _enum_{}_{}:\n\n".format(class_name, e.name))
             # Sphinx seems to divide the bullet list into individual <ul> tags if we weave the labels into it.
             # As such I'll put them all above the list. Won't be perfect but better than making the list visually broken.
@@ -463,7 +474,10 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != '':
                     f.write(' --- ' + rstize_text(value.text.strip(), state))
+
                 f.write('\n\n')
+
+            index += 1
 
     # Constants
     if len(class_def.constants) > 0:
@@ -477,6 +491,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("- **{}** = **{}**".format(constant.name, constant.value))
             if constant.text is not None and constant.text.strip() != '':
                 f.write(' --- ' + rstize_text(constant.text.strip(), state))
+
             f.write('\n\n')
 
     # Class description
@@ -494,11 +509,15 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Property descriptions
     if any(not p.overridden for p in class_def.properties.values()) > 0:
         f.write(make_heading('Property Descriptions', '-'))
+        index = 0
+
         for property_def in class_def.properties.values():
             if property_def.overridden:
                 continue
 
-            #f.write(".. _class_{}_{}:\n\n".format(class_name, property_def.name))
+            if index != 0:
+                f.write('----\n\n')
+
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write('- {} **{}**\n\n'.format(property_def.type_name.to_rst(state), property_def.name))
 
@@ -514,24 +533,30 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 format_table(f, info)
 
             if property_def.text is not None and property_def.text.strip() != '':
-                f.write(rstize_text(property_def.text.strip(), state))
-                f.write('\n\n')
+                f.write(rstize_text(property_def.text.strip(), state) + '\n\n')
+
+            index += 1
 
     # Method descriptions
     if len(class_def.methods) > 0:
         f.write(make_heading('Method Descriptions', '-'))
+        index = 0
+
         for method_list in class_def.methods.values():
             for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write('----\n\n')
+
                 if i == 0:
-                    #f.write(".. _class_{}_{}:\n\n".format(class_name, m.name))
                     f.write(".. _class_{}_method_{}:\n\n".format(class_name, m.name))
+
                 ret_type, signature = make_method_signature(class_def, m, False, state)
                 f.write("- {} {}\n\n".format(ret_type, signature))
 
-                if m.description is None or m.description.strip() == '':
-                    continue
-                f.write(rstize_text(m.description.strip(), state))
-                f.write("\n\n")
+                if m.description is not None and m.description.strip() != '':
+                    f.write(rstize_text(m.description.strip(), state) + '\n\n')
+
+                index += 1
 
 
 def make_class_list(class_list, columns):  # type: (List[str], int) -> None
@@ -599,6 +624,40 @@ def make_class_list(class_list, columns):  # type: (List[str], int) -> None
     f.close()
 
 
+def escape_rst(text, until_pos=-1):  # type: (str) -> str
+    # Escape \ character, otherwise it ends up as an escape character in rst
+    pos = 0
+    while True:
+        pos = text.find('\\', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\\\\" + text[pos + 1:]
+        pos += 2
+
+    # Escape * character to avoid interpreting it as emphasis
+    pos = 0
+    while True:
+        pos = text.find('*', pos, until_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\*" + text[pos + 1:]
+        pos += 2
+
+    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
+    pos = 0
+    while True:
+        pos = text.find('_', pos, until_pos)
+        if pos == -1:
+            break
+        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
+            text = text[:pos] + "\_" + text[pos + 1:]
+            pos += 2
+        else:
+            pos += 1
+
+    return text
+
+
 def rstize_text(text, state):  # type: (str, State) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -608,8 +667,10 @@ def rstize_text(text, state):  # type: (str, State) -> str
             break
 
         pre_text = text[:pos]
+        indent_level = 0
         while text[pos + 1] == '\t':
             pos += 1
+            indent_level += 1
         post_text = text[pos + 1:]
 
         # Handle codeblocks
@@ -633,6 +694,9 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == '\t':
                     to_skip += 1
 
+                if to_skip > indent_level:
+                    print_error("Four spaces should be used for indentation within [codeblock], file: {}".format(state.current_class), state)
+
                 if len(code_text[code_pos + to_skip + 1:]) == 0:
                     code_text = code_text[:code_pos] + "\n"
                     code_pos += 1
@@ -649,36 +713,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
             pos += 2
 
     next_brac_pos = text.find('[')
-
-    # Escape \ character, otherwise it ends up as an escape character in rst
-    pos = 0
-    while True:
-        pos = text.find('\\', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\\\\" + text[pos + 1:]
-        pos += 2
-
-    # Escape * character to avoid interpreting it as emphasis
-    pos = 0
-    while True:
-        pos = text.find('*', pos, next_brac_pos)
-        if pos == -1:
-            break
-        text = text[:pos] + "\*" + text[pos + 1:]
-        pos += 2
-
-    # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
-    pos = 0
-    while True:
-        pos = text.find('_', pos, next_brac_pos)
-        if pos == -1:
-            break
-        if not text[pos + 1].isalnum():  # don't escape within a snake_case word
-            text = text[:pos] + "\_" + text[pos + 1:]
-            pos += 2
-        else:
-            pos += 1
+    text = escape_rst(text, next_brac_pos)
 
     # Handle [tags]
     inside_code = False
@@ -892,7 +927,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
     if len(data) == 0:
         return
-    
+
     column_sizes = [0] * len(data[0])
     for row in data:
         for i, text in enumerate(row):
@@ -907,7 +942,7 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
         sep += "+" + "-" * (size + 2)
     sep += "+\n"
     f.write(sep)
-    
+
     for row in data:
         row_text = "|"
         for i, text in enumerate(row):
@@ -947,7 +982,11 @@ def make_enum(t, state):  # type: (str, State) -> str
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
-    print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
+    # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
+    if "{}.{}".format(c, e) != "Vector3.Axis":
+        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+
     return t
 
 

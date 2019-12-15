@@ -10,8 +10,8 @@ namespace GodotTools.Internals
         public const string CSharpLanguageType = "CSharpScript";
         public const string CSharpLanguageExtension = "cs";
 
-        public static string UpdateApiAssembliesFromPrebuilt() =>
-            internal_UpdateApiAssembliesFromPrebuilt();
+        public static string UpdateApiAssembliesFromPrebuilt(string config) =>
+            internal_UpdateApiAssembliesFromPrebuilt(config);
 
         public static string FullTemplatesDir =>
             internal_FullTemplatesDir();
@@ -52,10 +52,10 @@ namespace GodotTools.Internals
 
         public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
 
-        // Internal Calls
+        #region Internal
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_UpdateApiAssembliesFromPrebuilt();
+        private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_FullTemplatesDir();
@@ -110,5 +110,7 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+
+        #endregion
     }
 }

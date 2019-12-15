@@ -51,8 +51,11 @@
 		<constant name="PORT_TYPE_TRANSFORM" value="3" enum="PortType">
 			Transform type. Translated to [code]mat4[/code] type in shader code.
 		</constant>
-		<constant name="PORT_TYPE_ICON_COLOR" value="4" enum="PortType">
-			Color type. Can be used for return icon type in members dialog (see [method VisualShaderNodeCustom._get_return_icon_type]) - do not use it in other cases!
+		<constant name="PORT_TYPE_SAMPLER" value="4" enum="PortType">
+			Sampler type. Translated to reference of sampler uniform in shader code. Can only be used for input ports in non-uniform nodes.
+		</constant>
+		<constant name="PORT_TYPE_MAX" value="5" enum="PortType">
+			Represents the size of the [enum PortType] enum.
 		</constant>
 	</constants>
 </class>

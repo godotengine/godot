@@ -955,6 +955,7 @@ void TileMap::update_bitmask_region(const Vector2 &p_start, const Vector2 &p_end
 
 void TileMap::update_cell_bitmask(int p_x, int p_y) {
 
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot update cell bitmask if Tileset is not open.");
 	PosKey p(p_x, p_y);
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
 	if (E != NULL) {
@@ -1050,6 +1051,7 @@ void TileMap::update_dirty_bitmask() {
 
 void TileMap::fix_invalid_tiles() {
 
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
 		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
@@ -1231,8 +1233,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		}
 #endif
 
-		int16_t x = decode_uint16(&local[0]);
-		int16_t y = decode_uint16(&local[2]);
+		uint16_t x = decode_uint16(&local[0]);
+		uint16_t y = decode_uint16(&local[2]);
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v & (1 << 29);
 		bool flip_v = v & (1 << 30);

@@ -247,7 +247,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				in_function_args = false;
 			}
 
-			if (expect_type && prev_is_char) {
+			if (expect_type && (prev_is_char || str[j] == '=')) {
 				expect_type = false;
 			}
 
@@ -364,20 +364,28 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	number_color = text_editor->get_color("number_color");
 	member_color = text_editor->get_color("member_variable_color");
 
-	EditorSettings *settings = EditorSettings::get_singleton();
-	String text_editor_color_theme = settings->get("text_editor/theme/color_theme");
+	const String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+	const bool default_theme = text_editor_color_theme == "Default";
 
-	bool default_theme = text_editor_color_theme == "Default";
-	bool dark_theme = settings->is_dark_theme();
-
-	function_definition_color = default_theme ? Color(0.0, 0.88, 1.0) : dark_theme ? Color(0.0, 0.88, 1.0) : Color(0.0, 0.65, 0.73);
-	node_path_color = default_theme ? Color(0.39, 0.76, 0.35) : dark_theme ? Color(0.39, 0.76, 0.35) : Color(0.32, 0.55, 0.29);
+	if (default_theme || EditorSettings::get_singleton()->is_dark_theme()) {
+		function_definition_color = Color(0.4, 0.9, 1.0);
+		node_path_color = Color(0.39, 0.76, 0.35);
+	} else {
+		function_definition_color = Color(0.0, 0.65, 0.73);
+		node_path_color = Color(0.32, 0.55, 0.29);
+	}
 
 	EDITOR_DEF("text_editor/highlighting/gdscript/function_definition_color", function_definition_color);
 	EDITOR_DEF("text_editor/highlighting/gdscript/node_path_color", node_path_color);
 	if (text_editor_color_theme == "Adaptive" || default_theme) {
-		settings->set_initial_value("text_editor/highlighting/gdscript/function_definition_color", function_definition_color, true);
-		settings->set_initial_value("text_editor/highlighting/gdscript/node_path_color", node_path_color, true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/highlighting/gdscript/function_definition_color",
+				function_definition_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/highlighting/gdscript/node_path_color",
+				node_path_color,
+				true);
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/highlighting/gdscript/function_definition_color");

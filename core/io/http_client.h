@@ -166,6 +166,7 @@ private:
 	bool ssl_verify_host;
 	bool blocking;
 	bool handshaking;
+	bool head_request;
 
 	Vector<uint8_t> response_str;
 
@@ -220,6 +221,7 @@ public:
 	bool is_blocking_mode_enabled() const;
 
 	void set_read_chunk_size(int p_size);
+	int get_read_chunk_size() const;
 
 	Error poll();
 

@@ -139,7 +139,6 @@
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
-#include "scene/resources/dynamic_font_stb.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape.h"
 #include "scene/resources/line_shape_2d.h"

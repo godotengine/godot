@@ -47,8 +47,6 @@
 
 #include "semaphore_iphone.h"
 
-#include "ios.h"
-
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -166,8 +164,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
-	camera_server = memnew(CameraIOS);
-
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
@@ -184,7 +180,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+	ios = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	return OK;
 };
@@ -362,11 +359,6 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
-	if (camera_server) {
-		memdelete(camera_server);
-		camera_server = NULL;
-	}
-
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
@@ -508,6 +500,15 @@ String OSIPhone::get_name() const {
 
 	return "iOS";
 };
+
+String OSIPhone::get_model_name() const {
+
+	String model = ios->get_model();
+	if (model != "")
+		return model;
+
+	return OS_Unix::get_model_name();
+}
 
 Size2 OSIPhone::get_window_size() const {
 

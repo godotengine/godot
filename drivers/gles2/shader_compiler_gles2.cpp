@@ -809,15 +809,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += "else\n";
 					code += _dump_node_code(cf_node->blocks[1], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 				}
-			} else if (cf_node->flow_op == SL::FLOW_OP_SWITCH) {
-				code += _mktab(p_level) + "switch (" + _dump_node_code(cf_node->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")\n";
-				code += _dump_node_code(cf_node->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-			} else if (cf_node->flow_op == SL::FLOW_OP_CASE) {
-				code += _mktab(p_level) + "case " + _dump_node_code(cf_node->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ":\n";
-				code += _dump_node_code(cf_node->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-			} else if (cf_node->flow_op == SL::FLOW_OP_DEFAULT) {
-				code += _mktab(p_level) + "default:\n";
-				code += _dump_node_code(cf_node->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			} else if (cf_node->flow_op == SL::FLOW_OP_DO) {
 				code += _mktab(p_level);
 				code += "do";
@@ -920,7 +911,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
 	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "point_size";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
@@ -995,7 +986,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
-	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
+	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
 	// gl_InstanceID is not available in OpenGL ES 2.0
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 

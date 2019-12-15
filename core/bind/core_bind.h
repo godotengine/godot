@@ -222,6 +222,9 @@ public:
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
+	void set_low_processor_usage_mode_sleep_usec(int p_usec);
+	int get_low_processor_usage_mode_sleep_usec() const;
+
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output = Array(), bool p_read_stderr = false);
 
@@ -342,6 +345,9 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
+	void set_vsync_via_compositor(bool p_enable);
+	bool is_vsync_via_compositor_enabled() const;
+
 	PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
@@ -349,6 +355,8 @@ public:
 	bool has_feature(const String &p_feature) const;
 
 	bool request_permission(const String &p_name);
+	bool request_permissions();
+	Vector<String> get_granted_permissions() const;
 
 	static _OS *get_singleton() { return singleton; }
 

@@ -48,22 +48,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_TYPES_H_INC
 #define AI_TYPES_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 // Some runtime headers
 #include <sys/types.h>
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
 
 // Our compile configuration
-#include "defs.h"
+#include <assimp/defs.h>
 
 // Some types moved to separate header due to size of operators
-#include "vector3.h"
-#include "vector2.h"
-#include "color4.h"
-#include "matrix3x3.h"
-#include "matrix4x4.h"
-#include "quaternion.h"
+#include <assimp/vector3.h>
+#include <assimp/vector2.h>
+#include <assimp/color4.h>
+#include <assimp/matrix3x3.h>
+#include <assimp/matrix4x4.h>
+#include <assimp/quaternion.h>
+
+typedef int32_t ai_int32;
+typedef uint32_t ai_uint32 ;
 
 #ifdef __cplusplus
 #include <cstring>
@@ -71,7 +79,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>   // for aiString::Set(const std::string&)
 
 namespace Assimp    {
-    //! @cond never
+//! @cond never
 namespace Intern        {
     // --------------------------------------------------------------------
     /** @brief Internal helper class to utilize our internal new/delete
@@ -269,8 +277,8 @@ struct aiString
     }
 
     /** Copy constructor */
-    aiString(const aiString& rOther) :
-        length(rOther.length)
+    aiString(const aiString& rOther)
+    : length(rOther.length)
     {
         // Crop the string to the maximum length
         length = length>=MAXLEN?MAXLEN-1:length;
@@ -280,7 +288,7 @@ struct aiString
 
     /** Constructor from std::string */
     explicit aiString(const std::string& pString) :
-        length(pString.length())
+        length( (ai_uint32) pString.length())
     {
         length = length>=MAXLEN?MAXLEN-1:length;
         memcpy( data, pString.c_str(), length);
@@ -292,15 +300,15 @@ struct aiString
         if( pString.length() > MAXLEN - 1) {
             return;
         }
-        length = pString.length();
+        length = (ai_uint32)pString.length();
         memcpy( data, pString.c_str(), length);
         data[length] = 0;
     }
 
     /** Copy a const char* to the aiString */
     void Set( const char* sz) {
-        const size_t len = ::strlen(sz);
-        if( len > MAXLEN - 1) {
+        const ai_int32 len = (ai_uint32) ::strlen(sz);
+        if( len > (ai_int32)MAXLEN - 1) {
             return;
         }
         length = len;
@@ -346,7 +354,7 @@ struct aiString
 
     /** Append a string to the string */
     void Append (const char* app)   {
-        const size_t len = ::strlen(app);
+        const ai_uint32 len = (ai_uint32) ::strlen(app);
         if (!len) {
             return;
         }
@@ -379,7 +387,7 @@ struct aiString
     /** Binary length of the string excluding the terminal 0. This is NOT the
      *  logical length of strings containing UTF-8 multi-byte sequences! It's
      *  the number of bytes from the beginning of the string to its end.*/
-    size_t length;
+    ai_uint32 length;
 
     /** String buffer. Size limit is MAXLEN */
     char data[MAXLEN];

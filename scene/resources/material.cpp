@@ -496,10 +496,16 @@ void SpatialMaterial::_update_shader() {
 	}
 	code += "uniform float roughness : hint_range(0,1);\n";
 	code += "uniform float point_size : hint_range(0,128);\n";
-	code += "uniform sampler2D texture_metallic : hint_white;\n";
-	code += "uniform vec4 metallic_texture_channel;\n";
-	code += "uniform sampler2D texture_roughness : hint_white;\n";
-	code += "uniform vec4 roughness_texture_channel;\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		code += "uniform sampler2D texture_metallic : hint_white;\n";
+		code += "uniform vec4 metallic_texture_channel;\n";
+	}
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		code += "uniform sampler2D texture_roughness : hint_white;\n";
+		code += "uniform vec4 roughness_texture_channel;\n";
+	}
 	if (billboard_mode == BILLBOARD_PARTICLES) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
@@ -790,20 +796,30 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
 		code += "\talbedo_tex *= COLOR;\n";
 	}
-
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+
+	if (textures[TEXTURE_METALLIC] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+		} else {
+			code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		}
+		code += "\tMETALLIC = metallic_tex * metallic;\n";
 	} else {
-		code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+		code += "\tMETALLIC = metallic;\n";
 	}
-	code += "\tMETALLIC = metallic_tex * metallic;\n";
-	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-		code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+
+	if (textures[TEXTURE_ROUGHNESS] != NULL) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+		} else {
+			code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		}
+		code += "\tROUGHNESS = roughness_tex * roughness;\n";
 	} else {
-		code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+		code += "\tROUGHNESS = roughness;\n";
 	}
-	code += "\tROUGHNESS = roughness_tex * roughness;\n";
+
 	code += "\tSPECULAR = specular;\n";
 
 	if (features[FEATURE_NORMAL_MAPPING]) {
@@ -1389,6 +1405,8 @@ void SpatialMaterial::set_texture(TextureParam p_param, const Ref<Texture> &p_te
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+	_change_notify();
+	_queue_shader_change();
 }
 
 Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
@@ -1754,6 +1772,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_roughness_texture_channel()
 
 void SpatialMaterial::set_ao_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	ao_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1764,6 +1783,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_ao_texture_channel() const 
 
 void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	refraction_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1804,10 +1824,9 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
-	if (p_billboard) {
-		material->set_billboard_mode(BILLBOARD_ENABLED);
-	} else if (p_billboard_y) {
-		material->set_billboard_mode(BILLBOARD_FIXED_Y);
+	if (p_billboard || p_billboard_y) {
+		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
+		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
 	materials_for_2d[version] = material;

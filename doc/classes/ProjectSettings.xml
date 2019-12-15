@@ -6,6 +6,7 @@
 	<description>
 		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
+		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,7 +17,10 @@
 			<argument index="0" name="hint" type="Dictionary">
 			</argument>
 			<description>
-				Adds a custom property info to a property. The dictionary must contain: name:[String](the property's name) and type:[int](see [code]TYPE_*[/code] in [@GlobalScope]), and optionally hint:[int](see [code]PROPERTY_HINT_*[/code] in [@GlobalScope]), hint_string:[String].
+				Adds a custom property info to a property. The dictionary must contain:
+				- [code]name[/code]: [String] (the property's name)
+				- [code]type[/code]: [int] (see [enum Variant.Type])
+				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
 				[b]Example:[/b]
 				[codeblock]
 				ProjectSettings.set("category/property_name", 0)
@@ -144,6 +148,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the specified property's initial value. This is the value the property reverts to.
 			</description>
 		</method>
 		<method name="set_order">
@@ -165,6 +170,11 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets the value of a setting.
+				[b]Example:[/b]
+				[codeblock]
+				ProjectSettings.set_setting("application/config/name", "Example")
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
@@ -201,6 +211,7 @@
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
+			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings (see this class' description at the top).
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
@@ -274,6 +285,9 @@
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
+		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
+		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>
@@ -334,7 +348,7 @@
 		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when a function parameter is unused.
 		</member>
-		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="" default="true">
+		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables warnings when a member variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="" default="true">
@@ -403,25 +417,28 @@
 			Sets the window to full screen when it starts.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different height for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different width for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
-			Sets the main window width. On desktop platforms, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
 		</member>
-		<member name="editor/active" type="bool" setter="" getter="" default="false">
-			Internal editor setting, don't touch.
+		<member name="display/window/vsync/vsync_via_compositor" type="bool" setter="" getter="" default="false">
+			If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], enables vertical synchronization via the operating system's window compositor when in windowed mode and the compositor is enabled. This will prevent stutter in certain situations. (Windows only.)
+		</member>
+		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 		</member>

@@ -106,6 +106,8 @@ private:
 
 	struct TextOperation {
 		int cursor_pos;
+		int window_pos;
+		int cached_width;
 		String text;
 	};
 	List<TextOperation> undo_stack;

@@ -534,6 +534,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	updating = true;
 
 	Set<String> paths;
+	HashMap<String, Set<String> > types;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);
@@ -542,7 +543,27 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 			Ref<Animation> anim = player->get_animation(E->get());
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				paths.insert(anim->track_get_path(i));
+				String track_path = anim->track_get_path(i);
+				paths.insert(track_path);
+
+				String track_type_name;
+				Animation::TrackType track_type = anim->track_get_type(i);
+				switch (track_type) {
+					case Animation::TrackType::TYPE_ANIMATION: {
+						track_type_name = TTR("Anim Clips");
+					} break;
+					case Animation::TrackType::TYPE_AUDIO: {
+						track_type_name = TTR("Audio Clips");
+					} break;
+					case Animation::TrackType::TYPE_METHOD: {
+						track_type_name = TTR("Functions");
+					} break;
+					default: {
+					} break;
+				}
+				if (!track_type_name.empty()) {
+					types[track_path].insert(track_type_name);
+				}
 			}
 		}
 	}
@@ -646,10 +667,22 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		} else {
 			if (ti) {
-				//just a node, likely call or animation track
+				//just a node, not a property track
+				String types_text = "[";
+				if (types.has(path)) {
+					Set<String>::Element *F = types[path].front();
+					types_text += F->get();
+					while (F->next()) {
+						F = F->next();
+						types_text += " / " + F->get();
+					}
+				}
+				types_text += "]";
+				ti = filters->create_item(ti);
+				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+				ti->set_text(0, types_text);
 				ti->set_editable(0, true);
 				ti->set_selectable(0, true);
-				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_checked(0, anode->is_path_filtered(path));
 				ti->set_metadata(0, path);
 			}

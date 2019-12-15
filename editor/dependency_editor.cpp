@@ -49,7 +49,6 @@ void DependencyEditor::_searched(const String &p_path) {
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());
@@ -646,7 +645,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	set_custom_minimum_size(Size2(500, 220));
+	set_custom_minimum_size(Size2(500, 220) * EDSCALE);
 	get_ok()->set_text(TTR("Open Anyway"));
 	get_cancel()->set_text(TTR("Close"));
 

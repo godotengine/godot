@@ -322,6 +322,7 @@ Transform Spatial::get_relative_transform(const Node *p_parent) const {
 void Spatial::set_translation(const Vector3 &p_translation) {
 
 	data.local_transform.origin = p_translation;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -337,6 +338,7 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -357,6 +359,7 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -690,11 +693,10 @@ void Spatial::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_targe
 	Transform lookat;
 	lookat.origin = p_pos;
 
-	Vector3 original_scale(get_global_transform().basis.get_scale());
+	Vector3 original_scale(get_scale());
 	lookat = lookat.looking_at(p_target, p_up);
-	// as basis was normalized, we just need to apply original scale back
-	lookat.basis.scale(original_scale);
 	set_global_transform(lookat);
+	set_scale(original_scale);
 }
 
 Vector3 Spatial::to_local(Vector3 p_global) const {

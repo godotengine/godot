@@ -42,12 +42,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file MemoryIOWrapper.h
  *  Handy IOStream/IOSystem implemetation to read directly from a memory buffer */
+#pragma once
 #ifndef AI_MEMORYIOSTREAM_H_INC
 #define AI_MEMORYIOSTREAM_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/IOStream.hpp>
 #include <assimp/IOSystem.hpp>
 #include <assimp/ai_assert.h>
+
 #include <stdint.h>
 
 namespace Assimp    {

@@ -66,7 +66,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the index of the longest axis of the [AABB] (according to [Vector3]::AXIS* enum).
+				Returns the index of the longest axis of the [AABB] (according to [Vector3]'s [code]AXIS_*[/code] constants).
 			</description>
 		</method>
 		<method name="get_longest_axis_size">
@@ -176,13 +176,22 @@
 				Returns [code]true[/code] if the [AABB] intersects the line segment between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
 		<method name="merge">
 			<return type="AABB">
 			</return>
 			<argument index="0" name="with" type="AABB">
 			</argument>
 			<description>
-				Returns a larger AABB that contains this AABB and [code]with[/code].
+				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
 		</method>
 	</methods>

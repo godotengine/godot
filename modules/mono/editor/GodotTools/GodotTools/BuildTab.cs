@@ -113,7 +113,7 @@ namespace GodotTools
                 throw new IndexOutOfRangeException("Item list index out of range");
 
             // Get correct issue idx from issue list
-            int issueIndex = (int) issuesList.GetItemMetadata(idx);
+            int issueIndex = (int)issuesList.GetItemMetadata(idx);
 
             if (idx < 0 || idx >= issues.Count)
                 throw new IndexOutOfRangeException("Issue index out of range");
@@ -134,7 +134,7 @@ namespace GodotTools
 
             if (file.StartsWith("res://"))
             {
-                var script = (Script) ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
+                var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
 
                 if (script != null && Internal.ScriptEditorEdit(script, issue.Line, issue.Column))
                     Internal.EditorNodeShowScriptScreen();
@@ -220,7 +220,7 @@ namespace GodotTools
 
             issuesList.Clear();
 
-            var issue = new BuildIssue {Message = cause, Warning = false};
+            var issue = new BuildIssue { Message = cause, Warning = false };
 
             ErrorCount += 1;
             issues.Add(issue);
@@ -250,7 +250,7 @@ namespace GodotTools
         {
             base._Ready();
 
-            issuesList = new ItemList {SizeFlagsVertical = (int) SizeFlags.ExpandFill};
+            issuesList = new ItemList { SizeFlagsVertical = (int)SizeFlags.ExpandFill };
             issuesList.Connect("item_activated", this, nameof(_IssueActivated));
             AddChild(issuesList);
         }

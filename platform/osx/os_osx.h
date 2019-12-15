@@ -31,7 +31,8 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
-#include "camera_osx.h"
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
+
 #include "core/os/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -50,6 +51,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreVideo/CoreVideo.h>
 
+#undef BitMap
 #undef CursorShape
 
 class OS_OSX : public OS_Unix {
@@ -70,8 +72,6 @@ public:
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
-
-	CameraServer *camera_server;
 
 	List<String> args;
 	MainLoop *main_loop;
@@ -110,9 +110,6 @@ public:
 	NSOpenGLContext *context;
 
 	bool layered_window;
-	bool waiting_for_vsync;
-	NSCondition *vsync_condition;
-	CVDisplayLinkRef displayLink;
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];

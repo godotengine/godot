@@ -4,7 +4,7 @@
 		A script implemented in the GDScript programming language.
 	</brief_description>
 	<description>
-		A script implemented in the GDScript programming language. The script exends the functionality of all objects that instance it.
+		A script implemented in the GDScript programming language. The script extends the functionality of all objects that instance it.
 		[method new] creates a new instance of the script. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>

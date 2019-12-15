@@ -38,7 +38,6 @@
 #include "haiku_direct_window.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
 #include "servers/visual_server.h"
 
 class OS_Haiku : public OS_Unix {
@@ -50,7 +49,6 @@ private:
 	VisualServer *visual_server;
 	VideoMode current_video_mode;
 	int video_driver_index;
-	CameraServer *camera_server;
 
 #ifdef MEDIA_KIT_ENABLED
 	AudioDriverMediaKit driver_media_kit;

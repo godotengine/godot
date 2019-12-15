@@ -65,13 +65,14 @@ void SkeletonEditor::create_physical_skeleton() {
 	for (int bone_id = 0; bc > bone_id; ++bone_id) {
 
 		const int parent = skeleton->get_bone_parent(bone_id);
-		const int parent_parent = skeleton->get_bone_parent(parent);
 
 		if (parent < 0) {
 
 			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
 
 		} else {
+
+			const int parent_parent = skeleton->get_bone_parent(parent);
 
 			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 

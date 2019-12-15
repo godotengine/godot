@@ -137,6 +137,7 @@ class VisualShaderEditor : public VBoxContainer {
 			category = p_category;
 			sub_category = p_sub_category;
 			description = p_description;
+			sub_func = 0;
 			sub_func_str = p_sub_func;
 			return_type = p_return_type;
 			mode = p_mode;
@@ -148,12 +149,15 @@ class VisualShaderEditor : public VBoxContainer {
 	};
 
 	Vector<AddOption> add_options;
+	int texture_node_option_idx;
+	int custom_node_option_idx;
 	List<String> keyword_list;
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
-	void _add_node(int p_idx, int p_op_idx = -1);
-	void _update_custom_nodes();
+	void _add_custom_node(const String &p_path);
+	void _add_texture_node(const String &p_path);
+	VisualShaderNode *_add_node(int p_idx, int p_op_idx = -1);
 	void _update_options_menu();
 
 	void _show_preview_text();
@@ -253,13 +257,14 @@ protected:
 	static void _bind_methods();
 
 public:
+	void update_custom_nodes();
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
 	void clear_custom_types();
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category);
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_subcategory);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);

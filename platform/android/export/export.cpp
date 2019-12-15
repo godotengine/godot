@@ -220,6 +220,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level;
+		bool usb;
 	};
 
 	struct APKExportData {
@@ -246,17 +247,20 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				String devices;
 				List<String> args;
 				args.push_back("devices");
+				args.push_back("-l");
 				int ec;
 				OS::get_singleton()->execute(adb, args, true, NULL, &devices, &ec);
 
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
+				Vector<bool> ldevices_usbconnection;
 				for (int i = 1; i < ds.size(); i++) {
 
 					String d = ds[i];
-					int dpos = d.find("device");
+					int dpos = d.find(" device ");
 					if (dpos == -1)
 						continue;
+					ldevices_usbconnection.push_back(d.find(" usb:") != -1);
 					d = d.substr(0, dpos).strip_edges();
 					ldevices.push_back(d);
 				}
@@ -287,6 +291,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						Device d;
 						d.id = ldevices[i];
+						d.usb = ldevices_usbconnection[i];
 						for (int j = 0; j < ea->devices.size(); j++) {
 							if (ea->devices[j].id == ldevices[i]) {
 								d.description = ea->devices[j].description;
@@ -341,7 +346,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								} else if (p.begins_with("ro.opengles.version=")) {
 									uint32_t opengl = p.get_slice("=", 1).to_int();
 									d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl)&0xFF) + "\n";
+								} else if (p.begins_with("ro.boot.serialno=")) {
+									d.description += "Serial: " + p.get_slice("=", 1).strip_edges() + "\n";
 								}
+							}
+
+							if (d.usb) {
+								d.description += "Connection: USB\n";
+							} else {
+								d.description += "Connection: " + d.id + "\n";
 							}
 
 							d.name = vendor + " " + device;
@@ -766,17 +779,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
 						uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-						String value;
-						if (attr_value != 0xFFFFFFFF)
-							value = string_table[attr_value];
-						else
-							value = "Res #" + itos(attr_resid);
+						const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 						String attrname = string_table[attr_name];
-						String nspace;
-						if (attr_nspace != 0xFFFFFFFF)
-							nspace = string_table[attr_nspace];
-						else
-							nspace = "";
+						const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
 						//replace project information
 						if (tname == "manifest" && attrname == "package") {
@@ -828,14 +833,16 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "meta-data" && attrname == "name" && string_table[attr_value] == "xr_mode_metadata_name") {
+						// FIXME: `attr_value != 0xFFFFFFFF` below added as a stopgap measure for GH-32553,
+						// but the issue should be debugged further and properly addressed.
+						if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
 							// Update the meta-data 'android:name' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && string_table[attr_value] == "xr_mode_metadata_value") {
+						if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
 							// Update the meta-data 'android:value' attribute based on the selected XR mode.
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "vr_only";
@@ -1290,7 +1297,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_package/use_custom_build"), false));
@@ -1351,7 +1358,7 @@ public:
 		return logo;
 	}
 
-	virtual bool poll_devices() {
+	virtual bool poll_export() {
 
 		bool dc = devices_changed;
 		if (dc) {
@@ -1361,7 +1368,7 @@ public:
 		return dc;
 	}
 
-	virtual int get_device_count() const {
+	virtual int get_options_count() const {
 
 		device_lock->lock();
 		int dc = devices.size();
@@ -1370,20 +1377,31 @@ public:
 		return dc;
 	}
 
-	virtual String get_device_name(int p_device) const {
+	virtual String get_options_tooltip() const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		return TTR("Select device from the list");
+	}
+
+	virtual String get_option_label(int p_index) const {
+
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].name;
+		String s = devices[p_index].name;
 		device_lock->unlock();
 		return s;
 	}
 
-	virtual String get_device_info(int p_device) const {
+	virtual String get_option_tooltip(int p_index) const {
 
-		ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		device_lock->lock();
-		String s = devices[p_device].description;
+		String s = devices[p_index].description;
+		if (devices.size() == 1) {
+			// Tooltip will be:
+			// Name
+			// Description
+			s = devices[p_index].name + "\n\n" + s;
+		}
 		device_lock->unlock();
 		return s;
 	}
@@ -1410,7 +1428,9 @@ public:
 		}
 
 		const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
-		const bool use_reverse = devices[p_device].api_level >= 21;
+		const bool use_reverse = devices[p_device].api_level >= 21 && devices[p_device].usb;
+		// Note: Reverse can still fail if device is connected by both usb and network
+		// Ideally we'd know for sure whether adb reverse would work before we build the APK
 
 		if (use_reverse)
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
@@ -1515,7 +1535,7 @@ public:
 				}
 			} else {
 
-				static const char *const msg = "--- Device API < 21; debugging over Wi-Fi ---";
+				static const char *const msg = "--- Device API < 21 or no USB connection; debugging over Wi-Fi ---";
 				EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 				print_line(String(msg).to_upper());
 			}
@@ -1875,7 +1895,7 @@ public:
 								new_file += "<!--CHUNK_" + text + "_BEGIN-->\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in AndroidManifest.conf for chunk: " + text);
+									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
 									f->seek(pos);
 								} else {
 									//add chunk lines
@@ -1894,7 +1914,7 @@ public:
 							String last_tag = "android:icon=\"@drawable/icon\"";
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
-								WARN_PRINTS("No adding of application tags because could not find last tag for <application: " + last_tag);
+								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
 								new_file += l + "\n";
 							} else {
 								String base = l.substr(0, last_tag_pos + last_tag.length());
@@ -1980,9 +2000,9 @@ public:
 				return ERR_CANT_CREATE;
 			}
 			if (p_debug) {
-				src_apk = build_path.plus_file("build/outputs/apk/debug/build-debug-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/debug/android_debug.apk");
 			} else {
-				src_apk = build_path.plus_file("build/outputs/apk/release/build-release-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/release/android_release.apk");
 			}
 
 			if (!FileAccess::exists(src_apk)) {

@@ -192,14 +192,14 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 #ifdef DEBUG_ENABLED
 			int plane_count = planes.size();
 			uint16_t plane = nodesptr[idx].plane;
-			ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, false);
+			ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, 0);
 #endif
 
 			idx = planesptr[nodesptr[idx].plane].is_point_over(point) ? nodes[idx].over : nodes[idx].under;
 
 #ifdef DEBUG_ENABLED
 
-			ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, false);
+			ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, 0);
 #endif
 		}
 
@@ -364,7 +364,7 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 		const Face3 &f = p_faces[indices[i]];
 
 		/*
-		if (f.get_plane().is_almost_like(divisor_plane))
+		if (f.get_plane().is_equal_approx(divisor_plane))
 			continue;
 		*/
 
@@ -412,7 +412,7 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 
 	for (int i = 0; i < p_planes.size(); i++) {
 
-		if (p_planes[i].is_almost_like(divisor_plane)) {
+		if (p_planes[i].is_equal_approx(divisor_plane)) {
 			divisor_plane_idx = i;
 			break;
 		}

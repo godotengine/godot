@@ -58,6 +58,7 @@ void EditorAbout::_notification(int p_what) {
 void EditorAbout::_license_tree_selected() {
 
 	TreeItem *selected = _tpl_tree->get_selected();
+	_tpl_text->scroll_to_line(0);
 	_tpl_text->set_text(selected->get_metadata(0));
 }
 
@@ -141,7 +142,7 @@ EditorAbout::EditorAbout() {
 	hbc->add_child(about_text);
 
 	TabContainer *tc = memnew(TabContainer);
-	tc->set_custom_minimum_size(Size2(630, 240) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 

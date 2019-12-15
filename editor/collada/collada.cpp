@@ -1488,7 +1488,6 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 
 Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
 
-	String type = parser.get_node_name();
 	NodeCamera *cam = memnew(NodeCamera);
 	cam->camera = _uri_to_id(parser.get_attribute_value_safe("url"));
 
@@ -1509,7 +1508,6 @@ Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &parser) {
 
 Collada::Node *Collada::_parse_visual_instance_light(XMLParser &parser) {
 
-	String type = parser.get_node_name();
 	NodeLight *cam = memnew(NodeLight);
 	cam->light = _uri_to_id(parser.get_attribute_value_safe("url"));
 

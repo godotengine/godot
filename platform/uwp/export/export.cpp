@@ -517,7 +517,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 			int total_out_before = strm.total_out;
 
 			int err = deflate(&strm, Z_FULL_FLUSH);
-			ERR_FAIL_COND_V(err >= 0, ERR_BUG); // Negative means bug
+			ERR_FAIL_COND_V(err < 0, ERR_BUG); // Negative means bug
 
 			bh.compressed_size = strm.total_out - total_out_before;
 
@@ -1144,9 +1144,19 @@ public:
 			return valid;
 		}
 
+		if (!_valid_resource_name(p_preset->get("package/short_name"))) {
+			valid = false;
+			err += TTR("Invalid package short name.") + "\n";
+		}
+
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
 			err += TTR("Invalid package unique name.") + "\n";
+		}
+
+		if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
+			valid = false;
+			err += TTR("Invalid package publisher display name.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {

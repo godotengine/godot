@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skeleton2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
+		Skeleton for 2D characters and animated objects.
 	</brief_description>
 	<description>
 	</description>
@@ -20,6 +21,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">

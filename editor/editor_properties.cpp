@@ -979,8 +979,6 @@ void EditorPropertyEasing::_draw_easing() {
 	RID ci = easing_draw->get_canvas_item();
 
 	Size2 s = easing_draw->get_size();
-	Rect2 r(Point2(), s);
-	r = r.grow(3);
 
 	const int points = 48;
 
@@ -1884,6 +1882,23 @@ void EditorPropertyColor::_bind_methods() {
 void EditorPropertyColor::update_property() {
 
 	picker->set_pick_color(get_edited_object()->get(get_edited_property()));
+	const Color color = picker->get_pick_color();
+
+	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
+	if (picker->is_editing_alpha()) {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s\nA: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2),
+				rtos(color.a).pad_decimals(2)));
+	} else {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2)));
+	}
 }
 
 void EditorPropertyColor::setup(bool p_show_alpha) {
@@ -2205,7 +2220,14 @@ void EditorPropertyResource::_menu_option(int p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 
 			if (Object::cast_to<Node>(get_edited_object())) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()));
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()), false);
+			}
+
+		} break;
+		case OBJ_MENU_EXTEND_SCRIPT: {
+
+			if (Object::cast_to<Node>(get_edited_object())) {
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()), true);
 			}
 
 		} break;
@@ -2338,7 +2360,8 @@ void EditorPropertyResource::_update_menu_items() {
 	menu->clear();
 
 	if (get_edited_property() == "script" && base_type == "Script" && Object::cast_to<Node>(get_edited_object())) {
-		menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+		menu->add_icon_item(get_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+		menu->add_icon_item(get_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
 		menu->add_separator();
 	} else if (base_type != "") {
 		int idx = 0;
@@ -2399,19 +2422,11 @@ void EditorPropertyResource::_update_menu_items() {
 
 				inheritors_array.push_back(t);
 
+				if (!icon.is_valid())
+					icon = get_icon(has_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
+
 				int id = TYPE_BASE_ID + idx;
-
-				if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
-					icon = get_icon(t, "EditorIcons");
-				}
-
-				if (icon.is_valid()) {
-
-					menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
-				} else {
-
-					menu->add_item(vformat(TTR("New %s"), t), id);
-				}
+				menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 
 				idx++;
 			}
@@ -2615,14 +2630,6 @@ void EditorPropertyResource::update_property() {
 						get_tree()->call_deferred("call_group", "_editor_resource_properties", "_fold_other_editors", this);
 					}
 					opened_editor = true;
-					/*
-					Button *open_in_editor = memnew(Button);
-					open_in_editor->set_text(TTR("Open Editor"));
-					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
-					sub_inspector_vbox->add_child(open_in_editor);
-					open_in_editor->connect("pressed", this, "_open_editor_pressed");
-					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
-					*/
 				}
 			}
 
@@ -2651,7 +2658,7 @@ void EditorPropertyResource::update_property() {
 		assign->set_text(TTR("[empty]"));
 	} else {
 
-		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Node"));
+		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
 		if (res->get_name() != String()) {
 			assign->set_text(res->get_name());

@@ -68,8 +68,6 @@ env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
-env_base.split_drivers = False
-env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
@@ -129,6 +127,7 @@ opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=extra werro
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
+opts.Add(BoolVariable('split_libmodules', "Split intermediate libmodules.a in smaller chunks to prevent exceeding linker command line size (forced to True when using MinGW)", False))
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
@@ -150,6 +149,7 @@ opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", Tru
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
 opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
+opts.Add(BoolVariable('builtin_pcre2_with_jit', "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
@@ -189,7 +189,7 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Prepend(CPPPATH=['#', '#editor'])
+env_base.Prepend(CPPPATH=['#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters

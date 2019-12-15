@@ -59,6 +59,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	RichTextLabel *warnings_panel;
 
 	Ref<Script> script;
+	bool script_is_valid;
 
 	Vector<String> functions;
 
@@ -91,6 +92,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		Color keyword_color;
 		Color basetype_color;
 		Color type_color;
+		Color usertype_color;
 		Color comment_color;
 		Color string_color;
 	} colors_cache;

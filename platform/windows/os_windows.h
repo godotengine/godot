@@ -31,7 +31,6 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "camera_win.h"
 #include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
@@ -56,6 +55,71 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#ifndef POINTER_STRUCTURES
+
+#define POINTER_STRUCTURES
+
+typedef DWORD POINTER_INPUT_TYPE;
+typedef UINT32 POINTER_FLAGS;
+typedef UINT32 PEN_FLAGS;
+typedef UINT32 PEN_MASK;
+
+enum tagPOINTER_INPUT_TYPE {
+	PT_POINTER = 0x00000001,
+	PT_TOUCH = 0x00000002,
+	PT_PEN = 0x00000003,
+	PT_MOUSE = 0x00000004,
+	PT_TOUCHPAD = 0x00000005
+};
+
+typedef enum tagPOINTER_BUTTON_CHANGE_TYPE {
+	POINTER_CHANGE_NONE,
+	POINTER_CHANGE_FIRSTBUTTON_DOWN,
+	POINTER_CHANGE_FIRSTBUTTON_UP,
+	POINTER_CHANGE_SECONDBUTTON_DOWN,
+	POINTER_CHANGE_SECONDBUTTON_UP,
+	POINTER_CHANGE_THIRDBUTTON_DOWN,
+	POINTER_CHANGE_THIRDBUTTON_UP,
+	POINTER_CHANGE_FOURTHBUTTON_DOWN,
+	POINTER_CHANGE_FOURTHBUTTON_UP,
+	POINTER_CHANGE_FIFTHBUTTON_DOWN,
+	POINTER_CHANGE_FIFTHBUTTON_UP,
+} POINTER_BUTTON_CHANGE_TYPE;
+
+typedef struct tagPOINTER_INFO {
+	POINTER_INPUT_TYPE pointerType;
+	UINT32 pointerId;
+	UINT32 frameId;
+	POINTER_FLAGS pointerFlags;
+	HANDLE sourceDevice;
+	HWND hwndTarget;
+	POINT ptPixelLocation;
+	POINT ptHimetricLocation;
+	POINT ptPixelLocationRaw;
+	POINT ptHimetricLocationRaw;
+	DWORD dwTime;
+	UINT32 historyCount;
+	INT32 InputData;
+	DWORD dwKeyStates;
+	UINT64 PerformanceCount;
+	POINTER_BUTTON_CHANGE_TYPE ButtonChangeType;
+} POINTER_INFO;
+
+typedef struct tagPOINTER_PEN_INFO {
+	POINTER_INFO pointerInfo;
+	PEN_FLAGS penFlags;
+	PEN_MASK penMask;
+	UINT32 pressure;
+	UINT32 rotation;
+	INT32 tiltX;
+	INT32 tiltY;
+} POINTER_PEN_INFO;
+
+#endif
+
+typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
+typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
+
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
 	BYTE bHeight; // Height, in pixels, of the image
@@ -77,11 +141,16 @@ typedef struct {
 class JoypadWindows;
 class OS_Windows : public OS {
 
+	static GetPointerTypePtr win8p_GetPointerType;
+	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
+
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 
+#ifdef STDOUT_FILE
 	FILE *stdo;
+#endif
 
 	struct KeyEvent {
 
@@ -105,9 +174,7 @@ class OS_Windows : public OS {
 	ContextGL_Windows *gl_context;
 #endif
 	VisualServer *visual_server;
-	CameraWindows *camera_server;
 	int pressrc;
-	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
 	Point2 last_pos;
@@ -175,7 +242,7 @@ class OS_Windows : public OS {
 	void _drag_event(float p_x, float p_y, int idx);
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
-	void _update_window_style(bool repaint = true);
+	void _update_window_style(bool p_repaint = true, bool p_maximized = false);
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
@@ -208,6 +275,7 @@ protected:
 	bool minimized;
 	bool borderless;
 	bool console_visible;
+	bool was_maximized;
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

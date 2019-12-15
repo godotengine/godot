@@ -259,7 +259,8 @@ class ClassStatus:
                     status.progresses[tag.tag].increment(len(descr.text.strip()) > 0)
             elif tag.tag in ['constants', 'members']:
                 for sub_tag in list(tag):
-                    status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
+                    if not sub_tag.text is None:
+                        status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
             elif tag.tag in ['tutorials']:
                 pass  # Ignore those tags for now

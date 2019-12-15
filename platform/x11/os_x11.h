@@ -42,7 +42,6 @@
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
@@ -131,9 +130,12 @@ class OS_X11 : public OS_Unix {
 		int opcode;
 		Vector<int> touch_devices;
 		Map<int, Vector2> absolute_devices;
+		Map<int, Vector3> pen_devices;
 		XIEventMask all_event_mask;
 		XIEventMask all_master_event_mask;
 		Map<int, Vector2> state;
+		double pressure;
+		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;
 		Vector2 raw_pos;
@@ -146,8 +148,6 @@ class OS_X11 : public OS_Unix {
 	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void flush_mouse_motion();
-
-	CameraServer *camera_server;
 
 	MouseMode mouse_mode;
 	Point2i center;

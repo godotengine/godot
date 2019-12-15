@@ -115,12 +115,6 @@ Comment: Open Asset Import Library (assimp)
 Copyright: 2006-2016, assimp team
 License: BSD-3-clause
 
-Files: ./thirdparty/b2d_convexdecomp/
-Comment: Box2D (ConvexDecomp)
-Copyright: 2007, Eric Jordan
- 2006-2009, Erin Catto
-License: Zlib
-
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2013, Erwin Coumans
@@ -297,12 +291,6 @@ Files: ./thirdparty/misc/smaz.c
 Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
-
-Files: ./thirdparty/misc/stb_truetype.h
- ./thirdparty/misc/stb_vorbis.c
-Comment: stb libraries
-Copyright: 2007-2019, Sean Barrett
-License: public-domain
 
 Files: ./thirdparty/misc/triangulator.cpp
  ./thirdparty/misc/triangulator.h

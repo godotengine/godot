@@ -702,13 +702,13 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		bottom_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		min_value = memnew(SpinBox);
-		min_value->set_max(0);
 		min_value->set_min(-10000);
+		min_value->set_max(0);
 		min_value->set_step(0.01);
 
 		max_value = memnew(SpinBox);
-		max_value->set_max(10000);
 		max_value->set_min(0.01);
+		max_value->set_max(10000);
 		max_value->set_step(0.01);
 
 		label_value = memnew(LineEdit);

@@ -144,8 +144,6 @@ public:
 	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name, int p_params_count);
 	GDMonoMethod *get_method_with_desc(const String &p_description, bool p_include_namespace);
 
-	void *get_method_thunk(const StringName &p_name, int p_params_count = 0);
-
 	GDMonoField *get_field(const StringName &p_name);
 	const Vector<GDMonoField *> &get_all_fields();
 

@@ -64,6 +64,11 @@ namespace Godot.Collections
             return safeHandle.DangerousGetHandle();
         }
 
+        public Array Duplicate(bool deep = false)
+        {
+            return new Array(godot_icall_Array_Duplicate(GetPtr(), deep));
+        }
+
         public Error Resize(int newSize)
         {
             return godot_icall_Array_Resize(GetPtr(), newSize);
@@ -179,6 +184,9 @@ namespace Godot.Collections
         internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, System.Array array, int arrayIndex);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Array_Duplicate(IntPtr ptr, bool deep);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static int godot_icall_Array_IndexOf(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -248,6 +256,11 @@ namespace Godot.Collections
         public static explicit operator Array(Array<T> from)
         {
             return from.objectArray;
+        }
+
+        public Array<T> Duplicate(bool deep = false)
+        {
+            return new Array<T>(objectArray.Duplicate(deep));
         }
 
         public Error Resize(int newSize)

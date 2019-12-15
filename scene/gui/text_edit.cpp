@@ -161,57 +161,58 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 			/* BEGIN */
 
 			int lr = cr.begin_key.length();
-			if (lr == 0 || lr > left)
-				continue;
+			const CharType *kc;
+			bool match;
 
-			const CharType *kc = cr.begin_key.c_str();
+			if (lr != 0 && lr <= left) {
+				kc = cr.begin_key.c_str();
 
-			bool match = true;
+				match = true;
 
-			for (int k = 0; k < lr; k++) {
-				if (kc[k] != str[i + k]) {
-					match = false;
+				for (int k = 0; k < lr; k++) {
+					if (kc[k] != str[i + k]) {
+						match = false;
+						break;
+					}
+				}
+
+				if (match) {
+
+					ColorRegionInfo cri;
+					cri.end = false;
+					cri.region = j;
+					text.write[p_line].region_info[i] = cri;
+					i += lr - 1;
+
 					break;
 				}
-			}
-
-			if (match) {
-
-				ColorRegionInfo cri;
-				cri.end = false;
-				cri.region = j;
-				text.write[p_line].region_info[i] = cri;
-				i += lr - 1;
-
-				break;
 			}
 
 			/* END */
 
 			lr = cr.end_key.length();
-			if (lr == 0 || lr > left)
-				continue;
+			if (lr != 0 && lr <= left) {
+				kc = cr.end_key.c_str();
 
-			kc = cr.end_key.c_str();
+				match = true;
 
-			match = true;
+				for (int k = 0; k < lr; k++) {
+					if (kc[k] != str[i + k]) {
+						match = false;
+						break;
+					}
+				}
 
-			for (int k = 0; k < lr; k++) {
-				if (kc[k] != str[i + k]) {
-					match = false;
+				if (match) {
+
+					ColorRegionInfo cri;
+					cri.end = true;
+					cri.region = j;
+					text.write[p_line].region_info[i] = cri;
+					i += lr - 1;
+
 					break;
 				}
-			}
-
-			if (match) {
-
-				ColorRegionInfo cri;
-				cri.end = true;
-				cri.region = j;
-				text.write[p_line].region_info[i] = cri;
-				i += lr - 1;
-
-				break;
 			}
 		}
 	}
@@ -268,6 +269,12 @@ void TextEdit::Text::clear_wrap_cache() {
 	}
 }
 
+void TextEdit::Text::clear_info_icons() {
+	for (int i = 0; i < text.size(); i++) {
+		text.write[i].has_info = false;
+	}
+}
+
 void TextEdit::Text::clear() {
 
 	text.clear();
@@ -302,6 +309,7 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	line.breakpoint = false;
 	line.bookmark = false;
 	line.hidden = false;
+	line.has_info = false;
 	line.width_cache = -1;
 	line.wrap_amount_cache = -1;
 	line.data = p_text;
@@ -409,7 +417,6 @@ void TextEdit::_update_scrollbars() {
 		cursor.line_ofs = 0;
 		cursor.wrap_ofs = 0;
 		v_scroll->set_value(0);
-		v_scroll->set_max(0);
 		v_scroll->hide();
 	}
 
@@ -428,7 +435,6 @@ void TextEdit::_update_scrollbars() {
 
 		cursor.x_ofs = 0;
 		h_scroll->set_value(0);
-		h_scroll->set_max(0);
 		h_scroll->hide();
 	}
 
@@ -935,7 +941,7 @@ void TextEdit::_notification(int p_what) {
 				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
 				if (minimap_line >= 0) {
 					minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
-					minimap_line -= (smooth_scroll_enabled ? 1 : 0);
+					minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 				}
 				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
 
@@ -955,6 +961,10 @@ void TextEdit::_notification(int p_what) {
 						if (minimap_line < 0 || minimap_line >= (int)text.size()) {
 							break;
 						}
+					}
+
+					if (minimap_line < 0 || minimap_line >= (int)text.size()) {
+						break;
 					}
 
 					Map<int, HighlighterInfo> color_map;
@@ -1271,7 +1281,8 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Loop through characters in one line.
-					for (int j = 0; j < str.length(); j++) {
+					int j = 0;
+					for (; j < str.length(); j++) {
 
 						if (syntax_coloring) {
 							if (color_map.has(last_wrap_column + j)) {
@@ -1501,7 +1512,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (cursor.column == last_wrap_column + str.length() && cursor.line == line && cursor_wrap_index == line_wrap_index && (char_ofs + char_margin) >= xmargin_beg) {
+					if (cursor.column == (last_wrap_column + j) && cursor.line == line && cursor_wrap_index == line_wrap_index && (char_ofs + char_margin) >= xmargin_beg) {
 
 						cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
 						cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
@@ -1722,7 +1733,9 @@ void TextEdit::_notification(int p_what) {
 						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xFFFF)))).x;
 					}
 
-					draw_string(font, hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font->get_height() * i + spacing), l.replace(String::chr(0xFFFF), ""), font_color);
+					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font->get_height() * i + spacing);
+					round_ofs = round_ofs.round();
+					draw_string(font, round_ofs, l.replace(String::chr(0xFFFF), ""), font_color);
 					if (end > 0) {
 						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font->get_height() + font->get_height() * i + spacing - 1);
 						draw_line(b, b + Vector2(end - begin, 0), font_color);
@@ -2145,7 +2158,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
 	if (first_visible_line > 0 && minimap_line >= 0) {
 		minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
-		minimap_line -= (smooth_scroll_enabled ? 1 : 0);
+		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 	} else {
 		minimap_line = 0;
 	}
@@ -2842,19 +2855,51 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// No need to indent if we are going upwards.
 				if (auto_indent && !(k->get_command() && k->get_shift())) {
-					// Indent once again if previous line will end with ':' or '{' and the line is not a comment
+					// Indent once again if previous line will end with ':','{','[','(' and the line is not a comment
 					// (i.e. colon/brace precedes current cursor position).
-					if (cursor.column > 0 && (text[cursor.line][cursor.column - 1] == ':' || text[cursor.line][cursor.column - 1] == '{') && !is_line_comment(cursor.line)) {
-						if (indent_using_spaces) {
-							ins += space_indent;
-						} else {
-							ins += "\t";
+					if (cursor.column > 0) {
+						const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(cursor.line);
+						bool indent_char_found = false;
+						bool should_indent = false;
+						char indent_char = ':';
+						char c = text[cursor.line][cursor.column];
+
+						for (int i = 0; i < cursor.column; i++) {
+							c = text[cursor.line][i];
+							switch (c) {
+								case ':':
+								case '{':
+								case '[':
+								case '(':
+									indent_char_found = true;
+									should_indent = true;
+									indent_char = c;
+									continue;
+							}
+
+							if (indent_char_found && cri_map.has(i) && (color_regions[cri_map[i].region].begin_key == "#" || color_regions[cri_map[i].region].begin_key == "//")) {
+
+								should_indent = true;
+								break;
+							} else if (indent_char_found && !_is_whitespace(c)) {
+								should_indent = false;
+								indent_char_found = false;
+							}
 						}
 
-						// No need to move the brace below if we are not taking the text with us.
-						if (text[cursor.line][cursor.column] == '}' && !k->get_command()) {
-							brace_indent = true;
-							ins += "\n" + ins.substr(1, ins.length() - 2);
+						if (!is_line_comment(cursor.line) && should_indent) {
+							if (indent_using_spaces) {
+								ins += space_indent;
+							} else {
+								ins += "\t";
+							}
+
+							// No need to move the brace below if we are not taking the text with us.
+							char closing_char = _get_right_pair_symbol(indent_char);
+							if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column]) && !k->get_command()) {
+								brace_indent = true;
+								ins += "\n" + ins.substr(1, ins.length() - 2);
+							}
 						}
 					}
 				}
@@ -3881,7 +3926,9 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	if (shift_first_line) {
 		text.set_breakpoint(p_line + 1, text.is_breakpoint(p_line));
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
-		text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		if (text.has_info_icon(p_line)) {
+			text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
+		}
 
 		text.set_breakpoint(p_line, false);
 		text.set_hidden(p_line, false);
@@ -3965,7 +4012,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
 
-	if (!setting_text)
+	if (!setting_text && idle_detect->is_inside_tree())
 		idle_detect->start();
 
 	if (undo_enabled) {
@@ -4019,7 +4066,7 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 
 void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
 
-	if (!setting_text)
+	if (!setting_text && idle_detect->is_inside_tree())
 		idle_detect->start();
 
 	String text;
@@ -4070,6 +4117,7 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
+	_update_scrollbars();
 	cursor_set_line(new_line);
 	cursor_set_column(new_column);
 
@@ -4390,7 +4438,6 @@ int TextEdit::get_line_wrap_index_at_col(int p_line, int p_column) const {
 }
 
 void TextEdit::cursor_set_column(int p_col, bool p_adjust_viewport) {
-
 	if (p_col < 0)
 		p_col = 0;
 
@@ -4535,7 +4582,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		int v_scroll_i = floor(get_v_scroll());
 		int sc = 0;
 		int n_line;
-		for (n_line = 0; n_line < text.size() - 1; n_line++) {
+		for (n_line = 0; n_line < text.size(); n_line++) {
 			if (!is_line_hidden(n_line)) {
 				sc++;
 				sc += times_line_wraps(n_line);
@@ -4543,6 +4590,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 					break;
 			}
 		}
+		n_line = MIN(n_line, text.size() - 1);
 		int line_wrap_amount = times_line_wraps(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
@@ -4748,6 +4796,9 @@ void TextEdit::set_text(String p_text) {
 		end_complex_operation();
 		selection.active = false;
 	}
+
+	cursor_set_line(0);
+	cursor_set_column(0);
 
 	update();
 	setting_text = false;
@@ -5050,15 +5101,18 @@ Map<int, TextEdit::Text::ColorRegionInfo> TextEdit::_get_line_color_region_info(
 void TextEdit::clear_colors() {
 
 	keywords.clear();
+	member_keywords.clear();
 	color_regions.clear();
 	color_region_cache.clear();
 	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
+	update();
 }
 
 void TextEdit::add_keyword_color(const String &p_keyword, const Color &p_color) {
 
 	keywords[p_keyword] = p_color;
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -5075,12 +5129,14 @@ Color TextEdit::get_keyword_color(String p_keyword) const {
 void TextEdit::add_color_region(const String &p_begin_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
 
 	color_regions.push_back(ColorRegion(p_begin_key, p_end_key, p_color, p_line_only));
+	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
 	update();
 }
 
 void TextEdit::add_member_keyword(const String &p_keyword, const Color &p_color) {
 	member_keywords[p_keyword] = p_color;
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -5094,6 +5150,7 @@ Color TextEdit::get_member_color(String p_member) const {
 
 void TextEdit::clear_member_keywords() {
 	member_keywords.clear();
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -5386,11 +5443,11 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 PoolVector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
 
 	int col, line;
-	if (search(p_key, p_search_flags, p_from_line, p_from_column, col, line)) {
+	if (search(p_key, p_search_flags, p_from_line, p_from_column, line, col)) {
 		PoolVector<int> result;
 		result.resize(2);
-		result.set(0, line);
-		result.set(1, col);
+		result.set(SEARCH_RESULT_COLUMN, col);
+		result.set(SEARCH_RESULT_LINE, line);
 		return result;
 
 	} else {
@@ -5634,9 +5691,7 @@ void TextEdit::set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info
 }
 
 void TextEdit::clear_info_icons() {
-	for (int i = 0; i < text.size(); i++) {
-		text.set_info_icon(i, NULL, "");
-	}
+	text.clear_info_icons();
 	update();
 }
 
@@ -5913,7 +5968,7 @@ void TextEdit::unfold_line(int p_line) {
 
 	if (!is_folded(p_line) && !is_line_hidden(p_line))
 		return;
-	int fold_start = p_line;
+	int fold_start;
 	for (fold_start = p_line; fold_start > 0; fold_start--) {
 		if (is_folded(fold_start))
 			break;
@@ -6018,6 +6073,7 @@ void TextEdit::undo() {
 		}
 	}
 
+	_update_scrollbars();
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
 		cursor_set_line(undo_stack_pos->get().to_line);
 		cursor_set_column(undo_stack_pos->get().to_column);
@@ -6053,6 +6109,8 @@ void TextEdit::redo() {
 				break;
 		}
 	}
+
+	_update_scrollbars();
 	cursor_set_line(undo_stack_pos->get().to_line);
 	cursor_set_column(undo_stack_pos->get().to_column);
 	undo_stack_pos = undo_stack_pos->next();
@@ -6328,8 +6386,9 @@ void TextEdit::_confirm_completion() {
 	String line = text[cursor.line];
 	CharType next_char = line[cursor.column];
 	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
+	CharType last_completion_char_display = completion_current.display[completion_current.display.length() - 1];
 
-	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
+	if ((last_completion_char == '"' || last_completion_char == '\'') && (last_completion_char == next_char || last_completion_char_display == next_char)) {
 		_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
@@ -6476,6 +6535,7 @@ void TextEdit::_update_completion_candidates() {
 		if (inquote && restore_quotes == 1 && !option.display.is_quoted()) {
 			String quote = single_quote ? "'" : "\"";
 			option.display = option.display.quote(quote);
+			option.insert_text = option.insert_text.quote(quote);
 		}
 
 		if (option.display.begins_with(s)) {
@@ -6901,6 +6961,9 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
 
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_COLUMN);
+	BIND_ENUM_CONSTANT(SEARCH_RESULT_LINE);
+
 	/*
 	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
 	ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
@@ -7077,6 +7140,7 @@ TextEdit::TextEdit() {
 	max_chars = 0;
 	clear();
 	wrap_enabled = false;
+	wrap_at = 0;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
 	syntax_highlighter = NULL;

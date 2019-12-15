@@ -55,7 +55,6 @@ class VideoPlayer : public Control {
 	RID stream_rid;
 
 	Ref<ImageTexture> texture;
-	Ref<Image> last_frame;
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
@@ -75,19 +74,19 @@ class VideoPlayer : public Control {
 
 	void _mix_audio();
 	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
-	static void _mix_audios(void *self) { reinterpret_cast<VideoPlayer *>(self)->_mix_audio(); }
+	static void _mix_audios(void *p_self);
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Size2 get_minimum_size() const;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
-	Ref<Texture> get_video_texture();
+	Ref<Texture> get_video_texture() const;
 
 	void set_stream(const Ref<VideoStream> &p_stream);
 	Ref<VideoStream> get_stream() const;

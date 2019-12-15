@@ -123,6 +123,13 @@ void ConfigFile::erase_section(const String &p_section) {
 	values.erase(p_section);
 }
 
+void ConfigFile::erase_section_key(const String &p_section, const String &p_key) {
+
+	ERR_FAIL_COND_MSG(!values.has(p_section), "Cannot erase key from nonexistent section '" + p_section + "'.");
+
+	values[p_section].erase(p_key);
+}
+
 Error ConfigFile::save(const String &p_path) {
 
 	Error err;
@@ -293,6 +300,7 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
 
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
+	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);

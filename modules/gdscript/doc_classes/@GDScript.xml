@@ -21,7 +21,7 @@
 			<argument index="3" name="a8" type="int" default="255">
 			</argument>
 			<description>
-				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
+				Returns a color constructed from integer red, green, blue, and alpha channels. Each channel should have 8 bits of information ranging from 0 to 255.
 				[code]r8[/code] red channel
 				[code]g8[/code] green channel
 				[code]b8[/code] blue channel
@@ -208,7 +208,7 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
-				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum [code]TYPE_*[/code] in [@GlobalScope].
+				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the [enum Variant.Type] values.
 				[codeblock]
 				a = Vector2(1, 0)
 				# Prints 1
@@ -336,11 +336,12 @@
 			<description>
 				Rounds [code]s[/code] to the closest smaller integer and returns it.
 				[codeblock]
-				# a is 2
+				# a is 2.0
 				a = floor(2.99)
-				# a is -3
+				# a is -3.0
 				a = floor(-2.99)
 				[/codeblock]
+				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(s)[/code] directly.
 			</description>
 		</method>
 		<method name="fmod">
@@ -502,7 +503,7 @@
 			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]a[/code] and [code]b[/code] are approximately equal to each other.
+				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
 			</description>
 		</method>
 		<method name="is_inf">
@@ -538,7 +539,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]s[/code] is zero or almost zero.
+				Returns [code]true[/code] if [code]s[/code] is zero or almost zero.
 			</description>
 		</method>
 		<method name="len">
@@ -590,10 +591,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-					var min_angle = deg2rad(0.0)
-					var max_angle = deg2rad(90.0)
-					rotation = lerp_angle(min_angle, max_angle, elapsed)
-					elapsed += delta
+				    var min_angle = deg2rad(0.0)
+				    var max_angle = deg2rad(90.0)
+				    rotation = lerp_angle(min_angle, max_angle, elapsed)
+				    elapsed += delta
 				[/codeblock]
 			</description>
 		</method>
@@ -615,9 +616,10 @@
 				Loads a resource from the filesystem located at [code]path[/code].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing [b]Copy Path[/b].
 				[codeblock]
-				# Load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory.
 				var main = load("res://main.tscn")
 				[/codeblock]
+				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 			</description>
 		</method>
 		<method name="log">
@@ -785,7 +787,7 @@
 				Returns a resource from the filesystem that is loaded during script parsing.
 				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
-				# Load a scene called main located in the root of the project directory
+				# Load a scene called main located in the root of the project directory.
 				var main = preload("res://main.tscn")
 				[/codeblock]
 			</description>
@@ -839,6 +841,7 @@
 				printraw("B")
 				# Prints AB
 				[/codeblock]
+				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
@@ -1215,7 +1218,7 @@
 			<argument index="0" name="what" type="Variant">
 			</argument>
 			<description>
-				Returns the internal type of the given Variant object, using the [code]TYPE_*[/code] enum in [@GlobalScope].
+				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
@@ -1231,7 +1234,7 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Checks that [code]json[/code] is valid JSON data. Returns empty string if valid. Returns error message if not valid.
+				Checks that [code]json[/code] is valid JSON data. Returns an empty string if valid, or an error message otherwise.
 				[codeblock]
 				j = to_json([1, 2, 3])
 				v = validate_json(j)
@@ -1362,6 +1365,26 @@
 				Stops the function execution and returns the current suspended state to the calling function.
 				From the caller, call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state. Within the resumed function, [code]yield()[/code] returns whatever was passed to the [code]resume()[/code] function call.
 				If passed an object and a signal, the execution is resumed when the object emits the given signal. In this case, [code]yield()[/code] returns the argument passed to [code]emit_signal()[/code] if the signal takes only one argument, or an array containing all the arguments passed to [code]emit_signal()[/code] if the signal takes multiple arguments.
+				You can also use [code]yield[/code] to wait for a function to finish:
+				[codeblock]
+				func _ready():
+				    yield(do_something(), "completed")
+				    yield(do_something_else(), "completed")
+				    print("All functions are done!")
+
+				func do_something():
+				    print("Something is done!")
+
+				func do_something_else():
+				    print("Something else is done!")
+
+				# prints:
+				# Something is done!
+				# Something else is done!
+				# All functions are done!
+				[/codeblock]
+				When yielding on a function, the [code]completed[/code] signal will be emitted automatically when the function returns. It can, therefore, be used as the [code]signal[/code] parameter of the [code]yield[/code] method to resume.
+				If you are planning on calling the same function within a loop, you should consider using [code]yield(get_tree(), "idle_frame")[/code] also.
 			</description>
 		</method>
 	</methods>

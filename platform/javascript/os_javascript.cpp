@@ -574,6 +574,8 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		}, cursors[p_shape].utf8().get_data());
 		/* clang-format on */
 		cursors[p_shape] = "";
+
+		cursors_cache.erase(p_shape);
 	}
 
 	set_cursor_shape(cursor_shape);
@@ -835,7 +837,7 @@ void OS_JavaScript::set_clipboard(const String &p_text) {
 		var text = UTF8ToString($0);
 		if (!navigator.clipboard || !navigator.clipboard.writeText)
 			return 1;
-		navigator.clipboard.writeText(text).catch(e => {
+		navigator.clipboard.writeText(text).catch(function(e) {
 			// Setting OS clipboard is only possible from an input callback.
 			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
 		});
@@ -967,8 +969,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	AudioDriverManager::initialize(p_audio_driver);
 	VisualServer *visual_server = memnew(VisualServerRaster());
 	input = memnew(InputDefault);
-
-	camera_server = memnew(CameraServer);
 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
@@ -1104,7 +1104,6 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 
-	memdelete(camera_server);
 	memdelete(input);
 }
 

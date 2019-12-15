@@ -343,6 +343,8 @@ public:
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_fractional_delta, RID, bool)
+	FUNC1R(bool, particles_is_inactive, RID)
+	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
 
 	FUNC2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
@@ -518,7 +520,7 @@ public:
 	FUNC11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
 	FUNC7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	FUNC7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
-	FUNC10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
+	FUNC11(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID, bool)
 	FUNC6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
 	FUNC4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	FUNC4(canvas_item_add_particles, RID, RID, RID, RID)

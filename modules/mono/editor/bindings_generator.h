@@ -214,6 +214,14 @@ class BindingsGenerator {
 		 */
 		bool memory_own;
 
+		/**
+		 * This must be set to true for any struct bigger than 32-bits. Those cannot be passed/returned by value
+		 * with internal calls, so we must use pointers instead. Returns must be replace with out parameters.
+		 * In this case, [c_out] and [cs_out] must have a different format, explained below.
+		 * The Mono IL interpreter icall trampolines don't support passing structs bigger than 32-bits by value (at least not on WASM).
+		 */
+		bool ret_as_byref_arg;
+
 		// !! The comments of the following fields make reference to other fields via square brackets, e.g.: [field_name]
 		// !! When renaming those fields, make sure to rename their references in the comments
 
@@ -248,6 +256,14 @@ class BindingsGenerator {
 		 * %0: [c_type_out] of the return type
 		 * %1: name of the variable to be returned
 		 * %2: [name] of the return type
+		 * ---------------------------------------
+		 * If [ret_as_byref_arg] is true, the format is different. Instead of using a return statement,
+		 * the value must be assigned to a parameter. This type of this parameter is a pointer to [c_type_out].
+		 * Formatting elements:
+		 * %0: [c_type_out] of the return type
+		 * %1: name of the variable to be returned
+		 * %2: [name] of the return type
+		 * %3: name of the parameter that must be assigned the return value
 		 */
 		String c_out;
 
@@ -291,9 +307,10 @@ class BindingsGenerator {
 		 * One or more statements that determine how a variable of this type is returned from a method.
 		 * It must contain the return statement(s).
 		 * Formatting elements:
-		 * %0: internal method call statement
-		 * %1: [cs_type] of the return type
-		 * %2: [im_type_out] of the return type
+		 * %0: internal method name
+		 * %1: internal method call arguments without surrounding parenthesis
+		 * %2: [cs_type] of the return type
+		 * %3: [im_type_out] of the return type
 		 */
 		String cs_out;
 
@@ -417,7 +434,7 @@ class BindingsGenerator {
 
 			r_enum_itype.cs_type = r_enum_itype.proxy_name;
 			r_enum_itype.cs_in = "(int)%s";
-			r_enum_itype.cs_out = "return (%1)%0;";
+			r_enum_itype.cs_out = "return (%2)%0(%1);";
 			r_enum_itype.im_type_in = "int";
 			r_enum_itype.im_type_out = "int";
 			r_enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[r_enum_itype.proxy_name];
@@ -434,6 +451,8 @@ class BindingsGenerator {
 			is_instantiable = false;
 
 			memory_own = false;
+
+			ret_as_byref_arg = false;
 
 			c_arg_in = "%s";
 

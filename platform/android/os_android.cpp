@@ -43,6 +43,7 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
+#include "net_socket_android.h"
 
 #include <dlfcn.h>
 
@@ -106,6 +107,8 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+
+	NetSocketAndroid::make_default();
 }
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
@@ -175,9 +178,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
-	///@TODO implement a subclass for Android and instantiate that instead
-	camera_server = memnew(CameraServer);
-
 	//power_manager = memnew(PowerAndroid);
 
 	return OK;
@@ -195,8 +195,6 @@ void OS_Android::delete_main_loop() {
 }
 
 void OS_Android::finalize() {
-
-	memdelete(camera_server);
 
 	memdelete(input);
 }
@@ -218,6 +216,16 @@ void OS_Android::alert(const String &p_alert, const String &p_title) {
 bool OS_Android::request_permission(const String &p_name) {
 
 	return godot_java->request_permission(p_name);
+}
+
+bool OS_Android::request_permissions() {
+
+	return godot_java->request_permissions();
+}
+
+Vector<String> OS_Android::get_granted_permissions() const {
+
+	return godot_java->get_granted_permissions();
 }
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
@@ -473,6 +481,23 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 					break;
 				}
 			}
+		} break;
+	}
+}
+
+void OS_Android::process_hover(int p_type, Point2 p_pos) {
+	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
+	switch (p_type) {
+		case 7: // hover move
+		case 9: // hover enter
+		case 10: { // hover exit
+			Ref<InputEventMouseMotion> ev;
+			ev.instance();
+			ev->set_position(p_pos);
+			ev->set_global_position(p_pos);
+			ev->set_relative(p_pos - hover_prev_pos);
+			input->parse_input_event(ev);
+			hover_prev_pos = p_pos;
 		} break;
 	}
 }

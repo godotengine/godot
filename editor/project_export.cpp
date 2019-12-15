@@ -253,9 +253,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	TreeItem *patch_add = patches->create_item(patch_root);
 	patch_add->set_metadata(0, patchlist.size());
 	if (patchlist.size() == 0)
-		patch_add->set_text(0, "Add initial export...");
+		patch_add->set_text(0, TTR("Add initial export..."));
 	else
-		patch_add->set_text(0, "Add previous patches...");
+		patch_add->set_text(0, TTR("Add previous patches..."));
 
 	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
 
@@ -286,11 +286,13 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			export_templates_error->hide();
 
 		export_button->set_disabled(true);
+		get_ok()->set_disabled(true);
 
 	} else {
 		export_error->hide();
 		export_templates_error->hide();
 		export_button->set_disabled(false);
+		get_ok()->set_disabled(false);
 	}
 
 	custom_features->set_text(current->get_custom_features());
@@ -623,6 +625,7 @@ void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
 	_edit_preset(-1);
 	export_button->set_disabled(true);
+	get_ok()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
 }
@@ -1104,6 +1107,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	name->connect("text_changed", this, "_name_changed");
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
+	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", this, "_runnable_pressed");
 	settings_vb->add_child(runnable);
 
@@ -1149,11 +1153,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_files->connect("item_edited", this, "_tree_changed");
 
 	include_filters = memnew(LineEdit);
-	resources_vb->add_margin_child(TTR("Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"), include_filters);
+	resources_vb->add_margin_child(
+			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			include_filters);
 	include_filters->connect("text_changed", this, "_filter_changed");
 
 	exclude_filters = memnew(LineEdit);
-	resources_vb->add_margin_child(TTR("Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"), exclude_filters);
+	resources_vb->add_margin_child(
+			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			exclude_filters);
 	exclude_filters->connect("text_changed", this, "_filter_changed");
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
@@ -1245,6 +1253,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button->connect("pressed", this, "_export_project");
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
+	get_ok()->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	add_child(export_all_dialog);

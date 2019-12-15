@@ -193,22 +193,6 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
-#ifndef DISABLE_DEPRECATED
-void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
-
-	WARN_DEPRECATED_MSG("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
-
-	set_mesh_library(p_theme);
-}
-
-Ref<MeshLibrary> GridMap::get_theme() const {
-
-	WARN_DEPRECATED_MSG("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
-
-	return get_mesh_library();
-}
-#endif // DISABLE_DEPRECATED
-
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 
 	if (!mesh_library.is_null())
@@ -227,10 +211,10 @@ Ref<MeshLibrary> GridMap::get_mesh_library() const {
 }
 
 void GridMap::set_cell_size(const Vector3 &p_size) {
-
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
 	_recreate_octant_data();
+	emit_signal("cell_size_changed", cell_size);
 }
 Vector3 GridMap::get_cell_size() const {
 
@@ -838,11 +822,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
 
-#ifndef DISABLE_DEPRECATED
-	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &GridMap::set_theme);
-	ClassDB::bind_method(D_METHOD("get_theme"), &GridMap::get_theme);
-#endif // DISABLE_DEPRECATED
-
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -885,10 +864,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-#ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", 0), "set_theme", "get_theme");
-#endif // DISABLE_DEPRECATED
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
@@ -902,6 +877,8 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
+
+	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {

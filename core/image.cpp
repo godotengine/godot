@@ -885,8 +885,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width cannot be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height cannot be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 
@@ -1284,8 +1284,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 		Component *dst_ptr = &p_dst[i * dst_w * CC];
 		uint32_t count = dst_w;
 
-		while (count--) {
-
+		while (count) {
+			count--;
 			for (int j = 0; j < CC; j++) {
 				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + right_step], rdown_ptr[j], rdown_ptr[j + right_step]);
 			}
@@ -1321,6 +1321,8 @@ void Image::expand_x2_hq2x() {
 	{
 		PoolVector<uint8_t>::Read r = data.read();
 		PoolVector<uint8_t>::Write w = dest.write();
+
+		ERR_FAIL_COND(!r.ptr());
 
 		hq2x_resize((const uint32_t *)r.ptr(), width, height, (uint32_t *)w.ptr());
 	}
@@ -1373,6 +1375,7 @@ void Image::shrink_x2() {
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
 		ERR_FAIL_COND(new_img.size() == 0);
+		ERR_FAIL_COND(data.size() == 0);
 
 		{
 			PoolVector<uint8_t>::Write w = new_img.write();
@@ -2895,6 +2898,8 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 		PoolVector<uint8_t>::Read rp = data.read();
 		PoolVector<uint8_t>::Write wp = result_image.write();
 
+		ERR_FAIL_COND(!rp.ptr());
+
 		unsigned char *write_ptr = wp.ptr();
 		float *read_ptr = (float *)rp.ptr();
 
@@ -2930,7 +2935,7 @@ void Image::srgb_to_linear() {
 	if (data.size() == 0)
 		return;
 
-	static const uint8_t srgb2lin[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252 };
+	static const uint8_t srgb2lin[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252, 255 };
 
 	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
 

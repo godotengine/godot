@@ -385,6 +385,7 @@ public:
 	}
 
 	inline int size() const;
+	inline bool empty() const;
 	T get(int p_index) const;
 	void set(int p_index, const T &p_val);
 	void push_back(const T &p_val);
@@ -472,6 +473,12 @@ template <class T>
 int PoolVector<T>::size() const {
 
 	return alloc ? alloc->size / sizeof(T) : 0;
+}
+
+template <class T>
+bool PoolVector<T>::empty() const {
+
+	return alloc ? alloc->size == 0 : true;
 }
 
 template <class T>

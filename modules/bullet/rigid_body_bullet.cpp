@@ -126,16 +126,16 @@ void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
 	body->apply_torque(p_torque);
 }
 
-void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_j) {
-	body->apply_central_impulse(p_j);
+void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_impulse) {
+	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
-	body->apply_impulse(p_pos, p_j);
+void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
+	body->apply_impulse(p_pos, p_impulse);
 }
 
-void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_j) {
-	body->apply_torque_impulse(p_j);
+void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_impulse) {
+	body->apply_torque_impulse(p_impulse);
 }
 
 void BulletPhysicsDirectBodyState::set_sleep_state(bool p_enable) {
@@ -411,6 +411,8 @@ void RigidBodyBullet::on_collision_filters_change() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
+
+	set_activation_state(true);
 }
 
 void RigidBodyBullet::on_collision_checker_start() {
@@ -471,7 +473,7 @@ void RigidBodyBullet::assert_no_constraints() {
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
 	if (p_active) {
-		btBody->setActivationState(ACTIVE_TAG);
+		btBody->activate();
 	} else {
 		btBody->setActivationState(WANTS_DEACTIVATION);
 	}
@@ -918,7 +920,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 
 		currentArea = areasWhereIam[i];
 
-		if (PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
+		if (!currentArea || PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
 			continue;
 		}
 

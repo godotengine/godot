@@ -376,6 +376,12 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	return OK;
 }
 
+Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
+	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+	return theme->get_icon("Play", "EditorIcons");
+}
+
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
 	String current_version = VERSION_FULL_CONFIG;
@@ -1403,7 +1409,7 @@ bool EditorExport::poll_export_platforms() {
 
 	bool changed = false;
 	for (int i = 0; i < export_platforms.size(); i++) {
-		if (export_platforms.write[i]->poll_devices()) {
+		if (export_platforms.write[i]->poll_export()) {
 			changed = true;
 		}
 	}
@@ -1606,12 +1612,19 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
 				err = da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+				if (err == OK) {
+					err = sign_shared_object(p_preset, p_debug, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+				}
 			}
 			memdelete(da);
 		}
 	}
 
 	return err;
+}
+
+Error EditorExportPlatformPC::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+	return OK;
 }
 
 void EditorExportPlatformPC::set_extension(const String &p_extension, const String &p_feature_key) {

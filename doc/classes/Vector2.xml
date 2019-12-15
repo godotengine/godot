@@ -153,6 +153,15 @@
 				Returns the vector with all components rounded down.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="v" type="Vector2">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+			</description>
+		</method>
 		<method name="is_normalized">
 			<return type="bool">
 			</return>

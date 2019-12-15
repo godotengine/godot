@@ -95,9 +95,11 @@ public:
 		bool support_shadow_cubemaps;
 
 		bool multisample_supported;
+		bool render_to_mipmap_supported;
 
 		GLuint depth_internalformat;
 		GLuint depth_type;
+		GLuint depth_buffer_internalformat;
 
 	} config;
 
@@ -336,7 +338,7 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_will_need_resize) const;
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VS::TextureType p_type, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
@@ -1140,12 +1142,6 @@ public:
 		GLuint multisample_depth;
 		bool multisample_active;
 
-		// TODO post processing effects?
-
-		// TODO HDR?
-
-		// TODO this is hardcoded for texscreen copies for now
-
 		struct Effect {
 			GLuint fbo;
 			int width;
@@ -1163,13 +1159,37 @@ public:
 
 		Effect copy_screen_effect;
 
+		struct MipMaps {
+
+			struct Size {
+				GLuint fbo;
+				GLuint color;
+				int width;
+				int height;
+			};
+
+			Vector<Size> sizes;
+			GLuint color;
+			int levels;
+
+			MipMaps() :
+					color(0),
+					levels(0) {
+			}
+		};
+
+		MipMaps mip_maps[2];
+
 		struct External {
 			GLuint fbo;
 			GLuint color;
+			GLuint depth;
 			RID texture;
 
 			External() :
-					fbo(0) {
+					fbo(0),
+					color(0),
+					depth(0) {
 			}
 		} external;
 
@@ -1181,6 +1201,9 @@ public:
 		VS::ViewportMSAA msaa;
 
 		RID texture;
+
+		bool used_dof_blur_near;
+		bool mip_maps_allocated;
 
 		RenderTarget() :
 				fbo(0),
@@ -1195,7 +1218,9 @@ public:
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				used_dof_blur_near(false),
+				mip_maps_allocated(false) {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
 				flags[i] = false;
 			}

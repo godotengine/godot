@@ -587,11 +587,24 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_pressed", "Button", icon_color_pressed);
 
 	// OptionButton
-	theme->set_stylebox("normal", "OptionButton", style_widget);
-	theme->set_stylebox("hover", "OptionButton", style_widget_hover);
-	theme->set_stylebox("pressed", "OptionButton", style_widget_pressed);
-	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
-	theme->set_stylebox("disabled", "OptionButton", style_widget_disabled);
+	Ref<StyleBoxFlat> style_option_button_normal = style_widget->duplicate();
+	Ref<StyleBoxFlat> style_option_button_hover = style_widget_hover->duplicate();
+	Ref<StyleBoxFlat> style_option_button_pressed = style_widget_pressed->duplicate();
+	Ref<StyleBoxFlat> style_option_button_focus = style_widget_focus->duplicate();
+	Ref<StyleBoxFlat> style_option_button_disabled = style_widget_disabled->duplicate();
+
+	int option_button_arrow_margin = theme->get_icon("GuiOptionArrow", "EditorIcons")->get_size().width + (default_margin_size + 4) * EDSCALE;
+	style_option_button_normal->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
+	style_option_button_hover->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
+	style_option_button_pressed->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
+	style_option_button_focus->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
+	style_option_button_disabled->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
+
+	theme->set_stylebox("normal", "OptionButton", style_option_button_normal);
+	theme->set_stylebox("hover", "OptionButton", style_option_button_hover);
+	theme->set_stylebox("pressed", "OptionButton", style_option_button_pressed);
+	theme->set_stylebox("focus", "OptionButton", style_option_button_focus);
+	theme->set_stylebox("disabled", "OptionButton", style_option_button_disabled);
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_color_hover", "OptionButton", font_color_hl);
@@ -648,9 +661,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("hseparation", "CheckBox", 4 * EDSCALE);
 	theme->set_constant("check_vadjust", "CheckBox", 0 * EDSCALE);
 
+	// PopupDialog
+	theme->set_stylebox("panel", "PopupDialog", style_popup);
+
 	// PopupMenu
-	Ref<StyleBoxFlat> style_popup_menu = style_popup;
-	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
+	theme->set_stylebox("panel", "PopupMenu", style_popup);
 	theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_labeled_separator_left);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", style_popup_labeled_separator_right);
@@ -1087,7 +1102,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
 
 	// GridContainer
-	theme->set_constant("vseperation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
 
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
@@ -1130,7 +1145,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color symbol_color = Color(0.34, 0.57, 1.0).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color keyword_color = Color(1.0, 0.44, 0.52);
 	const Color basetype_color = dark_theme ? Color(0.26, 1.0, 0.76) : Color(0.0, 0.76, 0.38);
-	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
+	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.4 : 0.3);
+	const Color usertype_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
 	const Color comment_color = dim_color;
 	const Color string_color = (dark_theme ? Color(1.0, 0.85, 0.26) : Color(1.0, 0.82, 0.09)).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 
@@ -1169,6 +1185,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/keyword_color", keyword_color, true);
 		setting->set_initial_value("text_editor/highlighting/base_type_color", basetype_color, true);
 		setting->set_initial_value("text_editor/highlighting/engine_type_color", type_color, true);
+		setting->set_initial_value("text_editor/highlighting/user_type_color", usertype_color, true);
 		setting->set_initial_value("text_editor/highlighting/comment_color", comment_color, true);
 		setting->set_initial_value("text_editor/highlighting/string_color", string_color, true);
 		setting->set_initial_value("text_editor/highlighting/background_color", te_background_color, true);

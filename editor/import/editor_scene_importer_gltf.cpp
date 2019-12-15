@@ -229,8 +229,16 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 
 	ERR_FAIL_COND_V(!state.json.has("scenes"), ERR_FILE_CORRUPT);
 	const Array &scenes = state.json["scenes"];
-	for (int i = 0; i < 1; i++) { //only first scene is imported
-		const Dictionary &s = scenes[i];
+	int loaded_scene = 0;
+	if (state.json.has("scene")) {
+		loaded_scene = state.json["scene"];
+	} else {
+		WARN_PRINT("The load-time scene is not defined in the glTF2 file. Picking the first scene.")
+	}
+
+	if (scenes.size()) {
+		ERR_FAIL_COND_V(loaded_scene >= scenes.size(), ERR_FILE_CORRUPT);
+		const Dictionary &s = scenes[loaded_scene];
 		ERR_FAIL_COND_V(!s.has("nodes"), ERR_UNAVAILABLE);
 		const Array &nodes = s["nodes"];
 		for (int j = 0; j < nodes.size(); j++) {
@@ -1487,15 +1495,15 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 }
 
 EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset) {
-	int heighest = -1;
+	int highest = -1;
 	GLTFNodeIndex best_node = -1;
 
 	for (int i = 0; i < subset.size(); ++i) {
 		const GLTFNodeIndex node_i = subset[i];
 		const GLTFNode *node = state.nodes[node_i];
 
-		if (heighest == -1 || node->height < heighest) {
-			heighest = node->height;
+		if (highest == -1 || node->height < highest) {
+			highest = node->height;
 			best_node = node_i;
 		}
 	}
@@ -1973,7 +1981,7 @@ Error EditorSceneImporterGLTF::_reparent_to_fake_joint(GLTFState &state, GLTFSke
 	state.nodes.push_back(fake_joint);
 
 	// We better not be a joint, or we messed up in our logic
-	if (node->joint == true)
+	if (node->joint)
 		return FAILED;
 
 	fake_joint->translation = node->translation;
@@ -2135,7 +2143,6 @@ Error EditorSceneImporterGLTF::_create_skeletons(GLTFState &state) {
 
 			skeleton->add_bone(node->name);
 			skeleton->set_bone_rest(bone_index, node->xform);
-			skeleton->set_bone_pose(bone_index, node->xform);
 
 			if (node->parent >= 0 && state.nodes[node->parent]->skeleton == skel_i) {
 				const int bone_parent = skeleton->find_bone(state.nodes[node->parent]->name);
@@ -2316,7 +2323,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 		Array samplers = d["samplers"];
 
 		if (d.has("name")) {
-			animation.name = d["name"];
+			animation.name = _sanitize_scene_name(d["name"]);
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
@@ -2356,6 +2363,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 			const int output = s["output"];
 
 			GLTFAnimation::Interpolation interp = GLTFAnimation::INTERP_LINEAR;
+			int output_count = 1;
 			if (s.has("interpolation")) {
 				const String &in = s["interpolation"];
 				if (in == "STEP") {
@@ -2364,8 +2372,10 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					interp = GLTFAnimation::INTERP_LINEAR;
 				} else if (in == "CATMULLROMSPLINE") {
 					interp = GLTFAnimation::INTERP_CATMULLROMSPLINE;
+					output_count = 3;
 				} else if (in == "CUBICSPLINE") {
 					interp = GLTFAnimation::INTERP_CUBIC_SPLINE;
+					output_count = 3;
 				}
 			}
 
@@ -2394,6 +2404,9 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				const int wc = mesh->blend_weights.size();
 
 				track->weight_tracks.resize(wc);
+
+				const int expected_value_count = times.size() * output_count * wc;
+				ERR_FAIL_COND_V_MSG(weights.size() != expected_value_count, ERR_PARSE_ERROR, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
 
 				const int wlen = weights.size() / wc;
 				PoolVector<float>::Read r = weights.read();
@@ -2493,9 +2506,9 @@ Camera *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_
 
 	const GLTFCamera &c = state.cameras[gltf_node->camera];
 	if (c.perspective) {
-		camera->set_perspective(c.fov_size, c.znear, c.znear);
+		camera->set_perspective(c.fov_size, c.znear, c.zfar);
 	} else {
-		camera->set_orthogonal(c.fov_size, c.znear, c.znear);
+		camera->set_orthogonal(c.fov_size, c.znear, c.zfar);
 	}
 
 	return camera;

@@ -64,6 +64,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
+		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
@@ -110,6 +111,8 @@ class SceneTreeDock : public VBoxContainer {
 	ToolButton *button_instance;
 	ToolButton *button_create_script;
 	ToolButton *button_clear_script;
+
+	Button *button_3d;
 
 	HBoxContainer *button_hb;
 	ToolButton *edit_local, *edit_remote;
@@ -259,7 +262,8 @@ public:
 
 	void replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
-	void open_script_dialog(Node *p_for_node);
+	void attach_script_to_selected(bool p_extend);
+	void open_script_dialog(Node *p_for_node, bool p_extend);
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 

@@ -192,13 +192,9 @@ uint32_t Dictionary::hash() const {
 
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
-	List<Variant> keys;
-	get_key_list(&keys);
-
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-
-		h = hash_djb2_one_32(E->get().hash(), h);
-		h = hash_djb2_one_32(operator[](E->get()).hash(), h);
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		h = hash_djb2_one_32(E.key().hash(), h);
+		h = hash_djb2_one_32(E.value().hash(), h);
 	}
 
 	return h;
@@ -207,9 +203,10 @@ uint32_t Dictionary::hash() const {
 Array Dictionary::keys() const {
 
 	Array varr;
-	varr.resize(size());
 	if (_p->variant_map.empty())
 		return varr;
+
+	varr.resize(size());
 
 	int i = 0;
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
@@ -223,9 +220,10 @@ Array Dictionary::keys() const {
 Array Dictionary::values() const {
 
 	Array varr;
-	varr.resize(size());
 	if (_p->variant_map.empty())
 		return varr;
+
+	varr.resize(size());
 
 	int i = 0;
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
@@ -255,11 +253,8 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 
 	Dictionary n;
 
-	List<Variant> keys;
-	get_key_list(&keys);
-
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		n[E->get()] = p_deep ? operator[](E->get()).duplicate(p_deep) : operator[](E->get());
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		n[E.key()] = p_deep ? E.value().duplicate(true) : E.value();
 	}
 
 	return n;

@@ -483,6 +483,7 @@ void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 

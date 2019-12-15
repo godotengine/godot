@@ -31,6 +31,7 @@
 #ifndef SORT_ARRAY_H
 #define SORT_ARRAY_H
 
+#include "core/error_macros.h"
 #include "core/typedefs.h"
 
 #define ERR_BAD_COMPARE(cond)                                         \

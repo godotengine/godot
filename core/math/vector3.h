@@ -96,8 +96,8 @@ struct Vector3 {
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
-	_FORCE_INLINE_ Basis outer(const Vector3 &p_b) const;
-	_FORCE_INLINE_ Basis to_diagonal_matrix() const;
+	Basis outer(const Vector3 &p_b) const;
+	Basis to_diagonal_matrix() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
@@ -118,6 +118,8 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
 	_FORCE_INLINE_ Vector3 bounce(const Vector3 &p_normal) const;
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
+
+	bool is_equal_approx(const Vector3 &p_v) const;
 
 	/* Operators */
 
@@ -154,9 +156,6 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 };
 
-// Should be included after class definition, otherwise we get circular refs
-#include "core/math/basis.h"
-
 Vector3 Vector3::cross(const Vector3 &p_b) const {
 
 	Vector3 ret(
@@ -170,21 +169,6 @@ Vector3 Vector3::cross(const Vector3 &p_b) const {
 real_t Vector3::dot(const Vector3 &p_b) const {
 
 	return x * p_b.x + y * p_b.y + z * p_b.z;
-}
-
-Basis Vector3::outer(const Vector3 &p_b) const {
-
-	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
-	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
-	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
-
-	return Basis(row0, row1, row2);
-}
-
-Basis Vector3::to_diagonal_matrix() const {
-	return Basis(x, 0, 0,
-			0, y, 0,
-			0, 0, z);
 }
 
 Vector3 Vector3::abs() const {
@@ -348,11 +332,12 @@ Vector3 Vector3::operator-() const {
 
 bool Vector3::operator==(const Vector3 &p_v) const {
 
-	return (Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z));
+	return x == p_v.x && y == p_v.y && z == p_v.z;
 }
 
 bool Vector3::operator!=(const Vector3 &p_v) const {
-	return (!Math::is_equal_approx(x, p_v.x) || !Math::is_equal_approx(y, p_v.y) || !Math::is_equal_approx(z, p_v.z));
+
+	return x != p_v.x || y != p_v.y || z != p_v.z;
 }
 
 bool Vector3::operator<(const Vector3 &p_v) const {

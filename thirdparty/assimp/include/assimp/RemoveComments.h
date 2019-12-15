@@ -4,7 +4,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -43,9 +42,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file Declares a helper class, "CommentRemover", which can be
  *  used to remove comments (single and multi line) from a text file.
  */
+#pragma once
 #ifndef AI_REMOVE_COMMENTS_H_INC
 #define AI_REMOVE_COMMENTS_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/defs.h>
 
@@ -58,8 +61,7 @@ namespace Assimp    {
  *  to those in C or C++ so this code has been moved to a separate
  *  module.
  */
-class ASSIMP_API CommentRemover
-{
+class ASSIMP_API CommentRemover {
     // class cannot be instanced
     CommentRemover() {}
 

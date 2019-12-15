@@ -129,6 +129,7 @@ NodeDock::NodeDock() {
 
 	select_a_node = memnew(Label);
 	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
+	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_valign(Label::VALIGN_CENTER);
 	select_a_node->set_align(Label::ALIGN_CENTER);

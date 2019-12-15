@@ -260,6 +260,7 @@ private:
 	int tab_closing;
 
 	bool exiting;
+	bool dimmed;
 
 	int old_split_ofs;
 	VSplitContainer *top_split;
@@ -655,6 +656,7 @@ private:
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
+	Ref<ImageTexture> _load_custom_class_icon(const String &p_path) const;
 
 protected:
 	void _notification(int p_what);
@@ -849,6 +851,7 @@ public:
 	void restart_editor();
 
 	void dim_editor(bool p_dimming, bool p_force_dim = false);
+	bool is_editor_dimmed() const;
 
 	void edit_current() { _edit_current(); };
 

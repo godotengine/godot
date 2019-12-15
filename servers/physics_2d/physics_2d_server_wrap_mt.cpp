@@ -139,6 +139,7 @@ void Physics2DServerWrapMT::finish() {
 	segment_shape_free_cached_ids();
 	circle_shape_free_cached_ids();
 	rectangle_shape_free_cached_ids();
+	capsule_shape_free_cached_ids();
 	convex_polygon_shape_free_cached_ids();
 	concave_polygon_shape_free_cached_ids();
 

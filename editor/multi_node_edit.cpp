@@ -34,12 +34,10 @@
 #include "editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
-
 	return _set_impl(p_name, p_value, "");
 }
 
 bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
-
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es)
 		return false;
@@ -88,7 +86,6 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 }
 
 bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
-
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es)
 		return false;
@@ -117,7 +114,6 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	HashMap<String, PLData> usage;
 
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
@@ -126,7 +122,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	int nc = 0;
 
-	List<PLData *> datas;
+	List<PLData *> data_list;
 
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
 
@@ -149,7 +145,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				pld.uses = 0;
 				pld.info = F->get();
 				usage[F->get().name] = pld;
-				datas.push_back(usage.getptr(F->get().name));
+				data_list.push_back(usage.getptr(F->get().name));
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear
@@ -160,7 +156,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		nc++;
 	}
 
-	for (List<PLData *>::Element *E = datas.front(); E; E = E->next()) {
+	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
 
 		if (nc == E->get()->uses) {
 			p_list->push_back(E->get()->info);
@@ -171,17 +167,23 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MultiNodeEdit::clear_nodes() {
-
 	nodes.clear();
 }
 
 void MultiNodeEdit::add_node(const NodePath &p_node) {
-
 	nodes.push_back(p_node);
 }
 
-void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
+int MultiNodeEdit::get_node_count() const {
+	return nodes.size();
+}
 
+NodePath MultiNodeEdit::get_node(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, nodes.size(), NodePath());
+	return nodes[p_index];
+}
+
+void MultiNodeEdit::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	_set_impl(p_property, p_value, p_field);
 }
 

@@ -159,7 +159,7 @@ protected:
 	//bind helpers
 	Dictionary _get_range_config(int p_column) {
 		Dictionary d;
-		double min, max, step;
+		double min = 0.0, max = 0.0, step = 0.0;
 		get_range_config(p_column, min, max, step);
 		d["min"] = min;
 		d["max"] = max;
@@ -171,6 +171,8 @@ protected:
 	void _remove_child(Object *p_child) {
 		remove_child(Object::cast_to<TreeItem>(p_child));
 	}
+
+	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 public:
 	/* cell mode */
@@ -279,6 +281,8 @@ public:
 
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
+
+	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	~TreeItem();
 };

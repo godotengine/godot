@@ -27,7 +27,7 @@
 			[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="0">
-			Audio format. See [code]FORMAT_*[/code] constants for values.
+			Audio format. See [enum Format] constants for values.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
 			Loop start in bytes.
@@ -36,7 +36,7 @@
 			Loop end in bytes.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamSample.LoopMode" default="0">
-			Loop mode. See [code]LOOP_*[/code] constants for values.
+			Loop mode. See [enum LoopMode] constants for values.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio.

@@ -25,7 +25,7 @@
 
 #define DMUX_MAJ_VERSION 1
 #define DMUX_MIN_VERSION 0
-#define DMUX_REV_VERSION 2
+#define DMUX_REV_VERSION 3
 
 typedef struct {
   size_t start_;        // start location of the data

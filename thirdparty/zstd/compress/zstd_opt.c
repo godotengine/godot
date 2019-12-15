@@ -552,7 +552,6 @@ U32 ZSTD_insertBtAndGetAllMatches (
 {
     const ZSTD_compressionParameters* const cParams = &ms->cParams;
     U32 const sufficient_len = MIN(cParams->targetLength, ZSTD_OPT_NUM -1);
-    U32 const maxDistance = 1U << cParams->windowLog;
     const BYTE* const base = ms->window.base;
     U32 const current = (U32)(ip-base);
     U32 const hashLog = cParams->hashLog;
@@ -569,8 +568,7 @@ U32 ZSTD_insertBtAndGetAllMatches (
     const BYTE* const dictEnd = dictBase + dictLimit;
     const BYTE* const prefixStart = base + dictLimit;
     U32 const btLow = (btMask >= current) ? 0 : current - btMask;
-    U32 const windowValid = ms->window.lowLimit;
-    U32 const windowLow = ((current - windowValid) > maxDistance) ? current - maxDistance : windowValid;
+    U32 const windowLow = ZSTD_getLowestMatchIndex(ms, current, cParams->windowLog);
     U32 const matchLow = windowLow ? windowLow : 1;
     U32* smallerPtr = bt + 2*(current&btMask);
     U32* largerPtr  = bt + 2*(current&btMask) + 1;
@@ -674,19 +672,21 @@ U32 ZSTD_insertBtAndGetAllMatches (
 
     while (nbCompares-- && (matchIndex >= matchLow)) {
         U32* const nextPtr = bt + 2*(matchIndex & btMask);
-        size_t matchLength = MIN(commonLengthSmaller, commonLengthLarger);   /* guaranteed minimum nb of common bytes */
         const BYTE* match;
+        size_t matchLength = MIN(commonLengthSmaller, commonLengthLarger);   /* guaranteed minimum nb of common bytes */
         assert(current > matchIndex);
 
         if ((dictMode == ZSTD_noDict) || (dictMode == ZSTD_dictMatchState) || (matchIndex+matchLength >= dictLimit)) {
             assert(matchIndex+matchLength >= dictLimit);  /* ensure the condition is correct when !extDict */
             match = base + matchIndex;
+            if (matchIndex >= dictLimit) assert(memcmp(match, ip, matchLength) == 0);  /* ensure early section of match is equal as expected */
             matchLength += ZSTD_count(ip+matchLength, match+matchLength, iLimit);
         } else {
             match = dictBase + matchIndex;
+            assert(memcmp(match, ip, matchLength) == 0);  /* ensure early section of match is equal as expected */
             matchLength += ZSTD_count_2segments(ip+matchLength, match+matchLength, iLimit, dictEnd, prefixStart);
             if (matchIndex+matchLength >= dictLimit)
-                match = base + matchIndex;   /* prepare for match[matchLength] */
+                match = base + matchIndex;   /* prepare for match[matchLength] read */
         }
 
         if (matchLength > bestLength) {
@@ -1098,7 +1098,7 @@ _shortestPath:   /* cur, last_pos, best_mlen, best_off have to be set */
 
                     assert(anchor + llen <= iend);
                     ZSTD_updateStats(optStatePtr, llen, anchor, offCode, mlen);
-                    ZSTD_storeSeq(seqStore, llen, anchor, offCode, mlen-MINMATCH);
+                    ZSTD_storeSeq(seqStore, llen, anchor, iend, offCode, mlen-MINMATCH);
                     anchor += advance;
                     ip = anchor;
             }   }

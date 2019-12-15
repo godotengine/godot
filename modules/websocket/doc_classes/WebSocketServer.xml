@@ -82,6 +82,17 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="ca_chain" type="X509Certificate" setter="set_ca_chain" getter="get_ca_chain">
+			When using SSL (see [member private_key] and [member ssl_certificate]), you can set this to a valid [X509Certificate] to be provided as additional CA chain information during the SSL handshake.
+		</member>
+		<member name="private_key" type="CryptoKey" setter="set_private_key" getter="get_private_key">
+			When set to a valid [CryptoKey] (along with [member ssl_certificate]) will cause the server to require SSL instead of regular TCP (i.e. the [code]wss://[/code] protocol).
+		</member>
+		<member name="ssl_certificate" type="X509Certificate" setter="set_ssl_certificate" getter="get_ssl_certificate">
+			When set to a valid [X509Certificate] (along with [member private_key]) will cause the server to require SSL instead of regular TCP (i.e. the [code]wss://[/code] protocol).
+		</member>
+	</members>
 	<signals>
 		<signal name="client_close_request">
 			<argument index="0" name="id" type="int">

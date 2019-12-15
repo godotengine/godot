@@ -95,6 +95,11 @@ public class GodotLib {
 	public static native void touch(int what, int pointer, int howmany, int[] arr);
 
 	/**
+	 * Forward hover events from the main thread to the GL thread.
+	 */
+	public static native void hover(int type, int x, int y);
+
+	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */

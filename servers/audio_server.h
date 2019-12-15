@@ -115,6 +115,8 @@ public:
 	unsigned int get_capture_position() { return capture_position; }
 	unsigned int get_capture_size() { return capture_size; }
 
+	void clear_capture_buffer() { capture_buffer.resize(0); }
+
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }
 	void reset_profiling_time() { prof_time = 0; }

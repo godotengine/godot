@@ -43,6 +43,7 @@
 #include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
+#include "net_socket_android.h"
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
@@ -635,6 +636,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 	DirAccessJAndroid::setup(godot_io_java->get_instance());
 	AudioDriverAndroid::setup(godot_io_java->get_instance());
+	NetSocketAndroid::setup(godot_java->get_member_object("netUtils", "Lorg/godotengine/godot/utils/GodotNetUtils;", env));
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 
@@ -824,6 +826,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jo
 	if (os_android)
 		os_android->process_touch(ev,pointer,points);
 	*/
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jobject obj, jint p_type, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_hover(p_type, Point2(p_x, p_y));
 }
 
 /*
@@ -1385,6 +1394,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 	String permission = jstring_to_string(p_permission, env);
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
 		AudioDriver::get_singleton()->capture_start();
+	}
+
+	if (os_android->get_main_loop()) {
+		os_android->get_main_loop()->emit_signal("on_request_permissions_result", permission, p_result == JNI_TRUE);
 	}
 }
 

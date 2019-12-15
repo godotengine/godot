@@ -393,7 +393,7 @@ Vector3 Face3::get_closest_point_to(const Vector3 &p_point) const {
 				s = CLAMP(numer / denom, 0.f, 1.f);
 				t = 1 - s;
 			} else {
-				s = CLAMP(-e / c, 0.f, 1.f);
+				s = CLAMP(-d / a, 0.f, 1.f);
 				t = 0.f;
 			}
 		} else {

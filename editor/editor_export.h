@@ -243,10 +243,12 @@ public:
 	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = NULL, bool p_embed = false, int64_t *r_embedded_start = NULL, int64_t *r_embedded_size = NULL);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
-	virtual bool poll_devices() { return false; }
-	virtual int get_device_count() const { return 0; }
-	virtual String get_device_name(int p_device) const { return ""; }
-	virtual String get_device_info(int p_device) const { return ""; }
+	virtual bool poll_export() { return false; }
+	virtual int get_options_count() const { return 0; }
+	virtual String get_options_tooltip() const { return ""; }
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual String get_option_label(int p_device) const { return ""; }
+	virtual String get_option_tooltip(int p_device) const { return ""; }
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
@@ -423,6 +425,7 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
 	void set_extension(const String &p_extension, const String &p_feature_key = "default");
 	void set_name(const String &p_name);

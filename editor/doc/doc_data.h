@@ -78,6 +78,9 @@ public:
 		bool operator<(const PropertyDoc &p_prop) const {
 			return name < p_prop.name;
 		}
+		PropertyDoc() {
+			overridden = false;
+		}
 	};
 
 	struct ClassDoc {

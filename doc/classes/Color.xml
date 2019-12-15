@@ -151,6 +151,15 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+			</description>
+		</method>
 		<method name="lightened">
 			<return type="Color">
 			</return>

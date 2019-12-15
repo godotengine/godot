@@ -1,12 +1,15 @@
 using Godot;
+using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using GodotTools.Ides;
+using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
@@ -34,14 +37,14 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
             {
                 pr.Step("Generating C# project...".TTR());
 
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = (string) ProjectSettings.GetSetting("application/config/name");
+                string name = (string)ProjectSettings.GetSetting("application/config/name");
                 if (name.Empty())
                     name = "UnnamedProject";
 
@@ -58,7 +61,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "Release", "Tools"}
+                        Configs = new List<string> { "Debug", "Release", "Tools" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -73,9 +76,23 @@ namespace GodotTools
                         return false;
                     }
 
-                    // Make sure to update the API assemblies if they happen to be missing. Just in
-                    // case the user decided to delete them at some point after they were loaded.
-                    Internal.UpdateApiAssembliesFromPrebuilt();
+                    pr.Step("Updating Godot API assemblies...".TTR());
+
+                    string debugApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Debug");
+
+                    if (!string.IsNullOrEmpty(debugApiAssembliesError))
+                    {
+                        ShowErrorDialog("Failed to update the Godot API assemblies: " + debugApiAssembliesError);
+                        return false;
+                    }
+
+                    string releaseApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Release");
+
+                    if (!string.IsNullOrEmpty(releaseApiAssembliesError))
+                    {
+                        ShowErrorDialog("Failed to update the Godot API assemblies: " + releaseApiAssembliesError);
+                        return false;
+                    }
 
                     pr.Step("Done".TTR());
 
@@ -93,20 +110,20 @@ namespace GodotTools
 
         private void _RemoveCreateSlnMenuOption()
         {
-            menuPopup.RemoveItem(menuPopup.GetItemIndex((int) MenuOptions.CreateSln));
+            menuPopup.RemoveItem(menuPopup.GetItemIndex((int)MenuOptions.CreateSln));
             bottomPanelBtn.Show();
         }
 
         private void _ShowAboutDialog()
         {
-            bool showOnStart = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             aboutDialogCheckBox.Pressed = showOnStart;
             aboutDialog.PopupCenteredMinsize();
         }
 
         private void _ToggleAboutDialogOnStart(bool enabled)
         {
-            bool showOnStart = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+            bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             if (showOnStart != enabled)
                 editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
         }
@@ -143,7 +160,7 @@ namespace GodotTools
 
             if (what == NotificationReady)
             {
-                bool showInfoDialog = (bool) editorSettings.GetSetting("mono/editor/show_info_on_start");
+                bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
                 if (showInfoDialog)
                 {
                     aboutDialog.PopupExclusive = true;
@@ -174,9 +191,10 @@ namespace GodotTools
             "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss"
         };
 
+        [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editor = (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
 
             switch (editor)
             {
@@ -187,6 +205,12 @@ namespace GodotTools
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
+                case ExternalEditorId.Rider:
+                {
+                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line);
+                    return Error.Ok;
+                }        
                 case ExternalEditorId.MonoDevelop:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
@@ -211,7 +235,7 @@ namespace GodotTools
 
                     bool osxAppBundleInstalled = false;
 
-                    if (OS.IsOSX())
+                    if (OS.IsOSX)
                     {
                         // The package path is '/Applications/Visual Studio Code.app'
                         const string vscodeBundleId = "com.microsoft.VSCode";
@@ -251,7 +275,7 @@ namespace GodotTools
 
                     string command;
 
-                    if (OS.IsOSX())
+                    if (OS.IsOSX)
                     {
                         if (!osxAppBundleInstalled && _vsCodePath.Empty())
                         {
@@ -291,9 +315,10 @@ namespace GodotTools
             return Error.Ok;
         }
 
+        [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
+            return (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
         }
 
         public override bool Build()
@@ -321,7 +346,7 @@ namespace GodotTools
 
             bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
+            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
@@ -331,7 +356,7 @@ namespace GodotTools
 
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
-                menuPopup.AddItem("About C# support".TTR(), (int) MenuOptions.AboutCSharp);
+                menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.WindowTitle = "Important: C# support is not feature-complete";
@@ -354,7 +379,7 @@ namespace GodotTools
                 var aboutLabel = new Label();
                 aboutHBox.AddChild(aboutLabel);
                 aboutLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
-                aboutLabel.SizeFlagsVertical = (int) Control.SizeFlags.ExpandFill;
+                aboutLabel.SizeFlagsVertical = (int)Control.SizeFlags.ExpandFill;
                 aboutLabel.Autowrap = true;
                 aboutLabel.Text =
                     "C# support in Godot Engine is in late alpha stage and, while already usable, " +
@@ -369,7 +394,7 @@ namespace GodotTools
                 EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
-                aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
+                aboutDialogCheckBox = new CheckBox { Text = "Show this warning when starting the editor" };
                 aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }
@@ -382,7 +407,7 @@ namespace GodotTools
             else
             {
                 bottomPanelBtn.Hide();
-                menuPopup.AddItem("Create C# solution".TTR(), (int) MenuOptions.CreateSln);
+                menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
             }
 
             menuPopup.Connect("id_pressed", this, nameof(_MenuOptionPressed));
@@ -401,21 +426,24 @@ namespace GodotTools
 
             string settingsHintStr = "Disabled";
 
-            if (OS.IsWindows())
+            if (OS.IsWindows)
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsOSX())
+            else if (OS.IsOSX)
             {
-                settingsHintStr += $",Visual Studio:{(int) ExternalEditorId.VisualStudioForMac}" +
-                                   $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
+                                   $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsUnix())
+            else if (OS.IsUnixLike())
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
+                settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
@@ -427,11 +455,13 @@ namespace GodotTools
             });
 
             // Export plugin
-            var exportPlugin = new GodotSharpExport();
+            var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
+            exportPlugin.RegisterExportSettings();
             exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();
+            RiderPathManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
@@ -447,7 +477,7 @@ namespace GodotTools
                 // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
                 // will be freed after EditorSettings already was, and its device polling thread
                 // will try to access the EditorSettings singleton, resulting in null dereferencing.
-                (exportPluginWeak.GetRef() as GodotSharpExport)?.Dispose();
+                (exportPluginWeak.GetRef() as ExportPlugin)?.Dispose();
 
                 exportPluginWeak.Dispose();
             }

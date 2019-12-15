@@ -137,6 +137,7 @@ void VisualServerWrapMT::finish() {
 	}
 
 	texture_free_cached_ids();
+	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
 	mesh_free_cached_ids();
@@ -148,6 +149,7 @@ void VisualServerWrapMT::finish() {
 	spot_light_free_cached_ids();
 	reflection_probe_free_cached_ids();
 	gi_probe_free_cached_ids();
+	lightmap_capture_free_cached_ids();
 	particles_free_cached_ids();
 	camera_free_cached_ids();
 	viewport_free_cached_ids();

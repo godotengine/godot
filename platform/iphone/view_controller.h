@@ -45,4 +45,6 @@
 
 - (BOOL)prefersStatusBarHidden;
 
+- (BOOL)prefersHomeIndicatorAutoHidden;
+
 @end

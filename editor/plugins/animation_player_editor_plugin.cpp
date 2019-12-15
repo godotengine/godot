@@ -85,6 +85,9 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				track_editor->set_anim_pos(player->get_current_animation_position());
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
+			} else if (!player->is_valid()) {
+				// Reset timeline when the player has been stopped externally
+				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
@@ -304,6 +307,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
+	_animation_key_editor_seek(timeline_position, false);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -483,6 +487,8 @@ double AnimationPlayerEditor::_get_editor_step() const {
 	if (track_editor->is_snap_enabled()) {
 		const String current = player->get_assigned_animation();
 		const Ref<Animation> anim = player->get_animation(current);
+		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
+
 		// Use more precise snapping when holding Shift
 		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
@@ -1072,15 +1078,19 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
 
+	timeline_position = p_pos;
+
 	if (!is_visible_in_tree())
 		return;
+
 	if (!player)
 		return;
 
 	if (player->is_playing())
 		return;
 
-	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
+	if (!player->has_animation(player->get_assigned_animation()))
+		return;
 
 	updating = true;
 	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
@@ -1753,6 +1763,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	renaming = false;
 	last_active = false;
+	timeline_position = 0;
 
 	set_process_unhandled_key_input(true);
 

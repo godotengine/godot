@@ -26,7 +26,7 @@
 			The Light2D's energy value. The larger the value, the stronger the light.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Light2D.Mode" default="0">
-			The Light2D's mode. See [code]MODE_*[/code] constants for values.
+			The Light2D's mode. See [enum Mode] constants for values.
 		</member>
 		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">
 			The offset of the Light2D's [code]texture[/code].

@@ -230,7 +230,7 @@ void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
 	audio_track = p_idx;
 }
 
-Ref<Texture> VideoStreamPlaybackWebm::get_texture() {
+Ref<Texture> VideoStreamPlaybackWebm::get_texture() const {
 
 	return texture;
 }
@@ -484,6 +484,8 @@ RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_origina
 		*r_error = OK;
 	}
 
+	f->close();
+	memdelete(f);
 	return webm_stream;
 }
 

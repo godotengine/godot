@@ -465,11 +465,8 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _selection_changed();
 
-	bool selected_all_tracks;
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
-	HBoxContainer *track_copy_options;
-	Button *select_all_button;
 
 	struct TrackClipboard {
 		NodePath full_path;
@@ -524,7 +521,7 @@ public:
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
-	float snap_time(float p_value);
+	float snap_time(float p_value, bool p_relative = false);
 	bool is_grouping_tracks();
 
 	MenuButton *get_edit_menu();

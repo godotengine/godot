@@ -30,6 +30,7 @@
 
 #include "net_socket_posix.h"
 
+#ifndef UNIX_SOCKET_UNAVAILABLE
 #if defined(UNIX_ENABLED)
 
 #include <errno.h>
@@ -69,6 +70,7 @@
 #define SOCK_CBUF(x) x
 #define SOCK_IOCTL ioctl
 #define SOCK_CLOSE ::close
+#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::connect(p_sock, p_addr, p_addr_len)
 
 /* Windows */
 #elif defined(WINDOWS_ENABLED)
@@ -82,6 +84,9 @@
 #define SOCK_CBUF(x) (const char *)(x)
 #define SOCK_IOCTL ioctlsocket
 #define SOCK_CLOSE closesocket
+// connect is broken on windows under certain conditions, reasons unknown:
+// See https://github.com/godotengine/webrtc-native/issues/6
+#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::WSAConnect(p_sock, p_addr, p_addr_len, NULL, NULL, NULL, NULL)
 
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
@@ -280,6 +285,21 @@ void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_
 	_sock = p_sock;
 	_ip_type = p_ip_type;
 	_is_stream = p_is_stream;
+	// Disable descriptor sharing with subprocesses.
+	_set_close_exec_enabled(true);
+}
+
+void NetSocketPosix::_set_close_exec_enabled(bool p_enabled) {
+#ifndef WINDOWS_ENABLED
+	// Enable close on exec to avoid sharing with subprocesses. Off by default on Windows.
+#if defined(NO_FCNTL)
+	unsigned long par = p_enabled ? 1 : 0;
+	SOCK_IOCTL(_sock, FIOCLEX, &par);
+#else
+	int opts = fcntl(_sock, F_GETFD);
+	fcntl(_sock, F_SETFD, opts | FD_CLOEXEC);
+#endif
+#endif
 }
 
 Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
@@ -313,12 +333,16 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 		set_ipv6_only_enabled(ip_type != IP::TYPE_ANY);
 	}
 
-	if (protocol == IPPROTO_UDP && ip_type != IP::TYPE_IPV6) {
-		// Enable broadcasting for UDP sockets if it's not IPv6 only (IPv6 has no broadcast option).
-		set_broadcasting_enabled(true);
+	if (protocol == IPPROTO_UDP) {
+		// Make sure to disable broadcasting for UDP sockets.
+		// Depending on the OS, this option might or might not be enabled by default. Let's normalize it.
+		set_broadcasting_enabled(false);
 	}
 
 	_is_stream = p_sock_type == TYPE_TCP;
+
+	// Disable descriptor sharing with subprocesses.
+	_set_close_exec_enabled(true);
 
 #if defined(WINDOWS_ENABLED)
 	if (!_is_stream) {
@@ -390,7 +414,7 @@ Error NetSocketPosix::connect_to_host(IP_Address p_host, uint16_t p_port) {
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
 
-	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
+	if (SOCK_CONNECT(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 
 		NetError err = _get_socket_error();
 
@@ -580,15 +604,18 @@ Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP
 	return OK;
 }
 
-void NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
-	ERR_FAIL_COND(!is_open());
+Error NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	// IPv6 has no broadcast support.
-	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV6);
+	if (_ip_type == IP::TYPE_IPV6)
+		return ERR_UNAVAILABLE;
 
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_BROADCAST, SOCK_CBUF(&par), sizeof(int)) != 0) {
 		WARN_PRINT("Unable to change broadcast setting");
+		return FAILED;
 	}
+	return OK;
 }
 
 void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
@@ -691,3 +718,4 @@ Error NetSocketPosix::join_multicast_group(const IP_Address &p_multi_address, St
 Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
+#endif

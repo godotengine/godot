@@ -108,7 +108,7 @@ bool Timer::has_autostart() const {
 
 void Timer::start(float p_time) {
 
-	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree!");
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree. Either add it or set autostart to true.");
 
 	if (p_time > 0) {
 		set_wait_time(p_time);

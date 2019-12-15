@@ -35,6 +35,7 @@
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/ring_buffer.h"
 #include "packet_buffer.h"
 #include "websocket_peer.h"
@@ -55,6 +56,7 @@ public:
 		void *obj;
 		void *peer;
 		Ref<StreamPeer> conn;
+		Ref<StreamPeerTCP> tcp;
 		int id;
 		wslay_event_context_ptr ctx;
 
@@ -77,7 +79,6 @@ private:
 	static bool _wsl_poll(struct PeerData *p_data);
 	static void _wsl_destroy(struct PeerData **p_data);
 
-	Ref<StreamPeer> _connection;
 	struct PeerData *_data;
 	uint8_t _is_string;
 	// Our packet info is just a boolean (is_string), using uint8_t for it.

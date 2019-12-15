@@ -111,13 +111,13 @@ extern "C" {
 #define TINYEXR_ERROR_INVALID_ARGUMENT (-3)
 #define TINYEXR_ERROR_INVALID_DATA (-4)
 #define TINYEXR_ERROR_INVALID_FILE (-5)
-#define TINYEXR_ERROR_INVALID_PARAMETER (-5)
-#define TINYEXR_ERROR_CANT_OPEN_FILE (-6)
-#define TINYEXR_ERROR_UNSUPPORTED_FORMAT (-7)
-#define TINYEXR_ERROR_INVALID_HEADER (-8)
-#define TINYEXR_ERROR_UNSUPPORTED_FEATURE (-9)
-#define TINYEXR_ERROR_CANT_WRITE_FILE (-10)
-#define TINYEXR_ERROR_SERIALZATION_FAILED (-11)
+#define TINYEXR_ERROR_INVALID_PARAMETER (-6)
+#define TINYEXR_ERROR_CANT_OPEN_FILE (-7)
+#define TINYEXR_ERROR_UNSUPPORTED_FORMAT (-8)
+#define TINYEXR_ERROR_INVALID_HEADER (-9)
+#define TINYEXR_ERROR_UNSUPPORTED_FEATURE (-10)
+#define TINYEXR_ERROR_CANT_WRITE_FILE (-11)
+#define TINYEXR_ERROR_SERIALZATION_FAILED (-12)
 
 // @note { OpenEXR file format: http://www.openexr.com/openexrfilelayout.pdf }
 
@@ -552,6 +552,10 @@ namespace miniz {
 
 #if __has_warning("-Wtautological-constant-compare")
 #pragma clang diagnostic ignored "-Wtautological-constant-compare"
+#endif
+
+#if __has_warning("-Wextra-semi-stmt")
+#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 #endif
 
 #endif
@@ -7625,6 +7629,9 @@ static bool DecompressZip(unsigned char *dst,
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
+#if __has_warning("-Wextra-semi-stmt")
+#pragma clang diagnostic ignored "-Wextra-semi-stmt"
+#endif
 #endif
 
 #ifdef _MSC_VER
@@ -7884,6 +7891,10 @@ static bool DecompressRle(unsigned char *dst,
 
 #if __has_warning("-Wcast-qual")
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
+#if __has_warning("-Wextra-semi-stmt")
+#pragma clang diagnostic ignored "-Wextra-semi-stmt"
 #endif
 
 #endif

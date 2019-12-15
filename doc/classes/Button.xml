@@ -12,7 +12,7 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign" default="1">
-			Text alignment policy for the button's text, use one of the [code]ALIGN_*[/code] constants.
+			Text alignment policy for the button's text, use one of the [enum TextAlign] constants.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.

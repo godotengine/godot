@@ -82,8 +82,6 @@ public:
 	void set_character(int p_char) { character = (CharType)p_char; }
 	Dictionary get_environment() { return environment; }
 	void set_environment(Dictionary p_environment) { environment = p_environment; }
-
-	Variant get_value_or(String p_key, Variant p_default_value);
 };
 
 #endif // RICH_TEXT_EFFECT_H

@@ -84,13 +84,16 @@ String GDScriptLanguage::_get_processed_template(const String &p_template, const
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	String _template = "extends %BASE%\n"
 					   "\n"
+					   "\n"
 					   "# Declare member variables here. Examples:\n"
 					   "# var a%INT_TYPE% = 2\n"
 					   "# var b%STRING_TYPE% = \"text\"\n"
 					   "\n"
+					   "\n"
 					   "# Called when the node enters the scene tree for the first time.\n"
 					   "func _ready()%VOID_RETURN%:\n"
 					   "%TS%pass # Replace with function body.\n"
+					   "\n"
 					   "\n"
 					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
 					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
@@ -741,6 +744,14 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 			r_type.type.kind = GDScriptParser::DataType::BUILTIN;
 			r_type.type.builtin_type = Variant::ARRAY;
 		} break;
+		case GDScriptParser::Node::TYPE_CAST: {
+			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
+			GDScriptCompletionIdentifier value;
+			if (_guess_expression_type(p_context, cn->source_node, r_type)) {
+				r_type.type = cn->get_datatype();
+				found = true;
+			}
+		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
 			const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_expression);
 			switch (op->op) {
@@ -1229,6 +1240,9 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 		c.line = last_assign_line;
 		r_type.assigned_expression = last_assigned_expression;
 		if (_guess_expression_type(c, last_assigned_expression, r_type)) {
+			if (var_type.has_type) {
+				r_type.type = var_type;
+			}
 			return true;
 		}
 	}
@@ -1944,11 +1958,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 								ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_MEMBER);
 								r_result.insert(option.display, option);
 							}
-						} else {
-							for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
-								ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
-								r_result.insert(option.display, option);
-							}
+						}
+						for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
+							ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
+							r_result.insert(option.display, option);
 						}
 					}
 					if (!p_only_functions) {

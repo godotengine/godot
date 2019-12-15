@@ -411,6 +411,7 @@ void ItemList::set_max_columns(int p_amount) {
 	ERR_FAIL_COND(p_amount < 0);
 	max_columns = p_amount;
 	update();
+	shape_changed = true;
 }
 int ItemList::get_max_columns() const {
 
@@ -430,6 +431,7 @@ ItemList::SelectMode ItemList::get_select_mode() const {
 
 void ItemList::set_icon_mode(IconMode p_mode) {
 
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	icon_mode = p_mode;
 	update();
 	shape_changed = true;
@@ -925,7 +927,7 @@ void ItemList::_notification(int p_what) {
 				current_columns = max_columns;
 
 			while (true) {
-				//repeat util all fits
+				//repeat until all fits
 				bool all_fit = true;
 				Vector2 ofs;
 				int col = 0;
@@ -967,7 +969,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (all_fit) {
-					float page = size.height - bg->get_minimum_size().height;
+					float page = MAX(0, size.height - bg->get_minimum_size().height);
 					float max = MAX(page, ofs.y + max_h);
 					if (auto_height)
 						auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;

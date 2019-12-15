@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HTTPRequest" inherits="Node" category="Core" version="3.2">
 	<brief_description>
-		A node with the ability to send HTTP requests.
+		A node with the ability to send HTTP(S) requests.
 	</brief_description>
 	<description>
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
+		[b]Example of loading and displaying an image using HTTPRequest:[/b]
+		[codeblock]
+		func _ready():
+		    # Create an HTTP request node and connect its completion signal.
+		    var http_request = HTTPRequest.new()
+		    add_child(http_request)
+		    http_request.connect("request_completed", self, "_http_request_completed")
+
+		    # Perform the HTTP request. The URL below returns a PNG image as of writing.
+		    var error = http_request.request("https://via.placeholder.com/512")
+		    if error != OK:
+		        push_error("An error occurred in the HTTP request.")
+
+
+		# Called when the HTTP request is completed.
+		func _http_request_completed(result, response_code, headers, body):
+		    var image = Image.new()
+		    var error = image.load_png_from_buffer(body)
+		    if error != OK:
+		        push_error("Couldn't load the image.")
+
+		    var texture = ImageTexture.new()
+		    texture.create_from_image(image)
+
+		    # Display the image in a TextureRect node.
+		    var texture_rect = TextureRect.new()
+		    add_child(texture_rect)
+		    texture_rect.texture = texture
+		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
@@ -23,6 +53,7 @@
 			</return>
 			<description>
 				Returns the response body length.
+				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
@@ -36,7 +67,7 @@
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns the current status of the underlying [HTTPClient]. See [code]STATUS_*[/code] enum on [HTTPClient].
+				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
 			</description>
 		</method>
 		<method name="request">
@@ -61,6 +92,10 @@
 	<members>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies.
+		</member>
+		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="4096">
+			The size of the buffer used and maximum bytes to read per iteration. See [member HTTPClient.read_chunk_size].
+			Set this to a higher value (e.g. 65536 for 64 KiB) when downloading large files to achieve better speeds at the cost of memory.
 		</member>
 		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.

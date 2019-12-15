@@ -20,7 +20,7 @@ cache:
 
 matrix:
   include:
-    - name: Static checks (clang-format)
+    - name: Static checks (clang-format) + Documentation checks
       stage: check
       env: STATIC_CHECKS=yes
       os: linux
@@ -47,15 +47,6 @@ matrix:
             - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
-        coverity_scan:
-          project:
-            name: "godotengine/godot"
-            description: "Godot Engine Coverity scans"
-          notification_email: coverity@godotengine.org
-          build_command_prepend: ""
-          build_command: "scons p=x11 -j2 $OPTIONS"
-          branch_pattern: coverity_scan
-
     - name: Linux export template (release, Clang)
       stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
@@ -71,10 +62,14 @@ matrix:
       env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
+      addons:
+        apt:
+          packages:
+            - openjdk-8-jdk
 
     - name: macOS editor (debug, Clang)
       stage: build
-      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
 
@@ -116,13 +111,13 @@ before_install:
 install:
   - pip install --user scons;
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64;
+      export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
+      java -version;
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
-      misc/travis/android-tools-osx.sh;
     fi
 
 before_script:
@@ -134,6 +129,7 @@ before_script:
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
+      doc/tools/makerst.py --dry-run doc/classes modules;
     else
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
       if [ "$TEST_PROJECT" = "yes" ]; then

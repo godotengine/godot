@@ -94,6 +94,13 @@ public:
     * @param pScene The imported data to work at. */
     void Execute( aiScene* pScene);
 
+public:
+
+    // -------------------------------------------------------------------
+    /** Checks whether the scene is already in verbose format.
+    * @param pScene The data to check. 
+    * @return true if the scene is already in verbose format. */
+    static bool IsVerboseFormat(const aiScene* pScene);
 
 private:
 

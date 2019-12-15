@@ -44,7 +44,6 @@
 #include "core/project_settings.h"
 #include "core/register_core_types.h"
 #include "core/script_debugger_local.h"
-#include "core/script_debugger_remote.h"
 #include "core/script_language.h"
 #include "core/translation.h"
 #include "core/version.h"
@@ -59,12 +58,14 @@
 #include "main/tests/test_main.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -97,6 +98,7 @@ static MessageQueue *message_queue = NULL;
 
 // Initialized in setup2()
 static AudioServer *audio_server = NULL;
+static CameraServer *camera_server = NULL;
 static ARVRServer *arvr_server = NULL;
 static PhysicsServer *physics_server = NULL;
 static Physics2DServer *physics_2d_server = NULL;
@@ -257,6 +259,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --position <X>,<Y>               Request window position.\n");
 	OS::get_singleton()->print("  --low-dpi                        Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
+	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
+	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -397,6 +401,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Vector<String> breakpoints;
 	bool use_custom_res = true;
 	bool force_res = false;
+	bool saw_vsync_via_compositor_override = false;
 #ifdef TOOLS_ENABLED
 	bool found_project = false;
 #endif
@@ -444,6 +449,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				audio_driver = I->next()->get();
+
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
+					if (audio_driver == OS::get_singleton()->get_audio_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options are ", audio_driver.utf8().get_data());
+
+					for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
+						if (i == OS::get_singleton()->get_audio_driver_count() - 1) {
+							OS::get_singleton()->print(" and ");
+						} else if (i != 0) {
+							OS::get_singleton()->print(", ");
+						}
+
+						OS::get_singleton()->print("'%s'", OS::get_singleton()->get_audio_driver_name(i));
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
@@ -455,6 +486,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 
 				video_driver = I->next()->get();
+
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+					if (video_driver == OS::get_singleton()->get_video_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown video driver '%s', aborting.\nValid options are ", video_driver.utf8().get_data());
+
+					for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+						if (i == OS::get_singleton()->get_video_driver_count() - 1) {
+							OS::get_singleton()->print(" and ");
+						} else if (i != 0) {
+							OS::get_singleton()->print(", ");
+						}
+
+						OS::get_singleton()->print("'%s'", OS::get_singleton()->get_video_driver_name(i));
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
@@ -536,6 +593,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get() == "--enable-vsync-via-compositor") {
+
+			video_mode.vsync_via_compositor = true;
+			saw_vsync_via_compositor_override = true;
+		} else if (I->get() == "--disable-vsync-via-compositor") {
+
+			video_mode.vsync_via_compositor = false;
+			saw_vsync_via_compositor_override = true;
 #endif
 		} else if (I->get() == "--profiling") { // enable profiling
 
@@ -930,10 +995,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			video_mode.height = GLOBAL_GET("display/window/size/height");
 
 			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
+
 				int tw = globals->get("display/window/size/test_width");
-				int th = globals->get("display/window/size/test_height");
-				if (tw > 0 && th > 0) {
+				if (tw > 0) {
 					video_mode.width = tw;
+				}
+				int th = globals->get("display/window/size/test_height");
+				if (th > 0) {
 					video_mode.height = th;
 				}
 			}
@@ -951,6 +1019,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	video_mode.use_vsync = GLOBAL_DEF_RST("display/window/vsync/use_vsync", true);
 	OS::get_singleton()->_use_vsync = video_mode.use_vsync;
+
+	if (!saw_vsync_via_compositor_override) {
+		// If one of the command line options to enable/disable vsync via the
+		// window compositor ("--enable-vsync-via-compositor" or
+		// "--disable-vsync-via-compositor") was present then it overrides the
+		// project setting.
+		video_mode.vsync_via_compositor = GLOBAL_DEF("display/window/vsync/vsync_via_compositor", false);
+	}
+
+	OS::get_singleton()->_vsync_via_compositor = video_mode.vsync_via_compositor;
 
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
@@ -989,10 +1067,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (video_driver_idx < 0) {
-
-		//OS::get_singleton()->alert("Invalid Video Driver: " + video_driver);
 		video_driver_idx = 0;
-		//goto error;
 	}
 
 	if (audio_driver == "") { // specified in project.godot
@@ -1009,10 +1084,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver_idx < 0) {
-
-		OS::get_singleton()->alert("Invalid Audio Driver: " + audio_driver);
 		audio_driver_idx = 0;
-		//goto error;
 	}
 
 	{
@@ -1053,6 +1125,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
+
+	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1269,6 +1343,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 	register_module_types();
 
+	camera_server = CameraServer::create();
+
 	initialize_physics();
 	register_server_singletons();
 
@@ -1299,8 +1375,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
 
-	print_verbose("CORE API HASH: " + itos(ClassDB::get_api_hash(ClassDB::API_CORE)));
-	print_verbose("EDITOR API HASH: " + itos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
+	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
+	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
 	return OK;
@@ -1373,8 +1449,6 @@ bool Main::start() {
 			}
 		}
 	}
-
-	GLOBAL_DEF("editor/active", editor);
 
 	String main_loop_type;
 #ifdef TOOLS_ENABLED
@@ -1470,6 +1544,9 @@ bool Main::start() {
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
 		if (check_only) {
+			if (!script_res->is_valid()) {
+				OS::get_singleton()->set_exit_code(1);
+			}
 			return false;
 		}
 
@@ -1534,6 +1611,12 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
+				if (script_debugger && script_debugger->is_remote()) {
+					ScriptDebuggerRemote *remote_debugger = static_cast<ScriptDebuggerRemote *>(script_debugger);
+
+					remote_debugger->set_scene_tree(sml);
+				}
+
 				//autoload
 				List<PropertyInfo> props;
 				ProjectSettings::get_singleton()->get_property_list(&props);
@@ -1807,9 +1890,7 @@ bool Main::start() {
 			// Hide console window if requested (Windows-only).
 			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
 			OS::get_singleton()->set_console_visible(!hide_console);
-		}
 
-		if (project_manager || editor) {
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}
@@ -2036,6 +2117,11 @@ void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
 
+	if (script_debugger) {
+		// Flush any remaining messages
+		script_debugger->idle_poll();
+	}
+
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
@@ -2083,6 +2169,10 @@ void Main::cleanup() {
 		memdelete(audio_server);
 	}
 
+	if (camera_server) {
+		memdelete(camera_server);
+	}
+
 	OS::get_singleton()->finalize();
 	finalize_physics();
 
@@ -2113,6 +2203,5 @@ void Main::cleanup() {
 	unregister_core_driver_types();
 	unregister_core_types();
 
-	OS::get_singleton()->clear_last_error();
 	OS::get_singleton()->finalize_core();
 }

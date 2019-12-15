@@ -729,6 +729,43 @@ bool TreeItem::is_folding_disabled() const {
 	return disable_folding;
 }
 
+Variant TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+
+	if (p_argcount < 1) {
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 0;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type() != Variant::STRING) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::STRING;
+		return Variant();
+	}
+
+	StringName method = *p_args[0];
+
+	call_recursive(method, &p_args[1], p_argcount - 1, r_error);
+	return Variant();
+}
+
+void recursive_call_aux(TreeItem *p_item, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	if (!p_item) {
+		return;
+	}
+	p_item->call(p_method, p_args, p_argcount, r_error);
+	TreeItem *c = p_item->get_children();
+	while (c) {
+		recursive_call_aux(c, p_method, p_args, p_argcount, r_error);
+		c = c->get_next();
+	}
+}
+
+void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	recursive_call_aux(this, p_method, p_args, p_argcount, r_error);
+}
+
 void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell_mode", "column", "mode"), &TreeItem::set_cell_mode);
@@ -790,6 +827,7 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_color", "column", "color"), &TreeItem::set_custom_color);
 	ClassDB::bind_method(D_METHOD("clear_custom_color", "column"), &TreeItem::clear_custom_color);
+	ClassDB::bind_method(D_METHOD("get_custom_color", "column"), &TreeItem::get_custom_color);
 
 	ClassDB::bind_method(D_METHOD("set_custom_bg_color", "column", "color", "just_outline"), &TreeItem::set_custom_bg_color, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_custom_bg_color", "column"), &TreeItem::clear_custom_bg_color);
@@ -819,6 +857,14 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_disable_folding", "disable"), &TreeItem::set_disable_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
+
+	{
+		MethodInfo mi;
+		mi.name = "call_recursive";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
+
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_recursive", &TreeItem::_call_recursive_bind, mi);
+	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_folding"), "set_disable_folding", "is_folding_disabled");
@@ -1188,7 +1234,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (select_mode != SELECT_ROW && (p_item->cells[i].selected || selected_item == p_item)) {
+			if ((select_mode == SELECT_ROW && selected_item == p_item) || p_item->cells[i].selected) {
 				Rect2i r(cell_rect.position, cell_rect.size);
 
 				if (p_item->cells[i].text.size() > 0) {
@@ -2178,8 +2224,9 @@ void Tree::_go_down() {
 	TreeItem *next = NULL;
 	if (!selected_item) {
 
-		next = hide_root ? root->get_next_visible() : root;
-		selected_item = 0;
+		if (root) {
+			next = hide_root ? root->get_next_visible() : root;
+		}
 	} else {
 
 		next = selected_item->get_next_visible();
@@ -2677,11 +2724,21 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			} break;
 			case BUTTON_WHEEL_UP: {
 
+				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
+				if (v_scroll->get_value() != prev_value) {
+					accept_event();
+				}
+
 			} break;
 			case BUTTON_WHEEL_DOWN: {
 
+				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
+				if (v_scroll->get_value() != prev_value) {
+					accept_event();
+				}
+
 			} break;
 		}
 	}
@@ -2689,7 +2746,11 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 
+		double prev_value = v_scroll->get_value();
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		if (v_scroll->get_value() != prev_value) {
+			accept_event();
+		}
 	}
 }
 
@@ -2705,7 +2766,6 @@ bool Tree::edit_selected() {
 		return false;
 
 	Rect2 rect = s->get_meta("__focus_rect");
-
 	popup_edited_item = s;
 	popup_edited_item_col = col;
 
@@ -3990,6 +4050,7 @@ Tree::Tree() {
 	drop_mode_section = 0;
 	single_select_defer = NULL;
 
+	scrolling = false;
 	allow_rmb_select = false;
 	force_edit_checkbox_only_on_checkbox = false;
 

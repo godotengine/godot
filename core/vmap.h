@@ -196,8 +196,7 @@ public:
 
 		int pos = _find_exact(p_key);
 		if (pos < 0) {
-			V val;
-			pos = insert(p_key, val);
+			pos = insert(p_key, V());
 		}
 
 		return _cowdata.get_m(pos).value;

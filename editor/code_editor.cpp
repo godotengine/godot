@@ -108,6 +108,8 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 	}
 }
 
@@ -191,7 +193,9 @@ void FindReplaceBar::_replace() {
 		results_count = -1;
 	}
 
-	search_current();
+	if (!search_current()) {
+		search_next();
+	}
 }
 
 void FindReplaceBar::_replace_all() {
@@ -326,7 +330,7 @@ void FindReplaceBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->add_color_override("font_color", results_count > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
@@ -456,10 +460,10 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 void FindReplaceBar::popup_search(bool p_show_only) {
 
-	if (!is_visible())
-		replace_text->hide();
+	replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
+
 	_show_search(false, p_show_only);
 }
 
@@ -1178,6 +1182,19 @@ void CodeTextEditor::move_lines_down() {
 	text_editor->update();
 }
 
+void CodeTextEditor::_delete_line(int p_line) {
+	// this is currently intended to be called within delete_lines()
+	// so `begin_complex_operation` is ommitted here
+	text_editor->set_line(p_line, "");
+	if (p_line == 0 && text_editor->get_line_count() > 1) {
+		text_editor->cursor_set_line(1);
+		text_editor->cursor_set_column(0);
+	}
+	text_editor->backspace_at_cursor();
+	text_editor->unfold_line(p_line);
+	text_editor->cursor_set_line(p_line);
+}
+
 void CodeTextEditor::delete_lines() {
 	text_editor->begin_complex_operation();
 	if (text_editor->is_selection_active()) {
@@ -1185,22 +1202,13 @@ void CodeTextEditor::delete_lines() {
 		int from_line = text_editor->get_selection_from_line();
 		int count = Math::abs(to_line - from_line) + 1;
 
-		text_editor->cursor_set_line(to_line, false);
-		while (count) {
-			text_editor->set_line(text_editor->cursor_get_line(), "");
-			text_editor->backspace_at_cursor();
-			count--;
-			if (count)
-				text_editor->unfold_line(from_line);
+		text_editor->cursor_set_line(from_line, false);
+		for (int i = 0; i < count; i++) {
+			_delete_line(from_line);
 		}
-		text_editor->cursor_set_line(from_line - 1);
 		text_editor->deselect();
 	} else {
-		int line = text_editor->cursor_get_line();
-		text_editor->set_line(text_editor->cursor_get_line(), "");
-		text_editor->backspace_at_cursor();
-		text_editor->unfold_line(line);
-		text_editor->cursor_set_line(line);
+		_delete_line(text_editor->cursor_get_line());
 	}
 	text_editor->end_complex_operation();
 }
@@ -1441,6 +1449,9 @@ void CodeTextEditor::_update_font() {
 
 	text_editor->add_font_override("font", get_font("source", "EditorFonts"));
 
+	error->add_font_override("font", get_font("status_source", "EditorFonts"));
+	error->add_color_override("font_color", get_color("error_color", "Editor"));
+
 	Ref<Font> status_bar_font = get_font("status_source", "EditorFonts");
 	error->add_font_override("font", status_bar_font);
 	int count = status_bar->get_child_count();
@@ -1558,6 +1569,7 @@ void CodeTextEditor::goto_next_bookmark() {
 			if (bline > line) {
 				text_editor->unfold_line(bline);
 				text_editor->cursor_set_line(bline);
+				text_editor->center_viewport_to_cursor();
 				return;
 			}
 		}
@@ -1582,6 +1594,7 @@ void CodeTextEditor::goto_prev_bookmark() {
 			if (bline < line) {
 				text_editor->unfold_line(bline);
 				text_editor->cursor_set_line(bline);
+				text_editor->center_viewport_to_cursor();
 				return;
 			}
 		}
@@ -1675,8 +1688,6 @@ CodeTextEditor::CodeTextEditor() {
 	error = memnew(Label);
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
-	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", this, "_error_pressed");
 	find_replace_bar->connect("error", error, "set_text");

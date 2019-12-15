@@ -89,8 +89,8 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 
 	if (tokenizer->get_token() != GDScriptTokenizer::TK_NEWLINE) {
 		// be more python-like
-		int current = tab_level.back()->get();
-		tab_level.push_back(current);
+		IndentLevel current_level = indent_level.back()->get();
+		indent_level.push_back(current_level);
 		return true;
 		//_set_error("newline expected after ':'.");
 		//return false;
@@ -105,12 +105,19 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 		} else if (tokenizer->get_token(1) != GDScriptTokenizer::TK_NEWLINE) {
 
 			int indent = tokenizer->get_token_line_indent();
-			int current = tab_level.back()->get();
-			if (indent <= current) {
+			int tabs = tokenizer->get_token_line_tab_indent();
+			IndentLevel current_level = indent_level.back()->get();
+			IndentLevel new_indent(indent, tabs);
+			if (new_indent.is_mixed(current_level)) {
+				_set_error("Mixed tabs and spaces in indentation.");
 				return false;
 			}
 
-			tab_level.push_back(indent);
+			if (indent <= current_level.indent) {
+				return false;
+			}
+
+			indent_level.push_back(new_indent);
 			tokenizer->advance();
 			return true;
 
@@ -858,11 +865,23 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				if (current_function) {
 					int arg_idx = current_function->arguments.find(identifier);
 					if (arg_idx != -1) {
-						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
-							// Assignment is not really usage
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] - 1;
-						} else {
-							current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+						switch (tokenizer->get_token()) {
+							case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR:
+							case GDScriptTokenizer::TK_OP_ASSIGN_DIV:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MOD:
+							case GDScriptTokenizer::TK_OP_ASSIGN_MUL:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT:
+							case GDScriptTokenizer::TK_OP_ASSIGN_SUB:
+							case GDScriptTokenizer::TK_OP_ASSIGN: {
+								// Assignment is not really usage
+							} break;
+							default: {
+								current_function->arguments_usage.write[arg_idx] = current_function->arguments_usage[arg_idx] + 1;
+							}
 						}
 					}
 				}
@@ -2213,7 +2232,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 }
 
 void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static) {
-	int indent_level = tab_level.back()->get();
+	IndentLevel current_level = indent_level.back()->get();
 
 	p_block->has_return = true;
 
@@ -2228,13 +2247,11 @@ void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBran
 		if (error_set)
 			return;
 
-		if (indent_level > tab_level.back()->get()) {
+		if (current_level.indent > indent_level.back()->get().indent) {
 			break; // go back a level
 		}
 
-		if (pending_newline != -1) {
-			pending_newline = -1;
-		}
+		pending_newline = -1;
 
 		PatternBranchNode *branch = alloc_node<PatternBranchNode>();
 		branch->body = alloc_node<BlockNode>();
@@ -2685,7 +2702,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 
 void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
-	int indent_level = tab_level.back()->get();
+	IndentLevel current_level = indent_level.back()->get();
 
 #ifdef DEBUG_ENABLED
 
@@ -2698,9 +2715,13 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 	bool is_first_line = true;
 
 	while (true) {
-		if (!is_first_line && tab_level.back()->prev() && tab_level.back()->prev()->get() == indent_level) {
+		if (!is_first_line && indent_level.back()->prev() && indent_level.back()->prev()->get().indent == current_level.indent) {
+			if (indent_level.back()->prev()->get().is_mixed(current_level)) {
+				_set_error("Mixed tabs and spaces in indentation.");
+				return;
+			}
 			// pythonic single-line expression, don't parse future lines
-			tab_level.pop_back();
+			indent_level.pop_back();
 			p_block->end_line = tokenizer->get_token_line();
 			return;
 		}
@@ -2710,7 +2731,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 		if (error_set)
 			return;
 
-		if (indent_level > tab_level.back()->get()) {
+		if (current_level.indent > indent_level.back()->get().indent) {
 			p_block->end_line = tokenizer->get_token_line();
 			return; //go back a level
 		}
@@ -2914,14 +2935,14 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE && _parse_newline())
 						;
 
-					if (tab_level.back()->get() < indent_level) { //not at current indent level
+					if (indent_level.back()->get().indent < current_level.indent) { //not at current indent level
 						p_block->end_line = tokenizer->get_token_line();
 						return;
 					}
 
 					if (tokenizer->get_token() == GDScriptTokenizer::TK_CF_ELIF) {
 
-						if (tab_level.back()->get() > indent_level) {
+						if (indent_level.back()->get().indent > current_level.indent) {
 
 							_set_error("Invalid indentation.");
 							return;
@@ -2969,7 +2990,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 					} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CF_ELSE) {
 
-						if (tab_level.back()->get() > indent_level) {
+						if (indent_level.back()->get().indent > current_level.indent) {
 							_set_error("Invalid indentation.");
 							return;
 						}
@@ -3328,7 +3349,12 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after expression.");
+					// Attempt to guess a better error message if the user "retypes" a variable
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON && tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						_set_error("Unexpected ':=', use '=' instead. Expected end of statement after expression.");
+					} else {
+						_set_error(String() + "Expected end of statement after expression, got " + tokenizer->get_token_name(tokenizer->get_token()) + " instead");
+					}
 					return;
 				}
 
@@ -3341,32 +3367,45 @@ bool GDScriptParser::_parse_newline() {
 
 	if (tokenizer->get_token(1) != GDScriptTokenizer::TK_EOF && tokenizer->get_token(1) != GDScriptTokenizer::TK_NEWLINE) {
 
+		IndentLevel current_level = indent_level.back()->get();
 		int indent = tokenizer->get_token_line_indent();
-		int current_indent = tab_level.back()->get();
+		int tabs = tokenizer->get_token_line_tab_indent();
+		IndentLevel new_level(indent, tabs);
 
-		if (indent > current_indent) {
+		if (new_level.is_mixed(current_level)) {
+			_set_error("Mixed tabs and spaces in indentation.");
+			return false;
+		}
+
+		if (indent > current_level.indent) {
 			_set_error("Unexpected indentation.");
 			return false;
 		}
 
-		if (indent < current_indent) {
+		if (indent < current_level.indent) {
 
-			while (indent < current_indent) {
+			while (indent < current_level.indent) {
 
 				//exit block
-				if (tab_level.size() == 1) {
+				if (indent_level.size() == 1) {
 					_set_error("Invalid indentation. Bug?");
 					return false;
 				}
 
-				tab_level.pop_back();
+				indent_level.pop_back();
 
-				if (tab_level.back()->get() < indent) {
+				if (indent_level.back()->get().indent < indent) {
 
 					_set_error("Unindent does not match any outer indentation level.");
 					return false;
 				}
-				current_indent = tab_level.back()->get();
+
+				if (indent_level.back()->get().is_mixed(current_level)) {
+					_set_error("Mixed tabs and spaces in indentation.");
+					return false;
+				}
+
+				current_level = indent_level.back()->get();
 			}
 
 			tokenizer->advance();
@@ -3464,7 +3503,7 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
 void GDScriptParser::_parse_class(ClassNode *p_class) {
 
-	int indent_level = tab_level.back()->get();
+	IndentLevel current_level = indent_level.back()->get();
 
 	while (true) {
 
@@ -3472,7 +3511,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 		if (error_set)
 			return;
 
-		if (indent_level > tab_level.back()->get()) {
+		if (current_level.indent > indent_level.back()->get().indent) {
 			p_class->end_line = tokenizer->get_token_line();
 			return; //go back a level
 		}
@@ -6111,12 +6150,18 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 			break;
 	}
 
+	// Some classes are prefixed with `_` internally
+	if (!ClassDB::class_exists(expr_native)) {
+		expr_native = "_" + expr_native;
+	}
+
 	switch (p_container.kind) {
 		case DataType::NATIVE: {
 			if (p_container.is_meta_type) {
 				return ClassDB::is_parent_class(expr_native, GDScriptNativeClass::get_class_static());
 			} else {
-				return ClassDB::is_parent_class(expr_native, p_container.native_type);
+				StringName container_native = ClassDB::class_exists(p_container.native_type) ? p_container.native_type : StringName("_" + p_container.native_type);
+				return ClassDB::is_parent_class(expr_native, container_native);
 			}
 		} break;
 		case DataType::SCRIPT:
@@ -6426,6 +6471,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 					DataType true_type = _reduce_node_type(op->arguments[1]);
 					DataType false_type = _reduce_node_type(op->arguments[2]);
+					// Check arguments[0] errors.
+					_reduce_node_type(op->arguments[0]);
 
 					// If types are equal, then the expression is of the same type
 					// If they are compatible, return the broader type
@@ -8138,7 +8185,9 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						}
 #endif // DEBUG_ENABLED
 
+						bool type_match = check_types;
 						if (check_types && !_is_type_compatible(lh_type, rh_type)) {
+							type_match = false;
 							// Try supertype test
 							if (_is_type_compatible(rh_type, lh_type)) {
 								_mark_line_as_unsafe(op->line);
@@ -8150,23 +8199,27 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 											op->line);
 									return;
 								}
-								// Replace assignment with implicit conversion
-								BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
-								convert->line = op->line;
-								convert->function = GDScriptFunctions::TYPE_CONVERT;
+								if (op->op == OperatorNode::OP_ASSIGN) {
+									// Replace assignment with implicit conversion
+									BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+									convert->line = op->line;
+									convert->function = GDScriptFunctions::TYPE_CONVERT;
 
-								ConstantNode *tgt_type = alloc_node<ConstantNode>();
-								tgt_type->line = op->line;
-								tgt_type->value = (int)lh_type.builtin_type;
+									ConstantNode *tgt_type = alloc_node<ConstantNode>();
+									tgt_type->line = op->line;
+									tgt_type->value = (int)lh_type.builtin_type;
 
-								OperatorNode *convert_call = alloc_node<OperatorNode>();
-								convert_call->line = op->line;
-								convert_call->op = OperatorNode::OP_CALL;
-								convert_call->arguments.push_back(convert);
-								convert_call->arguments.push_back(op->arguments[1]);
-								convert_call->arguments.push_back(tgt_type);
+									OperatorNode *convert_call = alloc_node<OperatorNode>();
+									convert_call->line = op->line;
+									convert_call->op = OperatorNode::OP_CALL;
+									convert_call->arguments.push_back(convert);
+									convert_call->arguments.push_back(op->arguments[1]);
+									convert_call->arguments.push_back(tgt_type);
 
-								op->arguments.write[1] = convert_call;
+									op->arguments.write[1] = convert_call;
+
+									type_match = true; // Since we are converting, the type is matching
+								}
 #ifdef DEBUG_ENABLED
 								if (lh_type.builtin_type == Variant::INT && rh_type.builtin_type == Variant::REAL) {
 									_add_warning(GDScriptWarning::NARROWING_CONVERSION, op->line);
@@ -8179,6 +8232,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							_mark_line_as_unsafe(op->line);
 						}
 #endif // DEBUG_ENABLED
+						op->datatype.has_type = type_match;
 					} break;
 					case OperatorNode::OP_CALL:
 					case OperatorNode::OP_PARENT_CALL: {
@@ -8333,6 +8387,9 @@ void GDScriptParser::_add_warning(int p_code, int p_line, const String &p_symbol
 }
 
 void GDScriptParser::_add_warning(int p_code, int p_line, const Vector<String> &p_symbols) {
+	if (GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize() && base_path.begins_with("res://addons/")) {
+		return;
+	}
 	if (tokenizer->is_ignoring_warnings() || !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
 		return;
 	}
@@ -8546,8 +8603,8 @@ void GDScriptParser::clear() {
 	validating = false;
 	for_completion = false;
 	error_set = false;
-	tab_level.clear();
-	tab_level.push_back(0);
+	indent_level.clear();
+	indent_level.push_back(IndentLevel(0, 0));
 	error_line = 0;
 	error_column = 0;
 	pending_newline = -1;

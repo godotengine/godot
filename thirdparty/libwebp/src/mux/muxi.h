@@ -29,7 +29,7 @@ extern "C" {
 
 #define MUX_MAJ_VERSION 1
 #define MUX_MIN_VERSION 0
-#define MUX_REV_VERSION 2
+#define MUX_REV_VERSION 3
 
 // Chunk object.
 typedef struct WebPChunk WebPChunk;

@@ -397,8 +397,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		if (unlikely(m_cond)) {                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Breaking..:"); \
 			OPCODE_BREAK;                                                                                              \
-		} else                                                                                                         \
-			_err_error_exists = false;                                                                                 \
+		}                                                                                                              \
 	}
 
 #define CHECK_SPACE(m_space) \
@@ -765,15 +764,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
-#ifdef DEBUG_ENABLED
 				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 1];
 				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
 
 				if (src->get_type() != var_type) {
+#ifdef DEBUG_ENABLED
 					if (Variant::can_convert_strict(src->get_type(), var_type)) {
+#endif // DEBUG_ENABLED
 						Variant::CallError ce;
 						*dst = Variant::construct(var_type, const_cast<const Variant **>(&src), 1, ce);
 					} else {
+#ifdef DEBUG_ENABLED
 						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
 								   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
 						OPCODE_BREAK;
@@ -781,9 +782,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				} else {
 #endif // DEBUG_ENABLED
 					*dst = *src;
-#ifdef DEBUG_ENABLED
 				}
-#endif // DEBUG_ENABLED
 
 				ip += 4;
 			}
@@ -1419,7 +1418,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (!container->iter_init(*counter, valid)) {
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to iterate on object of type  " + Variant::get_type_name(container->get_type()) + "'.";
+						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "'.";
 						OPCODE_BREAK;
 					}
 #endif
@@ -1432,7 +1431,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "'.";
+						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "'.";
 						OPCODE_BREAK;
 					}
 #endif
@@ -1452,7 +1451,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (!container->iter_next(*counter, valid)) {
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to iterate on object of type  " + Variant::get_type_name(container->get_type()) + "' (type changed since first iteration?).";
+						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "' (type changed since first iteration?).";
 						OPCODE_BREAK;
 					}
 #endif
@@ -1465,7 +1464,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
+						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
 						OPCODE_BREAK;
 					}
 #endif
@@ -1561,14 +1560,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->path != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->path != "")
 			err_file = p_instance->script->path;
 		else if (script)
 			err_file = script->path;
 		if (err_file == "")
 			err_file = "<built-in>";
 		String err_func = name;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->name != "")
+		if (p_instance && ObjectDB::instance_validate(p_instance->owner) && p_instance->script->is_valid() && p_instance->script->name != "")
 			err_func = p_instance->script->name + "." + err_func;
 		int err_line = line;
 		if (err_text == "") {

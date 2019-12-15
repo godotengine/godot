@@ -45,7 +45,7 @@ namespace GodotTools.Ides
             listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, port: 0));
             listener.Start();
 
-            int port = ((IPEndPoint) listener.Server.LocalEndPoint).Port;
+            int port = ((IPEndPoint)listener.Server.LocalEndPoint).Port;
             using (var metaFileWriter = new StreamWriter(metaFile, Encoding.UTF8))
             {
                 metaFileWriter.WriteLine(port);
@@ -57,7 +57,7 @@ namespace GodotTools.Ides
 
         public void StartServer()
         {
-            var serverThread = new Thread(RunServerThread) {Name = "Godot Ide Connection Server"};
+            var serverThread = new Thread(RunServerThread) { Name = "Godot Ide Connection Server" };
             serverThread.Start();
         }
 

@@ -59,16 +59,35 @@ public:
 		FEED_IMAGES = 2
 	};
 
+	typedef CameraServer *(*CreateFunc)();
+
 private:
 protected:
+	static CreateFunc create_func;
+
 	Vector<Ref<CameraFeed> > feeds;
 
 	static CameraServer *singleton;
 
 	static void _bind_methods();
 
+	template <class T>
+	static CameraServer *_create_builtin() {
+		return memnew(T);
+	}
+
 public:
 	static CameraServer *get_singleton();
+
+	template <class T>
+	static void make_default() {
+		create_func = _create_builtin<T>;
+	}
+
+	static CameraServer *create() {
+		CameraServer *server = create_func ? create_func() : memnew(CameraServer);
+		return server;
+	};
 
 	// Right now we identify our feed by it's ID when it's used in the background.
 	// May see if we can change this to purely relying on CameraFeed objects or by name.

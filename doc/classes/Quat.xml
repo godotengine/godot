@@ -94,6 +94,15 @@
 				Returns the inverse of the quaternion.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="quat" type="Quat">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this quaterion and [code]quat[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+			</description>
+		</method>
 		<method name="is_normalized">
 			<return type="bool">
 			</return>

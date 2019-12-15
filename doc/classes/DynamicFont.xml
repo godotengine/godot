@@ -4,7 +4,8 @@
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
 	<description>
-		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths.
+		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths. DynamicFont also supports defining one or more fallbacks fonts, which will be used when displaying a character not supported by the main font.
+		DynamicFont uses the [url=https://www.freetype.org/]FreeType[/url] library for rasterization.
 		[codeblock]
 		var dynamic_font = DynamicFont.new()
 		dynamic_font.font_data = load("res://BarlowCondensed-Bold.ttf")
@@ -46,6 +47,7 @@
 			<argument index="0" name="type" type="int">
 			</argument>
 			<description>
+				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="remove_fallback">
@@ -76,6 +78,7 @@
 			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
+				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
 		</method>
 	</methods>
@@ -96,17 +99,20 @@
 			The font data.
 		</member>
 		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color( 1, 1, 1, 1 )">
+			The font outline's color.
+			[b]Note:[/b] It's recommended to leave this at the default value so that you can adjust it in individual controls. For example, if the outline is made black here, it won't be possible to change its color using a Label's font outline modulate theme item.
 		</member>
 		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+			The font outline's thickness in pixels (not relative to the font size).
 		</member>
 		<member name="size" type="int" setter="set_size" getter="get_size" default="16">
-			The font size.
+			The font size in pixels.
 		</member>
 		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" default="false">
-			If [code]true[/code], filtering is used.
+			If [code]true[/code], filtering is used. This makes the font blurry instead of pixelated when scaling it if font oversampling is disabled or ineffective. It's recommended to enable this when using the font in a control whose size changes over time, unless a pixel art aesthetic is desired.
 		</member>
 		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" default="false">
-			If [code]true[/code], mipmapping is used.
+			If [code]true[/code], mipmapping is used. This improves the font's appearance when downscaling it if font oversampling is disabled or ineffective.
 		</member>
 	</members>
 	<constants>

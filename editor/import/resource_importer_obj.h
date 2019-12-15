@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTEROBJ_H
 #define RESOURCEIMPORTEROBJ_H
 
-#include "import/resource_importer_scene.h"
+#include "resource_importer_scene.h"
 
 class EditorOBJImporter : public EditorSceneImporter {
 

@@ -39,7 +39,6 @@
 #include "main/input_default.h"
 //#include "power_android.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 
 class GodotJavaWrapper;
@@ -70,6 +69,7 @@ public:
 
 private:
 	Vector<TouchPos> touch;
+	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
 
 	bool use_gl2;
 	bool use_apk_expansion;
@@ -77,8 +77,6 @@ private:
 	bool use_16bits_fbo;
 
 	VisualServer *visual_server;
-
-	CameraServer *camera_server;
 
 	mutable String data_dir_cache;
 
@@ -124,6 +122,8 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual bool request_permission(const String &p_name);
+	virtual bool request_permissions();
+	virtual Vector<String> get_granted_permissions() const;
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 
@@ -186,6 +186,7 @@ public:
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
 	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_hover(int p_type, Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);

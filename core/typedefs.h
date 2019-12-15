@@ -108,7 +108,6 @@ T *_nullptr() {
 #include "core/int_types.h"
 
 #include "core/error_list.h"
-#include "core/error_macros.h"
 
 /** Generic ABS function, for math uses please use Math::abs */
 
@@ -174,6 +173,9 @@ inline void __swap_tmpl(T &x, T &y) {
 /** Function to find the next power of 2 to an integer */
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+
+	if (x == 0)
+		return 0;
 
 	--x;
 	x |= x >> 1;

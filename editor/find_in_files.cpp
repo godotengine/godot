@@ -889,7 +889,6 @@ String FindInFilesPanel::get_replace_text() {
 
 void FindInFilesPanel::update_replace_buttons() {
 
-	String text = get_replace_text();
 	bool disabled = _finder->is_searching();
 
 	_replace_all_button->set_disabled(disabled);
