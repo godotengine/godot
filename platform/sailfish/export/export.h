@@ -32,11 +32,3 @@
 
 void register_sailfish_exporter();
 
-class EditorExportPlatfromSailfish : public EditorExportPlatform {
-	GDCLASS(EditorExportPlatfromSailfish, EditorExportPlatform)
-
-	//GString arch;
-public:
-	EditorExportPlatfromSailfish() {
-	}
-};
