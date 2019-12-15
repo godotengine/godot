@@ -404,7 +404,7 @@ void GroupDialog::_bind_methods() {
 }
 
 GroupDialog::GroupDialog() {
-	set_custom_minimum_size(Size2(600, 400));
+	set_custom_minimum_size(Size2(600, 400) * EDSCALE);
 
 	scene_tree = SceneTree::get_singleton();
 
