@@ -1855,7 +1855,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case TEXT_CHAR: {
 
-			MethodInfo mi("char", PropertyInfo(Variant::INT, "ascii"));
+			MethodInfo mi("char", PropertyInfo(Variant::INT, "code"));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 
