@@ -510,9 +510,8 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			// only save what has been changed
 			// only save changed properties in instance
 
-			if ((E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE) || E->get().name == "__meta__") {
+			if (E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE) {
 				//property has requested that no instance state is saved, sorry
-				//also, meta won't be overridden or saved
 				continue;
 			}
 
