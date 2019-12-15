@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A GraphNode is a container defined by a title. It can have one or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
+		To add a slot to GraphNode, add any [Control]-derived child node to it.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -169,6 +170,12 @@
 			<argument index="8" name="custom_right" type="Texture" default="null">
 			</argument>
 			<description>
+				Sets properties of the slot with id [code]idx[/code].
+				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
+				[code]type_left[/code]/[code]right[/code] is an arbitrary type of the port. Only ports with the same type values can be connected.
+				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
+				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
+				[b]Note:[/b] this method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
 			</description>
 		</method>
 	</methods>
