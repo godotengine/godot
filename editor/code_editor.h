@@ -145,6 +145,7 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
 
+	ToolButton *toggle_scripts_button;
 	ToolButton *warning_button;
 	Label *warning_count_label;
 
@@ -186,6 +187,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
 	void _delete_line(int p_line);
+	void _toggle_scripts_pressed();
 
 protected:
 	virtual void _load_theme_settings() {}
