@@ -1372,7 +1372,7 @@ static const int reverse_caps_table[CAPS_LEN - 1][2] = {
 	{ 0xFF3A, 0xFF5A },
 };
 
-static int _find_upper(int ch) {
+static inline int _find_upper(int ch) {
 
 	int low = 0;
 	int high = CAPS_LEN - 1;
@@ -1393,7 +1393,7 @@ static int _find_upper(int ch) {
 	return ch;
 }
 
-static int _find_lower(int ch) {
+static inline int _find_lower(int ch) {
 
 	int low = 0;
 	int high = CAPS_LEN - 2;
