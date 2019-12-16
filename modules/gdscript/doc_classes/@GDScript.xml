@@ -168,14 +168,16 @@
 		<method name="char">
 			<return type="String">
 			</return>
-			<argument index="0" name="ascii" type="int">
+			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns a character as a String of the given ASCII code.
+				Returns a character as a String of the given Unicode code point (which is compatible with ASCII code).
 				[codeblock]
 				a = char(65)      # a is "A"
 				a = char(65 + 32) # a is "a"
+				a = char(8364)    # a is "€"
 				[/codeblock]
+				This is the inverse of [method ord].
 			</description>
 		</method>
 		<method name="clamp">
@@ -702,6 +704,13 @@
 			<argument index="0" name="char" type="String">
 			</argument>
 			<description>
+				Returns an integer representing the Unicode code point of the given Unicode character [code]char[/code].
+				[codeblock]
+				a = ord("A") # a is 65
+				a = ord("a") # a is 97
+				a = ord("€") # a is 8364
+				[/codeblock]
+				This is the inverse of [method char].
 			</description>
 		</method>
 		<method name="parse_json">
@@ -937,7 +946,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a random unsigned 32 bit integer. Use remainder to obtain a random value in the interval [code][0, N][/code] (where N is smaller than 2^32 -1).
+				Returns a random unsigned 32 bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
 				[codeblock]
 				randi()           # Returns random integer between 0 and 2^32 - 1
 				randi() % 20      # Returns random integer between 0 and 19
