@@ -1494,6 +1494,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_label->add_color_override("color", get_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
+	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	error_hb->add_child(error_tr);
 
 	description = NULL;
