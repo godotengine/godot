@@ -33,11 +33,20 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 
+#include <stdlib.h>
+
 /* helpers / binders */
 
 PacketPeer::PacketPeer() :
 		last_get_error(OK),
-		allow_object_decoding(false) {
+		allow_object_decoding(false),
+		max_encode_buffer_size(8 * 1024 * 1024),
+		encode_buffer_size(4 * 1024) {
+	encode_buffer = (uint8_t *)malloc(encode_buffer_size);
+}
+
+PacketPeer::~PacketPeer() {
+	free(encode_buffer);
 }
 
 void PacketPeer::set_allow_object_decoding(bool p_enable) {
@@ -100,12 +109,18 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 	if (len == 0)
 		return OK;
 
-	uint8_t *buf = (uint8_t *)alloca(len);
-	ERR_FAIL_COND_V_MSG(!buf, ERR_OUT_OF_MEMORY, "Out of memory.");
-	err = encode_variant(p_packet, buf, len, p_full_objects || allow_object_decoding);
+	ERR_FAIL_COND_V_MSG(len > max_encode_buffer_size, ERR_OUT_OF_MEMORY, "Reach to max_encode_buffer_size. Consider to raise max_encode_buffer_size.");
+
+	if (encode_buffer_size < len) {
+		encode_buffer = (uint8_t *)realloc(encode_buffer, len);
+		encode_buffer_size = len;
+	}
+
+	ERR_FAIL_COND_V_MSG(!encode_buffer, ERR_OUT_OF_MEMORY, "Out of memory.");
+	err = encode_variant(p_packet, encode_buffer, len, p_full_objects || allow_object_decoding);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to encode Variant.");
 
-	return put_packet(buf, len);
+	return put_packet(encode_buffer, len);
 }
 
 Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
