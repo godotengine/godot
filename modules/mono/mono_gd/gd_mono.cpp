@@ -356,7 +356,7 @@ void GDMono::initialize() {
 	}
 #endif
 
-#if !defined(WINDOWS_ENABLED) && !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
+#if !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
 	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
 	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
 		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
