@@ -5177,11 +5177,16 @@ void TextEdit::cut() {
 		OS::get_singleton()->set_clipboard(clipboard);
 		cursor_set_line(cursor.line);
 		cursor_set_column(0);
-		_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
 
-		backspace_at_cursor();
+		if (cursor.line == 0 && get_line_count() > 1) {
+			_remove_text(cursor.line, 0, cursor.line + 1, 0);
+		} else {
+			_remove_text(cursor.line, 0, cursor.line, text[cursor.line].length());
+			backspace_at_cursor();
+			cursor_set_line(cursor.line + 1);
+		}
+
 		update();
-		cursor_set_line(cursor.line + 1);
 		cut_copy_line = clipboard;
 
 	} else {
