@@ -2289,16 +2289,22 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 					touch_event->set_position(pos);
 					_gui_call_input(over, touch_event);
+					_gui_set_touch_focus(touch_event->get_index(), over);
 				}
 				set_input_as_handled();
 				return;
 			}
-		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
-			if (gui.last_mouse_focus->can_process()) {
+		} else {
+			Control *last_control = _gui_get_touch_focus(touch_event->get_index());
+			if (last_control && last_control->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); //make a copy
-				touch_event->set_position(gui.focus_inv_xform.xform(pos));
+				if (last_control == gui.mouse_focus) {
+					touch_event->set_position(gui.focus_inv_xform.xform(pos));
+				} else {
+					touch_event->set_position(last_control->get_global_transform_with_canvas().affine_inverse().xform(pos));
+				}
 
-				_gui_call_input(gui.last_mouse_focus, touch_event);
+				_gui_call_input(last_control, touch_event);
 			}
 			set_input_as_handled();
 			return;
@@ -2332,7 +2338,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
-		Control *over = gui.mouse_focus;
+		Control *over = _gui_get_touch_focus(drag_event->get_index());
 		if (!over) {
 			over = _gui_find_control(drag_event->get_position());
 		}
@@ -2585,6 +2591,10 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = nullptr;
 		gui.mouse_focus_mask = 0;
+	}
+	int index = _gui_has_touch_focus(p_control);
+	if (index != -1) {
+		_gui_clear_touch_focus(index);
 	}
 	if (gui.last_mouse_focus == p_control) {
 		gui.last_mouse_focus = nullptr;
@@ -3066,6 +3076,48 @@ void Viewport::_validate_property(PropertyInfo &property) const {
 	if (VisualServer::get_singleton()->is_low_end() && property.name == "hdr") {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
+}
+
+void Viewport::_gui_set_touch_focus(int p_index, Control *p_control) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			gui.touch_focuses.write[i].control = p_control;
+			return;
+		}
+	}
+
+	TouchFocus state;
+	state.index = p_index;
+	state.control = p_control;
+	gui.touch_focuses.push_back(state);
+}
+
+void Viewport::_gui_clear_touch_focus(int p_index) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			gui.touch_focuses.remove(i);
+			return;
+		}
+	}
+}
+
+Control *Viewport::_gui_get_touch_focus(int p_index) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].index == p_index) {
+			return gui.touch_focuses[i].control;
+		}
+	}
+	return NULL;
+}
+
+int Viewport::_gui_has_touch_focus(Control *p_control) {
+	for (int i = 0; i < gui.touch_focuses.size(); i++) {
+		if (gui.touch_focuses[i].control == p_control) {
+			return gui.touch_focuses[i].index;
+		}
+	}
+
+	return -1;
 }
 
 void Viewport::_bind_methods() {
