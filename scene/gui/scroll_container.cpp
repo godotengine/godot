@@ -236,6 +236,8 @@ void ScrollContainer::_update_scrollbar_position() {
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
 	if (is_a_parent_of(p_control)) {
+		Rect2 global_rect = get_global_rect();
+		Rect2 other_rect = p_control->get_global_rect();
 		float right_margin = 0;
 		if (v_scroll->is_visible()) {
 			right_margin += v_scroll->get_size().x;
@@ -245,8 +247,10 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 			bottom_margin += h_scroll->get_size().y;
 		}
 
-		set_v_scroll(MAX(MIN(p_control->get_begin().y, get_v_scroll()), p_control->get_end().y - get_size().y + bottom_margin));
-		set_h_scroll(MAX(MIN(p_control->get_begin().x, get_h_scroll()), p_control->get_end().x - get_size().x + right_margin));
+		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
+		set_v_scroll(get_v_scroll() + (diff - global_rect.position.y));
+		diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		set_h_scroll(get_h_scroll() + (diff - global_rect.position.x));
 	}
 }
 
