@@ -1186,7 +1186,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	patches_hb->add_spacer();
 
 	patch_dialog = memnew(EditorFileDialog);
-	patch_dialog->add_filter("*.pck ; Pack File");
+	patch_dialog->add_filter("*.pck ; " + TTR("Pack File"));
 	patch_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", this, "_patch_selected");
 	add_child(patch_dialog);
@@ -1269,8 +1269,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
-	export_pck_zip->add_filter("*.zip ; ZIP File");
-	export_pck_zip->add_filter("*.pck ; Godot Game Pack");
+	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
+	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Game Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);
