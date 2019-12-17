@@ -1527,7 +1527,9 @@ void CodeTextEditor::_notification(int p_what) {
 			emit_signal("load_theme_settings");
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_icon("Back", "EditorIcons") : get_icon("Forward", "EditorIcons"));
+			if (toggle_scripts_button->is_visible()) {
+				toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_icon("Back", "EditorIcons") : get_icon("Forward", "EditorIcons"));
+			}
 			_update_font();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -1643,6 +1645,10 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
+void CodeTextEditor::show_toggle_scripts_button() {
+	toggle_scripts_button->show();
+}
+
 CodeTextEditor::CodeTextEditor() {
 
 	code_complete_func = NULL;
@@ -1688,6 +1694,7 @@ CodeTextEditor::CodeTextEditor() {
 	toggle_scripts_button->connect("pressed", this, "_toggle_scripts_pressed");
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->set_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH));
+	toggle_scripts_button->hide();
 
 	// Error
 	ScrollContainer *scroll = memnew(ScrollContainer);
