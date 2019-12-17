@@ -776,6 +776,10 @@ msgid "Reset Zoom"
 msgstr "重置缩放"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "切换脚本面板"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "警告"
 
@@ -1718,6 +1722,11 @@ msgid "Erase Profile"
 msgstr "删除配置文件"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "管理编辑器功能配置文件"
+
+#: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
 msgstr "导入配置文件"
 
@@ -2653,7 +2662,8 @@ msgstr "恢复场景"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "其他项目或全场景工具。"
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "项目"
 
@@ -2979,6 +2989,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "从ZIP文件中导入模板"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "模板导出工具"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5068,6 +5083,88 @@ msgid ""
 msgstr "激活后，移动控制节点会更改变锚点，而非边距。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "左方"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "右方"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "向右旋转"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "底部视图"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "向左缩进"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "居中显示选中节点"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "向右缩进"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "底部"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "左视图"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "俯视图"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "右视图"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "底部视图"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "全名"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "缩放比率："
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "仅锚点"
 
@@ -6477,10 +6574,6 @@ msgstr "关闭文档"
 msgid "Run"
 msgstr "运行"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "切换脚本面板"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "单步进入"
@@ -7622,6 +7715,11 @@ msgstr "颜色"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "常量"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "主题"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9035,6 +9133,11 @@ msgid "Make Patch"
 msgstr "制作补丁"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " 文件"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "功能"
 
@@ -9085,6 +9188,15 @@ msgstr "导出模式？"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "全部导出"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " 文件"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11204,6 +11316,21 @@ msgid "Members:"
 msgstr "成员："
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "更改基本类型"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "添加节点..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "添加函数"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr "函数名"
 
@@ -11407,25 +11534,8 @@ msgid "Identifier is missing."
 msgstr "缺少标识符。"
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "标识符字段不能为空."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "标识符中不允许使用字符 '%s' 。"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "标识符段中的第一个字符不能是数字。"
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr "标识符段中的第一个字符不能是\"%s\"。"
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "标识符必须至少有一个“.”分隔符。"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12078,6 +12188,19 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "标识符字段不能为空."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "标识符段中的第一个字符不能是数字。"
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr "标识符段中的第一个字符不能是\"%s\"。"
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "标识符必须至少有一个“.”分隔符。"
 
 #~ msgid "Pause the scene"
 #~ msgstr "暂停运行场景"
@@ -13642,9 +13765,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Create Android keystore"
 #~ msgstr "创建 Android 的密钥库"
-
-#~ msgid "Full name"
-#~ msgstr "全名"
 
 #~ msgid "Organizational unit"
 #~ msgstr "组织单元"

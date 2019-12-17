@@ -746,6 +746,10 @@ msgid "Reset Zoom"
 msgstr "Obnovit původní přiblížení"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr ""
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Varování"
 
@@ -1742,6 +1746,11 @@ msgstr "Vymazat oblast"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Spravovat exportní šablony"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Profile(s)"
 msgstr "%d více souborů"
 
@@ -2714,7 +2723,8 @@ msgstr "Vrátit scénu"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Různé nástroje pro projekt nebo scény."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -3056,6 +3066,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Importovat šablony ze ZIP souboru"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Správce exportních šablon"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5211,6 +5226,87 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Levý"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Pravý"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Otočit doprava"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Pohled zdola"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Odsadit zleva"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Vycentrovat výběr"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Odsadit zprava"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Dolní"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Pohled zleva"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Pohled shora"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Pohled zprava"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Pohled zdola"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Poměr zvětšení:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Pouze kotvy"
 
@@ -6669,10 +6765,6 @@ msgstr "Zavřít dokumentaci"
 msgid "Run"
 msgstr "Spustit"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Step Into"
@@ -7866,6 +7958,11 @@ msgstr "Barva"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Konstantní"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Téma"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9324,6 +9421,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Soubory"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Funkce"
 
@@ -9374,6 +9476,15 @@ msgstr "Režim exportu?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Exportovat vše"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Soubory"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11568,6 +11679,21 @@ msgstr "Členové:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Změnit základní typ"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Přidat uzel..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Přidat funkci"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Funkce:"
 
@@ -11772,26 +11898,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Jméno není platný identifikátor:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."

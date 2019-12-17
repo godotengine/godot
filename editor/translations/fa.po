@@ -757,6 +757,10 @@ msgid "Reset Zoom"
 msgstr "بازنشانی بزرگنمایی"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr ""
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr ""
 
@@ -1755,6 +1759,11 @@ msgstr "کُندی در آغاز"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
+msgid "Godot Feature Profile"
+msgstr "مدیریت صدور قالب ها"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Profile(s)"
 msgstr "پروژه واردشده"
 
@@ -2702,7 +2711,8 @@ msgstr ""
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "پروژه"
 
@@ -3029,6 +3039,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "واردکردن قالب ها از درون یک فایل ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "قالب ها"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5240,6 +5255,77 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Top"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Bottom"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "خطی"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "خطی"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "نسبت تغییر مقیاس:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr ""
 
@@ -6708,10 +6794,6 @@ msgstr ""
 msgid "Run"
 msgstr "اجرا"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -7913,6 +7995,11 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "ثابت"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "یک پرونده را باز کن"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -9359,6 +9446,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " پوشه ها"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -9414,6 +9506,15 @@ msgstr "حالت صدور:"
 #, fuzzy
 msgid "Export All"
 msgstr "صدور"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " پوشه ها"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11624,6 +11725,21 @@ msgstr "عضوها:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "تغییر نوع پایه"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "افزودن گره"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "افزودن وظیفه"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "وظایف:"
 
@@ -11831,26 +11947,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "نام یک شناسه‌ی معتبر نیست:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."

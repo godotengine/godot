@@ -771,6 +771,10 @@ msgid "Reset Zoom"
 msgstr "Ponastavi Povečavo/Pomanjšavo"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr ""
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr ""
 
@@ -1774,6 +1778,11 @@ msgstr "Izbriši točke"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Upravljaj Izvozne Predloge"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Profile(s)"
 msgstr "%d več datotek"
 
@@ -2769,7 +2778,8 @@ msgstr "Povrni Prizor"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Različna projektna ali prizorska orodja."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -3116,6 +3126,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Uvozi Predloge iz ZIP Datoteke"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Izvozni Upravitelj Predlog"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5352,6 +5367,83 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Top"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Bottom"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Linearno"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Linearno"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Razmerje Obsega:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Samo Sidrišča"
 
@@ -6829,10 +6921,6 @@ msgstr ""
 msgid "Run"
 msgstr "Zaženi"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -8022,6 +8110,11 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Konstanta"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Odpri v Datoteki"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9467,6 +9560,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Datoteke"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -9521,6 +9619,15 @@ msgstr "Izvozi Projekt"
 #, fuzzy
 msgid "Export All"
 msgstr "Izvozi"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Datoteke"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11694,6 +11801,21 @@ msgstr "Člani:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Spremeni Osnovni Tip"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Dodaj vozlišče"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Dodaj Funkcijo"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Funkcije:"
 
@@ -11898,26 +12020,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Ime ni pravilen identifikator:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."

@@ -751,6 +751,10 @@ msgid "Reset Zoom"
 msgstr "إرجاع التكبير"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr ""
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "تحذيرات"
 
@@ -1727,6 +1731,11 @@ msgstr "إسم جديد:"
 #, fuzzy
 msgid "Erase Profile"
 msgstr "زر الفأرة الأيمن: مسح النقطة."
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "إدارة قوالب التصدير"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2713,7 +2722,8 @@ msgstr "إعادة المشهد"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "ادوات لكل-المشهد او لمشاريع متنوعه."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "مشروع"
 
@@ -3060,6 +3070,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "إستيراد القوالب من ملف مضغوط بصيغة Zip"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "‌تصدير مدير القوالب"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5285,6 +5300,85 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "وضع التدوير"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "نصف المُحدد"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "الخط الشمالي"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "الخط اليميني"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "نسبة التكبير:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "المرتكزات فقط"
 
@@ -6774,10 +6868,6 @@ msgstr ""
 msgid "Run"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -7971,6 +8061,11 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "ثابت"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "إفتح ملف"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9417,6 +9512,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " ملفات"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -9471,6 +9571,15 @@ msgstr "تصدير المشروع"
 #, fuzzy
 msgid "Export All"
 msgstr "تصدير"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " ملفات"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11641,6 +11750,21 @@ msgstr "الأعضاء:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "غير نوع %s"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "إضافة %s..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "مسح المهمة"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "الإعدادات:"
 
@@ -11842,24 +11966,7 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
 msgstr ""
 
 #: platform/iphone/export/export.cpp

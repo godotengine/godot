@@ -740,6 +740,10 @@ msgid "Reset Zoom"
 msgstr "Đặt lại phóng"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr ""
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Cảnh báo"
 
@@ -1697,6 +1701,11 @@ msgid "Erase Profile"
 msgstr "Xoá hồ sơ"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Quản lý trình tính năng"
+
+#: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
 msgstr "Nhập vào hồ sơ"
 
@@ -2647,7 +2656,8 @@ msgstr ""
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Dự án"
 
@@ -2971,6 +2981,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Nhập mẫu vào từ tệp nén ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Khung project"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5106,6 +5121,77 @@ msgstr ""
 "chúng."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Left"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Top"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Right"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Bottom"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Tịnh tuyến"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Tịnh tuyến"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Tỉ lệ Scale:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Chỉ các neo"
 
@@ -6545,10 +6631,6 @@ msgstr "Đóng Docs"
 msgid "Run"
 msgstr "Chạy"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr ""
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
@@ -7722,6 +7804,11 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Cố định"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Mở"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9144,6 +9231,11 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Tệp tin"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr ""
 
@@ -9198,6 +9290,15 @@ msgstr "Nhập từ Node:"
 #, fuzzy
 msgid "Export All"
 msgstr "Xuất Tile Set"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Tệp tin"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11337,6 +11438,21 @@ msgstr "Những Thành viên:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Đổi %s Loại"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Thêm Nút ..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Thêm Hàm"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Hàm:"
 
@@ -11536,24 +11652,7 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
 msgstr ""
 
 #: platform/iphone/export/export.cpp

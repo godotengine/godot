@@ -768,6 +768,10 @@ msgid "Reset Zoom"
 msgstr "Yaklaşmayı Sıfırla"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Betikler Panelini Aç/Kapa"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Uyarılar"
 
@@ -1725,6 +1729,11 @@ msgstr "Yeni profil ismi:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Profili Sil"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Dışa Aktarım Şablonlarını Yönet"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2687,7 +2696,8 @@ msgstr "Sahneyi Eski Durumuna Çevir"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Çeşitli proje ya da sahne-çapında araçlar."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Proje"
 
@@ -3022,6 +3032,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Şablonları Zip Dosyasından İçeri Aktar"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Dışa Aktarım Şablonu Yöneticisi"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5157,6 +5172,88 @@ msgstr ""
 "noktasını değiştirir."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Sol"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Sağ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Sağa Döndür"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Alttan Görünüm"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Sola Girintile"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "İçre Seçimi"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Sağa Girintile"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Alt"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Soldan Görünüm"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Üstten Görünüm"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Sağdan Görünüm"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Alttan Görünüm"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "Tam adı"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Ölçek Oranı:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Sadece çapalar"
 
@@ -6577,10 +6674,6 @@ msgstr "Belgeleri Kapat"
 msgid "Run"
 msgstr "Çalıştır"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Betikler Panelini Aç/Kapa"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "İçeri Adımla"
@@ -7724,6 +7817,11 @@ msgstr "Renk"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Sabit"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9166,6 +9264,11 @@ msgid "Make Patch"
 msgstr "Yama Yap"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Dosyalar"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Özellikler"
 
@@ -9219,6 +9322,15 @@ msgstr "Dışa Aktarma Biçimi:"
 #, fuzzy
 msgid "Export All"
 msgstr "Dışa Aktar"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Dosyalar"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11459,6 +11571,21 @@ msgstr "Üyeler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Temel Tipi Değiştir"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Düğüm Ekle..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Fonksiyon Ekle"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Fonksiyon:"
 
@@ -11664,26 +11791,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Ad doğru bir belirleyici değil:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -13958,9 +14068,6 @@ msgstr "Sabit değerler değiştirilemez."
 
 #~ msgid "Create Android keystore"
 #~ msgstr "Android Dokunaç Yığımı Oluştur"
-
-#~ msgid "Full name"
-#~ msgstr "Tam adı"
 
 #~ msgid "Organizational unit"
 #~ msgstr "Kuruluşsal birim"

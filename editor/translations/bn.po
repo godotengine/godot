@@ -779,6 +779,11 @@ msgstr "সম্প্রসারন/সংকোচন অপসারণ ক
 
 #: editor/code_editor.cpp
 #, fuzzy
+msgid "Toggle Scripts Panel"
+msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
+
+#: editor/code_editor.cpp
+#, fuzzy
 msgid "Warnings"
 msgstr "সতর্কতা"
 
@@ -1800,6 +1805,11 @@ msgstr "নতুন নাম:"
 #, fuzzy
 msgid "Erase Profile"
 msgstr "TileMap মুছে ফেলুন"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2829,7 +2839,8 @@ msgstr "দৃশ্য প্রত্যাবৃত্ত করুন"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "প্রকল্প অথবা দৃশ্যে-ব্যাপী বিবিধ সরঞ্জাম-সমূহ।"
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Project"
 msgstr "নতুন প্রকল্প"
@@ -3181,6 +3192,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "ZIP ফাইল হতে টেমপ্লেট-সমূহ ইম্পোর্ট করুন"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5502,6 +5518,88 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Top Left"
+msgstr "বাম"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "ডান"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "ডানে সরান"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "নিম্ন দর্শন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "বামে মাত্রা দিন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "নির্বাচনকে কেন্দ্রীভূত করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "ডানে মাত্রা দিন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "নিম্ন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "বাম দর্শন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "শীর্ষ দর্শন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "ডান দর্শন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "নিম্ন দর্শন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "পূর্ণ নাম"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "স্কেল/মাপের অনুপাত:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Anchors only"
 msgstr "অ্যাংকর"
 
@@ -7035,11 +7133,6 @@ msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
 msgid "Run"
 msgstr "চালান"
 
-#: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
-msgid "Toggle Scripts Panel"
-msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "পদার্পণ করুন"
@@ -8286,6 +8379,11 @@ msgstr "রঙ"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "ধ্রুবক/কন্সট্যান্ট"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "থিম"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -9778,6 +9876,11 @@ msgstr "উদ্দেশ্যিত পথ:"
 
 #: editor/project_export.cpp
 #, fuzzy
+msgid "Pack File"
+msgstr "ফাইল"
+
+#: editor/project_export.cpp
+#, fuzzy
 msgid "Features"
 msgstr "গঠনবিন্যাস"
 
@@ -9832,6 +9935,15 @@ msgstr "এক্সপোর্ট মোড:"
 #, fuzzy
 msgid "Export All"
 msgstr "এক্সপোর্ট"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr "ফাইল"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -12154,6 +12266,21 @@ msgstr "সদস্যগণ (Members):"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "ধরণ পরিবর্তন করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "নোড সংযোজন করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "ফাংশন সংযোজন করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "ফাংশন:"
 
@@ -12358,26 +12485,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "নামটি কার্যকর সনাক্তকারী নয়:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -14628,9 +14738,6 @@ msgstr ""
 
 #~ msgid "Create Android keystore"
 #~ msgstr "অ্যান্ড্রয়েড কীস্টোর (keystore) তৈরি করুন"
-
-#~ msgid "Full name"
-#~ msgstr "পূর্ণ নাম"
 
 #~ msgid "Organizational unit"
 #~ msgstr "সাংগঠনিক একক (Organizational unit)"

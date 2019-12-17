@@ -773,6 +773,10 @@ msgid "Reset Zoom"
 msgstr "รีเซ็ตซูม"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "เปิด/ปิดแผงสคริปต์"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "คำเตือน"
 
@@ -1779,6 +1783,11 @@ msgstr "ลบพื้นที่"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
+msgid "Godot Feature Profile"
+msgstr "จัดการแม่แบบส่งออก"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Profile(s)"
 msgstr "นำเข้าโปรเจกต์แล้ว"
 
@@ -2755,7 +2764,8 @@ msgstr "คืนกลับฉาก"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "โปรเจกต์และเครื่องมืออื่น ๆ"
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "โปรเจกต์"
 
@@ -3091,6 +3101,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "นำเข้าแม่แบบจากไฟล์ ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "จัดการแม่แบบส่งออก"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5329,6 +5344,88 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "ซ้าย"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "ขวา"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "ย้ายไปขวา"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "มุมล่าง"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "ย่อหน้าซ้าย"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "ให้สิ่งที่เลือกอยู่กลางจอ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "ย่อหน้าขวา"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "ล่าง"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "มุมซ้าย"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "มุมบน"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "มุมขวา"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "มุมล่าง"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "ชื่อเต็ม"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "อัตราส่วนเวลา:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "ปรับหมุดเท่านั้น"
 
@@ -6825,10 +6922,6 @@ msgstr "ปิดคู่มือ"
 msgid "Run"
 msgstr "รัน"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "เปิด/ปิดแผงสคริปต์"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "คำสั่งต่อไป"
@@ -8052,6 +8145,11 @@ msgstr "สี"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "คงที่"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "ธีม"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9529,6 +9627,11 @@ msgid "Make Patch"
 msgstr "สร้างแพตช์"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " ไฟล์"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "ฟีเจอร์"
 
@@ -9582,6 +9685,15 @@ msgstr "วิธีการส่งออก:"
 #, fuzzy
 msgid "Export All"
 msgstr "ส่งออก"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " ไฟล์"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11803,6 +11915,21 @@ msgstr "ตัวแปร:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "เปลี่ยนประเภท"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "เพิ่มโหนด"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "เพิ่มฟังก์ชัน"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "ฟังก์ชัน:"
 
@@ -12005,26 +12132,9 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "ไม่สามารถใช้ชื่อนี้ได้:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -14211,9 +14321,6 @@ msgstr ""
 
 #~ msgid "Create Android keystore"
 #~ msgstr "สร้าง Android keystore"
-
-#~ msgid "Full name"
-#~ msgstr "ชื่อเต็ม"
 
 #~ msgid "Organization"
 #~ msgstr "องค์กร"

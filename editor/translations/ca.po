@@ -736,6 +736,10 @@ msgid "Reset Zoom"
 msgstr "Reinicia el Zoom"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Panell d'Scripts"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Avisos"
 
@@ -1710,6 +1714,11 @@ msgstr "Nom del nou perfil:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Esborrar Perfil"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Administra els Perfils de Característiques de l'Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2688,7 +2697,8 @@ msgstr "Reverteix Escena"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Eines vàries o d'escena."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projecte"
 
@@ -3039,6 +3049,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Importa Plantilles des d'un Fitxer ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Gestor de Plantilles d'Exportació"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5196,6 +5211,87 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Esquerra"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Dreta"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Girar a la Dreta"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Vista Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Sagnia Esquerra"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Centra la Selecció"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Sagnia Dreta"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Part inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Vista Esquerra"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Vista Superior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Vista Dreta"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Vista Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Relació d'Escala:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Només Ancoratges"
 
@@ -6660,10 +6756,6 @@ msgstr "Tanca la Documentació"
 msgid "Run"
 msgstr "Executar"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Panell d'Scripts"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Pas a Pas (per instruccions)"
@@ -7856,6 +7948,11 @@ msgstr "Color"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Constant"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9371,6 +9468,11 @@ msgid "Make Patch"
 msgstr "Crea un Pedaç"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Fitxers"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Característiques"
 
@@ -9422,6 +9524,15 @@ msgstr "Mode d'Exportació?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Exportar Tot"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Fitxers"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11672,6 +11783,21 @@ msgstr "Membres:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Modifica el Tipus de Base"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Afegir Node..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Afegeix una Funció"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Funció:"
 
@@ -11907,26 +12033,8 @@ msgid "Identifier is missing."
 msgstr "Falta l'identificador."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "No es permet el caràcter '%s' en l'Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "Un dígit no pot ser el primer caràcter en un segment Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"El caràcter '%s' no pot ser el primer caràcter en un segment Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "L'identificador ha de tenir com a mínim un separador '. '."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12648,6 +12756,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "Un dígit no pot ser el primer caràcter en un segment Identificador."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "El caràcter '%s' no pot ser el primer caràcter en un segment "
+#~ "Identificador."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "L'identificador ha de tenir com a mínim un separador '. '."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Pausa l'escena"

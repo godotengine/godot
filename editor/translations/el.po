@@ -735,6 +735,10 @@ msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Προειδοποιήσεις"
 
@@ -1697,6 +1701,11 @@ msgstr "Νέο όνομα προφίλ:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Διαγραφή Προφίλ"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Διαχείριση Προφίλ Δυνατοτήτων Επεξεργαστή"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2675,7 +2684,8 @@ msgstr "Επαναφορά σκηνής"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Λοιπά έργα ή εργαλεία για όλη τη σκηνή."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Έργο"
 
@@ -3021,6 +3031,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Εισαγωγή προτύπων από αρχείο ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Διαχειριστής προτύπων εξαγωγής"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5166,6 +5181,87 @@ msgstr ""
 "περιθώρια τους."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Αριστερά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Περιστροφή Δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Κάτω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "στοιχειοθέτηση αριστερά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Κεντράρισμα επιλογής"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "στοιχειοθέτηση δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Κάτω"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Αριστερή όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Πάνω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Δεξιά όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Κάτω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Λόγος μεγέθυνσης:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Μόνο άγκυρες"
 
@@ -6609,10 +6705,6 @@ msgstr "Κλείσιμο  τεκμηρίωσης"
 msgid "Run"
 msgstr "Εκτέλεση"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Βήμα μέσα"
@@ -7770,6 +7862,11 @@ msgstr "Χρώμα"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Σταθερή"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Θέμα"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9248,6 +9345,11 @@ msgid "Make Patch"
 msgstr "Δημιουργία ενημέρωσης"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Αρχεία"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Δυνατότητες"
 
@@ -9298,6 +9400,15 @@ msgstr "Λειτουργία εξαγωγής;"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Εξαγωγή Όλων"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Αρχεία"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11531,6 +11642,21 @@ msgstr "Μέλη:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Αλλαγή βασικού τύπου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Προσθήκη Κόμβου..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Προσθήκη συνάρτησης"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Συνάρτηση:"
 
@@ -11761,30 +11887,9 @@ msgid "Identifier is missing."
 msgstr "Το αναγνωριστικό λείπει."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-"Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
-"αναγνωριστικού."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
-"αναγνωριστικού."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "Το αναγνωριστικό πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -12525,6 +12630,23 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+#~ "αναγνωριστικού."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+#~ "αναγνωριστικού."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "Το αναγνωριστικό πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Παύση της σκηνής"

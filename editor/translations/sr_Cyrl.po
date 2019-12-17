@@ -767,6 +767,10 @@ msgid "Reset Zoom"
 msgstr "Ресетуј увеличање"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Прикажи панел скриптица"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr ""
 
@@ -1778,6 +1782,11 @@ msgstr "Обриши TileMap"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Управљај извозним шаблонима"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
 msgid "Import Profile(s)"
 msgstr "још %d датотека/е"
 
@@ -2776,7 +2785,8 @@ msgstr "Поврати сцену"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Разни алати за пројекат или сцену."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Пројекат"
 
@@ -3125,6 +3135,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Увези шаблоне из ZIP датотеке"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Менаџер извозних шаблона"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5372,6 +5387,87 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Лево"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "десно"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Ротирај полигон"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Поглед одоздо"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Увучи лево"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Центрирај одабрано"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Увучи десно"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Доле"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Поглед с лева"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Поглед одозго"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Поглед с десна"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Поглед одоздо"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Размера скале:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Само сидра"
 
@@ -6876,10 +6972,6 @@ msgstr "Затвори документацију"
 msgid "Run"
 msgstr "Покрени"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Прикажи панел скриптица"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Корак у"
@@ -8107,6 +8199,11 @@ msgstr "Боја"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Константан"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Сачувај тему"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9583,6 +9680,11 @@ msgid "Make Patch"
 msgstr "Направи закрп"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Датотеке"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Карактеристике"
 
@@ -9637,6 +9739,15 @@ msgstr "Режим извоза:"
 #, fuzzy
 msgid "Export All"
 msgstr "Извоз"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Датотеке"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11820,6 +11931,21 @@ msgid "Members:"
 msgstr "Чланови:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "Измени уобичајен тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Додавање %s..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Иди на функцију..."
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr ""
 
@@ -12021,24 +12147,7 @@ msgid "Identifier is missing."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
