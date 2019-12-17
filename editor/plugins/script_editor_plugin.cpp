@@ -987,8 +987,11 @@ Array ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
-bool ScriptEditor::toggle_scripts_panel() {
+bool ScriptEditor::toggle_scripts_panel(CodeTextEditor *p_editor) {
 	list_split->set_visible(!list_split->is_visible());
+	if (p_editor) {
+		p_editor->update_toggle_scripts_button();
+	}
 	return list_split->is_visible();
 }
 
@@ -998,6 +1001,7 @@ bool ScriptEditor::is_scripts_panel_toggled() {
 
 void ScriptEditor::_menu_option(int p_option) {
 
+	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
 		case FILE_NEW: {
 			script_create_dialog->config("Node", "new_script");
@@ -1136,11 +1140,19 @@ void ScriptEditor::_menu_option(int p_option) {
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), debug_with_external_editor);
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
-			toggle_scripts_panel();
+			if (current) {
+				CodeTextEditor *code_editor = NULL;
+				ScriptTextEditor *editor = dynamic_cast<ScriptTextEditor *>(current);
+				if (editor) {
+					code_editor = editor->code_editor;
+				}
+				toggle_scripts_panel(code_editor);
+			} else {
+				toggle_scripts_panel(NULL);
+			}
 		}
 	}
 
-	ScriptEditorBase *current = _get_current_editor();
 	if (current) {
 
 		switch (p_option) {
@@ -3315,6 +3327,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
+
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	script_search_menu = memnew(MenuButton);

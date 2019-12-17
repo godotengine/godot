@@ -55,7 +55,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
-	CodeTextEditor *code_editor;
 	RichTextLabel *warnings_panel;
 
 	Ref<Script> script;
@@ -187,6 +186,8 @@ protected:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
+	CodeTextEditor *code_editor;
+
 	void _update_connected_methods();
 
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
