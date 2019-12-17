@@ -88,7 +88,7 @@
 			</return>
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph.
-				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of it's children use their [member CanvasItem.visible] property instead. 
+				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of it's children use their [member CanvasItem.visible] property instead.
 			</description>
 		</method>
 		<method name="is_node_connected">

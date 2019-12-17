@@ -401,6 +401,9 @@
 		<member name="display/window/handheld/orientation" type="String" setter="" getter="" default="&quot;landscape&quot;">
 			Default orientation on mobile devices.
 		</member>
+		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
+		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance, so leave it on [code]false[/code] unless you need it.
 		</member>
@@ -436,9 +439,6 @@
 		</member>
 		<member name="display/window/vsync/vsync_via_compositor" type="bool" setter="" getter="" default="false">
 			If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], enables vertical synchronization via the operating system's window compositor when in windowed mode and the compositor is enabled. This will prevent stutter in certain situations. (Windows only.)
-		</member>
-		<member name="display/window/ios/hide_home_indicator" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 		</member>
