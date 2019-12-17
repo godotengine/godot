@@ -879,7 +879,7 @@
 			Ctrl key mask.
 		</constant>
 		<constant name="KEY_MASK_CMD" value="268435456" enum="KeyModifierMask">
-			Cmd key mask.
+			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
 			Keypad key mask.
