@@ -994,6 +994,7 @@
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
+			(An instance stays linked to the original so when the original changes, 			the instance changes too.)
 		</constant>
 	</constants>
 </class>
