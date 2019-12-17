@@ -2328,11 +2328,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Input *input = Input::get_singleton();
 
-			if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+			if (!mods && p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
 				next = from->find_next_valid_focus();
 			}
 
-			if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+			if (!k->get_control() && !k->get_alt() && !k->get_metakey() && k->get_shift() && p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
 				next = from->find_prev_valid_focus();
 			}
 
