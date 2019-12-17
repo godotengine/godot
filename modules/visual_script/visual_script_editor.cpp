@@ -4776,6 +4776,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
 	function_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	function_vb->set_custom_minimum_size(Size2(450, 300) * EDSCALE);
 
 	HBoxContainer *func_name_hbox = memnew(HBoxContainer);
 	function_vb->add_child(func_name_hbox);
@@ -4810,7 +4811,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_input_scroll->add_child(func_input_vbox);
 
 	function_create_dialog = memnew(ConfirmationDialog);
-	function_create_dialog->set_custom_minimum_size(Size2(450, 300) * EDSCALE);
 	function_create_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
