@@ -14,12 +14,13 @@
 # Ch. <ccwpc@hanmail.net>, 2018.
 # moolow <copyhyeon@gmail.com>, 2019.
 # Jiyoon Kim <kimjiy@dickinson.edu>, 2019.
+# Ervin <zetsmart@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:37+0000\n"
-"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"Last-Translator: Ervin <zetsmart@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -32,7 +33,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "conver() 메서드의 인수 유형이 잘못되었어요. TYPE_* 상수를 사용하세요."
+msgstr "convert() 메서드의 인수 유형이 잘못되었어요. TYPE_* 상수를 사용하세요."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -3478,9 +3479,8 @@ msgid "Select Template File"
 msgstr "템플릿 파일 선택하기"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "내보내기 템플릿 로딩 중"
+msgstr "Godot 내보내기 템플릿"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4867,29 +4867,27 @@ msgstr "이 애셋은 이미 다운로드 중이에요!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "최근 업데이트"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "가장 최근 업데이트"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "이름 (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "이름 (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "라이선스"
+msgstr "라이선스 (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "라이선스"
+msgstr "라이선스 (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -8965,13 +8963,12 @@ msgid "Runnable"
 msgstr "실행가능"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "입력 포트 추가하기"
+msgstr "초기 내보내기 추가하기..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "이전 패치 추가하기..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"

@@ -73,8 +73,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:36+0000\n"
-"Last-Translator: Pierre Stempin <pierre.stempin@gmail.com>\n"
+"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -3597,9 +3597,8 @@ msgid "Select Template File"
 msgstr "Sélectionner le fichier de modèle"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Gérer les modèles d'exportation"
+msgstr "Modèles d'exportation Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -5004,29 +5003,28 @@ msgstr "Le téléchargement de cette ressource est déjà en cours !"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Récemment mis à jour"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Moins récemment mis à jour"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nom (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nom (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licence"
+msgstr "Licence (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licence"
+msgstr "Licence (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9169,13 +9167,12 @@ msgid "Runnable"
 msgstr "Exécutable"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Ajouter un port d'entrée"
+msgstr "Ajouter l'exportation initiale...."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Ajouter les correctifs précédents....."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"

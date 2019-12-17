@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:37+0000\n"
-"Last-Translator: Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>\n"
+"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
@@ -3512,9 +3512,8 @@ msgid "Select Template File"
 msgstr "Selecionar Ficheiro de Modelo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Gerir Modelos de Exportação"
+msgstr "Modelos de Exportação Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4907,29 +4906,27 @@ msgstr "A transferência deste Ativo já está em andamento!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Atualizações Recentes"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Atualizações Menos Recentes"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nome (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nome (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licença"
+msgstr "Licença (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licença"
+msgstr "Licença (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9032,13 +9029,12 @@ msgid "Runnable"
 msgstr "Executável"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Adicionar porta de entrada"
+msgstr "Adicionar exportação inicial..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Aplicar correções anteriores..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9150,7 +9146,7 @@ msgstr "Correções"
 
 #: editor/project_export.cpp
 msgid "Make Patch"
-msgstr "Fazer correção"
+msgstr "Fazer Correção"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -11220,7 +11216,7 @@ msgstr ""
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
 "Pressione Ctrl para largar um Getter. Pressione Shift para largar uma "
-"assinatura genérica."
+"Assinatura genérica."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a simple reference to the node."

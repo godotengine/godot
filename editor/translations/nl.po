@@ -39,12 +39,13 @@
 # ebbe <ebbesteenhoudt@gmail.com>, 2019.
 # Tirrin <lensenjoe@gmail.com>, 2019.
 # Filip Van Raemdonck <arrawn@gmail.com>, 2019.
+# Julian <jdhoogvorst@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-29 14:49+0000\n"
-"Last-Translator: Filip Van Raemdonck <arrawn@gmail.com>\n"
+"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"Last-Translator: Julian <jdhoogvorst@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -3545,9 +3546,8 @@ msgid "Select Template File"
 msgstr "Selecteer sjabloonbestand"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Beheer Export Templates"
+msgstr "Godot Export Templates"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3765,6 +3765,8 @@ msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
 msgstr ""
+"Voeg de bestanden toe volgende extensies. Voeg ze toe of verwijder ze in "
+"ProjectSettings."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3796,9 +3798,8 @@ msgid "Searching..."
 msgstr "Aan het zoeken..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Search complete"
-msgstr "Zoek Tekst"
+msgstr "Zoek Compleet"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3817,21 +3818,18 @@ msgid "Invalid group name."
 msgstr "Ongeldige groepnaam."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Rename Group"
-msgstr "Groepen beheren"
+msgstr "Groepen hernoemen"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Delete Group"
-msgstr "Layout Verwijderen"
+msgstr "Groep Verwijderen"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Groepen"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes Not in Group"
 msgstr "Knopen niet in de groep"
 
@@ -3846,12 +3844,11 @@ msgstr "Knopen in de groep"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Lege groepen worden automatisch verwijderd."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group Editor"
-msgstr "Open Script Bewerker"
+msgstr "Groep Bewerker"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -3951,9 +3948,8 @@ msgid "Import As:"
 msgstr "Importeer als:"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Preset"
-msgstr "Voorinstelling"
+msgstr "Voorinstellingen"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3964,9 +3960,10 @@ msgid "Save scenes, re-import and restart"
 msgstr "Sla scènes op, her-importeer en start opnieuw op"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Om de video driver te veranderen moet de editor herstart worden."
+msgstr ""
+"Het veranderen van het type van een geïmporteerd bestand vereist dat de "
+"editor herstart wordt."
 
 #: editor/import_dock.cpp
 msgid ""
@@ -3980,12 +3977,10 @@ msgid "Failed to load resource."
 msgstr "Mislukt om resource te laden."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Expand All Properties"
 msgstr "Klap alle eigenschappen uit"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Collapse All Properties"
 msgstr "Klap alle eigenschappen in"
 
@@ -4063,7 +4058,6 @@ msgid "MultiNode Set"
 msgstr "MultiNode groep"
 
 #: editor/node_dock.cpp
-#, fuzzy
 msgid "Select a single node to edit its signals and groups."
 msgstr "Selecteer een Node om Signalen en Groepen aan te passen."
 
@@ -4154,19 +4148,16 @@ msgstr "Laden..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "Beweeg Punt"
+msgstr "Beweeg Knooppunt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "Wijzig overlooptijd"
+msgstr "Wijzig BlendSpace1D limiet"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "Wijzig overlooptijd"
+msgstr "Wijzig BlendSpace1D labels"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4177,20 +4168,17 @@ msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Node Point"
-msgstr "Node Toevoegen"
+msgstr "Knooppunt Toevoegen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "Voeg Animatie Toe"
+msgstr "Voeg Animatiepunt Toe"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace1D Point"
-msgstr "Verwijder Pad Punt"
+msgstr "Verwijder BlendSpace1D Punt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
@@ -4242,34 +4230,28 @@ msgid "Open Animation Node"
 msgstr "Animatieknoop openen"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Triangle already exists."
-msgstr "Driehoek bestaat al"
+msgstr "Driehoek bestaat al."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Triangle"
-msgstr "Variabele Toevoegen"
+msgstr "Driehoek Toevoegen"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Limits"
-msgstr "Wijzig overlooptijd"
+msgstr "Wijzig BlendSpace2D limiet"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Labels"
-msgstr "Wijzig overlooptijd"
+msgstr "Wijzig BlendSpace2D labels"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "Verwijder Pad Punt"
+msgstr "Verwijder BlendSpace2D Punt"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Verwijder Variabele"
+msgstr "Verwijder BlendSpace2D Driehoek"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
@@ -4280,9 +4262,8 @@ msgid "No triangles exist, so no blending can take place."
 msgstr "Er bestaan geen driehoeken, blending kan niet plaatsvinden."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Toggle Auto Triangles"
-msgstr "AutoLoad-Globalen omschakelen"
+msgstr "Omschakelen Automatische Driehoeken"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -4302,9 +4283,8 @@ msgid "Blend:"
 msgstr "Mengen:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed"
-msgstr "Materiaal Wijzigingen"
+msgstr "Parameter veranderd"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -4316,15 +4296,13 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Output Node kan niet worden toegevoegd aan de blend tree."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "Voeg Node(s) Toe Uit Tree"
+msgstr "Voeg knoop toe aan BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node Moved"
-msgstr "Verplaatsingsmodus"
+msgstr "Knoop verplaatst"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
@@ -4334,26 +4312,22 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Connected"
-msgstr "Verbonden"
+msgstr "Knoop Verbonden"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Disconnected"
-msgstr "Verbinding Verbroken"
+msgstr "Knopen Losgekoppeld"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Animation"
-msgstr "Animatie"
+msgstr "Animatie Instellen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Alles Selecteren"
+msgstr "Knoop Verwijderen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -4366,9 +4340,8 @@ msgid "Toggle Filter On/Off"
 msgstr "Aan-uitschakelaar Track."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "Wijzig Anim Lengte"
+msgstr "Verander Filter"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -4403,9 +4376,8 @@ msgstr "Functies"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Renamed"
-msgstr "Node Naam:"
+msgstr "Knoop Hernoemd"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4905,7 +4877,7 @@ msgstr "Kan thema niet opslaan in bestand:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Schrijferror."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -4985,19 +4957,19 @@ msgstr "Download voor dit onderdeel is al bezig!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Recent Bijgewerkt"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Minst Recent Bijgewerkt"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Naam (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Naam (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5031,7 +5003,7 @@ msgstr "Alle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Geen resultaten voor \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -5242,6 +5214,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Game Camera Overschrijven\n"
+"Overschrijft de Game Camera met de Viewport van de Editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5249,12 +5223,13 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Game Camera Overschrijven\n"
+"Geen spelinstantie actief."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Gereedschappen"
+msgstr "Slot Geselecteerd"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5264,15 +5239,13 @@ msgstr "Geselecteerde Verwijderen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Selectie kopiëren"
+msgstr "Selectie Groeperen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected"
-msgstr "Selectie kopiëren"
+msgstr "Selectie Degroeperen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"

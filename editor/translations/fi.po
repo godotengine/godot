@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:37+0000\n"
+"PO-Revision-Date: 2019-12-16 23:50+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -3491,9 +3491,8 @@ msgid "Select Template File"
 msgstr "Valitse mallitiedosto"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Hallinnoi vientimalleja"
+msgstr "Godotin vientimallit"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4889,29 +4888,27 @@ msgstr "Tämän assetin lataus on jo käynnissä!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Viimeksi päivitetty"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Vanhin päivitys"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nimi (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nimi (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Lisenssi"
+msgstr "Lisenssi (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Lisenssi"
+msgstr "Lisenssi (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -9029,13 +9026,12 @@ msgid "Runnable"
 msgstr "Suoritettava"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Lisää tuloportti"
+msgstr "Lisää ensimmäinen vienti..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Lisää edelliset päivitykset..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
