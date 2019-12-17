@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Mono.Unix.Native;
 
 namespace GodotTools.Utils
 {
@@ -14,6 +13,9 @@ namespace GodotTools.Utils
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
         static extern string GetPlatformName();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        static extern bool UnixFileHasExecutableAccess(string filePath);
 
         public static class Names
         {
@@ -131,7 +133,7 @@ namespace GodotTools.Utils
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
             return searchDirs.Select(dir => Path.Combine(dir, name))
-                .FirstOrDefault(path => File.Exists(path) && Syscall.access(path, AccessModes.X_OK) == 0);
+                .FirstOrDefault(path => File.Exists(path) && UnixFileHasExecutableAccess(path));
         }
 
         public static void RunProcess(string command, IEnumerable<string> arguments)
