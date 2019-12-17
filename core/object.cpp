@@ -1215,7 +1215,9 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			MessageQueue::get_singleton()->push_call(target->get_instance_id(), c.method, args, argc, true);
 		} else {
 			Variant::CallError ce;
+			s->lock++;
 			target->call(c.method, args, argc, ce);
+			s->lock--;
 
 			if (ce.error != Variant::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
