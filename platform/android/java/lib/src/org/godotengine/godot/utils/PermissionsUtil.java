@@ -101,7 +101,7 @@ public final class PermissionsUtil {
 			return false;
 		}
 
-		if (manifestPermissions == null || manifestPermissions.length == 0)
+		if (manifestPermissions.length == 0)
 			return true;
 
 		List<String> dangerousPermissions = new ArrayList<>();
@@ -141,8 +141,8 @@ public final class PermissionsUtil {
 			e.printStackTrace();
 			return new String[0];
 		}
-		if (manifestPermissions == null || manifestPermissions.length == 0)
-			return new String[0];
+		if (manifestPermissions.length == 0)
+			return manifestPermissions;
 
 		List<String> dangerousPermissions = new ArrayList<>();
 		for (String manifestPermission : manifestPermissions) {
@@ -188,6 +188,8 @@ public final class PermissionsUtil {
 	private static String[] getManifestPermissions(Godot activity) throws PackageManager.NameNotFoundException {
 		PackageManager packageManager = activity.getPackageManager();
 		PackageInfo packageInfo = packageManager.getPackageInfo(activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+		if (packageInfo.requestedPermissions == null)
+			return new String[0];
 		return packageInfo.requestedPermissions;
 	}
 
