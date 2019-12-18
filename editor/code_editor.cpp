@@ -1654,6 +1654,7 @@ void CodeTextEditor::show_toggle_scripts_button() {
 
 void CodeTextEditor::update_toggle_scripts_button() {
 	toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_icon("Back", "EditorIcons") : get_icon("Forward", "EditorIcons"));
+	toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1700,7 +1701,6 @@ CodeTextEditor::CodeTextEditor() {
 	toggle_scripts_button = memnew(ToolButton);
 	toggle_scripts_button->connect("pressed", this, "_toggle_scripts_pressed");
 	status_bar->add_child(toggle_scripts_button);
-	toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 	toggle_scripts_button->hide();
 
 	// Error
