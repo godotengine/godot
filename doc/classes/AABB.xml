@@ -43,7 +43,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Gets the area of the [AABB].
+				Returns the volume of the [AABB].
 			</description>
 		</method>
 		<method name="get_endpoint">
@@ -182,7 +182,7 @@
 			<argument index="0" name="aabb" type="AABB">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="merge">
@@ -197,7 +197,7 @@
 	</methods>
 	<members>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			Ending corner.
+			Ending corner. This is calculated as [code]position + size[/code]. Changing this property changes [member size] accordingly.
 		</member>
 		<member name="position" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			Beginning corner.
