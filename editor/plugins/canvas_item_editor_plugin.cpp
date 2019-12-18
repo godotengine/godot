@@ -4076,10 +4076,9 @@ void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
 	ERR_FAIL_COND(!popup_temporarily_timers.has(p_control));
 
 	Timer *timer = popup_temporarily_timers[p_control];
+	timer->queue_delete();
 	p_control->hide();
-	remove_child(timer);
 	popup_temporarily_timers.erase(p_control);
-	memdelete(timer);
 	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
