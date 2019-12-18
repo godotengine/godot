@@ -43,15 +43,33 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "modules/regex/regex.h"
+
+#define prop_sailfish_sdk_path "sailfish_sdk/sdk_path"
+#define prop_custom_binary_arm       "custom_binary/arm"
+#define prop_custom_binary_arm_debug "custom_binary/arm_debug"
+#define prop_custom_binary_x86       "custom_binary/x86"
+#define prop_custom_binary_x86_debug "custom_binary/x86_debug"
+#define prop_version_release "version/release"
+#define prop_version_string  "version/string"
 
 class EditorExportPlatformSailfish : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformSailfish, EditorExportPlatform)
 
-	
+	enum TargetArch {
+		arch_armv7hl,
+		arch_i486
+	};
+
 	struct Device {
-		String address;
-		String name;
-		String arch;
+		String     address;
+		String     name;
+		TargetArch arch;
+	};
+
+	struct MerTarget {
+		String     name;
+		TargetArch arch;
 	};
 public:
 	EditorExportPlatformSailfish() {
@@ -61,7 +79,13 @@ public:
 	}
 
 	void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
+		// EditorNode::print("Could not unzip temporary unaligned APK.");
+		print_verbose("get_preset_features, path " + p_preset->get_export_path() );
+	}
 
+	virtual void get_platform_features(List<String> *r_features) override {
+		r_features->push_back("mobile");
+		r_features->push_back(get_os_name());
 	}
 
 	String get_os_name() const override {
@@ -81,17 +105,17 @@ public:
 	}
 
 	void get_export_options(List<ExportOption> *r_options) override {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sailfish_sdk/sdk_path", PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_sailfish_sdk_path, PROPERTY_HINT_GLOBAL_DIR), ""));
 		// r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sailfish_sdk/arm_target", PROPERTY_HINT_ENUM), ""));
 		// r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sailfish_sdk/x86_target", PROPERTY_HINT_ENUM), ""));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_binary/arm", PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_binary/arm_debug", PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_binary/x86", PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_binary/x86_debug", PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm, PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm_debug, PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86, PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86_debug, PROPERTY_HINT_GLOBAL_DIR), ""));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT,    "version/release", PROPERTY_HINT_RANGE, "1,40096,1,or_greater"), 1));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/string", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), "1.0.0"));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT,    prop_version_release, PROPERTY_HINT_RANGE, "1,40096,1,or_greater"), 1));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_version_string, PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), "1.0.0"));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "harbour-$genname"), "harbour-$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/game_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
@@ -105,11 +129,88 @@ public:
 		return ext;
 	}
 	Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+		String src_binary;
+		String sdk_path;
+		String sdk_configs_path = OS::get_singleton()->get_config_path();
+		String mer_sdk_tools;
+		List<MerTarget> mer_target; // Mer targets list
+#ifdef WINDOWS_ENABLED
+		sdk_configs_path +=  String("\\SailfishOS-SDK\\");
+		mer_sdk_tools = sdk_configs_path + String("\\mer-sdk-tools\\Sailfish OS Build Engine\\");
+#else		
+		sdk_configs_path +=  String("/SailfishOS-SDK/");
+		mer_sdk_tools = sdk_configs_path + String("/mer-sdk-tools/Sailfish OS Build Engine/");
+#endif
+		Error err;
+		DirAccessRef dir = DirAccess::open(mer_sdk_tools,&err);
+		if( err != Error::OK )
+		{
+			print_error("Cant open MerSDK targets tools dir: " + mer_sdk_tools);
+			return err;
+		}
+		// List existing in mersdk_tools tagets folders
+		print_verbose("Mer SDK targets:");
+		dir->list_dir_begin();
+		String entry = dir->get_next();
+		while(  entry != String() ) {
+			if(!dir->current_is_dir() || entry == String(".") || entry == String(".."))
+			{
+				entry = dir->get_next();
+				continue;
+			}
+			print_verbose( entry );
+			MerTarget target;
+			target.name = entry;
+			//SailfishOS-3.2.0.12-armv7hl/
+			//SailfishOS-3.2.0.12-i486/
+			RegEx regex("SailfishOS-([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)-(armv7hl|i486)");
+			Array matches = regex.search_all(entry);
+
+			if( matches.size() >= 6 ) {
+				print_verbose( String(" Version is ") + matches[1] + matches[2] + matches[3] + matches[4] );
+				print_verbose( String(" Arch is ") + matches[5] );
+			}
+			else {
+				int end = 0;
+				for(int i = 0; i < matches.size(); i++ ) {
+					String out = "match[%i] = %s";
+					Array values;
+					values.append( i );
+					values.append( matches[i] );
+					// print_verbose( out.format(values) );
+					int start = ((Ref<RegExMatch>)matches[i])->get_start(1);
+					print_verbose( entry.substr(end, start - end - 1) );
+					end = start + 1;
+				}
+			}
+			mer_target.push_back(target);
+			entry = dir->get_next();
+		}
+		dir->list_dir_end();
+
+		EditorProgress ep("export", "Exporting for SailfishOS", 105, true);
+		List<PropertyInfo> props = p_preset->get_properties();
+		// for(int i = 0; i < props.size(); i++ ) {
+		// 	PropertyInfo current = props[i];
+		// 	print_verbose(String("Property is ") + current.name );
+
+		// 	if( current.name == prop_sailfish_sdk_path ) {
+		// 		// sdk_path = current.hint;
+		// 		print_verbose("SDK path property: ");
+		// 		print_verbose("hint_string: " + current.hint_string);
+		// 		print_verbose("hint       : " + current.hint);
+		// 		print_verbose("type       : " + current.type);
+		// 		// OS::get_singleton()->print("SDK path is %s\n", sdk_path..c_str() );
+		// 		// print_verbose(String("SDK path is ") + sdk_path);
+		// 	}
+		// }
+		sdk_path = String(p_preset->get( prop_sailfish_sdk_path));
+		print_verbose(String("SDK path is ") + sdk_path);
+		print_verbose(String("Platfrom config path: ") + sdk_configs_path );
 		return Error::OK;
 	}
-	void get_platform_features(List<String> *r_features)override {
 
-	}
 	void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
 
 	}
