@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  zip.h                                                                */
+/*  zip_writer.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ZIP_H
-#define ZIP_H
+#ifndef ZIP_WRITER_H
+#define ZIP_WRITER_H
 
 #include "core/reference.h"
 
@@ -37,9 +37,8 @@
 #include "core/os/os.h"
 #include "thirdparty/minizip/zip.h"
 
-class Zip : public Reference {
-
-	GDCLASS(Zip, Object);
+class ZipWriter : public Reference {
+	GDCLASS(ZipWriter, Reference);
 
 	FileAccess *f;
 	zipFile zf;
@@ -54,17 +53,17 @@ public:
 		APPEND_ADDINZIP = 2,
 	};
 
-	Error open(String path, int append);
+	Error open(String path, ZipAppend append);
 	Error close();
 
-	Error open_new_file_in_zip(String path);
-	Error write_in_file_in_zip(Vector<uint8_t> data);
-	Error close_file_in_zip();
+	Error start_file(String path);
+	Error write_file(Vector<uint8_t> data);
+	Error close_file();
 
-	Zip();
-	~Zip();
+	ZipWriter();
+	~ZipWriter();
 };
 
-VARIANT_ENUM_CAST(Zip::ZipAppend)
+VARIANT_ENUM_CAST(ZipWriter::ZipAppend)
 
-#endif // ZIP_H
+#endif // ZIP_WRITER_H

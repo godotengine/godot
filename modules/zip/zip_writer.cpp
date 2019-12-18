@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  zip.cpp                                                              */
+/*  zip_writer.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,21 +30,27 @@
 
 #include "core/io/zip_io.h"
 
-#include "zip.h"
+#include "zip_writer.h"
 
-Error Zip::open(String path, int append) {
-	f = NULL;
+Error ZipWriter::open(String path, ZipAppend append) {
+	if (f) {
+		close();
+	}
+
 	zlib_filefunc_def io = zipio_create_io_from_file(&f);
-	io.opaque = &f;
 	zf = zipOpen2(path.utf8().get_data(), append, NULL, &io);
 	return zf != NULL ? OK : FAILED;
 }
 
-Error Zip::close() {
+Error ZipWriter::close() {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter cannot be closed because it is not open.")
+
 	return zipClose(zf, NULL) == ZIP_OK ? OK : FAILED;
 }
 
-Error Zip::open_new_file_in_zip(String path) {
+Error ZipWriter::start_file(String path) {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+
 	zip_fileinfo zipfi;
 
 	OS::Time time = OS::get_singleton()->get_time();
@@ -64,30 +70,36 @@ Error Zip::open_new_file_in_zip(String path) {
 	return ret == ZIP_OK ? OK : FAILED;
 }
 
-Error Zip::write_in_file_in_zip(Vector<uint8_t> data) {
+Error ZipWriter::write_file(Vector<uint8_t> data) {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+
 	return zipWriteInFileInZip(zf, data.ptr(), data.size()) == ZIP_OK ? OK : FAILED;
 }
 
-Error Zip::close_file_in_zip() {
+Error ZipWriter::close_file() {
+	ERR_FAIL_COND_V_MSG(!f, FAILED, "ZipWriter must be opened before use.")
+
 	return zipCloseFileInZip(zf) == ZIP_OK ? OK : FAILED;
 }
 
-void Zip::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open", "path", "append"), &Zip::open);
-	ClassDB::bind_method(D_METHOD("open_new_file_in_zip", "path"), &Zip::open_new_file_in_zip);
-	ClassDB::bind_method(D_METHOD("write_in_file_in_zip", "data"), &Zip::write_in_file_in_zip);
-	ClassDB::bind_method(D_METHOD("close_file_in_zip"), &Zip::close_file_in_zip);
-	ClassDB::bind_method(D_METHOD("close"), &Zip::close);
+void ZipWriter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZipWriter::open, DEFVAL(Variant(APPEND_CREATE)));
+	ClassDB::bind_method(D_METHOD("start_file", "path"), &ZipWriter::start_file);
+	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZipWriter::write_file);
+	ClassDB::bind_method(D_METHOD("close_file"), &ZipWriter::close_file);
+	ClassDB::bind_method(D_METHOD("close"), &ZipWriter::close);
 
 	BIND_ENUM_CONSTANT(APPEND_CREATE);
 	BIND_ENUM_CONSTANT(APPEND_CREATEAFTER);
 	BIND_ENUM_CONSTANT(APPEND_ADDINZIP);
 }
 
-Zip::Zip() {
+ZipWriter::ZipWriter() {
 	f = NULL;
-	zf = NULL;
 }
 
-Zip::~Zip() {
+ZipWriter::~ZipWriter() {
+	if (f) {
+		close();
+	}
 }
