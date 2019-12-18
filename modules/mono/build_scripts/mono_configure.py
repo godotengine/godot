@@ -446,18 +446,19 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
         if not os.path.isdir(target_mono_lib_dir):
             os.makedirs(target_mono_lib_dir)
 
+        lib_file_names = []
         if platform == 'osx':
-            # TODO: Make sure nothing is missing
-            copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.dylib'), target_mono_lib_dir)
+            lib_file_names = [lib_name + '.dylib' for lib_name in [
+                'libmono-btls-shared', 'libmono-native-compat', 'libMonoPosixHelper'
+            ]]
         elif is_unix_like(platform):
             lib_file_names = [lib_name + '.so' for lib_name in [
                 'libmono-btls-shared', 'libmono-ee-interp', 'libmono-native', 'libMonoPosixHelper',
                 'libmono-profiler-aot', 'libmono-profiler-coverage', 'libmono-profiler-log', 'libMonoSupportW'
             ]]
 
-            for lib_file_name in lib_file_names:
-                copy_if_exists(os.path.join(mono_root, 'lib', lib_file_name), target_mono_lib_dir)
-
+        for lib_file_name in lib_file_names:
+            copy_if_exists(os.path.join(mono_root, 'lib', lib_file_name), target_mono_lib_dir)
 
 def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
     tmpenv = Environment()
