@@ -102,5 +102,6 @@ if env['builtin_freetype']:
 
 # Godot source files
 env_freetype.add_source_files(env.modules_sources, "*.cpp")
+env_freetype.add_header_files(env.modules_headers, "*.h")
 # Used in scene/, needs to be in main env
 env.Append(CPPDEFINES=['FREETYPE_ENABLED'])

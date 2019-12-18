@@ -31,6 +31,28 @@ def add_source_files(self, sources, files, warn_duplicates=True):
                 continue
         sources.append(obj)
 
+def add_header_files(self, headers, files, warn_duplicates=True):
+    # Convert string to list of absolute paths (including expanding wildcard)
+    if isbasestring(files):
+        # Keep SCons project-absolute path as they are (no wildcard support)
+        if files.startswith('#'):
+            if '*' in files:
+                print("ERROR: Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
+                return
+            files = [files]
+        else:
+            dir_path = self.Dir('.').abspath
+            files = sorted(glob.glob(dir_path + "/" + files))
+
+    # Add each header path
+    for path in files:
+        if path in headers:
+            if warn_duplicates:
+                print("WARNING: Header \"{}\" already included in environment headers.".format(path))
+            else:
+                continue
+        headers.append(path)
+
 
 def disable_warnings(self):
     # 'self' is the environment
@@ -540,12 +562,20 @@ def generate_vs_project(env, num_jobs):
             result = " ^& ".join(common_build_prefix + [commands])
             return result
 
-        env.AddToVSProject(env.core_sources)
-        env.AddToVSProject(env.main_sources)
-        env.AddToVSProject(env.modules_sources)
-        env.AddToVSProject(env.scene_sources)
-        env.AddToVSProject(env.servers_sources)
-        env.AddToVSProject(env.editor_sources)
+        env.AddSourcesToVSProject(env.core_sources)
+        env.AddHeadersToVSProject(env.core_headers)
+        env.AddSourcesToVSProject(env.main_sources)
+        env.AddHeadersToVSProject(env.main_headers)
+        env.AddSourcesToVSProject(env.tests_sources)
+        env.AddHeadersToVSProject(env.tests_headers)
+        env.AddSourcesToVSProject(env.modules_sources)
+        env.AddHeadersToVSProject(env.modules_headers)
+        env.AddSourcesToVSProject(env.scene_sources)
+        env.AddHeadersToVSProject(env.scene_headers)
+        env.AddSourcesToVSProject(env.servers_sources)
+        env.AddHeadersToVSProject(env.servers_headers)
+        env.AddSourcesToVSProject(env.editor_sources)
+        env.AddHeadersToVSProject(env.editor_headers)
 
         # windows allows us to have spaces in paths, so we need
         # to double quote off the directory. However, the path ends

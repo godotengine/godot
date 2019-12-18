@@ -21,3 +21,5 @@ env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_cvtt.add_source_files(env.modules_sources, "*.cpp")
+env_cvtt.add_header_files(env.modules_headers, "*.h")
+

@@ -98,3 +98,4 @@ env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/co
 
 # Godot's own source files
 env_assimp.add_source_files(env.modules_sources, "*.cpp")
+env_assimp.add_header_files(env.modules_headers, "*.h")

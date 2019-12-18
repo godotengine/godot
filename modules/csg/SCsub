@@ -7,3 +7,4 @@ env_csg = env_modules.Clone()
 
 # Godot's own source files
 env_csg.add_source_files(env.modules_sources, "*.cpp")
+env_csg.add_header_files(env.modules_headers, "*.h")

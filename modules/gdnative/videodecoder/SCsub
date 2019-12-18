@@ -7,3 +7,4 @@ env_vsdecoder_gdnative = env_modules.Clone()
 
 env_vsdecoder_gdnative.Prepend(CPPPATH=['#modules/gdnative/include/'])
 env_vsdecoder_gdnative.add_source_files(env.modules_sources, '*.cpp')
+env_vsdecoder_gdnative.add_header_files(env.modules_headers, "*.h")

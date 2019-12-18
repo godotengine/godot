@@ -6,8 +6,10 @@ from platform_methods import run_in_subprocess
 import main_builders
 
 env.main_sources = []
+env.main_headers = []
 
 env.add_source_files(env.main_sources, "*.cpp")
+env.add_header_files(env.main_headers, "*.h")
 
 # order matters here.  higher index controller database files write on top of lower index database files
 controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb_204.txt", "#main/godotcontrollerdb.txt"]

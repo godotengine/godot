@@ -55,5 +55,6 @@ if env['builtin_libpng']:
 
 # Godot source files
 env_png.add_source_files(env.drivers_sources, "*.cpp")
+env_png.add_header_files(env.drivers_headers, "*.h")
 
 Export('env')

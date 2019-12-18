@@ -100,3 +100,4 @@ if env['builtin_mbedtls']:
 
 # Module sources
 env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")
+env_mbed_tls.add_header_files(env.modules_headers, "*.h")

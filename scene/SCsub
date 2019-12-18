@@ -3,6 +3,7 @@
 Import('env')
 
 env.scene_sources = []
+env.scene_headers = []
 
 # Thirdparty code
 thirdparty_dir = "#thirdparty/misc/"
@@ -20,6 +21,7 @@ env_thirdparty.add_source_files(env.scene_sources, thirdparty_sources)
 
 # Godot's own sources
 env.add_source_files(env.scene_sources, "*.cpp")
+env.add_header_files(env.scene_headers, "*.h")
 
 
 # Chain load SCsubs

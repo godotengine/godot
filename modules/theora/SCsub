@@ -84,3 +84,4 @@ if env['builtin_libtheora']:
 
 # Godot source files
 env_theora.add_source_files(env.modules_sources, "*.cpp")
+env_theora.add_header_files(env.modules_headers, "*.h")

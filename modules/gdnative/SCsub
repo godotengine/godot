@@ -12,6 +12,14 @@ env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
 
+env_gdnative.add_header_files(env.modules_headers, "gdnative.h")
+env_gdnative.add_header_files(env.modules_headers, "register_types.h")
+env_gdnative.add_header_files(env.modules_headers, "android/*.h")
+env_gdnative.add_header_files(env.modules_headers, "gdnative/*.h")
+env_gdnative.add_header_files(env.modules_headers, "nativescript/*.h")
+env_gdnative.add_header_files(env.modules_headers, "gdnative_library_singleton_editor.h")
+env_gdnative.add_header_files(env.modules_headers, "gdnative_library_editor_plugin.h")
+
 env_gdnative.Prepend(CPPPATH=['#modules/gdnative/include/'])
 
 Export('env_gdnative')

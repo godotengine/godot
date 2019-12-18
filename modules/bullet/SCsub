@@ -201,3 +201,4 @@ if env['builtin_bullet']:
 
 # Godot source files
 env_bullet.add_source_files(env.modules_sources, "*.cpp")
+env_bullet.add_header_files(env.modules_headers, "*.h")

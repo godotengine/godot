@@ -13,3 +13,4 @@ if use_gdnative: # GDNative is retained in Javascript for export compatibility
     env_webrtc.Prepend(CPPPATH=["#modules/gdnative/include/"])
 
 env_webrtc.add_source_files(env.modules_sources, "*.cpp")
+env_webrtc.add_header_files(env.modules_headers, "*.h")

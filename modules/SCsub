@@ -7,8 +7,10 @@ env_modules = env.Clone()
 Export('env_modules')
 
 env.modules_sources = []
+env.modules_headers = []
 
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
+env_modules.add_header_files(env.modules_headers, "register_module_types.h")
 
 for x in env.module_list:
     if (x in env.disabled_modules):

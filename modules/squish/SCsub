@@ -30,3 +30,4 @@ if env['builtin_squish']:
 
 # Godot source files
 env_squish.add_source_files(env.modules_sources, "*.cpp")
+env_squish.add_header_files(env.modules_headers, "*.h")

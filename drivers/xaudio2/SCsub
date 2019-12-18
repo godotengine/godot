@@ -3,5 +3,7 @@
 Import('env')
 
 env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_header_files(env.drivers_headers, "*.h")
+
 env.Append(CPPDEFINES=['XAUDIO2_ENABLED'])
 env.Append(LINKFLAGS=['xaudio2_8.lib'])

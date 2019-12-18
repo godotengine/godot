@@ -3,5 +3,6 @@
 Import('env')
 
 env.add_source_files(env.scene_sources, "*.cpp")
+env.add_header_files(env.scene_headers, "*.h")
 
 SConscript("default_theme/SCsub")

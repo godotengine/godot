@@ -238,6 +238,10 @@ if env['builtin_opus']:
 if not stub:
     # Module files
     env_opus.add_source_files(env.modules_sources, "*.cpp")
+    env_opus.add_header_files(env.modules_headers, "*.h")
 else:
     # Module files
     env_opus.add_source_files(env.modules_sources, "stub/register_types.cpp")
+    env_opus.add_header_files(env.modules_headers, "stub/register_types.h")
+
+

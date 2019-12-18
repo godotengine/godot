@@ -56,3 +56,5 @@ if not stub:
 else:
     # Module files
     env_vorbis.add_source_files(env.modules_sources, "stub/register_types.cpp")
+
+env_vorbis.add_header_files(env.modules_headers, "*.h")

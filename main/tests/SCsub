@@ -3,7 +3,9 @@
 Import('env')
 
 env.tests_sources = []
+env.tests_headers = []
 env.add_source_files(env.tests_sources, "*.cpp")
+env.add_header_files(env.tests_headers, "*.h")
 
 lib = env.add_library("tests", env.tests_sources)
 env.Prepend(LIBS=[lib])

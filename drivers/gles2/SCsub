@@ -3,5 +3,6 @@
 Import('env')
 
 env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_header_files(env.drivers_headers, "*.h")
 
 SConscript("shaders/SCsub")

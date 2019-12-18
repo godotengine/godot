@@ -3,3 +3,4 @@
 Import('env')
 
 env.add_source_files(env.servers_sources, "*.cpp")
+env.add_header_files(env.servers_headers, "*.h")

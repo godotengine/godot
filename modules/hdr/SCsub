@@ -7,3 +7,4 @@ env_hdr = env_modules.Clone()
 
 # Godot's own source files
 env_hdr.add_source_files(env.modules_sources, "*.cpp")
+env_hdr.add_header_files(env.modules_headers, "*.h")

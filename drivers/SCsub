@@ -3,6 +3,7 @@
 Import('env')
 
 env.drivers_sources = []
+env.drivers_headers = []
 
 # OS drivers
 SConscript('unix/SCsub')
@@ -38,10 +39,12 @@ if env['vsproj']:
     path = os.getcwd()
     # Change directory so the path resolves correctly in the function call.
     os.chdir("..")
-    env.AddToVSProject(env.drivers_sources)
+    env.AddSourcesToVSProject(env.drivers_sources)
+    env.AddHeadersToVSProject(env.drivers_headers)
     os.chdir(path)
 
 env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_header_files(env.drivers_headers, "*.h")
 
 lib = env.add_library("drivers", env.drivers_sources)
 env.Prepend(LIBS=[lib])

@@ -6,3 +6,4 @@ Import('env_modules')
 env_dds = env_modules.Clone()
 
 env_dds.add_source_files(env.modules_sources, "*.cpp")
+env_dds.add_header_files(env.modules_headers, "*.h")

@@ -31,3 +31,4 @@ if env['builtin_recast']:
 
 # Godot source files
 env_recast.add_source_files(env.modules_sources, "*.cpp")
+env_recast.add_header_files(env.modules_headers, "*.h")

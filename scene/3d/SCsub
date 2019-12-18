@@ -8,5 +8,11 @@ if env['disable_3d']:
     env.add_source_files(env.scene_sources, "particles.cpp")
     env.add_source_files(env.scene_sources, "visual_instance.cpp")
     env.add_source_files(env.scene_sources, "world_environment.cpp")
+    env.add_header_files(env.scene_headers, "spatial.h")
+    env.add_header_files(env.scene_headers, "skeleton.h")
+    env.add_header_files(env.scene_headers, "particles.h")
+    env.add_header_files(env.scene_headers, "visual_instance.h")
+    env.add_header_files(env.scene_headers, "world_environment.h")
 else:
     env.add_source_files(env.scene_sources, "*.cpp")
+    env.add_header_files(env.scene_headers, "*.h")

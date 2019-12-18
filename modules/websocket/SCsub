@@ -28,3 +28,4 @@ if env['builtin_wslay'] and not env["platform"] == "javascript": # already built
     env_wslay.add_source_files(env.modules_sources, wslay_sources)
 
 env_ws.add_source_files(env.modules_sources, "*.cpp")
+env_ws.add_header_files(env.modules_headers, "*.h")

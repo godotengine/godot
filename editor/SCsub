@@ -3,6 +3,7 @@
 Import('env')
 
 env.editor_sources = []
+env.editor_headers = []
 
 import os
 import os.path
@@ -79,6 +80,7 @@ if env['tools']:
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
 
     env.add_source_files(env.editor_sources, "*.cpp")
+    env.add_header_files(env.editor_headers, "*.h")
 
     SConscript('collada/SCsub')
     SConscript('doc/SCsub')

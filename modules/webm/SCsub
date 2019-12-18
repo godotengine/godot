@@ -35,3 +35,4 @@ env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_webm.add_source_files(env.modules_sources, "*.cpp")
+env_webm.add_header_files(env.modules_headers, "*.h")

@@ -35,3 +35,4 @@ if env['builtin_miniupnpc']:
 
 # Godot source files
 env_upnp.add_source_files(env.modules_sources, "*.cpp")
+env_upnp.add_header_files(env.modules_headers, "*.h")

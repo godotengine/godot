@@ -6,13 +6,16 @@ Import('env_modules')
 env_gdscript = env_modules.Clone()
 
 env_gdscript.add_source_files(env.modules_sources, "*.cpp")
+env_gdscript.add_header_files(env.modules_headers, "*.h")
 
 if env['tools']:
     env_gdscript.add_source_files(env.modules_sources, "./editor/*.cpp")
+    env_gdscript.add_header_files(env.modules_headers, "./editor/*.h")
 
     # Those two modules are required for the language server protocol
     if env['module_jsonrpc_enabled'] and env['module_websocket_enabled']:
         env_gdscript.add_source_files(env.modules_sources, "./language_server/*.cpp")
+        env_gdscript.add_header_files(env.modules_headers, "./language_server/*.h")
     else:
         # Using a define in the disabled case, to avoid having an extra define
         # in regular builds where all modules are enabled.

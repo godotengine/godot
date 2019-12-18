@@ -21,3 +21,4 @@ if env['builtin_xatlas']:
 
 # Godot source files
 env_xatlas_unwrap.add_source_files(env.modules_sources, "*.cpp")
+env_xatlas_unwrap.add_header_files(env.modules_headers, "*.h")

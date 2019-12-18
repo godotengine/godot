@@ -36,3 +36,4 @@ if not has_module:
     env_thirdparty.add_source_files(env.core_sources, thirdparty_mbedtls_sources)
 
 env_crypto.add_source_files(env.core_sources, "*.cpp")
+env_crypto.add_header_files(env.core_headers, "*.h")

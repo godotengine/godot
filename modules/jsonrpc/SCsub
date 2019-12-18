@@ -5,3 +5,4 @@ Import('env_modules')
 
 env_jsonrpc = env_modules.Clone()
 env_jsonrpc.add_source_files(env.modules_sources, "*.cpp")
+env_jsonrpc.add_header_files(env.modules_headers, "*.h")

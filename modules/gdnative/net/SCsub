@@ -10,4 +10,4 @@ if has_webrtc:
     env_net.Append(CPPDEFINES=['WEBRTC_GDNATIVE_ENABLED'])
 
 env_net.add_source_files(env.modules_sources, '*.cpp')
-
+env_net.add_header_files(env.modules_headers, "*.h")

@@ -134,3 +134,4 @@ if env['builtin_libwebp']:
 
 # Godot source files
 env_webp.add_source_files(env.modules_sources, "*.cpp")
+env_webp.add_header_files(env.modules_headers, "*.h")

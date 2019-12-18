@@ -7,6 +7,7 @@ import make_binders
 from platform_methods import run_in_subprocess
 
 env.core_sources = []
+env.core_headers = []
 
 
 # Generate AES256 script encryption key
@@ -140,6 +141,7 @@ if env['builtin_zstd']:
 
 # Godot's own sources
 env.add_source_files(env.core_sources, "*.cpp")
+env.add_header_files(env.core_headers, "*.h")
 
 # Certificates
 env.Depends("#core/io/certs_compressed.gen.h", ["#thirdparty/certs/ca-certificates.crt", env.Value(env['builtin_certs']), env.Value(env['system_certs_path'])])

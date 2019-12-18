@@ -6,3 +6,4 @@ Import('env_modules')
 env_gridmap = env_modules.Clone()
 
 env_gridmap.add_source_files(env.modules_sources, "*.cpp")
+env_gridmap.add_header_files(env.modules_headers, "*.h")

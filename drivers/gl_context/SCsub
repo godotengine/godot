@@ -21,3 +21,4 @@ if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
 
 # Godot source files
 env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_header_files(env.drivers_headers, "*.h")

@@ -20,3 +20,4 @@ env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot's own source files
 env_opensimplex.add_source_files(env.modules_sources, "*.cpp")
+env_opensimplex.add_header_files(env.modules_headers, "*.h")

@@ -5,3 +5,5 @@ Import('env')
 env_math = env.Clone()
 
 env_math.add_source_files(env.core_sources, "*.cpp")
+env_math.add_header_files(env.core_headers, "*.h")
+
