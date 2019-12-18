@@ -435,6 +435,33 @@ bool DirAccess::exists(String p_dir) {
 	return valid;
 }
 
+bool DirAccess::check_access_scope(String p_dir) {
+	if (p_dir.is_rel_path())
+		p_dir = get_current_dir().plus_file(p_dir);
+	p_dir = p_dir.replace("\\", "/");
+
+	int pos = p_dir.find("://");
+	Vector<String> path_parts = p_dir.substr(pos == -1 ? 0 : pos + 3).split("/");
+	int depth = 0;
+	// If we are ACCESS_FILESYSTEM we count the root as a depth so we start at -1
+	if (_access_type == ACCESS_FILESYSTEM)
+		depth = -1;
+
+	for (int i = 0; i < path_parts.size(); i++) {
+		if (path_parts[i] == "..") {
+			depth--;
+			if (depth < 0) {
+				// We navigate up even we couldn't navigate up again -> we are escaping our scope
+				return false;
+			}
+		} else if (path_parts[i] != ".") {
+			depth++;
+		}
+	}
+
+	return true;
+}
+
 DirAccess::DirAccess() {
 
 	_access_type = ACCESS_FILESYSTEM;

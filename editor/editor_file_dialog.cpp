@@ -220,6 +220,10 @@ void EditorFileDialog::update_dir() {
 }
 
 void EditorFileDialog::_dir_entered(String p_dir) {
+	if (!dir_access->check_access_scope(p_dir)) {
+		patherr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		return;
+	}
 
 	dir_access->change_dir(p_dir);
 	file->set_text("");
@@ -363,6 +367,10 @@ void EditorFileDialog::_action_pressed() {
 	}
 
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	if (!dir_access->check_access_scope(f)) {
+		patherr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		return;
+	}
 
 	if ((mode == MODE_OPEN_ANY || mode == MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
@@ -1087,18 +1095,23 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
-
-	Error err = dir_access->make_dir(makedirname->get_text());
-	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text());
-		invalidate();
-		update_filters();
-		update_dir();
-		_push_history();
-		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
-	} else {
+	// Make sure that the path doesn't escape our scope
+	if (!dir_access->check_access_scope(makedirname->get_text())) {
 		mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
+	} else {
+		Error err = dir_access->make_dir(makedirname->get_text());
+		if (err == OK) {
+			dir_access->change_dir(makedirname->get_text());
+			invalidate();
+			update_filters();
+			update_dir();
+			_push_history();
+			EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
+		} else {
+			mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
+		}
 	}
+
 	makedirname->set_text(""); // reset label
 }
 
@@ -1719,6 +1732,10 @@ EditorFileDialog::EditorFileDialog() {
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(TTR("Must use a valid extension."));
 	add_child(exterr);
+
+	patherr = memnew(AcceptDialog);
+	patherr->set_text(TTR("The specified path is invalid."));
+	add_child(patherr);
 
 	update_filters();
 	update_dir();

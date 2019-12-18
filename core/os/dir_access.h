@@ -83,6 +83,8 @@ public:
 	virtual Error make_dir_recursive(String p_dir);
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
 
+	virtual bool check_access_scope(String p_path);
+
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
 	static bool exists(String p_dir);
