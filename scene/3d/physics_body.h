@@ -43,6 +43,7 @@ class PhysicsBody : public CollisionObject {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
+    bool collision_avoidance_obstacle;
 
 	void _set_layers(uint32_t p_mask);
 	uint32_t _get_layers() const;
@@ -73,7 +74,10 @@ public:
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
-	PhysicsBody();
+    void set_collision_avoidance_obstacle(bool p_is);
+    bool is_collision_avoidance_obstacle() const;
+
+    PhysicsBody();
 };
 
 class StaticBody : public PhysicsBody {

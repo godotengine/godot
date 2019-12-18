@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  rvo_obstacle.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "rvo_obstacle.h"
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
-
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
-}
-
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
-}
-
-void unregister_orca_types() {
+RvoObstacle::RvoObstacle() {
 }

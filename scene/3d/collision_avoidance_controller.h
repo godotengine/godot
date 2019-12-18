@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  collision_avoidance_controller.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef COLLISION_AVOIDANCE_CONTROLLER_H
+#define COLLISION_AVOIDANCE_CONTROLLER_H
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
+#include "scene/main/node.h"
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
-}
+class CollisionAvoidanceController : public Node {
+    GDCLASS(CollisionAvoidanceController, Node);
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
-}
+    RID agent;
 
-void unregister_orca_types() {
-}
+protected:
+    static void _bind_methods();
+    void _notification(int p_what);
+
+public:
+    CollisionAvoidanceController();
+
+    virtual String get_configuration_warning() const;
+};
+
+#endif // COLLISION_AVOIDANCE_CONTROLLER_H

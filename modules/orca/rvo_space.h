@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  rvo_space.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RVO_SPACE_H
+#define RVO_SPACE_H
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
+#include "rvo_rid.h"
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
-}
+#include "core/math/math_defs.h"
+#include <Agent.h>
+#include <KdTree.h>
+#include <Obstacle.h>
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
-}
+class RvoSpace : public RvoRid {
 
-void unregister_orca_types() {
-}
+    /// Rvo world
+    RVO::KdTree rvo;
+
+    /// Is the obstacles array modified?
+    bool obstacles_dirty;
+    /// Obstacles
+    std::vector<RVO::Obstacle *> obstacles;
+
+    /// Is agent array modified?
+    bool agents_dirty;
+
+    /// All the Agents (even the controlled one)
+    std::vector<RVO::Agent *> agents;
+
+    /// Controlled agents
+    std::vector<RVO::Agent *> controlled_agents;
+
+public:
+    RvoSpace();
+
+    bool has_obstacle(RVO::Obstacle *obstacle) const;
+    void add_obstacle(RVO::Obstacle *obstacle);
+    void remove_obstacle(RVO::Obstacle *obstacle);
+
+    bool has_agent(RVO::Agent *agent) const;
+    void add_agent(RVO::Agent *agent);
+    void remove_agent(RVO::Agent *agent);
+
+    void set_agent_as_controlled(RVO::Agent *agent);
+    void remove_agent_as_controlled(RVO::Agent *agent);
+
+    void sync();
+    void step(real_t timestep);
+};
+
+#endif // RVO_SPACE_H

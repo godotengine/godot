@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  collision_avoidance_controller.cpp                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "collision_avoidance_controller.h"
 
-#include "rvo_collision_avoidance_server.h"
+#include "scene/3d/physics_body.h"
 #include "servers/collision_avoidance_server.h"
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
+void CollisionAvoidanceController::_bind_methods() {
 }
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
+void CollisionAvoidanceController::_notification(int p_what) {
+    switch (p_what) {
+        case NOTIFICATION_READY: {
+            ERR_FAIL_COND(agent.is_valid());
+            PhysicsBody *parent = Object::cast_to<PhysicsBody>(get_parent());
+            if (parent) {
+                agent = CollisionAvoidanceServer::get_singleton()->agent_add(parent->get_world()->get_collision_avoidance_space());
+            }
+        } break;
+        case NOTIFICATION_EXIT_TREE: {
+            if (agent.is_valid()) {
+                CollisionAvoidanceServer::get_singleton()->free(agent);
+                agent = RID();
+            }
+        } break;
+    }
 }
 
-void unregister_orca_types() {
+CollisionAvoidanceController::CollisionAvoidanceController() :
+        agent(RID()) {
+}
+
+String CollisionAvoidanceController::get_configuration_warning() const {
+    if (!Object::cast_to<PhysicsBody>(get_parent())) {
+        return TTR("CollisionAvoidanceController only serves to provide collision avoidance to a physics object. Please only use it as a child of RigidBody, KinematicBody.");
+    }
+
+    return String();
 }

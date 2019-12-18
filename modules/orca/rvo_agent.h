@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  rvo_agent.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RVO_AGENT_H
+#define RVO_AGENT_H
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
+#include "rvo_rid.h"
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
-}
+#include <Agent.h>
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
-}
+class RvoAgent : public RvoRid {
+    RVO::Agent agent;
 
-void unregister_orca_types() {
-}
+public:
+    RvoAgent();
+
+    RVO::Agent *get_agent() {
+        return &agent;
+    }
+};
+
+#endif // RVO_AGENT_H

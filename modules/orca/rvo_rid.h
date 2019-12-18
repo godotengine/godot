@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  rvo_rid.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RVO_RID_H
+#define RVO_RID_H
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
+#include "core/rid.h"
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
-}
+class RvoRid : public RID_Data {
+    RID self;
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
-}
+public:
+    _FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
+    _FORCE_INLINE_ RID get_self() const { return self; }
+};
 
-void unregister_orca_types() {
-}
+#endif // RVO_RID_H

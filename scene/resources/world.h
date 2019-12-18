@@ -46,7 +46,8 @@ class World : public Resource {
 
 private:
 	RID space;
-	RID scenario;
+    RID collision_avoidance_space;
+    RID scenario;
 	SpatialIndexer *indexer;
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
@@ -69,7 +70,8 @@ protected:
 
 public:
 	RID get_space() const;
-	RID get_scenario() const;
+    RID get_collision_avoidance_space() const;
+    RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;

@@ -141,6 +141,16 @@ void PhysicsBody::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
+void PhysicsBody::set_collision_avoidance_obstacle(bool p_is) {
+    collision_avoidance_obstacle = p_is;
+
+    // TODO init agent or obstacle
+}
+
+bool PhysicsBody::is_collision_avoidance_obstacle() const {
+    return collision_avoidance_obstacle;
+}
+
 void PhysicsBody::_set_layers(uint32_t p_mask) {
 	set_collision_layer(p_mask);
 	set_collision_mask(p_mask);
@@ -164,16 +174,21 @@ void PhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody::get_collision_layer_bit);
 
+    ClassDB::bind_method(D_METHOD("set_collision_avoidance_obstacle", "is_obstacle"), &PhysicsBody::set_collision_avoidance_obstacle);
+    ClassDB::bind_method(D_METHOD("is_collision_avoidance_obstacle"), &PhysicsBody::is_collision_avoidance_obstacle);
+
 	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody::_set_layers);
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody::_get_layers);
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_avoidance_obstacle"), "set_collision_avoidance_obstacle", "is_collision_avoidance_obstacle");
 }
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
-		CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
+        CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false),
+        collision_avoidance_obstacle(false) {
 
 	collision_layer = 1;
 	collision_mask = 1;
@@ -310,7 +325,7 @@ void StaticBody::_bind_methods() {
 }
 
 StaticBody::StaticBody() :
-		PhysicsBody(PhysicsServer::BODY_MODE_STATIC) {
+        PhysicsBody(PhysicsServer::BODY_MODE_STATIC) {
 }
 
 StaticBody::~StaticBody() {}

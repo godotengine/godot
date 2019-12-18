@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  collision_avoidance_server.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "collision_avoidance_server.h"
 
-#include "rvo_collision_avoidance_server.h"
-#include "servers/collision_avoidance_server.h"
+CollisionAvoidanceServer *CollisionAvoidanceServer::singleton = NULL;
 
-CollisionAvoidanceServer *new_server() {
-    return memnew(RvoCollisionAvoidanceServer);
+void CollisionAvoidanceServer::_bind_methods() {
+
+    ClassDB::bind_method(D_METHOD("space_create"), &CollisionAvoidanceServer::space_create);
+
+    ClassDB::bind_method(D_METHOD("agent_add", "space"), &CollisionAvoidanceServer::agent_add);
+
+    ClassDB::bind_method(D_METHOD("obstacle_add", "space"), &CollisionAvoidanceServer::obstacle_add);
+
+    ClassDB::bind_method(D_METHOD("free", "object"), &CollisionAvoidanceServer::free);
 }
 
-void register_orca_types() {
-    CollisionAvoidanceServerManager::set_default_server(new_server);
+CollisionAvoidanceServer *CollisionAvoidanceServer::get_singleton() {
+    return singleton;
 }
 
-void unregister_orca_types() {
+CollisionAvoidanceServer::CollisionAvoidanceServer() {
+    ERR_FAIL_COND(singleton != NULL);
+    singleton = this;
+}
+
+CollisionAvoidanceServer::~CollisionAvoidanceServer() {
+    singleton = NULL;
+}
+
+CreateCollisionAvoidanceServerCallback CollisionAvoidanceServerManager::create_callback = NULL;
+
+void CollisionAvoidanceServerManager::set_default_server(CreateCollisionAvoidanceServerCallback p_callback) {
+    create_callback = p_callback;
+}
+
+CollisionAvoidanceServer *CollisionAvoidanceServerManager::new_default_server() {
+    ERR_FAIL_COND_V(create_callback == NULL, NULL);
+    return create_callback();
 }
