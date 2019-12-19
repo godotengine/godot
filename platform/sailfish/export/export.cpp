@@ -38,6 +38,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/dictionary.h"
 #include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
@@ -58,7 +59,9 @@ class EditorExportPlatformSailfish : public EditorExportPlatform {
 
 	enum TargetArch {
 		arch_armv7hl,
-		arch_i486
+		arch_i486,
+		arch_x86 = arch_i486,
+		arch_unkown
 	};
 
 	struct Device {
@@ -69,6 +72,7 @@ class EditorExportPlatformSailfish : public EditorExportPlatform {
 
 	struct MerTarget {
 		String     name;
+		Array      version; // array of 4 integers
 		TargetArch arch;
 	};
 public:
@@ -135,6 +139,19 @@ public:
 		String sdk_configs_path = OS::get_singleton()->get_config_path();
 		String mer_sdk_tools;
 		List<MerTarget> mer_target; // Mer targets list
+		String arm_template;
+		String x86_template;
+
+		if(p_debug) 
+			arm_template = String( p_preset->get(prop_custom_binary_arm_debug) );
+		else
+			arm_template = String( p_preset->get(prop_custom_binary_arm) );
+		
+		if(p_debug) 
+			x86_template = String( p_preset->get(prop_custom_binary_x86_debug) );
+		else
+			x86_template = String( p_preset->get(prop_custom_binary_x86) );
+
 #ifdef WINDOWS_ENABLED
 		sdk_configs_path +=  String("\\SailfishOS-SDK\\");
 		mer_sdk_tools = sdk_configs_path + String("\\mer-sdk-tools\\Sailfish OS Build Engine\\");
@@ -162,29 +179,65 @@ public:
 			print_verbose( entry );
 			MerTarget target;
 			target.name = entry;
-			//SailfishOS-3.2.0.12-armv7hl/
-			//SailfishOS-3.2.0.12-i486/
+			//possible SailfishOS-3.2.0.12-armv7hl/
+			//possible SailfishOS-3.2.0.12-i486/
 			RegEx regex("SailfishOS-([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)-(armv7hl|i486)");
 			Array matches = regex.search_all(entry);
+			// print_verbose( String("Matches size: ") + Variant(matches.size()) );
+			if( matches.size() == 1 ) {
+				Ref<RegExMatch> rem = ((Ref<RegExMatch>)matches[0]);
+				Array names = rem->get_strings();
+				// print_verbose( String("match[0] strings size: ") + Variant(names.size()) );
+				if( names.size() < 6 ) {
+					print_verbose("Wrong match");
+					for( int d = 0; d < names.size(); d++ )
+					{
+						print_verbose( String("match[0].strings[") + Variant(d) + String("]: ") + String(names[d]) );
+					}
+					target.arch = arch_unkown;
+				}
+				else {
+					Array version_array;
+					version_array.push_back( int(names[1]) );
+					version_array.push_back( int(names[2]) );
+					version_array.push_back( int(names[3]) );
+					version_array.push_back( int(names[4]) );
+					target.version = version_array;
+					print_verbose( String(" Version is {0}.{1}.{2}.{3}").format(version_array) );
+					print_verbose( String(" Arch is ") + names[5] );
 
-			if( matches.size() >= 6 ) {
-				print_verbose( String(" Version is ") + matches[1] + matches[2] + matches[3] + matches[4] );
-				print_verbose( String(" Arch is ") + matches[5] );
-			}
-			else {
-				int end = 0;
-				for(int i = 0; i < matches.size(); i++ ) {
-					String out = "match[%i] = %s";
-					Array values;
-					values.append( i );
-					values.append( matches[i] );
-					// print_verbose( out.format(values) );
-					int start = ((Ref<RegExMatch>)matches[i])->get_start(1);
-					print_verbose( entry.substr(end, start - end - 1) );
-					end = start + 1;
+					if( names[5] == String("armv7hl") ) {
+						target.arch = arch_armv7hl;
+					}
+					else if( names[5] == String("i486") ) {
+						target.arch = arch_i486;
+					}
+					else
+						target.arch = arch_unkown;
 				}
 			}
-			mer_target.push_back(target);
+			else {
+				for(int i = 0; i < matches.size(); i++ ) {
+					Ref<RegExMatch> rem = ((Ref<RegExMatch>)matches[i]);
+					Array names = rem->get_strings();
+					for( int d = 0; d < names.size(); d++ )
+					{
+						print_verbose( String("match[") + Variant(i) + String("].strings[") + Variant(d) + String("]: ") + String(names[d]) );
+					}
+				}
+			}
+			// verify targets, and its versions (SDL-2.0.9 from Sailfish 3.1.0)
+			if( int(target.version[0]) >= 3 && int(target.version[1]) >= 1 ) {
+				if( target.arch == arch_armv7hl && arm_template == String() )
+					print_line( String("No arm tempalte for ")  + target.name );
+				else if( target.arch == arch_x86 && x86_template == String() )
+					print_line( String("No x86 tempalte for ")  + target.name );
+				else 
+					mer_target.push_back(target);
+			}
+			else {
+				print_error( String("Too old Mer target ")  + target.name );
+			}
 			entry = dir->get_next();
 		}
 		dir->list_dir_end();
@@ -208,6 +261,13 @@ public:
 		sdk_path = String(p_preset->get( prop_sailfish_sdk_path));
 		print_verbose(String("SDK path is ") + sdk_path);
 		print_verbose(String("Platfrom config path: ") + sdk_configs_path );
+		
+		
+		// for( int target_num = 0; mer_target.size(); terget_num++ )
+		// {
+			
+		// }
+
 		return Error::OK;
 	}
 
