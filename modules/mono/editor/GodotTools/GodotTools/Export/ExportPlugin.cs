@@ -78,7 +78,13 @@ namespace GodotTools.Export
             catch (Exception e)
             {
                 maybeLastExportError = e.Message;
-                GD.PushError($"Failed to export project: {e.Message}");
+
+                // 'maybeLastExportError' cannot be null or empty if there was an error, so we
+                // must consider the possibility of exceptions being thrown without a message.
+                if (string.IsNullOrEmpty(maybeLastExportError))
+                    maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
+
+                GD.PushError($"Failed to export project: {maybeLastExportError}");
                 Console.Error.WriteLine(e);
                 // TODO: Do something on error once _ExportBegin supports failing.
             }
@@ -513,7 +519,7 @@ namespace GodotTools.Export
                 case OS.Platforms.HTML5:
                     return "wasm-wasm32";
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Platform not supported: {platform}");
             }
         }
 
@@ -655,7 +661,7 @@ namespace GodotTools.Export
                 case OS.Platforms.HTML5:
                     return "wasm";
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Platform not supported: {platform}");
             }
         }
 

@@ -110,8 +110,14 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		case MONO_TYPE_STRING: {
-			MonoString *mono_string = GDMonoMarshal::mono_string_from_godot(p_value);
-			mono_field_set_value(p_object, mono_field, mono_string);
+			if (p_value.get_type() == Variant::NIL) {
+				// Otherwise, Variant -> String would return the string "Null"
+				MonoString *mono_string = NULL;
+				mono_field_set_value(p_object, mono_field, mono_string);
+			} else {
+				MonoString *mono_string = GDMonoMarshal::mono_string_from_godot(p_value);
+				mono_field_set_value(p_object, mono_field, mono_string);
+			}
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
