@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-09-07 13:51+0000\n"
-"Last-Translator: Overloaded <manoschool@yahoo.gr>\n"
+"PO-Revision-Date: 2019-12-15 05:52+0000\n"
+"Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -64,32 +64,31 @@ msgstr "Στην κλήση στο '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Μείξη"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -500,11 +499,9 @@ msgid "Warning: Editing imported animation"
 msgstr "Προσοχή: Επεξεργασία εισαγμένης κίνησης"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"Επιλέξτε ένα AnimationPlayer από την ιεραρχία της σκηνής για να "
-"επεξεργαστείτε animations."
+"Επιλέξτε έναν κόμβο AnimationPlayer για δημιουργία και επεξεργασία κινήσεων."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -636,9 +633,8 @@ msgid "Scale Ratio:"
 msgstr "Λόγος μεγέθυνσης:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Επιλογή κομματιών για αντιγραφή:"
+msgstr "Επιλογή Κομματιών για Αντιγραφή"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -650,9 +646,8 @@ msgid "Copy"
 msgstr "Αντιγραφή"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Αποεπιλογή Όλων"
+msgstr "Επιλογή Όλων/Κανένα"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -691,14 +686,12 @@ msgid "Replaced %d occurrence(s)."
 msgstr "Αντικαταστάθηκαν %d εμφανίσεις."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d match."
-msgstr "Βρέθηκαν %d αποτελέσματα."
+msgstr "%d αποτέλεσμα."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "Βρέθηκαν %d αποτελέσματα."
+msgstr "%d αποτελέσματα."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -740,6 +733,10 @@ msgstr "Σμύκρινση"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
+
+#: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1183,9 +1180,8 @@ msgid "Licenses"
 msgstr "Άδειες"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "Σφάλμα κατά το άνοιγμα του πακέτου, δεν είναι αρχείο zip."
+msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν είναι σε μορφή ZIP."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1253,9 +1249,8 @@ msgid "Delete Bus Effect"
 msgstr "Διαγραφή εφέ διαύλου ήχου"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "Δίαυλος ήχου, Σύρσιμο και απόθεση για αναδιάταξη."
+msgstr "Μεταφορά & απόθεση για αναδιάταξη."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1708,6 +1703,11 @@ msgid "Erase Profile"
 msgstr "Διαγραφή Προφίλ"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Διαχείριση Προφίλ Δυνατοτήτων Επεξεργαστή"
+
+#: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
 msgstr "Εισαγωγή Προφίλ"
 
@@ -1908,9 +1908,8 @@ msgid "Inherited by:"
 msgstr "Κληρονομείται από:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Brief Description"
-msgstr "Σύντομη περιγραφή:"
+msgstr "Σύντομη Περιγραφή"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1941,9 +1940,8 @@ msgid "Class Description"
 msgstr "Περιγραφή κλάσης"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials"
-msgstr "Online Tutorial:"
+msgstr "Διαδικτυακή Εκμάθηση"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2066,7 +2064,7 @@ msgstr "Εκκινιση"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/δευτ."
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
@@ -2082,19 +2080,19 @@ msgstr "Κόμβος"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "Εισερχόμενα RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "Εισερχόμενα RSET"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "Εξερχόμενα RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "Εξερχόμενα RSET"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2686,37 +2684,34 @@ msgstr "Επαναφορά σκηνής"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Λοιπά έργα ή εργαλεία για όλη τη σκηνή."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Έργο"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project Settings..."
-msgstr "Ρυθμίσεις έργου"
+msgstr "Ρυθμίσεις Έργου..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Έκδοση:"
+msgstr "Διαχείριση Εκδόσεων (VCS)"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Ρύθμιση Διαχείρισης Εκδόσεων"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Τερματισμός Διαχείρισης Εκδόσεων"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export..."
-msgstr "Εξαγωγή"
+msgstr "Εξαγωγή..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Install Android Build Template..."
-msgstr "Εγκατάσταση Προτύπου Χτισίματος Android"
+msgstr "Εγκατάσταση Προτύπου Δόμησης Android..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -2727,9 +2722,8 @@ msgid "Tools"
 msgstr "Εργαλεία"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "Εξερευνητής αχρησιμοποίητων πόρων"
+msgstr "Εξερευνητής Αχρησιμοποίητων Πόρων..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2833,9 +2827,8 @@ msgid "Editor"
 msgstr "Επεξεργαστής"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "Ρυθμίσεις επεξεργαστή"
+msgstr "Ρυθμίσεις Επεξεργαστή..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -2872,14 +2865,12 @@ msgid "Open Editor Settings Folder"
 msgstr "Άνοιγμα φακέλου ρυθμίσεων επεξεργαστή"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Editor Features..."
-msgstr "Διαχείριση Δυνατοτήτων Επεξεργαστή"
+msgstr "Διαχείριση Δυνατοτήτων Επεξεργαστή..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Export Templates..."
-msgstr "Διαχείριση προτύπων εξαγωγής"
+msgstr "Διαχείριση Προτύπων Εξαγωγής..."
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -2925,7 +2916,7 @@ msgstr "Αναπαραγωγή"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Παύση εκτέλεσης σκηνής για αποσφαλμάτωση."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -2999,7 +2990,7 @@ msgstr "Χωρις αποθήκευση"
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
-"Λείπει το πρότυπο χτισίματος Android, παρακαλούμε εγκαταστήστε τα σχετικά "
+"Λείπει το πρότυπο δόμησης Android, παρακαλούμε εγκαταστήστε τα σχετικά "
 "πρότυπα."
 
 #: editor/editor_node.cpp
@@ -3016,22 +3007,35 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
+"Αυτό θα ετοιμάσει το έργο σας για προσαρμοσμένες δομήσεις Android "
+"εγκαθιστώντας το πρότυπο πηγών στο «res://android/build».\n"
+"Μπορείτε μετά να κάνετε αλλαγές και να δομήσετε το δικό σας προσαρμοσμένο "
+"APK στην εξαγωγή (προσθέτοντας λειτουργικές μονάδες - modules, αλλάζοντας το "
+"AndroidManifest.xml, κλπ.).\n"
+"Σημειώστε πως για να γίνουν προσαρμοσμένες δομήσεις αντί της χρήσεις των "
+"έτοιμων APK, η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί στο "
+"πρότυπο εξαγωγής για Android."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"Το πρότυπο χτισίματος Android είναι εγκατεστημένο και δεν θα "
+"Το πρότυπο δόμησης Android είναι εγκατεστημένο στο έργο και δεν θα "
 "αντικατασταθεί.\n"
-"Αφαιρέστε τον φάκελο «build» πριν ξαναδοκιμάσετε την ενέργεια αυτήν."
+"Αφαιρέστε τον φάκελο «res://android/build» πριν ξαναδοκιμάσετε την ενέργεια "
+"αυτήν."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Εισαγωγή προτύπων από αρχείο ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Διαχειριστής προτύπων εξαγωγής"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3090,9 +3094,8 @@ msgid "Open the previous Editor"
 msgstr "Άνοιγμα του προηγούμενου επεξεργαστή"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "Δεν ορίστηκε πηγαία επιφάνεια."
+msgstr "Δεν βρέθηκαν υπό-πόροι."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3103,9 +3106,8 @@ msgid "Thumbnail..."
 msgstr "Μικρογραφία..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "Άνοιγμα Δέσμης Ενεργειών:"
+msgstr "Κύρια Δέσμη Ενεργειών:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3365,11 +3367,9 @@ msgid "Download"
 msgstr "Λήψη"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Official export templates aren't available for development builds."
 msgstr ""
-"Τα επίσημα πρότυπα εξαγωγής δεν είναι διαθέσιμα για τις εκδόσεις που "
-"βρίσκονται ακόμα σε εξέλιξη"
+"Τα επίσημα πρότυπα εξαγωγής δεν είναι διαθέσιμα για εκδόσεις ανάπτυξης."
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3452,23 +3452,20 @@ msgid "Download Complete."
 msgstr "Η λήψη ολοκληρώθηκε."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cannot remove temporary file:"
-msgstr "Δεν ήταν δυνατή η αποθήκευση θέματος σε αρχείο:"
+msgstr "Αδυναμία αφαίρεσης προσωρινού αρχείου:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"Αποτυχία εγκατάστασης προτύπων. Οι προβληματικές αρχειοθήκες μπορούν να "
-"βρεθούν στο '%s'."
+"Αποτυχία εγκατάστασης προτύπων.\n"
+"Τα προβληματικά πρότυπα μπορούν να βρεθούν στο «%s»."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting URL:"
-msgstr "Σφάλμα κατά τo αίτημα για διεύθηνση url: "
+msgstr "Σφάλμα αίτησης URL:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -3518,7 +3515,7 @@ msgstr "Σφάλμα χαιρετισμού SSL"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
-msgstr "Αποσυμπίεση Πηγών Χτισίματος Android"
+msgstr "Αποσυμπίεση Πηγών Δόμησης Android"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -3541,9 +3538,8 @@ msgid "Select Template File"
 msgstr "Επιλογή Αρχείου Προτύπων"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Φόρτωση προτύπων εξαγωγής"
+msgstr "Προτύπων Εξαγωγής Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3626,9 +3622,8 @@ msgid "New Inherited Scene"
 msgstr "Νέα Κληρονομημένη Σκηνή"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Κύρια σκηνή"
+msgstr "Ορισμός Ως Κύρια Σκηνή"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -3667,9 +3662,8 @@ msgid "Move To..."
 msgstr "Μετακίνηση σε..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Scene..."
-msgstr "Νέα σκηνή"
+msgstr "Νέα Σκηνή..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
@@ -3737,9 +3731,8 @@ msgid "Overwrite"
 msgstr "Αντικατάσταση"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Create Scene"
-msgstr "Δημιουργία από σκηνή"
+msgstr "Δημιουργία Σκηνής"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -3819,23 +3812,20 @@ msgid "Invalid group name."
 msgstr "Άκυρο όνομα ομάδας."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Rename Group"
-msgstr "Διαχείρηση ομάδων"
+msgstr "Μετονομασία Ομάδας"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Delete Group"
-msgstr "Διαγραφή διάταξης"
+msgstr "Διαγραφή Ομάδας"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Ομάδες"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes Not in Group"
-msgstr "Κόμβοι εκτός ομάδας"
+msgstr "Κόμβοι Εκτός Ομάδας"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
@@ -3851,9 +3841,8 @@ msgid "Empty groups will be automatically removed."
 msgstr "Οι άδειες ομάδες θα διαγράφονται αυτομάτως."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group Editor"
-msgstr "Επεξεργαστής Δεσμών Ενεργειών"
+msgstr "Επεξεργαστής Ομάδας"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -4379,9 +4368,8 @@ msgid "Audio Clips"
 msgstr "Αποσπάσματα ήχου:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Συναρτήσεις:"
+msgstr "Συναρτήσεις"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5191,6 +5179,87 @@ msgid ""
 msgstr ""
 "Όταν είναι ενεργό, η μετακίνηση των Control αλλάζει τις άγκυρες, αντί για τα "
 "περιθώρια τους."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Αριστερά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Περιστροφή Δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Κάτω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "στοιχειοθέτηση αριστερά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Κεντράρισμα επιλογής"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "στοιχειοθέτηση δεξιά"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Κάτω"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Αριστερή όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Πάνω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Δεξιά όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Κάτω όψη"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Λόγος μεγέθυνσης:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6636,10 +6705,6 @@ msgstr "Κλείσιμο  τεκμηρίωσης"
 msgid "Run"
 msgstr "Εκτέλεση"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Βήμα μέσα"
@@ -7797,6 +7862,11 @@ msgstr "Χρώμα"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Σταθερή"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Θέμα"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9275,6 +9345,11 @@ msgid "Make Patch"
 msgstr "Δημιουργία ενημέρωσης"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Αρχεία"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Δυνατότητες"
 
@@ -9325,6 +9400,15 @@ msgstr "Λειτουργία εξαγωγής;"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Εξαγωγή Όλων"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Αρχεία"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -10760,12 +10844,11 @@ msgstr "Στοίβαξη καρέ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
-msgstr "Πρόγραμμα δημιουργίας προφιλ"
+msgstr "Πρόγραμμα Δημιουργίας Προφίλ"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "Εξαγωγή Προφίλ"
+msgstr "Πρόγραμμα Δημιουργίας Δικτυακού Προφίλ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -11559,6 +11642,21 @@ msgstr "Μέλη:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Αλλαγή βασικού τύπου"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Προσθήκη Κόμβου..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Προσθήκη συνάρτησης"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "Συνάρτηση:"
 
@@ -11718,27 +11816,24 @@ msgstr ""
 "προεπιλεγμένη ρύθμιση."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
-"Η προσαρμοσμένη κατασκευή απαιτεί μια έγκυρη διαδρομή για το Android SDK "
-"στις Ρυθμίσεις Επεξεργαστή."
+"Η προσαρμοσμένη δόμηση απαιτεί μια έγκυρη διαδρομή για το Android SDK στις "
+"Ρυθμίσεις Επεξεργαστή."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
-"Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη κατασκευή στις Ρυθμίσεις "
+"Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη δόμηση στις Ρυθμίσεις "
 "Επεξεργαστή."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
-"Λείπει το πρότυπο χτισίματος Android, παρακαλούμε εγκαταστήστε τα σχετικά "
-"πρότυπα."
+"Λείπει το πρότυπο δόμησης Android από το έργο. Εγκαταστήστε το από το μενού "
+"«Έργο»."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -11754,6 +11849,8 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Δοκιμή δόμησης από προσαρμοσμένο πρότυπο δόμησης, αλλά δεν υπάρχουν "
+"πληροφορίες έκδοσης. Παρακαλούμε κάντε επανεγκατάσταση από το μενού «Έργο»."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11762,56 +11859,37 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"Ασυμφωνία εκδόσεων δόμησης Android:\n"
+"   Εγκατεστημένο πρότυπο: %s\n"
+"   Έκδοση Godot: %s\n"
+"Παρακαλούμε να επανεγκαταστήσετε το πρότυπο δόμησης Android από το μενού "
+"«Έργο»."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Building Android Project (gradle)"
-msgstr "Κατασκευή Έργου Android (gradle)"
+msgstr "Δόμηση Έργου Android (gradle)"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Η κατασκευή του έργου Android απέτυχε, ελέγξτε την έξοδο για το σφάλμα.\n"
-"Εναλλακτικά, επισκεφτείτε τη σελίδα docs.godotengine.org για το εγχειρίδιο "
-"πάνω στο θέμα της κατασκευής για Android."
+"Αποτυχία δόμησης έργου Android, ελέγξτε την έξοδο για το σφάλμα.\n"
+"Εναλλακτικά, επισκεφτείτε τη σελίδα docs.godotengine.org για τεκμηρίωση "
+"δόμησης Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "No build apk generated at: "
-msgstr "Δεν παράχθηκε κατασκευή apk στο: "
+msgstr "Δεν παράχθηκε δόμησης apk στο: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
 msgstr "Το αναγνωριστικό λείπει."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
-
-#: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό:"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-"Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
-"αναγνωριστικού."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
-"αναγνωριστικού."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "Το αναγνωριστικό πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -12552,6 +12630,23 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+#~ "αναγνωριστικού."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+#~ "αναγνωριστικού."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "Το αναγνωριστικό πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Παύση της σκηνής"

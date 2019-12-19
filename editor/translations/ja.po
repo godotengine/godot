@@ -757,6 +757,10 @@ msgid "Reset Zoom"
 msgstr "ズームをリセット"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "スクリプトパネルを切り替え"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "警告"
 
@@ -1715,6 +1719,11 @@ msgstr "新しいプロファイルの名前:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "プロファイルを消去"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "エディタ機能のプロファイルの管理"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2679,7 +2688,8 @@ msgstr "シーンを元に戻す"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "その他のプロジェクトまたはシーン全体のツール。"
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "プロジェクト"
 
@@ -3019,6 +3029,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "ZIPファイルからテンプレートをインポート"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "テンプレートのエクスポート マネージャー"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5144,6 +5159,87 @@ msgstr ""
 "されます。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "左側面"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "右側面"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "右に回転"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "下面図"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "左インデント"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "センター選択"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "右インデント"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "下面"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "左側面図"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "上面図"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "右側面図"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "下面図"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "スケール比:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "アンカーのみ"
 
@@ -6567,10 +6663,6 @@ msgstr "ドキュメントを閉じる"
 msgid "Run"
 msgstr "実行"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "スクリプトパネルを切り替え"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "ステップイン"
@@ -7722,6 +7814,11 @@ msgstr "色"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "コンスタント"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "テーマ"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9203,6 +9300,11 @@ msgid "Make Patch"
 msgstr "パッチ生成"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " ファイル"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "特徴"
 
@@ -9254,6 +9356,15 @@ msgstr "エクスポート モード？"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "すべてエクスポート"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " ファイル"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11462,6 +11573,21 @@ msgstr "メンバー:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "基本の型を変更"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "ノードを追加..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "関数を追加"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "関数:"
 
@@ -11675,25 +11801,8 @@ msgid "Identifier is missing."
 msgstr "識別子がありません。"
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "識別子セグメントはゼロ以外の長さでなければなりません。"
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "文字 '%s' は識別子に使用できません。"
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "数字を識別子セグメントの先頭に使用できません。"
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr "文字 '%s' は識別子 セグメントの先頭に使用できません。"
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "識別子には一つ以上の区切り文字 '.' が必要です。"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12420,6 +12529,19 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "識別子セグメントはゼロ以外の長さでなければなりません。"
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "数字を識別子セグメントの先頭に使用できません。"
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr "文字 '%s' は識別子 セグメントの先頭に使用できません。"
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "識別子には一つ以上の区切り文字 '.' が必要です。"
 
 #~ msgid "Pause the scene"
 #~ msgstr "シーンを一時停止"

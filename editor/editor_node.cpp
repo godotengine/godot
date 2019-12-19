@@ -6478,7 +6478,7 @@ EditorNode::EditorNode() {
 	file_templates->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.tpz ; Template Package");
+	file_templates->add_filter("*.tpz ; " + TTR("Template Package"));
 
 	file = memnew(EditorFileDialog);
 	gui_base->add_child(file);

@@ -154,10 +154,10 @@ void MeshInstance::_resolve_skeleton_path() {
 	if (!skeleton_path.is_empty()) {
 		Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
 		if (skeleton) {
-			new_skin_reference = skeleton->register_skin(skin);
-			if (skin.is_null()) {
+			new_skin_reference = skeleton->register_skin(skin_internal);
+			if (skin_internal.is_null()) {
 				//a skin was created for us
-				skin = new_skin_reference->get_skin();
+				skin_internal = new_skin_reference->get_skin();
 				_change_notify();
 			}
 		}
@@ -173,6 +173,7 @@ void MeshInstance::_resolve_skeleton_path() {
 }
 
 void MeshInstance::set_skin(const Ref<Skin> &p_skin) {
+	skin_internal = p_skin;
 	skin = p_skin;
 	if (!is_inside_tree())
 		return;

@@ -315,6 +315,9 @@ bool Sprite::is_pixel_opaque(const Point2 &p_point) const {
 	if (texture.is_null())
 		return false;
 
+	if (texture->get_size().width == 0 || texture->get_size().height == 0)
+		return false;
+
 	Rect2 src_rect, dst_rect;
 	bool filter_clip;
 	_get_rects(src_rect, dst_rect, filter_clip);

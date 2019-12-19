@@ -870,7 +870,7 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
 
 	file_dialog = memnew(EditorFileDialog);
-	file_dialog->add_filter("*.theme ; Theme File");
+	file_dialog->add_filter("*.theme ; " + TTR("Theme File"));
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_save_template_cbk");
 }

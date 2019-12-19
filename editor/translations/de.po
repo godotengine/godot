@@ -52,8 +52,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-12 09:05+0000\n"
-"Last-Translator: Jonas <dotchucknorris@gmx.de>\n"
+"PO-Revision-Date: 2019-12-15 05:52+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -776,6 +776,10 @@ msgstr "Verkleinern"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Vergrößerung zurücksetzen"
+
+#: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Seitenleiste umschalten"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1742,6 +1746,11 @@ msgstr "Neuer Profilname:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Profil löschen"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Verwalte Editorfunktionenprofile"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2718,7 +2727,8 @@ msgstr "Szene zurücksetzen"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Sonstiges Projekt oder szenenübergreifende Werkzeuge."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -2756,7 +2766,7 @@ msgstr "Werkzeuge"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
-msgstr "Verwaiste-Ressourcen-Dateimanager…"
+msgstr "Verwaltung nicht verwendeter Ressourcen…"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2932,7 +2942,7 @@ msgstr "Problem-Melder"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Community (Gemeinschaft)"
+msgstr "Internetgemeinschaft"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -3061,6 +3071,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Vorlagen aus ZIP-Datei importieren"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Exportvorlagenverwaltung"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3332,8 +3347,8 @@ msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
-"Keine ausführbare Exportvorlage für diese Plattform gefunden.\n"
-"Im Exportmenü kann eine ausführbare Vorlage hinzugefügt werden."
+"Keine Soforteinsatz-Exportvorlage für diese Plattform gefunden.\n"
+"Im Exportmenü kann eine Vorlage als Soforteinsatz markiert werden."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3565,9 +3580,8 @@ msgid "Select Template File"
 msgstr "Vorlagendatei auswählen"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Lade Exportvorlagen"
+msgstr "Godot Exportvorlagen"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4965,29 +4979,27 @@ msgstr "Dieser Nutzerinhalt wird bereits herunter geladen!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Kürzlich aktualisiert"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Lange nicht aktualisiert"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Name (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Name (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Lizenz"
+msgstr "Lizenz (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Lizenz"
+msgstr "Lizenz (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5191,6 +5203,88 @@ msgid ""
 msgstr ""
 "Wenn aktiviert ändert das Verschieben von Control-Nodes ihre Anker anstatt "
 "ihre Ausmaße."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Links"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Rechts"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Nach rechts rotieren"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Sicht von unten"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Nach links einrücken"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Auswahl zentrieren"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Nach rechts einrücken"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Unten"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Sicht von links"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Sicht von oben"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Sicht von rechts"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Sicht von unten"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "Vollständiger Name"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Skalierungsverhältnis:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6624,10 +6718,6 @@ msgstr "Dokumentation schließen"
 msgid "Run"
 msgstr "Ausführen"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Seitenleiste umschalten"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Hineinspringen"
@@ -7778,6 +7868,11 @@ msgstr "Farbe"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Konstant"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Motiv"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9123,16 +9218,15 @@ msgstr "Visual-Shader-Modus geändert"
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr "ausführbar"
+msgstr "Soforteinsatz"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Eingangsschnittstelle hinzufügen"
+msgstr "Ersten Export hinzufügen…"
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Vorherige Patches hinzufügen…"
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9189,9 +9283,8 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
-"Falls augeählt, werden die Voreinstellungen für die Ein-Klick-Entwicklung "
-"verfügbar sein.\n"
-"Nur eine Voreinstellung pro Platform muss ausführbar sein."
+"Falls aktiviert wird diese Vorlage beim Soforteinsatz verwendet.\n"
+"Nur eine Vorlage pro Plattform kann für den Soforteinsatz aktiviert werden."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9246,6 +9339,11 @@ msgid "Make Patch"
 msgstr "Erstelle Patch"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Dateien"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Funktionen"
 
@@ -9296,6 +9394,15 @@ msgstr "Export-Modus?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Alles exportieren"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Dateien"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11477,6 +11584,21 @@ msgid "Members:"
 msgstr "Mitglieder:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "Basistyp ändern"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Knoten hinzufügen..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Funktion hinzufügen"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr "Funktionsname"
 
@@ -11696,28 +11818,8 @@ msgid "Identifier is missing."
 msgstr "Bezeichner fehlt."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Bezeichnersegmente dürfen keine Länge gleich Null haben."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Das Zeichen ‚%s‘ ist in Bezeichnern nicht gestattet."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-"Eine Ziffer kann nicht das erste Zeichen eines Bezeichnersegments sein."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"Das Zeichen ‚%s‘ kann nicht das erste Zeichen in einem Bezeichnersegment "
-"sein."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "Der Bezeichner muss mindestens einen Punkt-Unterteiler ‚.‘ haben."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12458,6 +12560,22 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Bezeichnersegmente dürfen keine Länge gleich Null haben."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Eine Ziffer kann nicht das erste Zeichen eines Bezeichnersegments sein."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Das Zeichen ‚%s‘ kann nicht das erste Zeichen in einem Bezeichnersegment "
+#~ "sein."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "Der Bezeichner muss mindestens einen Punkt-Unterteiler ‚.‘ haben."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Szene pausieren"
@@ -14205,9 +14323,6 @@ msgstr "Konstanten können nicht verändert werden."
 
 #~ msgid "Create Android keystore"
 #~ msgstr "Erzeuge Android-Schlüssel"
-
-#~ msgid "Full name"
-#~ msgstr "Vollständiger Name"
 
 #~ msgid "Organizational unit"
 #~ msgstr "Organisatorische Einheit"

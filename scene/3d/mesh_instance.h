@@ -43,6 +43,7 @@ class MeshInstance : public GeometryInstance {
 protected:
 	Ref<Mesh> mesh;
 	Ref<Skin> skin;
+	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
 	NodePath skeleton_path;
 

@@ -1377,23 +1377,26 @@
 				You can also use [code]yield[/code] to wait for a function to finish:
 				[codeblock]
 				func _ready():
-				    yield(do_something(), "completed")
-				    yield(do_something_else(), "completed")
-				    print("All functions are done!")
+				    yield(countdown(), "completed") # waiting for the countdown() function to complete
+				    print('Ready')
 
-				func do_something():
-				    print("Something is done!")
-
-				func do_something_else():
-				    print("Something else is done!")
+				func countdown():
+				    yield(get_tree(), "idle_frame") # returns a GDScriptFunctionState object to _ready()
+				    print(3)
+				    yield(get_tree().create_timer(1.0), "timeout")
+				    print(2)
+				    yield(get_tree().create_timer(1.0), "timeout")
+				    print(1)
+				    yield(get_tree().create_timer(1.0), "timeout")
 
 				# prints:
-				# Something is done!
-				# Something else is done!
-				# All functions are done!
+				# 3
+				# 2
+				# 1
+				# Ready
 				[/codeblock]
 				When yielding on a function, the [code]completed[/code] signal will be emitted automatically when the function returns. It can, therefore, be used as the [code]signal[/code] parameter of the [code]yield[/code] method to resume.
-				If you are planning on calling the same function within a loop, you should consider using [code]yield(get_tree(), "idle_frame")[/code] also.
+				In order to yield on a function, the resulting function should also return a [code]GDScriptFunctionState[/code]. Notice [code]yield(get_tree(), "idle_frame")[/code] from the above example.
 			</description>
 		</method>
 	</methods>

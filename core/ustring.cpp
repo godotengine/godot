@@ -3792,7 +3792,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 
-	String src = this->replace("\\", "/").get_base_dir();
+	// Don't get base dir for src, this is expected to be a dir already.
+	String src = this->replace("\\", "/");
 	String dst = p_path.replace("\\", "/").get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) // failed

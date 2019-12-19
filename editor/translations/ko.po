@@ -14,12 +14,13 @@
 # Ch. <ccwpc@hanmail.net>, 2018.
 # moolow <copyhyeon@gmail.com>, 2019.
 # Jiyoon Kim <kimjiy@dickinson.edu>, 2019.
+# Ervin <zetsmart@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:37+0000\n"
-"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"Last-Translator: Ervin <zetsmart@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -32,7 +33,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "conver() 메서드의 인수 유형이 잘못되었어요. TYPE_* 상수를 사용하세요."
+msgstr "convert() 메서드의 인수 유형이 잘못되었어요. TYPE_* 상수를 사용하세요."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -735,6 +736,10 @@ msgstr "축소하기"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "확대 비율 원래대로"
+
+#: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "스크립트 패널 토글"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1694,6 +1699,11 @@ msgid "Erase Profile"
 msgstr "프로필 지우기"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "편집기 기능 프로필 관리하기"
+
+#: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
 msgstr "프로필 가져오기"
 
@@ -2647,7 +2657,8 @@ msgstr "씬 되돌리기"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "프로젝트 또는 씬 관련 여러가지 도구들."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "프로젝트"
 
@@ -2979,6 +2990,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "ZIP 파일에서 템플릿 가져오기"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "내보내기 템플릿 매니저"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3478,9 +3494,8 @@ msgid "Select Template File"
 msgstr "템플릿 파일 선택하기"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "내보내기 템플릿 로딩 중"
+msgstr "Godot 내보내기 템플릿"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4867,29 +4882,27 @@ msgstr "이 애셋은 이미 다운로드 중이에요!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "최근 업데이트"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "가장 최근 업데이트"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "이름 (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "이름 (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "라이선스"
+msgstr "라이선스 (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "라이선스"
+msgstr "라이선스 (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5086,6 +5099,88 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr "켜면, Control 노드는 움직이면서 여백이 아닌 앵커를 바꿔요."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "왼쪽면"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "오른쪽면"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "오른쪽으로 회전하기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "하단 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "내어쓰기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "선택 항목 중앙으로"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "들여쓰기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "아랫면"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "좌측 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "상단 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "우측 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "하단 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "성명"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "규모 비율:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6505,10 +6600,6 @@ msgstr "문서 닫기"
 msgid "Run"
 msgstr "실행하기"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "스크립트 패널 토글"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "프로시저 단위 실행하기"
@@ -7652,6 +7743,11 @@ msgstr "색깔"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "비선형"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "테마"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8965,13 +9061,12 @@ msgid "Runnable"
 msgstr "실행가능"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "입력 포트 추가하기"
+msgstr "초기 내보내기 추가하기..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "이전 패치 추가하기..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9082,6 +9177,11 @@ msgid "Make Patch"
 msgstr "패치 만들기"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " 파일"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "기능"
 
@@ -9132,6 +9232,15 @@ msgstr "내보내기 모드?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "모두 내보내기"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " 파일"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11280,6 +11389,21 @@ msgid "Members:"
 msgstr "멤버:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "기본 유형 바꾸기"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "노드 추가하기..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "함수 추가하기"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr "function_name"
 
@@ -11488,25 +11612,8 @@ msgid "Identifier is missing."
 msgstr "식별자가 없어요."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "식별자 세그먼트는 길이가 0이 아니어야 해요."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "문자 '%s'은(는) 식별자에 쓸 수 없어요."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "숫자는 식별자 세그먼트의 첫 문자로 쓸 수 없어요."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr "문자 '%s'은(는) 식별자 분리의 첫 문자로 쓸 수 없어요."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "식별자는 적어도 하나의 '.' 분리 기호를 갖고 있어야 해요."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12197,6 +12304,19 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있어요."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없어요."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "식별자 세그먼트는 길이가 0이 아니어야 해요."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "숫자는 식별자 세그먼트의 첫 문자로 쓸 수 없어요."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr "문자 '%s'은(는) 식별자 분리의 첫 문자로 쓸 수 없어요."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "식별자는 적어도 하나의 '.' 분리 기호를 갖고 있어야 해요."
 
 #~ msgid "Pause the scene"
 #~ msgstr "씬 일시 정지"
@@ -13907,9 +14027,6 @@ msgstr "상수는 수정할 수 없어요."
 
 #~ msgid "Create Android keystore"
 #~ msgstr "안드로이드 키스토어 만들기"
-
-#~ msgid "Full name"
-#~ msgstr "성명"
 
 #~ msgid "Organization"
 #~ msgstr "조직"

@@ -102,6 +102,18 @@ void gd_mono_profiler_init() {
 	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
 	if (profiler_enabled) {
 		mono_profiler_load(profiler_args.utf8());
+		return;
+	}
+
+	const String env_var_name = "MONO_ENV_OPTIONS";
+	if (OS::get_singleton()->has_environment(env_var_name)) {
+		const auto mono_env_ops = OS::get_singleton()->get_environment(env_var_name);
+		// Usually MONO_ENV_OPTIONS looks like:   --profile=jb:prof=timeline,ctl=remote,host=127.0.0.1:55467
+		const String prefix = "--profile=";
+		if (mono_env_ops.begins_with(prefix)) {
+			const auto ops = mono_env_ops.substr(prefix.length(), mono_env_ops.length());
+			mono_profiler_load(ops.utf8());
+		}
 	}
 }
 
@@ -356,7 +368,7 @@ void GDMono::initialize() {
 	}
 #endif
 
-#if !defined(WINDOWS_ENABLED) && !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
+#if !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
 	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
 	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
 		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");

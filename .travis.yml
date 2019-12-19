@@ -128,7 +128,7 @@ before_script:
 
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
-      sh ./misc/travis/clang-format.sh;
+      sh ./misc/travis/clang-format.sh &&
       doc/tools/makerst.py --dry-run doc/classes modules;
     else
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&

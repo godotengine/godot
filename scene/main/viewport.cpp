@@ -2407,12 +2407,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Input *input = Input::get_singleton();
 
-			if (!mods && p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
+			if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
 
 				next = from->find_next_valid_focus();
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
+			if (p_event->is_action_pressed("ui_focus_prev") && input->is_action_just_pressed("ui_focus_prev")) {
 
 				next = from->find_prev_valid_focus();
 			}
@@ -2634,6 +2634,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		return;
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 	gui.key_focus = p_control;
+	emit_signal("gui_focus_changed", p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
 }
@@ -3216,6 +3217,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", 0), "set_global_canvas_transform", "get_global_canvas_transform");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
+	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 
 	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);

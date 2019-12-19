@@ -4756,7 +4756,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();
 
 	Label *base_lbl = memnew(Label);
-	base_lbl->set_text("Change Base Type: ");
+	base_lbl->set_text(TTR("Change Base Type:") + " ");
 	graph_hbc->add_child(base_lbl);
 
 	base_type_select = memnew(Button);
@@ -4764,18 +4764,19 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph_hbc->add_child(base_type_select);
 
 	Button *add_nds = memnew(Button);
-	add_nds->set_text("Add Nodes...");
+	add_nds->set_text(TTR("Add Nodes..."));
 	graph_hbc->add_child(add_nds);
 	add_nds->connect("pressed", this, "_add_node_dialog");
 
 	Button *fn_btn = memnew(Button);
-	fn_btn->set_text("Add Function...");
+	fn_btn->set_text(TTR("Add Function..."));
 	graph_hbc->add_child(fn_btn);
 	fn_btn->connect("pressed", this, "_create_function_dialog");
 
 	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
 	function_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	function_vb->set_custom_minimum_size(Size2(450, 300) * EDSCALE);
 
 	HBoxContainer *func_name_hbox = memnew(HBoxContainer);
 	function_vb->add_child(func_name_hbox);
@@ -4810,7 +4811,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_input_scroll->add_child(func_input_vbox);
 
 	function_create_dialog = memnew(ConfirmationDialog);
-	function_create_dialog->set_custom_minimum_size(Size2(450, 300) * EDSCALE);
 	function_create_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);

@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:37+0000\n"
+"PO-Revision-Date: 2019-12-16 23:50+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -728,6 +728,10 @@ msgstr "Loitonna"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Palauta oletuslähennystaso"
+
+#: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Näytä/piilota skriptipaneeli"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1695,6 +1699,11 @@ msgid "Erase Profile"
 msgstr "Tyhjennä profiili"
 
 #: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Hallinnoi editorin ominaisuusprofiileja"
+
+#: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
 msgstr "Tuo profiileja"
 
@@ -2650,7 +2659,8 @@ msgstr "Palauta skene"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Sekalaiset projekti- tai skenetyökalut."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projekti"
 
@@ -2989,6 +2999,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Tuo mallit ZIP-tiedostosta"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Vientimallien hallinta"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3491,9 +3506,8 @@ msgid "Select Template File"
 msgstr "Valitse mallitiedosto"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Hallinnoi vientimalleja"
+msgstr "Godotin vientimallit"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4889,29 +4903,27 @@ msgstr "Tämän assetin lataus on jo käynnissä!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Viimeksi päivitetty"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Vanhin päivitys"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nimi (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nimi (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Lisenssi"
+msgstr "Lisenssi (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Lisenssi"
+msgstr "Lisenssi (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5114,6 +5126,87 @@ msgid ""
 msgstr ""
 "Aktiivisena ollessaan, Control solmujen siirtäminen muuttaa niiden "
 "ankkureita marginaalien sijaan."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Vasen"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "OIkea"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Kierrä oikealle"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Alanäkymä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Sisennä vasemmalle"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Keskitä valintaan"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Sisennä oikealle"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Pohja"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Vasen näkymä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Ylänäkymä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Oikea näkymä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Alanäkymä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Skaalaussuhde:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6543,10 +6636,6 @@ msgstr "Sulje dokumentaatio"
 msgid "Run"
 msgstr "Suorita"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Näytä/piilota skriptipaneeli"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Siirry sisään"
@@ -7689,6 +7778,11 @@ msgstr "Väri"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Muuttumaton"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Teema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9029,13 +9123,12 @@ msgid "Runnable"
 msgstr "Suoritettava"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Lisää tuloportti"
+msgstr "Lisää ensimmäinen vienti..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Lisää edelliset päivitykset..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9149,6 +9242,11 @@ msgid "Make Patch"
 msgstr "Luo päivitys"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Tiedostot"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Ominaisuudet"
 
@@ -9199,6 +9297,15 @@ msgstr "Vientitila?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Vie kaikki"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Tiedostot"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11372,6 +11479,21 @@ msgid "Members:"
 msgstr "Jäsenet:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "Muuta kantatyyppiä"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Lisää solmu..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Lisää funktio"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr "function_name"
 
@@ -11587,25 +11709,8 @@ msgid "Identifier is missing."
 msgstr "Tunniste puuttuu."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Tunnisteen osiot eivät voi olla nollan pituisia."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Merkki '%s' ei ole sallittu Identifier osiossa."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "Identifier osion ensimmäinen merkki ei voi olla numero."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr "Merkki '%s' ei voi olla Identifier osion ensimmäinen merkki."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "Identifier osiossa täytyy olla vähintään yksi '.' erotinmerkki."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12320,6 +12425,19 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Tunnisteen osiot eivät voi olla nollan pituisia."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "Identifier osion ensimmäinen merkki ei voi olla numero."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr "Merkki '%s' ei voi olla Identifier osion ensimmäinen merkki."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "Identifier osiossa täytyy olla vähintään yksi '.' erotinmerkki."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Keskeytä skenen suorittaminen hetkellisesti"

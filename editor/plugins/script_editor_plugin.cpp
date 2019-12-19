@@ -987,8 +987,21 @@ Array ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
+bool ScriptEditor::toggle_scripts_panel(CodeTextEditor *p_editor) {
+	list_split->set_visible(!list_split->is_visible());
+	if (p_editor) {
+		p_editor->update_toggle_scripts_button();
+	}
+	return list_split->is_visible();
+}
+
+bool ScriptEditor::is_scripts_panel_toggled() {
+	return list_split->is_visible();
+}
+
 void ScriptEditor::_menu_option(int p_option) {
 
+	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
 		case FILE_NEW: {
 			script_create_dialog->config("Node", "new_script");
@@ -1127,11 +1140,19 @@ void ScriptEditor::_menu_option(int p_option) {
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), debug_with_external_editor);
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
-			list_split->set_visible(!list_split->is_visible());
+			if (current) {
+				CodeTextEditor *code_editor = NULL;
+				ScriptTextEditor *editor = dynamic_cast<ScriptTextEditor *>(current);
+				if (editor) {
+					code_editor = editor->code_editor;
+				}
+				toggle_scripts_panel(code_editor);
+			} else {
+				toggle_scripts_panel(NULL);
+			}
 		}
 	}
 
-	ScriptEditorBase *current = _get_current_editor();
 	if (current) {
 
 		switch (p_option) {

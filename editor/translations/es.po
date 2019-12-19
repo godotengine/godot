@@ -773,6 +773,10 @@ msgid "Reset Zoom"
 msgstr "Restablecer Zoom"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Act./Desact. Panel de Scripts"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Advertencias"
 
@@ -1739,6 +1743,11 @@ msgstr "Nuevo nombre de perfil:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Borrar Perfil"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Administrar Perfiles de Características del Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2716,7 +2725,8 @@ msgstr "Revertir Escena"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Herramientas variadas de proyecto o escena."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Proyecto"
 
@@ -3059,6 +3069,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Importar plantillas desde un archivo ZIP"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Gestor de Plantillas de Exportación"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5193,6 +5208,88 @@ msgstr ""
 "anclajes en lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Rotar a la Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Vista Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Indentar a la Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Centrar Selección"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Indentar a la Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Abajo"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Vista Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Vista Superior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Vista Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Vista Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "Nombre válido"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Relación de Escala:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Sólo anclado"
 
@@ -6621,10 +6718,6 @@ msgstr "Cerrar Documentación"
 msgid "Run"
 msgstr "Ejecutar"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Act./Desact. Panel de Scripts"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Step Into"
@@ -7768,6 +7861,11 @@ msgstr "Color"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Constante"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9233,6 +9331,11 @@ msgid "Make Patch"
 msgstr "Crear Patch"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Archivos"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Características"
 
@@ -9283,6 +9386,15 @@ msgstr "¿Modo de Exportación?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Exportar Todo"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Archivos"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11459,6 +11571,21 @@ msgid "Members:"
 msgstr "Miembros:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Change Base Type:"
+msgstr "Cambiar Tipo Base"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Agregar Nodo..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Añadir Función"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
 msgstr "nombre_funcion"
 
@@ -11680,28 +11807,8 @@ msgid "Identifier is missing."
 msgstr "Identificador no encontrado."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Los segmentos de un identificador deben ser de largo no nulo."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "El carácter '%s' no esta permitido como identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-"Un dígito no puede ser el primer carácter en un segmento Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"El carácter '%s' no puede ser el primer carácter en un segmento "
-"Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "El Identificador debe tener al menos un '.' como separador."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12437,6 +12544,22 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Los segmentos de un identificador deben ser de largo no nulo."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Un dígito no puede ser el primer carácter en un segmento Identificador."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "El carácter '%s' no puede ser el primer carácter en un segmento "
+#~ "Identificador."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "El Identificador debe tener al menos un '.' como separador."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Pausar la escena"
@@ -14237,10 +14360,6 @@ msgstr "Las constantes no pueden modificarse."
 #, fuzzy
 #~ msgid "Create Android keystore"
 #~ msgstr "Crear recurso nuevo"
-
-#, fuzzy
-#~ msgid "Full name"
-#~ msgstr "Nombre válido"
 
 #~ msgid "Organizational unit"
 #~ msgstr "Unidad organizativa"

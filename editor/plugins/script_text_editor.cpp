@@ -1760,6 +1760,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_edit()->connect("symbol_lookup", this, "_lookup_symbol");
 	code_editor->get_text_edit()->connect("info_clicked", this, "_lookup_connections");
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	code_editor->show_toggle_scripts_button();
 
 	warnings_panel = memnew(RichTextLabel);
 	editor_box->add_child(warnings_panel);

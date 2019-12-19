@@ -790,6 +790,10 @@ msgid "Reset Zoom"
 msgstr "Сбросить приближение"
 
 #: editor/code_editor.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Переключить панель скриптов"
+
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Предупреждения"
 
@@ -1749,6 +1753,11 @@ msgstr "Новое имя:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Стереть профиль"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Godot Feature Profile"
+msgstr "Управление профилями редактора"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -2712,7 +2721,8 @@ msgstr "Восстановить сцену"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Прочие инструменты."
 
-#: editor/editor_node.cpp editor/script_create_dialog.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Проект"
 
@@ -3054,6 +3064,11 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Импортировать шаблоны из ZIP файла"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Template Package"
+msgstr "Менеджер шаблонов экспорта"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5182,6 +5197,88 @@ msgstr ""
 "вместо отступов."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Left"
+msgstr "Лево"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Right"
+msgstr "Право"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Right"
+msgstr "Повернуть вправо"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Left"
+msgstr "Вид Снизу"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Left"
+msgstr "Убрать отступ слева"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Top"
+msgstr "Центрировать выбранное"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Right"
+msgstr "Отступ вправо"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Center Bottom"
+msgstr "Низ"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Left Wide"
+msgstr "Вид слева"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Top Wide"
+msgstr "Вид сверху"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Right Wide"
+msgstr "Вид справа"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Bottom Wide"
+msgstr "Вид Снизу"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "Полное имя"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Keep Ratio"
+msgstr "Коэффициент масштабирования:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Только якоря"
 
@@ -6611,10 +6708,6 @@ msgstr "Закрыть документацию"
 msgid "Run"
 msgstr "Запустить"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Переключить панель скриптов"
-
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Шаг в"
@@ -7768,6 +7861,11 @@ msgstr "Цвет"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Постоянный"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme File"
+msgstr "Тема"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9230,6 +9328,11 @@ msgid "Make Patch"
 msgstr "Создать латку"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Pack File"
+msgstr " Файлы"
+
+#: editor/project_export.cpp
 msgid "Features"
 msgstr "Особенности"
 
@@ -9281,6 +9384,15 @@ msgstr "Режим экспорта?"
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Экспортировать всё"
+
+#: editor/project_export.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "ZIP File"
+msgstr " Файлы"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11459,6 +11571,21 @@ msgstr "Свойства:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Change Base Type:"
+msgstr "Изменить базовый тип"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Nodes..."
+msgstr "Добавить узел..."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Function..."
+msgstr "Добавить функцию"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "function_name"
 msgstr "имя_функции"
 
@@ -11675,25 +11802,8 @@ msgid "Identifier is missing."
 msgstr "Отсутствует определитель."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Идентифицированные сегменты не должны быть пустыми."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Символ '%s' в идентификаторе не допускается."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "Цифра не может быть первым символом идентификатора сегмента."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr "Символ '%s' не может быть первым символом идентификатора сегмента."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "Идентификатор должен иметь хотя бы один '.' разделитель."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -12427,6 +12537,19 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Идентифицированные сегменты не должны быть пустыми."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr "Цифра не может быть первым символом идентификатора сегмента."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr "Символ '%s' не может быть первым символом идентификатора сегмента."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "Идентификатор должен иметь хотя бы один '.' разделитель."
 
 #~ msgid "Pause the scene"
 #~ msgstr "Приостановить сцену"
@@ -14005,9 +14128,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Create Android keystore"
 #~ msgstr "Создать keystore для Android"
-
-#~ msgid "Full name"
-#~ msgstr "Полное имя"
 
 #~ msgid "Organizational unit"
 #~ msgstr "Подразделение"

@@ -30,6 +30,7 @@
 
 #include "scroll_container.h"
 #include "core/os/os.h"
+#include "scene/main/viewport.h"
 
 bool ScrollContainer::clips_input() const {
 
@@ -232,12 +233,38 @@ void ScrollContainer::_update_scrollbar_position() {
 	v_scroll->raise();
 }
 
+void ScrollContainer::_ensure_focused_visible(Control *p_control) {
+
+	if (is_a_parent_of(p_control)) {
+		Rect2 global_rect = get_global_rect();
+		Rect2 other_rect = p_control->get_global_rect();
+		float right_margin = 0;
+		if (v_scroll->is_visible()) {
+			right_margin += v_scroll->get_size().x;
+		}
+		float bottom_margin = 0;
+		if (h_scroll->is_visible()) {
+			bottom_margin += h_scroll->get_size().y;
+		}
+
+		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
+		set_v_scroll(get_v_scroll() + (diff - global_rect.position.y));
+		diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		set_h_scroll(get_h_scroll() + (diff - global_rect.position.x));
+	}
+}
+
 void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
 		call_deferred("_update_scrollbar_position");
 	};
+
+	if (p_what == NOTIFICATION_READY) {
+
+		get_viewport()->connect("gui_focus_changed", this, "_ensure_focused_visible");
+	}
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 
@@ -521,6 +548,7 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
+	ClassDB::bind_method(D_METHOD("_ensure_focused_visible"), &ScrollContainer::_ensure_focused_visible);
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &ScrollContainer::set_v_scroll);
