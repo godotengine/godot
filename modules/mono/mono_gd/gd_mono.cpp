@@ -119,28 +119,6 @@ void gd_mono_profiler_init() {
 
 #if defined(DEBUG_ENABLED)
 
-bool gd_mono_wait_for_debugger_msecs(uint32_t p_msecs) {
-
-	do {
-		if (mono_is_debugger_attached())
-			return true;
-
-		int last_tick = OS::get_singleton()->get_ticks_msec();
-
-		OS::get_singleton()->delay_usec((p_msecs < 25 ? p_msecs : 25) * 1000);
-
-		uint32_t tdiff = OS::get_singleton()->get_ticks_msec() - last_tick;
-
-		if (tdiff > p_msecs) {
-			p_msecs = 0;
-		} else {
-			p_msecs -= tdiff;
-		}
-	} while (p_msecs > 0);
-
-	return mono_is_debugger_attached();
-}
-
 void gd_mono_debug_init() {
 
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
@@ -401,12 +379,6 @@ void GDMono::initialize() {
 
 	Error domain_load_err = _load_scripts_domain();
 	ERR_FAIL_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
-
-#if defined(DEBUG_ENABLED) && !defined(JAVASCRIPT_ENABLED)
-	bool debugger_attached = gd_mono_wait_for_debugger_msecs(500);
-	if (!debugger_attached && OS::get_singleton()->is_stdout_verbose())
-		print_error("Mono: Debugger wait timeout");
-#endif
 
 	_register_internal_calls();
 
