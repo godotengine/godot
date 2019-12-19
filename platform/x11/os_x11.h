@@ -34,7 +34,6 @@
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joystick_linux.h"
 #include "main/input_default.h"
@@ -173,10 +172,6 @@ class OS_X11 : public OS_Unix {
 	joystick_linux *joystick;
 #endif
 
-#ifdef RTAUDIO_ENABLED
-	AudioDriverRtAudio driver_rtaudio;
-#endif
-
 #ifdef ALSA_ENABLED
 	AudioDriverALSA driver_alsa;
 #endif
@@ -184,7 +179,6 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
-	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 

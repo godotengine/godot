@@ -440,12 +440,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	visual_server = memnew(VisualServerRaster(rasterizer));
 	visual_server->init();
 
-	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}*/
+	// AudioDriverManagerSW::initialize(p_audio_driver);
 
 	print_line("Init SM");
 

@@ -181,7 +181,7 @@ Error AudioDriverRtAudio::init() {
 		}
 	}
 
-	return OK;
+	return active ? OK : ERR_UNAVAILABLE;
 }
 
 int AudioDriverRtAudio::get_mix_rate() const {

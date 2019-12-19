@@ -30,6 +30,7 @@
 #include "audio_server_sw.h"
 #include "globals.h"
 #include "os/os.h"
+#include "servers/audio/audio_driver_dummy.h"
 
 struct _AudioDriverLock {
 
@@ -945,6 +946,7 @@ AudioDriverSW::AudioDriverSW() {
 
 AudioDriverSW *AudioDriverManagerSW::drivers[MAX_DRIVERS];
 int AudioDriverManagerSW::driver_count = 0;
+AudioDriverDummy AudioDriverManagerSW::dummy_driver;
 
 void AudioDriverManagerSW::add_driver(AudioDriverSW *p_driver) {
 
@@ -956,6 +958,43 @@ int AudioDriverManagerSW::get_driver_count() {
 
 	return driver_count;
 }
+
+void AudioDriverManagerSW::initialize(int p_driver) {
+	AudioDriverSW *driver;
+	int failed_driver = -1;
+
+	// Check if there is a selected driver
+	if (p_driver >= 0 && p_driver < driver_count) {
+		if (drivers[p_driver]->init() == OK) {
+			drivers[p_driver]->set_singleton();
+			return;
+		} else {
+			failed_driver = p_driver;
+		}
+	}
+
+	// No selected driver, try them all in order
+	for (int i = 0; i < driver_count; i++) {
+		// Don't re-init the driver if it failed above
+		if (i == failed_driver) {
+			continue;
+		}
+
+		if (drivers[i]->init() == OK) {
+			drivers[i]->set_singleton();
+			return;
+		}
+	}
+
+	// Fallback to our dummy driver
+	if (dummy_driver.init() == OK) {
+		ERR_PRINT("AudioDriverManager: all drivers failed, falling back to dummy driver");
+		dummy_driver.set_singleton();
+	} else {
+		ERR_PRINT("AudioDriverManager: dummy driver faild to init()");
+	}
+}
+
 AudioDriverSW *AudioDriverManagerSW::get_driver(int p_driver) {
 
 	ERR_FAIL_INDEX_V(p_driver, driver_count, NULL);
