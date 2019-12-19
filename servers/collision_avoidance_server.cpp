@@ -35,12 +35,28 @@ CollisionAvoidanceServer *CollisionAvoidanceServer::singleton = NULL;
 void CollisionAvoidanceServer::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("space_create"), &CollisionAvoidanceServer::space_create);
+    ClassDB::bind_method(D_METHOD("space_set_active"), &CollisionAvoidanceServer::space_set_active);
+    ClassDB::bind_method(D_METHOD("space_is_active"), &CollisionAvoidanceServer::space_is_active);
 
     ClassDB::bind_method(D_METHOD("agent_add", "space"), &CollisionAvoidanceServer::agent_add);
+    ClassDB::bind_method(D_METHOD("agent_add", "space"), &CollisionAvoidanceServer::agent_add);
+    ClassDB::bind_method(D_METHOD("agent_set_neighbor_dist", "agent", "dist"), &CollisionAvoidanceServer::agent_set_neighbor_dist);
+    ClassDB::bind_method(D_METHOD("agent_set_max_neighbors", "agent", "count"), &CollisionAvoidanceServer::agent_set_max_neighbors);
+    ClassDB::bind_method(D_METHOD("agent_set_time_horizon", "agent", "time"), &CollisionAvoidanceServer::agent_set_time_horizon);
+    ClassDB::bind_method(D_METHOD("agent_set_time_horizon_obs", "agent", "time"), &CollisionAvoidanceServer::agent_set_time_horizon_obs);
+    ClassDB::bind_method(D_METHOD("agent_set_radius", "agent", "radius"), &CollisionAvoidanceServer::agent_set_radius);
+    ClassDB::bind_method(D_METHOD("agent_set_max_speed", "agent", "max_speed"), &CollisionAvoidanceServer::agent_set_max_speed);
+    ClassDB::bind_method(D_METHOD("agent_set_velocity", "agent", "velocity"), &CollisionAvoidanceServer::agent_set_velocity);
+    ClassDB::bind_method(D_METHOD("agent_set_velocity_target", "agent", "target_velocity"), &CollisionAvoidanceServer::agent_set_target_velocity);
+    ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &CollisionAvoidanceServer::agent_set_position);
+    ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &CollisionAvoidanceServer::agent_set_callback, DEFVAL(Variant()));
 
     ClassDB::bind_method(D_METHOD("obstacle_add", "space"), &CollisionAvoidanceServer::obstacle_add);
 
     ClassDB::bind_method(D_METHOD("free", "object"), &CollisionAvoidanceServer::free);
+
+    ClassDB::bind_method(D_METHOD("set_active", "active"), &CollisionAvoidanceServer::set_active);
+    ClassDB::bind_method(D_METHOD("step", "delta_time"), &CollisionAvoidanceServer::step);
 }
 
 CollisionAvoidanceServer *CollisionAvoidanceServer::get_singleton() {

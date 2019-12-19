@@ -50,6 +50,7 @@
 #include "main/input_default.h"
 #include "main/main.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/collision_avoidance_server.h"
 #include "servers/physics_2d_server.h"
 
 #include "editor/editor_audio_buses.h"
@@ -5492,6 +5493,8 @@ EditorNode::EditorNode() {
 
 	VisualServer::get_singleton()->textures_keep_original(true);
 	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
+
+    CollisionAvoidanceServer::get_singleton()->set_active(false); // no physics by default if editor
 
 	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
 	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor

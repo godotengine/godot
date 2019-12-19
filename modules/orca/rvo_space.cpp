@@ -30,6 +30,8 @@
 
 #include "rvo_space.h"
 
+#include "rvo_agent.h"
+
 RvoSpace::RvoSpace() {
 }
 
@@ -52,35 +54,35 @@ void RvoSpace::remove_obstacle(RVO::Obstacle *obstacle) {
     }
 }
 
-bool RvoSpace::has_agent(RVO::Agent *agent) const {
-    return std::find(agents.begin(), agents.end(), agent) != agents.end();
+bool RvoSpace::has_agent(RvoAgent *agent) const {
+    return std::find(agents.begin(), agents.end(), agent->get_agent()) != agents.end();
 }
 
-void RvoSpace::add_agent(RVO::Agent *agent) {
+void RvoSpace::add_agent(RvoAgent *agent) {
     if (!has_agent(agent)) {
-        agents.push_back(agent);
+        agents.push_back(agent->get_agent());
         agents_dirty = true;
     }
 }
 
-void RvoSpace::remove_agent(RVO::Agent *agent) {
+void RvoSpace::remove_agent(RvoAgent *agent) {
     remove_agent_as_controlled(agent);
-    auto it = std::find(agents.begin(), agents.end(), agent);
+    auto it = std::find(agents.begin(), agents.end(), agent->get_agent());
     if (it != agents.end()) {
         agents.erase(it);
         agents_dirty = true;
     }
 }
 
-void RvoSpace::set_agent_as_controlled(RVO::Agent *agent) {
+void RvoSpace::set_agent_as_controlled(RvoAgent *agent) {
     const bool exist = std::find(controlled_agents.begin(), controlled_agents.end(), agent) != controlled_agents.end();
     if (!exist) {
-        ERR_FAIL_COND(has_agent(agent));
+        ERR_FAIL_COND(!has_agent(agent));
         controlled_agents.push_back(agent);
     }
 }
 
-void RvoSpace::remove_agent_as_controlled(RVO::Agent *agent) {
+void RvoSpace::remove_agent_as_controlled(RvoAgent *agent) {
     auto it = std::find(controlled_agents.begin(), controlled_agents.end(), agent);
     if (it != controlled_agents.end()) {
         controlled_agents.erase(it);
@@ -100,11 +102,15 @@ void RvoSpace::sync() {
 }
 
 void RvoSpace::step(real_t timestep) {
-    // Please TODO do this MT
+    // TODO Please do this in MT
     for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
-        controlled_agents[i]->computeNeighbors(&rvo);
-        controlled_agents[i]->computeNewVelocity(timestep);
+        controlled_agents[i]->get_agent()->computeNeighbors(&rvo);
+        controlled_agents[i]->get_agent()->computeNewVelocity(timestep);
     }
+}
 
-    // TODO emit signal?
+void RvoSpace::dispatch_callbacks() {
+    for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
+        controlled_agents[i]->dispatch_callback();
+    }
 }

@@ -31,19 +31,38 @@
 #ifndef RVO_AGENT_H
 #define RVO_AGENT_H
 
+#include "core/object.h"
 #include "rvo_rid.h"
-
 #include <Agent.h>
 
+class RvoSpace;
+
 class RvoAgent : public RvoRid {
+    struct AvoidanceComputedCallback {
+        ObjectID id;
+        StringName method;
+        Variant udata;
+        Variant new_velocity;
+    };
+
+    RvoSpace *space;
     RVO::Agent agent;
+    AvoidanceComputedCallback callback;
 
 public:
-    RvoAgent();
+    RvoAgent(RvoSpace *p_space);
+    ~RvoAgent();
+
+    RvoSpace *get_space() {
+        return space;
+    }
 
     RVO::Agent *get_agent() {
         return &agent;
     }
+
+    void set_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+    void dispatch_callback();
 };
 
 #endif // RVO_AGENT_H

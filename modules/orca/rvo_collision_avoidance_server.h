@@ -41,11 +41,16 @@ class RvoCollisionAvoidanceServer : public CollisionAvoidanceServer {
     mutable RID_Owner<RvoAgent> agent_owner;
     mutable RID_Owner<RvoObstacle> obstacle_owner;
 
+    bool active;
+    Vector<RvoSpace *> active_spaces;
+
 public:
     RvoCollisionAvoidanceServer();
     virtual ~RvoCollisionAvoidanceServer();
 
     virtual RID space_create();
+    virtual void space_set_active(RID p_space, bool p_active);
+    virtual bool space_is_active(RID p_space) const;
 
     virtual RID agent_add(RID p_space);
     virtual void agent_set_neighbor_dist(RID p_agent, real_t p_dist);
@@ -55,12 +60,16 @@ public:
     virtual void agent_set_radius(RID p_agent, real_t p_radius);
     virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed);
     virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity);
+    virtual void agent_set_target_velocity(RID p_agent, Vector2 p_velocity);
     virtual void agent_set_position(RID p_agent, Vector2 p_position);
-    virtual void agent_set_callback(RID p_agent);
+    virtual void agent_set_callback(RID p_agent, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant());
 
     virtual RID obstacle_add(RID p_space);
 
     virtual void free(RID p_object);
+
+    virtual void set_active(bool p_active);
+    virtual void step(real_t p_delta_time);
 };
 
 #endif // RVO_COLLISION_AVOIDANCE_SERVER_H

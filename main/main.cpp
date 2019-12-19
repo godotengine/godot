@@ -2002,7 +2002,9 @@ bool Main::iteration() {
 			break;
 		}
 
-		message_queue->flush();
+        message_queue->flush();
+
+        CollisionAvoidanceServer::get_singleton()->step(frame_slice * time_scale);
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
 

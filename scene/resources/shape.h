@@ -57,6 +57,8 @@ public:
 
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
+    /// Returns the radius of a sphere that fully enclose this shape
+    virtual real_t get_enclosing_radius() const = 0;
 
 	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
 

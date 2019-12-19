@@ -38,6 +38,8 @@
 #include <KdTree.h>
 #include <Obstacle.h>
 
+class RvoAgent;
+
 class RvoSpace : public RvoRid {
 
     /// Rvo world
@@ -55,7 +57,7 @@ class RvoSpace : public RvoRid {
     std::vector<RVO::Agent *> agents;
 
     /// Controlled agents
-    std::vector<RVO::Agent *> controlled_agents;
+    std::vector<RvoAgent *> controlled_agents;
 
 public:
     RvoSpace();
@@ -64,15 +66,16 @@ public:
     void add_obstacle(RVO::Obstacle *obstacle);
     void remove_obstacle(RVO::Obstacle *obstacle);
 
-    bool has_agent(RVO::Agent *agent) const;
-    void add_agent(RVO::Agent *agent);
-    void remove_agent(RVO::Agent *agent);
+    bool has_agent(RvoAgent *agent) const;
+    void add_agent(RvoAgent *agent);
+    void remove_agent(RvoAgent *agent);
 
-    void set_agent_as_controlled(RVO::Agent *agent);
-    void remove_agent_as_controlled(RVO::Agent *agent);
+    void set_agent_as_controlled(RvoAgent *agent);
+    void remove_agent_as_controlled(RvoAgent *agent);
 
     void sync();
     void step(real_t timestep);
+    void dispatch_callbacks();
 };
 
 #endif // RVO_SPACE_H

@@ -30,5 +30,43 @@
 
 #include "rvo_agent.h"
 
-RvoAgent::RvoAgent() {
+#include "rvo_space.h"
+
+RvoAgent::RvoAgent(RvoSpace *p_space) :
+        space(p_space) {
+    callback.id = ObjectID(0);
+}
+
+RvoAgent::~RvoAgent() {
+    space->remove_agent(this);
+}
+
+void RvoAgent::set_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+    callback.id = p_id;
+    callback.method = p_method;
+    callback.udata = p_udata;
+
+    if (p_id == 0) {
+        space->remove_agent_as_controlled(this);
+    } else {
+        space->set_agent_as_controlled(this);
+    }
+}
+
+void RvoAgent::dispatch_callback() {
+    if (callback.id == 0) {
+        return;
+    }
+    Object *obj = ObjectDB::get_instance(callback.id);
+    if (obj == NULL) {
+        callback.id = ObjectID(0);
+    }
+
+    Variant::CallError responseCallError;
+
+    callback.new_velocity = Vector2(agent.newVelocity_.x(), agent.newVelocity_.y());
+
+    const Variant *vp[2] = { &callback.new_velocity, &callback.udata };
+    int argc = (callback.udata.get_type() == Variant::NIL) ? 1 : 2;
+    obj->call(callback.method, vp, argc, responseCallError);
 }

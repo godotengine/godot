@@ -46,6 +46,8 @@ public:
     static CollisionAvoidanceServer *get_singleton();
 
     virtual RID space_create() = 0;
+    virtual void space_set_active(RID p_space, bool p_active) = 0;
+    virtual bool space_is_active(RID p_space) const = 0;
 
     /**
      * Creates and add the agent to the space.
@@ -110,9 +112,14 @@ public:
     virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed) = 0;
 
     /**
-     * Velocity of the agent
+     * Current velocity of the agent
      */
     virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity) = 0;
+
+    /**
+     * The new target velocity.
+     */
+    virtual void agent_set_target_velocity(RID p_agent, Vector2 p_velocity) = 0;
 
     /**
      * Position of the agent in world space.
@@ -122,11 +129,14 @@ public:
     /**
      * Callback called at the end of the RVO process
      */
-    virtual void agent_set_callback(RID p_agent) = 0;
+    virtual void agent_set_callback(RID p_agent, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant()) = 0;
 
     virtual RID obstacle_add(RID p_space) = 0;
 
     virtual void free(RID p_object) = 0;
+
+    virtual void set_active(bool p_active) = 0;
+    virtual void step(real_t delta_time) = 0;
 
     CollisionAvoidanceServer();
     virtual ~CollisionAvoidanceServer();

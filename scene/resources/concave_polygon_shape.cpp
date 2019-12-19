@@ -64,6 +64,15 @@ Vector<Vector3> ConcavePolygonShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t ConcavePolygonShape::get_enclosing_radius() const {
+    real_t r = 0;
+    PoolVector<Vector3> data = get_faces();
+    for (int i(0); i < data.size(); i++) {
+        r = MAX(data[i].length_squared(), r);
+    }
+    return Math::sqrt(r);
+}
+
 void ConcavePolygonShape::_update_shape() {
 	Shape::_update_shape();
 }

@@ -62,6 +62,10 @@ Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t CylinderShape::get_enclosing_radius() const {
+    return Vector2(radius, height).length();
+}
+
 void CylinderShape::_update_shape() {
 
 	Dictionary d;

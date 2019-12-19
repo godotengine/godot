@@ -36,13 +36,49 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/object.h"
 #include "core/rid.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/scene_string_names.h"
+#include "servers/collision_avoidance_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/plugins/spatial_editor_plugin.h"
 #endif
 
+void ca_init_agent_as_obstacle(RID p_agent, PhysicsBody *p_node) {
+    // Estimate the radius of this physics body
+    real_t radius = 0.0;
+    for (int i(0); i < p_node->get_child_count(); i++) {
+        // For each collision shape
+        CollisionShape *cs = Object::cast_to<CollisionShape>(p_node->get_child(i));
+        if (cs) {
+            // Take the distance between the Body center to the shape center
+            real_t r = cs->get_transform().origin.length();
+            if (cs->get_shape().is_valid()) {
+                // and add the enclosing shape radius
+                r += cs->get_shape()->get_enclosing_radius();
+            }
+            // Takes the biggest radius
+            radius = MAX(radius, r);
+        }
+    }
+    // Initialize the Agent as an object
+    CollisionAvoidanceServer::get_singleton()->agent_set_neighbor_dist(p_agent, 0.0);
+    CollisionAvoidanceServer::get_singleton()->agent_set_max_neighbors(p_agent, 0);
+    CollisionAvoidanceServer::get_singleton()->agent_set_time_horizon(p_agent, 0.0);
+    CollisionAvoidanceServer::get_singleton()->agent_set_time_horizon_obs(p_agent, 0.0);
+    CollisionAvoidanceServer::get_singleton()->agent_set_radius(p_agent, radius);
+    CollisionAvoidanceServer::get_singleton()->agent_set_max_speed(p_agent, 0.0);
+}
+
 void PhysicsBody::_notification(int p_what) {
+    switch (p_what) {
+        case NOTIFICATION_READY:
+            reset_collision_avoidance();
+            break;
+        case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+            update_collision_avoidance();
+            break;
+    }
 }
 
 Vector3 PhysicsBody::get_linear_velocity() const {
@@ -142,9 +178,12 @@ void PhysicsBody::remove_collision_exception_with(Node *p_node) {
 }
 
 void PhysicsBody::set_collision_avoidance_obstacle(bool p_is) {
+    if (collision_avoidance_obstacle == p_is) {
+        // Pointless
+        return;
+    }
     collision_avoidance_obstacle = p_is;
-
-    // TODO init agent or obstacle
+    reset_collision_avoidance();
 }
 
 bool PhysicsBody::is_collision_avoidance_obstacle() const {
@@ -192,6 +231,24 @@ PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 
 	collision_layer = 1;
 	collision_mask = 1;
+}
+
+void PhysicsBody::reset_collision_avoidance() {
+    if (collision_avoidance_rid.is_valid()) {
+        CollisionAvoidanceServer::get_singleton()->free(collision_avoidance_rid);
+        collision_avoidance_rid = RID();
+    }
+    set_physics_process_internal(is_collision_avoidance_obstacle());
+}
+
+void PhysicsBody::update_collision_avoidance() {
+    if (collision_avoidance_rid.is_valid()) {
+        const Vector2 o(get_global_transform().origin.x, get_global_transform().origin.z);
+        const Vector2 v(get_linear_velocity().x, get_linear_velocity().z);
+        CollisionAvoidanceServer::get_singleton()->agent_set_position(collision_avoidance_rid, o);
+        CollisionAvoidanceServer::get_singleton()->agent_set_velocity(collision_avoidance_rid, v);
+        CollisionAvoidanceServer::get_singleton()->agent_set_target_velocity(collision_avoidance_rid, v);
+    }
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -329,6 +386,20 @@ StaticBody::StaticBody() :
 }
 
 StaticBody::~StaticBody() {}
+
+void StaticBody::reset_collision_avoidance() {
+    PhysicsBody::reset_collision_avoidance();
+
+    if (is_collision_avoidance_obstacle()) {
+        CRASH_NOW();
+        // TODO create an obstacle
+        //CollisionAvoidanceServer::get_singleton()->obstacle_add()
+    }
+}
+
+void StaticBody::update_collision_avoidance() {
+    reset_collision_avoidance();
+}
 
 void StaticBody::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
@@ -1089,6 +1160,27 @@ RigidBody::~RigidBody() {
 		memdelete(contact_monitor);
 }
 
+void RigidBody::reset_collision_avoidance() {
+    PhysicsBody::reset_collision_avoidance();
+
+    if (get_world().is_valid())
+        if (mode == MODE_STATIC) {
+            // TODO please as obstacle
+            CRASH_NOW();
+        } else if (is_collision_avoidance_obstacle()) {
+            collision_avoidance_rid = CollisionAvoidanceServer::get_singleton()->agent_add(get_world()->get_collision_avoidance_space());
+            ca_init_agent_as_obstacle(collision_avoidance_rid, this);
+        }
+}
+
+void RigidBody::update_collision_avoidance() {
+    if (mode == MODE_STATIC) {
+        reset_collision_avoidance();
+    } else {
+        PhysicsBody::update_collision_avoidance();
+    }
+}
+
 void RigidBody::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
 		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, 0);
@@ -1399,6 +1491,15 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 
 	slide_colliders.write[p_bounce]->collision = colliders[p_bounce];
 	return slide_colliders[p_bounce];
+}
+
+void KinematicBody::reset_collision_avoidance() {
+    PhysicsBody::reset_collision_avoidance();
+
+    if (is_collision_avoidance_obstacle() && get_world().is_valid()) {
+        collision_avoidance_rid = CollisionAvoidanceServer::get_singleton()->agent_add(get_world()->get_collision_avoidance_space());
+        ca_init_agent_as_obstacle(collision_avoidance_rid, this);
+    }
 }
 
 void KinematicBody::_notification(int p_what) {

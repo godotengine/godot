@@ -33,9 +33,11 @@
 
 #include "rvo_rid.h"
 
-class RvoObstacle : public RvoRid
+#include "Obstacle.h"
 
-{
+class RvoObstacle : public RvoRid {
+    RVO::Obstacle obstacle;
+
 public:
     RvoObstacle();
 };

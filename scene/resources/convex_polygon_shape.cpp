@@ -55,6 +55,15 @@ Vector<Vector3> ConvexPolygonShape::get_debug_mesh_lines() {
 	return Vector<Vector3>();
 }
 
+real_t ConvexPolygonShape::get_enclosing_radius() const {
+    real_t r = 0;
+    PoolVector<Vector3> data = get_points();
+    for (int i(0); i < data.size(); i++) {
+        r = MAX(data[i].length_squared(), r);
+    }
+    return Math::sqrt(r);
+}
+
 void ConvexPolygonShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), points);
