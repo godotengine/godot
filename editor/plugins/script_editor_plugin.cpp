@@ -987,11 +987,8 @@ Array ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
-bool ScriptEditor::toggle_scripts_panel(CodeTextEditor *p_editor) {
+bool ScriptEditor::toggle_scripts_panel() {
 	list_split->set_visible(!list_split->is_visible());
-	if (p_editor) {
-		p_editor->update_toggle_scripts_button();
-	}
 	return list_split->is_visible();
 }
 
@@ -1141,14 +1138,13 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case TOGGLE_SCRIPTS_PANEL: {
 			if (current) {
-				CodeTextEditor *code_editor = NULL;
-				ScriptTextEditor *editor = dynamic_cast<ScriptTextEditor *>(current);
+				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(current);
+				toggle_scripts_panel();
 				if (editor) {
-					code_editor = editor->code_editor;
+					editor->update_toggle_scripts_button();
 				}
-				toggle_scripts_panel(code_editor);
 			} else {
-				toggle_scripts_panel(NULL);
+				toggle_scripts_panel();
 			}
 		}
 	}

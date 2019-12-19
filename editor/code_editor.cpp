@@ -1509,7 +1509,7 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel(this) ? get_icon("Back", "EditorIcons") : get_icon("Forward", "EditorIcons"));
+	toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_icon("Back", "EditorIcons") : get_icon("Forward", "EditorIcons"));
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {

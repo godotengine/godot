@@ -966,6 +966,12 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 }
 
+void ScriptTextEditor::update_toggle_scripts_button() {
+	if (code_editor != NULL) {
+		code_editor->update_toggle_scripts_button();
+	}
+}
+
 void ScriptTextEditor::_update_connected_methods() {
 	TextEdit *text_edit = code_editor->get_text_edit();
 	text_edit->clear_info_icons();
