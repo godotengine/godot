@@ -2621,6 +2621,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 #ifdef RTAUDIO_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_rtaudio);
 #endif
+	AudioDriverManagerSW::add_driver(&driver_dummy);
 }
 
 OS_Windows::~OS_Windows() {

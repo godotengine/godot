@@ -41,6 +41,7 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
+#include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
@@ -141,6 +142,7 @@ class OS_Windows : public OS {
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
+	AudioDriverDummy driver_dummy;
 
 	CrashHandler crash_handler;
 
