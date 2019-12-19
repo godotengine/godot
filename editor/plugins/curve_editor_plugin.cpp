@@ -510,8 +510,8 @@ void CurveEditor::set_hover_point_index(int index) {
 }
 
 void CurveEditor::update_view_transform() {
-	Vector2 control_size = get_size();
-	const real_t margin = 24;
+	Ref<Font> font = get_font("font", "Label");
+	const real_t margin = font->get_height() + 2 * EDSCALE;
 
 	float min_y = 0;
 	float max_y = 1;
@@ -521,15 +521,19 @@ void CurveEditor::update_view_transform() {
 		max_y = _curve_ref->get_max_value();
 	}
 
-	Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
-	Vector2 wm = Vector2(margin, margin) / control_size;
-	wm.y *= (max_y - min_y);
-	world_rect.position -= wm;
-	world_rect.size += 2.0 * wm;
+	const Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
+	const Size2 view_margin(margin, margin);
+	const Size2 view_size = get_size() - view_margin * 2;
+	const Vector2 scale = view_size / world_rect.size;
 
-	_world_to_view = Transform2D();
-	_world_to_view.translate(-world_rect.position - Vector2(0, world_rect.size.y));
-	_world_to_view.scale(Vector2(control_size.x, -control_size.y) / world_rect.size);
+	Transform2D world_trans;
+	world_trans.translate(-world_rect.position - Vector2(0, world_rect.size.y));
+	world_trans.scale(Vector2(scale.x, -scale.y));
+
+	Transform2D view_trans;
+	view_trans.translate(view_margin);
+
+	_world_to_view = view_trans * world_trans;
 }
 
 Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
@@ -735,10 +739,10 @@ void CurveEditor::_draw() {
 
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
 	} else if (curve.get_point_count() == 0) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50, font_height), TTR("Right click to add point"), text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), text_color);
 	}
 }
 
