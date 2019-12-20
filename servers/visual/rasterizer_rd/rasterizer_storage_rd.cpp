@@ -2616,7 +2616,7 @@ void RasterizerStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_in
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
-	ERR_FAIL_INDEX(p_index, !multimesh->uses_colors);
+	ERR_FAIL_COND(!multimesh->uses_colors);
 
 	_multimesh_make_local(multimesh);
 
