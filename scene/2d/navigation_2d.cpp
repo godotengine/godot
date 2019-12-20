@@ -234,6 +234,138 @@ void Navigation2D::navpoly_remove(int p_id) {
 	navpoly_map.erase(p_id);
 }
 
+real_t Navigation2D::_is_point_within_poly(const Vector2 &p_point, const Navigation2D::Polygon &p_poly, int p_tri) const {
+	Vector2 corn[3];
+	corn[0] = _get_vertex(p_poly.edges[0].point);
+	corn[1] = _get_vertex(p_poly.edges[p_tri - 1].point);
+	corn[2] = _get_vertex(p_poly.edges[p_tri].point);
+
+	// make sure counterclockwise
+	if (p_poly.clockwise) {
+		Vector2 temp = corn[0];
+		corn[0] = corn[2];
+		corn[2] = temp;
+	}
+
+	// we are interested in finding the furthest out distance of the point
+	// from the 3 edges. If the point is in front of any edge, it is outside.
+	// HOWEVER, we want to use an epsilon and allow the best fit solution where the point
+	// is *just* outside, if it is not completely within any triangle.
+	// This prevents a bug whereby points can be lost in floating point cracks between triangles.
+
+	// Note that on sharp corners (e.g. long thin triangle), the actual distance of the point to a corner may be less
+	// than that perpendicular to an edge, so a point far from the triangle could wrongly be classified as 'within'.
+	// However this should not be a problem in practice because we also use an expanded AABB check for quick reject.
+	real_t furthest = -_point_in_tri_large_dist;
+
+	// each edge
+	for (int c = 0; c < 3; c++) {
+		const Vector2 *pA = &corn[c];
+		const Vector2 *pB = &corn[(c + 1) % 3];
+
+		Vector2 dir = *pB - *pA;
+		Vector2 normal(dir.y, -dir.x);
+
+		real_t sl = normal.length_squared();
+
+		// invalid triangle, near zero area, normal cannot be calculated
+		// this could perhaps be done as a preventative prepass? NYI
+		if (sl <= 0.00001f)
+			return _point_in_tri_large_dist;
+
+		// normalize (we have already calced the square length, so why not use it...)
+		normal *= 1.0f / Math::sqrt(sl);
+
+		Vector2 offset = p_point - *pA;
+
+		// distance of the point from the edge. positive is in front, negative behind
+		real_t dist = offset.dot(normal);
+
+		if (dist > furthest) {
+			// if any point is further than the epsilon the triangle is not hit
+			if (dist > _point_in_tri_edge_epsilon)
+				return _point_in_tri_large_dist;
+
+			furthest = dist;
+		}
+	}
+
+	return furthest;
+}
+
+void Navigation2D::_find_closest_polys(const Vector2 &p_pointA, const Vector2 &p_pointB, Navigation2D::Polygon **r_polyA, Navigation2D::Polygon **r_polyB) const {
+	*r_polyA = NULL;
+	*r_polyB = NULL;
+	real_t closest_distA = _point_in_tri_large_dist - 1.0f;
+	real_t closest_distB = closest_distA;
+
+	bool bFoundA = false;
+	bool bFoundB = false;
+	bool bFoundBoth = false;
+
+	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
+
+		if (!E->get().linked)
+			continue;
+
+		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
+
+			Polygon &p = F->get();
+
+			if (!bFoundBoth && p.edges.size()) {
+				// create an aabb for the poly, this is a quick reject test
+				int nEdges = p.edges.size();
+				Rect2 bb(_get_vertex(p.edges[0].point), Vector2(0, 0));
+				for (int i = 1; i < nEdges; i++)
+					bb.expand_to(_get_vertex(p.edges[i].point));
+
+				// we want to grow a little to cope with float error
+				bb = bb.grow(_point_in_tri_bb_epsilon);
+
+				// if we haven't yet found pointA, and pointA is within the aabb, check each tri
+				if (!bFoundA && bb.has_point(p_pointA)) {
+					for (int i = 2; i < nEdges; i++) {
+						real_t dist = _is_point_within_poly(p_pointA, p, i);
+
+						if (dist < closest_distA) {
+							closest_distA = dist;
+							*r_polyA = &p;
+
+							// if fully inside, definitely select this tri
+							if (dist <= 0.0) {
+								bFoundA = true;
+								if (bFoundA && bFoundB)
+									bFoundBoth = true;
+							}
+						}
+					} // for i through edges
+				} // not found A
+
+				if (!bFoundB && bb.has_point(p_pointB)) {
+					for (int i = 2; i < nEdges; i++) {
+						real_t dist = _is_point_within_poly(p_pointB, p, i);
+
+						if (dist < closest_distB) {
+							closest_distB = dist;
+							*r_polyB = &p;
+
+							// if fully inside, definitely select this tri
+							if (dist <= 0.0) {
+								bFoundB = true;
+								if (bFoundA && bFoundB)
+									bFoundBoth = true;
+							}
+						}
+					} // for i through edges
+				} // not found B
+
+			} // if both not found
+
+			p.prev_edge = -1;
+		}
+	}
+}
+
 Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vector2 &p_end, bool p_optimize) {
 
 	Polygon *begin_poly = NULL;
@@ -243,46 +375,15 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	float begin_d = 1e20;
 	float end_d = 1e20;
 
-	//look for point inside triangle
-
-	for (Map<int, NavMesh>::Element *E = navpoly_map.front(); E; E = E->next()) {
-
-		if (!E->get().linked)
-			continue;
-		for (List<Polygon>::Element *F = E->get().polygons.front(); F; F = F->next()) {
-
-			Polygon &p = F->get();
-			if (begin_d || end_d) {
-				for (int i = 2; i < p.edges.size(); i++) {
-
-					if (begin_d > 0) {
-
-						if (Geometry::is_point_in_triangle(p_start, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
-							begin_poly = &p;
-							begin_point = p_start;
-							begin_d = 0;
-							if (end_d == 0)
-								break;
-						}
-					}
-
-					if (end_d > 0) {
-
-						if (Geometry::is_point_in_triangle(p_end, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
-
-							end_poly = &p;
-							end_point = p_end;
-							end_d = 0;
-							if (begin_d == 0)
-								break;
-						}
-					}
-				}
-			}
-
-			p.prev_edge = -1;
-		}
+	// are the start and end points within any of the nav polys?
+	_find_closest_polys(p_start, p_end, &begin_poly, &end_poly);
+	if (begin_poly) {
+		begin_point = p_start;
+		begin_d = 0;
+	}
+	if (end_poly) {
+		end_point = p_end;
+		end_d = 0;
 	}
 
 	//start or end not inside triangle.. look for closest segment :|

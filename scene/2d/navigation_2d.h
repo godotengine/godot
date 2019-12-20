@@ -151,6 +151,13 @@ class Navigation2D : public Node2D {
 	void _navpoly_link(int p_id);
 	void _navpoly_unlink(int p_id);
 
+	const real_t _point_in_tri_bb_epsilon = 1.0f;
+	const real_t _point_in_tri_edge_epsilon = 1.0f;
+	const real_t _point_in_tri_large_dist = 1e20;
+
+	real_t _is_point_within_poly(const Vector2 &p_point, const Navigation2D::Polygon &p_poly, int p_tri) const;
+	void _find_closest_polys(const Vector2 &p_pointA, const Vector2 &p_pointB, Navigation2D::Polygon **r_polyA, Navigation2D::Polygon **r_polyB) const;
+
 	float cell_size;
 	Map<int, NavMesh> navpoly_map;
 	int last_id;
