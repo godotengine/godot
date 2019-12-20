@@ -34,7 +34,6 @@
 #include "rvo_rid.h"
 
 #include "core/math/math_defs.h"
-#include <Agent.h>
 #include <KdTree.h>
 #include <Obstacle.h>
 
@@ -59,6 +58,9 @@ class RvoSpace : public RvoRid {
     /// Controlled agents
     std::vector<RvoAgent *> controlled_agents;
 
+    /// Physics delta time
+    real_t deltatime;
+
 public:
     RvoSpace();
 
@@ -77,8 +79,11 @@ public:
     void remove_agent_as_controlled(RvoAgent *agent);
 
     void sync();
-    void step(real_t timestep);
+    void step(real_t p_deltatime);
     void dispatch_callbacks();
+
+private:
+    void compute_single_step(uint32_t index, RvoAgent **agent);
 };
 
 #endif // RVO_SPACE_H

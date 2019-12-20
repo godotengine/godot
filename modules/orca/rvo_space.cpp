@@ -30,9 +30,11 @@
 
 #include "rvo_space.h"
 
+#include "core/os/threaded_array_processor.h"
 #include "rvo_agent.h"
 
-RvoSpace::RvoSpace() {
+RvoSpace::RvoSpace() :
+        deltatime(0.0) {
 }
 
 bool RvoSpace::has_obstacle(RVO::Obstacle *obstacle) const {
@@ -105,12 +107,18 @@ void RvoSpace::sync() {
     }
 }
 
-void RvoSpace::step(real_t timestep) {
-    // TODO Please do this in MT
-    for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
-        controlled_agents[i]->get_agent()->computeNeighbors(&rvo);
-        controlled_agents[i]->get_agent()->computeNewVelocity(timestep);
-    }
+void RvoSpace::compute_single_step(uint32_t _index, RvoAgent **agent) {
+    (*agent)->get_agent()->computeNeighbors(&rvo);
+    (*agent)->get_agent()->computeNewVelocity(deltatime);
+}
+
+void RvoSpace::step(real_t p_deltatime) {
+    deltatime = p_deltatime;
+    thread_process_array(
+            controlled_agents.size(),
+            this,
+            &RvoSpace::compute_single_step,
+            controlled_agents.data());
 }
 
 void RvoSpace::dispatch_callbacks() {
