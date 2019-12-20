@@ -1181,6 +1181,14 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				}
 
 			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIN: {
+				glBlendEquation(GL_MIN);
+
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MAX: {
+				glBlendEquation(GL_MAX);
+
+			} break;
 		}
 
 		state.current_blend_mode=p_material->shader->spatial.blend_mode;
@@ -2204,6 +2212,20 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 								glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE);
 							}
 
+						} break;
+						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIN: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+							// not supported on iphone/android
+#else
+							glBlendEquation(GL_MIN);
+#endif
+						} break;
+						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MAX: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+							// not supported on iphone/android
+#else
+							glBlendEquation(GL_MAX);
+#endif
 						} break;
 					}
 

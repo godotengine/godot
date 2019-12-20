@@ -2386,6 +2386,20 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 						}
 
 					} break;
+					case RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_MIN: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+						// not supported on iphone/android
+#else
+						glBlendEquation(GL_MIN);
+#endif
+					} break;
+					case RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_MAX: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+						// not supported on iphone/android
+#else
+						glBlendEquation(GL_MAX);
+#endif
+					} break;
 				}
 
 				prev_blend_mode = blend_mode;

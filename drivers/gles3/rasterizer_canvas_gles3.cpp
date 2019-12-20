@@ -1594,6 +1594,20 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					}
 
 				} break;
+				case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIN: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+					// not supported on iphone/android
+#else
+					glBlendEquation(GL_MIN);
+#endif
+				} break;
+				case RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MAX: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+					// not supported on iphone/android
+#else
+					glBlendEquation(GL_MAX);
+#endif
+				} break;
 			}
 
 			last_blend_mode = blend_mode;

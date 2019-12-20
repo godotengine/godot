@@ -1659,6 +1659,21 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 						glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 					}
 				} break;
+				case RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIN: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+					// not supported on iphone/android
+#else
+					glBlendEquation(GL_MIN);
+#endif
+
+				} break;
+				case RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MAX: {
+#if defined(ANDROID_ENABLED) || defined(IPHONE_ENABLED)
+					// not supported on iphone/android
+#else
+					glBlendEquation(GL_MAX);
+#endif
+				} break;
 			}
 		}
 

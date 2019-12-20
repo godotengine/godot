@@ -605,6 +605,12 @@
 		<constant name="BLEND_MODE_DISABLED" value="5" enum="BlendMode">
 			Disables blending mode. Colors including alpha are written as-is. Only applicable for render targets with a transparent background. No lighting will be applied.
 		</constant>
+		<constant name="BLEND_MODE_MIN" value="6" enum="BlendMode">
+			Minimum blending mode. (This does NOT work on Android/iPhone.)
+		</constant>
+		<constant name="BLEND_MODE_MAX" value="7" enum="BlendMode">
+			Maximum blending mode. (This does NOT work on Android/iPhone.)
+		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			The CanvasItem's transform has changed. This notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
 		</constant>

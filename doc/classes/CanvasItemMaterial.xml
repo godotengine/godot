@@ -42,6 +42,12 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
+		<constant name="BLEND_MODE_MIN" value="5" enum="BlendMode">
+			Minimum blending mode. (This does NOT work on Android/iPhone.)
+		</constant>
+		<constant name="BLEND_MODE_MAX" value="6" enum="BlendMode">
+			Maximum blending mode. (This does NOT work on Android/iPhone.)
+		</constant>
 		<constant name="LIGHT_MODE_NORMAL" value="0" enum="LightMode">
 			Render the material using both light and non-light sensitive material properties.
 		</constant>
