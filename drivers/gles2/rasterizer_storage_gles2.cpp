@@ -5812,10 +5812,11 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
 #ifdef JAVASCRIPT_ENABLED
-	// no way of detecting 32 or 16 bit support for renderbuffer, so default to 32
+	// RenderBuffer internal format must be 16 bits in WebGL,
+	// but depth_texture should default to 32 always
 	// if the implementation doesn't support 32, it should just quietly use 16 instead
 	// https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/
-	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT;
+	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT16;
 	config.depth_type = GL_UNSIGNED_INT;
 #else
 	// on mobile check for 24 bit depth support for RenderBufferStorage
