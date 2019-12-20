@@ -54,7 +54,7 @@ class RvoSpace : public RvoRid {
     bool agents_dirty;
 
     /// All the Agents (even the controlled one)
-    std::vector<RVO::Agent *> agents;
+    std::vector<RvoAgent *> agents;
 
     /// Controlled agents
     std::vector<RvoAgent *> controlled_agents;
@@ -69,6 +69,9 @@ public:
     bool has_agent(RvoAgent *agent) const;
     void add_agent(RvoAgent *agent);
     void remove_agent(RvoAgent *agent);
+    std::vector<RvoAgent *> &get_agents() {
+        return agents;
+    }
 
     void set_agent_as_controlled(RvoAgent *agent);
     void remove_agent_as_controlled(RvoAgent *agent);

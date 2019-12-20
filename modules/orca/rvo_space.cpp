@@ -55,19 +55,19 @@ void RvoSpace::remove_obstacle(RVO::Obstacle *obstacle) {
 }
 
 bool RvoSpace::has_agent(RvoAgent *agent) const {
-    return std::find(agents.begin(), agents.end(), agent->get_agent()) != agents.end();
+    return std::find(agents.begin(), agents.end(), agent) != agents.end();
 }
 
 void RvoSpace::add_agent(RvoAgent *agent) {
     if (!has_agent(agent)) {
-        agents.push_back(agent->get_agent());
+        agents.push_back(agent);
         agents_dirty = true;
     }
 }
 
 void RvoSpace::remove_agent(RvoAgent *agent) {
     remove_agent_as_controlled(agent);
-    auto it = std::find(agents.begin(), agents.end(), agent->get_agent());
+    auto it = std::find(agents.begin(), agents.end(), agent);
     if (it != agents.end()) {
         agents.erase(it);
         agents_dirty = true;
@@ -96,7 +96,11 @@ void RvoSpace::sync() {
     }
 
     if (agents_dirty) {
-        rvo.buildAgentTree(agents);
+        std::vector<RVO::Agent *> raw_agents;
+        raw_agents.reserve(agents.size());
+        for (int i(0); i < agents.size(); i++)
+            raw_agents.push_back(agents[i]->get_agent());
+        rvo.buildAgentTree(raw_agents);
         agents_dirty = false;
     }
 }

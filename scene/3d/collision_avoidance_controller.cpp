@@ -104,12 +104,12 @@ void CollisionAvoidanceController::_notification(int p_what) {
 
 CollisionAvoidanceController::CollisionAvoidanceController() :
         agent(RID()),
-        neighbor_dist(10.0),
+        neighbor_dist(30.0),
         max_neighbors(10),
-        time_horizon(5.0),
-        time_horizon_obs(5.0),
+        time_horizon(20.0),
+        time_horizon_obs(20.0),
         radius(1.0),
-        max_speed(50.0),
+        max_speed(20.0),
         velocity_submitted(false) {
 }
 

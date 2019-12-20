@@ -37,10 +37,6 @@ RvoAgent::RvoAgent(RvoSpace *p_space) :
     callback.id = ObjectID(0);
 }
 
-RvoAgent::~RvoAgent() {
-    space->remove_agent(this);
-}
-
 void RvoAgent::set_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
     callback.id = p_id;
     callback.method = p_method;

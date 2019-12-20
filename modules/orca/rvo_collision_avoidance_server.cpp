@@ -158,18 +158,31 @@ void RvoCollisionAvoidanceServer::free(RID p_object) {
     if (space_owner.owns(p_object)) {
         RvoSpace *obj = space_owner.get(p_object);
 
-        // TODO please destroy all the agents and objects
+        // Destroy all the agents of this server
+        if (obj->get_agents().size() != 0) {
+            print_error("The collision avoidance server destroyed contains Agents, please destroy these.");
+        }
+
+        for (int i(0); i < obj->get_agents().size(); i++) {
+            agent_owner.free(obj->get_agents()[i]->get_self());
+            memdelete(obj->get_agents()[i]);
+            obj->get_agents()[i] = NULL;
+        }
+
+        // TODO please destroy Obstacles
+
         space_set_active(p_object, false);
         space_owner.free(p_object);
 
         memdelete(obj);
     } else if (agent_owner.owns(p_object)) {
         RvoAgent *obj = agent_owner.get(p_object);
+        obj->get_space()->remove_agent(obj);
         agent_owner.free(p_object);
         memdelete(obj);
     } else if (obstacle_owner.owns(p_object)) {
-        // TODO please remove from the space
         RvoObstacle *obj = obstacle_owner.get(p_object);
+        // TODO please remove from the space
         obstacle_owner.free(p_object);
         memdelete(obj);
     } else {

@@ -51,7 +51,6 @@ class RvoAgent : public RvoRid {
 
 public:
     RvoAgent(RvoSpace *p_space);
-    ~RvoAgent();
 
     RvoSpace *get_space() {
         return space;
