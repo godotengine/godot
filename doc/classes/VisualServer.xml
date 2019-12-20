@@ -44,6 +44,7 @@
 			<return type="RID">
 			</return>
 			<description>
+				Creates a camera and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] VisualServer functions.
 			</description>
 		</method>
 		<method name="camera_set_cull_mask">
@@ -54,6 +55,7 @@
 			<argument index="1" name="layers" type="int">
 			</argument>
 			<description>
+				Sets the cull mask associated with this camera. The cull mask describes which 3d layers are rendered by this camera. Equivalent to [member Camera.cull_mask].
 			</description>
 		</method>
 		<method name="camera_set_environment">
@@ -64,6 +66,7 @@
 			<argument index="1" name="env" type="RID">
 			</argument>
 			<description>
+				Sets the environment used by this camera. Equivalent to [member Camera.environment].
 			</description>
 		</method>
 		<method name="camera_set_frustum">
@@ -80,6 +83,7 @@
 			<argument index="4" name="z_far" type="float">
 			</argument>
 			<description>
+				Sets camera to use frustum projection. This mode allows adjusting the [code]offset[/code] argument to create "tilted frustum" effects.
 			</description>
 		</method>
 		<method name="camera_set_orthogonal">
@@ -94,6 +98,7 @@
 			<argument index="3" name="z_far" type="float">
 			</argument>
 			<description>
+				Sets camera to use orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
 			</description>
 		</method>
 		<method name="camera_set_perspective">
@@ -108,6 +113,7 @@
 			<argument index="3" name="z_far" type="float">
 			</argument>
 			<description>
+				Sets camera to use perspective projection. Objects on the screen becomes smaller when they are far away.
 			</description>
 		</method>
 		<method name="camera_set_transform">
@@ -118,6 +124,7 @@
 			<argument index="1" name="transform" type="Transform">
 			</argument>
 			<description>
+				Sets [Transform] of camera.
 			</description>
 		</method>
 		<method name="camera_set_use_vertical_aspect">
@@ -128,6 +135,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], preserves the horizontal aspect ratio which is equivalent to [constant Camera.KEEP_WIDTH]. If [code]false[/code], preserves the vertical aspect ratio which is equivalent to [constant Camera.KEEP_HEIGHT].
 			</description>
 		</method>
 		<method name="canvas_create">
@@ -198,6 +206,7 @@
 			<argument index="5" name="normal_map" type="RID">
 			</argument>
 			<description>
+				Adds a mesh command to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -414,6 +423,7 @@
 			<argument index="10" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Adds a triangle array to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -477,6 +487,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables the use of distance fields for GUI elements that are rendering distance field based fonts.
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_behind_parent">
@@ -800,6 +811,7 @@
 			<argument index="1" name="scale" type="float">
 			</argument>
 			<description>
+				Sets the texture's scale factor of the light. Equivalent to [member Light2D.texture_scale].
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_buffer_size">
@@ -876,6 +888,7 @@
 			<argument index="1" name="texture" type="RID">
 			</argument>
 			<description>
+				Sets texture to be used by light. Equivalent to [member Light2D.texture].
 			</description>
 		</method>
 		<method name="canvas_light_set_texture_offset">
@@ -886,6 +899,7 @@
 			<argument index="1" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Sets the offset of the light's texture. Equivalent to [member Light2D.offset].
 			</description>
 		</method>
 		<method name="canvas_light_set_transform">
@@ -909,6 +923,7 @@
 			<argument index="2" name="max_z" type="int">
 			</argument>
 			<description>
+				Sets the Z range of objects that will be affected by this light. Equivalent to [member Light2D.range_z_min] and [member Light2D.range_z_max].
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -981,6 +996,7 @@
 			<return type="RID">
 			</return>
 			<description>
+				Creates a directional light and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] VisualServer functions.
 			</description>
 		</method>
 		<method name="draw">
@@ -991,12 +1007,14 @@
 			<argument index="1" name="frame_step" type="float" default="0.0">
 			</argument>
 			<description>
+				Draws a frame. [i]This method is deprecated[/i], please use [method force_draw] instead.
 			</description>
 		</method>
 		<method name="environment_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates an environment and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]environment_*[/code] VisualServer functions.
 			</description>
 		</method>
 		<method name="environment_set_adjustment">
@@ -1015,6 +1033,7 @@
 			<argument index="5" name="ramp" type="RID">
 			</argument>
 			<description>
+				Sets the values to be used with the "Adjustment" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ambient_light">
@@ -1029,6 +1048,7 @@
 			<argument index="3" name="sky_contibution" type="float" default="0.0">
 			</argument>
 			<description>
+				Sets the ambient light parameters. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_background">
@@ -1039,6 +1059,7 @@
 			<argument index="1" name="bg" type="int" enum="VisualServer.EnvironmentBG">
 			</argument>
 			<description>
+				Sets the [i]BGMode[/i] of the environment. Equivalent to [member Environment.background_mode].
 			</description>
 		</method>
 		<method name="environment_set_bg_color">
@@ -1049,6 +1070,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Color displayed for clear areas of the scene (if using Custom color or Color+Sky background modes).
 			</description>
 		</method>
 		<method name="environment_set_bg_energy">
@@ -1059,6 +1081,7 @@
 			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
+				Sets the intensity of the background color.
 			</description>
 		</method>
 		<method name="environment_set_canvas_max_layer">
@@ -1069,6 +1092,7 @@
 			<argument index="1" name="max_layer" type="int">
 			</argument>
 			<description>
+				Sets the maximum layer to use if using Canvas background mode.
 			</description>
 		</method>
 		<method name="environment_set_dof_blur_far">
@@ -1087,6 +1111,7 @@
 			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
 			</argument>
 			<description>
+				Sets the values to be used with the "DoF Far Blur" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_dof_blur_near">
@@ -1105,6 +1130,7 @@
 			<argument index="5" name="quality" type="int" enum="VisualServer.EnvironmentDOFBlurQuality">
 			</argument>
 			<description>
+				Sets the values to be used with the "DoF Near Blur" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_fog">
@@ -1121,6 +1147,7 @@
 			<argument index="4" name="sun_amount" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the scene fog. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_fog_depth">
@@ -1141,6 +1168,7 @@
 			<argument index="6" name="transmit_curve" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the fog depth effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_fog_height">
@@ -1157,6 +1185,7 @@
 			<argument index="4" name="height_curve" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the fog height effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -1185,6 +1214,7 @@
 			<argument index="10" name="bicubic_upscale" type="bool">
 			</argument>
 			<description>
+				Sets the variables to be used with the "glow" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -1195,6 +1225,7 @@
 			<argument index="1" name="sky" type="RID">
 			</argument>
 			<description>
+				Sets the [Sky] to be used as the environment's background when using [i]BGMode[/i] sky. Equivalent to [member Environment.background_sky].
 			</description>
 		</method>
 		<method name="environment_set_sky_custom_fov">
@@ -1205,6 +1236,7 @@
 			<argument index="1" name="scale" type="float">
 			</argument>
 			<description>
+				Sets a custom field of view for the background [Sky]. Equivalent to [member Environment.background_sky_custom_fov].
 			</description>
 		</method>
 		<method name="environment_set_sky_orientation">
@@ -1215,6 +1247,7 @@
 			<argument index="1" name="orientation" type="Basis">
 			</argument>
 			<description>
+				Sets the rotation of the background [Sky] expressed as a [Basis]. Equivalent to [member Environment.background_sky_orientation].
 			</description>
 		</method>
 		<method name="environment_set_ssao">
@@ -1247,6 +1280,7 @@
 			<argument index="12" name="bilateral_sharpness" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the "Screen Space Ambient Occlusion (SSAO)" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -1267,6 +1301,7 @@
 			<argument index="6" name="roughness" type="bool">
 			</argument>
 			<description>
+				Sets the variables to be used with the "screen space reflections" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_tonemap">
@@ -1291,6 +1326,7 @@
 			<argument index="8" name="auto_exp_grey" type="float">
 			</argument>
 			<description>
+				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="finish">
@@ -1308,6 +1344,7 @@
 			<argument index="1" name="frame_step" type="float" default="0.0">
 			</argument>
 			<description>
+				Forces a frame to be drawn when the function is called. Drawing a frame updates all [Viewport]s that are set to update. Use with extreme caution.
 			</description>
 		</method>
 		<method name="force_sync">
@@ -1594,6 +1631,7 @@
 			<argument index="2" name="texture" type="RID">
 			</argument>
 			<description>
+				Sets up [ImmediateGeometry] internals to prepare for drawing. Equivalent to [method ImmediateGeometry.begin].
 			</description>
 		</method>
 		<method name="immediate_clear">
@@ -1602,6 +1640,7 @@
 			<argument index="0" name="immediate" type="RID">
 			</argument>
 			<description>
+				Clears everything that was set up between [method immediate_begin] and [method immediate_end]. Equivalent to [method ImmediateGeometry.clear].
 			</description>
 		</method>
 		<method name="immediate_color">
@@ -1612,12 +1651,14 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color to be used with next vertex. Equivalent to [method ImmediateGeometry.set_color].
 			</description>
 		</method>
 		<method name="immediate_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates an [ImmediateGeometry] and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]immediate_*[/code] VisualServer functions.
 			</description>
 		</method>
 		<method name="immediate_end">
@@ -1626,6 +1667,7 @@
 			<argument index="0" name="immediate" type="RID">
 			</argument>
 			<description>
+				Ends drawing the [ImmediateGeometry] and displays it. Equivalent to [method ImmediateGeometry.end].
 			</description>
 		</method>
 		<method name="immediate_get_material" qualifiers="const">
@@ -1634,6 +1676,7 @@
 			<argument index="0" name="immediate" type="RID">
 			</argument>
 			<description>
+				Returns the material assigned to the [ImmediateGeometry].
 			</description>
 		</method>
 		<method name="immediate_normal">
@@ -1644,6 +1687,7 @@
 			<argument index="1" name="normal" type="Vector3">
 			</argument>
 			<description>
+				Sets the normal to be used with next vertex. Equivalent to [method ImmediateGeometry.set_normal].
 			</description>
 		</method>
 		<method name="immediate_set_material">
@@ -1654,6 +1698,7 @@
 			<argument index="1" name="material" type="RID">
 			</argument>
 			<description>
+				Sets the material to be used to draw the [ImmediateGeometry].
 			</description>
 		</method>
 		<method name="immediate_tangent">
@@ -1664,6 +1709,7 @@
 			<argument index="1" name="tangent" type="Plane">
 			</argument>
 			<description>
+				Sets the tangent to be used with next vertex. Equivalent to [method ImmediateGeometry.set_tangent].
 			</description>
 		</method>
 		<method name="immediate_uv">
@@ -1674,6 +1720,7 @@
 			<argument index="1" name="tex_uv" type="Vector2">
 			</argument>
 			<description>
+				Sets the UV to be used with next vertex. Equivalent to [method ImmediateGeometry.set_uv].
 			</description>
 		</method>
 		<method name="immediate_uv2">
@@ -1684,6 +1731,7 @@
 			<argument index="1" name="tex_uv" type="Vector2">
 			</argument>
 			<description>
+				Sets the UV2 to be used with next vertex. Equivalent to [method ImmediateGeometry.set_uv2].
 			</description>
 		</method>
 		<method name="immediate_vertex">
@@ -1694,6 +1742,7 @@
 			<argument index="1" name="vertex" type="Vector3">
 			</argument>
 			<description>
+				Adds the next vertex using the information provided in advance. Equivalent to [method ImmediateGeometry.add_vertex].
 			</description>
 		</method>
 		<method name="immediate_vertex_2d">
@@ -3956,10 +4005,12 @@
 	<signals>
 		<signal name="frame_post_draw">
 			<description>
+				Emitted at the end of the frame, after the VisualServer has finished updating all the Viewports.
 			</description>
 		</signal>
 		<signal name="frame_pre_draw">
 			<description>
+				Emitted at the beginning of the frame, before the VisualServer updates all the Viewports.
 			</description>
 		</signal>
 	</signals>
