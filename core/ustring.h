@@ -338,6 +338,8 @@ public:
 	String percent_encode() const;
 	String percent_decode() const;
 
+	String property_name_encode() const;
+
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
 	bool is_valid_float() const;

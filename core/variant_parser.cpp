@@ -1530,9 +1530,6 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else if (c != '=') {
 				what += String::chr(c);
 			} else {
-				if (p_stream->is_utf8()) {
-					what.parse_utf8(what.ascii(true).get_data());
-				}
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
