@@ -15,20 +15,17 @@ txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
 if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
     e = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
     txt = ""
-    ec_valid = True
-    if (len(e) != 64):
-        ec_valid = False
-    else:
+    ec_valid = (len(e) == 64)
+    if (ec_valid):
 
         for i in range(len(e) >> 1):
-            if (i > 0):
-                txt += ","
             txts = "0x" + e[i * 2:i * 2 + 2]
             try:
                 int(txts, 16)
             except:
                 ec_valid = False
-            txt += txts
+            txt += ("," * (i > 0)) + txts
+            
     if (not ec_valid):
         txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
         print("Invalid AES256 encryption key, not 64 bits hex: " + e)
