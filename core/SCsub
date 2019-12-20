@@ -24,7 +24,9 @@ if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
                 int(txts, 16)
             except:
                 ec_valid = False
-            txt += ("," * (i > 0)) + txts
+            if(i > 0):
+                txt += ","
+            txt += txts
             
     if (not ec_valid):
         txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
