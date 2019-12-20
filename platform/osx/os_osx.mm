@@ -1029,12 +1029,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	visual_server->init();
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init() != OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}
+	AudioDriverManagerSW::initialize(p_audio_driver);
 
 	sample_manager = memnew(SampleManagerMallocSW);
 	audio_server = memnew(AudioServerSW(sample_manager));

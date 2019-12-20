@@ -36,6 +36,9 @@
 #include "servers/audio/audio_mixer_sw.h"
 #include "servers/audio/voice_rb_sw.h"
 #include "servers/audio_server.h"
+
+class AudioDriverDummy;
+
 class AudioServerSW : public AudioServer {
 
 	OBJ_TYPE(AudioServerSW, AudioServer);
@@ -265,9 +268,11 @@ class AudioDriverManagerSW {
 
 	static AudioDriverSW *drivers[MAX_DRIVERS];
 	static int driver_count;
+	static AudioDriverDummy dummy_driver;
 
 public:
 	static void add_driver(AudioDriverSW *p_driver);
+	static void initialize(int p_driver);
 	static int get_driver_count();
 	static AudioDriverSW *get_driver(int p_driver);
 };

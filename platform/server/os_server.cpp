@@ -62,12 +62,7 @@ void OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init() != OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}
+	AudioDriverManagerSW::initialize(p_audio_driver);
 
 	sample_manager = memnew(SampleManagerMallocSW);
 	audio_server = memnew(AudioServerSW(sample_manager));
@@ -221,7 +216,6 @@ void OS_Server::run() {
 
 OS_Server::OS_Server() {
 
-	AudioDriverManagerSW::add_driver(&driver_dummy);
 	//adriver here
 	grab = false;
 };
