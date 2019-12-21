@@ -53,6 +53,7 @@ public:
 		bool destroy;
 		bool valid;
 		bool is_server;
+		bool closing;
 		void *obj;
 		void *peer;
 		Ref<StreamPeer> conn;
@@ -68,6 +69,7 @@ public:
 			id = 1;
 			ctx = NULL;
 			obj = NULL;
+			closing = false;
 			peer = NULL;
 		}
 	};
