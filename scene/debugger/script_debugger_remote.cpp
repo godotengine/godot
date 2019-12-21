@@ -1257,7 +1257,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		scene_tree(NULL) {
 
 	packet_peer_stream->set_stream_peer(tcp_client);
-	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough
+	packet_peer_stream->set_output_buffer_max_size((1024 * 1024 * 8) - 4); // 8 MiB should be way more than enough, minus 4 bytes for separator.
 
 	phl.printfunc = _print_handler;
 	phl.userdata = this;
