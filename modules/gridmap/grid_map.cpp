@@ -336,7 +336,6 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	c.rot = p_rot;
 
 	cell_map[key] = c;
-	
 	emit_signal("cell_contents_changed", Vector3(p_x, p_y, p_z));
 }
 
