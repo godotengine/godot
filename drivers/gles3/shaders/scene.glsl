@@ -1258,7 +1258,12 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * omni_lights[idx].light_pos_inv_radius.w;
-	float omni_attenuation = pow(max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w);
+	float omni_attenuation;
+	if (normalized_distance < 1.0) {
+		omni_attenuation = pow(normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+	} else {
+		omni_attenuation = 0.0;
+	}
 	vec3 light_attenuation = vec3(omni_attenuation);
 
 #if !defined(SHADOWS_DISABLED)
@@ -1317,7 +1322,12 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * spot_lights[idx].light_pos_inv_radius.w;
-	float spot_attenuation = pow(max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w);
+	float spot_attenuation;
+	if (normalized_distance < 1.0) {
+		spot_attenuation = pow(1.0 - normalized_distance, spot_lights[idx].light_direction_attenuation.w);
+	} else {
+		spot_attenuation = 0.0;
+	}
 	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
 	float spot_cutoff = spot_lights[idx].light_params.y;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_cutoff);
