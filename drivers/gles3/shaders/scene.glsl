@@ -897,18 +897,22 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 		bias += incr * 2.0;
 
 		vec3 uv_depth = (source.xyz / source.w) * 0.5 + 0.5;
-		float depth = texture(depth_buffer, uv_depth.xy).r;
+		if (uv_depth.x > 0.0 && uv_depth.x < 1.0 && uv_depth.y > 0.0 && uv_depth.y < 1.0) {
+			float depth = texture(depth_buffer, uv_depth.xy).r;
 
-		if (depth < uv_depth.z) {
-			if (depth > (bias.z / bias.w) * 0.5 + 0.5) {
-				return min(pow(ratio, 4.0), 1.0);
-			} else {
-				return 1.0;
+			if (depth < uv_depth.z) {
+				if (depth > (bias.z / bias.w) * 0.5 + 0.5) {
+					return min(pow(ratio, 4.0), 1.0);
+				} else {
+					return 1.0;
+				}
 			}
-		}
 
-		ratio += ratio_incr;
-		steps -= 1.0;
+			ratio += ratio_incr;
+			steps -= 1.0;
+		} else {
+			return 1.0;
+		}
 	}
 
 	return 1.0;
