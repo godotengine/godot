@@ -107,7 +107,7 @@ namespace GodotTools.Utils
                 searchDirs.AddRange(pathDirs);
 
             string nameExt = Path.GetExtension(name);
-            bool hasPathExt = string.IsNullOrEmpty(nameExt) || windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
+            bool hasPathExt = !string.IsNullOrEmpty(nameExt) && windowsExts.Contains(nameExt, StringComparer.OrdinalIgnoreCase);
 
             searchDirs.Add(System.IO.Directory.GetCurrentDirectory()); // last in the list
 
