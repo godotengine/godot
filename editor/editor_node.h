@@ -789,7 +789,7 @@ public:
 	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
-	void show_warning(const String &p_text, const String &p_title = "Warning!");
+	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);
 

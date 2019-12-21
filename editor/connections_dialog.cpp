@@ -413,7 +413,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Receiver Method:", dstm_hb);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);

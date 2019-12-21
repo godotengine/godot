@@ -1329,7 +1329,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	top_hb->add_spacer();
 
-	top_hb->add_child(memnew(Label("Play Mode:")));
+	top_hb->add_child(memnew(Label(TTR("Play Mode:"))));
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
 

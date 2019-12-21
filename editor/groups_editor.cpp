@@ -446,7 +446,7 @@ GroupDialog::GroupDialog() {
 	add_group_text->connect("text_entered", this, "_add_group_pressed");
 
 	Button *add_group_button = memnew(Button);
-	add_group_button->set_text("Add");
+	add_group_button->set_text(TTR("Add"));
 	chbc->add_child(add_group_button);
 	add_group_button->connect("pressed", this, "_add_group_pressed", varray(String()));
 
