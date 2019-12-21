@@ -404,10 +404,15 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	HBoxContainer *tool_hb = memnew(HBoxContainer);
 	Ref<ButtonGroup> g(memnew(ButtonGroup));
 
-	String workspace_label[WORKSPACE_MODE_MAX] = { "Edit", "New Single Tile", "New Autotile", "New Atlas" };
+	String workspace_label[WORKSPACE_MODE_MAX] = {
+		TTR("Edit"),
+		TTR("New Single Tile"),
+		TTR("New Autotile"),
+		TTR("New Atlas")
+	};
 	for (int i = 0; i < (int)WORKSPACE_MODE_MAX; i++) {
 		tool_workspacemode[i] = memnew(Button);
-		tool_workspacemode[i]->set_text(TTR(workspace_label[i]));
+		tool_workspacemode[i]->set_text(workspace_label[i]);
 		tool_workspacemode[i]->set_toggle_mode(true);
 		tool_workspacemode[i]->set_button_group(g);
 		tool_workspacemode[i]->connect("pressed", this, "_on_workspace_mode_changed", varray(i));
@@ -445,7 +450,16 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_hb = memnew(HBoxContainer);
 
 	g = Ref<ButtonGroup>(memnew(ButtonGroup));
-	String label[EDITMODE_MAX] = { "Region", "Collision", "Occlusion", "Navigation", "Bitmask", "Priority", "Icon", "Z Index" };
+	String label[EDITMODE_MAX] = {
+		TTR("Region"),
+		TTR("Collision"),
+		TTR("Occlusion"),
+		TTR("Navigation"),
+		TTR("Bitmask"),
+		TTR("Priority"),
+		TTR("Icon"),
+		TTR("Z Index")
+	};
 	for (int i = 0; i < (int)EDITMODE_MAX; i++) {
 		tool_editmode[i] = memnew(Button);
 		tool_editmode[i]->set_text(label[i]);

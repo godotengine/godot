@@ -572,7 +572,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				if (nd_list->is_input_port_editable()) {
 					has_gnode_text = true;
 					Button *btn = memnew(Button);
-					btn->set_text("Add Input Port");
+					btn->set_text(TTR("Add Input Port"));
 					hbnc->add_child(btn);
 					btn->connect("pressed", this, "_add_input_port", varray(E->get()));
 				}
@@ -581,7 +581,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbnc->add_spacer();
 					has_gnode_text = true;
 					Button *btn = memnew(Button);
-					btn->set_text("Add Output Port");
+					btn->set_text(TTR("Add Output Port"));
 					hbnc->add_child(btn);
 					btn->connect("pressed", this, "_add_output_port", varray(E->get()));
 				}
