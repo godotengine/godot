@@ -194,6 +194,10 @@
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
 		</member>
+		<member name="application/config/color" type="Color" setter="" getter="" default="Color( 0, 0, 0, 1 )">
+			If this color is changed from the default black color, it will be used to color the editor window's borders. This can be used to distinguish multiple projects at a quick glance.
+			[b]Note:[/b] The editor must be restarted for the change to be visible.
+		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="" default="&quot;&quot;">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.

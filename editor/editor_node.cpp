@@ -189,6 +189,21 @@ void EditorNode::_update_scene_tabs() {
 	}
 }
 
+void EditorNode::_update_gui_base_stylebox() {
+	// Updates the stylebox to use the project-defined editor color.
+	// This can be used to distinguish projects more easily, especially when working on
+	// several projects at once.
+	Ref<StyleBoxFlat> style_box = gui_base->get_stylebox("Background", "EditorStyles");
+
+	if (GLOBAL_GET("application/config/color") != Color(0, 0, 0)) {
+		// Only set borders if the value is different from the default setting
+		style_box->set_border_width_all(Math::round(4 * EDSCALE));
+		style_box->set_border_color(GLOBAL_GET("application/config/color"));
+	}
+
+	gui_base->add_style_override("panel", style_box);
+}
+
 void EditorNode::_version_control_menu_option(int p_idx) {
 
 	switch (vcs_actions_menu->get_item_id(p_idx)) {
@@ -378,7 +393,8 @@ void EditorNode::_notification(int p_what) {
 			theme_base->set_theme(theme);
 			gui_base->set_theme(theme);
 
-			gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+			_update_gui_base_stylebox();
+
 			scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
 			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
 			scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
@@ -5728,7 +5744,7 @@ EditorNode::EditorNode() {
 
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
-	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+	_update_gui_base_stylebox();
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
