@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"PO-Revision-Date: 2019-12-21 08:38+0000\n"
 "Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -82,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -786,6 +786,10 @@ msgstr "Sélection uniquement"
 msgid "Standard"
 msgstr "Standard"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Afficher/Cacher le panneau des scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -801,10 +805,6 @@ msgstr "Dézoomer"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Réinitialiser le zoom"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Afficher/Cacher le panneau des scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1772,9 +1772,8 @@ msgid "Erase Profile"
 msgstr "Effacer le profil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Gérer les profils de fonctionnalités de l'éditeur"
+msgstr "Profil des fonctionnalités de Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3104,9 +3103,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Importer des modèles depuis un fichier ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Gestionnaire d'export de modèles"
+msgstr "Paquet de modèle"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5021,9 +5019,8 @@ msgid "Recently Updated"
 msgstr "Récemment mis à jour"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Least Recently Updated"
-msgstr "Moins récemment mis à jour"
+msgstr "Mises à jour les moins récentes"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
@@ -5245,85 +5242,72 @@ msgstr ""
 "au lieu de leur marges."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Gauche"
+msgstr "En haut à gauche"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Droite"
+msgstr "En haut à droite"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Rotation vers la droite"
+msgstr "En bas à droite"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Vue de dessous"
+msgstr "En bas à gauche"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Indenter vers la gauche"
+msgstr "Centré à Gauche"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Centrer sur la sélection"
+msgstr "Centrée en Haut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Indenter vers la droite"
+msgstr "Centrée à droite"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Dessous"
+msgstr "Centrée en bas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Centre"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Vue de gauche"
+msgstr "Étendu à Gauche"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Vue de dessus"
+msgstr "Étendu en Haut"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Vue de droite"
+msgstr "Étendu à Droite"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Vue de dessous"
+msgstr "Étendu en Bas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "Étendu au CentreV"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "Étendu au CentreH"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "Rectangle complet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Ratio d'échelle :"
+msgstr "Conserver les Proportions"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -7911,9 +7895,8 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Thème"
+msgstr "Fichier de Thème"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9383,9 +9366,8 @@ msgid "Make Patch"
 msgstr "Conçevoir un patch"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Fichiers"
+msgstr "Fichiers Pack"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9440,9 +9422,8 @@ msgid "Export All"
 msgstr "Tout exporter"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Fichiers"
+msgstr "Fichiers ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
@@ -11629,19 +11610,16 @@ msgid "Members:"
 msgstr "Membres :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Changer le type de base"
+msgstr "Changer le type de base :"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Ajouter un nœud..."
+msgstr "Ajouter des nœuds..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Ajouter une fonction"
+msgstr "Ajouter une fonction..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

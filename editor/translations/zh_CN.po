@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-12-16 23:50+0000\n"
+"PO-Revision-Date: 2019-12-21 08:38+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -759,6 +759,10 @@ msgstr "仅选中"
 msgid "Standard"
 msgstr "标准"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "切换脚本面板"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -774,10 +778,6 @@ msgstr "缩小"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "重置缩放"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "切换脚本面板"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -954,7 +954,7 @@ msgstr "创建新的 %s"
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr "收藏:"
+msgstr "收藏："
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
@@ -1123,7 +1123,7 @@ msgstr "改变字典的值"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "感谢Godot社区!"
+msgstr "Godot社区致谢！"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1520,7 +1520,7 @@ msgstr "选择目录"
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "新建目录"
+msgstr "新建文件夹"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
@@ -1532,7 +1532,7 @@ msgstr "名称:"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
-msgstr "无法创建目录。"
+msgstr "无法创建文件夹。"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
@@ -1722,9 +1722,8 @@ msgid "Erase Profile"
 msgstr "删除配置文件"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "管理编辑器功能配置文件"
+msgstr "Godot功能配置文件"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -1740,7 +1739,7 @@ msgstr "管理编辑器功能配置文件"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "选择当前目录"
+msgstr "选择当前文件夹"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1825,7 +1824,7 @@ msgstr "切换显示隐藏文件"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "切换收藏"
+msgstr "开关收藏"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
@@ -1877,7 +1876,7 @@ msgstr "以列表的形式查看所有项。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr "目录|文件:"
+msgstr "目录与文件："
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
@@ -2155,23 +2154,23 @@ msgstr "保存出错。"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "不能打开 '%s' 。文件可能已被移动或删除。"
+msgstr "无法打开“%s”。文件可能已被移动或删除。"
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr "分析 \"%s\" 时出错。"
+msgstr "解析“%s”时出错。"
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "文件 \"%s\" 的意外结束。"
+msgstr "文件“%s”意外结束。"
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "缺少 \"%s\" 或其依赖项。"
+msgstr "“%s”或其依赖项缺失。"
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr "加载 \"%s\" 时出错。"
+msgstr "加载“%s”时出错。"
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -2183,7 +2182,7 @@ msgstr "正在分析"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr "创建缩略图"
+msgstr "正在创建缩略图"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
@@ -2209,11 +2208,11 @@ msgstr "无法覆盖仍处于打开状态的场景!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "无法加载要合并的MeshLibrary！"
+msgstr "无法加载要合并的网格库！"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "保存MeshLibrary出错！"
+msgstr "保存网格库出错！"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -2321,7 +2320,7 @@ msgstr "保存并关闭"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr "在关闭前保存更改到 %s 吗？"
+msgstr "是否在关闭前保存对“%s”的更改？"
 
 #: editor/editor_node.cpp
 msgid "Saved %s modified resource(s)."
@@ -2345,7 +2344,7 @@ msgstr "是"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr "此场景尚未保存，要在运行之前保存它吗？"
+msgstr "此场景尚未保存。是否在运行前保存？"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2353,7 +2352,7 @@ msgstr "此操作必须在打开一个场景后才能执行。"
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "导出网格库(Mesh Library)"
+msgstr "导出网格库"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
@@ -2365,11 +2364,11 @@ msgstr "导出图块集"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr "此操作必须先选择一个node才能执行。"
+msgstr "此操作必须先选择一个节点才能执行。"
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "当前场景尚未保存，仍要打开？"
+msgstr "当前场景尚未保存。是否仍要打开？"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2381,7 +2380,7 @@ msgstr "恢复"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr "此操作无法撤销，确定要继续吗？"
+msgstr "此操作无法撤销，是否继续？"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2435,7 +2434,7 @@ msgstr "无法在: \"%s\" 上启用加载项插件, 配置解析失败。"
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "在插件目录中没有找到脚本: 'res://addons/%s'。"
+msgstr "无法在“res://addons/%s”中找到插件的脚本字段。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2469,7 +2468,8 @@ msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"加载场景出错，场景必须放在项目目录下。请尝试使用'导入'菜单导入此场景后再试。"
+"加载场景出错，场景必须放在项目目录下。请尝试使用“导入”打开该场景，然后再在项"
+"目目录下保存。"
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
@@ -2554,15 +2554,15 @@ msgstr "切换场景标签页"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
-msgstr "%d 个文件或目录未展示"
+msgstr "其它 %d 个文件或文件夹"
 
 #: editor/editor_node.cpp
 msgid "%d more folders"
-msgstr "%d 个目录未展示"
+msgstr "其它 %d 个文件夹"
 
 #: editor/editor_node.cpp
 msgid "%d more files"
-msgstr "%d 个文件未展示"
+msgstr "其它 %d 个文件"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
@@ -2594,11 +2594,11 @@ msgstr "复制文本"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr "下一项"
+msgstr "下一个标签页"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr "上一个目录"
+msgstr "上一个标签页"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
@@ -2638,7 +2638,7 @@ msgstr "转换为..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "MeshLibrary(网格库)..."
+msgstr "网格库..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -2725,7 +2725,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr "小型部署与网络文件系统"
+msgstr "使用网络文件系统进行小型部署"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2738,8 +2738,7 @@ msgid ""
 msgstr ""
 "当启用此项后，将在导出或发布项目时生成最小化可自行文件。\n"
 "文件系统将通过网络连接到编辑器来实现。\n"
-"在Android平台，通过USB发布能获得更快的效率。\n"
-"此选项用于加快游戏的测试。"
+"在Android平台，通过USB发布能获得更快的效率。此选项可以加快大体积游戏的测试。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -2991,9 +2990,8 @@ msgid "Import Templates From ZIP File"
 msgstr "从ZIP文件中导入模板"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "模板导出工具"
+msgstr "模板包"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3504,7 +3502,7 @@ msgstr "从列表中选择镜像：（Shift+单击：在浏览器中打开）"
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
-msgstr "收藏夹"
+msgstr "收藏"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3580,11 +3578,11 @@ msgstr "创建实例节点"
 
 #: editor/filesystem_dock.cpp
 msgid "Add to Favorites"
-msgstr "添加到收藏夹"
+msgstr "添加到收藏"
 
 #: editor/filesystem_dock.cpp
 msgid "Remove from Favorites"
-msgstr "从收藏夹中删除"
+msgstr "从收藏中删除"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3669,7 +3667,7 @@ msgstr "移动"
 
 #: editor/filesystem_dock.cpp
 msgid "There is already file or folder with the same name in this location."
-msgstr "当前位置已存在相同名字的文件或目录。"
+msgstr "当前位置已存在相同名字的文件或文件夹。"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
@@ -4682,7 +4680,7 @@ msgstr "当前:"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
-msgstr "添加输入事件"
+msgstr "添加输入"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
@@ -4961,7 +4959,7 @@ msgid ""
 msgstr ""
 "无法确定光照贴图的保存路径。\n"
 "请先保存场景（光照贴图将被存在同一目录下）或从属性面板中手动保存 "
-"`BakedLightmap` 属性。"
+"BakedLightmap 属性。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5083,86 +5081,72 @@ msgid ""
 msgstr "激活后，移动控制节点会更改变锚点，而非边距。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "左方"
+msgstr "左上角"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "右方"
+msgstr "右上角"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "向右旋转"
+msgstr "右下角"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "底部视图"
+msgstr "左下角"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "向左缩进"
+msgstr "左侧居中"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "居中显示选中节点"
+msgstr "顶部居中"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "向右缩进"
+msgstr "右侧居中"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "底部"
+msgstr "底部居中"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "居中"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "左视图"
+msgstr "左侧全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "俯视图"
+msgstr "顶部全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "右视图"
+msgstr "右侧全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "底部视图"
+msgstr "底部全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "垂直居中全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "水平居中全幅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "全名"
+msgstr "整个矩形"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "缩放比率："
+msgstr "保持长宽比"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5780,7 +5764,7 @@ msgstr "创建轮廓(outlines)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "网络"
+msgstr "网格"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -6748,7 +6732,7 @@ msgstr "全选"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
-msgstr "删除线"
+msgstr "删除行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -6869,11 +6853,11 @@ msgstr "该骨架没有骨骼绑定，请创建一些 Bone2D 骨骼子节点。"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Create Rest Pose from Bones"
-msgstr "从骨骼创建休闲姿势"
+msgstr "从骨骼创建放松姿势"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
-msgstr "将休闲姿势设置为骨骼"
+msgstr "将放松姿势设置到骨骼"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7273,7 +7257,7 @@ msgstr "吸附设置"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "转化吸附:"
+msgstr "平移吸附:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
@@ -7441,7 +7425,7 @@ msgstr "添加空白帧"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr "修改FPS"
+msgstr "修改动画FPS"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
@@ -7461,7 +7445,7 @@ msgstr "新建动画"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
-msgstr "速度（FPS）:"
+msgstr "速度（FPS）："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -7717,9 +7701,8 @@ msgid "Constant"
 msgstr "常量"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "主题"
+msgstr "主题文件"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9113,8 +9096,8 @@ msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"筛选导出非资源文件或目录\n"
-"（使用英文逗号分隔，如: *.json,*.txt docs/* ）"
+"筛选导出非资源文件或文件夹\n"
+"（使用英文逗号分隔，如：*.json, *.txt, docs/* ）"
 
 #: editor/project_export.cpp
 msgid ""
@@ -9122,7 +9105,7 @@ msgid ""
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
 "从项目中排除文件或目录\n"
-"（以逗号分隔，例如：*.json，*.txt, docs/*）"
+"（以英文逗号分隔，如：*.json, *.txt, docs/*）"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -9133,9 +9116,8 @@ msgid "Make Patch"
 msgstr "制作补丁"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " 文件"
+msgstr "包文件"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9190,13 +9172,12 @@ msgid "Export All"
 msgstr "全部导出"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " 文件"
+msgstr "ZIP 文件"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godot游戏包"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -9220,7 +9201,7 @@ msgstr "无效的“.zip”项目文件，没有包含一个“project.godot”�
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr "请选择一个空目录。"
+msgstr "请选择空文件夹。"
 
 #: editor/project_manager.cpp
 msgid "Please choose a 'project.godot' or '.zip' file."
@@ -9267,11 +9248,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
-msgstr "无法在项目目录下编辑project.godot文件。"
+msgstr "无法在项目路径下编辑project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr "无法在项目目录下创建project.godot文件。"
+msgstr "无法在项目路径下创建project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -9311,7 +9292,7 @@ msgstr "项目名称:"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr "项目目录:"
+msgstr "项目路径："
 
 #: editor/project_manager.cpp
 msgid "Project Installation Path:"
@@ -9492,7 +9473,7 @@ msgstr "扫描"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr "选择要扫描的目录"
+msgstr "选择要扫描的文件夹"
 
 #: editor/project_manager.cpp
 msgid "New Project"
@@ -9559,7 +9540,7 @@ msgstr "改变动作盲区"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
-msgstr "添加输入事件"
+msgstr "添加输入动作事件"
 
 #: editor/project_settings_editor.cpp
 msgid "All Devices"
@@ -10312,7 +10293,7 @@ msgstr "按钮组"
 
 #: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
-msgstr "（连接从）"
+msgstr "（连接来源）"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -10410,7 +10391,7 @@ msgstr "无效的基本路径。"
 
 #: editor/script_create_dialog.cpp
 msgid "A directory with the same name exists."
-msgstr "存在具有相同名称的目录。"
+msgstr "存在同名目录。"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid extension."
@@ -10954,7 +10935,7 @@ msgstr "过滤网格"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr "向此GridMap提供MeshLibrary资源以使用其网格。"
+msgstr "向此GridMap提供网格库资源以使用其网格。"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11217,7 +11198,7 @@ msgstr "添加属性Setter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Base Type"
-msgstr "更改基本类型"
+msgstr "更改基础类型"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Move Node(s)"
@@ -11261,7 +11242,7 @@ msgstr "无法复制函数节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
-msgstr "剪贴板是空的 ！"
+msgstr "剪贴板是空的！"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
@@ -11273,7 +11254,7 @@ msgstr "无法通过函数节点创建函数。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "无法从多个函数节点创建函数。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
@@ -11316,19 +11297,16 @@ msgid "Members:"
 msgstr "成员："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "更改基本类型"
+msgstr "更改基础类型："
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
 msgstr "添加节点..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "添加函数"
+msgstr "添加函数..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
@@ -11784,7 +11762,7 @@ msgstr ""
 #: scene/2d/skeleton_2d.cpp
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr "该骨骼没有一个合适的 REST 姿势。请到 Skeleton2D 节点中设置一个。"
+msgstr "该骨骼没有合适的放松姿势。请到 Skeleton2D 节点中设置一个。"
 
 #: scene/2d/tile_map.cpp
 msgid ""

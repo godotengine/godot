@@ -1,63 +1,53 @@
-# Albanian translation of the Godot Engine editor
+# Marathi translation of the Godot Engine editor
 # Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-# Igli <iglibh@outlook.com>, 2018.
-# Enrik Qose <enrikqose@gmail.com>, 2019.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-03-24 17:38+0000\n"
-"Last-Translator: Enrik Qose <enrikqose@gmail.com>\n"
-"Language-Team: Albanian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/sq/>\n"
-"Language: sq\n"
+"Language: mr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Tipi i argumentit i pa lejuar për tu konvertuar me convert(), përdor "
-"konstantet TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"Bajte (byte) të pa mjaftueshem për çkodim të bajteve, ose format i gabuar."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Input i gabuar %i (nuk kaloi) në shprehje"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "'self' nuk mund të përdoret sepse instanca është 'null' (nuk kaloi)"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Operandë të gabuar për operatorët %s, %s dhe %s."
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Indeksi i gabuar i llojit %s për llojin bazë %s"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Indeksi i emërtuar gabimisht '%s' për llojin bazë %s"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "Argumente të gabuar për të ndërtuar '%s'"
+msgstr ""
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "Në thërritje të '%s':"
+msgstr ""
 
 #: core/ustring.cpp
 msgid "B"
@@ -89,36 +79,35 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Liro"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "I Balancuar"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Pasqyrë"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr "Koha:"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Vlerë e Re:"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Vendos Çelësin Këtu"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Dyfisho Çelësat e Zgjedhur"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Fshi Çelësat e Zgjedhur"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -178,24 +167,24 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr "Ndrysho Gjatësin e Animacionit"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Ndrysho Ciklin e Animacionit"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr "Binari i Vetive"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "Binari i Transformimeve 3D"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "Binari i Thërritjes së Metodave"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -203,38 +192,36 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr "Binari i Ridëgjimit të Audios"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr "Binari i Rishikimit të Animacionit"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Kohëzgjatja e Animacionit (sekonda)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Kohëzgjatja e Animacionit (sekonda)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Shto Binarë"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Përsëritje Animacioni"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Funksionet:"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Klipe Audio:"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
@@ -266,7 +253,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr "Koha (s): "
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -274,7 +261,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr "I Vazhdueshëm"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
@@ -299,7 +286,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr "Kubik"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -312,15 +299,15 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Vendos Key"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Dyfisho Key(s)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr "Fshi Key(s)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -332,7 +319,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Ndrysho Metodën e Përsëritjes së Animacionit"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -356,7 +343,7 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
-msgstr "Krijo"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
@@ -380,7 +367,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
-msgstr "Ndrysho Hapin e Animacionit"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
@@ -440,7 +427,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr "Metoda nuk u gjet në objekt: "
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -448,7 +435,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr "Clipboard-i është bosh"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -498,7 +485,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
-msgstr "Vlera e hapit për animacionin."
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -515,11 +502,11 @@ msgstr ""
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Ndrysho"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "Karakteristikat e animacionit."
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
@@ -543,27 +530,27 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
-msgstr "Fshi të Selektuarat"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
-msgstr "Shko tek Hapi Tjetër"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Previous Step"
-msgstr "Shko tek Hapi i Mëparshëm"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "Përmirëso Animacionin"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Pastro Animacionin"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr "Zgjidh Node që do të animohet:"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -587,11 +574,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
-msgstr "Përmirëso"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Fshi keys të gabuar"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -599,7 +586,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
-msgstr "Pastro të gjithë animacionet"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
@@ -627,13 +614,12 @@ msgid "Copy"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr "Shto Klip Audio"
+msgstr ""
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -672,9 +658,8 @@ msgid "%d match."
 msgstr ""
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "Përputhjet:"
+msgstr ""
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -740,19 +725,16 @@ msgid ""
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
-msgstr "Lidhë me Nyjen:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Lidhë me Nyjen:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "Sinjalet:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
@@ -762,7 +744,7 @@ msgstr ""
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr "Shto"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -773,7 +755,7 @@ msgstr "Shto"
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr "Hiq"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
@@ -784,9 +766,8 @@ msgid "Extra Call Arguments:"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "I Balancuar"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -806,9 +787,8 @@ msgid "Disconnects the signal after its first emission."
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Lidh Sinjalin: "
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -823,104 +803,101 @@ msgstr "Lidh Sinjalin: "
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Mbyll"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr "Lidh"
+msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Sinjalet:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Lidh '%s' me '%s'"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Shkëput '%s' nga '%s'"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "Shkëputi të gjith nga sinjali: '%s'"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "Lidh..."
+msgstr ""
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Shkëput"
+msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "Lidh Sinjalin: "
+msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "Modifiko Lidhjen: "
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "A jeni i sigurt që do të heqësh të gjitha lidhjet nga sinjali \"%s\"?"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Sinjalet"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr "A jeni i sigurt që doni të hiqni të gjitha lidhjet nga ky sinjal?"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr "Shkëputi të Gjitha"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr "Modifiko..."
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
-msgstr "Shko te Metoda"
+msgstr ""
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "Ndrysho Tipin e %s"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
-msgstr "Ndrysho"
+msgstr ""
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Krijo %s të ri"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr "Të Preferuarat:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr "Të fundit:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr "Kërko:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
-msgstr "Përputhjet:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
@@ -928,63 +905,57 @@ msgstr "Përputhjet:"
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
-msgstr "Përshkrimi:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr "Kërko Zëvendësimin Për:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr "Varësit Për:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Skena '%s' është duke u modifikuar.\n"
-"Ndryshimet nuk do të kenë efekt në qoftë se nuk ringarkohet."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Resursi '%s' është në përdorim.\n"
-"Ndryshimet do të marrin efekt kur të ringarkohet."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr "Varësitë"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr "Resursi"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
-msgstr "Rrugë"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr "Varësitë:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr "Rregullo të Thyerat"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr "Editori i Varësive"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr "Kërko Resursin Zëvendësues:"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -994,16 +965,15 @@ msgstr "Kërko Resursin Zëvendësues:"
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr "Hap"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr "Pronarët e:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Hiq skedarët e zgjedhur nga projekti? (pa kthim pas)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1011,50 +981,46 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"Skedarët që do të hiqen janë të kërkuara nga resurse të tjera në mënyrë që "
-"ato të funksionojnë.\n"
-"Hiqi gjithsesi? (pa kthim pas)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr "Nuk mund të heqësh:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr "Gabim gjatë ngarkimit:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr "Ngrakimi dështoi për shkak të varësive të munguara:"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr "Hap Gjithsesi"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr "Cili veprim duhet të kryet?"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr "Rregullo Varësitë"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "Gabimet janë duke u ngarkuar!"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Përfundimisht fshi %d artikuj? (pa kthim pas)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Varësitë"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Eksploruesi I Resurseve Pa Zotërues"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -1062,147 +1028,140 @@ msgstr "Eksploruesi I Resurseve Pa Zotërues"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr "Fshi"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr "Zotëron"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr "Resurset Pa Zotërues Të Caktuar:"
+msgstr ""
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr "Ndrysho Çelësin e Fjalorit"
+msgstr ""
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr "Ndrysho Vlerën e Fjalorit"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Faleminderit nga komuniteti i Godot!"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Kontribuesit e Godot Engine"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr "Themeluesit e Projektit"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr "Krye Zhvilluesi"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Menaxheri Projektit "
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr "Zhvilluesit"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr "Autorët"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr "Sponsorat Platinium"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr "Sponsorat Flori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "Mini Sponsorat"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr "Dhuruesit Flori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr "Dhuruesit Argjend"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr "Dhuruesit Bronz"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr "Dhuruesit"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr "Liçensa"
+msgstr ""
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "Liçensa të palëve të treta"
+msgstr ""
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Godot Engine mbështetet në nje numër librarish falas dhe 'open source' "
-"palësh të treta, të gjitha në përshtatje me liçensen MIT. Më poshtë është "
-"një listë e këtyre komponentëve së bashku me deklaratat e tyre për të "
-"drejtat e autorit dhe termat e liçensës."
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr "Të Gjithë Komponentët"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Components"
-msgstr "Komponentët"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr "Liçensat"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "Gabim në hapjen e skedarit paketë, nuk është në formatin zip."
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "Duke Dekompresuar Asetet"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
-msgstr "Paketa u instalua me sukses!"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "Sukses!"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
-msgstr "Instalo"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr "Instaluesi Paketave"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr "Folësit"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "Shto Efekt"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
@@ -1250,11 +1209,11 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "Pa Zë"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Tejkalo"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
@@ -1263,19 +1222,19 @@ msgstr ""
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "Dyfisho"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr "Rivendos Volumin"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr "Fshi Efektin"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1337,7 +1296,7 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr "Ngarko"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
@@ -1345,7 +1304,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"
-msgstr "Ruaje Si"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
@@ -1353,7 +1312,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Ngarko të Parazgjedhur"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
@@ -1365,29 +1324,23 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr "Emër i palejuar."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr "Karakteret e lejuar:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
 msgstr ""
-"Emër i palejuar. Nuk duhet të përplaset me emrin e një klase egzistuese të "
-"programit."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "Emër i palejuar. Nuk duhet të përplaset me emrin e një tipi 'buit-in'."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
 msgstr ""
-"Emër i palejuar. Nuk duhet të përplaset me emrin e një konstante globale."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
@@ -1395,148 +1348,142 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "Autoload '%s' egziston!"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr "Riemërto Autoload-in"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Ndrysho Globalet e AutoLoad-it"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
-msgstr "Lëviz Autoload-in"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
-msgstr "Hiq Autoload-in"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Enable"
-msgstr "Lejo"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
-msgstr "Riorganizo Autoload-et"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid path."
-msgstr "Rruga e pasaktë."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
 msgid "File does not exist."
-msgstr "Skedari nuk egziston."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
-msgstr "Jo në rrugën e resurseve."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "Shto Autoload"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Rruga:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Emri i Nyjes:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_profiler.cpp editor/project_manager.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Name"
-msgstr "Emri"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "Vetmitar"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr "Duke Përditësuar Skenën"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Storing local changes..."
-msgstr "Duke ruajtur ndryshimet lokale..."
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Updating scene..."
-msgstr "Duke përditësuar skenën..."
+msgstr ""
 
 #: editor/editor_data.cpp editor/editor_properties.cpp
 msgid "[empty]"
-msgstr "[bosh]"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[e paruajtur]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first."
-msgstr "Ju lutem zgjidhni direktorin bazë në fillim"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr "Zgjidh një Direktori"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
-msgstr "Emri:"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
-msgstr "Nuk mund të krijoj folderin."
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr "Duke Ruajtur Skedarin:"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr "Nuk u gjet shabllon eksportimi në rrugën e pritur:"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "Packing"
-msgstr "Duke Paketuar"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
-"Platforma e përcaktuar kërkon 'ETC' texture compression për GLES2. Lejo "
-"'Import Etc' në Opsionet e Projektit."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"Platforma e përcaktuar kërkon 'ETC2' texture compression për GLES3. Lejo "
-"'Import Etc 2' në Opsionet e Projektit."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1545,106 +1492,90 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Platforma e përcaktuar kërkon 'ETC' texture compression për driver fallback "
-"to GLES2.\n"
-"Lejo 'Import Etc' in Opsionet e Projektit, ose çaktivizo 'Driver Fallback "
-"Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "Shablloni 'Custom debug' nuk u gjet."
+msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "Shablloni 'Custom release' nuk u gjet."
+msgstr ""
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
-msgstr "Skedari shabllon nuk u gjet:"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "Editor"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Asset Library"
-msgstr "Hap Editorin e Aseteve"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "Importo"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "Nyje"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "FileSystem"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "Zëvendëso të gjitha (pa kthim pas)"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "Një skedar ose folder me këtë emër ekziston që më parë."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "Vetëm Vetitë"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled)"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "Përshkrimi i Klasës:"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "Hap Editorin tjetër"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Properties:"
-msgstr "Vetitë:"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Features:"
@@ -1665,23 +1596,20 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Error saving profile to path: '%s'."
-msgstr "Gabim gjatë ruajtjes së TileSet-it!"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Versioni Aktual:"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "(Aktual)"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1692,213 +1620,202 @@ msgstr ""
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importo"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
-msgstr "Eksporto"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Vetitë:"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options"
-msgstr "Përshkrimi i Klasës"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase Profile"
-msgstr "Fshi Pikat."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "%d skedarë më shumë"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Export Profile"
-msgstr "Eksporto Projektin"
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "Zgjidh Folderin Aktual"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr "Skedari Egziston, Mbishkruaj?"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
-msgstr "Zgjidh Këtë Folder"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr "Kopjo Rrugën"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Open in File Manager"
-msgstr "Hap në Menaxherin e Skedarëve"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 msgid "Show in File Manager"
-msgstr "Shfaq në Menaxherin e Skedarëve"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Folder i Ri..."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
-msgstr "Rifresko"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
-msgstr "Të Gjithë të Njohurat"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr "Të Gjithë Skedarët (*)"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr "Hap një Skedar"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr "Hap Skedarët"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr "Hap një Direktori"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr "Hap një Skedar ose Direktori"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/editor_properties.cpp editor/inspector_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
-msgstr "Ruaj"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
-msgstr "Ruaj një Skedar"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr "Shko Pas"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr "Shko Përpara"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr "Shko Lartë"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr "Ndrysho Skedarët e Fshehur"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "Ndrysho të Preferuarat"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr "Ndrysho Mënyrën"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr "Fokuso Rrugën"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
-msgstr "Lëviz të Preferuarën Lartë"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
-msgstr "Lëviz të Preferuarën Poshtë"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Shko te folderi prind"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Shko te folderi prind"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Kërko skedarët"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr "Hiqe nga të preferuarat folderin aktual."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "Ndrysho Skedarët e Fshehur"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
-msgstr "Shiko artikujt si një rrjet kornizash."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
-msgstr "Shiko artikujt si nje list."
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr "Direktorit & Skedarët:"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
-msgstr "Shikim paraprak:"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr "Skedar:"
+msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr "Duhet të perdorësh një shtesë të lejuar."
+msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
-msgstr "SkanoBurimet"
+msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid ""
@@ -1908,45 +1825,44 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "Duke (Ri)Importuar Asetet"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr "Siper"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Class:"
-msgstr "Klasa:"
+msgstr ""
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Trashëgon:"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr "E trashëguar nga:"
+msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Brief Description"
-msgstr "Përshkrim i Shkurtër:"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr "Vetitë"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Metodat"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Vetitë e Temës"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumeracionet"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "enum  "
@@ -1954,16 +1870,15 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr "Konstantet"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Class Description"
-msgstr "Përshkrimi i Klasës"
+msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Online Tutorials"
-msgstr "Tutorialet Online:"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1971,90 +1886,83 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Nuk ka për momentin tutoriale për këtë klas, ti mund të [color=$color][url="
-"$url]contribute one[/url][/color] ose [color=$color][url=$url2]request one[/"
-"url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Përshkrimi i Vetive"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Nuk ka për momentin përshkrim për këtë veti. Të lutem na ndihmo duke  [color="
-"$color][url=$url]contributing one[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Përshkrimi i Metodës"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Nuk ka për momentin një përshkrim për këtë metod. Të lutem na ndihmo duke "
-"[color=$color][url=$url]contributing one[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr "Kërko Ndihmë"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
-msgstr "Shfaqi të Gjitha"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Classes Only"
-msgstr "Vetëm Klasat"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Methods Only"
-msgstr "Vetëm Metodat"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Signals Only"
-msgstr "Vetëm Sinjalet"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Constants Only"
-msgstr "Vetëm Konstantet"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Properties Only"
-msgstr "Vetëm Vetitë"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr "Vetëm Vetitë e Temës"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
-msgstr "Tipi i Anëtarit"
+msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Class"
-msgstr "Klasa"
+msgstr ""
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
-msgstr "Vetitë:"
+msgstr ""
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr "Vendos"
+msgstr ""
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr "Vendos të Shumëfishta:"
+msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr "Përfundimi:"
+msgstr ""
 
 #: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Copy Selection"
@@ -2068,30 +1976,29 @@ msgstr ""
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
-msgstr "Pastro"
+msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr "Pastro Përfundimin"
+msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
 msgid "Stop"
-msgstr "Ndalo"
+msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
 msgid "Start"
-msgstr "Fillo"
+msgstr ""
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
 msgstr ""
 
 #: editor/editor_network_profiler.cpp
-#, fuzzy
 msgid "Down"
-msgstr "Shkarko"
+msgstr ""
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
@@ -2099,7 +2006,7 @@ msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr "Nyje"
+msgstr ""
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -2123,132 +2030,126 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "Eksportimi i projektit dështoi me kodin e gabimit %d."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr "Resurset e importuara nuk mund të ruhen."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr "Në rregull"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr "Gabim duke ruajtur resurset!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
-"Ky resurs nuk mund të ruhet sepse nuk i përket skenës së modifikuar. Bëje më "
-"parë unik."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "Ruaj Resurset Si..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr "Nuk mund të hapi skedarin për të shkruajtur:"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr "Formati i skedarit të kërkuar është i panjohur:"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "Gabim gjatë ruajtjes."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Nuk mund të hapi '%s'. Skedari mund te jetë lëvizur ose fshirë."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr "Gabim gjatë analizës gramatikore '%s'."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "Mbarim i papritur i skedarit '%s'."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "Mungesë e '%s' ose e varësive të tij."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr "Gabim gjatë ngarkimit të '%s'."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr "Duke Ruajtur Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
-msgstr "Duke Analizuar"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr "Duke Krijuar Kornizat"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr "Ky veprim nuk mund të kryhet pa një rrënjë të pemës."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
-"Skena nuk mund të ruhet sepse ndodhet një instancim ciklik.\n"
-"Të lutem rregulloje dhe më pas provoje ta ruash përsëri."
 
 #: editor/editor_node.cpp
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Nuk mund ta ruante skenën. Me shumë  mundësi varësitë (instancat ose "
-"trashgimit) nuk mund të plotësohej."
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr "Nuk mund të mbishkruash skenën që është akoma e hapur!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "Nuk mund të ngarkoj 'MeshLibrary' për bashkimin!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "Gabim gjatë ruajtjes së MeshLibrary!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "Nuk mund të ngarkoj TileSet-in për bashkimin!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr "Gabim gjatë ruajtjes së TileSet-it!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr "Gabim duke provuar të ruaj faqosjen!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Faqosja e parazgjedhur e editorit u mbishkel."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr "Emri i faqosjes nuk u gjet!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Riktheu faqosjen e parazgjedhur në opsionet bazë."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2256,265 +2157,226 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Ky resurs i përket një skene që është e importuar, kështu që nuk mund të "
-"modifikohet.\n"
-"Ju lutem lexoni dokumentimin e përshtatshëm për të importuar skenat dhe të "
-"kuptoni më mirë këtë metodë të punuari."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
-"Ky resurs i përket një skene që është instancuar ose trashëguat.\n"
-"Ndryshimet në të nuk do të ruhen kur të ruani skenën aktuale."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
-"Ky resurs është i importuar kështu që nuk mund të modifikohet. Kështu që "
-"ndrysho opsionet e tij në panelin e importit dhe më pas ri-importoje."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
 "Instancing it or inheriting will allow making changes to it.\n"
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Kjo skenë është e importuar kështu që ndryshimet në të nuk do të ruhen. "
-"Instancimi ose trashëgimi prej saj do të lejoj të bësh ndryshime në të.\n"
-"Ju lutem lexoni dokumentimin e përshtatshëm për të importuar skenat dhe të "
-"kuptoni më mirë këtë metodë të punuari."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object, so changes to it won't be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"Ky është një objekt në largësi (remote) kështu ndryshimet në të nuk do të "
-"ruhen.\n"
-"Ju lutem lexoni dokumentimin e përshtatshëm për të 'debugging' për të "
-"kuptuar më mirë këtë metodë të punuari."
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "Nuk ka një skenë të përcaktuar për të filluar."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
 msgstr ""
-"Skena aktuale nuk është ruajtur më parë, ju lutem ruajeni para se të filloni."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr "Nuk mund të fillojë subprocess-in!"
+msgstr ""
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
-msgstr "Hap Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr "Hap Skenën Bazë"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "Hap Skenën Shpejtë..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr "Hap Skenën Shpejtë..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr "Hap Shkrimin Shpejt..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr "Ruaj & Mbyll"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr "Ruaji ndryshimet në '%s' para se ta mbyllësh?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Saved %s modified resource(s)."
-msgstr "U ruajtën resurset e modifikuara të %s."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr "Një nyje rrënjë është e kërkuar para se të ruash skenën."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr "Ruaje Skenën Si..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr "Jo"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr "Po"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr "Kjo skenë nuk është ruajtur më parë. Ruaje para se të fillosh?"
+msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr "Ky veprim nuk mund të kryhet pa një skenë."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "Eksporto Librarinë Mesh"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Ky veprim nuk mund të kryhet pa një nyje rrënjë."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "Eksporto Tile Set"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr "Ky veprim nuk mund të kryhet pa një nyje të zgjedhur."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "Skena aktuale nuk është ruajtur. Hap gjithsesi?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr "Nuk mund të ringarkojë një skenë që nuk është ruajtur më parë."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr "Rikthe"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr "Ky veprim nuk mund të çbëhet. Rikthe gjithsesi?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Hap Skenën Shpejtë..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr "Dil"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "Dil nga editori?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr "Hap Menaxherin e Projekteve?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr "Ruaj & Dil"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Ruaj ndryshimet nga skenat e mëposhtme përpara se të dalësh?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Ruaj ndryshimet ne skenat e mëposhtme para se të hapësh Menaxherin e "
-"Projekteve?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"Ky opsion është hequr. Situatat ku një rifreskim duhet të kryet me forcë "
-"tashmë konsiderohen një 'bug'. Ju lutem reportojeni."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr "Zgjidh një Skenë Kryesore"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr "Mbyll Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "Mbyll Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
-"I paaftë të aktivizoj shtojcën në: '%s' analiza gramatikore e 'config' "
-"dështoi."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "I paaftë te gjej fushën e shkrimit për shtojcën në: 'res://addons/%s'."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "I paaftë të ngarkojë shkrimin e shtojcës nga rruga: '%s'."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"I paaftë të ngarkojë shkrimin e shtojcës nga rruga: '%s' Me sa duket është "
-"një gabim në kod, ju lutem kontrolloni sintaksën."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"I paaftë të ngarkojë shkrimin e shtojcës nga rruga: '%s' Tipi bazë nuk është "
-"'EditorPlugin'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"I paaftë të ngarkojë shkrimin për shtojcën nga rruga: '%s' Shkrimi nuk është "
-"në metodën vegël."
 
 #: editor/editor_node.cpp
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Skena '%s' është importuar automatikisht, prandaj nuk mund të modifikohet.\n"
-"Për të bërë ndryshime në të, një skenë e re e trashëguar mund të krijohet."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"Gabim gjat ngarkimit të skenës, duhet të jetë brenda rrugës së projektit. "
-"Përdor 'Importo' për të hapur skenën, më pas ruaje brenda rrugës së "
-"projektit."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr "Skena '%s' ka varësi të thyera:"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "Pastro Skenat e Fundit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2522,9 +2384,6 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Nuk është përcaktuar një skenë kryesore më parë, zgjidh një?\n"
-"Mund ta ndryshosh më vonë në \"Opsionet e Projektit\" nën kategorin "
-"'aplikacioni'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2532,9 +2391,6 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Skena e zgjedhur '%s' nuk egziston, zgjidh një të saktë?\n"
-"Mund ta ndryshosh më vonë te \"Opsionet e Projektit\" nën kategorin "
-"'aplikacioni'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2542,40 +2398,36 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Skena e zgjedhur nuk është një skedar skene, zgjidh një të saktë?\n"
-"Mund ta ndryshosh më vonë te \"Opsionet e Projektit\" nën kategorin "
-"'aplikacioni'."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr "Ruaj Faqosjen"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr "Fshi Faqosjen"
+msgstr ""
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "E Parazgjedhur"
+msgstr ""
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "Show in FileSystem"
-msgstr "Shfaqe në 'FileSystem'"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
-msgstr "Luaj Këtë Skenë"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Close Tab"
-msgstr "Mbyll Tabin"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo Close Tab"
-msgstr "Mbyll Tabin"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
@@ -2586,139 +2438,135 @@ msgid "Close Tabs to the Right"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close All Tabs"
-msgstr "Mbyll Tabin"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr "Ndrysho Tabin e Skenës"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
-msgstr "%d skedar ose foldera më shumë"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "%d more folders"
-msgstr "%d foldera më shumë"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "%d more files"
-msgstr "%d skedarë më shumë"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr "Pozicioni i Dokut"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr "Metoda Pa Shpërqëndrime"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr "Ndrysho metodën pa shpërqëndrime."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "Shto një skenë të re."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr "Skenë"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr "Shko në skenën e hapur më parë."
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Kopjo Rrugën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr "Tabi tjetër"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr "Tabi i mëparshëm"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr "Filtro Skedarët..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr "Veprime me skedarët e skenave."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr "Skenë e Re"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr "Skenë e Re e Trashëguar..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr "Hap Skenën..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "Hap të Fundit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr "Ruaj Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr "Ruaj të Gjitha Skenat"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "Konverto në..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "LibrariaMesh..."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "SetPllakash..."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr "Zhbëj"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr "Ribëj"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr "Rikthe Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Vegla të ndryshme për projektin ose skenën."
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Project"
-msgstr "Projekti"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project Settings..."
-msgstr "Opsionet e Projektit"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "Versioni:"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
@@ -2729,9 +2577,8 @@ msgid "Shut Down Version Control"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export..."
-msgstr "Eksporto"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
@@ -2739,41 +2586,38 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
-msgstr "Hap Folderin e të Dhënave të Projektit"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr "Veglat"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "Eksploruesi I Resurseve Pa Zotërues"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Dil të Lista Projekteve"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr "Rregullo (Debug)"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr "Dorëzo me Rregullim në Largësi"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
-"Kur eksporton ose dorëzon, rezultati i ekzekutueshëm do të tentoj të lidhet "
-"me IP-në e këtij kompjuteri në mënyrë që të rregullohet."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr "Dorëzim i Vogël me Rrjet FS"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2784,39 +2628,30 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This "
 "option speeds up testing for games with a large footprint."
 msgstr ""
-"Kur ky opsion është i aktivizuar, eksportimi ose dorëzimi do të prodhojë një "
-"të ekzekutueshëm minimal.\n"
-"Filesystem-i do të jepet nga projekti nga editri përmes rrjetit.\n"
-"Në Android, dorëzimi do të përdori kabllin USB për performancë më të "
-"shpejtë. Ky opsion shpejton testimin për lojërat e mëdha."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr "Format e Përplasjes të Dukshme"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Format e përplasjes dhe nyjet 'raycast' (për 2D dhe 3D) do të jenë të "
-"dukshme gjatë ekzekutimit të lojës nëse ky opsion është i aktivizuar."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr "Navigim i Dukshëm"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
-"Rrjetat e navigimit dhe poligonet do të jenë të dukshme gjatë lojës nëse ky "
-"opsion është i aktivizuar."
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Sinkronizo Nryshimet e Skenës"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2825,13 +2660,10 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"Kur ky opsion është i aktivizuar, çdo ndryshim i bërë në këtë skenë do të "
-"kopjohet dhe në lojën duke u ekzekutuar.\n"
-"Kur përdoret në largësi është më efikas me rrjet 'filesystem'."
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr "Sinkronizo Ndryshimet e Shkrimit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2840,67 +2672,58 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"Kurbky opsion është aktivizuar, çdo shkrim që ruhet do të ringarkohet në "
-"lojën që është duke u ekzekutuar.\n"
-"Kur përdoret në një paisje në largësi është më efikas me rrjetin "
-"'filesyetem'."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr "Editor"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "Opsionet e Editorit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "Faqosja e Editorit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Hap Folderin e Editorit për të Dhënat/Opsionet"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "Ndrysho Ekranin e Plotë"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "Ndrysho metodën e ndarjes"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "Hap Folderin e Editorit për të Dhënat/Opsionet"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Hap Folderin e të Dhënave të Editorit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "Hap Folderin e Opsioneve të Editorit"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Editor Features..."
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Export Templates..."
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
-msgstr "Ndihmë"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2909,36 +2732,36 @@ msgstr "Ndihmë"
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
-msgstr "Kërko"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr "Dokumentimi Online"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Pyetje&Përgjigje"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr "Gjurmuesi i Problemeve"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Komuniteti"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "Rreth"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Luaj projektin."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "Luaj"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
@@ -2946,85 +2769,80 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "Pusho Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr "Ndalo skenën."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr "Luaj skenën e modifikuar."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Luaj Skenën"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr "Luaj skenë të zgjedhur"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr "Luaj Skenë të Zgjedhur"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "Ndryshimi i driver-it të videos kërkon të rifillosh editorin."
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
 msgid "Save & Restart"
-msgstr "Ruaj & Rifillo"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
-msgstr "Rrotullohet kur dritarja e editorit rivizaton."
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "I Vazhdueshëm"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Përditëso Ndryshimet"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
-msgstr "Çaktivizo Rrotulluesin e Përditësimit"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "FileSystem"
-msgstr "FileSystem"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr "Inspektori"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "Zgjero Panelin Fundor"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr "Përfundimi"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr "Mos Ruaj"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3047,68 +2865,67 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Importo Shabllonet Nga Skedari ZIP"
+msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Menaxheri i Shablloneve të Eksportimit"
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr "Eksporto Projektin"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr "Libraria e Eksportit"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Bashko Me Ekzistuesin"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Password:"
-msgstr "Fjalëkalimi:"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr "Hap & Fillo një Shkrim"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
-msgstr "E Trashëguar e Re"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr "Ngarko Gabimet"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "Hap Editorin 2D"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "Hap Editorin 3D"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "Hap Editorin e Aseteve"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr "Hap Editorin tjetër"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr "Hap Editorin e mëparshëm"
+msgstr ""
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -3116,131 +2933,124 @@ msgstr ""
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr "Duke Krijuar Shikimin Paraprak të Mesh-ave"
+msgstr ""
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr "Korniza..."
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
-msgstr "Modifiko Shtojcën"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr "Shtojcat e Instaluara:"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
-msgstr "Përditëso"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr "Versioni:"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Author:"
-msgstr "Autori:"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr "Statusi:"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
-msgstr "Modifiko:"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
-msgstr "Përmasa:"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Koha e Hapit (sek)"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr "Koha Mesatare (sek)"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr "Hapi %"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Hapi i Fizikës %"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
-msgstr "Gjithpërfshirës"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Vetja"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr "Nr i Hapit:"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Time"
-msgstr "Koha"
+msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Calls"
-msgstr "Thërritjet"
+msgstr ""
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Modifiko:"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
-msgstr "Mbi"
+msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr "Shtresa"
+msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
-msgstr "Biti %d, vlera %d"
+msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
-msgstr "[Bosh]"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr "Cakto..."
+msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
-msgstr "RID i pavlefshëm"
+msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"Resursi i zgjedhur (%s) nuk përputhet me ndonjë tip të pritur për këtë veti "
-"(%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
-"Nuk mund të krijoj një 'ViewportTexture' në resurset e ruajtur si një "
-"skedar.\n"
-"Resursi duhet ti përkasë një skene."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3249,18 +3059,14 @@ msgid ""
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
-"Nuk mune të krijojë një 'ViewportTexture' në këtë resurs sepse nuk është "
-"vendosur si një lokal në skenë.\n"
-"Ju lutem aktivizoni vetinë 'lokal në skenë' në të (dhe të gjitha resurset që "
-"e mbajnë deri te një nyje)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr "Zgjidh një 'Viewport'"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr "Shkrim i Ri"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
@@ -3268,11 +3074,11 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
-msgstr "%s i Ri"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Make Unique"
-msgstr "Bëje Unik"
+msgstr ""
 
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3286,76 +3092,74 @@ msgstr "Bëje Unik"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr "Ngjit"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
-msgstr "Konverto në %s"
+msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr "Nyja e zgjedhur nuk është një 'Viewport'!"
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
-msgstr "Madhësia: "
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr "Faqja: "
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Item"
-msgstr "Hiq Artikullin"
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
-msgstr "Çelës i Ri:"
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Value:"
-msgstr "Vlerë e Re:"
+msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
-msgstr "Shto Palë Çelës/Vlerë"
+msgstr ""
 
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
-"Nuk u gjet eksport paraprak i saktë për këtë platformë.\n"
-"Ju lutem shtoni një eksport paraprak të saktë në menu."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr "Shkruaj logjikën në metodën _run()."
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr "Ekziston një skenë e modifikuar që më parë."
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Nuk mund të instancoj shkrimin:"
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr "A mos harrove fjalën kyç 'tool'?"
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr "Nuk mund të ekzekutonte shkrimin:"
+msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr "A mos harrove metodën '_run'?"
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Zgjidh Nyjet Për ti Importuar"
+msgstr ""
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -3363,29 +3167,28 @@ msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "Rruga Skenës:"
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "Importo nga Nyja:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Redownload"
-msgstr "Ri-Shkarko"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr "Çinstalo"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr "(E Instaluar)"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
-msgstr "Shkarko"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
@@ -3393,403 +3196,376 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr "(Mungon)"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr "(Aktual)"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Duke marrë pasqyrat, ju lutem prisni..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr "Hiq shabllonin me version '%s'?"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr "Nuk mund të hapi zip-in e shablloneve të eksportimit."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "version.txt është format i pasaktë brenda shablloneve: %s."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr "Nuk u gjet version.txt brenda shablloneve."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
-msgstr "Gabim gjatë krijimit të rrugës për shabllonet:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
-msgstr "Duke Nxjerrë Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "Duke Importuar:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
-"Nuk u gjet linku për shkarkimin e këtij versioni. Shkarkimi direkt është i "
-"disponueshëm vetëm për lëshimet zyrtare."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr "Nuk mund të zgjidhte."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect."
-msgstr "Nuk mund të lidhet."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr "Nuk u përgjigj."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Request Failed."
-msgstr "Kërkimi Dështoi."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Redirect Loop."
-msgstr "Ridrejto Ciklin."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr "Dështoi:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr "Shkarkimi u Plotësua."
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cannot remove temporary file:"
-msgstr "Nuk mund të heqësh:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"Instalimi i shablloneve dështoi. Arkivat problematike të shablloneve mund të "
-"gjenden në '%s'."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting URL:"
-msgstr "Gabim duke kërkuar url: "
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "Duke u Lidhur te Pasqyra..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
-msgstr "U Shkëput"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
-msgstr "Duke Zgjidhur"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr "Nuk mund të zgjidhi"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting..."
-msgstr "Duke u lidhur..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
-msgstr "Nuk mund të lidhet"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
-msgstr "U Lidh"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting..."
-msgstr "Duke bër kërkesën..."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
-msgstr "Duke Shkarkuar"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
-msgstr "Gabim në Lidhje"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
-msgstr "Gabim në 'SSL Handshake'"
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uncompressing Android Build Sources"
-msgstr "Duke Dekompresuar Asetet"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr "Versioni Aktual:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
-msgstr "Versionet e Instaluar:"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Install From File"
-msgstr "Instalo Nga Skedari"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove Template"
-msgstr "Hiq Shabllonin"
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
-msgstr "Zgjidh skedarin e shabllonit"
+msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
-msgstr "Menaxheri i Shablloneve të Eksportimit"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Templates"
-msgstr "Shkarko Shabllonet"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr "Zgjidh pasqyrën nga lista: (Shift+Kliko: Për ta hapur në shfletues)"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
-msgstr "Të Preferuarat"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"Statusi: Importimi i skedarit dështoi. Please rregullo skedarin dhe ri-"
-"importoje manualisht."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
-msgstr "Nuk mund të leviz/riemërtoj rrenjën e resurseve."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move a folder into itself."
-msgstr "Nuk mund të leviz një folder brenda vetvetes."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Error moving:"
-msgstr "Gabim gjatë lëvizjes:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Error duplicating:"
-msgstr "Gabim gjatë dyfishimit:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:"
-msgstr "I paaftë të përditësoj varësitë:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
 msgid "No name provided."
-msgstr "Nuk u dha një emër."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Provided name contains invalid characters."
-msgstr "Emri i dhënë përmban karaktere të pasakta"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
-msgstr "Një skedar ose folder me këtë emër ekziston që më parë."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr "Emri permban karaktere të pasakta."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr "Duke riemërtuar skedarin:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr "Duke riemërtuar folderin:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating file:"
-msgstr "Duke dyfishuar skedarin:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating folder:"
-msgstr "Duke dyfishuar folderin:"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Inherited Scene"
-msgstr "Skenë e Re e Trashëguar..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Zgjidh një Skenë Kryesore"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scenes"
-msgstr "Hap Skenën"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr "Instanco"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Add to Favorites"
-msgstr "Shto te të preferuarat"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from Favorites"
-msgstr "Hiq nga të preferuarat"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Modifiko Varësitë..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "Shiko Pronarët..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
-msgstr "Riemërto..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr "Dyfisho..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Lëviz në..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Scene..."
-msgstr "Skenë e Re"
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr "Shkrim i Ri..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
-msgstr "Resurs i Ri..."
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Expand All"
-msgstr "Zgjero të Gjitha"
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Collapse All"
-msgstr "Mbyll të Gjitha"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/project_manager.cpp editor/rename_dialog.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Rename"
-msgstr "Riemërto"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Previous Folder/File"
-msgstr "Folderi i Mëparshëm"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Next Folder/File"
-msgstr "Folderi Tjetër"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr "Riskano 'Filesystem'-in"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle Split Mode"
-msgstr "Ndrysho metodën e ndarjes"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
-msgstr "Kërko skedarët"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
-"Duke Skanuar Skedarët,\n"
-"Ju Lutem Prisini..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr "Lëviz"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "There is already file or folder with the same name in this location."
 msgstr ""
-"Ekziston që më parë një skedar ose folder me të njëjtin emër në këtë "
-"vendndodhje."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr "Mbishkruaj"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Create Scene"
-msgstr "Ruaj Skenën"
+msgstr ""
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr "Krijo një Shkrim"
+msgstr ""
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
-msgstr "Gjej në Skedarët"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Find:"
-msgstr "Gjej:"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Folder:"
-msgstr "Folderi:"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Filters:"
-msgstr "Filtrat:"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid ""
@@ -3800,154 +3576,149 @@ msgstr ""
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find..."
-msgstr "Gjej..."
+msgstr ""
 
 #: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
 msgid "Replace..."
-msgstr "Zëvendëso..."
+msgstr ""
 
 #: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr "Anullo"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Find: "
-msgstr "Gjej: "
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Replace: "
-msgstr "Zëvendëso: "
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Replace all (no undo)"
-msgstr "Zëvendëso të gjitha (pa kthim pas)"
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
-msgstr "Duke kërkuar..."
+msgstr ""
 
 #: editor/find_in_files.cpp
 msgid "Search complete"
-msgstr "Kërkimi u kompletua"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr "Shto te Grupi"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr "Hiq nga Grupi"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Group name already exists."
-msgstr "Emri i grupit ekziston që më parë."
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Invalid group name."
-msgstr "Emri i grupit i pasakt."
+msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Rename Group"
-msgstr "Menaxho Grupet"
+msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Delete Group"
-msgstr "Fshi Faqosjen"
+msgstr ""
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr "Grupet"
+msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes Not in Group"
-msgstr "Nyjet që nuk janë në Grup"
+msgstr ""
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
-msgstr "Nyjet filtruese"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
-msgstr "Nyjet në Grup"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
 msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group Editor"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
-msgstr "Menaxho Grupet"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import as Single Scene"
-msgstr "Importo si një Skenë të vetme"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr "Importo me Animacione të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr "Importo me Materiale të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr "Importo me Objekte të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr "Importo me Objekte+Materiale të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr "Importo me Objekte+Animacione të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "Importo me Materiale+Animacione të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "Importo me Objekte+Materiale+Animacione të Veçuara"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr "Importo si Skena të Shumfishta"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr "Importo si Skena+Materiale të Shumfishta"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr "Importo Skenën"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Duke Importuar Skenën..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
-msgstr "Duke Gjeneruar Hartat e Dritës"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating for Mesh: "
-msgstr "Duke Gjeneruar për 'Mesh'-in: "
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr "Duke Ekzekutuar Shkrimin..."
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -3963,206 +3734,200 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr "Duke Ruajtur..."
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "Vendos si të Parazgjedhur për '%s'"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "Pastro të Parazgjedhurat për '%s'"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid " Files"
-msgstr " Skedarët"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr "Importo Si:"
+msgstr ""
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Preset"
-msgstr "Ngarko Gabimet"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr "Ri-importo"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr "Ruaj skenat, ri-importo dhe rifillo"
+msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
 msgstr ""
-"Ndryshimi i tipit të një skedari te importuar kërkon që editori të "
-"rifillohet."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
-"Kujdes: Egzistojnë asete që përdorin këtë resurs, ato mund të ndalojnë të "
-"ngarkohen si duhet."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
-msgstr "Dështoi të ngarkojë resursin."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Expand All Properties"
-msgstr "Zgjero Të Gjitha Vetitë"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Collapse All Properties"
-msgstr "Zvogëlo Të Gjitha Vetitë"
+msgstr ""
 
 #: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr "Ruaje Si…"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
-msgstr "Kopjo Parametrat"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Paste Params"
-msgstr "Ngjit Parametrat"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
-msgstr "Modifiko Resursin 'Clipboard'"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
-msgstr "Kopjo Resursin"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Make Built-In"
-msgstr "Bëje 'Built-In'"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "Bëj Sub-Resurset Unik"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Open in Help"
-msgstr "Hap në Ndihmë"
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Create a new resource in memory and edit it."
-msgstr "Krijo një resurs të ri në memorje dhe modifikoje atë."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr "Ngarko një resurs egzistues nga disku dhe modifikoje atë."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr "Ruaje resursin aktual të modifikuar."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
-msgstr "Shko te objekti i mëparshëm i modifikuar në histori."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Go to the next edited object in history."
-msgstr "Shko te objekti tjetër i modifikuar në histori."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
-msgstr "Historia e objekteve të modifikuara së fundmi."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Object properties."
-msgstr "Vetitë e objekteve."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
-msgstr "Filtro vetitë."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
-msgstr "Ndryshimet mund të humbasin!"
+msgstr ""
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr ""
 
 #: editor/node_dock.cpp
-#, fuzzy
 msgid "Select a single node to edit its signals and groups."
-msgstr "Zgjidh një nyje për të modifikuar Sinjalet dhe Grupet."
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
-msgstr "Modifiko një Shtojcë"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Create a Plugin"
-msgstr "Krijo një Shtojcë"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
-msgstr "Emri i Shtojcës:"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr "Subfolderi:"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
-msgstr "Gjuha:"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Script Name:"
-msgstr "Emri i Shkrimit:"
+msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr "Aktivizo tani?"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon"
-msgstr "Krijo një Poligon"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create points."
-msgstr "Krijo pika."
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
 "RMB: Erase Point"
-msgstr "Modifiko pikat. LMB: Lëviz Pikën RMB: Fshi Pikën"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Erase points."
-msgstr "Fshi Pikat."
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon"
-msgstr "Modifiko Poligonin"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr "Fut një Pikë"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon (Remove Point)"
-msgstr "Modifiko Poligonin (Hiq Pikën)"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Remove Polygon And Point"
-msgstr "Hiq Poligonin Dhe Pikën"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4170,14 +3935,14 @@ msgstr "Hiq Poligonin Dhe Pikën"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Shto Animacion"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Load..."
-msgstr "Ngarko…"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4206,7 +3971,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Animation Point"
-msgstr "Shto Pikë në Animacion"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Remove BlendSpace1D Point"
@@ -4249,7 +4014,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Open Editor"
-msgstr "Hap Editorin"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4259,9 +4024,8 @@ msgid "Open Animation Node"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Triangle already exists."
-msgstr "Emri i grupit ekziston që më parë."
+msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Triangle"
@@ -4350,12 +4114,12 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Set Animation"
-msgstr "Vendos Animacionin"
+msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Delete Node"
-msgstr "Fshi Nyjen"
+msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -4386,19 +4150,16 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Klipe Audio:"
+msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Klipe Audio:"
+msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funksionet:"
+msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4880,14 +4641,12 @@ msgid "Request failed, return code:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed."
-msgstr "Kërkimi Dështoi."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Cannot save response to:"
-msgstr "Nuk mund të heqësh:"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
@@ -4898,19 +4657,16 @@ msgid "Request failed, too many redirects"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Redirect loop."
-msgstr "Ridrejto Ciklin."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, timeout"
-msgstr "Kërkimi Dështoi."
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "Koha"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4953,9 +4709,8 @@ msgid "Idle"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Instalo"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -4986,14 +4741,12 @@ msgid "Name (Z-A)"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Liçensa"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Liçensa"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5020,9 +4773,8 @@ msgid "No results for \"%s\"."
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "Importo"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
@@ -5042,9 +4794,8 @@ msgid "Site:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Importo"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5055,9 +4806,8 @@ msgid "Testing"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "Ngarko…"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5126,28 +4876,24 @@ msgid "Move Vertical Guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Vertical Guide"
-msgstr "Krijo Pllakë"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
-msgstr "Fshi keys të gabuar"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Horizontal Guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal Guide"
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Fshi keys të gabuar"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Horizontal and Vertical Guides"
@@ -5289,9 +5035,8 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5300,9 +5045,8 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5314,18 +5058,16 @@ msgid "Paste Pose"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Guides"
-msgstr "Pastro"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Pastro"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -5399,9 +5141,8 @@ msgid "Pan Mode"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Ruler Mode"
-msgstr "Ndrysho Mënyrën"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
@@ -5578,9 +5319,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Vendos Key"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5603,9 +5343,8 @@ msgid "Divide grid step by 2"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Zgjidh një 'Viewport'"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5630,9 +5369,8 @@ msgid "Error instancing scene from %s"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Default Type"
-msgstr "Ndrysho Tipin e %s"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5665,9 +5403,8 @@ msgstr ""
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Restart"
-msgstr "Ruaj & Rifillo"
+msgstr ""
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5747,14 +5484,12 @@ msgid "Load Curve Preset"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add Point"
-msgstr "Shto Pikë në Animacion"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Point"
-msgstr "Hiq Artikullin"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left Linear"
@@ -5765,9 +5500,8 @@ msgid "Right Linear"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Preset"
-msgstr "Ngarko Gabimet"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
@@ -5891,9 +5625,8 @@ msgid "Create Trimesh Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Convex Collision Sibling(s)"
-msgstr "Krijo një Poligon"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6248,9 +5981,8 @@ msgid "Split Segment (in curve)"
 msgstr ""
 
 #: editor/plugins/physical_bone_plugin.cpp
-#, fuzzy
 msgid "Move Joint"
-msgstr "Lëviz të Preferuarën Lartë"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
@@ -6514,9 +6246,8 @@ msgid "Error writing TextFile:"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Could not load file at:"
-msgstr "Nuk mund të krijoj folderin."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
@@ -6539,9 +6270,8 @@ msgid "Error Importing"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "New Text File..."
-msgstr "Folder i Ri..."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open File"
@@ -6582,18 +6312,16 @@ msgid "Find Previous"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter scripts"
-msgstr "Filtro vetitë."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter methods"
-msgstr "Nyjet filtruese"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6628,9 +6356,8 @@ msgid "Open..."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reopen Closed Script"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -6759,24 +6486,20 @@ msgid "Search Results"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Recent Scripts"
-msgstr "Pastro Skenat e Fundit"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Connections to method:"
-msgstr "Lidhë me Nyjen:"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Source"
-msgstr "Resursi"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Signal"
-msgstr "Sinjalet"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
@@ -6842,9 +6565,8 @@ msgid "Bookmarks"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "Krijo pika."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6893,9 +6615,8 @@ msgid "Complete Symbol"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Evaluate Selection"
-msgstr "Fshi të Selektuarat"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -6922,24 +6643,20 @@ msgid "Contextual Help"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Ndrysho Mënyrën"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Bookmark"
-msgstr "Shko tek Hapi Tjetër"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "Shko tek Hapi i Mëparshëm"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Remove All Bookmarks"
-msgstr "Hiq Autoload-in"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function..."
@@ -7201,9 +6918,8 @@ msgid "Audio Listener"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Doppler"
-msgstr "Vetitë:"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
@@ -7373,9 +7089,8 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Settings..."
-msgstr "Duke u lidhur..."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7442,24 +7157,20 @@ msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "Krijo %s të ri"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "Krijo një Poligon"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "Krijo një Poligon"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7474,18 +7185,16 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "Konverto në %s"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "Krijo një Poligon"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
@@ -7564,17 +7273,16 @@ msgid "(empty)"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move Frame"
-msgstr "Lëviz të Preferuarën Lartë"
+msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
-msgstr "Animacionet:"
+msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
-msgstr "Animacionin i Ri"
+msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -7586,7 +7294,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Kornizat e Animacionit:"
+msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -7613,9 +7321,8 @@ msgid "Move (After)"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -7727,9 +7434,8 @@ msgid "Create From Current Editor Theme"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "Ndrysho Mënyrën"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled Button"
@@ -7784,9 +7490,8 @@ msgid "Many"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled LineEdit"
-msgstr "Çaktivizo Rrotulluesin e Përditësimit"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -7837,9 +7542,8 @@ msgid "Constant"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr " Skedarët"
+msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -7891,9 +7595,8 @@ msgid "Enable Priority"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter tiles"
-msgstr "Filtro Skedarët..."
+msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
@@ -7930,9 +7633,8 @@ msgid "Flip Vertically"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
-msgstr "Binari i Transformimeve 3D"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet."
@@ -7979,9 +7681,8 @@ msgid "Occlusion Mode"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Mode"
-msgstr "Metoda Pa Shpërqëndrime"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask Mode"
@@ -7992,9 +7693,8 @@ msgid "Priority Mode"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Ndrysho Mënyrën"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Z Index Mode"
@@ -8114,7 +7814,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Tile"
-msgstr "Krijo Pllakë"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
@@ -8154,7 +7854,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
-msgstr "Fshi një Pllakë"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Collision Polygon"
@@ -8209,9 +7909,8 @@ msgid "No files added to stage"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit"
-msgstr "Komuniteti"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
@@ -8230,38 +7929,32 @@ msgid "Staging area"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Detect new changes"
-msgstr "Sinkronizo Nryshimet e Skenës"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Changes"
-msgstr "Ndrysho"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Renamed"
-msgstr "Riemërto"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Deleted"
-msgstr "Fshi"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "Ndrysho"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Stage Selected"
-msgstr "Zgjidh"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
@@ -8272,9 +7965,8 @@ msgid "Add a commit message"
 msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Changes"
-msgstr "Sinkronizo Ndryshimet e Shkrimit"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
@@ -8298,18 +7990,16 @@ msgid "(GLES3 only)"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Output"
-msgstr "Përfundimi"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "Inspektori"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -8320,46 +8010,40 @@ msgid "Sampler"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add input port"
-msgstr "Shto te të preferuarat"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port type"
-msgstr "Ndrysho Tipin e %s"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change output port type"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port name"
-msgstr "Ndrysho Vlerën e Fjalorit"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change output port name"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove input port"
-msgstr "Hiq Autoload-in"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove output port"
-msgstr "Hiq nga të preferuarat"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Set expression"
-msgstr "Versioni Aktual:"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Resize VisualShader node"
@@ -8379,7 +8063,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
-msgstr "Dyfisho Nyjet"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -8387,9 +8071,8 @@ msgid "Paste Nodes"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Nodes"
-msgstr "Fshi Nyjen"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8408,14 +8091,12 @@ msgid "Light"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Show resulted shader code."
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Create Shader Node"
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color function."
@@ -8478,9 +8159,8 @@ msgid "SoftLight operator."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color constant."
-msgstr "Konstantet"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color uniform."
@@ -8898,9 +8578,8 @@ msgid "Transform constant."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform uniform."
-msgstr "Binari i Transformimeve 3D"
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
@@ -9114,9 +8793,8 @@ msgid "Runnable"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Shto te të preferuarat"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
@@ -9222,9 +8900,8 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Skedarët"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9279,9 +8956,8 @@ msgid "Export All"
 msgstr ""
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Skedarët"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
@@ -9293,7 +8969,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr "Menaxho Shabllonet e Eksportit"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
@@ -9442,9 +9118,8 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Missing Project"
-msgstr "Projekti"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
@@ -9490,15 +9165,11 @@ msgid ""
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
-"Nuk është përcaktuar një skenë kryesore më parë, zgjidh një?\n"
-"Mund ta ndryshosh më vonë në \"Opsionet e Projektit\" nën kategorin "
-"'aplikacioni'."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9545,9 +9216,8 @@ msgid "Project Manager"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Projects"
-msgstr "Projekti"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -9566,9 +9236,8 @@ msgid "New Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Missing"
-msgstr "Fshi një Pllakë"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -9611,9 +9280,8 @@ msgid ""
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "An action with the name '%s' already exists."
-msgstr "Një skedar ose folder me këtë emër ekziston që më parë."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -10172,9 +9840,8 @@ msgid "Make node as Root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "Fshi Nyjen"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10185,9 +9852,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "Fshi Nyjen"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10238,9 +9904,8 @@ msgid "User Interface"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Other Node"
-msgstr "Fshi Nyjen"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -10293,27 +9958,24 @@ msgid "Load As Placeholder"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Open Documentation"
-msgstr "Hap të Fundit"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Expand/Collapse All"
-msgstr "Mbyll të Gjitha"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -10336,9 +9998,8 @@ msgid "Delete (No Confirm)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Add/Create a New Node."
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10375,14 +10036,12 @@ msgid "Unlock Node"
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Button Group"
-msgstr "Shto te Grupi"
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "(Connecting From)"
-msgstr "Gabim në Lidhje"
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -10407,9 +10066,8 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Open Script:"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10454,33 +10112,28 @@ msgid "Select a Node"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Path is empty."
-msgstr "Clipboard-i është bosh"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Filename is empty."
-msgstr "Clipboard-i është bosh"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid base path."
-msgstr "Rruga e pasaktë."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "A directory with the same name exists."
-msgstr "Një skedar ose folder me këtë emër ekziston që më parë."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid extension."
-msgstr "Duhet të perdorësh një shtesë të lejuar."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen."
@@ -10499,9 +10152,8 @@ msgid "Error loading script from %s"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Overrides"
-msgstr "Mbishkruaj"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
@@ -10520,9 +10172,8 @@ msgid "File exists, it will be reused."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid class name."
-msgstr "Emër i palejuar."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path."
@@ -10537,9 +10188,8 @@ msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in script (into scene file)."
-msgstr "Veprime me skedarët e skenave."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Will create a new script file."
@@ -10550,19 +10200,16 @@ msgid "Will load an existing script file."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name:"
-msgstr "Klasa:"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template:"
-msgstr "Hiq Shabllonin"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script:"
-msgstr "Hap Editorin e Shkrimit"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -10581,33 +10228,28 @@ msgid "Warning:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Error:"
-msgstr "Pasqyrë"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Error"
-msgstr "Ngarko Gabimet"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source"
-msgstr "Resursi"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Source:"
-msgstr "Resursi"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "C++ Source:"
-msgstr "Resursi"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Trace"
@@ -10618,18 +10260,16 @@ msgid "Errors"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Child process connected."
-msgstr "U Shkëput"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Skip Breakpoints"
-msgstr "Krijo pika."
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10648,9 +10288,8 @@ msgid "Profiler"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "Eksporto Projektin"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -10734,7 +10373,7 @@ msgstr ""
 
 #: editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "Opsionet e Editorit"
+msgstr ""
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -10857,9 +10496,8 @@ msgid "Enabled GDNative Singleton"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Disabled GDNative Singleton"
-msgstr "Çaktivizo Rrotulluesin e Përditësimit"
+msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -10946,9 +10584,8 @@ msgid "GridMap Fill Selection"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Paste Selection"
-msgstr "Fshi të Selektuarat"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Paint"
@@ -11031,9 +10668,8 @@ msgid "Pick Distance:"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Filter meshes"
-msgstr "Nyjet filtruese"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
@@ -11158,32 +10794,28 @@ msgid "Set Variable Type"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Override an existing built-in function."
-msgstr "Emër i palejuar. Nuk duhet të përplaset me emrin e një tipi 'buit-in'."
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create a new function."
-msgstr "Krijo një Shtojcë"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create a new variable."
-msgstr "Krijo një Folder"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr "Sinjalet:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create a new signal."
-msgstr "Krijo %s të ri"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -11210,9 +10842,8 @@ msgid "Add Function"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Delete input port"
-msgstr "Hiq Autoload-in"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
@@ -11223,24 +10854,20 @@ msgid "Add Signal"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Input Port"
-msgstr "Shto te të preferuarat"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Output Port"
-msgstr "Shto te të preferuarat"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Input Port"
-msgstr "Hiq Autoload-in"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Output Port"
-msgstr "Hiq nga të preferuarat"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11321,9 +10948,8 @@ msgid "Connect Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Disconnect Nodes"
-msgstr "U Shkëput"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11374,9 +11000,8 @@ msgid "Try to only have one sequence input in selection."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Create Function"
-msgstr "Krijo një Shtojcë"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
@@ -11407,23 +11032,20 @@ msgid "Members:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Ndrysho Tipin e %s"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Nodes..."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Funksionet:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
-msgstr "Funksionet:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -11446,14 +11068,12 @@ msgid "Cut Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Function"
-msgstr "Funksionet:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Refresh Graph"
-msgstr "Rifresko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11551,7 +11171,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Select device from the list"
-msgstr "Zgjidh paisjen nga lista"
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
@@ -11672,18 +11292,16 @@ msgid "Using default boot splash image."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Emër i palejuar."
+msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Emër i palejuar."
+msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -12214,70 +11832,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Pause the scene"
-#~ msgstr "Pusho skenën"
-
-#~ msgid "Properties:"
-#~ msgstr "Vetitë:"
-
-#~ msgid "Methods:"
-#~ msgstr "Metodat:"
-
-#~ msgid "Theme Properties:"
-#~ msgstr "Vetitë e Temës:"
-
-#~ msgid "Enumerations:"
-#~ msgstr "Enumeracionet:"
-
-#~ msgid "Constants:"
-#~ msgstr "Konstantet:"
-
-#~ msgid "Class Description:"
-#~ msgstr "Përshkrimi i Klasës:"
-
-#~ msgid "Property Descriptions:"
-#~ msgstr "Përshkrimi i Vetive:"
-
-#~ msgid "Method Descriptions:"
-#~ msgstr "Përshkrimi i Metodes:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Duke bër kërkesën..."
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Nuk mund të hapi file_type_catche.cch për të shkruajtur, skedari nuk do "
-#~ "të ruhet!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr ""
-#~ "Nuk mund të navigoj te '%s' sepse nuk është gjetur në sistemin e "
-#~ "skedarëve!"
-
-#~ msgid "Previous Folder"
-#~ msgstr "Folderi i Mëparshëm"
-
-#~ msgid "Next Folder"
-#~ msgstr "Folderi Tjetër"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Hap Editorin tjetër"
-
-#~ msgid "Update Always"
-#~ msgstr "Përditëso Gjithmonë"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Fshi skedarët e zgjedhur?"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Hap Skenat"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Direktoria e Mëparshme"
-
-#~ msgid "Next Directory"
-#~ msgstr "Direktoria Tjetër"

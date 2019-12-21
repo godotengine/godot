@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-16 23:50+0000\n"
+"PO-Revision-Date: 2019-12-21 08:38+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -521,7 +521,7 @@ msgstr "Agrupar las pistas por nodo o mostrarlas como una lista plana."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr "Snap:"
+msgstr "Ajuste:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -726,6 +726,10 @@ msgstr "Solo Selección"
 msgid "Standard"
 msgstr "Estándar"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Act/Desact. Panel de Scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -741,10 +745,6 @@ msgstr "Alejar Zoom"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Resetear el Zoom"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Act/Desact. Panel de Scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -824,7 +824,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr "Oneshot"
+msgstr "OneShot"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
@@ -1713,9 +1713,8 @@ msgid "Erase Profile"
 msgstr "Borrar Perfil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Administrar Perfiles de Características del Editor"
+msgstr "Perfil de Características de Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3037,9 +3036,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Importar Plantillas Desde Archivo ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Gestor de Plantillas de Exportación"
+msgstr "Paquete de Plantillas"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -4208,7 +4206,7 @@ msgstr "Seleccionar y mover puntos, crear puntos con click derecho."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr "Activar snap y mostrar grilla."
+msgstr "Activar ajuste y mostrar grilla."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5068,7 +5066,7 @@ msgstr "Vista Previa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr "Configurar Snap"
+msgstr "Configurar Ajuste"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
@@ -5171,86 +5169,72 @@ msgstr ""
 "márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Izquierda"
+msgstr "Superior Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Derecha"
+msgstr "Superior Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Rotar a la Derecha"
+msgstr "Inferior Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Vista Inferior"
+msgstr "Inferior Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Indentar a la Izq"
+msgstr "Centro Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Centrar Selección"
+msgstr "Centro Superior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Indentar a la Der"
+msgstr "Centro Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Fondo"
+msgstr "Centro Inferior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Centro"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Vista Izquierda"
+msgstr "Izquierda Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Vista Superior"
+msgstr "Superior Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Vista Derecha"
+msgstr "Derecha Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Vista Inferior"
+msgstr "Inferior Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "Centro Vert. Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "Centro Horiz. Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "Nombre completo"
+msgstr "Todo el Rect"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Ratio de Escala:"
+msgstr "Mantener Proporciones"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5417,32 +5401,32 @@ msgstr "Usar Ajuste a Grilla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr "Opciones de Alineado"
+msgstr "Opciones de Ajuste"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr "Usar Snap de Rotación"
+msgstr "Usar Ajuste de Rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Scale Snap"
-msgstr "Usar Snap a la Escala"
+msgstr "Usar Ajuste de Escalado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr "Usar Snap Relativo"
+msgstr "Ajuste Relativo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr "Usar Pixel Snap"
+msgstr "Usar Ajuste a Pixeles"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr "Ajuste inteligente"
+msgstr "Ajuste Inteligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configurar Snap..."
+msgstr "Configurar Ajuste..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
@@ -6409,11 +6393,11 @@ msgstr "Ajustes de Grilla"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Snap"
-msgstr "Esnapear"
+msgstr "Ajustar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr "Activar Snap"
+msgstr "Activar Ajuste"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -7275,7 +7259,7 @@ msgstr "Usar Espacio Local"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Usar Snap"
+msgstr "Usar Ajuste"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7377,19 +7361,19 @@ msgstr "Configuración..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr "Ajustes de Snap"
+msgstr "Configuración de Ajuste"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "Snap de Traslación:"
+msgstr "Ajuste de Traslación:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "Snap de Rotación (grados):"
+msgstr "Ajuste de Rotación (grados):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr "Snap de Escala (%):"
+msgstr "Ajuste de Escala (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
@@ -7637,7 +7621,7 @@ msgstr "Asignar Margen"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr "Modo Snap:"
+msgstr "Modo de Ajuste:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: scene/resources/visual_shader.cpp
@@ -7646,11 +7630,11 @@ msgstr "Ninguno"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr "Pixel Snap"
+msgstr "Ajustar a Pixeles"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr "Snap de Grilla"
+msgstr "Ajustar a Grilla"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -7825,9 +7809,8 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Tema"
+msgstr "Archivo de Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8012,7 +7995,7 @@ msgstr "Mantener el polígono dentro del region Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr "Activar snap y mostrar grilla (configurable via el Inspector)."
+msgstr "Activar ajuste y mostrar grilla (configurable vía el Inspector)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -9291,9 +9274,8 @@ msgid "Make Patch"
 msgstr "Crear Parche"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Archivos"
+msgstr "Archivo \"Pack\""
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9348,13 +9330,12 @@ msgid "Export All"
 msgstr "Exportar Todos"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Archivos"
+msgstr "Archivo ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godot Game Pack"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11080,7 +11061,7 @@ msgstr "Mapa de Grilla"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr "Anclar Vista"
+msgstr "Ajustar Vista"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -11531,19 +11512,16 @@ msgid "Members:"
 msgstr "Miembros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Cambiar Tipo Base"
+msgstr "Cambiar Tipo Base:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Agregar Nodo..."
+msgstr "Agregar Nodos..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Agregar Función"
+msgstr "Agregar Función..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

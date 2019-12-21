@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-15 05:52+0000\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -278,11 +278,11 @@ msgstr "Συνεχόμενη"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr "Ξεχωριστή"
+msgstr "Διακριτή"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr "Άμεση"
+msgstr "Σκανδαλιστική"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -718,6 +718,10 @@ msgstr "Μόνο στην επιλογή"
 msgid "Standard"
 msgstr "Τυπική"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -733,10 +737,6 @@ msgstr "Σμύκρινση"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Εναλλαγή πλαισίου δεσμών ενεργειών"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

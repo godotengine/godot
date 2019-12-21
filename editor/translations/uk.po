@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-15 05:53+0000\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -726,6 +726,10 @@ msgstr "Тільки виділити"
 msgid "Standard"
 msgstr "Стандартний"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Перемкнути панель скриптів"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -741,10 +745,6 @@ msgstr "Зменшення"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Скинути масштаб"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Перемкнути панель скриптів"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1710,9 +1710,8 @@ msgid "Erase Profile"
 msgstr "Витерти профіль"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Керування профілями можливостей редактора"
+msgstr "Профіль можливостей Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3024,9 +3023,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Імпортувати шаблони з ZIP-файлу"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Менеджер експорту шаблонів"
+msgstr "Пакунок шаблонів"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5154,85 +5152,72 @@ msgstr ""
 "їхні поля."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Зліва"
+msgstr "Згори ліворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Справа"
+msgstr "Згори праворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Обернути праворуч"
+msgstr "Внизу праворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Вигляд знизу"
+msgstr "Внизу ліворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Зменшити відступ"
+msgstr "За центром ліворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Центрувати на вибраному"
+msgstr "За центром згори"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Збільшити відступ"
+msgstr "За центром праворуч"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Знизу"
+msgstr "За центром внизу"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "За центром"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Вигляд зліва"
+msgstr "Ліворуч за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Вигляд згори"
+msgstr "Згори за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Вигляд справа"
+msgstr "Праворуч за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Вигляд знизу"
+msgstr "Внизу за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "Верт. за центром за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "Гор. за центром за шириною"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "Увесь прямокутник"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Співвідношення масштабу:"
+msgstr "Зберігати співвідношення розмірів"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -7809,9 +7794,8 @@ msgid "Constant"
 msgstr "Сталий"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Тема"
+msgstr "Файл теми"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9276,9 +9260,8 @@ msgid "Make Patch"
 msgstr "Створити латку"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Файли"
+msgstr "Файл пакунка"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9333,13 +9316,12 @@ msgid "Export All"
 msgstr "Експортувати усе"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Файли"
+msgstr "Файл ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Пакунок гри Godot"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11513,19 +11495,16 @@ msgid "Members:"
 msgstr "Члени:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Змінити базовий тип"
+msgstr "Змінити базовий тип:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Додати вузол…"
+msgstr "Додати вузли…"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Додати функцію"
+msgstr "Додати функцію…"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

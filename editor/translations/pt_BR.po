@@ -74,12 +74,13 @@
 # Rafael Silveira <res883@gmail.com>, 2019.
 # Luigi <luigimendeszanchett@gmail.com>, 2019.
 # Nicolas Abril <nicolas.abril@protonmail.ch>, 2019.
+# johnnybigoode <jamarson@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-12-13 09:38+0000\n"
-"Last-Translator: Nicolas Abril <nicolas.abril@protonmail.ch>\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
+"Last-Translator: johnnybigoode <jamarson@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -87,7 +88,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -782,6 +783,10 @@ msgstr "Selecionar Apenas"
 msgid "Standard"
 msgstr "Padrão"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Alternar Painel de Scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -797,10 +802,6 @@ msgstr "Reduzir"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Redefinir Ampliação"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Alternar Painel de Scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1762,9 +1763,8 @@ msgid "Erase Profile"
 msgstr "Apagar Perfil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Gerenciar perfis de recurso do editor"
+msgstr "Perfil de funcionalidade do Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3078,9 +3078,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Importar Modelos de um Arquivo ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Gerenciador de Exportação de Modelo"
+msgstr "Pacote de modelos"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3397,7 +3396,6 @@ msgid "Import From Node:"
 msgstr "Importar a Partir do Nó:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Redownload"
 msgstr "Baixar Novamente"
 
@@ -3587,9 +3585,8 @@ msgid "Select Template File"
 msgstr "Selecionar o Arquivo de Modelo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Carregando Modelos de Exportação"
+msgstr "Modelos de Exportação do Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4988,29 +4985,27 @@ msgstr "Download deste asset já está em progresso!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Atualizado recentemente"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Ultima Atualização Recente"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nome (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nome (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licença"
+msgstr "Licença (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licença"
+msgstr "Licença (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5216,48 +5211,40 @@ msgstr ""
 "margens."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Esquerda"
+msgstr "Superior Esquerda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Direita"
+msgstr "Superior Direita"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Rotacionar para a direita"
+msgstr "Inferior direita"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Visão inferior"
+msgstr "Inferior Esquerda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Recuar Esquerda"
+msgstr "Centro Esquerda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Centralizar Seleção"
+msgstr "Centro Superior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Recuar Direita"
+msgstr "Centro Direita"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Baixo"
+msgstr "Centro Inferior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Centro"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5293,9 +5280,8 @@ msgid "Full Rect"
 msgstr "Nome Válido"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Razão de Escala:"
+msgstr "Manter proporção"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -7276,9 +7262,8 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificador de velocidade da Visão Livre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Slow Modifier"
-msgstr "Modificador de velocidade da Visão Livre"
+msgstr "Modificador de velocidade lenta da Visão Livre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7871,9 +7856,8 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Tema"
+msgstr "Arquivo de Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8298,9 +8282,8 @@ msgid "Deleted"
 msgstr "Excluído"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "Alterar"
+msgstr "Alterar tipo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
@@ -8360,7 +8343,7 @@ msgstr "Booleano"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Sampler"
-msgstr "Amostras"
+msgstr "Amostrador (Sampler)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -8611,9 +8594,8 @@ msgid "Input parameter."
 msgstr "Parâmetro de entrada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr "Parâmetro de entrada '%s' para os modos de shader vértice e fragmento."
+msgstr "Parâmetro de entrada '%s' para os modos vértice e fragmento de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment and light shader modes."
@@ -8953,24 +8935,20 @@ msgid "Multiplies vector by transform."
 msgstr "Multiplica vetor por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform constant."
-msgstr "Transformação Abortada."
+msgstr "Constante da transformada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform uniform."
-msgstr "Transformação Abortada."
+msgstr "Transformada uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector function."
-msgstr "Atribuição à função."
+msgstr "Função vetorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector operator."
-msgstr "Alterar Operador Vet"
+msgstr "Operador vetorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes vector from three scalars."
@@ -9110,14 +9088,12 @@ msgid "Subtracts vector from vector."
 msgstr "Subtrai vetor de vetor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector constant."
-msgstr "Alterar Constante Vet"
+msgstr "Vetor constante."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector uniform."
-msgstr "Atribuição à uniforme."
+msgstr "Vector uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""

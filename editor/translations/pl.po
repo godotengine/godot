@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-16 23:50+0000\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -748,6 +748,10 @@ msgstr "Tylko zaznaczenie"
 msgid "Standard"
 msgstr "Standardowy"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Przełącz panel skryptów"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -763,10 +767,6 @@ msgstr "Oddal"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Wyzeruj przybliżenie"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Przełącz panel skryptów"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1727,9 +1727,8 @@ msgid "Erase Profile"
 msgstr "Usuń profil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Zarządzaj profilami funkcjonalności edytora"
+msgstr "Profil funkcjonalności Godota"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3032,9 +3031,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Zaimportuj Szablony z pliku ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Menedżer szablonów eksportu"
+msgstr "Szablonowy pakiet"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -5164,86 +5162,72 @@ msgstr ""
 "zamiast marginesów."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Lewa"
+msgstr "Lewy górny róg"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Prawa"
+msgstr "Prawy górny róg"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Obróć w prawo"
+msgstr "Prawy dolny róg"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Widok z dołu"
+msgstr "Lewy dolny róg"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Wcięcie w lewo"
+msgstr "Wyśrodkowane po lewej"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Wyśrodkowywanie na zaznaczeniu"
+msgstr "Wyśrodkowane na górze"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Wcięcie w prawo"
+msgstr "Wyśrodkowane po prawej"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Dół"
+msgstr "Wyśrodkowane na dole"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Wyśrodkowane"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Widok z lewej"
+msgstr "Rozciągnij po lewej"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Widok z góry"
+msgstr "Rozciągnij na górze"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Widok z prawej"
+msgstr "Rozciągnij po prawej"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Widok z dołu"
+msgstr "Rozciągnij na dole"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "Rozciągnij pionowo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "Rozciągnij poziomo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "Poprawna nazwa"
+msgstr "Cały obszar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Współczynnik skali:"
+msgstr "Zachowaj proporcie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -7815,9 +7799,8 @@ msgid "Constant"
 msgstr "Stałe"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Motyw"
+msgstr "Plik motywu"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9277,9 +9260,8 @@ msgid "Make Patch"
 msgstr "Utwórz ścieżkę"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Pliki"
+msgstr "Plik paczki"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9334,13 +9316,12 @@ msgid "Export All"
 msgstr "Eksportuj wszystko"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Pliki"
+msgstr "Plik ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godotowa paczka gry"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11509,19 +11490,16 @@ msgid "Members:"
 msgstr "Członkowie:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Zmień typ podstawowy"
+msgstr "Zmień typ podstawowy:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Dodaj węzeł..."
+msgstr "Dodaj węzły..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Dodaj funkcję"
+msgstr "Dodaj funkcję..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

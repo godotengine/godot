@@ -46,8 +46,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:36+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2019-12-21 08:38+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -55,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -756,6 +756,10 @@ msgstr "Sólo selección"
 msgid "Standard"
 msgstr "Estándar"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Act./Desact. Panel de Scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -771,10 +775,6 @@ msgstr "Alejar Zoom"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Restablecer Zoom"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Act./Desact. Panel de Scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1745,9 +1745,8 @@ msgid "Erase Profile"
 msgstr "Borrar Perfil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Administrar Perfiles de Características del Editor"
+msgstr "Perfil de Características de Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3071,9 +3070,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Importar plantillas desde un archivo ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Gestor de Plantillas de Exportación"
+msgstr "Paquete de Plantillas"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3579,9 +3577,8 @@ msgid "Select Template File"
 msgstr "Selecciona un Archivo de Plantilla"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Cargando plantillas de exportación"
+msgstr "Plantillas de Exportación de Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4981,29 +4978,27 @@ msgstr "¡Éste asset ya está descargándose!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Actualizados Recientemente"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Actualizados con Antigüedad"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Nombre (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Nombre (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licencia"
+msgstr "Licencia (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licencia"
+msgstr "Licencia (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5208,86 +5203,72 @@ msgstr ""
 "anclajes en lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Izquierda"
+msgstr "Superior Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Derecha"
+msgstr "Superior Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Rotar a la Derecha"
+msgstr "Inferior Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Vista Inferior"
+msgstr "Inferior Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Indentar a la Izquierda"
+msgstr "Centro Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Centrar Selección"
+msgstr "Centro Superior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Indentar a la Derecha"
+msgstr "Centro Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Abajo"
+msgstr "Centro Inferior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Centro"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Vista Izquierda"
+msgstr "Izquierda Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Vista Superior"
+msgstr "Superior Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Vista Derecha"
+msgstr "Derecha Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Vista Inferior"
+msgstr "Inferior Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "Centro Vert. Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "Centro Horiz. Ancha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "Nombre válido"
+msgstr "Completa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Relación de Escala:"
+msgstr "Mantener Proporciones"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -7523,7 +7504,7 @@ msgstr "Geometría inválida, no es posible crear un polígono de colisión."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Crear hermano de CollisionPolygon2D"
+msgstr "Crear CollisionPolygon2D hermano"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7863,9 +7844,8 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Tema"
+msgstr "Archivo de Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -9210,13 +9190,12 @@ msgid "Runnable"
 msgstr "Ejecutable"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Add initial export..."
-msgstr "Agregar puerto de entrada"
+msgstr "Agregar puerto de entrada..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Agregar parches anteriores..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9331,9 +9310,8 @@ msgid "Make Patch"
 msgstr "Crear Patch"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Archivos"
+msgstr "Paquete de Archivos"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9388,13 +9366,12 @@ msgid "Export All"
 msgstr "Exportar Todo"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Archivos"
+msgstr "Archivo ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godot Game Pack"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11571,19 +11548,16 @@ msgid "Members:"
 msgstr "Miembros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Cambiar Tipo Base"
+msgstr "Cambiar Tipo Base:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Agregar Nodo..."
+msgstr "Agregar Nodos..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Añadir Función"
+msgstr "Agregar Función..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
@@ -11982,8 +11956,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"Se debe de proveer de forma a CollisionShape2D para que funcione. ¡Creale un "
-"recurso \"shape\"!"
+"Para que CollisionShape2D funcione, se debe proporcionar un shape. Por "
+"favor, ¡crea un recurso shape para ello!"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12215,7 +12189,7 @@ msgid ""
 "shape resource for it."
 msgstr ""
 "Se debe proporcionar un shape para que CollisionShape funcione. Por favor, "
-"crea un recurso de shape para ello."
+"crea un recurso shape para ello."
 
 #: scene/3d/collision_shape.cpp
 msgid ""

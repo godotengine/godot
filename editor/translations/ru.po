@@ -59,12 +59,13 @@
 # Danil Alexeev <danil@alexeev.xyz>, 2019.
 # Ravager <al.porkhunov@gmail.com>, 2019.
 # Александр <akonn7@mail.ru>, 2019.
+# Rei <clxgamer12@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:36+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
+"Last-Translator: Rei <clxgamer12@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -73,7 +74,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -216,24 +217,20 @@ msgid "Anim Multi Change Keyframe Time"
 msgstr "Время смены ключевых кадров анимации"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Изменить переход"
+msgstr "Анимация Многократное изменение Переход"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Изменить положение"
+msgstr "Анимационное многосменное преобразование"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Измененить значение ключевого кадра"
+msgstr "Анимация многократное изменение ключевых кадров Значение"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Изменить вызов анимации"
+msgstr "Анимационный многократный вызов изменения"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -773,6 +770,10 @@ msgstr "Только выделять"
 msgid "Standard"
 msgstr "Стандартный"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Переключить панель скриптов"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -788,10 +789,6 @@ msgstr "Отдалить"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Сбросить приближение"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Переключить панель скриптов"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1755,9 +1752,8 @@ msgid "Erase Profile"
 msgstr "Стереть профиль"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Управление профилями редактора"
+msgstr "Профиль возможностей Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3066,9 +3062,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Импортировать шаблоны из ZIP файла"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Менеджер шаблонов экспорта"
+msgstr "Шаблонный пакет"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3570,9 +3565,8 @@ msgid "Select Template File"
 msgstr "Выбрать файл шаблона"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Загрузка шаблонов экспорта"
+msgstr "Шаблоны экспорта Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3653,9 +3647,8 @@ msgid "New Inherited Scene"
 msgstr "Новая вложенная сцена"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Главная сцена"
+msgstr "Сделать главной сценой"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -4383,14 +4376,12 @@ msgstr ""
 "удается получить отслеживаемые имена."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Дорожки Анимации:"
+msgstr "Анимационные клипы"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Аудиодорожки:"
+msgstr "Аудиоклипы"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Functions"
@@ -4412,9 +4403,8 @@ msgid "Edit Filtered Tracks:"
 msgstr "Редактировать фильтры:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Filtering"
-msgstr "Включить фильтр"
+msgstr "Включить фильтрацию"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -4962,7 +4952,7 @@ msgstr "Повторить"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr "Ошибка Загрузки"
+msgstr "Ошибка загрузки"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -4970,29 +4960,27 @@ msgstr "Загрузка этого шаблона уже идёт!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Недавно обновлённые"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Последнее обновление"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Название (А-Я)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Название (Я-А)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Лицензия"
+msgstr "Лицензия (А-Я)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Лицензия"
+msgstr "Лицензия (Я-А)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5028,7 +5016,7 @@ msgstr "Плагины..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr "Сортировать:"
+msgstr "Сортировка:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -5105,12 +5093,12 @@ msgstr "Шаг сетки:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Первичная линия Каждая:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "steps"
-msgstr "2 шага"
+msgstr "шаги"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5121,9 +5109,8 @@ msgid "Rotation Step:"
 msgstr "Шаг поворота:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Масштаб:"
+msgstr "Шаг шкалы:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5188,85 +5175,70 @@ msgid "Presets for the anchors and margins values of a Control node."
 msgstr "Предустановки для якорей и значения отступов контрольного узла."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
-msgstr ""
-"Если активно, при перемещении узлов Control будут изменяться значения якорей "
-"вместо отступов."
+msgstr "При активном движении узлы Control меняют свои якоря вместо полей."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Лево"
+msgstr "Слева вверху"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Право"
+msgstr "Верхнее право"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Повернуть вправо"
+msgstr "Нижнее право"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Вид Снизу"
+msgstr "Нижнее левое"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Убрать отступ слева"
+msgstr "Центр Слева"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Центрировать выбранное"
+msgstr "Топ-центр"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Отступ вправо"
+msgstr "Центральное право"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Низ"
+msgstr "Центральное дно"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Центр"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Вид слева"
+msgstr "Налево Широко"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Вид сверху"
+msgstr "Широчайший спектр"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Вид справа"
+msgstr "Правая Широта"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Вид Снизу"
+msgstr "Широкий нижний край"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "V Центр Широкий"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "H Центр Широкий"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5274,9 +5246,8 @@ msgid "Full Rect"
 msgstr "Полное имя"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Коэффициент масштабирования:"
+msgstr "Сохранять пропорции"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5296,6 +5267,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Переопределение игровой камеры\n"
+"Переопределяет игровую камеру с помощью камеры редактора вью-порта."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5303,6 +5276,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Переопределение игровой камеры\n"
+"Нет запущенного экземпляра игры."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5446,7 +5421,6 @@ msgid "Use Rotation Snap"
 msgstr "Использовать привязку вращения"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
 msgstr "Использовать умную привязку"
 
@@ -5534,7 +5508,7 @@ msgstr "Обзор"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
-msgstr "Всегда показать сетку"
+msgstr "Всегда показывать сетку"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -7860,12 +7834,11 @@ msgstr "Цвет"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr "Постоянный"
+msgstr "Константа"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Тема"
+msgstr "Файл темы"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8328,7 +8301,7 @@ msgstr "Файлы не выбраны!"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect changes in file diff"
-msgstr ""
+msgstr "Обнаружение изменений в разнице в файлах"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -9124,6 +9097,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
+"Возвращает падение на основе точечного произведения нормальной поверхности и "
+"направления обзора камеры (пропустите соответствующие входы к ней)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -9140,11 +9115,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr ""
+msgstr "(только в режиме фрагмента/света) Скалярная производная функция."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr ""
+msgstr "(только в режиме фрагмента/света) Векторная производная функция."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9213,11 +9188,11 @@ msgstr "Активный"
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Add initial export..."
-msgstr "Добавить входной порт"
+msgstr "Добавить начальный экспорт..."
 
 #: editor/project_export.cpp
 msgid "Add previous patches..."
-msgstr ""
+msgstr "Добавить предыдущие патчи..."
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
@@ -9274,6 +9249,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"Если этот флажок установлен, предварительная установка будет доступна для "
+"использования в развертывании одним щелчком мыши.\n"
+"Только одна предустановка на платформу может быть помечена как работающая."
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9328,9 +9306,8 @@ msgid "Make Patch"
 msgstr "Создать латку"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Файлы"
+msgstr "Файл пакета"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9338,7 +9315,7 @@ msgstr "Особенности"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
-msgstr "Пользовательский (через запятую):"
+msgstr "Пользовательские (через запятую):"
 
 #: editor/project_export.cpp
 msgid "Feature List:"
@@ -9386,13 +9363,12 @@ msgid "Export All"
 msgstr "Экспортировать всё"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Файлы"
+msgstr "ZIP-файл"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Пакет игры Godot"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -9697,9 +9673,8 @@ msgid "Projects"
 msgstr "Проекты"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Last Modified"
-msgstr "Изменён"
+msgstr "Последнее изменение"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -10289,9 +10264,8 @@ msgid "Instance Scene(s)"
 msgstr "Дополнить сценой(ами)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Replace with Branch Scene"
-msgstr "Сохранить ветку, как сцену"
+msgstr "Сохранить ветку как сцену"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -11445,6 +11419,7 @@ msgstr "Добавить предзагрузочный узел"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Нельзя бросать узлы, потому что в этой сцене не используется скрипт '%s'."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11455,6 +11430,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Не может отказаться от свойств, потому что в этой сцене не используется "
+"скрипт '%s'.\n"
+"Опустите, удерживая клавишу shift, чтобы просто скопировать подпись."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11534,7 +11512,7 @@ msgstr "Выберите по крайней мере один узел с по�
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Попробуйте выбрать только одну последовательность."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
@@ -11570,22 +11548,18 @@ msgid "Members:"
 msgstr "Свойства:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Изменить базовый тип"
+msgstr "Изменить базовый тип:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Добавить узел..."
+msgstr "Добавить узлы..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Добавить функцию"
+msgstr "Добавить функцию..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "function_name"
 msgstr "имя_функции"
 
@@ -12418,7 +12392,7 @@ msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw"
-msgstr "Raw"
+msgstr "Сырой"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."

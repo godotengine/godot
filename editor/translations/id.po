@@ -732,6 +732,10 @@ msgstr "Hanya yang Dipilih"
 msgid "Standard"
 msgstr "Standar"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Jungkitkan Panel Skrip"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -747,10 +751,6 @@ msgstr "Perkecil Pandangan"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Kebalikan Semula Pandangan"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Jungkitkan Panel Skrip"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

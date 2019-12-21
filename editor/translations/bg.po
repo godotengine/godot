@@ -733,6 +733,11 @@ msgstr "Само Селекцията"
 msgid "Standard"
 msgstr ""
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Scripts Panel"
+msgstr "Видимост на Панела със Скриптове"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -748,11 +753,6 @@ msgstr "Отдалечи"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr ""
-
-#: editor/code_editor.cpp
-#, fuzzy
-msgid "Toggle Scripts Panel"
-msgstr "Видимост на Панела със Скриптове"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

@@ -756,6 +756,10 @@ msgstr "Kun Valgte"
 msgid "Standard"
 msgstr ""
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Veksle skriptpanel"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -771,10 +775,6 @@ msgstr "Zoom Ut"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Nullstill Zoom"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Veksle skriptpanel"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

@@ -762,6 +762,10 @@ msgstr "僅選擇區域"
 msgid "Standard"
 msgstr "標準"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "\"切換腳本\" 面板"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -777,10 +781,6 @@ msgstr "縮小"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "重設縮放大小"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "\"切換腳本\" 面板"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

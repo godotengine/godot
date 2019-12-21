@@ -750,6 +750,10 @@ msgstr "Solo selezione"
 msgid "Standard"
 msgstr "Standard"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Attiva Pannello Scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -765,10 +769,6 @@ msgstr "Rimpicciolisci"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Azzera ingrandimento"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Attiva Pannello Scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"

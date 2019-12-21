@@ -28,12 +28,13 @@
 # leela <53352@protonmail.com>, 2019.
 # Tarou Yamada <mizuningyou@yahoo.co.jp>, 2019.
 # kazuma kondo <kazmax7@gmail.com>, 2019.
+# Akihiro Ogoshi <technical@palsystem-game.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
-"Last-Translator: kazuma kondo <kazmax7@gmail.com>\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
+"Last-Translator: Akihiro Ogoshi <technical@palsystem-game.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -740,6 +741,10 @@ msgstr "選択範囲のみ"
 msgid "Standard"
 msgstr "標準"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "スクリプトパネルを切り替え"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -755,10 +760,6 @@ msgstr "ズームアウト"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "ズームをリセット"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "スクリプトパネルを切り替え"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -4356,9 +4357,8 @@ msgid "Audio Clips"
 msgstr "オーディオクリップ:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "関数:"
+msgstr "関数"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp

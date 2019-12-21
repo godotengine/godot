@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-09 11:36+0000\n"
+"PO-Revision-Date: 2019-12-21 08:37+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -719,6 +719,10 @@ msgstr "Selecció Només"
 msgid "Standard"
 msgstr "Estàndard"
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Panell d'Scripts"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -734,10 +738,6 @@ msgstr "Allunya"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Reinicia el Zoom"
-
-#: editor/code_editor.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Panell d'Scripts"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -12045,12 +12045,14 @@ msgid "Invalid Identifier:"
 msgstr "Identificador no vàlid:"
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Required icon is not specified in the preset."
 msgstr ""
+"La icona necessària no està especificada a la configuració preestablerta."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Aturar Servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"

@@ -761,6 +761,11 @@ msgstr "শুধুমাত্র নির্বাচিতসমূহ"
 msgid "Standard"
 msgstr ""
 
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Scripts Panel"
+msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -776,11 +781,6 @@ msgstr "সংকুচিত করুন (জুম্ আউট)"
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
-
-#: editor/code_editor.cpp
-#, fuzzy
-msgid "Toggle Scripts Panel"
-msgstr "ফেবরিট/প্রিয়-সমূহ অদলবদল/টগল করুন"
 
 #: editor/code_editor.cpp
 #, fuzzy
