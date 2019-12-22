@@ -108,6 +108,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _removed_from_graph();
 
+	void _tree_changed();
+
 	EditorFileDialog *open_file;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);

@@ -712,6 +712,10 @@ void AnimationNodeBlendTreeEditor::_removed_from_graph() {
 	}
 }
 
+void AnimationNodeBlendTreeEditor::_tree_changed() {
+	_update_graph();
+}
+
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -817,6 +821,7 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_property_changed", &AnimationNodeBlendTreeEditor::_property_changed);
 	ClassDB::bind_method("_file_opened", &AnimationNodeBlendTreeEditor::_file_opened);
 	ClassDB::bind_method("_update_options_menu", &AnimationNodeBlendTreeEditor::_update_options_menu);
+	ClassDB::bind_method("_tree_changed", &AnimationNodeBlendTreeEditor::_tree_changed);
 
 	ClassDB::bind_method("_anim_selected", &AnimationNodeBlendTreeEditor::_anim_selected);
 }
@@ -909,6 +914,7 @@ bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
 void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 
 	if (blend_tree.is_valid()) {
+		blend_tree->disconnect("tree_changed", this, "_tree_changed");
 		blend_tree->disconnect("removed_from_graph", this, "_removed_from_graph");
 	}
 
@@ -918,6 +924,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 		hide();
 	} else {
 		blend_tree->connect("removed_from_graph", this, "_removed_from_graph");
+		blend_tree->connect("tree_changed", this, "_tree_changed");
 
 		_update_graph();
 	}

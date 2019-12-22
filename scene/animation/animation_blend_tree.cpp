@@ -678,12 +678,20 @@ String AnimationNodeTransition::get_caption() const {
 }
 
 void AnimationNodeTransition::_update_inputs() {
+	bool inputs_changed = false;
+
 	while (get_input_count() < enabled_inputs) {
 		add_input(inputs[get_input_count()].name);
+		inputs_changed = true;
 	}
 
 	while (get_input_count() > enabled_inputs) {
 		remove_input(get_input_count() - 1);
+		inputs_changed = true;
+	}
+
+	if (inputs_changed) {
+		emit_signal("tree_changed");
 	}
 }
 
