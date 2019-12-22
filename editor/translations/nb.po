@@ -559,8 +559,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Rediger"
 
@@ -841,6 +842,11 @@ msgstr "Legg til ekstra Call Argument:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Ekstra Call Argumenter:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Lim inn Noder"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3225,6 +3231,11 @@ msgstr "Åpne den neste Editoren"
 msgid "Open the previous Editor"
 msgstr "Åpne den forrige Editoren"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Advarsler"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4941,6 +4952,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "Overgang"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Panorerings-Modus"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #, fuzzy
@@ -6236,6 +6252,11 @@ msgid "Remove item %d?"
 msgstr "Fjern element %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshBibliotek..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Legg til Element"
@@ -6901,6 +6922,23 @@ msgstr "Åpne en fil"
 #, fuzzy
 msgid "Save File As..."
 msgstr "Lagre Som..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8221,6 +8259,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Ikon"
 
@@ -8364,6 +8403,20 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Vis Filer"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Ny %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Next Coordinate"
 msgstr "Neste skript"
@@ -8380,6 +8433,41 @@ msgstr "Forrige skript"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Roter Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Animasjonsnode"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Rediger Poly"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Animasjonsnode"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Roter Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Eksporter Prosjekt"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Panorerings-Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11717,6 +11805,16 @@ msgstr "Rediger Variabel:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Legg til Input"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Legg til Input"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "Ugyldig navn. Kan ikke kollidere med et eksisterende innebygd type navn."
@@ -11781,16 +11879,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Legg til Input"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Legg til Input"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13090,10 +13178,6 @@ msgstr "Konstanter kan ikke endres."
 
 #~ msgid "RMB: Erase Point."
 #~ msgstr "Høyreklikk: Slett Punkt."
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "Vis Filer"
 
 #~ msgid "Save Theme As"
 #~ msgstr "Lagre drakt som"

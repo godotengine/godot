@@ -560,8 +560,9 @@ msgstr "เฟรมต่อวินาที"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "แก้ไข"
 
@@ -840,6 +841,11 @@ msgstr "เพิ่มตัวแปร:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "ตัวแปรเพิ่มเติม:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "เลือกเมท็อด"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3163,6 +3169,11 @@ msgstr "เปิดตัวแก้ไขถัดไป"
 msgid "Open the previous Editor"
 msgstr "เปิดตัวแก้ไขก่อนหน้า"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "คำเตือน"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4841,6 +4852,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "ทรานสิชัน"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "โหมดมุมมอง"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -6126,6 +6142,11 @@ msgid "Remove item %d?"
 msgstr "ลบไอเทม %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshLibrary..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "เพิ่มไอเทม"
@@ -6787,6 +6808,23 @@ msgstr "เปิดไฟล์"
 #, fuzzy
 msgid "Save File As..."
 msgstr "บันทึกเป็น..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8127,6 +8165,7 @@ msgid "Data Type:"
 msgstr "ชนิดข้อมูล:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "รูปย่อ"
 
@@ -8270,6 +8309,20 @@ msgid "Merge from Scene"
 msgstr "รวมจากฉาก"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Autotiles"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "%s ใหม่"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Next Coordinate"
 msgstr "ไปชั้นบน"
@@ -8286,6 +8339,41 @@ msgstr "ไปชั้นล่าง"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "โหมดการทำงาน:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "โหนดแอนิเมชัน"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "แก้ไขรูปหลายเหลี่ยม"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "สร้าง Mesh นำทาง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "โหมดหมุน"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "วิธีการส่งออก:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "ดัชนี:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11661,6 +11749,16 @@ msgstr "แก้ไขประเภทตัวแปร"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "เพิ่มอินพุต"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "เพิ่มอินพุต"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr "ชื่อผิดพลาด ต้องไม่ใช้ชื่อเดียวกับชนิดตัวแปร"
 
@@ -11723,16 +11821,6 @@ msgstr "เพิ่มตัวแปร"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "เพิ่มสัญญาณ"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "เพิ่มอินพุต"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "เพิ่มอินพุต"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13286,9 +13374,6 @@ msgstr ""
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "หมุน 270 องศา"
-
-#~ msgid "Warning"
-#~ msgstr "คำเตือน"
 
 #~ msgid "Variable"
 #~ msgstr "ตัวแปร"

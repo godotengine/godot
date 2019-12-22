@@ -554,8 +554,9 @@ msgstr "フレームレート"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "編集"
 
@@ -821,6 +822,11 @@ msgstr "呼出し引数を追加:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "追加の呼出し引数:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "メソッドの選択"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3092,6 +3098,11 @@ msgstr "次のエディタを開く"
 msgid "Open the previous Editor"
 msgstr "前のエディタを開く"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "警告"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "サブリソースが見つかりませんでした。"
@@ -4675,6 +4686,11 @@ msgstr "終了アニメーションを設定する。これはサブトランジ
 msgid "Transition: "
 msgstr "トランジション: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "パンモード"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5902,6 +5918,11 @@ msgid "Remove item %d?"
 msgstr "アイテム%dを取り除きますか？"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "メッシュライブラリ..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "アイテムを追加"
@@ -6535,6 +6556,23 @@ msgstr "ファイルを開く"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "名前を付けて保存..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7796,6 +7834,7 @@ msgid "Data Type:"
 msgstr "データの型:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "アイコン"
 
@@ -7932,6 +7971,20 @@ msgid "Merge from Scene"
 msgstr "シーンからマージ"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "オートタイルを無効にする"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "新規 %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "次の座標"
 
@@ -7946,6 +7999,41 @@ msgstr "前の座標"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "前のシェイプ、サブタイル、またはタイルを選択します。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "領域モード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "コリジョンモード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "オクルージョンモード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "ナビゲーションモード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "ビットマスクモード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "優先モード"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "インデックス:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11309,6 +11397,16 @@ msgid "Set Variable Type"
 msgstr "変数の型を設定"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Input Port"
+msgstr "入力ポートの追加"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "出力ポートを追加"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "既存の組込み関数をオーバーライド。"
 
@@ -11368,16 +11466,6 @@ msgstr "変数を追加"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "シグナルを追加"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "入力ポートの追加"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "出力ポートを追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13043,9 +13131,6 @@ msgstr "定数は変更できません。"
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "270度回転"
-
-#~ msgid "Warning"
-#~ msgstr "警告"
 
 #~ msgid "Variable"
 #~ msgstr "変数"

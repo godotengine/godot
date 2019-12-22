@@ -638,7 +638,7 @@ public:
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
-	
+
 	PhysicalBone();
 	~PhysicalBone();
 

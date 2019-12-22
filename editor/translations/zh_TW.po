@@ -564,8 +564,9 @@ msgstr "每秒張數"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "編輯"
 
@@ -845,6 +846,11 @@ msgstr "新增額外呼叫參數:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "額外呼叫參數:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "過濾檔案..."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3183,6 +3189,11 @@ msgstr "開啟下一個編輯器"
 msgid "Open the previous Editor"
 msgstr "開啟上一個編輯器"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "警告"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4846,6 +4857,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "轉場: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "平移模式"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -6117,6 +6133,11 @@ msgid "Remove item %d?"
 msgstr "删除項目%d？"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "網狀資料庫(MeshLibrary)…"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "添加項目"
@@ -6767,6 +6788,23 @@ msgstr "開啟檔案"
 #, fuzzy
 msgid "Save File As..."
 msgstr "另存場景為..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8089,6 +8127,7 @@ msgid "Data Type:"
 msgstr "數據類型:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "圖標"
 
@@ -8230,6 +8269,20 @@ msgid "Merge from Scene"
 msgstr "從場景合併"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "過濾檔案..."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "新建 %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "下一個座標"
 
@@ -8245,6 +8298,41 @@ msgstr "上一個座標"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "選擇上一個形狀、子磁貼或磁貼。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "旋轉模式"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "插值模式"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "編輯遮擋多邊形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "創建導航網格"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "旋轉模式"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "導出模式:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "平移模式"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11578,6 +11666,16 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "添加輸入"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "添加輸入"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr "無效名稱.不能與現有的內置類型名稱沖突."
 
@@ -11640,16 +11738,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "添加輸入"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "添加輸入"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12901,10 +12989,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Zoom in"
 #~ msgstr "放大"
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "過濾檔案..."
 
 #, fuzzy
 #~ msgid "Zoom:"

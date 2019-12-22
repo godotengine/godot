@@ -529,8 +529,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Edita"
 
@@ -799,6 +800,11 @@ msgstr "Arguments de Crida addicionals:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Arguments de Crida addicionals:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Selecciona un Mètode"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3111,6 +3117,11 @@ msgstr "Obre l'Editor Següent"
 msgid "Open the previous Editor"
 msgstr "Obre l'Editor precedent"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Avís"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4712,6 +4723,11 @@ msgstr "Definiu l'animació final. Això és útil per a sub-transicions."
 msgid "Transition: "
 msgstr "Transició: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Mode d'Escombratge lateral"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5985,6 +6001,11 @@ msgid "Remove item %d?"
 msgstr "Elimina l'element %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Biblioteca de Models (MeshLibrary)..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Afegeix un Element"
@@ -6625,6 +6646,23 @@ msgstr "Obrir Fitxer"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Anomena i Desa..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7930,6 +7968,7 @@ msgid "Data Type:"
 msgstr "Tipus de Dades:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Icona"
 
@@ -8070,6 +8109,20 @@ msgid "Merge from Scene"
 msgstr "Combina-ho a partir de l'Escena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "AutoTiles"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Nou %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Coordenada Següent"
 
@@ -8086,6 +8139,41 @@ msgstr "Coordenada Anterior"
 #, fuzzy
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Seleccioneu la forma, sub-rajola o rajola anterior."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Mode Regió"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Mode Col·lisió"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Mode Oclusió"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Mode Navegació"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Mode màscara de bits"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Mode Prioritat"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Índex:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11522,6 +11610,16 @@ msgstr "Estableix el Tipus de Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Afegeix una Entrada"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Afegir port de sortida"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "El Nom no és vàlid. No pot coincidir amb noms de tipus integrats ja "
@@ -11586,16 +11684,6 @@ msgstr "Afegeix una Variable"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Afegeix un Senyal"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Afegeix una Entrada"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Afegir port de sortida"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13291,9 +13379,6 @@ msgstr "Les constants no es poden modificar."
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Gira-ho 270 graus"
-
-#~ msgid "Warning"
-#~ msgstr "Avís"
 
 #~ msgid "Variable"
 #~ msgstr "Variable"

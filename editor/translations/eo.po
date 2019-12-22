@@ -528,8 +528,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Editi"
 
@@ -800,6 +801,10 @@ msgstr "Aldoni alvoko argumento:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Aldona argumentoj de alvoko:"
+
+#: editor/connections_dialog.cpp
+msgid "Receiver Method:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3014,6 +3019,11 @@ msgstr ""
 msgid "Open the previous Editor"
 msgstr ""
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Avertoj"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr ""
@@ -4571,6 +4581,10 @@ msgstr ""
 msgid "Transition: "
 msgstr ""
 
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Play Mode:"
+msgstr ""
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5762,6 +5776,11 @@ msgid "Remove item %d?"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Maŝo biblioteko..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr ""
@@ -6386,6 +6405,23 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7632,6 +7668,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr ""
 
@@ -7763,6 +7800,18 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Autotile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr ""
 
@@ -7776,6 +7825,35 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Region"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Collision"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Occlusion"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Videbla navigacio"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Z Index"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -10934,6 +11012,14 @@ msgid "Set Variable Type"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr ""
 
@@ -10994,14 +11080,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp

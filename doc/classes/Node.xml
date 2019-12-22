@@ -839,7 +839,7 @@
 			Pause mode. How the node will behave if the [SceneTree] is paused.
 		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
-			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
+			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
 		</member>
 	</members>
 	<signals>
@@ -994,6 +994,7 @@
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
+			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>
 	</constants>
 </class>

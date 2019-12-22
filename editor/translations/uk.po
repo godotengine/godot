@@ -539,8 +539,9 @@ msgstr "Кадри за секунду"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Редагувати"
 
@@ -806,6 +807,11 @@ msgstr "Додати додатковий аргумент виклику:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Додаткові аргументи виклику:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Вибір методу"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3082,6 +3088,11 @@ msgstr "Відкрити наступний редактор"
 msgid "Open the previous Editor"
 msgstr "Відкрити попередній редактор"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Попередження"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Підлеглих ресурсів не знайдено."
@@ -4672,6 +4683,11 @@ msgstr "Встановити кінець анімації. Корисно дл�
 msgid "Transition: "
 msgstr "Перехід: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Режим панорамування"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5887,6 +5903,11 @@ msgid "Remove item %d?"
 msgstr "Видалення елемента %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Бібліотека сітки..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Додати елемент"
@@ -6518,6 +6539,23 @@ msgstr "Відкрити файл"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Зберегти файл як…"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7774,6 +7812,7 @@ msgid "Data Type:"
 msgstr "Тип даних:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Піктограма"
 
@@ -7907,6 +7946,20 @@ msgid "Merge from Scene"
 msgstr "Об'єднати зі сцени"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Вимкнути автоплитки"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Новий %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Наступна координата"
 
@@ -7921,6 +7974,41 @@ msgstr "Попередня координата"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Вибір попередньої форми, підплитки або плитки."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Режим області"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Режим перешкоди"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Режим перешкоди"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Режим навігації"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Режим бітової маски"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Режим пріоритетності"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Індекс:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11246,6 +11334,14 @@ msgid "Set Variable Type"
 msgstr "Встановити тип змінної"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Додати вхідний порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Додати вихідний порт"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Перевизначення наявної вбудованої функції."
 
@@ -11304,14 +11400,6 @@ msgstr "Додати змінну"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Додати сигнал"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Додати вхідний порт"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Додати вихідний порт"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
@@ -13127,9 +13215,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Обертання на 270 градусів"
-
-#~ msgid "Warning"
-#~ msgstr "Попередження"
 
 #~ msgid "Variable"
 #~ msgstr "Змінна"

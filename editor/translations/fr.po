@@ -73,8 +73,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:38+0000\n"
-"Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2019-12-22 04:19+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -599,8 +599,9 @@ msgstr "IPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Édition"
 
@@ -866,6 +867,11 @@ msgstr "Ajouter un argument supplémentaire :"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Arguments supplémentaires :"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Sélectionner une méthode"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3162,6 +3168,11 @@ msgstr "Ouvrir l'éditeur suivant"
 msgid "Open the previous Editor"
 msgstr "Ouvrir l'éditeur précédant"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Avertissements"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Aucune sous-ressource n'a été trouvée."
@@ -4761,6 +4772,11 @@ msgstr "Définir l'animation de fin. Ceci est utile pour les sous-transitions."
 msgid "Transition: "
 msgstr "Transition : "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Mode navigation"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5980,6 +5996,11 @@ msgid "Remove item %d?"
 msgstr "Supprimer l'objet %d ?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshLibrary…"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Ajouter un item"
@@ -6617,6 +6638,23 @@ msgstr "Ouvrir le fichier"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Enregistrer sous…"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7875,6 +7913,7 @@ msgid "Data Type:"
 msgstr "Type de données :"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Icône"
 
@@ -8008,6 +8047,20 @@ msgid "Merge from Scene"
 msgstr "Fusionner depuis la scène"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Désactiver Autotile"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Nouveau %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Coordonnée suivante"
 
@@ -8022,6 +8075,41 @@ msgstr "Coordonnée précédente"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Sélectionner la forme précédente, sous-tuile, ou tuile."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Mode Région"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Mode collision"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Mode Occlusion"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Mode Navigation"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Mode Bitmask"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Mode prioritaire"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Index :"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -9407,7 +9495,7 @@ msgstr "Clé de chiffrement invalide (doit comporter 64 caractères)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr "Clé de chiffre des scripts (256 bits en hexadécimal) :"
+msgstr "Clé de chiffrement des scripts (256 bits en hexadécimal) :"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -9423,11 +9511,11 @@ msgstr "Tout exporter"
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
-msgstr "Fichiers ZIP"
+msgstr "Fichier ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Données de jeu Godot"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11361,6 +11449,14 @@ msgid "Set Variable Type"
 msgstr "Définir type de variable"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Ajouter un port d'entrée"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Ajouter un port de sortie"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Remplacer une fonction intégrée existante."
 
@@ -11419,14 +11515,6 @@ msgstr "Ajouter une variable"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Ajouter un signal"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Ajouter un port d'entrée"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Ajouter un port de sortie"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"

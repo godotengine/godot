@@ -545,8 +545,9 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Modificare"
 
@@ -827,6 +828,11 @@ msgstr "Adăugați Extra Argument de Chemare:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Extra Argumente de Chemare:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Proprietățile obiectului."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3193,6 +3199,10 @@ msgstr "Deschide Editorul următor"
 msgid "Open the previous Editor"
 msgstr "Deschide Editorul anterior"
 
+#: editor/editor_node.h
+msgid "Warning!"
+msgstr ""
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4866,6 +4876,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "Tranziție"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Mod În Jur"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -6151,6 +6166,11 @@ msgid "Remove item %d?"
 msgstr "Elimini obiectul %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Librărie_de_Structuri..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Adaugă Obiect"
@@ -6813,6 +6833,23 @@ msgstr "Deschideți un Fișier"
 #, fuzzy
 msgid "Save File As..."
 msgstr "Salvează Ca..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8121,6 +8158,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr ""
 
@@ -8262,6 +8300,19 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Vizualizează Fișierele"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr ""
 
@@ -8277,6 +8328,41 @@ msgstr "Fila anterioară"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Modul de Execuție:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Nod de Animație"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Editează Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Creează un Mesh de Navigare"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Mod Rotație"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Exportă Proiectul"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Mod În Jur"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11571,6 +11657,16 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Adaugă Intrare(Input)"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Adaugă Intrare(Input)"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "Nume nevalid. Nu trebuie să se lovească cu un nume de tip deja existent în "
@@ -11635,16 +11731,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Adaugă Intrare(Input)"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Adaugă Intrare(Input)"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12868,10 +12954,6 @@ msgstr ""
 
 #~ msgid "RMB: Erase Point."
 #~ msgstr "RMB: Șterge Punctul."
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "Vizualizează Fișierele"
 
 #, fuzzy
 #~ msgid "Zoom:"

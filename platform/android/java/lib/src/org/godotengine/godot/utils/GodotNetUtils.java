@@ -33,7 +33,6 @@ package org.godotengine.godot.utils;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
-
 import org.godotengine.godot.Godot;
 
 /**

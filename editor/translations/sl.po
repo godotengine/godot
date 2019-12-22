@@ -558,8 +558,9 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Uredi"
 
@@ -839,6 +840,11 @@ msgstr "Dodaj Dodaten Klicni Argument:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Dodatni Klicni Argumenti:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Lastnosti objekta."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3188,6 +3194,10 @@ msgstr "Odpri naslednji Urejevalnik"
 msgid "Open the previous Editor"
 msgstr "Odpri prejšnji Urejevalnik"
 
+#: editor/editor_node.h
+msgid "Warning!"
+msgstr ""
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr ""
@@ -4860,6 +4870,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "Prehod"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Način Plošče"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -6135,6 +6150,11 @@ msgid "Remove item %d?"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Knjižnica Modelov..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr ""
@@ -6787,6 +6807,23 @@ msgstr "Odpri v Datoteki"
 #, fuzzy
 msgid "Save File As..."
 msgstr "Shrani Kot..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8092,6 +8129,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr ""
 
@@ -8234,6 +8272,19 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Ogled datotek"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr ""
 
@@ -8249,6 +8300,41 @@ msgstr "Prejšnji zavihek"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Animacijski Gradnik"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Uredi Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Animacijski Gradnik"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Način Vrtenja"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Izvozi Projekt"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Način Plošče"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11548,6 +11634,16 @@ msgstr "Nastavite Tip Spremenljivke"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Dodaj Vnos"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Dodaj Vnos"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "Neveljavno ime. Ne sme se prekrivati z obstoječim vgrajenim imenom tipa."
@@ -11611,16 +11707,6 @@ msgstr "Dodaj Spremenljivko"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Dodaj Signal"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Dodaj Vnos"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Dodaj Vnos"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12870,10 +12956,6 @@ msgstr "Konstante ni možno spreminjati."
 #, fuzzy
 #~ msgid "Zoom in"
 #~ msgstr "Približaj"
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "Ogled datotek"
 
 #, fuzzy
 #~ msgid "Zoom:"

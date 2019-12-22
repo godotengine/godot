@@ -553,8 +553,9 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "עריכה"
 
@@ -830,6 +831,11 @@ msgstr ""
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr ""
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "מאפייני פריט."
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3105,6 +3111,11 @@ msgstr "פתיחת העורך הבא"
 msgid "Open the previous Editor"
 msgstr "פתיחת העורך הקודם"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "אזהרות"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr ""
@@ -4755,6 +4766,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "מעברון"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "מצב גולמי"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -6006,6 +6022,11 @@ msgid "Remove item %d?"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "ייצוא ספריה"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr ""
@@ -6654,6 +6675,23 @@ msgstr "פתיחת קובץ"
 #, fuzzy
 msgid "Save File As..."
 msgstr "שמירה בשם…"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7968,6 +8006,7 @@ msgid "Data Type:"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr ""
 
@@ -8108,6 +8147,18 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Autotile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Next Coordinate"
 msgstr "הסקריפט הבא"
@@ -8123,6 +8174,40 @@ msgstr "הסקריפט הקודם"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "מצב גולמי"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "עריכת מצולע"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "עריכת מצולע"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "עריכת מצולע"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "מצב גולמי"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "ייצוא מיזם"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Z Index"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -11407,6 +11492,16 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "מועדפים:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "מועדפים:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr "שם שגוי. לא יכול לחפוף לשם סוג מובנה קיים."
 
@@ -11469,16 +11564,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "מועדפים:"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "מועדפים:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12608,9 +12693,6 @@ msgstr ""
 
 #~ msgid "Update Always"
 #~ msgstr "לעדכן תמיד"
-
-#~ msgid "Raw Mode"
-#~ msgstr "מצב גולמי"
 
 #~ msgid "Path to Node:"
 #~ msgstr "נתיב המפרק:"
