@@ -133,6 +133,13 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"_",
 	"INF",
 	"NAN",
+	"E",
+	"LN2",
+	"LN10",
+	"LOG2E",
+	"LOG10E",
+	"SQRT12",
+	"SQRT2",
 	"Error",
 	"EOF",
 	"Cursor"
@@ -232,6 +239,13 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_WILDCARD, "_" },
 	{ GDScriptTokenizer::TK_CONST_INF, "INF" },
 	{ GDScriptTokenizer::TK_CONST_NAN, "NAN" },
+	{ GDScriptTokenizer::TK_CONST_E, "E" },
+	{ GDScriptTokenizer::TK_CONST_LN2, "LN2" },
+	{ GDScriptTokenizer::TK_CONST_LN10, "LN10" },
+	{ GDScriptTokenizer::TK_CONST_LOG2E, "LOG2E" },
+	{ GDScriptTokenizer::TK_CONST_LOG10E, "LOG10E" },
+	{ GDScriptTokenizer::TK_CONST_SQRT12, "SQRT12" },
+	{ GDScriptTokenizer::TK_CONST_SQRT2, "SQRT2" },
 	{ GDScriptTokenizer::TK_ERROR, NULL }
 };
 
@@ -296,6 +310,13 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_WILDCARD:
 		case TK_CONST_INF:
 		case TK_CONST_NAN:
+		case TK_CONST_E:
+		case TK_CONST_LN2:
+		case TK_CONST_LN10:
+		case TK_CONST_LOG2E:
+		case TK_CONST_LOG10E:
+		case TK_CONST_SQRT12:
+		case TK_CONST_SQRT2:
 		case TK_ERROR:
 			return !variable_safe;
 

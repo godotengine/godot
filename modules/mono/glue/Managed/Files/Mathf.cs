@@ -15,6 +15,14 @@ namespace Godot
         public const real_t Pi = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
         public const real_t Inf = real_t.PositiveInfinity;
         public const real_t NaN = real_t.NaN;
+        public const real_t E = (real_t) 2.7182818284590452353602874714M;
+        public const real_t Ln2 = (real_t) 0.6931471805599453094172321214581765680755001343602M;
+        public const real_t Ln10 = (real_t) 2.3025850929940456840179914546843642076011014886287M;
+        public const real_t Log2e = (real_t) 1.4426950408889634073599246810018921374266459541529M;
+        public const real_t Log10e = (real_t) 0.4342944819032518276511289189166050822943970058036M;
+        public const real_t Sqrt12 = (real_t) 0.7071067811865475244008443621048490M;
+        public const real_t Sqrt2 = (real_t) 1.4142135623730950488016887242M;
+        
 
         private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
         private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823

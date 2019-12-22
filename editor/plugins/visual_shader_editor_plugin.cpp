@@ -2571,6 +2571,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Pi/2", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Pi/2 constant (1.570796) or 90 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI / 2));
 	add_options.push_back(AddOption("Pi", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Pi constant (3.141593) or 180 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI));
 	add_options.push_back(AddOption("Tau", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Tau constant (6.283185) or 360 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_TAU));
+	add_options.push_back(AddOption("Ln2", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Ln2 constant (0.693147). Natural logarithm of two."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
+	add_options.push_back(AddOption("Ln10", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Ln10 constant (2.302585). Natural logarithm of ten."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
+	add_options.push_back(AddOption("Log2E", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Log2E constant (1.442695). Logarithm of base two of value e."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
+	add_options.push_back(AddOption("Log10E", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Log10E constant (0.434294). Logarithm of base ten of value e."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
+	add_options.push_back(AddOption("Sqrt12", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Sqrt12 constant (0.707107). Square root of one half."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
 	add_options.push_back(AddOption("Sqrt2", "Scalar", "Constants", "VisualShaderNodeScalarConstant", TTR("Sqrt2 constant (1.414214). Square root of 2."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
 
 	// FUNCTIONS

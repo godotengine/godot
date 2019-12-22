@@ -421,6 +421,62 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			constant->datatype = _type_from_variant(constant->value);
 			tokenizer->advance();
 			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_E) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_E;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_LN2) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_LN2;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_LN10) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_LN10;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_LOG2E) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_LOG2E;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_LOG10E) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_LOG10E;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_SQRT12) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_SQRT12;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONST_SQRT2) {
+
+			//constant defined by tokenizer
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			constant->value = Math_SQRT2;
+			constant->datatype = _type_from_variant(constant->value);
+			tokenizer->advance();
+			expr = constant;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_PRELOAD) {
 
 			//constant defined by tokenizer

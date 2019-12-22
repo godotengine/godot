@@ -450,6 +450,41 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_cons
 	nan.first = "NAN";
 	nan.second = Math_NAN;
 	p_constants->push_back(nan);
+
+	Pair<String, Variant> e;
+	e.first = "E";
+	e.second = Math_E;
+	p_constants->push_back(e);
+
+	Pair<String, Variant> ln2;
+	ln2.first = "LN2";
+	ln2.second = Math_LN2;
+	p_constants->push_back(ln2);
+
+	Pair<String, Variant> ln10;
+	ln10.first = "LN10";
+	ln10.second = Math_LN10;
+	p_constants->push_back(ln10);
+
+	Pair<String, Variant> log2e;
+	log2e.first = "LOG2E";
+	log2e.second = Math_LOG2E;
+	p_constants->push_back(log2e);
+
+	Pair<String, Variant> log10e;
+	log10e.first = "LOG10E";
+	log10e.second = Math_LOG10E;
+	p_constants->push_back(log10e);
+
+	Pair<String, Variant> sqrt12;
+	sqrt12.first = "SQRT12";
+	sqrt12.second = Math_SQRT12;
+	p_constants->push_back(sqrt12);
+
+	Pair<String, Variant> sqrt2;
+	sqrt2.first = "SQRT2";
+	sqrt2.second = Math_SQRT2;
+	p_constants->push_back(sqrt2);
 }
 
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
@@ -2179,7 +2214,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 	}
 
 	static const char *_keywords[] = {
-		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
+		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT12", "SQRT2", "self", "true", "as", "assert",
 		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
 		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
@@ -3281,7 +3316,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
-	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol || "E" == p_symbol || "LN2" == p_symbol || "LN10" == p_symbol || "LOG2E" == p_symbol || "LOG10E" == p_symbol || "SQRT12" == p_symbol || "SQRT2" == p_symbol) {
 		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 		r_result.class_name = "@GDScript";
 		r_result.class_member = p_symbol;
