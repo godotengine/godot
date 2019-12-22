@@ -37,6 +37,7 @@
 #include <android/log.h>
 #include <jni.h>
 
+#include "core/math/rect2.h"
 #include "string_android.h"
 
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
@@ -59,6 +60,7 @@ private:
 	jmethodID _is_video_playing = 0;
 	jmethodID _pause_video = 0;
 	jmethodID _stop_video = 0;
+	jmethodID _get_window_inset = 0;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
@@ -83,6 +85,7 @@ public:
 	bool is_video_playing();
 	void pause_video();
 	void stop_video();
+	Rect2 get_window_inset();
 };
 
 #endif /* !JAVA_GODOT_IO_WRAPPER_H */

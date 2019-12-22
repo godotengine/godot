@@ -61,6 +61,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_is_video_playing = p_env->GetMethodID(cls, "isVideoPlaying", "()Z");
 		_pause_video = p_env->GetMethodID(cls, "pauseVideo", "()V");
 		_stop_video = p_env->GetMethodID(cls, "stopVideo", "()V");
+		_get_window_inset = p_env->GetMethodID(cls, "getWindowInset", "()[I");
 	}
 }
 
@@ -204,4 +205,17 @@ int GodotIOJavaWrapper::get_vk_height() {
 
 void GodotIOJavaWrapper::set_vk_height(int p_height) {
 	virtual_keyboard_height = p_height;
+}
+
+Rect2 GodotIOJavaWrapper::get_window_inset() {
+	if (_get_window_inset) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jintArray ret = (jintArray)env->CallObjectMethod(godot_io_instance, _get_window_inset);
+		jint *inset_arr = env->GetIntArrayElements(ret, JNI_FALSE);
+		Rect2 inset_rect(inset_arr[0], inset_arr[1], inset_arr[2], inset_arr[3]);
+		env->ReleaseIntArrayElements(ret, inset_arr, JNI_ABORT);
+		return inset_rect;
+	} else {
+		return Rect2();
+	}
 }

@@ -538,6 +538,10 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+		}
+
 		//check for apk expansion API
 		if (true) {
 			boolean md5mismatch = false;

@@ -291,6 +291,16 @@ Size2 OS_Android::get_window_size() const {
 	return Vector2(default_videomode.width, default_videomode.height);
 }
 
+Rect2 OS_Android::get_window_safe_area() const {
+	Rect2 inset = godot_io_java->get_window_inset();
+	Size2 window_size = get_window_size();
+
+	return Rect2(
+			inset.position.x, inset.position.y,
+			window_size.width - inset.size.width - inset.position.x,
+			window_size.height - inset.size.height - inset.position.y);
+}
+
 String OS_Android::get_name() const {
 
 	return "Android";
