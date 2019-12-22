@@ -496,15 +496,13 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (b4b5426, 2019)
+- Version: git (e12ea82, 2019)
 - License: MIT
 
 Files extracted from upstream source:
 
 - `xatlas.{cpp,h}`
-
-Note: License is marked as Public Domain in the files, but it was
-later clarified upstream to MIT license.
+- `LICENSE`
 
 
 ## zlib
