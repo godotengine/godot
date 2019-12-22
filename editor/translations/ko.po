@@ -534,8 +534,9 @@ msgstr "초당 프레임"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "편집하기"
 
@@ -801,6 +802,11 @@ msgstr "별도의 호출 인수 추가하기:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "별도의 호출 인수:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "메서드 선택하기"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3050,6 +3056,11 @@ msgstr "다음 편집기 열기"
 msgid "Open the previous Editor"
 msgstr "이전 편집기 열기"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "경고"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "하위 리소스를 찾을 수 없어요."
@@ -4625,6 +4636,11 @@ msgstr "끝 애니메이션을 설정해요. 이것은 하위 전환에 유용�
 msgid "Transition: "
 msgstr "전환: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "팬 모드"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5828,6 +5844,11 @@ msgid "Remove item %d?"
 msgstr "%d개의 항목을 삭제할까요?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "메시 라이브러리..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "항목 추가하기"
@@ -6456,6 +6477,23 @@ msgstr "파일 열기"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "다른 이름으로 저장하기..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7709,6 +7747,7 @@ msgid "Data Type:"
 msgstr "데이터 유형:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "아이콘"
 
@@ -7842,6 +7881,20 @@ msgid "Merge from Scene"
 msgstr "씬에서 병합하기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "오토타일 끄기"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "아틀라스:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "다음 좌표"
 
@@ -7856,6 +7909,41 @@ msgstr "이전 좌표"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "지역 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "충돌 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "어클루전 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "내비게이션 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "비트 마스크 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "우선 순위 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "인덱스:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11125,6 +11213,14 @@ msgid "Set Variable Type"
 msgstr "변수 유형 설정"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "입력 포트 추가하기"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "출력 포트 추가하기"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "존재하는 내장 함수를 다시 정의해요."
 
@@ -11183,14 +11279,6 @@ msgstr "변수 추가하기"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "시그널 추가하기"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "입력 포트 추가하기"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "출력 포트 추가하기"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
@@ -12946,9 +13034,6 @@ msgstr "상수는 수정할 수 없어요."
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "270도 회전"
 
-#~ msgid "Warning"
-#~ msgstr "경고"
-
 #~ msgid "Variable"
 #~ msgstr "변수"
 
@@ -14083,9 +14168,6 @@ msgstr "상수는 수정할 수 없어요."
 
 #~ msgid "Lossy Quality:"
 #~ msgstr "손실 품질:"
-
-#~ msgid "Atlas:"
-#~ msgstr "아틀라스:"
 
 #~ msgid "Shrink By:"
 #~ msgstr "이미지 줄이기:"

@@ -526,8 +526,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Muokkaa"
 
@@ -793,6 +794,11 @@ msgstr "Lisää ylimääräinen argumentti kutsulle:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Ylimääräiset argumentit:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Valitse metodi"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3061,6 +3067,11 @@ msgstr "Avaa seuraava editori"
 msgid "Open the previous Editor"
 msgstr "Avaa edellinen editori"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Varoitus"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Aliresursseja ei löydetty."
@@ -4647,6 +4658,11 @@ msgstr "Aseta loppuanimaatio. Tämä on hyödyllistä alisiirtymiä varten."
 msgid "Transition: "
 msgstr "Siirtymä: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Panorointitila"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5875,6 +5891,11 @@ msgid "Remove item %d?"
 msgstr "Poistetaanko kohde %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Mesh-kirjastoksi..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Lisää kohde"
@@ -6508,6 +6529,23 @@ msgstr "Avaa tiedosto"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Tallenna tiedosto nimellä..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7760,6 +7798,7 @@ msgid "Data Type:"
 msgstr "Tietotyyppi:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Kuvake"
 
@@ -7896,6 +7935,20 @@ msgid "Merge from Scene"
 msgstr "Yhdistä skenestä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Poista automaattiruudutus käytöstä"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Uusi %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Seuraava koordinaatti"
 
@@ -7910,6 +7963,41 @@ msgstr "Edellinen koordinaatti"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Valitse edellinen muoto, aliruutu tai ruutu."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Aluetila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Törmäystila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Peittotila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Siirtymistila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Bittimaskitila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Prioriteettitila"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Indeksi:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11232,6 +11320,14 @@ msgid "Set Variable Type"
 msgstr "Aseta muuttujan tyyppi"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Lisää tuloportti"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Lisää lähtöportti"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Ylikirjoita olemassa oleva sisäänrakennettu funktio."
 
@@ -11290,14 +11386,6 @@ msgstr "Lisää muuttuja"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Lisää signaali"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Lisää tuloportti"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Lisää lähtöportti"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
@@ -12982,9 +13070,6 @@ msgstr "Vakioita ei voi muokata."
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Käännä 270 astetta"
-
-#~ msgid "Warning"
-#~ msgstr "Varoitus"
 
 #~ msgid "Variable"
 #~ msgstr "Muuttuja"

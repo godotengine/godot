@@ -538,8 +538,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Upravit"
 
@@ -809,6 +810,11 @@ msgstr "Přidat další argument volání:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Další argumenty volání:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Vybrat metodu"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3128,6 +3134,11 @@ msgstr "Otevřít další editor"
 msgid "Open the previous Editor"
 msgstr "Otevřít předchozí editor"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Varování"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -4735,6 +4746,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "Přechod: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "RAW mód"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5996,6 +6012,11 @@ msgid "Remove item %d?"
 msgstr "Odstranit %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshLibrary..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Přidat položku"
@@ -6632,6 +6653,23 @@ msgstr "Otevřít soubor"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Uložit soubor jako..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7940,6 +7978,7 @@ msgid "Data Type:"
 msgstr "Datový typ:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Ikona"
 
@@ -8082,6 +8121,20 @@ msgid "Merge from Scene"
 msgstr "Sloučit ze scény"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Nový textový soubor"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Nový %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Next Coordinate"
 msgstr "Další skript"
@@ -8098,6 +8151,41 @@ msgstr "Předchozí skript"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Režim otáčení"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Interpolační režim"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Editovat polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Vytvořit Navigation Mesh"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Režim otáčení"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Expertní režim:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Index:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11419,6 +11507,16 @@ msgstr "Nastavit typ proměnné"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Přidat vstup"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Přidat vstup"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "Neplatný název. Nesmí kolidovat s existujícím jménem zabudovaného typu."
@@ -11482,16 +11580,6 @@ msgstr "Přidat proměnnou"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Přidat signál"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Přidat vstup"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Přidat vstup"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12785,9 +12873,6 @@ msgstr "Konstanty není možné upravovat."
 #~ msgid "Update Always"
 #~ msgstr "Aktualizovat vždy"
 
-#~ msgid "Raw Mode"
-#~ msgstr "RAW mód"
-
 #~ msgid "Path to Node:"
 #~ msgstr "Cesta k uzlu:"
 
@@ -12922,9 +13007,6 @@ msgstr "Konstanty není možné upravovat."
 #~ msgid "RMB: Erase Point."
 #~ msgstr "RMB: Vymazat bod."
 
-#~ msgid "New TextFile"
-#~ msgstr "Nový textový soubor"
-
 #~ msgid "Save Theme As"
 #~ msgstr "Uložit motiv jako"
 
@@ -12995,9 +13077,6 @@ msgstr "Konstanty není možné upravovat."
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Otočit o 270 stupňů"
-
-#~ msgid "Warning"
-#~ msgstr "Varování"
 
 #~ msgid "Variable"
 #~ msgstr "Proměnná"

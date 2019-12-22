@@ -60,12 +60,13 @@
 # Ravager <al.porkhunov@gmail.com>, 2019.
 # Александр <akonn7@mail.ru>, 2019.
 # Rei <clxgamer12@gmail.com>, 2019.
+# Vitaly <arkology11@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
-"Last-Translator: Rei <clxgamer12@gmail.com>\n"
+"PO-Revision-Date: 2019-12-22 04:19+0000\n"
+"Last-Translator: Vitaly <arkology11@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -583,8 +584,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Редактировать"
 
@@ -850,6 +852,11 @@ msgstr "Добавить дополнительный параметр вызо�
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Дополнительные параметры вызова:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Выбрать метод"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3121,6 +3128,11 @@ msgstr "Открыть следующий редактор"
 msgid "Open the previous Editor"
 msgstr "Открыть предыдущий редактор"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Предупреждение"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Вложенные ресурсы не найдены."
@@ -4705,6 +4717,11 @@ msgstr "Установите конец анимации. Полезно для 
 msgid "Transition: "
 msgstr "Переход: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Режим осмотра"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5243,7 +5260,7 @@ msgstr "H Центр Широкий"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Full Rect"
-msgstr "Полное имя"
+msgstr "Полный прямоугольник"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
@@ -5564,7 +5581,6 @@ msgid "Insert keys (based on mask)."
 msgstr "Вставить ключи (на основе маски)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
@@ -5921,6 +5937,11 @@ msgstr "Размер обводки:"
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Удалить элемент %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Библиотека полисеток..."
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6554,6 +6575,23 @@ msgstr "Открыть файл"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Сохранить как..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7817,6 +7855,7 @@ msgid "Data Type:"
 msgstr "Тип информации:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Иконка"
 
@@ -7950,6 +7989,20 @@ msgid "Merge from Scene"
 msgstr "Слияние из сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Отключить автотайлы"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Атласы:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Следующая Координата"
 
@@ -7964,6 +8017,41 @@ msgstr "Предыдущая Координата"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Выберите предыдущую форму, элемент тайла или тайл."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Режим региона"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Режим столкновения"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Режим перекрытия"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Режим навигации"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Режим битовой маски"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Режим приоритета"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Индекс:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11297,6 +11385,14 @@ msgid "Set Variable Type"
 msgstr "Установить тип переменной"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Добавить входной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Добавить выходной порт"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Переопределить существующую встроенную функцию."
 
@@ -11355,14 +11451,6 @@ msgstr "Добавить переменную"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Добавить сигнал"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Добавить входной порт"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Добавить выходной порт"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
@@ -12214,7 +12302,6 @@ msgstr ""
 "Вместо этого используйте BakedLightmap."
 
 #: scene/3d/light.cpp
-#, fuzzy
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight с углом более 90 градусов не может отбрасывать тени."
 
@@ -12302,13 +12389,12 @@ msgstr ""
 "shapes)."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Чтобы AnimatedSprite3D отображал кадры, пожалуйста установите или создайте "
-"ресурс SpriteFrames в параметре 'Frames'."
+"Чтобы AnimatedSprite3D отображал кадры, ресурс SpriteFrames должен быть "
+"создан или задан в свойстве \"Frames\"."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -12374,9 +12460,8 @@ msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
 msgstr "Путь, заданный для AnimationPlayer, не ведет к узлу AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "Корневой элемент AnimationPlayer недействительный."
+msgstr "Корневой элемент AnimationPlayer недействителен."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -12447,7 +12532,6 @@ msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Если «Exp Edit» включён, «Min Value» должно быть больше 0."
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
@@ -13014,9 +13098,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Поворот на 270 градусов"
-
-#~ msgid "Warning"
-#~ msgstr "Предупреждение"
 
 #~ msgid "Variable"
 #~ msgstr "Переменная"
@@ -14205,9 +14286,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Lossy Quality:"
 #~ msgstr "Потеря качества:"
-
-#~ msgid "Atlas:"
-#~ msgstr "Атласы:"
 
 #~ msgid "Shrink By:"
 #~ msgstr "Степень сжатия:"

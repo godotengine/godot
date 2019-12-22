@@ -574,8 +574,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -841,6 +842,11 @@ msgstr "Zusätzlichen Aufrufparameter hinzufügen:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Zusätzliche Aufrufparameter:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Methode auswählen"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3133,6 +3139,11 @@ msgstr "Nächsten Editor öffnen"
 msgid "Open the previous Editor"
 msgstr "Vorigen Editor öffnen"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Warnung"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Keine Unter-Ressourcen gefunden."
@@ -4724,6 +4735,11 @@ msgstr "End-Animation festlegen. Hilfreich bei Sub-Transitionen."
 msgid "Transition: "
 msgstr "Übergang: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Schwenkmodus"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5956,6 +5972,11 @@ msgid "Remove item %d?"
 msgstr "Element %d entfernen?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "Mesh-Bibliothek..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Element hinzufügen"
@@ -6590,6 +6611,23 @@ msgstr "Datei öffnen"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Datei speichern als..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7850,6 +7888,7 @@ msgid "Data Type:"
 msgstr "Datentyp:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Symbol"
 
@@ -7985,6 +8024,20 @@ msgid "Merge from Scene"
 msgstr "Aus Szene zusammenführen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Autokacheln deaktivieren"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Atlas:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Nächste Koordinate"
 
@@ -7999,6 +8052,41 @@ msgstr "Vorherige Koordinate"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Die vorherige Form oder Kachel auswählen."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Bereichsmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Kollisionsmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Verschlussmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Navigationsmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Bitmaskenmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Prioritätsmodus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Index:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11335,6 +11423,14 @@ msgid "Set Variable Type"
 msgstr "Variablentyp festlegen"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Eingangsschnittstelle hinzufügen"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Ausgangsschnittstelle hinzufügen"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Eine existierende eingebaute Funktion überschreiben."
 
@@ -11393,14 +11489,6 @@ msgstr "Variable hinzufügen"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Signal hinzufügen"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Eingangsschnittstelle hinzufügen"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Ausgangsschnittstelle hinzufügen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
@@ -13239,9 +13327,6 @@ msgstr "Konstanten können nicht verändert werden."
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Drehe auf 270 Grad"
 
-#~ msgid "Warning"
-#~ msgstr "Warnung"
-
 #~ msgid "Variable"
 #~ msgstr "Variable"
 
@@ -14427,9 +14512,6 @@ msgstr "Konstanten können nicht verändert werden."
 
 #~ msgid "Lossy Quality:"
 #~ msgstr "Verlustbehaftete Qualität:"
-
-#~ msgid "Atlas:"
-#~ msgstr "Atlas:"
 
 #~ msgid "Shrink By:"
 #~ msgstr "Verkleinern nach:"

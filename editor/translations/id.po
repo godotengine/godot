@@ -545,8 +545,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Sunting"
 
@@ -812,6 +813,11 @@ msgstr "Tambah Argumen Panggilan Ekstra:"
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "Argumen-argumen Panggilan Ekstra:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Pilih Method/Fungsi"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3085,6 +3091,11 @@ msgstr "Buka Editor Selanjutnya"
 msgid "Open the previous Editor"
 msgstr "Buka Editor Sebelumnya"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Peringatan"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Tidak ada sub-sumber yang ditemukan."
@@ -4671,6 +4682,11 @@ msgstr "Terapkan akhir pada animasi. Berguna untuk sub-transisi."
 msgid "Transition: "
 msgstr "Transisi: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Mode Geser Pandangan"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -5904,6 +5920,11 @@ msgid "Remove item %d?"
 msgstr "Hapus item %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "PerpustakaanMesh..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "Tambah Item"
@@ -6536,6 +6557,23 @@ msgstr "Buka Berkas"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Simpan Berkas Sebagai..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7793,6 +7831,7 @@ msgid "Data Type:"
 msgstr "Jenis data:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Ikon"
 
@@ -7927,6 +7966,20 @@ msgid "Merge from Scene"
 msgstr "Gabung dari Skena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Nonaktifkan Autotile"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "%s baru"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Koordinat berikutnya"
 
@@ -7941,6 +7994,41 @@ msgstr "Koordinat Sebelumnya"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Pilih bentuk sebelumnya, subtile, atau Tile."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Mode Wilayah"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Mode Tabrakan"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Mode Oklusi"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Mode Navigasi"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Mode Bitmask"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Mode Prioritas"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Indeks:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -11265,6 +11353,16 @@ msgstr "Atur Jenis variabel"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "Tambah port masukan"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "Tambah port keluaran"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr "Tidak boleh sama dengan nama tipe bawaan yang ada."
 
@@ -11327,16 +11425,6 @@ msgstr "Tambahkan Variabel"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Tambahkan Sinyal"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "Tambah port masukan"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "Tambah port keluaran"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy

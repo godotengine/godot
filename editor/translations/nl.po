@@ -44,8 +44,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
-"Last-Translator: Julian <jdhoogvorst@gmail.com>\n"
+"PO-Revision-Date: 2019-12-22 12:24+0000\n"
+"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -246,7 +246,7 @@ msgstr "Animatie Terugspelen Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Animatielengte (in frames)"
+msgstr "Animatielengte (frames)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
@@ -304,7 +304,7 @@ msgstr "Tijd (en): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Track schakelaar ingeschakeld"
+msgstr "Track in-/uit schakelen"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -480,7 +480,7 @@ msgstr "Voeg Methode Track sleutel toe"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr "Methode niet gevonden in object "
+msgstr "Methode niet gevonden in object: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -564,8 +564,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Bewerken"
 
@@ -833,6 +834,11 @@ msgid "Extra Call Arguments:"
 msgstr "Extra Aanroep Argumenten:"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "Selecteer Method"
+
+#: editor/connections_dialog.cpp
 msgid "Advanced"
 msgstr "Geavanceerd"
 
@@ -1072,7 +1078,7 @@ msgstr "Error bij het laden van:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr "Laden mislukt vanwege het ontbrekende van afhankelijkheden:"
+msgstr "Laden mislukt vanwege afwezige afhankelijkheden:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1144,7 +1150,7 @@ msgstr "Hoofdontwikkelaar"
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Project Manager "
+msgstr "Projectbeheer "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1562,8 +1568,8 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
-"Doel platform heeft 'ETC' afbeelding compressie nodig voor GLES2. Activeer "
-"'Importeer ETC' in de project instellingen."
+"Doelplatform vereist 'ETC' textuurcompressie voor GLES2. Schakel 'Import "
+"Etc' in bij de Projectinstellingen."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2041,7 +2047,7 @@ msgstr "Alleen Eigenschappen"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr "Enkel Thema Eigenschappen"
+msgstr "Alleen Thema Eigenschappen"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
@@ -2079,11 +2085,11 @@ msgstr "Selectie kopiëren"
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
-msgstr "Leegmaken"
+msgstr "Wissen"
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr "Maak Uitvoer Leeg"
+msgstr "Uitvoer wissen"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
@@ -2385,7 +2391,7 @@ msgstr "Exporteer Mesh Library"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Deze bewerking is niet mogelijk zonder een hoofdknoop."
+msgstr "Deze bewerking is niet mogelijk zonder een wortelknoop."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -2426,7 +2432,7 @@ msgstr "Sluit de editor af?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr "Open de Project Manager?"
+msgstr "Open Projectbeheer?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -2440,8 +2446,7 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Wil je de wijzigen aan de volgende scene(s) opslaan voor de Project Manager "
-"opent?"
+"Wijzigen aan de volgende scène(s) opslaan voor het openen van Projectbeheer?"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2520,7 +2525,7 @@ msgstr "De scene '%s' heeft kapotte afhankelijkheden:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "Maak Leeg"
+msgstr "Recente scènes wissen"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2676,7 +2681,7 @@ msgstr "Scene Opslaan"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr "Alle Scenes Opslaan"
+msgstr "Alle Scènes Opslaan"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -3113,6 +3118,11 @@ msgstr "Open de volgende Editor"
 msgid "Open the previous Editor"
 msgstr "Open de vorige Editor"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "Waarschuwingen"
+
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
 msgstr "Geen deel-hulpbronnen gevonden."
@@ -3524,7 +3534,7 @@ msgstr "Opvragen..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
-msgstr "Bezig met downloaden"
+msgstr "Bezig met neerladen"
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
@@ -3622,7 +3632,7 @@ msgstr "Naam bevat ongeldige tekens."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr "Hernoem bestand:"
+msgstr "Bestandsnaam wijzigen:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
@@ -3759,7 +3769,7 @@ msgstr "Creëer Script"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
-msgstr "Zoeken in bestanden"
+msgstr "In bestanden zoeken"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
@@ -4272,7 +4282,7 @@ msgstr "BlendSpace2D hoort niet bij een AnimationTree knoop."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
-msgstr "Er bestaan geen driehoeken, blending kan niet plaatsvinden."
+msgstr "Er bestaan geen driehoeken, dus mengen kan niet plaatsvinden."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Toggle Auto Triangles"
@@ -4302,7 +4312,7 @@ msgstr "Parameter veranderd"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
-msgstr "Filters Bewerken"
+msgstr "Filters berwerken"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
@@ -4422,7 +4432,7 @@ msgstr "Verander Animatie Naam:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr "Animatie verwijderen?"
+msgstr "Animatie wissen?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -4448,7 +4458,7 @@ msgstr "Meng met volgende aanpassing"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr "Wijzig overlooptijd"
+msgstr "Wijzig overgangstijd"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
@@ -4585,22 +4595,22 @@ msgstr "Animatiespeler vastzetten"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr "Maak Nieuwe Animatie Aan"
+msgstr "Nieuwe Animatie Opstellen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr "Animatie Naam:"
+msgstr "Animatienaam:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 msgid "Error!"
-msgstr "Foutmelding!"
+msgstr "Fout!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr "Mengtijden:"
+msgstr "Overgangstijden:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
@@ -4698,6 +4708,11 @@ msgstr "Stel eindanimatie in. Dit is handig voor sub-transities."
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
 msgstr "Overgang: "
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "Verschuif Modus"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5301,7 +5316,7 @@ msgstr "Plak Houding"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Guides"
-msgstr "Maak gidsen leeg"
+msgstr "Wis hulplijnen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
@@ -5310,7 +5325,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
-msgstr "Maak Bones Leeg"
+msgstr "Botten wissen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -5318,7 +5333,7 @@ msgstr "Maak IK Ketting"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
-msgstr "Maak IK Ketting Leeg"
+msgstr "IK-Keten wissen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5466,7 +5481,8 @@ msgstr "Snappen aan gidsen"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
 msgstr ""
-"Vergrendel het geselecteerde object in plaats (kan niet verplaatst worden)."
+"Vergrendel het geselecteerde object op zijn plaats (kan niet verplaatst "
+"worden)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5500,7 +5516,7 @@ msgstr "Maak één of meerdere op maat gemaakte botten van één of meerdere Nod
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Custom Bones"
-msgstr "Maak Aangepaste Botten Leeg"
+msgstr "Aangepaste Botten Wissen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5590,7 +5606,7 @@ msgstr "Kopieer Houding"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr "Maak Houding Leeg"
+msgstr "Houding wissen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -5669,7 +5685,7 @@ msgstr "Herstart"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr "Leeg Emissie Masker"
+msgstr "Emissiemasker wissen"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5854,7 +5870,7 @@ msgstr "Model heeft geen UV in deze laag"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "MeshInstance ontbreekt een Mesh!"
+msgstr "MeshInstance bevat geen Mesh!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
@@ -5910,20 +5926,25 @@ msgstr "Creëer een contour mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
-msgstr "Grootte Omlijning:"
+msgstr "Omlijningsgrootte:"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
-msgstr "Item %d verwijderen?"
+msgstr "Element %d verwijderen?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshBibilotheek..."
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
-msgstr "Item Toevoegen"
+msgstr "Element toevoegen"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove Selected Item"
-msgstr "Verwijder Geselecteerde Item"
+msgstr "Geselecteerd element verwijderen"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import from Scene"
@@ -5935,11 +5956,11 @@ msgstr "Update Vanuit Scene"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "Geen mesh bron gespecificeerd (en geen MultiMesh ingesteld in node)."
+msgstr "Geen mesh bron aangegeven (en geen MultiMesh ingesteld in knoop)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "Geen mesh bron gespecificeerd (en MultiMesh bevat geen Mesh)."
+msgstr "Geen mesh bron aangegeven (en MultiMesh bevat geen Mesh)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
@@ -5947,7 +5968,7 @@ msgstr "Mesh bron is ongeldig (ongeldig pad)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "Mesh bron is ongeldig (niet een MeshInstance)."
+msgstr "Mesh bron is ongeldig (geen MeshInstance)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
@@ -5955,7 +5976,7 @@ msgstr "Mesh bron is ongeldig (bevat geen Mesh resource)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
-msgstr "Geen oppervlakte bron gespecificeerd."
+msgstr "Geen oppervlakte bron aangegeven."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
@@ -6033,7 +6054,7 @@ msgstr "Creëer Navigatie Polygoon"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
-msgstr "Converteer Naar CPUParticles"
+msgstr "Zet om in CPUParticles"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generating Visibility Rect"
@@ -6397,7 +6418,7 @@ msgstr "UV->Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
-msgstr "Wis UV"
+msgstr "UV wissen"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
@@ -6503,7 +6524,7 @@ msgstr "Pad naar AnimationPlayer is ongeldig"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
-msgstr "Wis Recente Bestanden"
+msgstr "'Recente Bestanden' wissen"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close and save changes?"
@@ -6548,6 +6569,23 @@ msgstr "Open een Bestand"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Opslaan Als..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6757,7 +6795,7 @@ msgstr "Zoek Resultaten"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
-msgstr "Maak Recente Scripts Leeg"
+msgstr "'Recente Scripts' wissen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Connections to method:"
@@ -7615,7 +7653,7 @@ msgstr "Verticaal:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select/Clear All Frames"
-msgstr "Selecteer/Wis alle Frames"
+msgstr "Alle frames selecteren/wissen"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
@@ -7803,6 +7841,7 @@ msgid "Data Type:"
 msgstr "Data Type:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Icoon"
 
@@ -7936,6 +7975,20 @@ msgid "Merge from Scene"
 msgstr "Vervoeg vanuit Scene"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "Autotile uitschakelen"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "Nieuw %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Volgend Coördinaat"
 
@@ -7950,6 +8003,41 @@ msgstr "Vorig Coördinaat"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Selecteer de vorige shape, subtegel of Tegel."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "Regio Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "Collision modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Occlusion Mode"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Navigatie Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "Bitmask Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "Prioriteit Modus"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "Index:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -8146,7 +8234,7 @@ msgstr "Plak Tile Bitmask"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr "Wis Tegel Bitmask"
+msgstr "Tegel Bitmask wissen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Concave"
@@ -9104,9 +9192,9 @@ msgid ""
 "constants."
 msgstr ""
 "Aangepaste Godot Shader Language expressie die wordt geplaatst bovenop het "
-"resultaat van de shader. Je kunt hierin meerdere functies detineren en later "
-"aanroepen in de expressies. Je kunt hierin ook variaties, uniformen en "
-"constante declareren."
+"resultaat van de shader. Je kunt hierin meerdere functies plaatsen en later "
+"aanroepen in de expressies. Je kunt hierin ook varyings, uniformen en "
+"constanten declareren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9646,8 +9734,8 @@ msgid ""
 "The interface will update after restarting the editor or project manager."
 msgstr ""
 "Taal veranderd. \n"
-"De gebruikersinterface wordt bijgewerkt de volgende keer dat de editor of "
-"projectmanager wordt gestart."
+"De gebruikersinterface wordt bij het herstarten van de editor of "
+"projectbeheer bijgewerkt."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9659,7 +9747,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Project Manager"
+msgstr "Projectbeheer"
 
 #: editor/project_manager.cpp
 msgid "Projects"
@@ -10248,6 +10336,8 @@ msgid ""
 "Cannot instance the scene '%s' because the current scene exists within one "
 "of its nodes."
 msgstr ""
+"Kan scène '%s' niet instantiëren omdat de huidige scène in één van zijn "
+"knopen bestaat."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -10263,7 +10353,7 @@ msgstr "Initialiseer Kind Scene"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
-msgstr "Script vrijmaken"
+msgstr "Script wissen"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10284,6 +10374,8 @@ msgstr "Kopieer Knooppunt(en)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Kan ouderschap van knopen in geërfde scenes niet aanpassen, volgorde van "
+"knopen kan niet veranderen."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -10332,12 +10424,17 @@ msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
+"Het uitzetten van \"editable_instance\" zal ervoor zorgen dat alle "
+"eigenschappen van deze knoop naar hun standaardwaarde worden teruggezet."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
+"Het aanzetten van \"Als plaatsvervanger laden\" zal \"Bewerkbare kinderen\" "
+"uitzetten en ervoor zorgen dat alle eigenschappen van deze knoop naar hun "
+"standaardwaarde worden teruggezet."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10374,7 +10471,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr ""
+msgstr "Kan niet werken aan knopen waar de huidige scène van erft!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach Script"
@@ -10393,6 +10490,8 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
+"Kon nieuwe scène niet opslaan. Waarschijnlijk konden "
+"(instantie-)afhankelijkheden niet voldaan worden."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
@@ -10408,7 +10507,7 @@ msgstr "Sub-Resource"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Wis Erfenis"
+msgstr "Erfenis wissen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -10476,7 +10575,7 @@ msgstr "Verbind een nieuw of bestaand script aan het geselecteerde knooppunt."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr "Verwijder script van selecteerde knooppunt."
+msgstr "Script van geselecteerde knopen wissen."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10488,7 +10587,7 @@ msgstr "Lokaal"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr ""
+msgstr "Erfenis wissen? (Kan niet ongedaan worden gemaakt!)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visible"
@@ -10515,12 +10614,16 @@ msgid ""
 "Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
+"Knoop heeft %s verbinding(en) en %s groep(en).\n"
+"Klik hier om signaalvenster te tonen."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
+"Knoop heeft %s verbinding(en).\n"
+"Klik hier om signaalvenster te tonen."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10547,6 +10650,8 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make selectable."
 msgstr ""
+"Kinderen zijn niet selecteerbaar.\n"
+"Klik hier om selecteerbaar te maken."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
@@ -10557,6 +10662,8 @@ msgid ""
 "AnimationPlayer is pinned.\n"
 "Click to unpin."
 msgstr ""
+"AnimationPlayer is vastgezet.\n"
+"Klik om los te maken."
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
@@ -10772,7 +10879,7 @@ msgstr "Monitors"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
-msgstr ""
+msgstr "Kies één of meer elementen van de lijst om de grafiek weer te geven."
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -10952,7 +11059,7 @@ msgstr "Dynamische Bibliotheek"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Add an architecture entry"
-msgstr ""
+msgstr "Voeg een architectuur invoer toe"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "GDNativeLibrary"
@@ -10980,7 +11087,7 @@ msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Tekenreeks met lengte 1 verwacht (één karakter)."
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -11117,11 +11224,11 @@ msgstr "Cursor Achter Roteer Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
-msgstr "Wis Cursor Rotatie"
+msgstr "Cursorrotatie wissen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
-msgstr "Maak selectie leeg"
+msgstr "Selectie wissen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Fill Selection"
@@ -11133,7 +11240,7 @@ msgstr "GridMap Instellingen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
-msgstr ""
+msgstr "Selecteerafstand:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Filter meshes"
@@ -11141,7 +11248,7 @@ msgstr "Filter Meshes"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr ""
+msgstr "Voeg een MeshLibrary aan deze GridMap toe om meshes te gebruiken."
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11149,7 +11256,7 @@ msgstr "Klassennaam kan geen gereserveerd sleutelwoord zijn"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr ""
+msgstr "Einde van innerlijke exception stack trace"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
@@ -11157,7 +11264,7 @@ msgstr "Bak NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
-msgstr "Leeg de navigatie mesh."
+msgstr "Navigatiemesh wissen."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
@@ -11270,6 +11377,14 @@ msgid "Set Variable Type"
 msgstr "Zet variabele type"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Voeg invoerpoort toe"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Voeg uitvoerpoort toe"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
 msgstr "Overschrijft een bestaande ingebouwde functie."
 
@@ -11330,14 +11445,6 @@ msgid "Add Signal"
 msgstr "Signaal Toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Input Port"
-msgstr "Voeg invoerpoort toe"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Add Output Port"
-msgstr "Voeg uitvoerpoort toe"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Input Port"
 msgstr "Verwijder Invoerpoort"
 
@@ -11358,11 +11465,10 @@ msgid "Duplicate VisualScript Nodes"
 msgstr "Kopieer VisualScript Knooppunt"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"Houdt Meta ingedrukt om een Getter te plaatsen. Houdt Shift ingedrukt om een "
-"generiek signatuur te plaatsen."
+"%s ingedrukt houden om een Getter te plaatsen. Houd de Shift-toets ingedrukt "
+"om een generieke signatuur te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
@@ -11371,10 +11477,8 @@ msgstr ""
 "generiek signatuur te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a simple reference to the node."
-msgstr ""
-"Houdt Meta ingedrukt om een simpele referentie naar de node te plaatsen."
+msgstr "Houd %s ingedrukt om een simpele referentie naar de knoop te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
@@ -11382,9 +11486,8 @@ msgstr ""
 "Houdt Ctrl ingedrukt om een simpele referentie naar de node te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Variable Setter."
-msgstr "Houdt Meta ingedrukt om een Variable Setter te plaatsen."
+msgstr "Houdt %s ingedrukt om een Variable Setter te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
@@ -11397,6 +11500,7 @@ msgstr "Preload Node Toevoegen"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
+"Kan knopen niet plaatsen, script '%s'' wordt niet in deze scène gebruikt."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11407,6 +11511,9 @@ msgid ""
 "Can't drop properties because script '%s' is not used in this scene.\n"
 "Drop holding 'Shift' to just copy the signature."
 msgstr ""
+"Kan eigenschappen niet plaatsen omdat script '%s' niet gebruikt wordt in "
+"deze scène.\n"
+"Plaats met 'Shift'-toets ingedrukt om allen de signatuur te kopiëren."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -11479,11 +11586,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
-msgstr ""
+msgstr "Selecteer ten minste één knoop met een Sequence poort."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Try to only have one sequence input in selection."
-msgstr ""
+msgstr "Slechts één sequence invoer kan geselecteerd worden."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
@@ -11535,7 +11642,7 @@ msgstr "functie_naam"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
-msgstr "Selecteer of maak een functie om de grafiek te bewerken."
+msgstr "Selecteer of maak een functie om het diagram te bewerken."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
@@ -11559,7 +11666,7 @@ msgstr "Creëer Functie"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Refresh Graph"
-msgstr "Verversen Graph"
+msgstr "Diagram vernieuwen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -11640,7 +11747,7 @@ msgstr "Package naam ontbreekt."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Pakketsegmenten moeten een lengte ongelijk nul hebben."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
@@ -11679,6 +11786,7 @@ msgstr "Debug Keystore is niet ingesteld of aanwezig in de Editor Settings."
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
+"Eigen build vereist een geldige Android SDK pad in de Editorinstellingen."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
@@ -11689,10 +11797,12 @@ msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
+"Geen Android bouwsjabloon geïnstalleerd in dit project. Vanuit het "
+"projectmenu kan het geïnstalleerd worden."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Ongeldige publieke sleutel voor APK -uitbreiding."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -11703,6 +11813,8 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Geprobeerd met een eigen bouwsjabloon te bouwen, maar versie info ontbreekt. "
+"Installeer alstublieft opnieuw vanuit het 'Project' menu."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11711,6 +11823,10 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"Android buildversie onverenigbaar:\n"
+"   Template geïnstalleerd: %s\n"
+"   Godot versie: %s\n"
+"Herinstalleer Android build template vanuit het 'Project' menu."
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
@@ -11733,9 +11849,8 @@ msgid "Identifier is missing."
 msgstr "Identifier ontbreekt."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "Naam is geen geldige identifier:"
+msgstr "Het karakter '%s' is geen geldige identifier."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -11743,9 +11858,8 @@ msgstr ""
 "App Store Team ID niet gespecificeerd - kan het project niet configureren."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "Naam is geen geldige identifier:"
+msgstr "Ongeldige identifier:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
@@ -11773,39 +11887,32 @@ msgid "Could not open template for export:"
 msgstr "Kon template niet openen voor export:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:"
-msgstr "Ongeldige index eigenschap naam."
+msgstr "Ongeldige export template:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:"
-msgstr "Map kon niet gemaakt worden."
+msgstr "Kon de custom HTML shell niet lezen:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:"
-msgstr "Map kon niet gemaakt worden."
+msgstr "Kon de opstartafbeelding niet lezen:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Map kon niet gemaakt worden."
+msgstr "Gebruik de standaard opstartafbeelding."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "Ongeldige klassenaam"
+msgstr "Ongeldige pakket korte naam."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Ongeldige unieke naam."
+msgstr "Ongeldige pakket unieke naam."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "Ongeldige unieke naam."
+msgstr "Ongeldige pakket uitgevernaam."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -11855,7 +11962,6 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Ongeldige afmetingen van splash screen afbeelding (moet 620×300 zijn)."
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
@@ -11926,13 +12032,12 @@ msgstr ""
 "ingeschakeld."
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
-"Een textuur met de vorm van het licht moet worden aangeboden in de 'texture' "
-"eigenschap."
+"Een textuur met de vorm van het licht moet in de 'Texture' eigenschap worden "
+"aangegeven."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -11942,11 +12047,10 @@ msgstr ""
 "laten werken."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "De occluder polygoon van deze occluder is leeg. Teken alsjeblieft een "
-"polygoon!"
+"polygoon."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -11977,18 +12081,26 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"GPU-gebaseerde particles worden niet ondersteund door de GLES2-"
+"stuurprogramma.\n"
+"Gebruik in plaats daarvan een CPUParticles2D knoop. De \"Zet om in "
+"CPUParticles\" optie kan hiervoor gebruikt worden."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
 msgstr ""
+"Een materiaal om de particles te verwerken is niet aangegeven, dus geen "
+"gedrag is gedefinieerd."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Particles2D animatie heeft een CanvasItemMaterial nodig met \"Particles "
+"Animation\" aan."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -12000,6 +12112,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"Grootteveranderingen van een RigidBody2D (in Character- of Rigidmodus) zal "
+"overschreven worden door de physics engine als het spel start.\n"
+"Verander in plaats daarvan de grootte van CollisionShapes in de kinderen."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -12020,27 +12135,27 @@ msgstr ""
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
+"Dit bot heeft geen correcte REST pose. Deze kan in een Skeleton2D knoop "
+"gezet worden."
 
 #: scene/2d/tile_map.cpp
-#, fuzzy
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D dient enkel om een bots vorm te koppelen aan een node "
-"afgeleid van CollisionObject2D. Gebruik het alsjeblieft als een child van "
-"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D etc. om ze een vorm te "
-"geven."
+"TileMap met de optie \"Use Parent\" aan heeft een CollisionShape2D-ouder "
+"nodig om vormen aan te geven. De TileMap hoort een kind van een Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D enz. knoop te zijn om ze een vorm "
+"te geven."
 
 #: scene/2d/visibility_notifier_2d.cpp
-#, fuzzy
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D werkt het beste wanneer het gebruikt wordt met de "
-"aangepaste scene root direct als ouder."
+"VisibilityEnable2D werkt het beste wanneer het gebruikt wordt met de wortel "
+"van de aangepaste scène als directe ouder."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
@@ -12055,6 +12170,8 @@ msgid ""
 "The controller ID must not be 0 or this controller won't be bound to an "
 "actual controller."
 msgstr ""
+"Het controller ID moet ongelijk 0 zijn, anders zal deze controller niet "
+"verbonden worden met een werkelijke controller."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
@@ -12065,14 +12182,16 @@ msgid ""
 "The anchor ID must not be 0 or this anchor won't be bound to an actual "
 "anchor."
 msgstr ""
+"Het anker ID moet ongelijk 0 zijn, anders zal dit anker niet verbonden "
+"worden met een werkelijk anker."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr ""
+msgstr "ARVROrigin heeft een ARVRCamera nodig als kind."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
@@ -12130,29 +12249,32 @@ msgstr ""
 "van Area, StaticBody, RigidBody, KinematicBody etc. om ze een vorm te geven."
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
-"Een vorm moet gegeven worden om CollisionShape te laten werken. Maak "
-"alsjeblieft een vorm resource voor deze!"
+"Om CollisionShape te laten werken, hoort het een Shape te hebben. Maak "
+"hiervoor alstublieft een Shape bron aan."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"Een vlak als vorm werkt niet goed en zal verwijderd worden in toekomstige "
+"versies. Gebruik wordt afgeraden."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
+msgstr "Niets is zichtbaar want geen mesh is toegewezen."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
 "CPUParticles animation requires the usage of a SpatialMaterial whose "
 "Billboard Mode is set to \"Particle Billboard\"."
 msgstr ""
+"CPUParticles animatie heeft een SpatialMaterial nodig met \"BillBoard Mode\" "
+"op de waarde \"Particle Billboard\"."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -12163,10 +12285,13 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"GIProbes worden niet ondersteund door het GLES2 grafische stuurprogramma.\n"
+"Gebruik in plaats daarvan een BakedLightmap."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
+"Een SpotLight met een hoek breder dan 90 graden kan geen schaduwen werpen."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -12187,28 +12312,37 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"Op GPU-gebaseerde particles worden niet ondersteund door het GLES2 grafische "
+"stuurprogramma.\n"
+"Gebruik in plaats daarvan een CPUParticles knoop. De optie \"Zet om in "
+"CPUParticles\" kan hiervoor gebruikt worden."
 
 #: scene/3d/particles.cpp
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
+"Niets is zichtbaar want meshes zijn niet toegewezen aan de tekendoorlopen "
+"(draw passes)."
 
 #: scene/3d/particles.cpp
 msgid ""
 "Particles animation requires the usage of a SpatialMaterial whose Billboard "
 "Mode is set to \"Particle Billboard\"."
 msgstr ""
+"Particles animatie heeft een SpatialMaterial nodig met \"BillBoard Mode\" op "
+"de waarde \"Particle Billboard\"."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
+msgstr "PathFollow werkt alleen wanneer het een kind van een Path knoop is."
 
 #: scene/3d/path.cpp
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
+"Een PathFollow met \"Rotation Mode\" op \"ROTATION_ORIENTED\" vereist dat de "
+"\"Up Vector\" van de Curve bron in de ouder Path aan staat."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -12216,14 +12350,17 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"Grootteveranderingen van een RigidBody (in Character- of Rigidmodus) zal "
+"overschreven worden door de physics engine als het spel start.\n"
+"Verander in plaats daarvan de grootte van CollisionShapes in de kinderen."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
-"Pad eigenschap moet verwijzen naar een geldige Spatial node om te werken."
+"De \"Remote Path\" eigenschap moet wijzen naar een geldige Spatial (of van "
+"Spatial afgeleide) knoop om te werken."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -12235,27 +12372,33 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"Grootteveranderingen van een SoftBody (in Character- of Rigidmodus) zal "
+"overschreven worden door de physics engine als het spel start.\n"
+"Verander de grootte van CollisionShapes in de kinderen."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Een SpriteFrames resource moet gemaakt of gegeven worden in de 'Frames' "
-"eigenschap om AnimatedSprite3D frames te laten tonen."
+"Een SpriteFrames bron moet in de 'Frames' eigenschap gemaakt of gegeven "
+"worden om AnimatedSprite3D frames te laten tonen."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+"VehicleWheel dient ervoor een VehicleBody met een wielsysteem te voorzien. "
+"Gebruik het als kind van een VehicleBody."
 
 #: scene/3d/world_environment.cpp
 msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment vereist dat de \"Environment\" eigenschap een Environment "
+"heeft om een zichtbaar effect te hebben."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -12269,33 +12412,32 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"Deze WorldEnvironment wordt genegeerd. Voeg een Camera (voor 3D scènes) toe "
+"of zet de \"Background Mode\" naar Canvas (voor 2D scènes)."
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr ""
+msgstr "In BlendTree knoop '%s', animatie niet gevonden: '%s'"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "Animatie Tools"
+msgstr "Animatie niet gevonden: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr ""
+msgstr "In knoop '%s', ongeldige animatie: '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "FOUTMELDING: Invalide animatie naam!"
+msgstr "Ongeldige animatie: '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "Ontkoppel '%s' van '%s'"
+msgstr "Niets verbonden met invoer '%s' van knoop '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
-msgstr ""
+msgstr "Geen AnimationNode wortel is voor deze graaf aangegeven."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -12306,15 +12448,15 @@ msgstr ""
 #: scene/animation/animation_tree.cpp
 msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
 msgstr ""
+"Het pad naar de AnimationPlayer leidt niet naar een AnimationPlayer knoop."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "Animatie boom is ongeldig."
+msgstr "De AnimationPlayer wortel is een ongeldig knoop."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "Deze knoop is verouderd. Gebruik in plaats daarvan AnimationTree."
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
@@ -12325,18 +12467,16 @@ msgid "HSV"
 msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw"
-msgstr "Yaw"
+msgstr "Rauw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
 msgstr "Wissel tussen hexadecimaal en codewaarden."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Huidige kleur als een preset toevoegen"
+msgstr "Huidige kleur als voorkeuze toevoegen."
 
 #: scene/gui/container.cpp
 msgid ""
@@ -12345,15 +12485,18 @@ msgid ""
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Container op zich dient geen doel, tenzij een script de plaatsing van de "
-"kindknooppunten bepaalt.\n"
+"kinderen bepaalt.\n"
 "Als je niet van plan bent om een script toe te voegen, gebruik dan een "
-"gewone Control node."
+"gewone Control knoop."
 
 #: scene/gui/control.cpp
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"De Hint Tooltip zal niet worden getoond omdat Mouse Filter van deze knoop op "
+"\"Ignore\" staat. Zet Mouse Filter op \"Stop\" of \"Pass\" om dit op te "
+"lossen."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -12361,22 +12504,21 @@ msgstr "Alarm!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Bevestig Alsjeblieft..."
+msgstr "Bevestig alsjeblieft..."
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
-"Standaard verbergen pop-ups zich tenzij je popup() aanroept of één van de "
-"popup*() functies. Ze zichtbaar maken om te bewerken is prima, maar ze "
-"zullen zich verbergen bij het uitvoeren."
+"Standaard worden pop-ups verborgen, tenzij je popup() aanroept of één van de "
+"popup*() methoden. Ze zichtbaar maken om te bewerken is prima, maar ze "
+"zullen zich verbergen bij het draaien van het spel."
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr ""
+msgstr "Als \"Exp Edit\" aanstaat, moet \"Min Value\" groter zijn dan nul."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -12384,19 +12526,21 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
+"ScrollContainer hoort te werken met een enkel Control kind.\n"
+"Gebruik een houder (VBox, Hbox, enz.) of een Control als kind en zet de "
+"minimale grootte handmatig."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
 msgstr "(Andere)"
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"Standaard Omgeving gespecificeerd in Project Instellingen (Rendering -> "
-"Viewport -> Standaard Omgeving) kan niet worden geladen."
+"De standaard Environment zoals aangegeven in Projectinstellingen "
+"(Rendering→Environment→Default Environment) kon niet worden geladen."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -12411,18 +12555,16 @@ msgstr ""
 "RenderTarget van en wijs zijn interne texture toe aan een node om te tonen."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Ongeldige bron voor shader."
+msgstr "Ongeldige bron voor voorvertoning."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "Ongeldige bron voor shader."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Ongeldige bron voor shader."
+msgstr "Ongeldige vergelijkingsfunctie voor dat type."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

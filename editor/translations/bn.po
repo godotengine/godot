@@ -565,8 +565,9 @@ msgstr "এফ পি এস"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "সম্পাদন করুন (Edit)"
 
@@ -849,6 +850,11 @@ msgstr "ডাকযোগ্য অতিরিক্ত মান/আর্গ
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr "ডাকযোগ্য অতিরিক্ত মান/আর্গুমেন্ট-সমূহ:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Receiver Method:"
+msgstr "মেথড/পদ্ধতি বাছাই করুন"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3261,6 +3267,11 @@ msgstr "এডিটরে খুলুন"
 msgid "Open the previous Editor"
 msgstr "এডিটরে খুলুন"
 
+#: editor/editor_node.h
+#, fuzzy
+msgid "Warning!"
+msgstr "সতর্কতা"
+
 #: editor/editor_path.cpp
 #, fuzzy
 msgid "No sub-resources found."
@@ -5009,6 +5020,11 @@ msgstr ""
 msgid "Transition: "
 msgstr "ট্র্যানজিশন/স্থানান্তরণ"
 
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Play Mode:"
+msgstr "প্যান মোড"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #, fuzzy
@@ -6317,6 +6333,11 @@ msgid "Remove item %d?"
 msgstr "%d টি বস্তু অপসারণ করবেন?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh Library"
+msgstr "MeshLibrary (মেস-লাইব্রেরি)..."
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
 msgstr "বস্তু যোগ করুন"
@@ -6996,6 +7017,23 @@ msgstr "একটি ফাইল খুলুন"
 #, fuzzy
 msgid "Save File As..."
 msgstr "এইরূপে সংরক্ষণ করুন..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8361,6 +8399,7 @@ msgid "Data Type:"
 msgstr "ডাটার ধরণ:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "আইকন"
 
@@ -8508,6 +8547,20 @@ msgid "Merge from Scene"
 msgstr "দৃশ্য হতে একত্রিত করবেন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Autotile"
+msgstr "স্বয়ংক্রিয় টুকরো"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Atlas"
+msgstr "এটলাস/মানচিত্রাবলী:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Next Coordinate"
 msgstr "পরবর্তী স্ক্রিপ্ট"
@@ -8524,6 +8577,41 @@ msgstr "পূর্বের ট্যাব"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Region"
+msgstr "চালানোর মোড:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Collision"
+msgstr "অ্যানিমেশনের নোড"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Occlusion"
+msgstr "Poly সম্পাদন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Navigation"
+msgstr "Navigation Mesh তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Bitmask"
+msgstr "ঘূর্ণায়ন মোড"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Priority"
+msgstr "এক্সপোর্ট মোড:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Z Index"
+msgstr "ইন্ডেক্স:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11990,6 +12078,16 @@ msgstr "চলক/ভেরিয়েবল সম্পাদন করুন:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
+msgid "Add Input Port"
+msgstr "ইনপুট যোগ করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Add Output Port"
+msgstr "ইনপুট যোগ করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Override an existing built-in function."
 msgstr ""
 "অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান পূর্বনির্মিত ধরণের নামের সাথে পরম্পরবিরোধী "
@@ -12054,16 +12152,6 @@ msgstr "চলক/ভেরিয়েবল সংযোজন করুন"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "সংকেত/সিগন্যাল সংযোজন করুন"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Input Port"
-msgstr "ইনপুট যোগ করুন"
-
-#: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
-msgid "Add Output Port"
-msgstr "ইনপুট যোগ করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -13669,9 +13757,6 @@ msgstr ""
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "২৭০ ডিগ্রি ঘোরান্‌"
 
-#~ msgid "Warning"
-#~ msgstr "সতর্কতা"
-
 #~ msgid "Variable"
 #~ msgstr "চলক/ভেরিয়েবল"
 
@@ -14842,9 +14927,6 @@ msgstr ""
 
 #~ msgid "Lossy Quality:"
 #~ msgstr "ধ্বংসাত্মক গুণের:"
-
-#~ msgid "Atlas:"
-#~ msgstr "এটলাস/মানচিত্রাবলী:"
 
 #~ msgid "Shrink By:"
 #~ msgstr "সঙ্কোচন দ্বারা:"
