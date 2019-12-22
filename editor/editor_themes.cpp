@@ -861,6 +861,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "LineEdit", style_widget);
 	theme->set_stylebox("focus", "LineEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "LineEdit", style_widget_disabled);
+	theme->set_icon("clear", "LineEdit", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_color_selected", "LineEdit", mono_color);
