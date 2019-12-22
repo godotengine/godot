@@ -1309,6 +1309,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (line >= bpoints[bpoints.size() - 1]) {
 				tx->unfold_line(bpoints[0]);
 				tx->cursor_set_line(bpoints[0]);
+				tx->center_viewport_to_cursor();
 			} else {
 				for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
 					int bline = E->get();
@@ -1335,6 +1336,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (line <= bpoints[0]) {
 				tx->unfold_line(bpoints[bpoints.size() - 1]);
 				tx->cursor_set_line(bpoints[bpoints.size() - 1]);
+				tx->center_viewport_to_cursor();
 			} else {
 				for (List<int>::Element *E = bpoints.back(); E; E = E->prev()) {
 					int bline = E->get();
