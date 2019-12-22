@@ -113,10 +113,10 @@ public:
 		// r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sailfish_sdk/arm_target", PROPERTY_HINT_ENUM), ""));
 		// r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sailfish_sdk/x86_target", PROPERTY_HINT_ENUM), ""));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm, PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm_debug, PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86, PROPERTY_HINT_GLOBAL_DIR), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86_debug, PROPERTY_HINT_GLOBAL_DIR), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm, PROPERTY_HINT_GLOBAL_FILE), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_arm_debug, PROPERTY_HINT_GLOBAL_FILE), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86, PROPERTY_HINT_GLOBAL_FILE), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_custom_binary_x86_debug, PROPERTY_HINT_GLOBAL_FILE), ""));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT,    prop_version_release, PROPERTY_HINT_RANGE, "1,40096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, prop_version_string, PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), "1.0.0"));
@@ -126,6 +126,30 @@ public:
 	}
 
 	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override {
+		String arm_template;
+		String x86_template;
+		bool p_debug = false;
+
+		if(p_debug) 
+			arm_template = String( p_preset->get(prop_custom_binary_arm_debug) );
+		else
+			arm_template = String( p_preset->get(prop_custom_binary_arm) );
+		
+		if(p_debug) 
+			x86_template = String( p_preset->get(prop_custom_binary_x86_debug) );
+		else
+			x86_template = String( p_preset->get(prop_custom_binary_x86) );
+
+		// print_verbose( String("arm_binary: ") + arm_template );
+		// print_verbose( String("x86_binary: ") + x86_template );
+
+		// TODO move it to can_export() function
+		if( arm_template == String() && x86_template.empty() ) {
+			r_error = String("Cant export without SailfishOS export tempaltes");
+			r_missing_templates = true;
+			return false;
+		}
+
 		return true;
 	}
 	List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
@@ -151,6 +175,14 @@ public:
 			x86_template = String( p_preset->get(prop_custom_binary_x86_debug) );
 		else
 			x86_template = String( p_preset->get(prop_custom_binary_x86) );
+
+		print_verbose( String("arm_binary: ") + arm_template );
+		print_verbose( String("x86_binary: ") + x86_template );
+
+		// TODO move it to can_export() function
+		if( arm_template == String() && x86_template.empty() ) {
+			print_error("Cant export without SailfishOS export tempaltes");
+		}
 
 #ifdef WINDOWS_ENABLED
 		sdk_configs_path +=  String("\\SailfishOS-SDK\\");
@@ -236,7 +268,7 @@ public:
 					mer_target.push_back(target);
 			}
 			else {
-				print_error( String("Too old Mer target ")  + target.name );
+				print_error( String("Too old Sailfish target ")  + target.name );
 			}
 			entry = dir->get_next();
 		}
@@ -244,29 +276,25 @@ public:
 
 		EditorProgress ep("export", "Exporting for SailfishOS", 105, true);
 		List<PropertyInfo> props = p_preset->get_properties();
-		// for(int i = 0; i < props.size(); i++ ) {
-		// 	PropertyInfo current = props[i];
-		// 	print_verbose(String("Property is ") + current.name );
 
-		// 	if( current.name == prop_sailfish_sdk_path ) {
-		// 		// sdk_path = current.hint;
-		// 		print_verbose("SDK path property: ");
-		// 		print_verbose("hint_string: " + current.hint_string);
-		// 		print_verbose("hint       : " + current.hint);
-		// 		print_verbose("type       : " + current.type);
-		// 		// OS::get_singleton()->print("SDK path is %s\n", sdk_path..c_str() );
-		// 		// print_verbose(String("SDK path is ") + sdk_path);
-		// 	}
-		// }
 		sdk_path = String(p_preset->get( prop_sailfish_sdk_path));
 		print_verbose(String("SDK path is ") + sdk_path);
 		print_verbose(String("Platfrom config path: ") + sdk_configs_path );
 		
 		
-		// for( int target_num = 0; mer_target.size(); terget_num++ )
-		// {
-			
-		// }
+		for( int target_num = 0; mer_target.size(); target_num++ )
+		{
+			String merssh = sdk_path + "/libexec/qtcreator/merssh";
+			String build_command = mer_sdk_tools + "/" + mer_target[target_num].name + "/rpmbuild";
+			List<String> cmdline;
+			cmdline.push_back("--help");
+			cmdline.push_back("--version");
+			int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Sailfish RPM (rpmbuild)"), build_command, cmdline);
+			if (result != 0) {
+				EditorNode::get_singleton()->show_warning(TTR("Building of Sailfish RPM failed, check output for the error.\nAlternatively visit docs.godotengine.org for Sailfish build documentation."));
+				return ERR_CANT_CREATE;
+			}
+		}
 
 		return Error::OK;
 	}
