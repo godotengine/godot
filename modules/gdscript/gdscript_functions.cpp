@@ -63,6 +63,8 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"ceil",
 		"round",
 		"abs",
+		"abs",
+		"sign",
 		"sign",
 		"pow",
 		"log",
@@ -97,7 +99,10 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"wrapi",
 		"wrapf",
 		"max",
+		"max",
 		"min",
+		"min",
+		"clamp",
 		"clamp",
 		"nearest_po2",
 		"weakref",
@@ -134,7 +139,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"get_stack",
 		"instance_from_id",
 		"len",
-		"is_instance_valid",
+		"is_instance_valid"
 	};
 
 	return _names[p_func];
@@ -267,13 +272,27 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::round((double)*p_args[0]);
 		} break;
-		case MATH_ABS: {
+		case MATH_ABS_INT: {
 			VALIDATE_ARG_COUNT(1);
 			if (p_args[0]->get_type() == Variant::INT) {
 
 				int64_t i = *p_args[0];
 				r_ret = ABS(i);
+				break;
 			} else if (p_args[0]->get_type() == Variant::REAL) {
+
+			} else {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::INT;
+				r_ret = Variant();
+				break;
+			}
+		}
+		case MATH_ABS_FLOAT: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type() == Variant::REAL) {
 
 				double r = *p_args[0];
 				r_ret = Math::abs(r);
@@ -285,13 +304,27 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = Variant();
 			}
 		} break;
-		case MATH_SIGN: {
+		case MATH_SIGN_INT: {
 			VALIDATE_ARG_COUNT(1);
 			if (p_args[0]->get_type() == Variant::INT) {
 
 				int64_t i = *p_args[0];
 				r_ret = i < 0 ? -1 : (i > 0 ? +1 : 0);
+				break;
 			} else if (p_args[0]->get_type() == Variant::REAL) {
+
+			} else {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::REAL;
+				r_ret = Variant();
+				break;
+			}
+		}
+		case MATH_SIGN_FLOAT: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type() == Variant::REAL) {
 
 				real_t r = *p_args[0];
 				r_ret = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
@@ -509,14 +542,21 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(3);
 			r_ret = Math::wrapf((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
-		case LOGIC_MAX: {
+		case LOGIC_MAX_INT: {
 			VALIDATE_ARG_COUNT(2);
 			if (p_args[0]->get_type() == Variant::INT && p_args[1]->get_type() == Variant::INT) {
 
 				int64_t a = *p_args[0];
 				int64_t b = *p_args[1];
 				r_ret = MAX(a, b);
+				break;
 			} else {
+			}
+		}
+		case LOGIC_MAX_FLOAT: {
+			VALIDATE_ARG_COUNT(2);
+			if (p_args[0]->get_type() == Variant::REAL && p_args[1]->get_type() == Variant::REAL) {
+
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
@@ -525,16 +565,22 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 				r_ret = MAX(a, b);
 			}
-
 		} break;
-		case LOGIC_MIN: {
+		case LOGIC_MIN_INT: {
 			VALIDATE_ARG_COUNT(2);
 			if (p_args[0]->get_type() == Variant::INT && p_args[1]->get_type() == Variant::INT) {
 
 				int64_t a = *p_args[0];
 				int64_t b = *p_args[1];
 				r_ret = MIN(a, b);
+				break;
 			} else {
+			}
+		}
+		case LOGIC_MIN_FLOAT: {
+			VALIDATE_ARG_COUNT(2);
+			if (p_args[0]->get_type() == Variant::REAL && p_args[1]->get_type() == Variant::REAL) {
+
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
@@ -544,7 +590,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = MIN(a, b);
 			}
 		} break;
-		case LOGIC_CLAMP: {
+		case LOGIC_CLAMP_INT: {
 			VALIDATE_ARG_COUNT(3);
 			if (p_args[0]->get_type() == Variant::INT && p_args[1]->get_type() == Variant::INT && p_args[2]->get_type() == Variant::INT) {
 
@@ -552,7 +598,14 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t b = *p_args[1];
 				int64_t c = *p_args[2];
 				r_ret = CLAMP(a, b, c);
+				break;
 			} else {
+			}
+		}
+		case LOGIC_CLAMP_FLOAT: {
+			VALIDATE_ARG_COUNT(3);
+			if (p_args[0]->get_type() == Variant::REAL && p_args[1]->get_type() == Variant::REAL && p_args[2]->get_type() == Variant::REAL) {
+
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 				VALIDATE_ARG_NUM(2);
@@ -1484,8 +1537,10 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_FLOOR:
 		case MATH_CEIL:
 		case MATH_ROUND:
-		case MATH_ABS:
-		case MATH_SIGN:
+		case MATH_ABS_INT:
+		case MATH_ABS_FLOAT:
+		case MATH_SIGN_INT:
+		case MATH_SIGN_FLOAT:
 		case MATH_POW:
 		case MATH_LOG:
 		case MATH_EXP:
@@ -1509,9 +1564,12 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_CARTESIAN2POLAR:
 		case MATH_WRAP:
 		case MATH_WRAPF:
-		case LOGIC_MAX:
-		case LOGIC_MIN:
-		case LOGIC_CLAMP:
+		case LOGIC_MAX_INT:
+		case LOGIC_MAX_FLOAT:
+		case LOGIC_MIN_INT:
+		case LOGIC_MIN_FLOAT:
+		case LOGIC_CLAMP_INT:
+		case LOGIC_CLAMP_FLOAT:
 		case LOGIC_NEAREST_PO2:
 		case TYPE_CONVERT:
 		case TYPE_OF:
@@ -1623,12 +1681,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
-		case MATH_ABS: {
-			MethodInfo mi("abs", PropertyInfo(Variant::REAL, "s"));
-			mi.return_val.type = Variant::REAL;
+		case MATH_SIGN_INT: {
+			MethodInfo mi("sign", PropertyInfo(Variant::INT, "s"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
-		case MATH_SIGN: {
+		case MATH_SIGN_FLOAT: {
 			MethodInfo mi("sign", PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
@@ -1794,18 +1852,34 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
-		case LOGIC_MAX: {
+		case LOGIC_MAX_INT: {
+			MethodInfo mi("max", PropertyInfo(Variant::INT, "a"), PropertyInfo(Variant::INT, "b"));
+			mi.return_val.type = Variant::INT;
+			return mi;
+
+		} break;
+		case LOGIC_MAX_FLOAT: {
 			MethodInfo mi("max", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 
 		} break;
-		case LOGIC_MIN: {
+		case LOGIC_MIN_INT: {
+			MethodInfo mi("min", PropertyInfo(Variant::INT, "a"), PropertyInfo(Variant::INT, "b"));
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case LOGIC_MIN_FLOAT: {
 			MethodInfo mi("min", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
-		case LOGIC_CLAMP: {
+		case LOGIC_CLAMP_INT: {
+			MethodInfo mi("clamp", PropertyInfo(Variant::INT, "value"), PropertyInfo(Variant::INT, "min"), PropertyInfo(Variant::INT, "max"));
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case LOGIC_CLAMP_FLOAT: {
 			MethodInfo mi("clamp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
@@ -2055,6 +2129,16 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case IS_INSTANCE_VALID: {
 			MethodInfo mi("is_instance_valid", PropertyInfo(Variant::OBJECT, "instance"));
 			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
+		case MATH_ABS_INT: {
+			MethodInfo mi("abs", PropertyInfo(Variant::INT, "s"));
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case MATH_ABS_FLOAT: {
+			MethodInfo mi("abs", PropertyInfo(Variant::REAL, "s"));
+			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case FUNC_MAX: {
