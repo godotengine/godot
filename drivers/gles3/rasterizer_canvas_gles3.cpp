@@ -1416,8 +1416,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 				glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 				state.using_skeleton = true;
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
 			} else {
 				state.using_skeleton = false;
 			}
@@ -1603,6 +1601,11 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		state.final_transform = ci->final_transform;
 		state.extra_matrix = Transform2D();
+
+		if (state.using_skeleton) {
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM, state.skeleton_transform);
+			state.canvas_shader.set_uniform(CanvasShaderGLES3::SKELETON_TRANSFORM_INVERSE, state.skeleton_transform_inverse);
+		}
 
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
