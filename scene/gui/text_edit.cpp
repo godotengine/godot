@@ -1946,6 +1946,7 @@ void TextEdit::indent_right() {
 
 	// Ignore if the cursor is not past the first column.
 	if (is_selection_active() && get_selection_to_column() == 0) {
+		selection_offset = 0;
 		end_line--;
 	}
 
