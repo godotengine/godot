@@ -705,7 +705,7 @@ protected:
 public:
 	static _JSON *get_singleton() { return singleton; }
 
-	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
+	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false, bool p_full_precision = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
 	_JSON() { singleton = this; }
