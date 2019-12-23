@@ -240,10 +240,10 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PI" value="3.141593">
+		<constant name="PI" value="3.14159265358979">
 			Constant that represents how many times the diameter of a circle fits around its perimeter. This is equivalent to [code]TAU / 2[/code].
 		</constant>
-		<constant name="TAU" value="6.283185">
+		<constant name="TAU" value="6.28318530717959">
 			The circle constant, the circumference of the unit circle in radians.
 		</constant>
 		<constant name="INF" value="inf">

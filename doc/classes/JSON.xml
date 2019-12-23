@@ -27,9 +27,12 @@
 			</argument>
 			<argument index="2" name="sort_keys" type="bool" default="false">
 			</argument>
+			<argument index="3" name="full_precision" type="bool" default="false">
+			</argument>
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
+				[b]Note:[/b] If [code]full_precision[/code] is true, when printing floats, the unreliable digits are printed in addition to the reliable digits to guarantee exact decoding.
 				Use [code]indent[/code] parameter to pretty print the output.
 				[b]Example output:[/b]
 				[codeblock]

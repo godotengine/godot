@@ -62,7 +62,7 @@ class JSON {
 
 	static const char *tk_name[TK_MAX];
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys);
+	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_full_precision = false);
 
 	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
@@ -70,7 +70,7 @@ class JSON {
 	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
 
 public:
-	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
+	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
 	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
 };
 

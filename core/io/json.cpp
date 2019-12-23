@@ -55,7 +55,7 @@ static String _make_indent(const String &p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys) {
+String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, bool p_full_precision) {
 	String colon = ":";
 	String end_statement = "";
 
@@ -71,8 +71,17 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			return p_var.operator bool() ? "true" : "false";
 		case Variant::INT:
 			return itos(p_var);
-		case Variant::FLOAT:
-			return rtos(p_var);
+		case Variant::FLOAT: {
+			double num = p_var;
+			if (p_full_precision) {
+				// Store unreliable digits (17) instead of just reliable
+				// digits (14) so that the value can be decoded exactly.
+				return String::num(num, 17 - (int)floor(log10(num)));
+			} else {
+				// Store only reliable digits (14) by default.
+				return String::num(num, 14 - (int)floor(log10(num)));
+			}
+		}
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
 		case Variant::PACKED_FLOAT32_ARRAY:
@@ -121,8 +130,8 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 	}
 }
 
-String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
-	return _print_var(p_var, p_indent, 0, p_sort_keys);
+String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
+	return _print_var(p_var, p_indent, 0, p_sort_keys, p_full_precision);
 }
 
 Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {

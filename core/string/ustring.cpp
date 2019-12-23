@@ -54,7 +54,7 @@
 #define snprintf _snprintf_s
 #endif
 
-#define MAX_DIGITS 6
+#define MAX_DECIMALS 32
 #define UPPERCASE(m_c) (((m_c) >= 'a' && (m_c) <= 'z') ? ((m_c) - ('a' - 'A')) : (m_c))
 #define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
 #define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
@@ -1379,8 +1379,11 @@ String String::num(double p_num, int p_decimals) {
 	}
 #ifndef NO_USE_STDLIB
 
-	if (p_decimals > 16) {
-		p_decimals = 16;
+	if (p_decimals < 0) {
+		p_decimals = 14 - (int)floor(log10(p_num));
+	}
+	if (p_decimals > MAX_DECIMALS) {
+		p_decimals = MAX_DECIMALS;
 	}
 
 	char fmt[7];
@@ -1391,7 +1394,6 @@ String String::num(double p_num, int p_decimals) {
 		fmt[1] = 'l';
 		fmt[2] = 'f';
 		fmt[3] = 0;
-
 	} else if (p_decimals < 10) {
 		fmt[2] = '0' + p_decimals;
 		fmt[3] = 'l';
@@ -1458,8 +1460,9 @@ String String::num(double p_num, int p_decimals) {
 		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
-		if (p_decimals > MAX_DIGITS)
-			p_decimals = MAX_DIGITS;
+		if (p_decimals > MAX_DECIMALS) {
+			p_decimals = MAX_DECIMALS;
+		}
 
 		int dec_int = 0;
 		int dec_max = 0;
@@ -1471,16 +1474,18 @@ String String::num(double p_num, int p_decimals) {
 			digit++;
 
 			if (p_decimals == -1) {
-				if (digit == MAX_DIGITS) //no point in going to infinite
+				if (digit == MAX_DECIMALS) { //no point in going to infinite
 					break;
+				}
 
 				if (dec - (double)((int)dec) < 1e-6) {
 					break;
 				}
 			}
 
-			if (digit == p_decimals)
+			if (digit == p_decimals) {
 				break;
+			}
 		}
 		dec *= 10;
 		int last = (int)dec % 10;
@@ -1616,7 +1621,15 @@ String String::num_real(double p_num) {
 		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
-		int decimals = MAX_DIGITS;
+
+#if REAL_T_IS_DOUBLE
+		int decimals = 14 - (int)floor(log10(p_num));
+#else
+		int decimals = 6 - (int)floor(log10(p_num));
+#endif
+		if (decimals > MAX_DECIMALS) {
+			decimals = MAX_DECIMALS;
+		}
 
 		int dec_int = 0;
 		int dec_max = 0;
