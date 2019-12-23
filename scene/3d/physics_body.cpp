@@ -57,12 +57,11 @@ void ca_init_agent_as_obstacle(RID p_agent, PhysicsBody *p_node) {
                 // and add the enclosing shape radius
                 r += cs->get_shape()->get_enclosing_radius();
             }
-            r *= cs->get_transform().basis.get_scale().length();
+            r *= cs->get_global_transform().basis.get_scale().length();
             // Takes the biggest radius
             radius = MAX(radius, r);
         }
     }
-    radius *= p_node->get_transform().basis.get_scale().length();
 
     // Initialize the Agent as an object
     CollisionAvoidanceServer::get_singleton()->agent_set_neighbor_dist(p_agent, 0.0);
