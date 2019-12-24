@@ -853,7 +853,7 @@ void Translation::set_locale(const String &p_locale) {
 		locale = univ_locale;
 	}
 
-	if (OS::get_singleton()->get_main_loop()) {
+	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(this)) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
