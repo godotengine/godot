@@ -37,6 +37,9 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 
+// The metadata key used to store and retrieve the version text to copy to the clipboard.
+static const String META_TEXT_TO_COPY = "text_to_copy";
+
 void EditorAbout::_theme_changed() {
 	const Ref<Font> font = get_theme_font("source", "EditorFonts");
 	const int font_size = get_theme_font_size("source_size", "EditorFonts");
@@ -63,7 +66,12 @@ void EditorAbout::_license_tree_selected() {
 	_tpl_text->set_text(selected->get_metadata(0));
 }
 
+void EditorAbout::_version_button_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
+}
+
 void EditorAbout::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_version_button_pressed"), &EditorAbout::_version_button_pressed);
 }
 
 TextureRect *EditorAbout::get_logo() const {
@@ -124,17 +132,32 @@ EditorAbout::EditorAbout() {
 	_logo = memnew(TextureRect);
 	hbc->add_child(_logo);
 
+	VBoxContainer *version_info_vbc = memnew(VBoxContainer);
+
+	// Add a dummy control node for spacing.
+	Control *v_spacer = memnew(Control);
+	version_info_vbc->add_child(v_spacer);
+
+	version_btn = memnew(LinkButton);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
 	}
+	version_btn->set_text(VERSION_FULL_NAME + hash);
+	// Set the text to copy in metadata as it slightly differs from the button's text.
+	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
+	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+	version_btn->set_tooltip(TTR("Click to copy."));
+	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
+	version_info_vbc->add_child(version_btn);
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(VERSION_FULL_NAME + hash +
-						 String::utf8("\n\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
+	about_text->set_text(String::utf8("\xc2\xa9 2007-2021 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2021 ") +
 						 TTR("Godot Engine contributors") + "\n");
-	hbc->add_child(about_text);
+	version_info_vbc->add_child(about_text);
+
+	hbc->add_child(version_info_vbc);
 
 	TabContainer *tc = memnew(TabContainer);
 	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
