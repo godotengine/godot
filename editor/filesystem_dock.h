@@ -140,7 +140,7 @@ private:
 	ConfirmationDialog *make_scene_dialog;
 	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
-	ScriptCreateDialog *make_script_dialog_text;
+	ScriptCreateDialog *make_script_dialog;
 	CreateDialog *new_resource_dialog;
 
 	bool always_show_folders;
