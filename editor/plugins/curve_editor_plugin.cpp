@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 
 CurveEditor::CurveEditor() {
 	_selected_point = -1;

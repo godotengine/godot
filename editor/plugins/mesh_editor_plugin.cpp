@@ -30,6 +30,8 @@
 
 #include "mesh_editor_plugin.h"
 
+#include "editor/editor_scale.h"
+
 void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;

@@ -47,6 +47,7 @@
 #include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "gdnative_library_editor_plugin.h"
 #include "gdnative_library_singleton_editor.h"

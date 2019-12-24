@@ -35,6 +35,7 @@
 #include "core/os/main_loop.h"
 #include "core/project_settings.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {

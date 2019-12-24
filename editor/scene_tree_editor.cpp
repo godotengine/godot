@@ -32,9 +32,10 @@
 
 #include "core/message_queue.h"
 #include "core/print_string.h"
+#include "editor/editor_node.h"
+#include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor_node.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"

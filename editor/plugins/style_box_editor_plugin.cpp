@@ -30,6 +30,8 @@
 
 #include "style_box_editor_plugin.h"
 
+#include "editor/editor_scale.h"
+
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 
 	return Object::cast_to<StyleBox>(p_object) != NULL;

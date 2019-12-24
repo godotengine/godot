@@ -32,6 +32,8 @@
 #include "gdnative_library_editor_plugin.h"
 #include "gdnative.h"
 
+#include "editor/editor_scale.h"
+
 void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 	library = p_library;
 	Ref<ConfigFile> config = p_library->get_config_file();

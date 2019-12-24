@@ -33,6 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
 
 // Edits a y(x) curve

@@ -40,6 +40,7 @@
 #include "core/project_settings.h"
 #include "editor_data.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"

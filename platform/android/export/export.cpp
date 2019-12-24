@@ -38,6 +38,7 @@
 #include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/android/logo.gen.h"

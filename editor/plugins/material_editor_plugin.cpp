@@ -30,6 +30,8 @@
 
 #include "material_editor_plugin.h"
 
+#include "editor/editor_scale.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/resources/particles_material.h"
 
 void MaterialEditor::_notification(int p_what) {

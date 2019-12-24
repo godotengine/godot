@@ -41,6 +41,7 @@
 class Camera;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
+class ViewportContainer;
 
 class EditorSpatialGizmo : public SpatialGizmo {
 

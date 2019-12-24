@@ -31,6 +31,7 @@
 #include "sprite_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/mesh_instance_2d.h"

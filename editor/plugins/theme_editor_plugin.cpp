@@ -32,6 +32,8 @@
 
 #include "core/os/file_access.h"
 #include "core/version.h"
+#include "editor/editor_scale.h"
+#include "scene/gui/progress_bar.h"
 
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 

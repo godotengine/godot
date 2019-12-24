@@ -35,7 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 

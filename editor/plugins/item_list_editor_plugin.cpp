@@ -31,6 +31,7 @@
 #include "item_list_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_scale.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 
