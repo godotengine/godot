@@ -75,6 +75,7 @@ class ProjectManager : public Control {
 	TabContainer *tabs;
 	ProjectList *_project_list;
 
+	LinkButton *version_btn;
 	OptionButton *language_btn;
 	Control *gui_base;
 
@@ -115,6 +116,7 @@ class ProjectManager : public Control {
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);
 
+	void _version_button_pressed();
 	void _on_order_option_changed();
 	void _on_filter_option_changed();
 

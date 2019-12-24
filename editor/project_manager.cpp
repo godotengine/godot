@@ -2403,6 +2403,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_erase_missing_projects", &ProjectManager::_erase_missing_projects);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
 	ClassDB::bind_method("_erase_missing_projects_confirm", &ProjectManager::_erase_missing_projects_confirm);
+	ClassDB::bind_method("_version_button_pressed", &ProjectManager::_version_button_pressed);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_on_order_option_changed", &ProjectManager::_on_order_option_changed);
@@ -2421,6 +2422,10 @@ void ProjectManager::_bind_methods() {
 void ProjectManager::_open_asset_library() {
 	asset_library->disable_community_support();
 	tabs->set_current_tab(1);
+}
+
+void ProjectManager::_version_button_pressed() {
+	OS::get_singleton()->set_clipboard(version_btn->get_text());
 }
 
 ProjectManager::ProjectManager() {
@@ -2658,16 +2663,30 @@ ProjectManager::ProjectManager() {
 	settings_hb->set_alignment(BoxContainer::ALIGN_END);
 	settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 
-	Label *version_label = memnew(Label);
+	// A VBoxContainer that contains a dummy Control node to adjust the LinkButton's vertical position.
+	VBoxContainer *spacer_vb = memnew(VBoxContainer);
+	settings_hb->add_child(spacer_vb);
+
+	Control *v_spacer = memnew(Control);
+	spacer_vb->add_child(v_spacer);
+
+	version_btn = memnew(LinkButton);
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
 	}
-	version_label->set_text("v" VERSION_FULL_BUILD "" + hash);
-	// Fade out the version label to be less prominent, but still readable
-	version_label->set_self_modulate(Color(1, 1, 1, 0.6));
-	version_label->set_align(Label::ALIGN_CENTER);
-	settings_hb->add_child(version_label);
+	version_btn->set_text("v" VERSION_FULL_BUILD + hash);
+	// Fade the version label to be less prominent, but still readable.
+	version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
+	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+	version_btn->set_tooltip(TTR("Click to copy."));
+	version_btn->connect("pressed", this, "_version_button_pressed");
+	spacer_vb->add_child(version_btn);
+
+	// Add a small horizontal spacer between the version and language buttons
+	// to distinguish them.
+	Control *h_spacer = memnew(Control);
+	settings_hb->add_child(h_spacer);
 
 	language_btn = memnew(OptionButton);
 	language_btn->set_flat(true);
