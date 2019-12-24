@@ -3162,8 +3162,6 @@ void EditorNode::set_current_scene(int p_idx) {
 	if (editor_data.check_and_update_scene(p_idx)) {
 		if (editor_data.get_scene_path(p_idx) != "")
 			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
-
-		call_deferred("_clear_undo_history");
 	}
 
 	changing_scene = true;
