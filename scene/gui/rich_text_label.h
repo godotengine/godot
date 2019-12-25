@@ -61,6 +61,7 @@ public:
 		ITEM_IMAGE,
 		ITEM_NEWLINE,
 		ITEM_FONT,
+		ITEM_FONT_SCALE,
 		ITEM_COLOR,
 		ITEM_UNDERLINE,
 		ITEM_STRIKETHROUGH,
@@ -155,6 +156,12 @@ private:
 	struct ItemFont : public Item {
 		Ref<Font> font;
 		ItemFont() { type = ITEM_FONT; }
+	};
+
+	struct ItemScaleFont : public Item {
+
+		real_t scale;
+		ItemScaleFont() { type = ITEM_FONT_SCALE; }
 	};
 
 	struct ItemColor : public Item {
@@ -372,6 +379,7 @@ private:
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
 
 	Ref<Font> _find_font(Item *p_item);
+	real_t _find_font_scale(Item *p_item);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
 	Align _find_align(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
@@ -416,6 +424,7 @@ public:
 	void push_bold_italics();
 	void push_italics();
 	void push_mono();
+	void push_font_scale(real_t scale);
 	void push_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();

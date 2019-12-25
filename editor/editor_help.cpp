@@ -508,6 +508,9 @@ void EditorHelp::_update_doc() {
 
 			_add_text(cd.properties[i].name);
 
+			class_desc->pop();
+			class_desc->pop();
+
 			if (describe) {
 				class_desc->pop();
 				property_descr = true;
@@ -524,9 +527,6 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text("]");
 				class_desc->pop();
 			}
-
-			class_desc->pop();
-			class_desc->pop();
 
 			class_desc->pop();
 		}

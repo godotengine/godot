@@ -540,26 +540,26 @@ Ref<BitmapFont> BitmapFont::get_fallback() const {
 	return fallback;
 }
 
-float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
+float BitmapFont::draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
 
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
 		if (fallback.is_valid())
-			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, p_outline);
+			return fallback->draw_char_scaled(p_canvas_item, p_pos, p_scale, p_char, p_next, p_modulate, p_outline);
 		return 0;
 	}
 
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 	if (!p_outline && c->texture_idx != -1) {
 		Point2 cpos = p_pos;
-		cpos.x += c->h_align;
-		cpos.y -= ascent;
-		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		cpos.x += c->h_align * p_scale;
+		cpos.y -= ascent * p_scale;
+		cpos.y += c->v_align * p_scale;
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size * p_scale), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
 	}
 
-	return get_char_size(p_char, p_next).width;
+	return get_char_size(p_char, p_next).width * p_scale;
 }
 
 Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {

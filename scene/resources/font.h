@@ -58,7 +58,10 @@ public:
 	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
 
 	virtual bool has_outline() const { return false; }
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	virtual float draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const {
+		return draw_char_scaled(p_canvas_item, p_pos, 1.0, p_char, p_next, p_modulate, p_outline);
+	}
 
 	void update_changes();
 	Font();
@@ -73,6 +76,7 @@ class FontDrawer {
 	struct PendingDraw {
 		RID canvas_item;
 		Point2 pos;
+		float scale;
 		CharType chr;
 		CharType next;
 		Color modulate;
@@ -88,17 +92,21 @@ public:
 	}
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
+		return draw_char_scaled(p_canvas_item, p_pos, 1.0, p_char, p_next, p_modulate);
+	}
+
+	float draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
 		if (has_outline) {
-			PendingDraw draw = { p_canvas_item, p_pos, p_char, p_next, p_modulate };
+			PendingDraw draw = { p_canvas_item, p_pos, p_scale, p_char, p_next, p_modulate };
 			pending_draws.push_back(draw);
 		}
-		return font->draw_char(p_canvas_item, p_pos, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline);
+		return font->draw_char_scaled(p_canvas_item, p_pos, p_scale, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline);
 	}
 
 	~FontDrawer() {
 		for (int i = 0; i < pending_draws.size(); ++i) {
 			const PendingDraw &draw = pending_draws[i];
-			font->draw_char(draw.canvas_item, draw.pos, draw.chr, draw.next, draw.modulate, false);
+			font->draw_char_scaled(draw.canvas_item, draw.pos, draw.scale, draw.chr, draw.next, draw.modulate, false);
 		}
 	}
 };
@@ -192,7 +200,7 @@ public:
 	void set_distance_field_hint(bool p_distance_field);
 	bool is_distance_field_hint() const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	float draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	BitmapFont();
 	~BitmapFont();

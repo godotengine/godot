@@ -299,7 +299,7 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 	}
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only) const {
+float DynamicFontAtSize::draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only) const {
 
 	if (!valid)
 		return 0;
@@ -319,18 +319,18 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 
 		if (!p_advance_only && ch->texture_idx != -1) {
 			Point2 cpos = p_pos;
-			cpos.x += ch->h_align;
-			cpos.y -= font->get_ascent();
-			cpos.y += ch->v_align;
+			cpos.x += ch->h_align * p_scale;
+			cpos.y -= font->get_ascent() * p_scale;
+			cpos.y += ch->v_align * p_scale;
 			Color modulate = p_modulate;
 			if (FT_HAS_COLOR(face)) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 			RID texture = font->textures[ch->texture_idx].texture->get_rid();
-			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), texture, ch->rect_uv, modulate, false, RID(), false);
+			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size * p_scale), texture, ch->rect_uv, modulate, false, RID(), false);
 		}
 
-		advance = ch->advance;
+		advance = ch->advance * p_scale;
 	}
 
 	return advance;
@@ -864,7 +864,7 @@ bool DynamicFont::has_outline() const {
 	return outline_cache_id.outline_size > 0;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
+float DynamicFont::draw_char_scaled(RID p_canvas_item, const Point2 &p_pos, float p_scale, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
 	const Ref<DynamicFontAtSize> &font_at_size = p_outline && outline_cache_id.outline_size > 0 ? outline_data_at_size : data_at_size;
 
 	if (!font_at_size.is_valid())
@@ -875,7 +875,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 
 	// If requested outline draw, but no outline is present, simply return advance without drawing anything
 	bool advance_only = p_outline && outline_cache_id.outline_size == 0;
-	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only) + spacing_char;
+	return font_at_size->draw_char_scaled(p_canvas_item, p_pos, p_scale, p_char, p_next, color, fallbacks, advance_only) + spacing_char;
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {
