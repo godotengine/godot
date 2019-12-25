@@ -31,6 +31,7 @@
 # orcstudio <orcstudio@orcstudio.org>, 2019.
 # Rachid Graphicos <graphicos1d@gmail.com>, 2019.
 # traveller010 <manar.bushnaq.001@gmail.com>, 2019.
+# zaMaestro <mahersanalla@gmail.com>,2019
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
@@ -3802,16 +3803,16 @@ msgstr ""
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Create Scene"
-msgstr "حفظ المشهد"
+msgstr "أنشئ مشهد"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "أنشئ نص"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "Find in Files"
-msgstr "%d مزيد من الملفات"
+msgstr "%d جد من الملفات"
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -5387,7 +5388,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "مستطيل كامل"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -6365,7 +6366,7 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Delete Point"
-msgstr ""
+msgstr "احذف النقطة"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -6574,7 +6575,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
-msgstr ""
+msgstr "نصف القطر"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
@@ -6955,7 +6956,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to next edited document."
-msgstr ""
+msgstr "اذهب الى الملف المعدل"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Discard"
