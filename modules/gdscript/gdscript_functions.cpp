@@ -280,7 +280,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = ABS(i);
 				break;
 			} else if (p_args[0]->get_type() == Variant::REAL) {
-				FALLTHROUGH;
+
 			} else {
 
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -289,6 +289,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = Variant();
 				break;
 			}
+			FALLTHROUGH;
 		}
 		case MATH_ABS_FLOAT: {
 			VALIDATE_ARG_COUNT(1);
@@ -312,7 +313,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = i < 0 ? -1 : (i > 0 ? +1 : 0);
 				break;
 			} else if (p_args[0]->get_type() == Variant::REAL) {
-				FALLTHROUGH;
+
 			} else {
 
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -321,6 +322,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = Variant();
 				break;
 			}
+			FALLTHROUGH;
 		}
 		case MATH_SIGN_FLOAT: {
 			VALIDATE_ARG_COUNT(1);
@@ -550,9 +552,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t b = *p_args[1];
 				r_ret = MAX(a, b);
 				break;
-			} else {
-				FALLTHROUGH;
 			}
+			FALLTHROUGH;
 		}
 		case LOGIC_MAX_FLOAT: {
 			VALIDATE_ARG_COUNT(2);
@@ -575,9 +576,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t b = *p_args[1];
 				r_ret = MIN(a, b);
 				break;
-			} else {
-				FALLTHROUGH;
 			}
+			FALLTHROUGH;
 		}
 		case LOGIC_MIN_FLOAT: {
 			VALIDATE_ARG_COUNT(2);
@@ -601,9 +601,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t c = *p_args[2];
 				r_ret = CLAMP(a, b, c);
 				break;
-			} else {
-				FALLTHROUGH;
 			}
+			FALLTHROUGH;
 		}
 		case LOGIC_CLAMP_FLOAT: {
 			VALIDATE_ARG_COUNT(3);
