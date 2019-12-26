@@ -1021,71 +1021,75 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	EditorProgress save("save", TTR("Saving Scene"), 4);
-	save.step(TTR("Analyzing"), 0);
 
-	int c2d = 0;
-	int c3d = 0;
-	_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
+	if (editor_data.get_edited_scene_root() != NULL) {
+		save.step(TTR("Analyzing"), 0);
 
-	bool is2d;
-	if (c3d < c2d) {
-		is2d = true;
-	} else {
-		is2d = false;
-	}
-	save.step(TTR("Creating Thumbnail"), 1);
-	//current view?
+		int c2d = 0;
+		int c3d = 0;
 
-	Ref<Image> img;
-	if (is2d) {
-		img = scene_root->get_texture()->get_data();
-	} else {
-		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
-	}
+		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
 
-	if (img.is_valid()) {
-
-		img = img->duplicate();
-
-		save.step(TTR("Creating Thumbnail"), 2);
-		save.step(TTR("Creating Thumbnail"), 3);
-
-		int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-		preview_size *= EDSCALE;
-
-		// consider a square region
-		int vp_size = MIN(img->get_width(), img->get_height());
-		int x = (img->get_width() - vp_size) / 2;
-		int y = (img->get_height() - vp_size) / 2;
-
-		if (vp_size < preview_size) {
-			// just square it.
-			img->crop_from_point(x, y, vp_size, vp_size);
+		bool is2d;
+		if (c3d < c2d) {
+			is2d = true;
 		} else {
-			int ratio = vp_size / preview_size;
-			int size = preview_size * MAX(1, ratio / 2);
-
-			x = (img->get_width() - size) / 2;
-			y = (img->get_height() - size) / 2;
-
-			img->crop_from_point(x, y, size, size);
-			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
+			is2d = false;
 		}
-		img->convert(Image::FORMAT_RGB8);
+		save.step(TTR("Creating Thumbnail"), 1);
+		//current view?
 
-		img->flip_y();
+		Ref<Image> img;
+		if (is2d) {
+			img = scene_root->get_texture()->get_data();
+		} else {
+			img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+		}
 
-		//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
-		String temp_path = EditorSettings::get_singleton()->get_cache_dir();
-		String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
-		cache_base = temp_path.plus_file("resthumb-" + cache_base);
+		if (img.is_valid()) {
 
-		//does not have it, try to load a cached thumbnail
+			img = img->duplicate();
 
-		String file = cache_base + ".png";
+			save.step(TTR("Creating Thumbnail"), 2);
+			save.step(TTR("Creating Thumbnail"), 3);
 
-		post_process_preview(img);
-		img->save_png(file);
+			int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			preview_size *= EDSCALE;
+
+			// consider a square region
+			int vp_size = MIN(img->get_width(), img->get_height());
+			int x = (img->get_width() - vp_size) / 2;
+			int y = (img->get_height() - vp_size) / 2;
+
+			if (vp_size < preview_size) {
+				// just square it.
+				img->crop_from_point(x, y, vp_size, vp_size);
+			} else {
+				int ratio = vp_size / preview_size;
+				int size = preview_size * MAX(1, ratio / 2);
+
+				x = (img->get_width() - size) / 2;
+				y = (img->get_height() - size) / 2;
+
+				img->crop_from_point(x, y, size, size);
+				img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
+			}
+			img->convert(Image::FORMAT_RGB8);
+
+			img->flip_y();
+
+			//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
+			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
+			cache_base = temp_path.plus_file("resthumb-" + cache_base);
+
+			//does not have it, try to load a cached thumbnail
+
+			String file = cache_base + ".png";
+
+			post_process_preview(img);
+			img->save_png(file);
+		}
 	}
 
 	save.step(TTR("Saving Scene"), 4);
