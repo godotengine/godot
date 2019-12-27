@@ -24,6 +24,10 @@ subject to the following restrictions:
 #include <stdlib.h>  //size_t for MSVC 6.0
 #include <float.h>
 
+// -- GODOT start --
+#include "core/error_macros.h"
+// -- GODOT end --
+
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 #define BT_BULLET_VERSION 289
 
@@ -150,7 +154,17 @@ inline int btIsDoublePrecision()
 			#define btAssert assert
 		#endif//_MSC_VER
 	#else
-		#define btAssert(x)
+// -- GODOT start --
+		#ifndef DEBUG_ENABLED
+			#define btAssert(x)
+		#else// DEBUG_ENABLED
+			#define btAssert(m_cond) do{                                                                                          \
+				if (!(m_cond)) {                                                                                                  \
+					_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Bullet issue. Condition ' " _STR(m_cond) " ' is false."); \
+				}                                                                                                                 \
+			}while(0);
+		#endif// DEBUG_ENABLED
+// -- GODOT end --
 	#endif
 		//btFullAssert is optional, slows down a lot
 		#define btFullAssert(x)
@@ -178,7 +192,17 @@ inline int btIsDoublePrecision()
 			#endif
 	
 		#else//BT_DEBUG
+// -- GODOT start --
+			#ifdef DEBUG_ENABLED
 				#define btAssert(x)
+			#else// DEBUG_ENABLED
+			#define btAssert(m_cond) do{                                                                                          \
+				if (!(m_cond)) {                                                                                                  \
+					_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Bullet issue. Condition ' " _STR(m_cond) " ' is false."); \
+				}                                                                                                                 \
+			}while(0);
+		#endif// DEBUG_ENABLED
+// -- GODOT end --
 		#endif//BT_DEBUG
 		//btFullAssert is optional, slows down a lot
 		#define btFullAssert(x)
@@ -200,7 +224,17 @@ inline int btIsDoublePrecision()
 	#ifdef BT_DEBUG
 			#define btAssert assert
 	#else
+// -- GODOT start --
+		#ifndef DEBUG_ENABLED
 			#define btAssert(x)
+		#else// DEBUG_ENABLED
+			#define btAssert(m_cond) do{                                                                                          \
+				if (!(m_cond)) {                                                                                                  \
+					_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Bullet issue. Condition ' " _STR(m_cond) " ' is false."); \
+				}                                                                                                                 \
+			}while(0);
+		#endif// DEBUG_ENABLED
+// -- GODOT end --
 	#endif
 			//btFullAssert is optional, slows down a lot
 			#define btFullAssert(x)
@@ -267,7 +301,17 @@ inline int btIsDoublePrecision()
 					#define btAssert assert
 				#endif//defined (__i386__) || defined (__x86_64__)
 				#else//defined(DEBUG) || defined (_DEBUG)
-					#define btAssert(x)
+// -- GODOT start --
+					#ifndef DEBUG_ENABLED
+						#define btAssert(x)
+					#else// DEBUG_ENABLED
+						#define btAssert(m_cond) do{                                                                                          \
+							if (!(m_cond)) {                                                                                                  \
+								_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Bullet issue. Condition ' " _STR(m_cond) " ' is false."); \
+							}                                                                                                                 \
+						}while(0);
+					#endif// DEBUG_ENABLED
+// -- GODOT end --
 				#endif//defined(DEBUG) || defined (_DEBUG)
 
 				//btFullAssert is optional, slows down a lot
@@ -292,7 +336,17 @@ inline int btIsDoublePrecision()
 				#if defined(DEBUG) || defined (_DEBUG)
 					#define btAssert assert
 				#else
-					#define btAssert(x)
+// -- GODOT start --
+					#ifndef DEBUG_ENABLED
+						#define btAssert(x)
+					#else// DEBUG_ENABLED
+						#define btAssert(m_cond) do{                                                                                          \
+							if (!(m_cond)) {                                                                                                  \
+								_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Bullet issue. Condition ' " _STR(m_cond) " ' is false."); \
+							}                                                                                                                 \
+						}while(0);
+					#endif// DEBUG_ENABLED
+// -- GODOT end --
 				#endif
 
 				//btFullAssert is optional, slows down a lot
