@@ -125,7 +125,7 @@ void SpriteEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CONVERT_TO_MESH_2D: {
 
 			debug_uv_dialog->get_ok()->set_text(TTR("Create Mesh2D"));
-			debug_uv_dialog->set_title("Mesh2D Preview");
+			debug_uv_dialog->set_title(TTR("Mesh2D Preview"));
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
@@ -135,7 +135,7 @@ void SpriteEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
 
 			debug_uv_dialog->get_ok()->set_text(TTR("Create Polygon2D"));
-			debug_uv_dialog->set_title("Polygon2D Preview");
+			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
@@ -144,7 +144,7 @@ void SpriteEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
 
 			debug_uv_dialog->get_ok()->set_text(TTR("Create CollisionPolygon2D"));
-			debug_uv_dialog->set_title("CollisionPolygon2D Preview");
+			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
@@ -154,7 +154,7 @@ void SpriteEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
 
 			debug_uv_dialog->get_ok()->set_text(TTR("Create LightOccluder2D"));
-			debug_uv_dialog->set_title("LightOccluder2D Preview");
+			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();

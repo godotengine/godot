@@ -202,7 +202,7 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 	Ref<Resource> texture = ResourceLoader::load(p_file);
 	if (!texture.is_valid()) {
-		EditorNode::get_singleton()->show_warning("Unable to load images");
+		EditorNode::get_singleton()->show_warning(TTR("Unable to load images"));
 		ERR_FAIL_COND(!texture.is_valid());
 	}
 	if (texture != split_sheet_preview->get_texture()) {
