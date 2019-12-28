@@ -35,9 +35,6 @@
 
 namespace CSharpProject {
 
-bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
-		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items);
-
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include);
 
 } // namespace CSharpProject

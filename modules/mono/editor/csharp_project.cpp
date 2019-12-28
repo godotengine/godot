@@ -44,54 +44,6 @@
 
 namespace CSharpProject {
 
-bool generate_api_solution_impl(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
-		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items,
-		GDMonoAssembly *p_tools_project_editor_assembly) {
-
-	GDMonoClass *klass = p_tools_project_editor_assembly->get_class("GodotTools.ProjectEditor", "ApiSolutionGenerator");
-
-	Variant solution_dir = p_solution_dir;
-	Variant core_proj_dir = p_core_proj_dir;
-	Variant core_compile_items = p_core_compile_items;
-	Variant editor_proj_dir = p_editor_proj_dir;
-	Variant editor_compile_items = p_editor_compile_items;
-	const Variant *args[5] = { &solution_dir, &core_proj_dir, &core_compile_items, &editor_proj_dir, &editor_compile_items };
-	MonoException *exc = NULL;
-	klass->get_method("GenerateApiSolution", 5)->invoke(NULL, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL_V(false);
-	}
-
-	return true;
-}
-
-bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
-		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items) {
-
-	if (GDMono::get_singleton()->get_tools_project_editor_assembly()) {
-		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
-				p_editor_proj_dir, p_editor_compile_items,
-				GDMono::get_singleton()->get_tools_project_editor_assembly());
-	} else {
-		MonoDomain *temp_domain = GDMonoUtils::create_domain("GodotEngine.Domain.ApiSolutionGeneration");
-		CRASH_COND(temp_domain == NULL);
-		_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(temp_domain);
-
-		_GDMONO_SCOPE_DOMAIN_(temp_domain);
-
-		GDMonoAssembly *tools_project_editor_asm = NULL;
-
-		bool assembly_loaded = GDMono::get_singleton()->load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_asm);
-		ERR_FAIL_COND_V_MSG(!assembly_loaded, false, "Failed to load assembly: '" TOOLS_PROJECT_EDITOR_ASM_NAME "'.");
-
-		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
-				p_editor_proj_dir, p_editor_compile_items,
-				tools_project_editor_asm);
-	}
-}
-
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
 
 	if (!GLOBAL_DEF("mono/project/auto_update_project", true))

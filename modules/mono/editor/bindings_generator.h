@@ -635,8 +635,8 @@ class BindingsGenerator {
 	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_files);
-	Error generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items);
+	Error generate_cs_core_project(const String &p_proj_dir);
+	Error generate_cs_editor_project(const String &p_proj_dir);
 	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
 

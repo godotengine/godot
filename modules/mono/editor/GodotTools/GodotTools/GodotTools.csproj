@@ -9,6 +9,7 @@
     <AssemblyName>GodotTools</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
+    <DataDirToolsOutputPath>$(GodotSourceRootPath)/bin/GodotSharp/Tools</DataDirToolsOutputPath>
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
     <LangVersion>7</LangVersion>
   </PropertyGroup>
@@ -41,9 +42,11 @@
     <Reference Include="System" />
     <Reference Include="GodotSharp">
       <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="GodotSharpEditor">
       <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharpEditor.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -56,7 +59,6 @@
     <Compile Include="Ides\MonoDevelop\Instance.cs" />
     <Compile Include="Ides\Rider\RiderPathLocator.cs" />
     <Compile Include="Ides\Rider\RiderPathManager.cs" />
-    <Compile Include="Internals\BindingsGenerator.cs" />
     <Compile Include="Internals\EditorProgress.cs" />
     <Compile Include="Internals\GodotSharpDirs.cs" />
     <Compile Include="Internals\Internal.cs" />
@@ -99,5 +101,21 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Target Name="CopyToDataDir" AfterTargets="Build">
+    <ItemGroup>
+      <GodotToolsCopy Include="$(OutputPath)\GodotTools*.dll" />
+      <GodotToolsCopy Include="$(OutputPath)\Newtonsoft.Json.dll" />
+      <GodotToolsCopy Include="$(OutputPath)\DotNet.Glob.dll" />
+    </ItemGroup>
+    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <GodotToolsCopy Include="$(OutputPath)\GodotTools*.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(GodotToolsCopy)" DestinationFolder="$(DataDirToolsOutputPath)" ContinueOnError="false" />
+  </Target>
+  <Target Name="BuildAlwaysCopyToDataDir">
+    <!-- Custom target run by SCons to make sure the CopyToDataDir target is always executed, without having to use DisableFastUpToDateCheck -->
+    <CallTarget Targets="Build" />
+    <CallTarget Targets="CopyToDataDir" />
+  </Target>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
