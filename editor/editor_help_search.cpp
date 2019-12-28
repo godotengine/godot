@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
 
@@ -202,7 +203,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	vbox->add_child(hbox);
 
 	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Size2(200, 0));
+	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("gui_input", this, "_search_box_gui_input");
 	search_box->connect("text_changed", this, "_search_box_text_changed");
@@ -210,14 +211,14 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(ToolButton);
-	case_sensitive_button->set_tooltip("Case Sensitive");
+	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", this, "_update_results");
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(ToolButton);
-	hierarchy_button->set_tooltip("Show Hierarchy");
+	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", this, "_update_results");
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
@@ -225,7 +226,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
-	filter_combo->set_custom_minimum_size(Size2(200, 0));
+	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	filter_combo->set_stretch_ratio(0); // Fixed width.
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
@@ -245,8 +246,8 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_column_title(0, TTR("Name"));
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_min_width(1, 150);
-	results_tree->set_custom_minimum_size(Size2(0, 100));
+	results_tree->set_column_min_width(1, 150 * EDSCALE);
+	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", this, "_confirmed");
@@ -517,7 +518,7 @@ TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, cons
 			tooltip += ", ";
 	}
 	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, "Method", "method", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, TTRC("Method"), "method", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
@@ -532,13 +533,13 @@ TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, cons
 			tooltip += ", ";
 	}
 	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, "Signal", "signal", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, TTRC("Signal"), "signal", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
 
 	String tooltip = p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, "Constant", "constant", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, TTRC("Constant"), "constant", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
@@ -546,13 +547,13 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, "Property", "property", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, TTRC("Property"), "property", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
 
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, "Theme Property", "theme_item", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip) {
@@ -575,7 +576,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);
 	item->set_text(0, text);
-	item->set_text(1, TTR(p_type));
+	item->set_text(1, TTRGET(p_type));
 	item->set_tooltip(0, p_tooltip);
 	item->set_tooltip(1, p_tooltip);
 	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
