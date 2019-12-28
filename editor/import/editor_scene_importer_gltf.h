@@ -323,6 +323,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 				memdelete(nodes[i]);
 			}
 		}
+		bool is_8_weights = false;
 	};
 
 	String _sanitize_scene_name(const String &name);

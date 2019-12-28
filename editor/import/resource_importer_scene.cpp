@@ -125,6 +125,7 @@ void EditorSceneImporter::_bind_methods() {
 	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
 	BIND_CONSTANT(IMPORT_MATERIALS_IN_INSTANCES);
 	BIND_CONSTANT(IMPORT_USE_COMPRESSION);
+	BIND_CONSTANT(IMPORT_ANIMATION_8_WEIGHTS);
 }
 
 /////////////////////////////////
@@ -1176,6 +1177,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/8_weights"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.anim),Files (.tres)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), animations_out));
@@ -1315,6 +1317,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	if (int(p_options["materials/location"]) == 0)
 		import_flags |= EditorSceneImporter::IMPORT_MATERIALS_IN_INSTANCES;
+
+	if (bool(p_options["animation/8_weights"]))
+		import_flags |= EditorSceneImporter::IMPORT_ANIMATION_8_WEIGHTS;
 
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this

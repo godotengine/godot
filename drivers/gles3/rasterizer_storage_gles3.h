@@ -625,7 +625,7 @@ public:
 			uint32_t offset;
 		};
 
-		Attrib attribs[VS::ARRAY_MAX];
+		Attrib attribs[VS::ARRAY_MAX + 2];
 
 		Mesh *mesh;
 		uint32_t format;

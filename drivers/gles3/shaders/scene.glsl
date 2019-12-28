@@ -45,6 +45,10 @@ layout(location = 5) in vec2 uv2_attrib;
 #ifdef USE_SKELETON
 layout(location = 6) in uvec4 bone_indices; // attrib:6
 layout(location = 7) in highp vec4 bone_weights; // attrib:7
+#ifdef USE_SKELETON_8_WEIGHTS
+layout(location = 8) in uvec4 bone_indices8; // attrib:8
+layout(location = 9) in highp vec4 bone_weights8; // attrib:9
+#endif
 #endif
 
 #ifdef USE_INSTANCING
@@ -428,6 +432,46 @@ void main() {
 					 vec4(0.0, 0.0, 0.0, 1.0)) *
 			 bone_weights.w;
 
+#ifdef USE_SKELETON_8_WEIGHTS
+
+		bone_indicesi = ivec4(bone_indices8); // cast to signed int
+
+		tex_ofs = ivec2(bone_indicesi.x % 256, (bone_indicesi.x / 256) * 3);
+		m += mat4(
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
+			 bone_weights8.x;
+
+		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 3);
+
+		m += mat4(
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
+			 bone_weights8.y;
+
+		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 3);
+
+		m += mat4(
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
+			 bone_weights8.z;
+
+		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 3);
+
+		m += mat4(
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
+			 bone_weights8.w;
+
+#endif
 		world_matrix = world_matrix * transpose(m);
 	}
 #endif

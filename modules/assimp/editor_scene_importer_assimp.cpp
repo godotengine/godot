@@ -110,11 +110,12 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	// Cannot remove pivot points because the static mesh will be in the wrong place
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 	int32_t max_bone_weights = 4;
-	//if (p_flags & IMPORT_ANIMATION_EIGHT_WEIGHTS) {
-	//	const int eight_bones = 8;
-	//	importer.SetPropertyBool(AI_CONFIG_PP_LBW_MAX_WEIGHTS, eight_bones);
-	//	max_bone_weights = eight_bones;
-	//}
+	importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, max_bone_weights);
+	if (p_flags & EditorSceneImporter::IMPORT_ANIMATION_8_WEIGHTS) {
+		const int eight_bones = 8;
+		importer.SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, eight_bones);
+		max_bone_weights = eight_bones;
+	}
 
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
 
@@ -914,7 +915,11 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 		Ref<SurfaceTool> st;
 		st.instance();
-		st->begin(Mesh::PRIMITIVE_TRIANGLES);
+		VisualServer::ArrayFormat format_flags = (VisualServer::ArrayFormat)0;
+		if (state.max_bone_weights == 8) {
+			format_flags = VisualServer::ARRAY_FLAG_USE_8_WEIGHTS;
+		}
+		st->begin(Mesh::PRIMITIVE_TRIANGLES, format_flags);
 
 		for (size_t j = 0; j < ai_mesh->mNumVertices; j++) {
 

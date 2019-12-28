@@ -140,12 +140,6 @@ void main() {
 	uv2_out = uv2_attrib_blend + uv2_attrib * blend_amount;
 #endif
 
-#ifdef ENABLE_SKELETON
-
-	bone_out = bone_attrib_blend;
-	weight_out = weight_attrib_blend + weight_attrib * blend_amount;
-#endif
-
 #else //ENABLE_BLEND
 
 	vertex_out = vertex_attrib * blend_amount;
@@ -173,12 +167,6 @@ void main() {
 #ifdef ENABLE_UV2
 
 	uv2_out = uv2_attrib * blend_amount;
-#endif
-
-#ifdef ENABLE_SKELETON
-
-	bone_out = bone_attrib;
-	weight_out = weight_attrib * blend_amount;
 #endif
 
 #endif

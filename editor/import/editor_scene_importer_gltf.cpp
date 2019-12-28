@@ -35,12 +35,15 @@
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/pool_vector.h"
 #include "modules/regex/regex.h"
+#include "resource_importer_scene.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/visual_server.h"
 
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 
@@ -1013,14 +1016,46 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			if (a.has("COLOR_0")) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(state, a["COLOR_0"], true);
 			}
-			if (a.has("JOINTS_0")) {
+			if (!a.has("JOINTS_1") || !a.has("WEIGHTS_1")) {
+				state.is_8_weights = false;
+			}
+			if (a.has("JOINTS_0") && !state.is_8_weights) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
 			}
-			if (a.has("WEIGHTS_0")) {
-				PoolVector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
+			if (a.has("JOINTS_1") && state.is_8_weights) {
+				PoolVector<int> joints_0 = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
+				PoolVector<int> joints_1 = _decode_accessor_as_ints(state, a["JOINTS_1"], true);
+				PoolVector<PoolVector<int> > joints_split;
+				for (int32_t i = 0; i < joints_0.size(); i += 4) {
+					PoolVector<int> joints;
+					joints.resize(8);
+					joints.write()[0] = joints_0.read()[i + 0];
+					joints.write()[1] = joints_0.read()[i + 1];
+					joints.write()[2] = joints_0.read()[i + 2];
+					joints.write()[3] = joints_0.read()[i + 3];
+					joints_split.push_back(joints);
+				}
+				int32_t joint_count = 0;
+				for (int32_t i = 0; i < joints_split.size(); i++) {
+					PoolVector<int> &joints = joints_split.write()[i];
+					joints.resize(8);
+					joints.write()[4] = joints_1.read()[joint_count + 0];
+					joints.write()[5] = joints_1.read()[joint_count + 1];
+					joints.write()[6] = joints_1.read()[joint_count + 2];
+					joints.write()[7] = joints_1.read()[joint_count + 3];
+					joint_count += 4;
+				}
+				PoolVector<int> final_joints;
+				for (int32_t i = 0; i < joints_split.size(); i++) {
+					final_joints.append_array(joints_split[i]);
+				}
+				array[Mesh::ARRAY_BONES] = final_joints;
+			}
+			if (a.has("WEIGHTS_0") && !state.is_8_weights) {
+				PoolVector<float> weights_0 = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
 				{ //gltf does not seem to normalize the weights for some reason..
-					int wc = weights.size();
-					PoolVector<float>::Write w = weights.write();
+					int wc = weights_0.size();
+					PoolVector<float>::Write w = weights_0.write();
 
 					for (int k = 0; k < wc; k += 4) {
 						float total = 0.0;
@@ -1036,7 +1071,64 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 						}
 					}
 				}
-				array[Mesh::ARRAY_WEIGHTS] = weights;
+				array[Mesh::ARRAY_WEIGHTS] = weights_0;
+			}
+
+			if (a.has("WEIGHTS_1") && state.is_8_weights) {
+				PoolVector<float> weights_0 = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
+				PoolVector<float> weights_1 = _decode_accessor_as_floats(state, a["WEIGHTS_1"], true);
+
+				PoolVector<PoolVector<float> > weights_split;
+				for (int32_t i = 0; i < weights_0.size(); i += 4) {
+					PoolVector<float> weights;
+					weights.resize(8);
+					weights.write()[0] = weights_0.read()[i + 0];
+					weights.write()[1] = weights_0.read()[i + 1];
+					weights.write()[2] = weights_0.read()[i + 2];
+					weights.write()[3] = weights_0.read()[i + 3];
+					weights_split.push_back(weights);
+				}
+				int32_t weight_count = 0;
+				for (int32_t i = 0; i < weights_split.size(); i++) {
+					PoolVector<float> &weights = weights_split.write()[i];
+					weights.resize(8);
+					weights.write()[4] = weights_1.read()[weight_count + 0];
+					weights.write()[5] = weights_1.read()[weight_count + 1];
+					weights.write()[6] = weights_1.read()[weight_count + 2];
+					weights.write()[7] = weights_1.read()[weight_count + 3];
+					weight_count += 4;
+				}
+				PoolVector<float> final_weights;
+				for (int32_t i = 0; i < weights_split.size(); i++) {
+					final_weights.append_array(weights_split[i]);
+				}
+				{ //gltf does not seem to normalize the weights for some reason..
+					int wc = final_weights.size();
+					PoolVector<float>::Write w = final_weights.write();
+
+					for (int k = 0; k < wc; k += 8) {
+						float total = 0.0;
+						total += w[k + 0];
+						total += w[k + 1];
+						total += w[k + 2];
+						total += w[k + 3];
+						total += w[k + 4];
+						total += w[k + 5];
+						total += w[k + 6];
+						total += w[k + 7];
+						if (total > 0.0) {
+							w[k + 0] /= total;
+							w[k + 1] /= total;
+							w[k + 2] /= total;
+							w[k + 3] /= total;
+							w[k + 4] /= total;
+							w[k + 5] /= total;
+							w[k + 6] /= total;
+							w[k + 7] /= total;
+						}
+					}
+				}
+				array[Mesh::ARRAY_WEIGHTS] = final_weights;
 			}
 
 			if (p.has("indices")) {
@@ -1216,9 +1308,12 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					morphs.push_back(array_copy);
 				}
 			}
-
+			VisualServer::ArrayFormat format_flags = (VisualServer::ArrayFormat)0;
+			if (state.is_8_weights) {
+				format_flags = VisualServer::ARRAY_FLAG_USE_8_WEIGHTS;
+			}
 			//just add it
-			mesh.mesh->add_surface_from_arrays(primitive, array, morphs);
+			mesh.mesh->add_surface_from_arrays(primitive, array, morphs, format_flags);
 
 			if (p.has("material")) {
 				const int material = p["material"];
@@ -2973,6 +3068,10 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 
 	state.major_version = version.get_slice(".", 0).to_int();
 	state.minor_version = version.get_slice(".", 1).to_int();
+
+	if (p_flags & EditorSceneImporter::IMPORT_ANIMATION_8_WEIGHTS) {
+		state.is_8_weights = true;
+	}
 
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);
