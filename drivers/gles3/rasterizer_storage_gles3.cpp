@@ -4454,6 +4454,7 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 	if (multimesh->buffer) {
 		glDeleteBuffers(1, &multimesh->buffer);
 		multimesh->data.resize(0);
+		multimesh->buffer = 0;
 	}
 
 	multimesh->size = p_instances;
