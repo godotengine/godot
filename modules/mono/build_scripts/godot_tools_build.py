@@ -14,7 +14,7 @@ def build_godot_tools(source, target, env):
     build_config = 'Debug' if env['target'] == 'debug' else 'Release'
 
     # Custom build target to make sure output is always copied to the data dir.
-    extra_build_args = ['/Target=BuildAlwaysCopyToDataDir']
+    extra_build_args = ['/Target:Build;GodotTools:BuildAlwaysCopyToDataDir']
 
     from . solution_builder import build_solution, nuget_restore
     nuget_restore(env, solution_path)
