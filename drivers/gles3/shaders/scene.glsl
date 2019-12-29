@@ -1260,7 +1260,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	float normalized_distance = light_length * omni_lights[idx].light_pos_inv_radius.w;
 	float omni_attenuation;
 	if (normalized_distance < 1.0) {
-		omni_attenuation = pow(normalized_distance, omni_lights[idx].light_direction_attenuation.w);
+		omni_attenuation = pow(1.0 - normalized_distance, omni_lights[idx].light_direction_attenuation.w);
 	} else {
 		omni_attenuation = 0.0;
 	}
