@@ -303,7 +303,7 @@ public:
 	void set_auto_accept_quit(bool p_enable);
 	void set_quit_on_go_back(bool p_enable);
 
-	void quit();
+	void quit(int p_exit_code = -1);
 
 	void set_input_as_handled();
 	bool is_input_handled();

@@ -906,6 +906,7 @@
 		</member>
 		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
 			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
+			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
 		</member>
 		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on" default="true">
 			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
