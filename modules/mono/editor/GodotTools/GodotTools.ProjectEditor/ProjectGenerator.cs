@@ -10,68 +10,13 @@ namespace GodotTools.ProjectEditor
     {
         private const string CoreApiProjectName = "GodotSharp";
         private const string EditorApiProjectName = "GodotSharpEditor";
-        private const string CoreApiProjectGuid = "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}";
-        private const string EditorApiProjectGuid = "{8FBEC238-D944-4074-8548-B3B524305905}";
-
-        public static string GenCoreApiProject(string dir, IEnumerable<string> compileItems)
-        {
-            string path = Path.Combine(dir, CoreApiProjectName + ".csproj");
-
-            ProjectPropertyGroupElement mainGroup;
-            var root = CreateLibraryProject(CoreApiProjectName, out mainGroup);
-
-            mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
-            mainGroup.SetProperty("RootNamespace", "Godot");
-            mainGroup.SetProperty("ProjectGuid", CoreApiProjectGuid);
-            mainGroup.SetProperty("BaseIntermediateOutputPath", "obj");
-
-            GenAssemblyInfoFile(root, dir, CoreApiProjectName,
-                new[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProjectName + "\")]" },
-                new[] { "System.Runtime.CompilerServices" });
-
-            foreach (var item in compileItems)
-            {
-                root.AddItem("Compile", item.RelativeToPath(dir).Replace("/", "\\"));
-            }
-
-            root.Save(path);
-
-            return CoreApiProjectGuid;
-        }
-
-        public static string GenEditorApiProject(string dir, string coreApiProjPath, IEnumerable<string> compileItems)
-        {
-            string path = Path.Combine(dir, EditorApiProjectName + ".csproj");
-
-            ProjectPropertyGroupElement mainGroup;
-            var root = CreateLibraryProject(EditorApiProjectName, out mainGroup);
-
-            mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
-            mainGroup.SetProperty("RootNamespace", "Godot");
-            mainGroup.SetProperty("ProjectGuid", EditorApiProjectGuid);
-            mainGroup.SetProperty("BaseIntermediateOutputPath", "obj");
-
-            GenAssemblyInfoFile(root, dir, EditorApiProjectName);
-
-            foreach (var item in compileItems)
-            {
-                root.AddItem("Compile", item.RelativeToPath(dir).Replace("/", "\\"));
-            }
-
-            var coreApiRef = root.AddItem("ProjectReference", coreApiProjPath.Replace("/", "\\"));
-            coreApiRef.AddMetadata("Private", "False");
-
-            root.Save(path);
-
-            return EditorApiProjectGuid;
-        }
 
         public static string GenGameProject(string dir, string name, IEnumerable<string> compileItems)
         {
             string path = Path.Combine(dir, name + ".csproj");
 
             ProjectPropertyGroupElement mainGroup;
-            var root = CreateLibraryProject(name, out mainGroup);
+            var root = CreateLibraryProject(name, "Tools", out mainGroup);
 
             mainGroup.SetProperty("OutputPath", Path.Combine(".mono", "temp", "bin", "$(Configuration)"));
             mainGroup.SetProperty("BaseIntermediateOutputPath", Path.Combine(".mono", "temp", "obj"));
@@ -110,7 +55,7 @@ namespace GodotTools.ProjectEditor
             return root.GetGuid().ToString().ToUpper();
         }
 
-        public static void GenAssemblyInfoFile(ProjectRootElement root, string dir, string name, string[] assemblyLines = null, string[] usingDirectives = null)
+        private static void GenAssemblyInfoFile(ProjectRootElement root, string dir, string name, string[] assemblyLines = null, string[] usingDirectives = null)
         {
             string propertiesDir = Path.Combine(dir, "Properties");
             if (!Directory.Exists(propertiesDir))
@@ -138,7 +83,7 @@ namespace GodotTools.ProjectEditor
             root.AddItem("Compile", assemblyInfoFile.RelativeToPath(dir).Replace("/", "\\"));
         }
 
-        public static ProjectRootElement CreateLibraryProject(string name, out ProjectPropertyGroupElement mainGroup)
+        public static ProjectRootElement CreateLibraryProject(string name, string defaultConfig, out ProjectPropertyGroupElement mainGroup)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException($"{nameof(name)} cannot be empty", nameof(name));
@@ -147,7 +92,7 @@ namespace GodotTools.ProjectEditor
             root.DefaultTargets = "Build";
 
             mainGroup = root.AddPropertyGroup();
-            mainGroup.AddProperty("Configuration", "Debug").Condition = " '$(Configuration)' == '' ";
+            mainGroup.AddProperty("Configuration", defaultConfig).Condition = " '$(Configuration)' == '' ";
             mainGroup.AddProperty("Platform", "AnyCPU").Condition = " '$(Platform)' == '' ";
             mainGroup.AddProperty("ProjectGuid", "{" + Guid.NewGuid().ToString().ToUpper() + "}");
             mainGroup.AddProperty("OutputType", "Library");
@@ -182,16 +127,6 @@ namespace GodotTools.ProjectEditor
             root.AddImport(Path.Combine("$(MSBuildBinPath)", "Microsoft.CSharp.targets").Replace("/", "\\"));
 
             return root;
-        }
-
-        private static void AddItems(ProjectRootElement elem, string groupName, params string[] items)
-        {
-            var group = elem.AddItemGroup();
-
-            foreach (var item in items)
-            {
-                group.AddItem(groupName, item);
-            }
         }
 
         private const string AssemblyInfoTemplate =
