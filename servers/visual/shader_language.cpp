@@ -571,8 +571,10 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					CharType last_char = str[str.length() - 1];
 
 					if (hexa_found) {
-						//hex integers eg."0xFF" or "0x12AB", etc - NOT supported yet
-						return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant - Not supported");
+						//integer(hex)
+						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
+							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+						}
 					} else if (period_found || exponent_found || float_suffix_found) {
 						//floats
 						if (period_found) {
@@ -621,7 +623,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					else
 						tk.type = TK_INT_CONSTANT;
 
-					tk.constant = str.to_double(); //won't work with hex
+					if (hexa_found) {
+						tk.constant = (double)str.hex_to_int64(true);
+					} else {
+						tk.constant = str.to_double();
+					}
 					tk.line = tk_line;
 
 					return tk;
