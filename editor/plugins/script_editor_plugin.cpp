@@ -732,7 +732,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 			continue; //internal script, who cares
 
 		if (trim_trailing_whitespace_on_save) {
-			se->trim_trailing_whitespace();
+			se->trim_trailing_whitespace(true);
 		}
 
 		se->insert_final_newline();
@@ -1158,7 +1158,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					return;
 
 				if (trim_trailing_whitespace_on_save)
-					current->trim_trailing_whitespace();
+					current->trim_trailing_whitespace(true);
 
 				current->insert_final_newline();
 
@@ -1182,7 +1182,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case FILE_SAVE_AS: {
 
 				if (trim_trailing_whitespace_on_save)
-					current->trim_trailing_whitespace();
+					current->trim_trailing_whitespace(true);
 
 				current->insert_final_newline();
 
@@ -2222,7 +2222,7 @@ void ScriptEditor::save_all_scripts() {
 		}
 
 		if (trim_trailing_whitespace_on_save) {
-			se->trim_trailing_whitespace();
+			se->trim_trailing_whitespace(true);
 		}
 
 		se->insert_final_newline();

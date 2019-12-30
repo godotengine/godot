@@ -284,9 +284,9 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 	}
 }
 
-void TextEditor::trim_trailing_whitespace() {
+void TextEditor::trim_trailing_whitespace(bool p_exclude_current_line) {
 
-	code_editor->trim_trailing_whitespace();
+	code_editor->trim_trailing_whitespace(p_exclude_current_line);
 }
 
 void TextEditor::insert_final_newline() {

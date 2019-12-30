@@ -2542,7 +2542,7 @@ void VisualScriptEditor::clear_executing_line() {
 	// todo: add a way to show which node is executing right now.
 }
 
-void VisualScriptEditor::trim_trailing_whitespace() {
+void VisualScriptEditor::trim_trailing_whitespace(bool p_exclude_current_line) {
 }
 
 void VisualScriptEditor::insert_final_newline() {

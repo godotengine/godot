@@ -918,15 +918,23 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
 }
 
-void CodeTextEditor::trim_trailing_whitespace() {
-	bool trimed_whitespace = false;
+void CodeTextEditor::trim_trailing_whitespace(bool p_exclude_current_line) {
+	bool trimmed_whitespace = false;
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
-		String line = text_editor->get_line(i);
+		// If enabled, ignore the line the cursor is currently on.
+		// This prevents the cursor from moving when saving a file if it's on an empty line with trailing whitespace.
+		// Methods that trim trailing whitespace automatically on save should always enable this.
+		if (p_exclude_current_line && i == text_editor->cursor_get_line()) {
+			continue;
+		}
+
+		const String line = text_editor->get_line(i);
+
 		if (line.ends_with(" ") || line.ends_with("\t")) {
 
-			if (!trimed_whitespace) {
+			if (!trimmed_whitespace) {
 				text_editor->begin_complex_operation();
-				trimed_whitespace = true;
+				trimmed_whitespace = true;
 			}
 
 			int end = 0;
@@ -940,7 +948,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 		}
 	}
 
-	if (trimed_whitespace) {
+	if (trimmed_whitespace) {
 		text_editor->end_complex_operation();
 		text_editor->update();
 	}

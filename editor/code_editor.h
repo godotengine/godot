@@ -204,7 +204,7 @@ protected:
 	bool is_warnings_panel_opened;
 
 public:
-	void trim_trailing_whitespace();
+	void trim_trailing_whitespace(bool p_exclude_current_line = false);
 	void insert_final_newline();
 
 	void convert_indent_to_spaces();

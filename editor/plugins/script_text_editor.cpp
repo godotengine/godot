@@ -478,9 +478,9 @@ void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-void ScriptTextEditor::trim_trailing_whitespace() {
+void ScriptTextEditor::trim_trailing_whitespace(bool p_exclude_current_line) {
 
-	code_editor->trim_trailing_whitespace();
+	code_editor->trim_trailing_whitespace(p_exclude_current_line);
 }
 
 void ScriptTextEditor::insert_final_newline() {

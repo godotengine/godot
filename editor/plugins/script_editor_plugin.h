@@ -99,7 +99,7 @@ public:
 	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void set_executing_line(int p_line) = 0;
 	virtual void clear_executing_line() = 0;
-	virtual void trim_trailing_whitespace() = 0;
+	virtual void trim_trailing_whitespace(bool p_exclude_current_line = false) = 0;
 	virtual void insert_final_newline() = 0;
 	virtual void convert_indent_to_spaces() = 0;
 	virtual void convert_indent_to_tabs() = 0;
@@ -326,8 +326,6 @@ class ScriptEditor : public PanelContainer {
 	bool trim_trailing_whitespace_on_save;
 	bool use_space_indentation;
 	bool convert_indent_on_save;
-
-	void _trim_trailing_whitespace(TextEdit *tx);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(REF p_script, int p_line);
