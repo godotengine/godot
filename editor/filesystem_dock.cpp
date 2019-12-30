@@ -1750,8 +1750,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
-			make_script_dialog_text->config("Node", fpath.plus_file("new_script.gd"), false);
-			make_script_dialog_text->popup_centered(Size2(300, 300) * EDSCALE);
+			make_script_dialog->config("Node", fpath.plus_file("new_script.gd"), false);
+			make_script_dialog->popup_centered(Size2(300, 300) * EDSCALE);
 		} break;
 
 		case FILE_COPY_PATH: {
@@ -2686,9 +2686,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_scene_dialog->register_text_enter(make_scene_dialog_text);
 	make_scene_dialog->connect("confirmed", this, "_make_scene_confirm");
 
-	make_script_dialog_text = memnew(ScriptCreateDialog);
-	make_script_dialog_text->set_title(TTR("Create Script"));
-	add_child(make_script_dialog_text);
+	make_script_dialog = memnew(ScriptCreateDialog);
+	make_script_dialog->set_title(TTR("Create Script"));
+	add_child(make_script_dialog);
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
