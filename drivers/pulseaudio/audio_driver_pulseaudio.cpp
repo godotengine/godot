@@ -78,6 +78,8 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 }
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
+
+	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
 	ad->capture_default_device = i->default_source_name;
