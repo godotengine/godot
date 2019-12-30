@@ -171,6 +171,7 @@
 #include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 EditorNode *EditorNode::singleton = NULL;
 
@@ -573,11 +574,13 @@ void EditorNode::_fs_changed() {
 		if (preset.is_null()) {
 			String errstr = "Unknown export preset: " + export_defer.preset;
 			ERR_PRINTS(errstr);
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 		} else {
 			Ref<EditorExportPlatform> platform = preset->get_platform();
 			if (platform.is_null()) {
 				String errstr = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
 				ERR_PRINTS(errstr);
+				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 			} else {
 				// ensures export_project does not loop infinitely, because notifications may
 				// come during the export
@@ -594,6 +597,7 @@ void EditorNode::_fs_changed() {
 				}
 				if (err != OK) {
 					ERR_PRINTS(vformat(TTR("Project export failed with error code %d."), (int)err));
+					OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 				}
 			}
 		}
