@@ -16,7 +16,7 @@
 			The colliding body.
 		</member>
 		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
-			The colliding body's unique [RID].
+			The colliding body's unique instance ID. See [method Object.get_instance_id].
 		</member>
 		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
