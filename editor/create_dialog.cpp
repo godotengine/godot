@@ -33,8 +33,10 @@
 #include "core/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
+#include "editor_feature_profile.h"
 #include "editor_help.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 

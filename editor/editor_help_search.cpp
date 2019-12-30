@@ -31,6 +31,7 @@
 #include "editor_help_search.h"
 
 #include "core/os/keyboard.h"
+#include "editor_feature_profile.h"
 #include "editor_node.h"
 
 void EditorHelpSearch::_update_icons() {

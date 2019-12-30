@@ -33,6 +33,8 @@
 #include "core/global_constants.h"
 #include "core/project_settings.h"
 #include "editor_node.h"
+#include "editor_scale.h"
+#include "project_settings_editor.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 

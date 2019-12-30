@@ -33,6 +33,7 @@
 #include "core/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = NULL;
 

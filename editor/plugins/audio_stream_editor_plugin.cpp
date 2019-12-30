@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "editor/audio_stream_preview.h"
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {

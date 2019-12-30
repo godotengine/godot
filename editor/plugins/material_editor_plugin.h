@@ -41,6 +41,8 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/resources/material.h"
 
+class ViewportContainer;
+
 class MaterialEditor : public Control {
 
 	GDCLASS(MaterialEditor, Control);

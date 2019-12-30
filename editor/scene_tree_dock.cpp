@@ -35,7 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation_player_editor_plugin.h"

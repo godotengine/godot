@@ -40,6 +40,7 @@
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
+#include "servers/audio/audio_stream.h"
 
 void post_process_preview(Ref<Image> p_image) {
 

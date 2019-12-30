@@ -31,6 +31,7 @@
 #include "animation_blend_space_1d_editor.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {

@@ -41,6 +41,8 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
+class ProgressBar;
+
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);

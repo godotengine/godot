@@ -42,6 +42,7 @@
 #include "editor/bindings_generator.h"
 #include "editor/csharp_project.h"
 #include "editor/editor_node.h"
+#include "editor/node_dock.h"
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED

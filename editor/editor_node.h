@@ -31,66 +31,59 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
-#include "core/print_string.h"
-#include "editor/audio_stream_preview.h"
-#include "editor/connections_dialog.h"
-#include "editor/create_dialog.h"
-#include "editor/editor_about.h"
 #include "editor/editor_data.h"
-#include "editor/editor_export.h"
-#include "editor/editor_feature_profile.h"
 #include "editor/editor_folding.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_layouts_dialog.h"
-#include "editor/editor_log.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
-#include "editor/editor_run_native.h"
-#include "editor/editor_run_script.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_sub_scene.h"
-#include "editor/export_template_manager.h"
-#include "editor/fileserver/editor_file_server.h"
-#include "editor/filesystem_dock.h"
-#include "editor/groups_editor.h"
-#include "editor/import_dock.h"
 #include "editor/inspector_dock.h"
-#include "editor/node_dock.h"
-#include "editor/pane_drag.h"
-#include "editor/plugin_config_dialog.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_export.h"
-#include "editor/project_settings_editor.h"
 #include "editor/property_editor.h"
-#include "editor/quick_open.h"
-#include "editor/reparent_dialog.h"
-#include "editor/run_settings_dialog.h"
 #include "editor/scene_tree_dock.h"
-#include "editor/scene_tree_editor.h"
-#include "editor/script_create_dialog.h"
-#include "editor/settings_config_dialog.h"
-#include "scene/gui/center_container.h"
-#include "scene/gui/control.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/tabs.h"
-#include "scene/gui/texture_progress.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/viewport_container.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
+class AcceptDialog;
+class AudioStreamPreviewGenerator;
+class BackgroundProgress;
+class CenterContainer;
+class ConfirmationDialog;
+class Control;
+class DependencyEditor;
+class DependencyErrorDialog;
+class EditorAbout;
+class EditorExport;
+class EditorFeatureProfileManager;
+class EditorFileServer;
+class EditorInspector;
+class EditorLayoutsDialog;
+class EditorLog;
+class EditorPlugin;
 class EditorPluginList;
+class EditorQuickOpen;
+class EditorResourcePreview;
+class EditorRunNative;
+class EditorSettingsDialog;
+class ExportTemplateManager;
+class FileSystemDock;
+class HSplitContainer;
+class ImportDock;
+class MenuButton;
+class NodeDock;
+class OrphanResourcesDialog;
+class PaneDrag;
+class Panel;
+class PanelContainer;
+class PluginConfigDialog;
+class ProgressDialog;
+class ProjectExportDialog;
+class ProjectSettingsEditor;
+class RunSettingsDialog;
+class ScriptCreateDialog;
+class TabContainer;
+class Tabs;
+class TextureProgress;
+class ToolButton;
+class VSplitContainer;
 
 class EditorNode : public Node {
 
