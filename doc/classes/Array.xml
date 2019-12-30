@@ -93,7 +93,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the last element of the array if the array is not empty.
+				Returns the last element of the array, or [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="bsearch">
@@ -186,7 +186,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the first element of the array if the array is not empty.
+				Returns the first element of the array, or [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="has">
@@ -243,14 +243,14 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Removes the last element of the array.
+				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="pop_front">
 			<return type="Variant">
 			</return>
 			<description>
-				Removes the first element of the array.
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="push_back">
