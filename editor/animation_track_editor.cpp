@@ -4579,7 +4579,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 			bool valid;
 			subindices = _get_bezier_subindices_for_type(h.type, &valid);
 			if (!valid) {
-				EditorNode::get_singleton()->show_warning("Invalid track for Bezier (no suitable sub-properties)");
+				EditorNode::get_singleton()->show_warning(TTR("Invalid track for Bezier (no suitable sub-properties)"));
 				return;
 			}
 		}

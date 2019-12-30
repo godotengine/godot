@@ -263,7 +263,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		if (connecting_to_node != StringName()) {
 
 			if (state_machine->has_transition(connecting_from, connecting_to_node)) {
-				EditorNode::get_singleton()->show_warning("Transition exists!");
+				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
 
 			} else {
 

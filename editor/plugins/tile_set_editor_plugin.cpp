@@ -2037,10 +2037,10 @@ void TileSetEditor::_update_toggle_shape_button() {
 		tools[SHAPE_TOGGLE_TYPE]->hide();
 	} else if (concave.is_valid()) {
 		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConvexPolygonShape2D", "EditorIcons"));
-		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Convex");
+		tools[SHAPE_TOGGLE_TYPE]->set_text(TTR("Make Convex"));
 	} else if (convex.is_valid()) {
 		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConcavePolygonShape2D", "EditorIcons"));
-		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Concave");
+		tools[SHAPE_TOGGLE_TYPE]->set_text(TTR("Make Concave"));
 	} else {
 		// Shouldn't happen
 		separator_shape_toggle->hide();

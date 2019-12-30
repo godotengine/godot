@@ -457,7 +457,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(AcceptDialog);
-	debug_uv_dialog->set_title("UV Channel Debug");
+	debug_uv_dialog->set_title(TTR("UV Channel Debug"));
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
