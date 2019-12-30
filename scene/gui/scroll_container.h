@@ -95,7 +95,7 @@ public:
 	void set_deadzone(int p_deadzone);
 
 	bool is_following_focus() const;
-	void set_follow_focus(int p_follow);
+	void set_follow_focus(bool p_follow);
 
 	HScrollBar *get_h_scrollbar();
 	VScrollBar *get_v_scrollbar();

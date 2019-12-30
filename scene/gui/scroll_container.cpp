@@ -514,7 +514,7 @@ bool ScrollContainer::is_following_focus() const {
 	return follow_focus;
 }
 
-void ScrollContainer::set_follow_focus(int p_follow) {
+void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
