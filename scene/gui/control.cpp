@@ -2286,7 +2286,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect("changed", this, "_theme_changed");
+		data.theme->connect("changed", this, "_theme_changed", varray(), CONNECT_DEFERRED);
 	}
 }
 
