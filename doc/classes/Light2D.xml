@@ -68,7 +68,7 @@
 			Smooth shadow gradient length.
 		</member>
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
-			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching shadow mask will cast shadows.
+			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching light mask will cast shadows.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			[Texture] used for the Light2D's appearance.
