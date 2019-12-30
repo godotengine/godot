@@ -128,6 +128,11 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			udata.push_back(file_item);
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
+	} else if (display_mode == DISPLAY_MODE_SPLIT) {
+		if (lpath.get_base_dir() == path.get_base_dir()) {
+			subdirectory_item->select(0);
+			subdirectory_item->set_as_cursor(0);
+		}
 	}
 
 	if (searched_string.length() > 0) {
