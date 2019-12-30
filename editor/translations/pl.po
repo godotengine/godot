@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
+"PO-Revision-Date: 2019-12-26 00:02+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -831,9 +831,8 @@ msgid "Extra Call Arguments:"
 msgstr "Dodatkowe argumenty wywołania:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Wybierz metodę"
+msgstr "Metoda odbiorcy:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3097,9 +3096,8 @@ msgid "Open the previous Editor"
 msgstr "Otwórz poprzedni edytor"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Ostrzeżenie"
+msgstr "Ostrzeżenie!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4691,9 +4689,8 @@ msgid "Transition: "
 msgstr "Przejście: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Tryb przesuwania"
+msgstr "Tryb odtwarzania:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5243,7 +5240,7 @@ msgstr "Cały obszar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
-msgstr "Zachowaj proporcie"
+msgstr "Zachowaj proporcje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5912,9 +5909,8 @@ msgid "Remove item %d?"
 msgstr "Usuń element %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Biblioteka Meshów..."
+msgstr "Biblioteka meshów"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6549,20 +6545,22 @@ msgstr "Zapisz plik jako..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Brak skryptu do uruchomienia."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Nie udało się przeładować skryptu, sprawdź błędy w konsoli."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Skrypt nie jest w trybie edytora (tool), nie można go uruchomić."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"By uruchomić ten skrypt, musi on dziedziczyć EditorScript i być ustawiony w "
+"tryb edytora (tool)."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7953,17 +7951,15 @@ msgstr "Połącz ze sceny"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Nowy pojedynczy kafelek"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Wyłącz autokafelki"
+msgstr "Nowy autokafelek"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Nowy %s"
+msgstr "Nowy atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -7982,39 +7978,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Wybierz poprzedni kształt, podkafelek lub Kafelek."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Tryb obszaru"
+msgstr "Obszar"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Tryb kolizji"
+msgstr "Kolizja"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Tryb okluzji"
+msgstr "Okluzja"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Tryb nawigacji"
+msgstr "Nawigacja"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Tryb maski bitowej"
+msgstr "Maska bitowa"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Tryb priorytetów"
+msgstr "Priorytet"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Indeks:"
+msgstr "Indeks Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"

@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:38+0000\n"
+"PO-Revision-Date: 2019-12-23 17:08+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -804,9 +804,8 @@ msgid "Extra Call Arguments:"
 msgstr "별도의 호출 인수:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "메서드 선택하기"
+msgstr "받는 메서드:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3057,9 +3056,8 @@ msgid "Open the previous Editor"
 msgstr "이전 편집기 열기"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "경고"
+msgstr "경고!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4637,9 +4635,8 @@ msgid "Transition: "
 msgstr "전환: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "팬 모드"
+msgstr "실행 모드:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5844,9 +5841,8 @@ msgid "Remove item %d?"
 msgstr "%d개의 항목을 삭제할까요?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "메시 라이브러리..."
+msgstr "메시 라이브러리"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6480,20 +6476,22 @@ msgstr "다른 이름으로 저장하기..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "실행하기 위한 스크립트를 가질 수 없어요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "스크립트 다시 불러오기에 실패했어요. 콘솔에서 오류를 확인하세요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "스크립트가 Tool 모드가 아니에요. 실행할 수 없을 거예요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"이 스크립트를 실행하려면, 반드시 EditorScript에 속해야 하며, Tool 모드로 설정"
+"되어 있어야 해요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7882,17 +7880,15 @@ msgstr "씬에서 병합하기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "새 단일 타일"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "오토타일 끄기"
+msgstr "새 오토타일"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "아틀라스:"
+msgstr "새 아틀라스"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -7911,39 +7907,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "지역 모드"
+msgstr "지역"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "충돌 모드"
+msgstr "충돌"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "어클루전 모드"
+msgstr "어클루전"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "내비게이션 모드"
+msgstr "내비게이션"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "비트 마스크 모드"
+msgstr "비트 마스크"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "우선 순위 모드"
+msgstr "우선 순위"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "인덱스:"
+msgstr "Z 인덱스"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -10388,7 +10377,7 @@ msgstr "다른 씬에서 병합하기"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr "분기를 다른 씬으로 저장"
+msgstr "분기를 씬으로 저장하기"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"

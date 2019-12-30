@@ -73,8 +73,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-22 04:19+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2019-12-23 17:08+0000\n"
+"Last-Translator: Camille Mohr-Daurat <pouleyketchoup@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -869,9 +869,8 @@ msgid "Extra Call Arguments:"
 msgstr "Arguments supplémentaires :"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Sélectionner une méthode"
+msgstr "Méthode du récepteur :"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3169,9 +3168,8 @@ msgid "Open the previous Editor"
 msgstr "Ouvrir l'éditeur précédant"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Avertissements"
+msgstr "Avertissement !"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4773,9 +4771,8 @@ msgid "Transition: "
 msgstr "Transition : "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Mode navigation"
+msgstr "Mode d'exécution :"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5996,9 +5993,8 @@ msgid "Remove item %d?"
 msgstr "Supprimer l'objet %d ?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "MeshLibrary…"
+msgstr "Mesh Library"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6641,20 +6637,22 @@ msgstr "Enregistrer sous…"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Impossible d'obtenir le script à exécuter."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Échec du rechargement du script, vérifiez les erreurs dans la console."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Le script n'est pas en mode outil (tool), il ne peut pas être exécuté."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Pour exécuter ce script, il doit hériter de EditorScript et être défini en "
+"mode outil (tool)."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -8048,17 +8046,15 @@ msgstr "Fusionner depuis la scène"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Nouvelle Simple Tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Désactiver Autotile"
+msgstr "Nouvelle Auto-tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Nouveau %s"
+msgstr "Nouvel Atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -8077,39 +8073,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Sélectionner la forme précédente, sous-tuile, ou tuile."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Mode Région"
+msgstr "Région"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Mode collision"
+msgstr "Collision"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Mode Occlusion"
+msgstr "Occlusion"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Mode Navigation"
+msgstr "Navigation"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Mode Bitmask"
+msgstr "Bitmask"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Mode prioritaire"
+msgstr "Priorité"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Index :"
+msgstr "Z Index"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"

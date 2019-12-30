@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-22 12:24+0000\n"
+"PO-Revision-Date: 2019-12-27 15:52+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -73,11 +73,12 @@ msgstr "Ongeldige invoer %i (niet doorgegeven) in expressie"
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"self kan niet gebruikt worden omdat de instantie null is (niet doorgegeven)"
+"'self' kan niet gebruikt worden omdat de instantie 'null' is (niet "
+"doorgegeven)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Ongeldige operand voor operator %s, %s en %s."
+msgstr "Ongeldige operanden %s en %s voor operator %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -149,7 +150,7 @@ msgstr "Hier Key invoegen"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Kopieer Geselecteerde Key(s)"
+msgstr "Geselecteerde sleutel(s) dupliceren"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -165,7 +166,7 @@ msgstr "Beweeg Bézierpunten"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Dupliceer Keys"
+msgstr "Animatiesleutels dupliceren"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
@@ -201,7 +202,7 @@ msgstr "anim-multi-change overgang"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr "anim-multi-change transformatie"
+msgstr "Anim-multi-change transformatie"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
@@ -218,7 +219,7 @@ msgstr "Verander Animatielengte"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Verander Animatie Lus"
+msgstr "Animatielus veranderen"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -258,7 +259,7 @@ msgstr "Track Toevoegen"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Animatie Loopen"
+msgstr "Animatie herhalen"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -337,11 +338,11 @@ msgstr "Kubiek"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "Klem loop interpolatie"
+msgstr "Klem lusinterpolatie"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "Loop Interpolatie Terug"
+msgstr "Naadloze lusinterpolatie"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -350,7 +351,7 @@ msgstr "Voer Sleutel in"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Dupliceer Sleutel(s)"
+msgstr "Sleutel(s) dupliceren"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -366,7 +367,7 @@ msgstr "Verander Animatie Interpolatiemodus"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Verander Animatie lus Modus"
+msgstr "Animatielusmodus veranderen"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -422,9 +423,7 @@ msgstr "Herschik Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
-"Transformatie tracks zijn alleen te gebruiken met nodes die een dimensionale "
-"oriëntatie hebben."
+msgstr "Transformatiesporen gelden alleen voor op Spatial-gebaseerde knopen."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -433,14 +432,14 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Audio tracks kunnen enkel verwijzen naar nodes van het type:\n"
+"Audiosporen kunnen alleen verwijzen naar de volgende knopen:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Animatie tracks kunnen enkel verwijzen naar AnimatiePlayer nodes."
+msgstr "Animatiesporen kunnen alleen verwijzen naar AnimatiePlayer-knopen."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -519,17 +518,16 @@ msgid ""
 msgstr ""
 "Deze animatie behoort tot een geïmporteerde scène, dus veranderingen aan "
 "geïmporteerde tracks zullen niet worden opgeslagen.\n"
-"\n"
-"Om aangepaste tracks toe te voegen, navigeert u naar de importinstellingen "
-"van de scène en stelt u deze in\n"
-"\"Animation > Storage\" naar \"Files\", schakel \"Animation > Keep Custom "
-"Tracks\" in, dan herimporteren.\n"
-"U kunt ook een importvoorinstelling gebruiken die animaties importeert om "
-"bestanden te scheiden."
+"Om aangepaste tracks toe te kunnen voegen, moet in de importinstellingen van "
+"de scène en de \"Animation→Storage\" naar \"Files\" zetten en "
+"\"Animation→Keep Custom Tracks\" inschakelen. Importeer de scène dan "
+"opnieuw.\n"
+"Anders kan je een importvoorinstelling gebruiken die animaties importeert en "
+"in verschillende bestanden opslaat."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr "Waarschuwing:  Geïmporteerde animatie bewerken"
+msgstr "Waarschuwing: Er wordt een geïmporteerde animatie bewerkt"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -538,11 +536,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr "Toon alleen sporen die horen bij de geselecteerde node in de boom."
+msgstr "Alleen sporen van geselecteerde knopen tonen."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr "Sporen weergeven op basis van nodes of als lijst."
+msgstr "Sporen groeperen op knoop of als een normale lijst tonen."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
@@ -588,7 +586,7 @@ msgstr "Schaal Vanaf Cursor"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Dupliceer Selectie"
+msgstr "Selectie dupliceren"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
@@ -616,7 +614,7 @@ msgstr "Animatie Opschonen"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr "Kies de node die geanimeerd zal worden:"
+msgstr "Kies de knoop die geanimeerd zal worden:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -681,7 +679,7 @@ msgstr "Kopiëren"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "Selectie leegmaken"
+msgstr "Alles/niets selecteren"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -733,7 +731,7 @@ msgstr "Hoofdlettergevoelig"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr "Hele Woorden"
+msgstr "Hele woorden"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
@@ -745,7 +743,7 @@ msgstr "Alle Vervangen"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr "Alleen Selectie"
+msgstr "Alleen selectie"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
@@ -782,23 +780,23 @@ msgstr "Regel- en kolomnummers."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr "Methode in doel Node moet gespecificeerd worden."
+msgstr "Methode in doelknoop moet gespecificeerd worden."
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Doel methode niet gevonden. Specificeer een geldige methode of koppel een "
-"script aan de doel Node."
+"Doelmethode niet gevonden. Specificeer een geldige methode of koppel een "
+"script aan de doelknoop."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
-msgstr "Vasthechten aan knooppunt:"
+msgstr "Aan knoop verbinden:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr "Koppelen met script:"
+msgstr "Met script verbinden:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
@@ -827,16 +825,15 @@ msgstr "Verwijderen"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Extra Aanroep Argument Toevoegen:"
+msgstr "Aanvullende aanroepparameter toevoegen:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr "Extra Aanroep Argumenten:"
+msgstr "Aanroepparameters:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Selecteer Method"
+msgstr "Ontvangende methode:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -859,7 +856,7 @@ msgstr "Eenmalig"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr "Ontkoppelt het signaal na eerste keer uitzenden."
+msgstr "Koppelt het signaal automatisch los na de eerste uitzending."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
@@ -894,24 +891,24 @@ msgstr "Verbind '%s' met '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Ontkoppel '%s' van '%s'"
+msgstr "'%s' loskoppelen van '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "Ontkoppel alles van signaal: '%s'"
+msgstr "Alles van signaal '%s' loskoppelen"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "Verbind..."
+msgstr "Verbinden..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Losmaken"
+msgstr "Loskoppelen"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
-msgstr "Verbind een Signaal met een Methode"
+msgstr "Verbind een signaal met een methode"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
@@ -933,7 +930,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr "Ontkoppel Alles"
+msgstr "Alles loskoppelen"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
@@ -941,7 +938,7 @@ msgstr "Bewerken..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
-msgstr "Ga Naar Methode"
+msgstr "Naar methode springen"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -953,7 +950,7 @@ msgstr "Wijzig"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Maak Nieuwe %s"
+msgstr "%s opstellen"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -962,7 +959,7 @@ msgstr "Favorieten:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr "Recente:"
+msgstr "Onlangs:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
@@ -986,27 +983,27 @@ msgstr "Omschrijving:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr "Zoek Vervanging Voor:"
+msgstr "Vervanging zoeken voor:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr "Afhankelijkheden Voor:"
+msgstr "Afhankelijkheden voor:"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Scene '%s' wordt momenteel gewijzigd.\n"
-"Wijzigingen hebben pas effect na herladen."
+"Scène '%s' wordt momenteel bewerkt.\n"
+"Wijzigingen hebben pas na herladen effect."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Resource '%s' is in gebruik.\n"
-"Wijzigingen hebben pas effect na herladen."
+"Bron '%s' is in gebruik.\n"
+"Wijzigingen hebben pas na herladen effect."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1032,11 +1029,11 @@ msgstr "Repareer defecten"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr "Afhankelijkheden Editor"
+msgstr "Afhankelijkhedeneditor"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr "Zoek Vervangende Resource:"
+msgstr "Bronvervanging zoeken:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -1050,13 +1047,13 @@ msgstr "Openen"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr "Eigenaren Van:"
+msgstr "Eigenaren van:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
 msgstr ""
-"Verwijder geselecteerde bestanden van het project? (Kan niet ongedaan "
-"gemaakt worden.)"
+"Geselecteerde bestanden uit het project verwijderen? (Kan niet ongedaan "
+"gemaakt worden)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1064,17 +1061,17 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"De bestanden die verwijderd worden zijn vereist door andere resources om ze "
-"te laten werken.\n"
-"Toch verwijderen? (Kan niet ongedaan worden.)"
+"De bestanden die verwijderd worden zijn nodig om andere bronnen te laten "
+"werken.\n"
+"Toch verwijderen? (Kan niet ongedaan worden)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr "Niet te verwijderen:"
+msgstr "Kan niet verwijderd worden:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr "Error bij het laden van:"
+msgstr "Fout bij het laden van:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
@@ -1082,7 +1079,7 @@ msgstr "Laden mislukt vanwege afwezige afhankelijkheden:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr "Toch Openen"
+msgstr "Toch openen"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
@@ -1090,23 +1087,23 @@ msgstr "Welke actie moet ondernomen worden?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr "Repareer Afhankelijkheden"
+msgstr "Afhankelijkheden repareren"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "Errors bij het laden!"
+msgstr "Fouten bij het laden!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "%d item(s) permanent verwijderen? (Kan niet ongedaan worden!)"
+msgstr "%d bestand(en) voorgoed verwijderen? (Kan niet ongedaan worden!)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
-msgstr "Toon Afhankelijkheden"
+msgstr "Afhankelijkheden tonen"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Verweesde hulpbronnen verkenner"
+msgstr "Weesbronnen bekijken"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -1118,19 +1115,19 @@ msgstr "Verwijder"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr "Eigenaar Van"
+msgstr "In bezit"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr "Resources Zonder Expliciet Bezit:"
+msgstr "Bronnen zonder expliciet bezit:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr "Wijzig Array Sleutel"
+msgstr "Sleutel wijzigen"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr "Wijzig Array Waarde"
+msgstr "Waarde wijzigen"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -1204,9 +1201,9 @@ msgid ""
 "respective copyright statements and license terms."
 msgstr ""
 "Godot Engine maakt gebruik van een aantal gratis en open-source "
-"bibliotheken, ontwikkeld door derden, die compatibel zijn met onze MIT "
-"licentie. Wat volgt is een exhaustieve lijst van alle componenten van een "
-"derde partij met hun respectievelijke copyrightberichten en licentietermen."
+"bibliotheken, ontwikkeld door derden, die compatibel zijn met de MIT "
+"licentie. Wat volgt is een uitputtende lijst van alle componenten van derde "
+"partijen met hun respectievelijke copyrightberichten en licentietermen."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1402,7 +1399,7 @@ msgstr "Sla deze audiobus layout op in een bestand."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Laad Standaard"
+msgstr "Laad standaard"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
@@ -1426,7 +1423,7 @@ msgstr "Mag niet conflicteren met bestaande engine klasse naam."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing built-in type name."
-msgstr "Mag niet conflicteren met een bestaande ingebouwde type naam."
+msgstr "Mag niet conflicteren met een bestaande ingebouwde typenaam."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing global constant name."
@@ -1450,11 +1447,11 @@ msgstr "AutoLoad-Globalen omschakelen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
-msgstr "Verplaats Autoload"
+msgstr "Autoload verplaatsen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
-msgstr "Verwijder Autoload"
+msgstr "Autoload verwijderen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Enable"
@@ -1462,7 +1459,7 @@ msgstr "Inschakelen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
-msgstr "Herschik Autoloads"
+msgstr "Autoloads opnieuw ordenen"
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
 msgid "Invalid path."
@@ -1474,11 +1471,11 @@ msgstr "Bestand bestaat niet."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
-msgstr "Niet in resource pad."
+msgstr "Niet in bronpad."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "AutoLoad Toevoegen"
+msgstr "AutoLoad toevoegen"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
@@ -1489,7 +1486,7 @@ msgstr "Pad:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Node Naam:"
+msgstr "Knoopnaam:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_profiler.cpp editor/project_manager.cpp
@@ -1527,13 +1524,13 @@ msgstr "Kies eerst een basismap."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr "Kies een Map"
+msgstr "Kies een map"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "Map Maken"
+msgstr "Map maken"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
@@ -1629,15 +1626,15 @@ msgstr "Scene structuur bewerking"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
-msgstr "Dock importeren"
+msgstr "Importtabblad"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr "Knooppunt dock"
+msgstr "Knooptabblad"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem and Import Docks"
-msgstr "Bestandssysteem en Docks importeren"
+msgstr "Bestandssysteem- en Importtablad"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1685,7 +1682,7 @@ msgstr "Ingeschakelde Klassen:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr "'%s' bestandsformaat is ongeldig, het importeren is afgebroken."
+msgstr "Bestandsformaat '%s' is ongeldig, het importeren is afgebroken."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
@@ -1720,7 +1717,7 @@ msgstr "Nieuw"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importeren"
+msgstr "Import"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -1744,7 +1741,7 @@ msgstr "Wis Profiel"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr "Editor Profielen beheren"
+msgstr "Godotfunctieprofiel"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -1760,7 +1757,7 @@ msgstr "Editor Profielen beheren"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "Selecteer Huidige Map"
+msgstr "Huidige map selecteren"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1768,7 +1765,7 @@ msgstr "Bestand Bestaat, Overschrijven?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
-msgstr "Selecteer deze map"
+msgstr "Deze map selecteren"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1785,7 +1782,7 @@ msgstr "Weergeven in Bestandsbeheer"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Nieuwe Map..."
+msgstr "Nieuwe map..."
 
 #: editor/editor_file_dialog.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -1810,11 +1807,11 @@ msgstr "Open Bestand(en)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr "Open een Map"
+msgstr "Map openen"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr "Open een Bestand of Map"
+msgstr "Bestand of map openen"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/editor_properties.cpp editor/inspector_dock.cpp
@@ -1865,7 +1862,7 @@ msgstr "Verplaats Favoriet Naar Beneden"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to previous folder."
-msgstr "Ga naar de voorafgaande map."
+msgstr "Ga naar vorige map."
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to next folder."
@@ -1927,7 +1924,7 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "Bronnen (Her)Importeren"
+msgstr "Bronnen (her)importeren"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
@@ -1940,7 +1937,7 @@ msgstr "Klasse:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Erft:"
+msgstr "Erft van:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -2051,7 +2048,7 @@ msgstr "Alleen Thema Eigenschappen"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
-msgstr "Type Lid"
+msgstr "Veld Type"
 
 #: editor/editor_help_search.cpp
 msgid "Class"
@@ -2115,7 +2112,7 @@ msgstr "Omhoog"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr "Knooppunt"
+msgstr "Knoop"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -2143,7 +2140,7 @@ msgstr "Project exporteren faalt door foutcode %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr "De geïmporteerde bronnen kunnen niet worden opgeslagen."
+msgstr "Geïmporteerde bronnen kunnen niet opgeslagen worden."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -2152,7 +2149,7 @@ msgstr "Oké"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr "Error bij het opslaan van resource!"
+msgstr "Fout bij het opslaan van bron!"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2164,7 +2161,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr "Resource Opslaan Als..."
+msgstr "Bron opslaan als..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -2172,7 +2169,7 @@ msgstr "Kan bestand niet openen om te schrijven:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr "Opgevraagde bestandsformaat onbekend:"
+msgstr "Opgevraagd bestandsformaat onbekend:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
@@ -2273,9 +2270,9 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Dit bestand hoort bij een scene die geïmporteerd werd. Het is momenteel dus "
-"onbewerkbaar. Lees de documentatie over scenes importeren om deze workflow "
-"beter te begrijpen."
+"Deze bron hoort bij een geïmporteerd scène en kan dus niet bewerkt worden.\n"
+"Lees de documentatie over het importeren van scènes om dit proces beter te "
+"begrijpen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2291,8 +2288,8 @@ msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
-"Dit bestand werd geïmporteerd, dus het is niet bewerkbaar. Pas de "
-"instellingen aan in het importeerpaneel en importeer het nadien opnieuw."
+"Deze bron werd geïmporteerd en kan dus niet bewerkt worden. Pas de "
+"instellingen aan in het importvenster en importeer het nadien opnieuw."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2302,10 +2299,10 @@ msgid ""
 "understand this workflow."
 msgstr ""
 "Deze scene werd geïmporteerd, dus aanpassingen zullen niet worden behouden.\n"
-"Door het te instantieren of over te erven kunnen er wijzigingen worden "
+"Door het te instantiëren of over te erven kunnen er wijzigingen worden "
 "aangebracht.\n"
-"Lees de documentatie met betrekking tot importeren van scenes om deze "
-"workflow beter te begrijpen."
+"Lees de documentatie met betrekking tot importeren van scenes om dit proces "
+"beter te begrijpen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2359,11 +2356,11 @@ msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
 
 #: editor/editor_node.cpp
 msgid "Saved %s modified resource(s)."
-msgstr "Gewijzigde bron(en) %s opgeslagen."
+msgstr "%s gewijzigde bron(nen) opgeslagen."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr "Een hoofdknooppunt is vereist voor het opslaan van de scène."
+msgstr "Een wortelknoop is nodig om de scène op te slaan."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2507,16 +2504,17 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Scene '%s' werd automatisch geïmporteerd, dus ze kan niet aangepast worden.\n"
-"Om aanpassingen te doen kan je een erfende scene aanmaken."
+"Scène '%s' werd automatisch geïmporteerd en kan daarom niet aangepast "
+"worden.\n"
+"Om aanpassingen te doen kan je een afgeleide scène aanmaken."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"Fout tijdens het laden van de scene, ze moet zich in het projectpad "
-"bevinden. Gebruik 'Importeer' om de scene te openen en sla ze nadien ergens "
+"Fout tijdens het laden van de scène, het moet zich in het projectpad "
+"bevinden. Gebruik 'Importeer' om de scène te openen en sla het nadien ergens "
 "in het projectpad op."
 
 #: editor/editor_node.cpp
@@ -2617,7 +2615,7 @@ msgstr "nog %d bestand(en)"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr "Dock Positie"
+msgstr "Tabbladpositie"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -2711,7 +2709,7 @@ msgstr "Scene Herstellen"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Diverse project of scene-brede gereedschappen."
+msgstr "Overig project of scène-brede hulpmiddelen."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
@@ -2744,11 +2742,11 @@ msgstr "Android Build-sjabloon Installeren ..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
-msgstr "Open de Project datamap"
+msgstr "Projectdatamap openen"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr "Gereedschappen"
+msgstr "Hulpmiddelen"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
@@ -2869,7 +2867,7 @@ msgstr "Schermafdruk Maken"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Screenshots worden bewaard in de Editor Data/Instellingen map."
+msgstr "Schermafbeeldingen worden bewaard in de map \"Editor Data/Settings\"."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -2881,15 +2879,15 @@ msgstr "Systeemconsole (on)zichtbaar maken"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "Open Editor Data/Instellingen Map"
+msgstr "Editordata-/instellingenmap openen"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Open Editor Data Map"
+msgstr "Editordatamap openen"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "Open Editor Instellingen Map"
+msgstr "Editorinstellingenmap openen"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
@@ -3008,7 +3006,7 @@ msgstr "Vergroot onderste paneel"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr "Output"
+msgstr "Uitvoer"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
@@ -3072,7 +3070,7 @@ msgstr "Bibliotheek Exporteren"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Samenvoegen Met Bestaande"
+msgstr "Met bestaande samenvoegen"
 
 #: editor/editor_node.cpp
 msgid "Password:"
@@ -3119,9 +3117,8 @@ msgid "Open the previous Editor"
 msgstr "Open de vorige Editor"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Waarschuwingen"
+msgstr "Waarschuwing!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -3249,9 +3246,9 @@ msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
-"Kan geen ViewportTexture creëren op bronnen die zijn opgeslagen als een "
-"bestand.\n"
-"Bron moet toebehoren aan een scène."
+"Kan geen ViewportTexture maken op bronnen die als een bestand zijn "
+"opgeslagen.\n"
+"Bron moet aan een scène toebehoren."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3263,11 +3260,11 @@ msgstr ""
 "Kan geen ViewportTexture creëren op deze bron omdat deze niet is ingesteld "
 "als 'local to scene'.\n"
 "Schakel de 'local to scene' eigenschap op deze bron in (en op alle bronnen "
-"die het bevat tot en met een knooppunt)."
+"die het bevat tot een knoop)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr "Kies een Aanzicht portaal"
+msgstr "Beeldvenster kiezen"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
@@ -3338,7 +3335,7 @@ msgid ""
 "Please add a runnable preset in the export menu."
 msgstr ""
 "Geen uitvoerbare export preset gevonden voor dit platform.\n"
-"Voeg een uitvoerbare preset toe in her export menu."
+"Voeg een uitvoerbare preset toe in het exportmenu."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3366,7 +3363,7 @@ msgstr "Ben je de '_run' methode vergeten?"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Selecteer Node(s) om te Importeren"
+msgstr "Selecteer een of meer knopen om te importeren"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -3378,7 +3375,7 @@ msgstr "Scene Pad:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "Importeer Vanuit Node:"
+msgstr "Vanuit knoop importeren:"
 
 #: editor/export_template_manager.cpp
 msgid "Redownload"
@@ -3440,15 +3437,15 @@ msgstr "Export Sjablonen Uitpakken"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "Aan Het Importeren:"
+msgstr "Bezit met importeren:"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
-"Geen download links gevonden voor deze versie. Directe download is alleen "
-"beschikbaar voor officiele uitgaven."
+"Geen downloadlinks gevonden voor deze versie. Directe download is alleen "
+"beschikbaar voor officiële uitgaven."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3471,7 +3468,7 @@ msgstr "Aanvraag Mislukt."
 
 #: editor/export_template_manager.cpp
 msgid "Redirect Loop."
-msgstr "Redirectlus."
+msgstr "Blijft omleiden."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3480,7 +3477,7 @@ msgstr "Mislukt:"
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr "Download Voltooid."
+msgstr "Download voltooid."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3504,7 +3501,7 @@ msgstr "Verbinden met Mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
-msgstr "Verbinding Verbroken"
+msgstr "Verbinding verbroken"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
@@ -3591,12 +3588,12 @@ msgstr "Favorieten"
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"Status: Importeren van bestand mislukt. Repareer het bestand en importeer "
-"opnieuw handmatig."
+"Status: Bestandsimport mislukt. Repareer het bestand en importeer opnieuw "
+"handmatig."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
-msgstr "Kan de hoofdmap voor resources niet verplaatsen of hernoemen."
+msgstr "Kan de hoofdmap voor bronnen niet verplaatsen of hernoemen."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move a folder into itself."
@@ -3700,7 +3697,7 @@ msgstr "Nieuw Script..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
-msgstr "Nieuwe Hulpbron..."
+msgstr "Nieuwe bron..."
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
@@ -3879,52 +3876,52 @@ msgstr "Groepen beheren"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
-msgstr "Importeer als Enkele Scene"
+msgstr "Importeer als enkele scène"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr "Importeren met Gescheiden Animaties"
+msgstr "Importeren met afzonderlijke animaties"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr "Importeren met Gescheiden Materialen"
+msgstr "Importeren met afzonderlijke materialen"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr "Importeren met Gescheiden Objecten"
+msgstr "Importeren met afzonderlijke objecten"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr "Importeren met Gescheiden Objecten+Materialen"
+msgstr "Importeren met afzonderlijke objecten+materialen"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr "Importeren met Gescheiden Objecten+Animaties"
+msgstr "Importeren met afzonderlijke objecten+animaties"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "Importeren met Gescheiden Materialen+Animaties"
+msgstr "Importeren met afzonderlijke materialen+animaties"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "Importeren met Gescheiden Objecten+Materialen+Animaties"
+msgstr "Importeren met afzonderlijke objecten+materialen+animaties"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr "Importeren als Meerdere Scenes"
+msgstr "Importeren als meerdere scènes"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr "Importeren als Meerdere Scenes+Materialen"
+msgstr "Importeren als meerdere scènes+materialen"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr "Importeer Scene"
+msgstr "Scène importeren"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr "Scene Importeren..."
+msgstr "Scène wordt geïmporteerd..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -3976,28 +3973,28 @@ msgstr "Voorinstellingen"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr "Herimporteer"
+msgstr "Opnieuw importeren"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr "Sla scènes op, her-importeer en start opnieuw op"
+msgstr "Opnieuw importeren en herstarten (alle scènes worden opgeslagen)"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
 msgstr ""
-"Het veranderen van het type van een geïmporteerd bestand vereist dat de "
-"editor herstart wordt."
+"Het type van een geïmporteerd bestand veranderen vereist dat de editor "
+"herstart wordt."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
-"WAARSCHUWING: Er bestaan Assets die gebruikmaken van deze bron, hierdoor "
+"WAARSCHUWING: Er bestaan assets die gebruikmaken van deze bron, hierdoor "
 "kunnen deze mogelijk niet worden geladen."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
-msgstr "Mislukt om resource te laden."
+msgstr "Bron laden mislukt."
 
 #: editor/inspector_dock.cpp
 msgid "Expand All Properties"
@@ -4022,11 +4019,11 @@ msgstr "Plak Parameters"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
-msgstr "Hulpbron in klembord bewerken"
+msgstr "Bron in klembord bewerken"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
-msgstr "Kopieer Bron"
+msgstr "Bron kopiëren"
 
 #: editor/inspector_dock.cpp
 msgid "Make Built-In"
@@ -4050,7 +4047,7 @@ msgstr "Laad een bestaande bron van de schijf en bewerk het."
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr "De bewerkte bron opslaan."
+msgstr "De zojuist bewerkte bron opslaan."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -4078,11 +4075,11 @@ msgstr "Wijzigingen kunnen verloren gaan!"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "MultiNode groep"
+msgstr "MultiNode zetten"
 
 #: editor/node_dock.cpp
 msgid "Select a single node to edit its signals and groups."
-msgstr "Selecteer een Node om Signalen en Groepen aan te passen."
+msgstr "Selecteer één knoop om zijn signalen groepen aan te passen."
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
@@ -4172,7 +4169,7 @@ msgstr "Laden..."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Move Node Point"
-msgstr "Beweeg Knooppunt"
+msgstr "Knooppunt bewegen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Limits"
@@ -4192,7 +4189,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Node Point"
-msgstr "Knooppunt Toevoegen"
+msgstr "Knooppunt toevoegen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4205,7 +4202,7 @@ msgstr "Verwijder BlendSpace1D Punt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr "Verplaats BlendSpace1D knooppunt"
+msgstr "Verplaats BlendSpace1D-knooppunt"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4216,8 +4213,8 @@ msgid ""
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
 "AnimationTree is niet actief.\n"
-"Activeer om te kunnen afspelen, bekijk node waarschuwingen indien activatie "
-"mislukt."
+"Activeer om te kunnen afspelen, let op waarschuwingen in de knoop indien "
+"activatie mislukt."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4232,7 +4229,7 @@ msgstr "Selecteer en verplaats punten, maak punten aan met RMK."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr "Schakel automatisch uitlijnen en rasterweergave in."
+msgstr "Kleven inschakelen en raster weergeven."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4316,7 +4313,7 @@ msgstr "Filters berwerken"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr "Output Node kan niet worden toegevoegd aan de blend tree."
+msgstr "Uitvoerknoop kan niet worden toegevoegd aan de overgangsboom."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Add Node to BlendTree"
@@ -4341,7 +4338,7 @@ msgstr "Knoop Verbonden"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Nodes Disconnected"
-msgstr "Knopen Losgekoppeld"
+msgstr "Knopen losgekoppeld"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Set Animation"
@@ -4355,7 +4352,7 @@ msgstr "Knoop Verwijderen"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr "Knooppunt(en) verwijderen"
+msgstr "Knoop/knopen verwijderen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
@@ -4379,8 +4376,8 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
-"AnimationPlayer object heeft geen geldig pad voor het root knooppunt, "
-"waardoor de spoornamen niet konden gevonden worden."
+"Animatiespeler heeft geen geldig pad naar de wortelknoop, waardoor de "
+"spoornamen niet gevonden konden worden."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Anim Clips"
@@ -4462,7 +4459,7 @@ msgstr "Wijzig overgangstijd"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr "Laad Animatie"
+msgstr "Animatie laden"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -4474,7 +4471,7 @@ msgstr "Geen animatie om te kopiëren!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
-msgstr "Geen animatie hulpbron op klembord!"
+msgstr "Geen animatiebron op klembord!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
@@ -4514,11 +4511,11 @@ msgstr "Animatie positie (in seconden)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr "Schaal het afspelen van animaties globaal voor de Node."
+msgstr "Schaal het afspelen van animaties globaal voor de knoop."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr "Animatie Tools"
+msgstr "Animatiehulpmiddelen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4622,7 +4619,7 @@ msgstr "Cross-animatie mixtijden"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
-msgstr "Verplaats Knooppunt"
+msgstr "Knoop verplaatsen"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -4631,7 +4628,7 @@ msgstr "Voeg vertaling toe"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr "Node Toevoegen"
+msgstr "Knoop toevoegen"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
@@ -4659,11 +4656,11 @@ msgstr "Start- en eindknopen zijn nodig voor een sub-overgang."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
-msgstr "Geen afspeelresource ingesteld op pad: %s."
+msgstr "Geen afspeelbron ingesteld op pad: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Removed"
-msgstr "Knooppunt Verwijderd"
+msgstr "Knoop verwijderd"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition Removed"
@@ -4671,7 +4668,7 @@ msgstr "Transitie Verwijderd"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr "Stel in als Start Node (Autoplay)"
+msgstr "Stel in als startknoop (automatisch afspelen)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4710,9 +4707,8 @@ msgid "Transition: "
 msgstr "Overgang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Verschuif Modus"
+msgstr "Afspeelmodus:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -4809,35 +4805,35 @@ msgstr "Animatie boom is ongeldig."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Animatie Node"
+msgstr "Animatieknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr "OneShot knooppunt"
+msgstr "Eenmalige-oproepknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr "Meng knooppunt"
+msgstr "Overgangsknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "Blend2 knooppunt"
+msgstr "2-Overgangsknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "Blend3 knooppunt"
+msgstr "3-Overgangsknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "Blend4 knooppunt"
+msgstr "4-Overgangsknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "TimeScale knooppunt"
+msgstr "Tijdschaalknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "TimeSeek knooppunt"
+msgstr "TimeSeek-knoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
@@ -4845,11 +4841,11 @@ msgstr "Overgangsknoop"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr "Importeer Animaties..."
+msgstr "Animaties importeren..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "Wijzig Node Filters"
+msgstr "Wijzig knoopfilters"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
@@ -4881,7 +4877,7 @@ msgstr "Kan hostname niet herleiden:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
-msgstr "Aanvraag mislukt, retourcode:"
+msgstr "Aanvraag mislukt, statuscode:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed."
@@ -4901,19 +4897,19 @@ msgstr "Aanvraag mislukt, te veel redirects"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect loop."
-msgstr "Redirectlus."
+msgstr "Blijft omleiden."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, timeout"
-msgstr "Aanvraag mislukt, timeout"
+msgstr "Aanvraag mislukt, tijdslimiet"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Timeout."
-msgstr "Timeout."
+msgstr "Tijdslimiet."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Slechte download hash, ervan uitgaand dat met het bestand is geknoeid."
+msgstr "Slechte downloadhash, bestand kan gemanipuleerd zijn."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -4961,7 +4957,7 @@ msgstr "Probeer opnieuw"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr "Download Fout"
+msgstr "Downloadfout"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -5077,8 +5073,8 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Creëren van lichtmap afbeeldingen mislukt, zorg ervoor dat het pad "
-"schrijfbaar is."
+"Maken van lichtmap afbeeldingen mislukt, zorg ervoor dat het pad "
+"beschrijfbaar is."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
@@ -5091,7 +5087,7 @@ msgstr "Voorbeeld"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr "Configureer Snap"
+msgstr "Kleven instellen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
@@ -5181,15 +5177,14 @@ msgstr "De positie en grootte van de kinderen worden door hun ouder bepaald."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
-"Vooraf ingestelde waardes voor de ankers en marges van een Control Node."
+msgstr "Ingebouwde ankerpunten en marges van een Control-knoop."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Wanneer actief, verplaatsen van de Control-knooppunten veranderd hun ankers "
+"Als dit aan staat, verandert het verplaatsen van Control-knopen hun ankers "
 "in plaats van hun marges."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5278,8 +5273,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
-"Game Camera Overschrijven\n"
-"Overschrijft de Game Camera met de Viewport van de Editor."
+"Spelcamera overschrijven\n"
+"Overschrijft de spelcamera met beeldvenstercamera van de editor."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5320,8 +5315,7 @@ msgstr "Wis hulplijnen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr ""
-"Maak één of meerdere op maat gemaakte botten van één of meerdere knooppunten"
+msgstr "Stel bot(ten) op uit knoop/knopen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
@@ -5393,8 +5387,8 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Toon een lijst van alle objecten op de geklikte positie\n"
-"(Hetzelfde als Alt+RMB in de selectiemodus)."
+"Toon een lijst van alle objecten op de aangeklikte positie\n"
+"(hetzelfde als Alt+RMK in de selectiemodus)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
@@ -5406,76 +5400,76 @@ msgstr "Verschuif Modus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Ruler Mode"
-msgstr "Meetmode"
+msgstr "Meetlatmodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
-msgstr "Automatisch snappen omschakelen."
+msgstr "Slim Kleven omschakelen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr "Gebruik slim snappen"
+msgstr "Slim Kleven gebruiken"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
-msgstr "Gridsnappen omschakelen."
+msgstr "'Kleven aan raster' omschakelen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr "Gebruik grid snappen"
+msgstr "Kleven aan raster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr "Opties voor automatisch schikken"
+msgstr "Kleefinstellingen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr "Gebruik Rotatie Snap"
+msgstr "In stappen draaien"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Scale Snap"
-msgstr "Gebruik schaal snap"
+msgstr "In stappen verschalen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr "Snap Relatief"
+msgstr "Relatief kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr "Gebruik Pixel Uitlijnen"
+msgstr "Aan pixelraster kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr "Slim Uitlijnen"
+msgstr "Slim Kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Configureer Snap..."
+msgstr "Kleefinstellingen..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr "Snap naar Ouder"
+msgstr "Aan ouder kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
-msgstr "Snap naar Knooppunt Anker"
+msgstr "Aan knoopanker kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Sides"
-msgstr "Uitlijnen naar Knooppunt zijden"
+msgstr "Aan knoopzijden kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Center"
-msgstr "Snap naar middelpunt Knooppunt"
+msgstr "Aan knoopmiddelpunt kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Other Nodes"
-msgstr "Snap naar andere nodes"
+msgstr "Aan andere knopen kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
-msgstr "Snappen aan gidsen"
+msgstr "Aan gidslijnen kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5512,7 +5506,7 @@ msgstr "Laat Botten Zien"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr "Maak één of meerdere op maat gemaakte botten van één of meerdere Nodes"
+msgstr "Stel bot(ten) op uit knoop/knopen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Custom Bones"
@@ -5545,7 +5539,7 @@ msgstr "Toon Oorsprongspunt"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Toon Aanzicht Portaal"
+msgstr "Toon beeldvenster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
@@ -5577,7 +5571,7 @@ msgstr "Schaalmasker voor het invoegen van sleutels."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
-msgstr "Voeg Sleutel in (gebaseerd op bestaande maskers)."
+msgstr "Sleutel invoegen (gebaseerd op masker)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5586,11 +5580,11 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
-"Automatisch sleutels toevoegen als objecten verplaatst, geroteerd of schaal "
-"(op basis van masker) worden\n"
+"Automatisch sleutels invoegen als objecten verschuiven, geroteerd of "
+"geschaald worden (op basis van masker).\n"
 "Sleutels worden alleen toegevoegd aan bestaande tracks, er worden geen "
 "nieuwe tracks aangemaakt.\n"
-"Sleutels moeten voor de eerste keer handmatig worden ingevoerd."
+"De eerste keer moeten sleutels handmatig ingevoerd worden."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
@@ -5598,7 +5592,7 @@ msgstr "Automatisch Sleutel invoegen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
-msgstr "Voeg Sleutel in (Bestaande Banen)"
+msgstr "Sleutel invoegen (in bestaande banen)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
@@ -5630,12 +5624,12 @@ msgstr "%s aan het toevoegen..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Kan niet meerdere knooppunten instantiëren zonder een wortel."
+msgstr "Instantiëren van meerdere knopen onmogelijk zonder wortelknoop."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr "Knooppunt maken"
+msgstr "Knoop maken"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -5651,8 +5645,8 @@ msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
-"Sleep & laat los + Shift : voeg knooppunt toe als kind\n"
-"Sleep & laat los + Alt : Verander node type"
+"Sleep & laat los + Shift : voeg knoop op gelijk niveau toe.\n"
+"Sleep & laat los + Alt : verander knooptype"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
@@ -5673,7 +5667,7 @@ msgstr "Stel Handgreep In"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "Laad Emissie Masker"
+msgstr "Emissiemasker laden"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/cpu_particles_editor_plugin.cpp
@@ -5701,7 +5695,7 @@ msgstr "Telling Gegenereerde Punten:"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "Emissie Masker"
+msgstr "Emissiemasker"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5711,7 +5705,7 @@ msgstr "Neem uit Pixel"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "Emissie Kleuren"
+msgstr "Emissiekleuren"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5720,12 +5714,12 @@ msgstr "CPUParticles"
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr "Creëer Emissie Punten Vanuit Mesh"
+msgstr "Produceer emissiepunten vanuit mesh"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr "Emissiepunten maken vanuit knooppunt"
+msgstr "Produceer emissiepunt vanuit knoop"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
@@ -5757,7 +5751,7 @@ msgstr "Wijzig Curve Raaklijn"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
-msgstr "Laad Curve Preset"
+msgstr "Curvevoorinstelling laden"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add Point"
@@ -5933,9 +5927,8 @@ msgid "Remove item %d?"
 msgstr "Element %d verwijderen?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "MeshBibilotheek..."
+msgstr "Mesh Bibilotheek"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5948,7 +5941,7 @@ msgstr "Geselecteerd element verwijderen"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import from Scene"
-msgstr "Importeer Vanuit Scene"
+msgstr "Vanuit scène importeren"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -5972,7 +5965,7 @@ msgstr "Mesh bron is ongeldig (geen MeshInstance)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "Mesh bron is ongeldig (bevat geen Mesh resource)."
+msgstr "Meshbron is ongeldig (bevat geen Mesh)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -6099,7 +6092,7 @@ msgstr "Creëer Emitter"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
-msgstr "Emissie Punten:"
+msgstr "Emissiepunten:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points"
@@ -6115,7 +6108,7 @@ msgstr "Volume"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr "Emissie Bron: "
+msgstr "Emissiebron: "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -6268,7 +6261,9 @@ msgstr "Beweeg Punt"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
-msgstr "De Polygon2D skeleteigenschap wijst niet naar een Skeleton2D Node"
+msgstr ""
+"De eigenschap \"Skeleton\" van de Polygon2D wijst niet naar een Skeleton2D-"
+"knoop"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Sync Bones"
@@ -6284,15 +6279,15 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
-msgstr "Creëer UV Map"
+msgstr "Maak UV-Map"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
-"Polygon2D heeft interne hoekpunten waardoor deze niet meer bewerkt kan "
-"worden via de viewport."
+"Polygon2D heeft interne hoekpunten, het kan niet meer bewerkt worden via het "
+"beeldvenster."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -6320,7 +6315,7 @@ msgstr "Verwijder Custom Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
-msgstr "Transformeer UV Map"
+msgstr "Transformeer UV-Map"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform Polygon"
@@ -6410,11 +6405,11 @@ msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
-msgstr "Polygon->UV"
+msgstr "Polygon→UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV->Polygon"
-msgstr "UV->Polygon"
+msgstr "UV→Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6430,7 +6425,7 @@ msgstr "Uitlijnen"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr "Zet Snap Aan"
+msgstr "Aan raster kleven"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -6466,28 +6461,28 @@ msgstr "Synchroniseer Botten aan Polygoon"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr "ERROR: Laden van bron mislukt!"
+msgstr "FOUT: Laden van bron mislukt!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
-msgstr "Voeg Bron Toe"
+msgstr "Bron toevoegen"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Rename Resource"
-msgstr "Naam Wijzigen Bron"
+msgstr "Bronnaam wijzigen"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Resource"
-msgstr "Verwijder Bron"
+msgstr "Bron verwijderen"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Resource clipboard is empty!"
-msgstr "Bronnen klembord is leeg!"
+msgstr "Bronklembord is leeg!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
-msgstr "Plak Bron"
+msgstr "Bron plakken"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -6508,11 +6503,11 @@ msgstr "Openen in Editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
-msgstr "Laad Bron"
+msgstr "Bron laden"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ResourcePreloader"
-msgstr "BronnenPrelader"
+msgstr "Bronnen-voorlader"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -6536,7 +6531,7 @@ msgstr "Error schrijven TextFile:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Could not load file at:"
-msgstr "Bestand kon niet worden geladen op:"
+msgstr "Kan bestand niet laden uit:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
@@ -6572,24 +6567,26 @@ msgstr "Opslaan Als..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Kan het uit te voeren script niet verkrijgen."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Script herladen mislukt, zie de console voor foutmeldingen."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Script is niet in 'tool' modus en kan niet uitgevoerd worden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Om dit script uit te voeren moet het erven van EditorScript en in 'tool' "
+"modus gezet worden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "Importeer Thema"
+msgstr "Thema importeren"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -6605,7 +6602,7 @@ msgstr "Thema Opslaan Als..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
-msgstr "%s Class Referentie"
+msgstr "%s Klassereferentie"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -6671,7 +6668,7 @@ msgstr "Alles Opslaan"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr "Zacht Herladen Script"
+msgstr "Script zachtjes herladen"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
@@ -6692,11 +6689,11 @@ msgstr "Thema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
-msgstr "Importeer Thema..."
+msgstr "Thema importeren..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr "Herlaad Thema"
+msgstr "Thema herladen"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
@@ -6778,7 +6775,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Reload"
-msgstr "Herlaad"
+msgstr "Herladen"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -6816,8 +6813,7 @@ msgstr "Doel"
 #: editor/plugins/script_text_editor.cpp
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr ""
-"Ontbrekende verbonden methode '%s' voor signaal '%s' van knooppunt '%s'."
+msgstr "Ontbrekende verbonden methode '%s' voor signaal '%s' naar knoop '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -6837,7 +6833,7 @@ msgstr "Alleen bronnen uit bestandssysteem kunnen gedropt worden."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
-msgstr "Zoek Symbool"
+msgstr "Symbool opzoeken"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
@@ -6885,7 +6881,7 @@ msgstr "Knippen"
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr "Alles Selecteren"
+msgstr "Alles selecteren"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -7006,8 +7002,7 @@ msgstr "Shader"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr ""
-"Dit skelet heeft geen botten, maak een aantal secundaire Bone2D knooppunten."
+msgstr "Dit skelet heeft geen botten, maak een aantal Bone2D-knopen als kind."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Create Rest Pose from Bones"
@@ -7015,7 +7010,7 @@ msgstr "CreëerRest Pose vanuit botten"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
-msgstr "Stel Rustpose in op Botten"
+msgstr "Botten in rusthouding zetten"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7027,7 +7022,7 @@ msgstr "Maak Rustpose (van Botten)"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Bones to Rest Pose"
-msgstr "Stel Botten in op Rustpose"
+msgstr "Botten in rusthouding zetten"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7183,7 +7178,7 @@ msgstr "Geen ouder om kind aan te instantiëren."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr "Deze bewerking vereist één geselecteerde knooppunt."
+msgstr "Deze bewerking vereist één geselecteerde knoop."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -7219,7 +7214,7 @@ msgstr "Bekijk Informatie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View FPS"
-msgstr "Bekijk FPS"
+msgstr "Beeldsnelheid bekijken"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Half Resolution"
@@ -7276,8 +7271,7 @@ msgid ""
 msgstr ""
 "Opmerking: De weergegeven FPS waarde is de verversingssnelheid van de "
 "editor.\n"
-"Deze waarde kan niet worden gebruikt als een betrouwbare indicatie van in-"
-"game performance."
+"Het is geen betrouwbare indicatie voor werkelijke spelprestaties."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -7289,11 +7283,11 @@ msgstr "XForm Dialoog"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
-msgstr "Snap Knooppunten aan vloer"
+msgstr "Knopen aan vloer kleven"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "Geen solide vloer gevonden om selectie aan te koppelen."
+msgstr "Geen solide vloer gevonden om selectie aan te kleven."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7311,7 +7305,7 @@ msgstr "Gebruik Lokale Ruimtemodus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Gebruik Snap"
+msgstr "Kleven gebruiken"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7364,7 +7358,7 @@ msgstr "Transformatie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "Snap Objecten aan vloer"
+msgstr "Object aan vloer kleven"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7372,27 +7366,27 @@ msgstr "Transformatie Dialoog..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr "1 Aanzicht Portaal"
+msgstr "1 beeldvenster"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr "2 Aanzicht Portalen"
+msgstr "2 beeldvensters"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2 Aanzicht Portalen (Alt)"
+msgstr "2 beeldvensters (alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3 Aanzicht Portalen"
+msgstr "3 beeldvensters"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3 Aanzicht Portalen (Alt)"
+msgstr "3 beeldvensters (alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4 Aanzicht Portalen"
+msgstr "4 beeldvensters"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
@@ -7413,23 +7407,23 @@ msgstr "Instellingen..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr "Snap instellingen"
+msgstr "Kleefinstellingen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr "Verplaats Snap:"
+msgstr "Kleefafstand:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "Draai Snap (grad.):"
+msgstr "Draaihoek (graden):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr "Verander Grootte van Snap (%):"
+msgstr "Schaal-stapgrootte (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
-msgstr "Instellingen Aanzicht Portaal"
+msgstr "Beeldvensterinstellingen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
@@ -7497,7 +7491,9 @@ msgstr "Sprite is leeg!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Can't convert a sprite using animation frames to mesh."
-msgstr "Kan geen Sprite converteren dat animatieframes gebruikt om te meshen."
+msgstr ""
+"Een sprite die animatiebeelden gebruikt kan niet naar een Mesh omgezet "
+"worden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
@@ -7557,7 +7553,7 @@ msgstr "Instellingen:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "No Frames Selected"
-msgstr "Geen Ramen geselecteerd"
+msgstr "Geen frames geselecteerd"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add %d Frame(s)"
@@ -7569,11 +7565,11 @@ msgstr "Voeg Frame toe"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "FOUT: Kan frame benodigdheden niet laden!"
+msgstr "FOUT: Kan framebron niet laden!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
-msgstr "Klembord van bron is leeg of het is niet een textuur!"
+msgstr "Klembord voor bronnen is leeg of bevat geen textuur!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
@@ -7585,7 +7581,7 @@ msgstr "Lege Toevoegen"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr "Verander Animatie FPS"
+msgstr "Animatiesnelheid veranderen"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
@@ -7613,7 +7609,7 @@ msgstr "Lus"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Animatie Frames:"
+msgstr "Animatiebeelden:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -7641,7 +7637,7 @@ msgstr "Verplaats (Hierna)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Select Frames"
-msgstr "Selecteer Frames"
+msgstr "Frames selecteren"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -7657,11 +7653,11 @@ msgstr "Alle frames selecteren/wissen"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
-msgstr "Creëer Frames vanuit Sprite Sheet"
+msgstr "Frames toevoegen uit spritesheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
-msgstr "Sprite-Frames"
+msgstr "Spritebeelden"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -7673,7 +7669,7 @@ msgstr "Stel Marge In"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr "Snap Modus:"
+msgstr "Kleefmodus:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: scene/resources/visual_shader.cpp
@@ -7682,11 +7678,11 @@ msgstr "Geen"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr "Pixel Snap"
+msgstr "Aan pixels kleven"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr "Rooster Snap"
+msgstr "Aan raster kleven"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -7976,17 +7972,15 @@ msgstr "Vervoeg vanuit Scene"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Nieuwe enkele tegel"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Autotile uitschakelen"
+msgstr "Nieuwe Autotegel"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Nieuw %s"
+msgstr "Nieuwe atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -8005,39 +7999,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Selecteer de vorige shape, subtegel of Tegel."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Regio Modus"
+msgstr "Bereik"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Collision modus"
+msgstr "Botsing"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Occlusion Mode"
+msgstr "Occlusie"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Navigatie Modus"
+msgstr "Navigatie"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Bitmask Modus"
+msgstr "Bitmasker"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Prioriteit Modus"
+msgstr "Prioriteit"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Index:"
+msgstr "Z Index"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -8057,7 +8044,7 @@ msgstr "Navigatie Modus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask Mode"
-msgstr "Bitmask Modus"
+msgstr "Bitmaskermodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Priority Mode"
@@ -8077,7 +8064,7 @@ msgstr "Bitmasker kopiëren."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Paste bitmask."
-msgstr "Animatie plakken."
+msgstr "Bitmasker plakken."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Erase bitmask."
@@ -8097,9 +8084,7 @@ msgstr "Hou de veelhoek binnen een rechthoekig bereik."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr ""
-"Activeer automatisch schikken en toon raster (configureerbaar in de "
-"Inspecteur)."
+msgstr "Kleven inschakelen en raster weergeven (instellen in Inspecteur)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -8115,7 +8100,7 @@ msgstr ""
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr ""
-"Geselecteerde Texture verwijderen? Alle tegels die ervan gebruikt maken "
+"Geselecteerde Texture verwijderen? Alle tegels die ervan gebruikmaakten "
 "zullen verwijderd worden."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -8214,7 +8199,7 @@ msgstr "Stel Tile Icon in"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Bitmask"
-msgstr "Bewerk Tile Bitmask"
+msgstr "Tegelbitmasker bewerken"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Collision Polygon"
@@ -8230,11 +8215,11 @@ msgstr "Bewerk Navigation Polygon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Paste Tile Bitmask"
-msgstr "Plak Tile Bitmask"
+msgstr "Tegelbitmasker plakken"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr "Tegel Bitmask wissen"
+msgstr "Bitmasker wissen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Concave"
@@ -8385,7 +8370,7 @@ msgstr "(Alleen GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Output"
-msgstr "Uitput toevoegen"
+msgstr "Uitvoer toevoegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -8409,7 +8394,7 @@ msgstr "Voer input poort toe"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
-msgstr "Voeg output poort toe"
+msgstr "Uitvoerpoort toevoegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change input port type"
@@ -8417,7 +8402,7 @@ msgstr "Verander input port type"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change output port type"
-msgstr "Verander output poort type"
+msgstr "Uitvoerpoorttype veranderen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change input port name"
@@ -8425,7 +8410,7 @@ msgstr "Verander input poort naam"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change output port name"
-msgstr "Verander output poort name"
+msgstr "Uitvoerpoortnaam veranderen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Remove input port"
@@ -8433,7 +8418,7 @@ msgstr "Verwijder input poort"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Remove output port"
-msgstr "Verwijder output poort"
+msgstr "Uitvoerpoort verwijderen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set expression"
@@ -8453,20 +8438,20 @@ msgstr "Stel standaard invoer poort in"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node to Visual Shader"
-msgstr "Voer Knooppunt toe aan Visual Shader"
+msgstr "VisualShader-knoop toevoegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
-msgstr "Copier Knooppunten"
+msgstr "Knopen dupliceren"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
-msgstr "Plak Nodes"
+msgstr "Knopen plakken"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Delete Nodes"
-msgstr "Verwijder Knooppunten"
+msgstr "VisualShader-knoop/knopen verwijderen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8490,7 +8475,7 @@ msgstr "Laat shader resultaat zien."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Create Shader Node"
-msgstr "Maak een Shader knooppunt"
+msgstr "Shader-knoop maken"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color function."
@@ -8563,8 +8548,7 @@ msgstr "Kleur uniform."
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr ""
-"Resulteert het boolean resultaat van de %s vergelijking tussen twee "
-"parameters."
+"Geeft de booleaanse resultaat van de %s-vergelijking tussen twee parameters."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
@@ -8583,7 +8567,7 @@ msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
 msgstr ""
-"Resulteert een geassocieerde vector als de gegeven scalars gelijk, groter of "
+"Geeft een geassocieerde vector als de gegeven scalars gelijk, groter of "
 "kleiner zijn."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8591,16 +8575,16 @@ msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
 msgstr ""
-"Resulteert het boolean resultaat van de vergelijking tussen INF en een "
-"scalar parameter."
+"Geeft het booleaanse resultaat van de vergelijking tussen INF en een scalar "
+"parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
 msgstr ""
-"Resulteert het boolean resultaat van de vergelijking tussen NaN en een "
-"scalar parameter."
+"Geeft het booleaanse resultaat van de vergelijking tussen NaN en een scalar "
+"parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
@@ -8618,13 +8602,15 @@ msgstr "Niet Gelijk aan (!=)"
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
-"Resulteert een geassocieerde vector als de gegeven boolean true of false is."
+"Geeft een geassocieerde vector als de gegeven booleaanse waarde waar of "
+"onwaar is."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
-"Resulteert een geassocieerde scalar als de gegeven boolean true of false is."
+"Geeft een geassocieerde scalar als de gegeven booleaanse waarde waar of "
+"onwaar is."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the comparison between two parameters."
@@ -8636,7 +8622,7 @@ msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
-"Resulteert het boolean resultaat van een vergelijking tussen INF (of NaN) en "
+"Geeft het booleaanse resultaat van een vergelijking tussen INF (of NaN) en "
 "een scalar parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8649,7 +8635,7 @@ msgstr "Uniforme Boolean."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for all shader modes."
-msgstr "'%s' invoer parameter voor alle shader modes."
+msgstr "'%s' invoer parameter voor alle shadermodi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Input parameter."
@@ -8657,27 +8643,27 @@ msgstr "Input parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr "'%s' invoer parameter voor vertex en fragment shader modes."
+msgstr "'%s' invoerparameter voor vertex en fragment shadermodi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr "'%s' invoer parameter voor fragment en light shader modes."
+msgstr "'%s' invoerparameter voor fragment en light shadermodi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment shader mode."
-msgstr "'%s' invoer parameter voor fragment shader mode."
+msgstr "'%s' invoerparameter voor fragment-shadermodus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for light shader mode."
-msgstr "'%s' invoer parameter voor light shader mode."
+msgstr "'%s' invoerparameter voor light-shader modus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex shader mode."
-msgstr "'%s' invoer parameter voor vertex shader mode."
+msgstr "'%s' invoer parameter voor vertex-shadermodus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr "'%s' invoer parameter voor vertex en fragment shader mode."
+msgstr "'%s' invoerparameter voor vertex en fragment shadermodus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -8723,35 +8709,35 @@ msgstr "Sqrt2-constante (1.414214). Wortel van 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr "Resulteert de absolute waarde van de parameter."
+msgstr "Geeft de absolute waarde van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr "Resulteert de arc-cosinus van de parameter."
+msgstr "Geeft de arc-cosinus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "Resulteert de omgekeerde cosinus hyperbolicus van de parameter."
+msgstr "Geeft de omgekeerde cosinus hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr "Resulteert de arc-sinus van de parameter."
+msgstr "Geeft de arcsinus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "Resulteert de omgekeerde sinus hyperbolicus van de parameter."
+msgstr "Geeft de inverse sinus hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr "Resulteert de arctangens van de parameter."
+msgstr "Geeft de arctangens van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr "Resulteert de arctangens van de parameters."
+msgstr "Geeft de arctangens van de parameters."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "Resulteert de inverse tangent hyperbolicus van de parameter."
+msgstr "Geeft de inverse tangens hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8766,11 +8752,11 @@ msgstr "Beperkt een waarde tussen twee andere waarden."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr "Resulteert de cosinus van de parameter."
+msgstr "Geeft de cosinus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "Resulteert de cosinus hyperbolicus van de parameter."
+msgstr "Geeft de cosinus hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
@@ -8796,7 +8782,7 @@ msgstr "Berekent het fractionele deel van het argument."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr "Resulteert de inverse van de vierkantswortel van de parameter."
+msgstr "Geeft de inverse van de wortel van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
@@ -8808,11 +8794,11 @@ msgstr "Base-2 logaritme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr "Resulteert de hoogste waarde."
+msgstr "Geeft de grootste van twee waardes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr "Resulteert de laagste waarde."
+msgstr "Geeft de kleinste van twee waardes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
@@ -8820,7 +8806,7 @@ msgstr "Lineaire interpolatie tussen twee scalars."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the opposite value of the parameter."
-msgstr "Resulteert de omgekeerde waarde van de parameter."
+msgstr "Geeft de omgekeerde waarde van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - scalar"
@@ -8830,8 +8816,7 @@ msgstr "1.0 - scalar"
 msgid ""
 "Returns the value of the first parameter raised to the power of the second."
 msgstr ""
-"Resulteert de waarde van de eerste parameter verhoogd tot de macht van de "
-"tweede."
+"Geeft de waarde van de eerste parameter verhoogd tot de macht van de tweede."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
@@ -8859,15 +8844,15 @@ msgstr "Extraheert het signum van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the sine of the parameter."
-msgstr "Resulteert de sinus van de parameter."
+msgstr "Geeft de sinus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr "Resulteert de sinus hyperbolicus van de parameter."
+msgstr "Geeft de sinus hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
-msgstr "Resulteert de vierkantswortel van de parameter."
+msgstr "Geeft de vierkantswortel van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8877,11 +8862,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
-"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"SmoothStep functie( scalar(zijde0), scalar(zijde1), scalar(x) ).\n"
 "\n"
-"Resulteert 0.0 als 'x' kleiner dan 'edge0' is en resulteert 1.0 als x groter "
-"is dan 'edge1'. Anders wordt de waarde geïnterpoleerd tussen 0.0 en 1.0 "
-"middels Hermite polynomials."
+"Geeft 0.0 als 'x' kleiner dan 'zijde0' en 1.0 als x groter dan 'zijde1'. "
+"Anders wordt de waarde geïnterpoleerd tussen 0.0 en 1.0 middels Hermite-"
+"polynomen."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8889,17 +8874,17 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
-"Step function( scalar(edge), scalar(x) ).\n"
+"Stapfunctie( scalar(zijde), scalar(x) ).\n"
 "\n"
-"Resulteert 0.0 als 'x' kleiner dan 'edge' anders 1.0."
+"Geeft 0.0 als 'x' kleiner dan 'zijde' anders 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the tangent of the parameter."
-msgstr "Resulteert de tangens van de parameter."
+msgstr "Geeft de tangens van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr "Resulteert de tangens hyperbolicus van de parameter."
+msgstr "Geeft de tangens hyperbolicus van de parameter."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the truncated value of the parameter."
@@ -8919,7 +8904,7 @@ msgstr "Vermenigvuldigd scalar met scalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two scalars."
-msgstr "Resulteert de rest van twee scalars."
+msgstr "Geeft de rest van twee scalars."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts scalar from scalar."
@@ -9033,7 +9018,7 @@ msgstr "Berekent het kruisproduct van twee vectoren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
-msgstr "Resulteert de afstand tussen twee punten."
+msgstr "Geeft de afstand tussen twee punten."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
@@ -9046,10 +9031,10 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
-"Resulteert de vector met dezelfde richting als de referentie vector. De "
-"functie bevat drie vectorparameters: N, de orientatievector, I, de incident "
-"vector en Nref, de referentie vector. Als het puntproduct van I en Nref "
-"kleiner dan nul is, resulteert waarde N. Anders wordt -N geresulteerd."
+"Geeft de vector met dezelfde richting als de referentievector. De functie "
+"bevat drie vectorparameters: N, de oriëntatievector, I, de incidentvector en "
+"Nref, de referentievector. Als het inproduct van I en Nref kleiner dan nul "
+"is, is de terugkeerwaarde N, anders -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -9079,16 +9064,15 @@ msgstr "1.0 / vector"
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
-msgstr ""
-"Resulteert de reflectievector (a: invalshoek vector, b : normaal vector )."
+msgstr "Geeft de reflectievector (a: invalshoek vector, b : normaalvector)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
 msgstr ""
-"Resulteert de vector met dezelfde richting als de referentie vector. De "
-"functie bevat drie vectorparameters: N, de orientatievector, I, de "
-"invalsvector en Nref, de referentie vector. Als het puntproduct van I en "
-"Nref kleiner dan nul is, resulteert waarde N. Anders wordt -N geresulteerd."
+"Geeft de vector met dezelfde richting als de referentievector. De functie "
+"bevat drie vectorparameters: N, de oriëntatievector, I, de invalsvector en "
+"Nref, de referentie vector. Als het inproduct van I en Nref kleiner dan nul "
+"is, resulteert waarde N. Anders wordt -N geresulteerd."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9098,11 +9082,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
-"SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
+"Gladde stapfunctie ( vector(zijde0), vector(zijde1), vector(x) ).\n"
 "\n"
-"Resulteert 0.0 als 'x' kleiner dan 'edge0' is en resulteert 1.0 als 'x' "
-"groter dan 'edge1' is. Anders word de waarde geïnterpoleerd tusse 0.0 en 1.0 "
-"met behulp van Hermite polynomials."
+"Geeft 0.0 als 'x' kleiner dan 'zijde0' en 1.0 als 'x' groter dan 'zijde1'. "
+"Anders word de waarde geïnterpoleerd tussen 0.0 en 1.0 met behulp van "
+"Hermite polynomen."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9152,7 +9136,7 @@ msgstr "Vermenigvuldigd vector met vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two vectors."
-msgstr "Resulteert de rest van twee vectoren."
+msgstr "Geeft de rest van twee vectoren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts vector from vector."
@@ -9172,7 +9156,7 @@ msgid ""
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
-"Aangepaste Godot Shader Language expressie, met aangepast aantal invoer- en "
+"Aangepaste Godot Shader Language expressie, met aangepast aantal in- en "
 "uitvoerpoorten. Dit is een directe injectie van code in de vertex/fragment/"
 "light functie, niet gebruiken om functie declaraties in te schrijven."
 
@@ -9181,8 +9165,9 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Resulteert falloff gebaseerd op het puntproduct van de oppervlakte normaal "
-"en kijkrichting van de camera (geeft bijbehorende invoer door)."
+"Geeft de verminderingswaarde gebaseerd op het inproduct van de normaalvector "
+"van het oppervlak en de kijkrichting van de camera (bijbehorende invoer moet "
+"doorgeven worden)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9198,11 +9183,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr "(Enkel Fragment/Light mode) Scalaire afgeleide functie."
+msgstr "(Alleen voor fragment/light-modus) Scalaire afgeleide functie."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "(Alleen Fragment/Light mode) Vector afgeleide functie."
+msgstr "(Alleen voor fragment/lightmodus) Vector afgeleide functie."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9262,7 +9247,7 @@ msgstr "Bewerk visuele eigenschap"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
-msgstr "Visual shader mode aangepast"
+msgstr "VisualShader-modus aangepast"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -9360,15 +9345,15 @@ msgstr "Exporteer Modus:"
 
 #: editor/project_export.cpp
 msgid "Resources to export:"
-msgstr "Bronnen te exporteren:"
+msgstr "Bronnen om te exporteren:"
 
 #: editor/project_export.cpp
 msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filters voor de export van bestanden en mappen die geen hulpbron zijn\n"
-"(scheiden met een komma, bijv.: *.json, *.txt, docs/*)"
+"Filters om bestanden en mappen die geen hulpbron zijn te exporteren\n"
+"(door komma's gescheiden, bijv.: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid ""
@@ -9488,7 +9473,7 @@ msgstr "Nieuw spelproject"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
-msgstr "Geïmporteerd Project"
+msgstr "Geïmporteerd project"
 
 #: editor/project_manager.cpp
 msgid "Invalid Project Name."
@@ -9496,7 +9481,7 @@ msgstr "Ongeldige projectnaam."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
-msgstr "Kon map niet creëren."
+msgstr "Kon map niet aanmaken."
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
@@ -9536,7 +9521,7 @@ msgstr "Project hernoemen"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr "Importeer bestaand project"
+msgstr "Bestaand project importeren"
 
 #: editor/project_manager.cpp
 msgid "Import & Edit"
@@ -9586,9 +9571,9 @@ msgid ""
 "Not recommended for web games"
 msgstr ""
 "Hogere beeldkwaliteit\n"
-"Alle features beschikbaar\n"
+"Alle functionaliteiten beschikbaar\n"
 "Incompatibel met verouderde hardware\n"
-"Niet aanbevolen voor web gebaseerde games"
+"Niet aanbevolen voor webgebaseerde spellen"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
@@ -9602,9 +9587,9 @@ msgid ""
 "Recommended for web games"
 msgstr ""
 "Lagere beeldkwaliteit\n"
-"Sommige features zijn niet beschikbaar\n"
+"Sommige functionaliteiten zijn niet beschikbaar\n"
 "Werkt op bijna alle hardware\n"
-"Aanbevolen voor web gebaseerde games"
+"Aanbevolen voor webgebaseerde spellen"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
@@ -9725,7 +9710,7 @@ msgid ""
 "Remove all missing projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"Alle ontbrekende project uit de lijst verwijderen?\n"
+"Alle ontbrekende projecten uit de lijst verwijderen?\n"
 "De inhoud van de projectmap wordt niet geraakt."
 
 #: editor/project_manager.cpp
@@ -9742,7 +9727,7 @@ msgid ""
 "Are you sure to scan %s folders for existing Godot projects?\n"
 "This could take a while."
 msgstr ""
-"Wil je zoeken naar Godot projecten in de mappen %s?\n"
+"Wil je %s mappen doorzoeken naar bestaande Godot projecten?\n"
 "Dit kan een tijdje duren."
 
 #: editor/project_manager.cpp
@@ -9763,7 +9748,7 @@ msgstr "Scannen"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr "Selecteer een map om te scannen"
+msgstr "Selecteer een map om te doorzoeken"
 
 #: editor/project_manager.cpp
 msgid "New Project"
@@ -9911,7 +9896,7 @@ msgstr "Event Toevoegen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Knop"
+msgstr "Button (Knop)"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9991,23 +9976,23 @@ msgstr "Verwijder vertaling"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Remapped Path"
-msgstr "Voeg Remapped Path toe"
+msgstr "Bronpadomleiding toevoegen"
 
 #: editor/project_settings_editor.cpp
 msgid "Resource Remap Add Remap"
-msgstr "Voeg hulpbron Remap toe"
+msgstr "Bronomleiding toevoegen"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
-msgstr "Wijzig hulpbron Remap taal"
+msgstr "Taal van bronomleiding wijzigen"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap"
-msgstr "Verwijder Bron Remap"
+msgstr "Bronomleiding verwijderen"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap Option"
-msgstr "Verwijder Bron Remap Optie"
+msgstr "Bronomleidingsoptie verwijderen"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter"
@@ -10035,7 +10020,7 @@ msgstr "Editor moet worden herstart voordat de wijzigingen worden toegepast."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
-msgstr "Input Map"
+msgstr "Invoertoewijzing"
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"
@@ -10071,7 +10056,7 @@ msgstr "Vertalingen:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps"
-msgstr "Remaps"
+msgstr "Omleidingen"
 
 #: editor/project_settings_editor.cpp
 msgid "Resources:"
@@ -10079,7 +10064,7 @@ msgstr "Bronnen:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "Remaps per lokalisatie:"
+msgstr "Omleidingen per lokalisatie:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
@@ -10095,7 +10080,7 @@ msgstr "Laat alle lokalen zien"
 
 #: editor/project_settings_editor.cpp
 msgid "Show Selected Locales Only"
-msgstr "Laat alleen geselecteerde lokalen zien"
+msgstr "Alleen geselecteerde talen tonen"
 
 #: editor/project_settings_editor.cpp
 msgid "Filter mode:"
@@ -10143,7 +10128,7 @@ msgstr "Toewijzen"
 
 #: editor/property_editor.cpp
 msgid "Select Node"
-msgstr "Selecteer Knooppunt"
+msgstr "Knoop selecteren"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -10151,7 +10136,7 @@ msgstr "Fout bij laden bestand: Niet een bron!"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
-msgstr "Kies een Knooppunt"
+msgstr "Knoop kiezen"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -10191,15 +10176,15 @@ msgstr "Plaatsvervanger"
 
 #: editor/rename_dialog.cpp
 msgid "Node name"
-msgstr "Knooppunt naam"
+msgstr "Knoopnaam"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
-msgstr "Naam van primaire Node, indien beschikbaar"
+msgstr "Naam van bovenliggende knoop, indien beschikbaar"
 
 #: editor/rename_dialog.cpp
 msgid "Node type"
-msgstr "Knooppunt Type"
+msgstr "Knooptype"
 
 #: editor/rename_dialog.cpp
 msgid "Current scene name"
@@ -10207,7 +10192,7 @@ msgstr "Huidige scene naam"
 
 #: editor/rename_dialog.cpp
 msgid "Root node name"
-msgstr "Hernoem Wortel Knooppunt"
+msgstr "Wortelknoopnaam"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -10224,8 +10209,8 @@ msgstr "Per Niveau teller"
 #: editor/rename_dialog.cpp
 msgid "If set the counter restarts for each group of child nodes"
 msgstr ""
-"Indien ingesteld: herstart de teller voor iedere groep van secundaire "
-"knooppunten"
+"Indien ingesteld: herstart de teller voor iedere groep van onderliggende "
+"knopen"
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10237,7 +10222,7 @@ msgstr "Stap"
 
 #: editor/rename_dialog.cpp
 msgid "Amount by which counter is incremented for each node"
-msgstr "Hoeveelheid waarmee de teller incrementeert voor iedere Node"
+msgstr "Hoeveelheid waarmee de teller voor iedere knoop opgehoogd wordt"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
@@ -10249,7 +10234,7 @@ msgid ""
 "Missing digits are padded with leading zeros."
 msgstr ""
 "Minimum aantal nummers voor de teller.\n"
-"Missende nummers worden opgevuld met nullen."
+"Missende cijfers worden met voorloopnullen opgevuld."
 
 #: editor/rename_dialog.cpp
 msgid "Regular Expressions"
@@ -10289,7 +10274,7 @@ msgstr "Resetten"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Reparent Knooppunt"
+msgstr "Knoopouder wijzigen"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
@@ -10357,19 +10342,19 @@ msgstr "Script wissen"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
-msgstr "Deze bewerking kan niet worden uitgevoerd op het root knooppunt."
+msgstr "Deze bewerking kan niet op de wortelknoop worden uitgevoerd."
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
-msgstr "Verander knooppunt van ouder"
+msgstr "Knoop in ouder verplaatsen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Nodes In Parent"
-msgstr "Verander knooppunten van ouder"
+msgstr "Knopen in ouder verplaatsen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr "Kopieer Knooppunt(en)"
+msgstr "Dupliceer knoop/knopen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
@@ -10379,9 +10364,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
-"Knooppunt moet eigendom van de bewerkte scene zijn om het wortelknooppunt te "
-"worden."
+msgstr "Knoop moet bij de bewerkte scène horen om wortelknoop te worden."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
@@ -10389,11 +10372,11 @@ msgstr "Scene kan geen wortel worden"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
-msgstr "Maak knooppunt wortelknooppunt"
+msgstr "Knoop tot wortelknoop maken"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
-msgstr "Verwijder %d knooppunten?"
+msgstr "Verwijder %d knopen?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10401,7 +10384,7 @@ msgstr "Verwijder de wortel knoop \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr "Verwijder knooppunt \"%s\" en de kinderen?"
+msgstr "Verwijder knoop \"%s\" en zijn kinderen?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\"?"
@@ -10409,7 +10392,7 @@ msgstr "Verwijder knoop \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr "Kan dit niet uitvoeren met het wortel knooppunt."
+msgstr "Kan deze operatie niet uitvoeren met de wortelknoop."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -10446,7 +10429,7 @@ msgstr "Nieuwe wortel Scene"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
-msgstr "Hoofdknooppunt maken:"
+msgstr "Wortelknoop maken:"
 
 #: editor/scene_tree_dock.cpp
 msgid "2D Scene"
@@ -10462,12 +10445,11 @@ msgstr "Gebruikersomgeving"
 
 #: editor/scene_tree_dock.cpp
 msgid "Other Node"
-msgstr "Ander knooppunt"
+msgstr "Andere knoop"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr ""
-"Kan deze operatie niet uitvoeren op knooppunten van een scene buiten de tak!"
+msgstr "Kan deze operatie niet uitvoeren op knopen uit een vreemde scène!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
@@ -10479,11 +10461,11 @@ msgstr "Verbind Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
-msgstr "Verwijder Knooppunt(en)"
+msgstr "Verwijder knoop/knopen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change type of node(s)"
-msgstr "Verander knooppunt(en) type(n)"
+msgstr "Knooptypes veranderen"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10523,7 +10505,7 @@ msgstr "Open Godot online documentatie"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr "Kindknooppunt toevoegen"
+msgstr "Knoop hieronder toevoegen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
@@ -10535,7 +10517,7 @@ msgstr "Verander het type"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Reparent naar nieuw knooppunt"
+msgstr "Onder nieuwe knoop hangen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -10551,7 +10533,7 @@ msgstr "Tak opslaan als Scene"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
-msgstr "Kopieer knooppunt pad"
+msgstr "Knooppad kopiëren"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -10559,19 +10541,19 @@ msgstr "Verwijder (Geen bevestiging)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node."
-msgstr "Nieuw knooppunt maken/toevoegen."
+msgstr "Nieuwe knoop maken/toevoegen."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Een scène-bestand instantiëren als knooppunt. Maakt een overgeërfde scène "
-"als geen hoofdknooppunt bestaat."
+"Instantieer scènebestand als knoop. Maakt een overgeërfde scène als geen "
+"wortelknoop bestaat."
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
-msgstr "Verbind een nieuw of bestaand script aan het geselecteerde knooppunt."
+msgstr "Verbind een nieuw of bestaand script aan de geselecteerde knoop."
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
@@ -10595,7 +10577,7 @@ msgstr "Toggle Zichtbaarheid"
 
 #: editor/scene_tree_editor.cpp
 msgid "Unlock Node"
-msgstr "Knooppunt ontgrendelen"
+msgstr "Knoop ontgrendelen"
 
 #: editor/scene_tree_editor.cpp
 msgid "Button Group"
@@ -10607,7 +10589,7 @@ msgstr "(Verbonden vanaf)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr "Waarschuwing over knooppunt configuratie:"
+msgstr "Waarschuwing over knoopconfiguratie:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10615,7 +10597,7 @@ msgid ""
 "Click to show signals dock."
 msgstr ""
 "Knoop heeft %s verbinding(en) en %s groep(en).\n"
-"Klik hier om signaalvenster te tonen."
+"Klik hier om signaalbeheer te tonen."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10623,15 +10605,15 @@ msgid ""
 "Click to show signals dock."
 msgstr ""
 "Knoop heeft %s verbinding(en).\n"
-"Klik hier om signaalvenster te tonen."
+"Klik hier om signaalbeheer te tonen."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"Knooppunt zit in %2 groep(en).\n"
-"Klink om groepen weer te geven."
+"Knoop zit in %s groep(en).\n"
+"Klik om groepenbeheer weer te geven."
 
 #: editor/scene_tree_editor.cpp
 msgid "Open Script:"
@@ -10671,11 +10653,11 @@ msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
-msgstr "Hernoem Node"
+msgstr "Knoop hernoemen"
 
 #: editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
-msgstr "Scene boom (Knooppunten):"
+msgstr "Scèneboom (knopen):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
@@ -10683,7 +10665,7 @@ msgstr "Knoop configuratie waarschuwing!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr "Selecteer een Node"
+msgstr "Knoop uitkiezen"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty."
@@ -10783,11 +10765,11 @@ msgstr "Template:"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in Script:"
-msgstr "Ingebouwd Script:"
+msgstr "Ingebouwd script:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "Verbind Knooppunt Script"
+msgstr "Verbind knoopscript"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -10883,7 +10865,7 @@ msgstr "Kies één of meer elementen van de lijst om de grafiek weer te geven."
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
-msgstr "Lijst van Video Memory gebruik per Resource:"
+msgstr "Lijst van videogeheugengebruik per bron:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
@@ -10891,11 +10873,11 @@ msgstr "Totaal:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video Mem"
-msgstr "Video Mem"
+msgstr "Videogeheugen"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Resource pad"
+msgstr "Bronpad"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -10963,7 +10945,7 @@ msgstr "Verander Licht radius"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Verander AudioStreamPlayer3D Emissiehoek"
+msgstr "Uitvoerhoek AudioStreamPlayer3D veranderen"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -11091,7 +11073,7 @@ msgstr "Tekenreeks met lengte 1 verwacht (één karakter)."
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
-msgstr "stap argument is nul!"
+msgstr "Stap argument is nul!"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
@@ -11107,16 +11089,16 @@ msgstr "Niet gebaseerd op een resource bestand"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Ongeldige dictionary formaat van instantie (mist @path)"
+msgstr "Ongeldig dictionary formaat van instantie (mist @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Ongeldige dictionary formaat van instantie (kan script niet laden uit @path)"
+"Ongeldig dictionary formaat van instantie (kan script niet laden uit @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Ongeldige dictionary formaat van instantie (ongeldige script op @path)"
+msgstr "Ongeldig dictionary formaat van instantie (ongeldig script op @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
@@ -11152,27 +11134,27 @@ msgstr "Verdieping:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
-msgstr "Verwijder GridMap Selectie"
+msgstr "GridMap-selectie verwijderen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Fill Selection"
-msgstr "GridMap vul selectie"
+msgstr "GridMap-selectie vullen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Paste Selection"
-msgstr "GridMap Plak selectie"
+msgstr "GridMap-selectie plakken"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Paint"
-msgstr "GridMap Verf"
+msgstr "GridMap tekenen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
-msgstr "GridMap"
+msgstr "Grid Map"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr "Snap Beeld"
+msgstr "Beeld uitlijnen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -11280,7 +11262,7 @@ msgstr "Hoogteveld aan het creëeren..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
-msgstr "Markeer loopbare driehoeken..."
+msgstr "begaanbaare driehoeken markeren..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
@@ -11323,15 +11305,15 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
-"Een node yieldde zonder werkgeheugen, lees alsjeblieft de documentatie over "
-"het correct gebruik van yield!"
+"Een knoop werd overhandigd zonder werkend geheugen, de documentatie "
+"beschrijft correct overhandigen (yield)!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"Node yieldde, maar gaf geen functie toestand terug in het eerste "
+"Knoop werd overhandigd, maar gaf geen functietoestand terug in het eerste "
 "werkgeheugen."
 
 #: modules/visual_script/visual_script.cpp
@@ -11339,22 +11321,22 @@ msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
 msgstr ""
-"Een return waarde moet toegekend worden aan het eerste element van een node "
-"zijn werkgeheugen! Repareer alsjeblieft je node."
+"Een returnwaarde moet toegekend worden aan het eerste element van een knoop "
+"zijn werkgeheugen! Repareer de knoop."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr "Node gaf een ongeldige sequentie uitvoer: "
+msgstr "Knoop gaf een ongeldige sequentie uitvoer: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
 msgstr ""
-"Een sequentie bit was gevonden, maar niet de node in de stack. Rapporteer "
+"Een sequentie bit was gevonden, maar de knoop niet in de stack, rapporteer "
 "een bug!"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr "Stack overloop met stack diepte: "
+msgstr "Stapeloverloop met stapeldiepte: "
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Signal Arguments"
@@ -11382,11 +11364,11 @@ msgstr "Voeg invoerpoort toe"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Output Port"
-msgstr "Voeg uitvoerpoort toe"
+msgstr "Uitvoerpoort toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Override an existing built-in function."
-msgstr "Overschrijft een bestaande ingebouwde functie."
+msgstr "Een bestaande ingebouwde functie overschrijven."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new function."
@@ -11450,7 +11432,7 @@ msgstr "Verwijder Invoerpoort"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Output Port"
-msgstr "Verwijder uitvoerpoort"
+msgstr "Uitvoerpoort verwijderen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -11458,11 +11440,11 @@ msgstr "Verander Expressie"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
-msgstr "Verwijder VisualScript knooppunten"
+msgstr "VisualScript-knopen verwijderen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Duplicate VisualScript Nodes"
-msgstr "Kopieer VisualScript Knooppunt"
+msgstr "VisualScript-knoop dupliceren"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
@@ -11483,7 +11465,8 @@ msgstr "Houd %s ingedrukt om een simpele referentie naar de knoop te plaatsen."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
 msgstr ""
-"Houdt Ctrl ingedrukt om een simpele referentie naar de node te plaatsen."
+"Houdt de Ctrl-toets ingedrukt om een simpele referentie naar de knoop te "
+"plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Variable Setter."
@@ -11495,7 +11478,7 @@ msgstr "Houdt Ctrl ingedrukt om een Variable Setter te plaatsen."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr "Preload Node Toevoegen"
+msgstr "Preload-knoop toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
@@ -11504,7 +11487,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Voeg Node(s) Toe Uit Tree"
+msgstr "Knoop/knopen uit de scèneboom toevoegen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid ""
@@ -11541,7 +11524,7 @@ msgstr "Verbind Knopen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Disconnect Nodes"
-msgstr "Ontkoppel Knopen"
+msgstr "Knopen loskoppelen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -11549,7 +11532,7 @@ msgstr "Verbind Knoop gegevens"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Sequence"
-msgstr "Verbind Knooppunt sequentie"
+msgstr "Knoopsequentie verbinden"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
@@ -11577,12 +11560,11 @@ msgstr "Plak VisualScipt knoopen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function with a function node."
-msgstr "Kan geen functie maken met een functie-knooppunt."
+msgstr "Kan geen functie maken met een functie-knoop."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
-"Kan geen functie van knooppunten maken van knooppunten met meerdere functies."
+msgstr "Kan geen knoopfunctie maken van knoop met meerdere functies."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
@@ -11618,7 +11600,7 @@ msgstr "Signaal Bewerken:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Tool:"
-msgstr "Maak gereedschap:"
+msgstr "Maak hulpmiddel:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
@@ -11650,15 +11632,15 @@ msgstr "Geselecteerde Verwijderen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
-msgstr "Vind Node Type"
+msgstr "Knooptype vinden"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr "Kopiëer Nodes"
+msgstr "Knopen kopiëren"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr "Knip Nodes"
+msgstr "Knopen knippen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Function"
@@ -11670,7 +11652,7 @@ msgstr "Diagram vernieuwen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
-msgstr "Bewerk Member"
+msgstr "Lid bewerken"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -11690,15 +11672,15 @@ msgstr "Ongeldige index eigenschap naam."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "Basis object is geen Node!"
+msgstr "Basisobject is geen knoop!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr "Pad leidt niet tot Node!"
+msgstr "Pad leidt niet naar een knoop!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "Ongeldige index eigenschap naam '%s' in node %s."
+msgstr "Ongeldige eigenschapnaam '%s' in knoop %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -11719,15 +11701,15 @@ msgstr "VariableSet niet gevonden in script: "
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
 msgstr ""
-"Zelfgemaakte node heeft geen _step() methode, kan grafiek niet verwerken."
+"Zelfgemaakte knoop heeft geen _step() methode, kan diagram niet verwerken."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
-"Ongeldige return waarde van _step(), moet een geheel getal (seq out) of "
-"string (error) zijn."
+"Ongeldige terugkeerwaarde van _step(), moet een geheel getal (sequentie "
+"uitvoer) of string (fout) zijn."
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search VisualScript"
@@ -11747,7 +11729,7 @@ msgstr "Package naam ontbreekt."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr "Pakketsegmenten moeten een lengte ongelijk nul hebben."
+msgstr "Pakketsegmenten moeten een lengte ongelijk aan nul hebben."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
@@ -11837,8 +11819,8 @@ msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Bouwen van Android Project mislukt, controleer de output voor de fout.\n"
-"Zie docs.godotengine.org voor Android documentatie."
+"Bouwen van Androidproject mislukt, bekijk de foutmelding in de uitvoer.\n"
+"Zie anders Android bouwdocumentatie op docs.godotengine.org."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
@@ -11984,9 +11966,9 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Dit knooppunt heeft geen vorm, dus het kan niet met andere objecten botsen "
-"of interactie hebben.\n"
-"Overweeg om als kind een CollisionShape2D of CollisionPolygon2D toe te "
+"Deze knoop heeft geen vorm (Shape), dus kan het niet met andere objecten "
+"botsen of interactie hebben.\n"
+"Overweeg om een CollisionShape2D of CollisionPolygon2D als kind toe te "
 "voegen om de vorm ervan vast te leggen."
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -11995,10 +11977,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D dient enkel om een bots vorm te koppelen aan een node "
-"afgeleid van CollisionObject2D. Gebruik het alsjeblieft als een child van "
-"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D etc. om ze een vorm te "
-"geven."
+"CollisionPolygon2D dient enkel om een botsingsvorm te koppelen aan een knoop "
+"afgeleid van CollisionObject2D. Plaats hem onder een Area2D-, StaticBody2D-, "
+"RigidBody2D- of KinematicBody2D-knoop."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -12010,10 +11991,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D dient enkel om een bots vorm te koppelen aan een node "
-"afgeleid van CollisionObject2D. Gebruik het alsjeblieft als een child van "
-"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D etc. om ze een vorm te "
-"geven."
+"CollisionShape2D dient enkel om een botsingsvorm te koppelen aan een knoop "
+"afgeleid van CollisionObject2D. Plaats hem onder een Area2D-, StaticBody2D-, "
+"RigidBody2D- of KinematicBody2D-knoop."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12057,23 +12037,22 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
-"Een NavigatorPolygon hulpbron is nodig om dit knooppunt te laten werken. "
-"Gelieve een bron te selecteren of een polygoon te tekenen."
+"Een NavigationPolygon-bron is nodig om deze knoop te laten werken. Voer een "
+"bron in de geschikte eigenschap in of teken een polygoon."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance moet een kind of kleinkind zijn van een "
-"Navigation2D node. Het geeft alleen navigatie data."
+"NavigationPolygonInstance moet een (klein)kind zijn van een Navigation2D-"
+"knoop om navigatiegegevens door te geven."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"ParallaxLayer node werkt alleen wanneer het een kind is van een "
-"ParallaxBackground node."
+"ParallaxLayer-knoop werkt alleen als kind van een ParallaxBackground-knoop."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -12104,7 +12083,7 @@ msgstr ""
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
+msgstr "PathFollow2D werkt alleen als kind van een Path2D-knoop."
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -12119,17 +12098,16 @@ msgstr ""
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
-"Path eigenschap moet verwijzen naar een geldige Node2D node om te werken."
+"De eigenschap \"RemotePath\" moet naar een geldige Node2D-knoop verwijzen."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
-msgstr "Een Bone2D ketting moet eindigen op een Skeleton2D Knooppunt."
+msgstr "Deze Bone2D-keten moet eindigen op een Skeleton2D-knoop."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
-"Een Bone2D werkt alleen met een Skeleton2D of een andere Bone2D knooppunt "
-"als ouder."
+"Een Bone2D werkt alleen met een Skeleton2D of een andere Bone2D als ouder."
 
 #: scene/2d/skeleton_2d.cpp
 msgid ""
@@ -12159,11 +12137,11 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera moet een ARVROrigin knooppunt als ouder hebben."
+msgstr "ARVRCamera moet een ARVROrigin knoop als ouder hebben."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr "ARVRController moet een ARVROrigin knooppunt als ouder hebben."
+msgstr "ARVRController moet een ARVROrigin knoop als ouder hebben."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12175,7 +12153,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr "ARVRAnchor moet een ARVROrigin knooppunt als ouder hebben."
+msgstr "ARVRAnchor moet een ARVROrigin knoop als ouder hebben."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
@@ -12219,9 +12197,9 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Dit knooppunt heeft geen vorm, dus het kan niet met andere objecten botsen "
-"of interactie hebben.\n"
-"Overweeg om als kind een CollisionShape of CollisionPolygon toe te voegen om "
+"Deze knoop heeft geen vorm (Shape), dus het kan niet met andere objecten "
+"botsen of interactie hebben.\n"
+"Overweeg om een CollisionShape of CollisionPolygon als kind toe te voegen om "
 "de vorm ervan vast te leggen."
 
 #: scene/3d/collision_polygon.cpp
@@ -12230,9 +12208,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon dient alleen om een bots vorm te bieden aan een node die "
-"afstamt van CollisionObject. Gebruik het alsjeblieft alleen als een kind van "
-"van Area, StaticBody, RigidBody, KinematicBody etc. om ze een vorm te geven."
+"CollisionPolygon dient enkel om een botsingsvorm te koppelen aan een knoop "
+"afgeleid van CollisionObject. Plaats hem onder een Area-, StaticBody-, "
+"RigidBody- of KinematicBody-knoop."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -12244,9 +12222,9 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape dient alleen om een bots vorm te bieden aan een node die "
-"afstamt van de CollisionObject node. Gebruik het alsjeblieft alleen als kind "
-"van Area, StaticBody, RigidBody, KinematicBody etc. om ze een vorm te geven."
+"CollisionShape dient enkel om een botsingsvorm te koppelen aan een knoop "
+"afgeleid van CollisionObject. Plaats hem onder een Area-, StaticBody-, "
+"RigidBody- of KinematicBody-knoop."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12295,16 +12273,15 @@ msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Een NavigationMesh hulpbron is nodig om dit knooppunt te laten functioneren."
+msgstr "Een NavigationMesh-bron is nodig om deze knoop te laten werken."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance moet een kind of kleinkind zijn van een Navigation "
-"node. Het biedt alleen navigatie data."
+"NavigationMeshInstance moet een (klein)kind zijn van een Navigation-knoop om "
+"navigatiegevens door te geven."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12437,13 +12414,11 @@ msgstr "Niets verbonden met invoer '%s' van knoop '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
-msgstr "Geen AnimationNode wortel is voor deze graaf aangegeven."
+msgstr "Er is geen AnimationNode-wortelknoop voor dit diagram aangegeven."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr ""
-"Er is geen pad opgegeven naar een AnimationPlayer knooppunt dat de animaties "
-"bevat."
+msgstr "Geen pad naar een AnimationPlayer-knoop opgegeven."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
@@ -12549,10 +12524,10 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"Dit Aanzicht Portaal is niet ingesteld als render target. Maak het een kind "
-"van een Control zodat het een grootte kan ontvangen, als je de bedoeling "
-"hebt zijn inhoud direct op het scherm te weergeven. Anders, maak er een "
-"RenderTarget van en wijs zijn interne texture toe aan een node om te tonen."
+"Dit beeldvenster is niet ingesteld als renderdoelwit. Als de inhoud op het "
+"scherm getoond moet worden, moet je het een kind van een Control knoop "
+"maken, zodat het een grootte kan ontvangen. Anders, maak er een RenderTarget "
+"van en wijs zijn interne textuur toe aan een knoop om te tonen."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -9,12 +9,13 @@
 # Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
 # Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019.
+# Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-16 23:50+0000\n"
-"Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
+"PO-Revision-Date: 2019-12-23 17:08+0000\n"
+"Last-Translator: Tuomas Lähteenmäki <lahtis@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -796,9 +797,8 @@ msgid "Extra Call Arguments:"
 msgstr "Ylimääräiset argumentit:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Valitse metodi"
+msgstr "Valitse metodi:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1705,9 +1705,8 @@ msgid "Erase Profile"
 msgstr "Tyhjennä profiili"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Hallinnoi editorin ominaisuusprofiileja"
+msgstr "Hallinnoi editorin ominaisuusprofiilit"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3007,9 +3006,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Tuo mallit ZIP-tiedostosta"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Vientimallien hallinta"
+msgstr "Mallipaketti"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3068,9 +3066,8 @@ msgid "Open the previous Editor"
 msgstr "Avaa edellinen editori"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Varoitus"
+msgstr "Varoitus!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4659,9 +4656,8 @@ msgid "Transition: "
 msgstr "Siirtymä: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Panorointitila"
+msgstr "Toistotila:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5144,85 +5140,75 @@ msgstr ""
 "ankkureita marginaalien sijaan."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Vasen"
+msgstr "Vasemmassa yläkulmassa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "OIkea"
+msgstr "Oikeassa Yläkulmassa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Kierrä oikealle"
+msgstr "Alaoikea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Alanäkymä"
+msgstr "Alavasen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Sisennä vasemmalle"
+msgstr "Keskitä vasemmalle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Keskitä valintaan"
+msgstr "Keskitä ylös"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Sisennä oikealle"
+msgstr "Keskitä oikealle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Pohja"
+msgstr "Keskitä alas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Keskitä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
 msgstr "Vasen näkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
 msgstr "Ylänäkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
 msgstr "Oikea näkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
 msgstr "Alanäkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "VCenter Wide"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "HCenter Wide"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Full Rect"
-msgstr ""
+msgstr "VCenter Wide"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "HCenter Wide"
+msgstr "HCenter Wide"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Full Rect"
+msgstr "Täysi toisto"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
-msgstr "Skaalaussuhde:"
+msgstr "Skaalaussuhde"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5891,9 +5877,8 @@ msgid "Remove item %d?"
 msgstr "Poistetaanko kohde %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Mesh-kirjastoksi..."
+msgstr "Mesh-kirjasto"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6532,20 +6517,22 @@ msgstr "Tallenna tiedosto nimellä..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Skriptiä ei voi saada suorittamista varten."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Skriptin lataus epäonnistui. Tarkista konsolissa virheiden varalta."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Skripti ei ole työkalutilassa, sitä ei voi suorittaa."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Tämän skriptin suorittamiseksi sen on perittävä EditorScript ja asetettava "
+"se työkalutilaan."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7819,9 +7806,8 @@ msgid "Constant"
 msgstr "Muuttumaton"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Teema"
+msgstr "Teema-tiedosto"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -7936,17 +7922,15 @@ msgstr "Yhdistä skenestä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Uusi yksittäinen laatta"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Poista automaattiruudutus käytöstä"
+msgstr "Uusi automaattinen laatta"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Uusi %s"
+msgstr "Uusi Atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -7965,39 +7949,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Valitse edellinen muoto, aliruutu tai ruutu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Aluetila"
+msgstr "Alue"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Törmäystila"
+msgstr "Törmäys"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
 msgstr "Peittotila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
 msgstr "Siirtymistila"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Bittimaskitila"
+msgstr "Bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Prioriteettitila"
+msgstr "Prioriteetti"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Indeksi:"
+msgstr "Z Indeksi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -9332,7 +9309,7 @@ msgstr "Luo päivitys"
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Pack File"
-msgstr " Tiedostot"
+msgstr "Pakkaa tiedosto"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9387,13 +9364,12 @@ msgid "Export All"
 msgstr "Vie kaikki"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Tiedostot"
+msgstr "ZIP-tiedosto"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godot-peli paketti"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11567,19 +11543,16 @@ msgid "Members:"
 msgstr "Jäsenet:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Muuta kantatyyppiä"
+msgstr "Muuta perustyyppiä:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Lisää solmu..."
+msgstr "Lisää solmuja..."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Lisää funktio"
+msgstr "Lisää funktio..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

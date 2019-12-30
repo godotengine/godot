@@ -9,12 +9,13 @@
 # Gabor Csordas <gaborcsordas@yahoo.com>, 2018, 2019.
 # Tusa Gamer <tusagamer@mailinator.com>, 2018.
 # Máté Lugosi <mate.lugosi@gmail.com>, 2019.
+# sztrovacsek <magadeve@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
-"Last-Translator: Gabor Csordas <gaborcsordas@yahoo.com>\n"
+"PO-Revision-Date: 2019-12-26 00:02+0000\n"
+"Last-Translator: sztrovacsek <magadeve@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -68,32 +69,31 @@ msgstr "'%s' hívásánál:"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "Mixelés"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -190,9 +190,8 @@ msgid "Anim Multi Change Call"
 msgstr "Animáció hívás változtatás"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Animáció Nevének Megváltoztatása:"
+msgstr "Animáció hosszának megváltoztatása"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -240,9 +239,8 @@ msgid "Add Track"
 msgstr "Animáció nyomvonal hozzáadás"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animáció nagyítás."
+msgstr "Animáció ismételtetése"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -307,9 +305,8 @@ msgid "Trigger"
 msgstr "Érzékelő"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Jövő"
+msgstr "Felvétel"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
@@ -322,7 +319,7 @@ msgstr "Lineáris"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Köbös"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -407,9 +404,8 @@ msgid "Anim Insert Key"
 msgstr "Animáció kulcs beillesztés"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Animáció Nevének Megváltoztatása:"
+msgstr "Animáció léptékének megváltoztatása"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

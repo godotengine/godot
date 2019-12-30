@@ -52,7 +52,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-15 05:52+0000\n"
+"PO-Revision-Date: 2019-12-23 17:07+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -61,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -844,9 +844,8 @@ msgid "Extra Call Arguments:"
 msgstr "Zusätzliche Aufrufparameter:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Methode auswählen"
+msgstr "Empfängermethode:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1754,9 +1753,8 @@ msgid "Erase Profile"
 msgstr "Profil löschen"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "Verwalte Editorfunktionenprofile"
+msgstr "Godot-Funktionsprofil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -3079,9 +3077,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Vorlagen aus ZIP-Datei importieren"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Exportvorlagenverwaltung"
+msgstr "Vorlagenpaket"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
@@ -3140,9 +3137,8 @@ msgid "Open the previous Editor"
 msgstr "Vorigen Editor öffnen"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Warnung"
+msgstr "Warnung!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4736,9 +4732,8 @@ msgid "Transition: "
 msgstr "Übergang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Schwenkmodus"
+msgstr "Abspielmodus:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5221,86 +5216,72 @@ msgstr ""
 "ihre Ausmaße."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Left"
-msgstr "Links"
+msgstr "Oben links"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Right"
-msgstr "Rechts"
+msgstr "Oben rechts"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Right"
-msgstr "Nach rechts rotieren"
+msgstr "Unten rechts"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Left"
-msgstr "Sicht von unten"
+msgstr "Unten links"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Left"
-msgstr "Nach links einrücken"
+msgstr "Mitte links"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Top"
-msgstr "Auswahl zentrieren"
+msgstr "Mitte oben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Nach rechts einrücken"
+msgstr "Mitte rechts"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Unten"
+msgstr "Mitte unten"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Mitte"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Sicht von links"
+msgstr "Links groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "Sicht von oben"
+msgstr "Oben groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Sicht von rechts"
+msgstr "Rechts groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "Sicht von unten"
+msgstr "Unten groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "VCenter groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "HCenter groß"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "Vollständiger Name"
+msgstr "Vollständiges Rechteck"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Keep Ratio"
-msgstr "Skalierungsverhältnis:"
+msgstr "Skalierungsverhältnis beibehalten"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5972,9 +5953,8 @@ msgid "Remove item %d?"
 msgstr "Element %d entfernen?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Mesh-Bibliothek..."
+msgstr "Mesh-Bibliothek"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6614,20 +6594,22 @@ msgstr "Datei speichern als..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Auszuführendes Skript kann nicht abgerufen werden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Skript-Neuladen fehlgeschlagen, Fehlermeldungen in Konsole beachten."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Skript ist nicht im Werkzeugmodus, kann so nicht ausgeführt werden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Um dieses Skript auszuführen muss es von EditorScript erben und in den "
+"Werkzeugmodus versetzt werden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7909,9 +7891,8 @@ msgid "Constant"
 msgstr "Konstant"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "Motiv"
+msgstr "Motiv-Datei"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8025,17 +8006,15 @@ msgstr "Aus Szene zusammenführen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Neue Einzel-Kachel"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Autokacheln deaktivieren"
+msgstr "Neue Auto-Kachel"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Atlas:"
+msgstr "Neuer Atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -8054,39 +8033,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Die vorherige Form oder Kachel auswählen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Bereichsmodus"
+msgstr "Bereich"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Kollisionsmodus"
+msgstr "Kollision"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Verschlussmodus"
+msgstr "Verdeckung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Navigationsmodus"
+msgstr "Navigation"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Bitmaskenmodus"
+msgstr "Bitmaske"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Prioritätsmodus"
+msgstr "Priorität"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Index:"
+msgstr "Z-Index"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -9427,9 +9399,8 @@ msgid "Make Patch"
 msgstr "Erstelle Patch"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " Dateien"
+msgstr "Pack-Datei"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9484,13 +9455,12 @@ msgid "Export All"
 msgstr "Alles exportieren"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " Dateien"
+msgstr "ZIP-Datei"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr ""
+msgstr "Godot-Game-Pack"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -11672,19 +11642,16 @@ msgid "Members:"
 msgstr "Mitglieder:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "Basistyp ändern"
+msgstr "Basistyp ändern:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Nodes..."
-msgstr "Knoten hinzufügen..."
+msgstr "Nodes hinzufügen…"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Function..."
-msgstr "Funktion hinzufügen"
+msgstr "Funktion hinzufügen…"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"

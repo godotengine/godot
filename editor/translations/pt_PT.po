@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:38+0000\n"
+"PO-Revision-Date: 2019-12-23 17:08+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -808,9 +808,8 @@ msgid "Extra Call Arguments:"
 msgstr "Argumentos de chamada extra:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Selecione Método"
+msgstr "Método Recetor:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3086,9 +3085,8 @@ msgid "Open the previous Editor"
 msgstr "Abrir o Editor anterior"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Aviso"
+msgstr "Aviso!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4676,9 +4674,8 @@ msgid "Transition: "
 msgstr "Transição: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Modo deslocamento"
+msgstr "Modo Jogo:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5891,9 +5888,8 @@ msgid "Remove item %d?"
 msgstr "Remover item %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Bib. de Meshes..."
+msgstr "Bib. de Meshes"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6528,20 +6524,22 @@ msgstr "Guardar Ficheiro Como..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Não é possível obter o script para executar."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Falhou a re-leitura do script, analise os erros na consola."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Script não está no modo ferramenta, não será possível executá-lo."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Para executar este script, terá de descender de EditorScript e ser definido "
+"como modo ferramenta."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7928,17 +7926,15 @@ msgstr "Fundir a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Novo Tile Único"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Desativar Autotile"
+msgstr "Novo Autotile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Novo %s"
+msgstr "Novo Atlas"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -7957,39 +7953,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Selecione a forma, subtile ou Tile anterior."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Modo Região"
+msgstr "Região"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Modo Colisão"
+msgstr "Colisão"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Modo Oclusão"
+msgstr "Oclusão"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Modo Navegação"
+msgstr "Navegação"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Modo Bitmask"
+msgstr "Bitmask"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Modo Prioridade"
+msgstr "Prioridade"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Índice:"
+msgstr "Índice Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"

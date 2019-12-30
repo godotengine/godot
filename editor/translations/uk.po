@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
+"PO-Revision-Date: 2019-12-23 17:07+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -809,9 +809,8 @@ msgid "Extra Call Arguments:"
 msgstr "Додаткові аргументи виклику:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Вибір методу"
+msgstr "Метод-отримувач:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -3089,9 +3088,8 @@ msgid "Open the previous Editor"
 msgstr "Відкрити попередній редактор"
 
 #: editor/editor_node.h
-#, fuzzy
 msgid "Warning!"
-msgstr "Попередження"
+msgstr "Увага!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -4684,9 +4682,8 @@ msgid "Transition: "
 msgstr "Перехід: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Режим панорамування"
+msgstr "Режим гри:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -5903,9 +5900,8 @@ msgid "Remove item %d?"
 msgstr "Видалення елемента %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "Бібліотека сітки..."
+msgstr "Бібліотека сітки"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -6542,20 +6538,24 @@ msgstr "Зберегти файл як…"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Не вдалося отримати скрипт для запуску."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
 msgstr ""
+"Не вдалося перезавантажити скрипт. Ознайомтеся із повідомленнями про помилки "
+"у консолі."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Скрипт не працює у режимі інструмента — його не вдасться запустити."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Щоб цей скрипт можна було запустити, він має успадковуватися від "
+"EditorScript і мати встановлений режим інструмента."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7947,17 +7947,15 @@ msgstr "Об'єднати зі сцени"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
-msgstr ""
+msgstr "Нова окрема плитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Autotile"
-msgstr "Вимкнути автоплитки"
+msgstr "Нова автоплитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "New Atlas"
-msgstr "Новий %s"
+msgstr "Новий атлас"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
@@ -7976,39 +7974,32 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Вибір попередньої форми, підплитки або плитки."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Region"
-msgstr "Режим області"
+msgstr "Область"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision"
-msgstr "Режим перешкоди"
+msgstr "Зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion"
-msgstr "Режим перешкоди"
+msgstr "Перешкода"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Режим навігації"
+msgstr "Навігація"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask"
-msgstr "Режим бітової маски"
+msgstr "Бітова маска"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority"
-msgstr "Режим пріоритетності"
+msgstr "Пріоритетність"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index"
-msgstr "Індекс:"
+msgstr "Z-індекс"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"

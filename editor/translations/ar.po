@@ -31,12 +31,13 @@
 # orcstudio <orcstudio@orcstudio.org>, 2019.
 # Rachid Graphicos <graphicos1d@gmail.com>, 2019.
 # traveller010 <manar.bushnaq.001@gmail.com>, 2019.
+# Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-12 09:06+0000\n"
-"Last-Translator: traveller010 <manar.bushnaq.001@gmail.com>\n"
+"PO-Revision-Date: 2019-12-26 00:02+0000\n"
+"Last-Translator: Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -45,7 +46,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -515,9 +516,8 @@ msgid "Warning: Editing imported animation"
 msgstr "تحذير: تعديل رسوم متحركة مستوردة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "إختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
+msgstr "اختر مشغل الرسم المتحرك من شجرة المشهد لكي تنشئ أو تعدل الحركة."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
