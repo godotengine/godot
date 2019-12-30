@@ -293,7 +293,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 			float ofs = mod((pixel - margin_begin), tex_size - margin_begin - margin_end);
 			//scale to source texture
 			return (margin_begin + ofs) * tex_pixel_size;
-		} else if (np_repeat == 2) { //tile fit
+		} else { //tile fit
 			//convert to ratio
 			float src_area = draw_size - margin_begin - margin_end;
 			float dst_area = tex_size - margin_begin - margin_end;
