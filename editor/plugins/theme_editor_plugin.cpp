@@ -910,7 +910,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	theme_editor = memnew(ThemeEditor);
-	theme_editor->set_custom_minimum_size(Size2(0, 200));
+	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();
