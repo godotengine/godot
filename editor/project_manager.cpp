@@ -1409,9 +1409,7 @@ void ProjectList::sort_projects() {
 
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
-		if (item.control->is_visible()) {
-			item.control->get_parent()->move_child(item.control, i);
-		}
+		item.control->get_parent()->move_child(item.control, i);
 	}
 
 	// Rewind the coroutine because order of projects changed
