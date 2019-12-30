@@ -64,6 +64,10 @@ msgstr ""
 "kullanın."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -451,6 +455,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Bir kök olmadan yeni bir iz eklemek mümkün değildir"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2017,6 +2025,15 @@ msgid "Search Help"
 msgstr "Yardım Ara"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Büyük Küçük Harf Duyarlı"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Yardımcıları Göster"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Hepsini Görüntüle"
 
@@ -2051,6 +2068,29 @@ msgstr "Üye Tipi"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Sınıf"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metotlar"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Sinyaller"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Sabit"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Özellik:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Tema Özellikleri"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3426,6 +3466,15 @@ msgid "Importing:"
 msgstr "İçe Aktarım:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "İmza nesnesini oluşturmada sorun."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4611,6 +4660,11 @@ msgstr "Çapraz-Animasyon Karışma Süreleri"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Düğümü Taşı"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Geçiş: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5928,9 +5982,20 @@ msgstr "Anahat Örüntüsü Oluştur"
 msgid "Outline Size:"
 msgstr "Kontur Boyutu:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "%d öğe kaldırılsın mı?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Sahneden Güncelle"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6804,10 +6869,6 @@ msgid "Source"
 msgstr "Kaynak"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Sinyaller"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Hedef"
 
@@ -6832,6 +6893,11 @@ msgstr "İşleve Git"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Sadece dosya sisteminden kaynaklar bırakılabilir."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7475,15 +7541,34 @@ msgid "Create Mesh2D"
 msgstr "Örüntü2D Oluştur"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Mesh Önizlemeleri Oluşturuluyor"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Çokgen2D Oluştur"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "TemasÇokgen2D Oluştur"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "TemasÇokgen2D Oluştur"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "IşıkEngelleyici2D Oluştur"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "IşıkEngelleyici2D Oluştur"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7562,6 +7647,11 @@ msgstr "%d Çerçeve[ler]'i ekle"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Çerçeve Ekle"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Bediz yüklenemedi:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7852,10 +7942,6 @@ msgstr "Yazı Tipi"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Renk"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Sabit"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8266,6 +8352,16 @@ msgstr "Döşeme Önceliğini Değiştir"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Döşeme Z Derinliğini Değiştir"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Çokgeni Dışbükey Yap"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Çokgeni İçbükey Yap"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11106,10 +11202,6 @@ msgid "GDNative"
 msgstr "GDYerel"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "adım değiştirgeni sıfır!"
@@ -11248,6 +11340,11 @@ msgstr "İmleç Geriye Döndür Z"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "İmleç Döndürme Temizle"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Seçimi Sil"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11527,10 +11624,6 @@ msgstr "Bir Değişken Atayıcı bırakmak için Ctrl'e basılı tutun."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Önyüklenen Düğüm Ekle"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13428,9 +13521,6 @@ msgstr "Sabit değerler değiştirilemez."
 #~ msgid "Replace By"
 #~ msgstr "Şununla Değiştir"
 
-#~ msgid "Case Sensitive"
-#~ msgstr "Büyük Küçük Harf Duyarlı"
-
 #~ msgid "Backwards"
 #~ msgstr "Tersten"
 
@@ -13869,9 +13959,6 @@ msgstr "Sabit değerler değiştirilemez."
 #~ msgid "Loading Image:"
 #~ msgstr "Bediz Yükleniyor:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "Bediz yüklenemedi:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Bedizleri Dönüştürüyor"
 
@@ -14049,9 +14136,6 @@ msgstr "Sabit değerler değiştirilemez."
 #~ "correct?"
 #~ msgstr ""
 #~ "Onay belgesi dizeci okunamadı. Yol ve gizyazının her ikisi de doğru mu?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "İmza nesnesini oluşturmada sorun."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Çıkın imzasını oluşturmada sorun."

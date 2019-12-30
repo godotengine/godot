@@ -80,6 +80,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert()的参数类型无效，请使用TYPE_*常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "预期为长度为1的字符串（一个字符）。"
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -464,6 +468,10 @@ msgstr "动画播放器不能动画化自己，只能动画化其他播放器。
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "无法在没有root的情况下新建轨道"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2003,6 +2011,15 @@ msgid "Search Help"
 msgstr "搜索帮助"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "区分大小写"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "显示辅助信息"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "全部显示"
 
@@ -2037,6 +2054,29 @@ msgstr "成员类型"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "类"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "方法"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "信号"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "常量"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "属性:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "主题属性"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3372,6 +3412,15 @@ msgid "Importing:"
 msgstr "导入:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "创建包(PCK)签名对象出错。"
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4534,6 +4583,11 @@ msgstr "跨动画时间混合"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "移动节点"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "过渡"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5817,9 +5871,20 @@ msgstr "创建轮廓网格"
 msgid "Outline Size:"
 msgstr "轮廓大小："
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "确定要移除项目%d吗？"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "从场景中更新"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6686,10 +6751,6 @@ msgid "Source"
 msgstr "来源"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "信号"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "目标"
 
@@ -6713,6 +6774,11 @@ msgstr "转到函数"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "只可以拖拽来自文件系统中的资源。"
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr "无法放置该节点，因为脚本“%s”未在该场景中使用。"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7356,15 +7422,34 @@ msgid "Create Mesh2D"
 msgstr "创建 2D 网格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "创建网格预览"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "创建2D多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "创建2D碰撞多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "创建2D碰撞多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "添加2D遮光多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "添加2D遮光多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7442,6 +7527,11 @@ msgstr "添加%d帧"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "添加帧"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "无法加载图片:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7732,10 +7822,6 @@ msgstr "字体"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "颜色"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "常量"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8127,6 +8213,16 @@ msgstr "编辑图块优先级"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "编辑图块 Z 坐标"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "使多边形凸起"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "使多边形塌陷"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -10854,10 +10950,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "预期为长度为1的字符串（一个字符）。"
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Step参数为 0 ！"
 
@@ -10992,6 +11084,11 @@ msgstr "光标沿Z轴向后旋转"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "光标清除旋转"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "擦除选中"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11251,10 +11348,6 @@ msgstr "按住Ctrl键放置变量的Setter节点。"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "添加Preload节点"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr "无法放置该节点，因为脚本“%s”未在该场景中使用。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12867,9 +12960,6 @@ msgstr "不允许修改常量。"
 #~ msgid "Out-In"
 #~ msgstr "反缓入缓出"
 
-#~ msgid "Transitions"
-#~ msgstr "过渡"
-
 #~ msgid "Change Anim Len"
 #~ msgstr "修改动画时长"
 
@@ -13078,9 +13168,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Replace By"
 #~ msgstr "替换"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "区分大小写"
 
 #~ msgid "Backwards"
 #~ msgstr "向后"
@@ -13534,9 +13621,6 @@ msgstr "不允许修改常量。"
 #~ msgid "Loading Image:"
 #~ msgstr "加载图片中:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "无法加载图片:"
-
 #~ msgid "Converting Images"
 #~ msgstr "正在转换图片"
 
@@ -13719,9 +13803,6 @@ msgstr "不允许修改常量。"
 #~ "Couldn't read the certificate file. Are the path and password both "
 #~ "correct?"
 #~ msgstr "无法读取证书文件。路径和密码是否都正确？"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "创建包(PCK)签名对象出错。"
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "创建包(PCK)签名时出错。"

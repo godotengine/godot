@@ -33,6 +33,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Neveljavna vrsta argumenta za convert(), uporabite TYPE_* konstanto."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -444,6 +448,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -2081,6 +2089,16 @@ msgstr "Išči Pomoč"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
+msgid "Case Sensitive"
+msgstr "Zapri Prizor"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Iskanje"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
 msgid "Display All"
 msgstr "Zamenjaj Vse"
 
@@ -2123,6 +2141,30 @@ msgstr "Člani"
 #, fuzzy
 msgid "Class"
 msgstr "Razred:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metode"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Signali"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstanta"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Lastnosti"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Lastnosti"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3518,6 +3560,14 @@ msgid "Importing:"
 msgstr "Uvažanje:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4781,6 +4831,11 @@ msgstr "Navzkrižna Animacija Časa Mešanice"
 #, fuzzy
 msgid "Move Node"
 msgstr "Način Premika"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Prehod"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -6145,8 +6200,18 @@ msgstr ""
 msgid "Outline Size:"
 msgstr ""
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid ""
+"Update from existing scene?:\n"
+"%s"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7054,11 +7119,6 @@ msgid "Source"
 msgstr "Viri"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Signali"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7084,6 +7144,11 @@ msgstr "Dodaj Funkcijo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7747,8 +7812,17 @@ msgstr "Ustvari Nov %s"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Ustvari Predogled Modela"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Ustvarite Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7757,7 +7831,17 @@ msgstr "Ustvarite Poligon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Ustvarite Mapo"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Ustvarite Mapo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7842,6 +7926,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Napaka pri nalaganju vira."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8144,10 +8233,6 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstanta"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8574,6 +8659,16 @@ msgstr "Uredi Filtre"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Ustvarite Poligon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11338,10 +11433,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "stopnja argumenta je nič!"
@@ -11480,6 +11571,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "GridMap Izbriši Izbor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11757,10 +11853,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Dodaj prednaloženo vozlišče"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12975,10 +13067,6 @@ msgstr "Konstante ni možno spreminjati."
 
 #~ msgid "GUI Theme Items:"
 #~ msgstr "Elementi GUI Teme:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Lastnosti"
 
 #, fuzzy
 #~ msgid "Toggle folder status as Favorite."

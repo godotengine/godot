@@ -28,6 +28,10 @@ msgstr ""
 "constants!"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -430,6 +434,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -1996,6 +2004,14 @@ msgid "Search Help"
 msgstr ""
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr ""
+
+#: editor/editor_help_search.cpp
+msgid "Show Hierarchy"
+msgstr ""
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr ""
 
@@ -2032,6 +2048,28 @@ msgstr "th' Members:"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr ""
+
+#: editor/editor_help_search.cpp
+msgid "Method"
+msgstr ""
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Yer signals:"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr ""
+
+#: editor/editor_help_search.cpp
+msgid "Property"
+msgstr ""
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Paste yer Node"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3348,6 +3386,15 @@ msgid "Importing:"
 msgstr ""
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Blimey! I can't make th' signature object!"
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4558,6 +4605,11 @@ msgstr ""
 #, fuzzy
 msgid "Move Node"
 msgstr "Forge yer Node!"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Add Function"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -5856,8 +5908,18 @@ msgstr ""
 msgid "Outline Size:"
 msgstr ""
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid ""
+"Update from existing scene?:\n"
+"%s"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -6746,11 +6808,6 @@ msgid "Source"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Yer signals:"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -6774,6 +6831,11 @@ msgstr "Add Function"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7428,9 +7490,17 @@ msgid "Create Mesh2D"
 msgstr "Yar, Blow th' Selected Down!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Mesh2D Preview"
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Create Polygon2D"
 msgstr "Yar, Blow th' Selected Down!"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7439,7 +7509,17 @@ msgstr "Yar, Blow th' Selected Down!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Yar, Blow th' Selected Down!"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Yar, Blow th' Selected Down!"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Yar, Blow th' Selected Down!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7519,6 +7599,10 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
+msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Unable to load images"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7823,10 +7907,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -8239,6 +8319,14 @@ msgstr "Edit yer Variable:"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Convex"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Concave"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -10948,10 +11036,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "Blimey! Ye step argument be marooned!"
@@ -11093,6 +11177,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Yar, Blow th' Selected Down!"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11381,10 +11470,6 @@ msgstr "Smash yer Ctrl key t' sink a Variable Setter."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Add yer Preload Node"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12450,9 +12535,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Blimey! I can't read th' certificate file! Are yer path n' password "
 #~ "trusty?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Blimey! I can't make th' signature object!"
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Blimey! I can't create th' package signature."

@@ -44,6 +44,10 @@ msgstr ""
 "Tipe argumen salah dalam menggunakan convert(), gunakan konstanta TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -431,6 +435,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Tidak memungkinkan untuk menambah track baru tanpa akar"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -1999,6 +2007,15 @@ msgid "Search Help"
 msgstr "Mencari Bantuan"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Case Sensitive"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Tampilkan Bantuan-bantuan"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Tampilkan Semua"
 
@@ -2033,6 +2050,29 @@ msgstr "Tipe Anggota"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Kelas"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Fungsi"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Sinyal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstan"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Properti:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Properti-properti Tema"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3415,6 +3455,14 @@ msgid "Importing:"
 msgstr "Mengimpor:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4598,6 +4646,11 @@ msgstr "Waktu Berbaur Animasi-silang"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Pindahkan Node"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Transisi: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5915,9 +5968,20 @@ msgstr "Buat Garis Mesh"
 msgid "Outline Size:"
 msgstr "Ukuran Garis Tepi:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Hapus item %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Perbarui dari Skena"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6794,10 +6858,6 @@ msgid "Source"
 msgstr "Sumber"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Sinyal"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Target"
 
@@ -6823,6 +6883,11 @@ msgstr "Pergi ke Fungsi"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Hanya sumber daya dari berkas sistem yang dapat dihapus."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7469,15 +7534,34 @@ msgid "Create Mesh2D"
 msgstr "Buat Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Buat Pratinjau Mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Buat Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Buat CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Buat CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Buat LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Buat LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7556,6 +7640,11 @@ msgstr "Tambah %d Frame"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Tambah Frame"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Gagal memuat resource."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7846,10 +7935,6 @@ msgstr "Fonta"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Warna"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstan"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8256,6 +8341,16 @@ msgstr "Sunting Prioritas Tile"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Sunting Index Z Tile"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Buat Poligon Cembung"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Buat Poligon Cekung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11051,10 +11146,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Argumen step adalah nol!"
 
@@ -11196,6 +11287,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Hapus Pilihan"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11480,10 +11576,6 @@ msgstr ""
 #, fuzzy
 msgid "Add Preload Node"
 msgstr "Tambahkan Node"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13106,9 +13198,6 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 
 #~ msgid "Replace By"
 #~ msgstr "Ganti dengan"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Case Sensitive"
 
 #~ msgid "Backwards"
 #~ msgstr "Ke belakang"

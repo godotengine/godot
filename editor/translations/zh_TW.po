@@ -39,6 +39,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Convert()函數所收到的參數錯誤，請試著以 TYPE_ 作為開頭。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -444,6 +448,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "無法添加沒有根目錄的新曲目"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2106,6 +2114,15 @@ msgid "Search Help"
 msgstr "搜尋幫助"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "區分大小寫"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "顯示輔助線"
+
+#: editor/editor_help_search.cpp
 #, fuzzy
 msgid "Display All"
 msgstr "取代全部"
@@ -2145,6 +2162,30 @@ msgstr "成員類型"
 #, fuzzy
 msgid "Class"
 msgstr "Class:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "方法"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "信號"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "固定"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "屬性："
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "過濾檔案..."
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3511,6 +3552,14 @@ msgid "Importing:"
 msgstr "導入:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4769,6 +4818,11 @@ msgstr "跨動畫混合時間"
 #, fuzzy
 msgid "Move Node"
 msgstr "移動節點"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "轉場: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -6128,9 +6182,20 @@ msgstr "創建輪廓網格"
 msgid "Outline Size:"
 msgstr "輪廓尺寸："
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "删除項目%d？"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "從場景更新"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -7038,11 +7103,6 @@ msgid "Source"
 msgstr "資源"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "信號"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7069,6 +7129,11 @@ msgstr "轉到函數"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "只能拖拽檔案系統中的資源。"
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7733,8 +7798,17 @@ msgstr "創建2D網格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "創建網格預覽"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "創建3D多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7743,7 +7817,17 @@ msgstr "創建碰撞多邊形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "創建碰撞多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "創建遮光多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "創建遮光多邊形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7833,6 +7917,11 @@ msgstr "添加幀"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "添加幀"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "載入資源失敗。"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8142,10 +8231,6 @@ msgstr "字體"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "顏色"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "固定"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8563,6 +8648,16 @@ msgstr "編輯磁貼優先級"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "使多邊形凸起"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "使多邊形塌陷"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11362,10 +11457,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "step引數為0!"
@@ -11514,6 +11605,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "擦除選中"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11787,10 +11883,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -13130,9 +13222,6 @@ msgstr ""
 
 #~ msgid "Replace By"
 #~ msgstr "用...取代"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "區分大小寫"
 
 #~ msgid "Prompt On Replace"
 #~ msgstr "每次取代都要先詢問我"

@@ -25,6 +25,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -441,6 +445,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -2085,6 +2093,15 @@ msgid "Search Help"
 msgstr "Потражи помоћ"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Разликовање великих и малих слова"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Покажи помагаче"
+
+#: editor/editor_help_search.cpp
 #, fuzzy
 msgid "Display All"
 msgstr "Прикажи нормалу"
@@ -2128,6 +2145,30 @@ msgstr "Чланови"
 #, fuzzy
 msgid "Class"
 msgstr "Класа:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Методе"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Сигнали"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Константан"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Особине"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Особине"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3532,6 +3573,14 @@ msgid "Importing:"
 msgstr "Увожење:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4807,6 +4856,11 @@ msgstr "Вишеанимационо време мешања"
 #, fuzzy
 msgid "Move Node"
 msgstr "Режим померања"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Померај"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -6180,9 +6234,20 @@ msgstr "Направи ивичну мрежу"
 msgid "Outline Size:"
 msgstr "Величина ивице:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Обриши ствар %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Ажурирај из сцене"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -7109,11 +7174,6 @@ msgstr ""
 "Извор: "
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Сигнали"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7140,6 +7200,11 @@ msgstr "Иди на функцију..."
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Само ресурси из датотечног система се могу убацити."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7818,8 +7883,17 @@ msgstr "Направи ивичну мрежу"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Направи приказ мрежа"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Направи полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7828,7 +7902,17 @@ msgstr "Направи навигациони полигон"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Направи навигациони полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Направи осенчен полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Направи осенчен полигон"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7916,6 +8000,11 @@ msgstr "Додај оквир"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Додај оквир"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Грешка при учитавању ресурса."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8233,10 +8322,6 @@ msgstr "Фонт"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Боја"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Константан"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8669,6 +8754,16 @@ msgstr "Уреди филтере"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Помери полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Помери полигон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11475,10 +11570,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr ""
 
@@ -11618,6 +11709,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Обриши одабрано"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11886,10 +11982,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -13167,10 +13259,6 @@ msgstr ""
 #~ msgstr "Ставке теме графичког интерфејса:"
 
 #, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Особине"
-
-#, fuzzy
 #~ msgid "Toggle folder status as Favorite."
 #~ msgstr "Директоријум као омиљени"
 
@@ -13460,9 +13548,6 @@ msgstr ""
 
 #~ msgid "Replace By"
 #~ msgstr "Заменити са"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Разликовање великих и малих слова"
 
 #~ msgid "Backwards"
 #~ msgstr "Натраг"

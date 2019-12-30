@@ -61,6 +61,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Ongeldig argumenttype voor convert(), gebruik TYPE_* constanten."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Tekenreeks met lengte 1 verwacht (één karakter)."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -448,6 +452,10 @@ msgstr "Een animatiespeler kan zichzelf niet animeren, alleen andere spelers."
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Niet mogelijk om een nieuwe track toe te voegen zonder een root"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2019,6 +2027,15 @@ msgid "Search Help"
 msgstr "Zoek Hulp"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Hoofdlettergevoelig"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Toon helpers"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Alles tonen"
 
@@ -2053,6 +2070,29 @@ msgstr "Veld Type"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Klasse"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Methodes"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Signaal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Constante"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Eigenschap:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Thema Eigenschappen"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3440,6 +3480,15 @@ msgid "Importing:"
 msgstr "Bezit met importeren:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Error bij het maken van het signatuur object."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4620,6 +4669,11 @@ msgstr "Cross-animatie mixtijden"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Knoop verplaatsen"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Overgang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5922,9 +5976,20 @@ msgstr "Creëer een contour mesh"
 msgid "Outline Size:"
 msgstr "Omlijningsgrootte:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Element %d verwijderen?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Update Vanuit Scene"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6803,10 +6868,6 @@ msgid "Source"
 msgstr "Bron"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Signaal"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Doel"
 
@@ -6830,6 +6891,12 @@ msgstr "Ga Naar Functie"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Alleen bronnen uit bestandssysteem kunnen gedropt worden."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Kan knopen niet plaatsen, script '%s'' wordt niet in deze scène gebruikt."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7474,15 +7541,34 @@ msgid "Create Mesh2D"
 msgstr "Creëer Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Creëren van Mesh Previews"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Creëer Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Creëer CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Creëer CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Creëer LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Creëer LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7562,6 +7648,11 @@ msgstr "Voeg %d Frame(s) toe"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Voeg Frame toe"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Bron laden mislukt."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7852,10 +7943,6 @@ msgstr "Lettertype"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Kleur"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Constante"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8252,6 +8339,16 @@ msgstr "Bewerk Tile Priority"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Bewerk Tile Z Index"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Creëer Polygon Convex"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Creëer Polygon Concave"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11068,10 +11165,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "Tekenreeks met lengte 1 verwacht (één karakter)."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Stap argument is nul!"
 
@@ -11207,6 +11300,11 @@ msgstr "Cursor Achter Roteer Z"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Cursorrotatie wissen"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Selectie Verwijderen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11479,11 +11577,6 @@ msgstr "Houdt Ctrl ingedrukt om een Variable Setter te plaatsen."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Preload-knoop toevoegen"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Kan knopen niet plaatsen, script '%s'' wordt niet in deze scène gebruikt."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13296,9 +13389,6 @@ msgstr "Constanten kunnen niet worden aangepast."
 #~ msgid "Replace By"
 #~ msgstr "Vervangen Door"
 
-#~ msgid "Case Sensitive"
-#~ msgstr "Hoofdlettergevoelig"
-
 #~ msgid "Backwards"
 #~ msgstr "Achterwaarts"
 
@@ -13389,9 +13479,6 @@ msgstr "Constanten kunnen niet worden aangepast."
 #~ msgstr ""
 #~ "Kon het certificaat bestand niet lezen. Zijn het pad en wachtwoord beide "
 #~ "correct?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Error bij het maken van het signatuur object."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Error bij het maken van het pakket signatuur."

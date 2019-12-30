@@ -25,6 +25,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -443,6 +447,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -2106,6 +2114,16 @@ msgstr "在幫助檔搜尋"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
+msgid "Case Sensitive"
+msgstr "區分大小寫"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "搜尋"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
 msgid "Display All"
 msgstr "全部取代"
 
@@ -2145,6 +2163,30 @@ msgstr ""
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr ""
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "選擇模式"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "訊號"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "常數"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "選擇模式"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "篩選:"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3528,6 +3570,14 @@ msgid "Importing:"
 msgstr "導入中:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 #, fuzzy
 msgid ""
 "No download links found for this version. Direct download is only available "
@@ -4806,6 +4856,11 @@ msgstr ""
 #, fuzzy
 msgid "Move Node"
 msgstr "移動模式"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "過渡"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -6145,8 +6200,18 @@ msgstr ""
 msgid "Outline Size:"
 msgstr ""
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid ""
+"Update from existing scene?:\n"
+"%s"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7058,11 +7123,6 @@ msgid "Source"
 msgstr "來源:"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "訊號"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "目標"
 
@@ -7088,6 +7148,11 @@ msgstr "行為"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7760,8 +7825,17 @@ msgstr "新增"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "預覽:"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "縮放selection"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7770,7 +7844,17 @@ msgstr "縮放selection"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "縮放selection"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "新增資料夾"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "新增資料夾"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7855,6 +7939,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "資源加載失敗。"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8162,10 +8251,6 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "常數"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8588,6 +8673,16 @@ msgstr "檔案"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "縮放selection"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "縮放selection"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11377,10 +11472,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr ""
 
@@ -11522,6 +11613,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "縮放selection"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11798,10 +11894,6 @@ msgstr ""
 #, fuzzy
 msgid "Add Preload Node"
 msgstr "新增節點"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13090,10 +13182,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Replace By"
 #~ msgstr "由這個取代"
-
-#, fuzzy
-#~ msgid "Case Sensitive"
-#~ msgstr "區分大小寫"
 
 #, fuzzy
 #~ msgid "Backwards"

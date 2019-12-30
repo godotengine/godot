@@ -38,6 +38,10 @@ msgstr ""
 "Neplatný typ argumentu funkce convert(), použijte některou z konstant TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -424,6 +428,10 @@ msgstr "Přehrávač animace nemůže animovat sám sebe, pouze ostatní přehr�
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Není možné přidat novou stopu bez kořenového uzlu"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2005,6 +2013,15 @@ msgid "Search Help"
 msgstr "Prohledat nápovědu"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Rozlišovat velká a malá písmena"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Zobrazit pomocníky"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Zobrazit všechny"
 
@@ -2040,6 +2057,30 @@ msgstr "Členové"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Třída"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metody"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Signály"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstantní"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Vlastnost:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Vlastnosti motivu"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3420,6 +3461,15 @@ msgid "Importing:"
 msgstr "Importování:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Chyba při vytváření podpisového objektu."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4622,6 +4672,11 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Přesunout uzel"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Přechod: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5940,9 +5995,20 @@ msgstr "Vytvořit mesh obrysu"
 msgid "Outline Size:"
 msgstr "Velikost obrysu:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Odstranit %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Aktualizovat ze scény"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6833,11 +6899,6 @@ msgid "Source"
 msgstr "Zdroj:"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Signály"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -6861,6 +6922,11 @@ msgstr "Přejít na funkci"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7524,8 +7590,17 @@ msgstr "Vytvořit 2D mesh"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Náhled"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Vytvořit Polygon3D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7534,7 +7609,17 @@ msgstr "Vytvořit navigační polygon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Vytvořit navigační polygon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Vytvořit Occluder Polygon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Vytvořit Occluder Polygon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7618,6 +7703,11 @@ msgstr "Přidat snímek"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Přidat snímek"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Selhalo nahrání zdroje."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7926,10 +8016,6 @@ msgstr "Font"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Barva"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstantní"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8351,6 +8437,16 @@ msgstr "Editovat filtry"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Přesunout polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Přesunout polygon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11139,10 +11235,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "Argument kroku je nula!"
@@ -11284,6 +11376,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Vymazat označené"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11567,10 +11664,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Přidat předem načtený uzel"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13227,9 +13320,6 @@ msgstr "Konstanty není možné upravovat."
 #~ msgid "Replace By"
 #~ msgstr "Nahradit"
 
-#~ msgid "Case Sensitive"
-#~ msgstr "Rozlišovat velká a malá písmena"
-
 #~ msgid "Backwards"
 #~ msgstr "Pozpátku"
 
@@ -13299,9 +13389,6 @@ msgstr "Konstanty není možné upravovat."
 #~ "correct?"
 #~ msgstr ""
 #~ "Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Chyba při vytváření podpisového objektu."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Chyba při vytváření podpisu balíčku."

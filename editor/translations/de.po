@@ -70,6 +70,10 @@ msgstr ""
 "Ungültiger Argument-Typ in convert()-Aufruf, TYPE_*-Konstanten benötigt."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Zeichenkette der Länge 1 erwartet (ein Zeichen)."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -456,6 +460,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Ohne eine Wurzel kann keine neue Spur hinzugefügt werden"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2032,6 +2040,15 @@ msgid "Search Help"
 msgstr "Hilfe durchsuchen"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Groß-/Kleinschreibung beachten"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Helfer anzeigen"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Alles anzeigen"
 
@@ -2066,6 +2083,29 @@ msgstr "Mitgliedstyp"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Klasse"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Methoden"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Signal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstant"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Eigenschaft:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Motiv-Eigenschaften"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3461,6 +3501,15 @@ msgid "Importing:"
 msgstr "Importiere:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Fehler beim erstellen des Signaturobjekts."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4645,6 +4694,11 @@ msgstr "Übergangszeiten kreuzender Animationen"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Node verschieben"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Übergänge"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5948,9 +6002,20 @@ msgstr "Erzeuge Umriss-Mesh"
 msgid "Outline Size:"
 msgstr "Umrissgröße:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Element %d entfernen?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Aus Szene aktualisieren"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6831,10 +6896,6 @@ msgid "Source"
 msgstr "Quelle"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Signal"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Ziel"
 
@@ -6859,6 +6920,13 @@ msgstr "Springe zu Funktion"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Nur Ressourcen aus dem Dateisystem können hier fallen gelassen werden."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Nodes können hier nicht fallen gelassen werden da Skript ‚%s‘ in dieser "
+"Szene nicht genutzt wird."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7507,15 +7575,34 @@ msgid "Create Mesh2D"
 msgstr "Mesh2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Mesh-Vorschauen erzeugen"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Polygon2D erzeugen"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "CollisionPolygon2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "CollisionPolygon2D erzeugen"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "LightOccluder2D erzeugen"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D erzeugen"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7595,6 +7682,11 @@ msgstr "%d Frame(s) hinzufügen"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Frame hinzufügen"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Bild konnte nicht geladen werden:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7885,10 +7977,6 @@ msgstr "Schriftart"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Farbe"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstant"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8288,6 +8376,16 @@ msgstr "Kachelpriorität bearbeiten"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "bearbeite Kachel Z Index"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Polygon konvex machen"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Polygon konkav machen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11101,10 +11199,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "Zeichenkette der Länge 1 erwartet (ein Zeichen)."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Schrittargument ist null!"
 
@@ -11241,6 +11335,11 @@ msgstr "Rückwärts Z-Rotation am Mauszeiger"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Rotation am Mauszeiger zurücksetzen"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Auswahl löschen"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11511,12 +11610,6 @@ msgstr "Strg-Taste halten um einen Variablen-Setter zu setzen."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Preload-Node hinzufügen"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Nodes können hier nicht fallen gelassen werden da Skript ‚%s‘ in dieser "
-"Szene nicht genutzt wird."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13420,9 +13513,6 @@ msgstr "Konstanten können nicht verändert werden."
 #~ msgid "Out-In"
 #~ msgstr "Raus-Rein"
 
-#~ msgid "Transitions"
-#~ msgstr "Übergänge"
-
 #~ msgid "Change Anim Len"
 #~ msgstr "Animationslänge ändern"
 
@@ -13631,9 +13721,6 @@ msgstr "Konstanten können nicht verändert werden."
 
 #~ msgid "Replace By"
 #~ msgstr "Ersetzen durch"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Groß-/Kleinschreibung beachten"
 
 #~ msgid "Backwards"
 #~ msgstr "Rückwärts"
@@ -14094,9 +14181,6 @@ msgstr "Konstanten können nicht verändert werden."
 #~ msgid "Loading Image:"
 #~ msgstr "Lade Bild:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "Bild konnte nicht geladen werden:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Bilder werden konvertiert"
 
@@ -14272,9 +14356,6 @@ msgstr "Konstanten können nicht verändert werden."
 #~ msgstr ""
 #~ "Die Zertifikat-Datei konnte nicht gelesen werden. Sind Pfad und Passwort "
 #~ "beide korrekt?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Fehler beim erstellen des Signaturobjekts."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Fehler beim erstellen der Paketsignatur."

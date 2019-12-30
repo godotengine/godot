@@ -60,6 +60,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałych TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Oczekiwano ciągu znaków o długości 1 (znaku)."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -448,6 +452,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Nie da się dodać nowej ścieżki bez korzenia"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2009,6 +2017,15 @@ msgid "Search Help"
 msgstr "Wyszukaj w pomocy"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Z uwzględnieniem wielkości liter"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Pokaż linie pomocnicze"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Pokaż wszystko"
 
@@ -2043,6 +2060,29 @@ msgstr "Typ członka"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Klasa"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metody"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Sygnał"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Stałe"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Właściwość:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Właściwości motywu"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3420,6 +3460,15 @@ msgid "Importing:"
 msgstr "Importowanie:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Błąd przy eksporcie projektu!"
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4602,6 +4651,11 @@ msgstr "Czasy przejścia pomiędzy animacjami"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Przesuń węzeł"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Przejście: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5904,9 +5958,20 @@ msgstr "Utwórz siatkę zarysu"
 msgid "Outline Size:"
 msgstr "Rozmiar zarysu:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Usuń element %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Aktualizuj ze sceny"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6781,10 +6846,6 @@ msgid "Source"
 msgstr "Źródło"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Sygnał"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Cel"
 
@@ -6810,6 +6871,12 @@ msgstr "Przejdź do funkcji"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Jedynie zasoby z systemu plików mogą zostać tu upuszczone."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Nie można upuścić węzłów, ponieważ \"%s\" nie jest używany na tej scenie."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7453,15 +7520,34 @@ msgid "Create Mesh2D"
 msgstr "Utwórz węzeł Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Tworzenie podglądu Mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Utwórz węzeł Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Utwórz węzeł CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Utwórz węzeł CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Utwórz węzeł LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Utwórz węzeł LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7540,6 +7626,11 @@ msgstr "Dodaj %d klatek"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Dodaj klatkę"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Nie można załadować obrazu:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7830,10 +7921,6 @@ msgstr "Font"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Kolor"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Stałe"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8230,6 +8317,16 @@ msgstr "Edytuj priorytet Kafelka"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Edytuj indeks Z Kafelka"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Zmień wielokąt na wypukły"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Zmień wielokąt na wklęsły"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11031,10 +11128,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "Oczekiwano ciągu znaków o długości 1 (znaku)."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Argument kroku wynosi zero!"
 
@@ -11170,6 +11263,11 @@ msgstr "Kursor Obróć w tył Z"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Kursor Wyczyść obrót"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Usuń zaznaczenie"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11439,11 +11537,6 @@ msgstr "Przytrzymaj Ctrl, by upuścić ustawiacz (Setter) zmiennej."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Dodaj wstępnie wczytany węzeł"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Nie można upuścić węzłów, ponieważ \"%s\" nie jest używany na tej scenie."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13369,9 +13462,6 @@ msgstr "Stałe nie mogą być modyfikowane."
 #~ msgid "Replace By"
 #~ msgstr "Zastąp przez"
 
-#~ msgid "Case Sensitive"
-#~ msgstr "Z uwzględnieniem wielkości liter"
-
 #~ msgid "Backwards"
 #~ msgstr "Wstecz"
 
@@ -13810,9 +13900,6 @@ msgstr "Stałe nie mogą być modyfikowane."
 #~ msgid "Loading Image:"
 #~ msgstr "Ładowanie obrazu:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "Nie można załadować obrazu:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Konwersja obrazków"
 
@@ -13956,10 +14043,6 @@ msgstr "Stałe nie mogą być modyfikowane."
 
 #~ msgid "Del"
 #~ msgstr "Usuń"
-
-#, fuzzy
-#~ msgid "Error creating the signature object."
-#~ msgstr "Błąd przy eksporcie projektu!"
 
 #, fuzzy
 #~ msgid "RAW Mode"

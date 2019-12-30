@@ -31,6 +31,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Argument de tip invalid pentru convert(), folosiți constante TYPE_*"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -432,6 +436,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -2077,6 +2085,16 @@ msgstr "Căutați în Ajutor"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
+msgid "Case Sensitive"
+msgstr "Închide Scena"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Arată Asistenții"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
 msgid "Display All"
 msgstr "Înlocuiți Tot"
 
@@ -2119,6 +2137,30 @@ msgstr "Membri"
 #, fuzzy
 msgid "Class"
 msgstr "Clasă:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metode"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Semnale"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Permanent"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Proprietăți"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Proprietăți"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3525,6 +3567,14 @@ msgid "Importing:"
 msgstr "Se importă:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4787,6 +4837,11 @@ msgstr "Timpi de Amestecare Cross-Animație"
 #, fuzzy
 msgid "Move Node"
 msgstr "Mod Mutare"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Tranziție"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -6161,9 +6216,20 @@ msgstr "Creează Mesh de Contur"
 msgid "Outline Size:"
 msgstr "Dimensiunea Conturului:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Elimini obiectul %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Actualizează din Scenă"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -7080,11 +7146,6 @@ msgid "Source"
 msgstr "Resursă"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Semnale"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7110,6 +7171,11 @@ msgstr "Faceți Funcția"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7772,8 +7838,17 @@ msgstr "Creează Mesh de Contur"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Se creează Previzualizările Mesh-ului"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Crează Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7782,7 +7857,17 @@ msgstr "Creare Poligon de Navigare"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Creare Poligon de Navigare"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Creează Poligon de Ocluziune"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Creează Poligon de Ocluziune"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7868,6 +7953,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Încărcarea resursei a eșuat."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8173,10 +8263,6 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Permanent"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8600,6 +8686,16 @@ msgstr "Editează Filtrele"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Deplasare poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Deplasare poligon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -11370,10 +11466,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr ""
 
@@ -11510,6 +11602,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Curăță Rotația Cursorului"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Toată selecția"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11780,10 +11877,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -12973,10 +13066,6 @@ msgstr ""
 
 #~ msgid "GUI Theme Items:"
 #~ msgstr "Obiecte Tema Interfața Grafică:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Proprietăți"
 
 #, fuzzy
 #~ msgid "Toggle folder status as Favorite."

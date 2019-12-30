@@ -83,6 +83,10 @@ msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Неверный тип аргумента для convert(), используйте TYPE_* константы."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Ожидалась строка длиной 1 (символ)."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -469,6 +473,10 @@ msgstr "Проигрыватель анимации не может анимир
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2038,6 +2046,15 @@ msgid "Search Help"
 msgstr "Справка"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Чувствительность регистра"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Показывать помощники"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Отображать всё"
 
@@ -2072,6 +2089,29 @@ msgstr "Тип члена"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Класс"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Методы"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Сигнал"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Константа"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Параметр:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Свойства темы"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3451,6 +3491,15 @@ msgid "Importing:"
 msgstr "Импортируется:"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Ошибка при создании объекта подписи."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -4631,6 +4680,11 @@ msgstr "Межанимационный инструмент смешивания
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Переместить узел"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Переходы"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5934,9 +5988,20 @@ msgstr "Создать полисетку обводки"
 msgid "Outline Size:"
 msgstr "Размер обводки:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Удалить элемент %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Обновить из сцены"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6812,10 +6877,6 @@ msgid "Source"
 msgstr "Источник"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Сигнал"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Цель"
 
@@ -6841,6 +6902,12 @@ msgstr "Перейти к функции"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Можно перетащить только ресурс из файловой системы."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Нельзя бросать узлы, потому что в этой сцене не используется скрипт '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7489,15 +7556,34 @@ msgid "Create Mesh2D"
 msgstr "Создать Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Создание предпросмотра"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Создать Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Создать CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Создать CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Создан LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Создан LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7580,6 +7666,11 @@ msgstr "Добавить кадров: %d"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Добавить кадр"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Невозможно загрузить изображение:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7870,10 +7961,6 @@ msgstr "Шрифт"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Цвет"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Константа"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8278,6 +8365,16 @@ msgstr "Редактировать приоритет тайла"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Редактирование Z индекса плитки"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Сделать Полигон Выпуклым"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Сделать Полигон Вогнутым"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11093,10 +11190,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "Ожидалась строка длиной 1 (символ)."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
@@ -11233,6 +11326,11 @@ msgstr "Обратное вращение курсора по Z"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Курсор очистить поворот"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Очистить выделенное"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11503,11 +11601,6 @@ msgstr "Зажмите Ctrl, чтобы добавить Variable Setter."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Добавить предзагрузочный узел"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Нельзя бросать узлы, потому что в этой сцене не используется скрипт '%s'."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -13225,9 +13318,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Out-In"
 #~ msgstr "Из-В"
 
-#~ msgid "Transitions"
-#~ msgstr "Переходы"
-
 #~ msgid "Change Anim Len"
 #~ msgstr "Изменить длину анимации"
 
@@ -13435,9 +13525,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Replace By"
 #~ msgstr "Заменить на"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Чувствительность регистра"
 
 #~ msgid "Backwards"
 #~ msgstr "В обратном направлении"
@@ -13894,9 +13981,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Loading Image:"
 #~ msgstr "Загрузка изображения:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "Невозможно загрузить изображение:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Преобразование изображений"
 
@@ -14080,9 +14164,6 @@ msgstr "Константы не могут быть изменены."
 #~ "correct?"
 #~ msgstr ""
 #~ "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Ошибка при создании объекта подписи."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Ошибка при создании подписи пакета."
