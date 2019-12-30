@@ -62,6 +62,7 @@ class ScrollContainer : public Container {
 	bool scroll_v;
 
 	int deadzone;
+	bool follow_focus;
 
 	void _cancel_drag();
 
@@ -92,6 +93,9 @@ public:
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
+
+	bool is_following_focus() const;
+	void set_follow_focus(int p_follow);
 
 	HScrollBar *get_h_scrollbar();
 	VScrollBar *get_v_scrollbar();

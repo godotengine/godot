@@ -235,6 +235,10 @@ void ScrollContainer::_update_scrollbar_position() {
 
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
+	if (!follow_focus) {
+		return;
+	}
+
 	if (is_a_parent_of(p_control)) {
 		Rect2 global_rect = get_global_rect();
 		Rect2 other_rect = p_control->get_global_rect();
@@ -506,6 +510,14 @@ void ScrollContainer::set_deadzone(int p_deadzone) {
 	deadzone = p_deadzone;
 }
 
+bool ScrollContainer::is_following_focus() const {
+	return follow_focus;
+}
+
+void ScrollContainer::set_follow_focus(int p_follow) {
+	follow_focus = p_follow;
+}
+
 String ScrollContainer::get_configuration_warning() const {
 
 	int found = 0;
@@ -555,12 +567,16 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ScrollContainer::get_v_scroll);
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
+	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
+	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
 	ClassDB::bind_method(D_METHOD("get_h_scrollbar"), &ScrollContainer::get_h_scrollbar);
 	ClassDB::bind_method(D_METHOD("get_v_scrollbar"), &ScrollContainer::get_v_scrollbar);
 
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_enable_h_scroll", "is_h_scroll_enabled");
@@ -593,6 +609,7 @@ ScrollContainer::ScrollContainer() {
 	scroll_v = true;
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	follow_focus = false;
 
 	set_clip_contents(true);
 };
