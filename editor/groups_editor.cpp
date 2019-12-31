@@ -121,7 +121,7 @@ bool GroupDialog::_can_edit(Node *p_node, String p_group) {
 }
 
 void GroupDialog::_add_pressed() {
-	TreeItem *selected = nodes_to_add->get_selected();
+	TreeItem *selected = nodes_to_add->get_next_selected(NULL);
 
 	if (!selected) {
 		return;
@@ -150,7 +150,7 @@ void GroupDialog::_add_pressed() {
 }
 
 void GroupDialog::_removed_pressed() {
-	TreeItem *selected = nodes_to_remove->get_selected();
+	TreeItem *selected = nodes_to_remove->get_next_selected(NULL);
 
 	if (!selected) {
 		return;
