@@ -43,7 +43,7 @@ void GDScriptLanguageProtocol::on_data_received(int p_id) {
 	if (OK == peer->get_packet_buffer(data)) {
 		String message;
 		message.parse_utf8((const char *)data.read().ptr(), data.size());
-		std::size_t json_start = message.find("{");
+		int json_start = message.find("{");
 		message = message.substr(json_start);
 		if (message.begins_with("Content-Length:")) return;
 		String output = process_message(message);
