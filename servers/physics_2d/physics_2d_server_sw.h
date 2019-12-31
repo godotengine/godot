@@ -68,6 +68,7 @@ class Physics2DServerSW : public Physics2DServer {
 	mutable RID_Owner<Joint2DSW> joint_owner;
 
 	static Physics2DServerSW *singletonsw;
+	Mutex *pending_shape_update_list_lock;
 
 	//void _clear_query(Query2DSW *p_query);
 	friend class CollisionObject2DSW;

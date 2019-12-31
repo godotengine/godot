@@ -379,6 +379,7 @@ void Physics2DServerSW::area_add_shape(RID p_area, RID p_shape, const Transform2
 	Shape2DSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->add_shape(shape, p_transform, p_disabled);
 }
 
@@ -391,6 +392,7 @@ void Physics2DServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape)
 	ERR_FAIL_COND(!shape);
 	ERR_FAIL_COND(!shape->is_configured());
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape(p_shape_idx, shape);
 }
 void Physics2DServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) {
@@ -398,6 +400,7 @@ void Physics2DServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, co
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape_transform(p_shape_idx, p_transform);
 }
 
@@ -408,6 +411,7 @@ void Physics2DServerSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_
 	ERR_FAIL_INDEX(p_shape, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape_as_disabled(p_shape, p_disabled);
 }
 
@@ -441,6 +445,7 @@ void Physics2DServerSW::area_remove_shape(RID p_area, int p_shape_idx) {
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->remove_shape(p_shape_idx);
 }
 
@@ -449,6 +454,7 @@ void Physics2DServerSW::area_clear_shapes(RID p_area) {
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (area->get_shape_count())
 		area->remove_shape(0);
 }
@@ -644,6 +650,7 @@ void Physics2DServerSW::body_add_shape(RID p_body, RID p_shape, const Transform2
 	Shape2DSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->add_shape(shape, p_transform, p_disabled);
 }
 
@@ -656,6 +663,7 @@ void Physics2DServerSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape)
 	ERR_FAIL_COND(!shape);
 	ERR_FAIL_COND(!shape->is_configured());
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape(p_shape_idx, shape);
 }
 void Physics2DServerSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) {
@@ -663,6 +671,7 @@ void Physics2DServerSW::body_set_shape_transform(RID p_body, int p_shape_idx, co
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape_transform(p_shape_idx, p_transform);
 }
 
@@ -710,6 +719,7 @@ void Physics2DServerSW::body_remove_shape(RID p_body, int p_shape_idx) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->remove_shape(p_shape_idx);
 }
 
@@ -718,6 +728,7 @@ void Physics2DServerSW::body_clear_shapes(RID p_body) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (body->get_shape_count())
 		body->remove_shape(0);
 }
@@ -729,6 +740,7 @@ void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 void Physics2DServerSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin) {
@@ -1416,6 +1428,7 @@ void Physics2DServerSW::finish() {
 
 void Physics2DServerSW::_update_shapes() {
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (pending_shape_update_list.first()) {
 		pending_shape_update_list.first()->self()->_shape_changed();
 		pending_shape_update_list.remove(pending_shape_update_list.first());
@@ -1450,6 +1463,10 @@ Physics2DServerSW::Physics2DServerSW() {
 	BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
 	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
+#ifndef NO_THREADS
+	pending_shape_update_list_lock = Mutex::create();
+#endif
+
 	active = true;
 	island_count = 0;
 	active_objects = 0;
@@ -1458,6 +1475,8 @@ Physics2DServerSW::Physics2DServerSW() {
 	flushing_queries = false;
 };
 
-Physics2DServerSW::~Physics2DServerSW(){
-
+Physics2DServerSW::~Physics2DServerSW() {
+#ifndef NO_THREADS
+	memdelete(pending_shape_update_list_lock);
+#endif
 };

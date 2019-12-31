@@ -283,6 +283,7 @@ void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->add_shape(shape, p_transform, p_disabled);
 }
 
@@ -295,6 +296,7 @@ void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
 	ERR_FAIL_COND(!shape);
 	ERR_FAIL_COND(!shape->is_configured());
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape(p_shape_idx, shape);
 }
 
@@ -303,6 +305,7 @@ void PhysicsServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, cons
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape_transform(p_shape_idx, p_transform);
 }
 
@@ -336,6 +339,7 @@ void PhysicsServerSW::area_remove_shape(RID p_area, int p_shape_idx) {
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	area->remove_shape(p_shape_idx);
 }
 
@@ -344,6 +348,7 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (area->get_shape_count())
 		area->remove_shape(0);
 }
@@ -354,6 +359,7 @@ void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool 
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
 	FLUSH_QUERY_CHECK(area);
+	MutexLock lock(pending_shape_update_list_lock);
 	area->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
@@ -540,6 +546,7 @@ void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->add_shape(shape, p_transform, p_disabled);
 }
 
@@ -552,6 +559,7 @@ void PhysicsServerSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
 	ERR_FAIL_COND(!shape);
 	ERR_FAIL_COND(!shape->is_configured());
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape(p_shape_idx, shape);
 }
 void PhysicsServerSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
@@ -559,6 +567,7 @@ void PhysicsServerSW::body_set_shape_transform(RID p_body, int p_shape_idx, cons
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape_transform(p_shape_idx, p_transform);
 }
 
@@ -587,6 +596,7 @@ void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool 
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
@@ -603,6 +613,7 @@ void PhysicsServerSW::body_remove_shape(RID p_body, int p_shape_idx) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	body->remove_shape(p_shape_idx);
 }
 
@@ -611,6 +622,7 @@ void PhysicsServerSW::body_clear_shapes(RID p_body) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (body->get_shape_count())
 		body->remove_shape(0);
 }
@@ -1531,6 +1543,7 @@ int PhysicsServerSW::get_process_info(ProcessInfo p_info) {
 
 void PhysicsServerSW::_update_shapes() {
 
+	MutexLock lock(pending_shape_update_list_lock);
 	while (pending_shape_update_list.first()) {
 		pending_shape_update_list.first()->self()->_shape_changed();
 		pending_shape_update_list.remove(pending_shape_update_list.first());
@@ -1574,6 +1587,9 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_
 PhysicsServerSW *PhysicsServerSW::singleton = NULL;
 PhysicsServerSW::PhysicsServerSW() {
 	singleton = this;
+#ifndef NO_THREADS
+	pending_shape_update_list_lock = Mutex::create();
+#endif
 	BroadPhaseSW::create_func = BroadPhaseOctree::_create;
 	island_count = 0;
 	active_objects = 0;
@@ -1583,6 +1599,8 @@ PhysicsServerSW::PhysicsServerSW() {
 	flushing_queries = false;
 };
 
-PhysicsServerSW::~PhysicsServerSW(){
-
+PhysicsServerSW::~PhysicsServerSW() {
+#ifndef NO_THREADS
+	memdelete(pending_shape_update_list_lock);
+#endif
 };
