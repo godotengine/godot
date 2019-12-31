@@ -6145,6 +6145,8 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 		icon->set_albedo(color);
 
 		icon->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		icon->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		icon->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 		icon->set_cull_mode(SpatialMaterial::CULL_DISABLED);
 		icon->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_DISABLED);
 		icon->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);

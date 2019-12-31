@@ -103,6 +103,8 @@ void Light::set_color(const Color &p_color) {
 
 	color = p_color;
 	VS::get_singleton()->light_set_color(light, p_color);
+	// The gizmo color depends on the light color, so update it.
+	update_gizmo();
 }
 Color Light::get_color() const {
 
