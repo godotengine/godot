@@ -397,26 +397,29 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 			draw_center--;
 		}
 
-		if (np_repeat == 0) { //stretch
-			//convert to ratio
+		// np_repeat is passed as uniform using NinePatchRect::AxisStretchMode enum.
+		if (np_repeat == 0) { // Stretch.
+			// Convert to ratio.
 			float ratio = (pixel - screen_margin_begin) / (draw_size - screen_margin_begin - screen_margin_end);
-			//scale to source texture
+			// Scale to source texture.
 			return (margin_begin + ratio * (tex_size - margin_begin - margin_end)) * tex_pixel_size;
-		} else if (np_repeat == 1) { //tile
-			//convert to ratio
+		} else if (np_repeat == 1) { // Tile.
+			// Convert to offset.
 			float ofs = mod((pixel - screen_margin_begin), tex_size - margin_begin - margin_end);
-			//scale to source texture
+			// Scale to source texture.
 			return (margin_begin + ofs) * tex_pixel_size;
-		} else if (np_repeat == 2) { //tile fit
-			//convert to ratio
+		} else if (np_repeat == 2) { // Tile Fit.
+			// Calculate scale.
 			float src_area = draw_size - screen_margin_begin - screen_margin_end;
 			float dst_area = tex_size - margin_begin - margin_end;
 			float scale = max(1.0, floor(src_area / max(dst_area, 0.0000001) + 0.5));
-
-			//convert to ratio
+			// Convert to ratio.
 			float ratio = (pixel - screen_margin_begin) / src_area;
 			ratio = mod(ratio * scale, 1.0);
+			// Scale to source texture.
 			return (margin_begin + ratio * dst_area) * tex_pixel_size;
+		} else { // Shouldn't happen, but silences compiler warning.
+			return 0;
 		}
 	}
 }
