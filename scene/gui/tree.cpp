@@ -3462,8 +3462,13 @@ void Tree::ensure_cursor_is_visible() {
 	int ofs = get_item_offset(selected);
 	if (ofs == -1)
 		return;
+
+	const int tbh = _get_title_button_height();
+	ofs -= tbh;
+
+	const int marginh = cache.bg->get_margin(MARGIN_TOP) + cache.bg->get_margin(MARGIN_BOTTOM);
 	int h = compute_item_height(selected) + cache.vseparation;
-	int screenh = get_size().height - h_scroll->get_combined_minimum_size().height;
+	int screenh = get_size().height - h_scroll->get_combined_minimum_size().height - marginh - tbh;
 
 	if (h > screenh) { //screen size is too small, maybe it was not resized yet.
 		v_scroll->set_value(ofs);
