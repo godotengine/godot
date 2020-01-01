@@ -422,6 +422,8 @@
 			</argument>
 			<argument index="10" name="antialiased" type="bool" default="false">
 			</argument>
+			<argument index="11" name="antialiasing_use_indices" type="bool" default="false">
+			</argument>
 			<description>
 				Adds a triangle array to the [CanvasItem]'s draw commands.
 			</description>

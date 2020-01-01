@@ -782,6 +782,7 @@ public:
 			RID normal_map;
 			int count;
 			bool antialiased;
+			bool antialiasing_use_indices;
 
 			CommandPolygon() {
 				type = TYPE_POLYGON;

@@ -316,7 +316,7 @@ void Line2D::_draw() {
 			lb.colors,
 			lb.uvs, Vector<int>(), Vector<float>(),
 			texture_rid, -1, RID(),
-			_antialiased);
+			_antialiased, true);
 
 	// DEBUG
 	// Draw wireframe
