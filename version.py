@@ -4,5 +4,5 @@ major = 3
 minor = 2
 status = "beta"
 module_config = ""
-year = 2019
+year = 2020
 website = "https://godotengine.org"
