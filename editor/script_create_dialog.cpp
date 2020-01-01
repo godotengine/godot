@@ -109,6 +109,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	if (p_base_path != "") {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
+		current_language = language_menu->get_selected();
 	} else {
 		initial_bp = "";
 		file_path->set_text("");
