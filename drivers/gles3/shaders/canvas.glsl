@@ -419,7 +419,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 			// Scale to source texture.
 			return (margin_begin + ratio * dst_area) * tex_pixel_size;
 		} else { // Shouldn't happen, but silences compiler warning.
-			return 0;
+			return 0.0;
 		}
 	}
 }
