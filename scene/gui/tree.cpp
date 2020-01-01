@@ -2162,9 +2162,8 @@ void Tree::_go_right() {
 		if (selected_item->get_children() != NULL && selected_item->is_collapsed()) {
 			selected_item->set_collapsed(false);
 		} else if (selected_item->get_next_visible()) {
-			selected_item->select(0);
+			selected_col = 0;
 			_go_down();
-			return;
 		}
 	} else {
 		if (select_mode == SELECT_MULTI) {
