@@ -583,12 +583,14 @@ Camera::Projection Camera::get_projection() const {
 }
 
 void Camera::set_fov(float p_fov) {
+	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
 	_update_camera_mode();
 	_change_notify("fov");
 }
 
 void Camera::set_size(float p_size) {
+	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 	_change_notify("size");
