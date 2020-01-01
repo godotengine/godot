@@ -245,30 +245,26 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	};
 
 	if (!status.press_attempt && status.hovering) {
-		if (status.pressed)
+		if (status.pressed) {
 			return DRAW_HOVER_PRESSED;
-
+		}
 		return DRAW_HOVER;
 	} else {
 		/* determine if pressed or not */
-
 		bool pressing;
 		if (status.press_attempt) {
-
 			pressing = (status.pressing_inside || keep_pressed_outside);
-			if (status.pressed)
+			if (status.pressed) {
 				pressing = !pressing;
+			}
 		} else {
-
 			pressing = status.pressed;
 		}
 
-		if (pressing)
+		if (pressing) {
 			return DRAW_PRESSED;
-		else
-			return DRAW_NORMAL;
+		}
 	}
-
 	return DRAW_NORMAL;
 }
 

@@ -83,68 +83,63 @@ void Button::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-
 					style = get_stylebox("normal");
-					if (!flat)
-						style->draw(ci, Rect2(Point2(0, 0), size));
 					color = get_color("font_color");
-					if (has_color("icon_color_normal"))
+					if (has_color("icon_color_normal")) {
 						color_icon = get_color("icon_color_normal");
+					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
-
-					if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
+					if (has_stylebox("hover_pressed")) {
 						style = get_stylebox("hover_pressed");
-						if (!flat)
-							style->draw(ci, Rect2(Point2(0, 0), size));
-						if (has_color("font_color_hover_pressed"))
-							color = get_color("font_color_hover_pressed");
-						else
-							color = get_color("font_color");
-						if (has_color("icon_color_hover_pressed"))
-							color_icon = get_color("icon_color_hover_pressed");
-
-						break;
+					} else {
+						style = get_stylebox("pressed");
 					}
-					FALLTHROUGH;
-				}
-				case DRAW_PRESSED: {
-
-					style = get_stylebox("pressed");
-					if (!flat)
-						style->draw(ci, Rect2(Point2(0, 0), size));
-					if (has_color("font_color_pressed"))
+					if (has_color("font_color_hover_pressed")) {
+						color = get_color("font_color_hover_pressed");
+					} else if (has_color("font_color_pressed")) {
 						color = get_color("font_color_pressed");
-					else
+					} else {
 						color = get_color("font_color");
-					if (has_color("icon_color_pressed"))
+					}
+					if (has_color("icon_color_hover_pressed")) {
+						color_icon = get_color("icon_color_hover_pressed");
+					} else if (has_color("icon_color_pressed")) {
 						color_icon = get_color("icon_color_pressed");
-
+					}
+				} break;
+				case DRAW_PRESSED: {
+					style = get_stylebox("pressed");
+					if (has_color("font_color_pressed")) {
+						color = get_color("font_color_pressed");
+					} else {
+						color = get_color("font_color");
+					}
+					if (has_color("icon_color_pressed")) {
+						color_icon = get_color("icon_color_pressed");
+					}
 				} break;
 				case DRAW_HOVER: {
-
 					style = get_stylebox("hover");
-					if (!flat)
-						style->draw(ci, Rect2(Point2(0, 0), size));
 					color = get_color("font_color_hover");
-					if (has_color("icon_color_hover"))
+					if (has_color("icon_color_hover")) {
 						color_icon = get_color("icon_color_hover");
-
+					}
 				} break;
 				case DRAW_DISABLED: {
-
 					style = get_stylebox("disabled");
-					if (!flat)
-						style->draw(ci, Rect2(Point2(0, 0), size));
 					color = get_color("font_color_disabled");
-					if (has_color("icon_color_disabled"))
+					if (has_color("icon_color_disabled")) {
 						color_icon = get_color("icon_color_disabled");
-
+					}
 				} break;
 			}
 
-			if (has_focus()) {
+			if (!flat) {
+				style->draw(ci, Rect2(Point2(0, 0), size));
+			}
 
+			if (has_focus()) {
 				Ref<StyleBox> style2 = get_stylebox("focus");
 				style2->draw(ci, Rect2(Point2(), size));
 			}
