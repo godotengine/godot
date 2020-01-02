@@ -511,24 +511,29 @@ void BaseMaterial3D::_update_shader() {
 	//TODO ALL HINTS
 	if (!orm) {
 		code += "uniform float roughness : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_metallic : hint_white," + texfilter_str + ";\n";
-		code += "uniform vec4 metallic_texture_channel;\n";
-		switch (roughness_texture_channel) {
-			case TEXTURE_CHANNEL_RED: {
-				code += "uniform sampler2D texture_roughness : hint_roughness_r," + texfilter_str + ";\n";
-			} break;
-			case TEXTURE_CHANNEL_GREEN: {
-				code += "uniform sampler2D texture_roughness : hint_roughness_g," + texfilter_str + ";\n";
-			} break;
-			case TEXTURE_CHANNEL_BLUE: {
-				code += "uniform sampler2D texture_roughness : hint_roughness_b," + texfilter_str + ";\n";
-			} break;
-			case TEXTURE_CHANNEL_ALPHA: {
-				code += "uniform sampler2D texture_roughness : hint_roughness_a," + texfilter_str + ";\n";
-			} break;
-			case TEXTURE_CHANNEL_GRAYSCALE: {
-				code += "uniform sampler2D texture_roughness : hint_roughness_gray," + texfilter_str + ";\n";
-			} break;
+		if (textures[TEXTURE_METALLIC] != NULL) {
+			code += "uniform sampler2D texture_metallic : hint_white," + texfilter_str + ";\n";
+			code += "uniform vec4 metallic_texture_channel;\n";
+		}
+
+		if (textures[TEXTURE_ROUGHNESS] != NULL) {
+			switch (roughness_texture_channel) {
+				case TEXTURE_CHANNEL_RED: {
+					code += "uniform sampler2D texture_roughness : hint_roughness_r," + texfilter_str + ";\n";
+				} break;
+				case TEXTURE_CHANNEL_GREEN: {
+					code += "uniform sampler2D texture_roughness : hint_roughness_g," + texfilter_str + ";\n";
+				} break;
+				case TEXTURE_CHANNEL_BLUE: {
+					code += "uniform sampler2D texture_roughness : hint_roughness_b," + texfilter_str + ";\n";
+				} break;
+				case TEXTURE_CHANNEL_ALPHA: {
+					code += "uniform sampler2D texture_roughness : hint_roughness_a," + texfilter_str + ";\n";
+				} break;
+				case TEXTURE_CHANNEL_GRAYSCALE: {
+					code += "uniform sampler2D texture_roughness : hint_roughness_gray," + texfilter_str + ";\n";
+				} break;
+			}
 		}
 
 		code += "uniform float specular;\n";
@@ -846,37 +851,45 @@ void BaseMaterial3D::_update_shader() {
 	code += "\tALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 
 	if (!orm) {
-		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+		if (textures[TEXTURE_METALLIC] != NULL) {
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "\tfloat metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);\n";
+			} else {
+				code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
+			}
+			code += "\tMETALLIC = metallic_tex * metallic;\n";
 		} else {
-			code += "\tfloat metallic_tex = dot(texture(texture_metallic,base_uv),metallic_texture_channel);\n";
-		}
-		code += "\tMETALLIC = metallic_tex * metallic;\n";
-
-		switch (roughness_texture_channel) {
-			case TEXTURE_CHANNEL_RED: {
-				code += "\tvec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);\n";
-			} break;
-			case TEXTURE_CHANNEL_GREEN: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,1.0,0.0,0.0);\n";
-			} break;
-			case TEXTURE_CHANNEL_BLUE: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,1.0,0.0);\n";
-			} break;
-			case TEXTURE_CHANNEL_ALPHA: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,0.0,1.0);\n";
-			} break;
-			case TEXTURE_CHANNEL_GRAYSCALE: {
-				code += "\tvec4 roughness_texture_channel = vec4(0.333333,0.333333,0.333333,0.0);\n";
-			} break;
+			code += "\tMETALLIC = metallic;\n";
 		}
 
-		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+		if (textures[TEXTURE_ROUGHNESS] != NULL) {
+			switch (roughness_texture_channel) {
+				case TEXTURE_CHANNEL_RED: {
+					code += "\tvec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);\n";
+				} break;
+				case TEXTURE_CHANNEL_GREEN: {
+					code += "\tvec4 roughness_texture_channel = vec4(0.0,1.0,0.0,0.0);\n";
+				} break;
+				case TEXTURE_CHANNEL_BLUE: {
+					code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,1.0,0.0);\n";
+				} break;
+				case TEXTURE_CHANNEL_ALPHA: {
+					code += "\tvec4 roughness_texture_channel = vec4(0.0,0.0,0.0,1.0);\n";
+				} break;
+				case TEXTURE_CHANNEL_GRAYSCALE: {
+					code += "\tvec4 roughness_texture_channel = vec4(0.333333,0.333333,0.333333,0.0);\n";
+				} break;
+			}
+
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "\tfloat roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);\n";
+			} else {
+				code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+			}
+			code += "\tROUGHNESS = roughness_tex * roughness;\n";
 		} else {
-			code += "\tfloat roughness_tex = dot(texture(texture_roughness,base_uv),roughness_texture_channel);\n";
+			code += "\tROUGHNESS = roughness;\n";
 		}
-		code += "\tROUGHNESS = roughness_tex * roughness;\n";
 		code += "\tSPECULAR = specular;\n";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {

@@ -288,6 +288,8 @@ private:
 			uint64_t transparency : 2;
 			uint64_t shading_mode : 2;
 			uint64_t roughness_channel : 3;
+			uint64_t texture_metallic : 1;
+			uint64_t texture_roughness : 1;
 		};
 
 		uint64_t key;
@@ -337,6 +339,8 @@ private:
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
+		mk.texture_metallic = textures[TEXTURE_METALLIC].is_valid() ? 1 : 0;
+		mk.texture_roughness = textures[TEXTURE_ROUGHNESS].is_valid() ? 1 : 0;
 
 		return mk;
 	}
