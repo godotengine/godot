@@ -240,7 +240,6 @@ void VisibilityEnabler::_node_removed(Node *p_node) {
 
 	if (!visible)
 		_change_node_state(p_node, true);
-	p_node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, "_node_removed");
 	nodes.erase(p_node);
 }
 
