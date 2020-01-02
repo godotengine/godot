@@ -34,6 +34,7 @@ GDCINULL(WebSocketServer);
 
 WebSocketServer::WebSocketServer() {
 	_peer_id = 1;
+	bind_ip = IP_Address("*");
 }
 
 WebSocketServer::~WebSocketServer() {
@@ -48,6 +49,10 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketServer::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &WebSocketServer::get_peer_port);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketServer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("get_bind_ip"), &WebSocketServer::get_bind_ip);
+	ClassDB::bind_method(D_METHOD("set_bind_ip"), &WebSocketServer::set_bind_ip);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bind_ip"), "set_bind_ip", "get_bind_ip");
 
 	ClassDB::bind_method(D_METHOD("get_private_key"), &WebSocketServer::get_private_key);
 	ClassDB::bind_method(D_METHOD("set_private_key"), &WebSocketServer::set_private_key);
@@ -65,6 +70,16 @@ void WebSocketServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
 	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol")));
 	ADD_SIGNAL(MethodInfo("data_received", PropertyInfo(Variant::INT, "id")));
+}
+
+IP_Address WebSocketServer::get_bind_ip() const {
+	return bind_ip;
+}
+
+void WebSocketServer::set_bind_ip(const IP_Address &p_bind_ip) {
+	ERR_FAIL_COND(is_listening());
+	ERR_FAIL_COND(!p_bind_ip.is_valid() && !p_bind_ip.is_wildcard());
+	bind_ip = p_bind_ip;
 }
 
 Ref<CryptoKey> WebSocketServer::get_private_key() const {
