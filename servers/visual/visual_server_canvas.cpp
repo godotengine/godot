@@ -627,7 +627,7 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	canvas_item->commands.push_back(circle);
 }
 
-void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_force_disable_blending) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -659,12 +659,14 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	}
 	rect->texture = p_texture;
 	rect->normal_map = p_normal_map;
+
+	canvas_item->force_disable_blending = p_force_disable_blending;
+
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv) {
-
+void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv, bool p_force_disable_blending) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
@@ -707,8 +709,9 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_CLIP_UV;
 	}
 
-	canvas_item->rect_dirty = true;
+	canvas_item->force_disable_blending = p_force_disable_blending;
 
+	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(rect);
 }
 

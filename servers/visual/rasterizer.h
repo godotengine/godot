@@ -877,6 +877,7 @@ public:
 		bool light_masked;
 
 		Rect2 global_rect_cache;
+		bool force_disable_blending;
 
 		const Rect2 &get_rect() const {
 			if (custom_rect || (!rect_dirty && !update_when_visible))
@@ -1049,6 +1050,7 @@ public:
 			distance_field = false;
 			light_masked = false;
 			update_when_visible = false;
+			force_disable_blending = false;
 		}
 		virtual ~Item() {
 			clear();
