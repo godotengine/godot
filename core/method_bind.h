@@ -344,7 +344,7 @@ public:
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
 	}
 
-	void set_method_info(const MethodInfo &p_info) {
+	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
 
 		set_argument_count(p_info.arguments.size());
 #ifdef DEBUG_METHODS_ENABLED
@@ -364,7 +364,9 @@ public:
 		}
 		argument_types = at;
 		arguments = p_info;
-		arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		if (p_return_nil_is_variant) {
+			arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
 #endif
 	}
 
@@ -387,11 +389,11 @@ public:
 };
 
 template <class T>
-MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Variant::CallError &), const MethodInfo &p_info) {
+MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Variant::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 
 	MethodBindVarArg<T> *a = memnew((MethodBindVarArg<T>));
 	a->set_method(p_method);
-	a->set_method_info(p_info);
+	a->set_method_info(p_info, p_return_nil_is_variant);
 	return a;
 }
 

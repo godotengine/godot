@@ -32,7 +32,7 @@
 	</tutorials>
 	<methods>
 		<method name="add_do_method" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="add_undo_method" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
