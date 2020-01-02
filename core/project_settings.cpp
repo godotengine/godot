@@ -107,6 +107,10 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal == "") {
 			return "";
 		};
+		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
+		if (plocal[plocal.length() - 1] == '/') {
+			sep += 1;
+		}
 		return plocal + path.substr(sep, path.size() - sep);
 	};
 }
