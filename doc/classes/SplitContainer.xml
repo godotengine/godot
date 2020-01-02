@@ -20,7 +20,7 @@
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
 		</member>
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
-			Determines whether the dragger is visible.
+			Determines the dragger's visibility. See [enum DraggerVisibility] for options.
 		</member>
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
 		</member>
