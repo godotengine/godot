@@ -1,9 +1,7 @@
 import os
 import os.path
-import sys
 import re
 import glob
-import string
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
