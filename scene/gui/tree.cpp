@@ -3426,7 +3426,10 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 		if (it == p_item)
 			return ofs;
 
-		ofs += compute_item_height(it) + cache.vseparation;
+		ofs += compute_item_height(it);
+		if (it != root || !hide_root) {
+			ofs += cache.vseparation;
+		}
 
 		if (it->children && !it->collapsed) {
 
