@@ -4045,7 +4045,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 
-					tokenizer->advance();
+#define _ADVANCE_AND_CONSUME_NEWLINES \
+	do {                              \
+		tokenizer->advance();         \
+	} while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE)
+
+					_ADVANCE_AND_CONSUME_NEWLINES;
+					parenthesis++;
 
 					String hint_prefix = "";
 					bool is_arrayed = false;
@@ -4075,11 +4081,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 						current_export.type = type;
 						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
-						tokenizer->advance();
+						_ADVANCE_AND_CONSUME_NEWLINES;
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 							// hint expected next!
-							tokenizer->advance();
+							_ADVANCE_AND_CONSUME_NEWLINES;
 
 							switch (type) {
 
@@ -4087,7 +4093,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 
 										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											WARN_DEPRECATED_MSG("Exporting bit flags hint requires string constants.");
@@ -4099,7 +4105,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										}
 
 										current_export.hint = PROPERTY_HINT_FLAGS;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 
 										bool first = true;
 										while (true) {
@@ -4118,7 +4124,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 											current_export.hint_string += c.xml_escape();
 
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 												break;
 
@@ -4127,7 +4133,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												_set_error("Expected \")\" or \",\" in the named bit flags hint.");
 												return;
 											}
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 										}
 
 										break;
@@ -4135,7 +4141,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_RENDER") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the layers 2D render hint.");
 											return;
@@ -4146,7 +4152,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_PHYSICS") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the layers 2D physics hint.");
 											return;
@@ -4157,7 +4163,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_RENDER") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the layers 3D render hint.");
 											return;
@@ -4168,7 +4174,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_PHYSICS") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the layers 3D physics hint.");
 											return;
@@ -4198,7 +4204,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 											current_export.hint_string += c.xml_escape();
 
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 												break;
 
@@ -4208,7 +4214,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												return;
 											}
 
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 										}
 
 										break;
@@ -4220,7 +4226,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EASE") {
 										current_export.hint = PROPERTY_HINT_EXP_EASING;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the hint.");
 											return;
@@ -4232,7 +4238,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EXP") {
 
 										current_export.hint = PROPERTY_HINT_EXP_RANGE;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 
 										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 											break;
@@ -4240,7 +4246,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 											_set_error("Expected \")\" or \",\" in the exponential range hint.");
 											return;
 										}
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 									} else
 										current_export.hint = PROPERTY_HINT_RANGE;
 
@@ -4248,7 +4254,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
 										sign = -1;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 									}
 									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
@@ -4258,7 +4264,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									}
 
 									current_export.hint_string = rtos(sign * double(tokenizer->get_token_constant()));
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 										current_export.hint_string = "0," + current_export.hint_string;
@@ -4272,12 +4278,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										return;
 									}
 
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 
 									sign = 1.0;
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
 										sign = -1;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 									}
 
 									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
@@ -4288,7 +4294,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									}
 
 									current_export.hint_string += "," + rtos(sign * double(tokenizer->get_token_constant()));
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 										break;
@@ -4300,11 +4306,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										return;
 									}
 
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 									sign = 1.0;
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
 										sign = -1;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 									}
 
 									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
@@ -4315,7 +4321,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									}
 
 									current_export.hint_string += "," + rtos(sign * double(tokenizer->get_token_constant()));
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 
 								} break;
 								case Variant::STRING: {
@@ -4340,7 +4346,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												first = false;
 
 											current_export.hint_string += c.xml_escape();
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 												break;
 
@@ -4349,7 +4355,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												_set_error("Expected \")\" or \",\" in the enumeration hint.");
 												return;
 											}
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 										}
 
 										break;
@@ -4357,13 +4363,13 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "DIR") {
 
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 
 										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 											current_export.hint = PROPERTY_HINT_DIR;
 										else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 
 											if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER || !(tokenizer->get_token_identifier() == "GLOBAL")) {
 												_set_error("Expected \"GLOBAL\" after comma in the directory hint.");
@@ -4374,7 +4380,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												return;
 											}
 											current_export.hint = PROPERTY_HINT_GLOBAL_DIR;
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 
 											if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 												_set_error("Expected \")\" in the hint.");
@@ -4390,11 +4396,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FILE") {
 
 										current_export.hint = PROPERTY_HINT_FILE;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 
 										if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 
 											if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "GLOBAL") {
 
@@ -4403,12 +4409,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 													return;
 												}
 												current_export.hint = PROPERTY_HINT_GLOBAL_FILE;
-												tokenizer->advance();
+												_ADVANCE_AND_CONSUME_NEWLINES;
 
 												if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
 													break;
 												else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA)
-													tokenizer->advance();
+													_ADVANCE_AND_CONSUME_NEWLINES;
 												else {
 													_set_error("Expected \")\" or \",\" in the hint.");
 													return;
@@ -4424,7 +4430,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 												return;
 											}
 											current_export.hint_string = tokenizer->get_token_constant();
-											tokenizer->advance();
+											_ADVANCE_AND_CONSUME_NEWLINES;
 										}
 
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -4437,7 +4443,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "MULTILINE") {
 
 										current_export.hint = PROPERTY_HINT_MULTILINE_TEXT;
-										tokenizer->advance();
+										_ADVANCE_AND_CONSUME_NEWLINES;
 										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 											_set_error("Expected \")\" in the hint.");
 											return;
@@ -4464,7 +4470,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										_set_error("Color type hint expects RGB or RGBA as hints.");
 										return;
 									}
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 
 								} break;
 								default: {
@@ -4515,11 +4521,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							bool is_flags = false;
 
 							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-								tokenizer->advance();
+								_ADVANCE_AND_CONSUME_NEWLINES;
 
 								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
 									is_flags = true;
-									tokenizer->advance();
+									_ADVANCE_AND_CONSUME_NEWLINES;
 								} else {
 									current_export = PropertyInfo();
 									_set_error("Expected \"FLAGS\" after comma.");
@@ -4563,6 +4569,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 
+					tokenizer->advance();
+					parenthesis--;
+
 					if (is_arrayed) {
 						hint_prefix += itos(current_export.type);
 						if (current_export.hint) {
@@ -4572,8 +4581,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						current_export.hint = PROPERTY_HINT_TYPE_STRING;
 						current_export.type = Variant::ARRAY;
 					}
-
-					tokenizer->advance();
+#undef _ADVANCE_AND_CONSUME_NEWLINES
 				}
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPET && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPETSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE) {
