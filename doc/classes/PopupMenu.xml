@@ -334,7 +334,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the popup will be hidden when the window loses focus or not.
+				Returns [code]true[/code] if the popup will be hidden when the window loses focus or not.
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
@@ -391,7 +391,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the shortcut of the specified item [code]idx[/code] is disabled or not.
+				Returns [code]true[/code] if the specified item's shortcut is disabled.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -477,7 +477,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Sets whether the item at index [code]idx[/code] is disabled or not. When it is disabled, it can't be selected and its action can't be invoked.
+				Enables/disables the item at index [code]idx[/code]. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
 		<method name="set_item_icon">
