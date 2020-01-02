@@ -1602,7 +1602,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
 
-			default_args_doc.append(INDENT2 "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>\n");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>");
 		} else {
 			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -1621,7 +1621,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
-			if (summary_lines.size() || default_args_doc.get_string_length()) {
+			if (summary_lines.size()) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
@@ -1630,9 +1630,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					p_output.append("\n");
 				}
 
-				p_output.append(default_args_doc.as_string());
 				p_output.append(INDENT2 "/// </summary>");
 			}
+		}
+
+		if (default_args_doc.get_string_length()) {
+			p_output.append(default_args_doc.as_string());
 		}
 
 		if (!p_imethod.is_internal) {
