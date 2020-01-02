@@ -83,7 +83,7 @@ void godot_icall_GD_printerr(MonoArray *p_what) {
 	String str;
 	for (int i = 0; i < what.size(); i++)
 		str += what[i].operator String();
-	OS::get_singleton()->printerr("%s\n", str.utf8().get_data());
+	print_error(str);
 }
 
 void godot_icall_GD_printraw(MonoArray *p_what) {
