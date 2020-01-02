@@ -1602,7 +1602,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
 
-			default_args_doc.append(INDENT2 "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>\n");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>");
 		} else {
 			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -1621,7 +1621,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
-			if (summary_lines.size() || default_args_doc.get_string_length()) {
+			if (summary_lines.size()) {
 				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
@@ -1630,9 +1630,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					p_output.append("\n");
 				}
 
-				p_output.append(default_args_doc.as_string());
 				p_output.append(INDENT2 "/// </summary>");
 			}
+		}
+
+		if (default_args_doc.get_string_length()) {
+			p_output.append(default_args_doc.as_string());
 		}
 
 		if (!p_imethod.is_internal) {
@@ -2066,9 +2069,11 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
 			p_output.append(", total_length, vcall_error);\n");
 
-			// See the comment on the C_LOCAL_VARARG_RET declaration
-			if (return_type->cname != name_cache.type_Variant) {
-				p_output.append("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
+			if (!ret_void) {
+				// See the comment on the C_LOCAL_VARARG_RET declaration
+				if (return_type->cname != name_cache.type_Variant) {
+					p_output.append("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
+				}
 			}
 		} else {
 			p_output.append("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
