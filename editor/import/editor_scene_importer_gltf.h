@@ -172,7 +172,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			min = 0;
 			max = 0;
 			sparse_count = 0;
+			sparse_indices_buffer_view = 0;
 			sparse_indices_byte_offset = 0;
+			sparse_indices_component_type = 0;
+			sparse_values_buffer_view = 0;
 			sparse_values_byte_offset = 0;
 		}
 	};
