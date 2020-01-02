@@ -132,10 +132,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 }
 
-InputEvent::InputEvent() {
-
-	device = 0;
-}
+InputEvent::InputEvent() :
+		device(0) {}
 
 //////////////////
 
@@ -217,13 +215,11 @@ void InputEventWithModifiers::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command"), "set_command", "get_command");
 }
 
-InputEventWithModifiers::InputEventWithModifiers() {
-
-	alt = false;
-	shift = false;
-	control = false;
-	meta = false;
-}
+InputEventWithModifiers::InputEventWithModifiers() :
+		alt(false),
+		shift(false),
+		control(false),
+		meta(false) {}
 
 //////////////////////////////////
 
@@ -351,13 +347,11 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "echo"), "set_echo", "is_echo");
 }
 
-InputEventKey::InputEventKey() {
-
-	pressed = false;
-	scancode = 0;
-	unicode = 0; ///unicode
-	echo = false;
-}
+InputEventKey::InputEventKey() :
+		pressed(false),
+		scancode(0),
+		unicode(0), ///unicode
+		echo(false) {}
 
 ////////////////////////////////////////
 
@@ -404,10 +398,8 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position"), "set_global_position", "get_global_position");
 }
 
-InputEventMouse::InputEventMouse() {
-
-	button_mask = 0;
-}
+InputEventMouse::InputEventMouse() :
+		button_mask(0) {}
 
 ///////////////////////////////////////
 
@@ -547,13 +539,11 @@ void InputEventMouseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doubleclick"), "set_doubleclick", "is_doubleclick");
 }
 
-InputEventMouseButton::InputEventMouseButton() {
-
-	factor = 1;
-	button_index = 0;
-	pressed = false;
-	doubleclick = false;
-}
+InputEventMouseButton::InputEventMouseButton() :
+		factor(1),
+		button_index(0),
+		pressed(false),
+		doubleclick(false) {}
 
 ////////////////////////////////////////////
 
@@ -707,10 +697,8 @@ void InputEventMouseMotion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }
 
-InputEventMouseMotion::InputEventMouseMotion() {
-
-	pressure = 0;
-}
+InputEventMouseMotion::InputEventMouseMotion() :
+		pressure(0) {}
 
 ////////////////////////////////////////
 
@@ -783,11 +771,9 @@ void InputEventJoypadMotion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "axis_value"), "set_axis_value", "get_axis_value");
 }
 
-InputEventJoypadMotion::InputEventJoypadMotion() {
-
-	axis = 0;
-	axis_value = 0;
-}
+InputEventJoypadMotion::InputEventJoypadMotion() :
+		axis(0),
+		axis_value(0) {}
 /////////////////////////////////
 
 void InputEventJoypadButton::set_button_index(int p_index) {
@@ -865,12 +851,10 @@ void InputEventJoypadButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
-InputEventJoypadButton::InputEventJoypadButton() {
-
-	button_index = 0;
-	pressure = 0;
-	pressed = false;
-}
+InputEventJoypadButton::InputEventJoypadButton() :
+		button_index(0),
+		pressed(false),
+		pressure(0) {}
 
 //////////////////////////////////////////////
 
@@ -934,11 +918,9 @@ void InputEventScreenTouch::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
-InputEventScreenTouch::InputEventScreenTouch() {
-
-	index = 0;
-	pressed = false;
-}
+InputEventScreenTouch::InputEventScreenTouch() :
+		index(0),
+		pressed(false) {}
 
 /////////////////////////////
 
@@ -1020,10 +1002,8 @@ void InputEventScreenDrag::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
 }
 
-InputEventScreenDrag::InputEventScreenDrag() {
-
-	index = 0;
-}
+InputEventScreenDrag::InputEventScreenDrag() :
+		index(0) {}
 /////////////////////////////
 
 void InputEventAction::set_action(const StringName &p_action) {
@@ -1165,10 +1145,8 @@ void InputEventMagnifyGesture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
 }
 
-InputEventMagnifyGesture::InputEventMagnifyGesture() {
-
-	factor = 1.0;
-}
+InputEventMagnifyGesture::InputEventMagnifyGesture() :
+		factor(1.0) {}
 /////////////////////////////
 
 void InputEventPanGesture::set_delta(const Vector2 &p_delta) {
@@ -1207,10 +1185,8 @@ void InputEventPanGesture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "delta"), "set_delta", "get_delta");
 }
 
-InputEventPanGesture::InputEventPanGesture() {
-
-	delta = Vector2(0, 0);
-}
+InputEventPanGesture::InputEventPanGesture() :
+		delta(Vector2(0, 0)) {}
 /////////////////////////////
 
 void InputEventMIDI::set_channel(const int p_channel) {
@@ -1319,14 +1295,12 @@ void InputEventMIDI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
 }
 
-InputEventMIDI::InputEventMIDI() {
-
-	channel = 0;
-	message = 0;
-	pitch = 0;
-	velocity = 0;
-	instrument = 0;
-	pressure = 0;
-	controller_number = 0;
-	controller_value = 0;
-}
+InputEventMIDI::InputEventMIDI() :
+		channel(0),
+		message(0),
+		pitch(0),
+		velocity(0),
+		instrument(0),
+		pressure(0),
+		controller_number(0),
+		controller_value(0) {}

@@ -208,22 +208,20 @@ public:
 class InputEventWithModifiers : public InputEvent {
 	GDCLASS(InputEventWithModifiers, InputEvent);
 
-	bool shift;
 	bool alt;
+	bool shift;
 #ifdef APPLE_STYLE_KEYS
+	bool control;
 	union {
 		bool command;
 		bool meta; //< windows/mac key
 	};
-
-	bool control;
 #else
 	union {
 		bool command; //< windows/mac key
 		bool control;
 	};
 	bool meta; //< windows/mac key
-
 #endif
 
 protected:

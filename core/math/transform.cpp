@@ -216,10 +216,8 @@ Transform::operator String() const {
 
 Transform::Transform(const Basis &p_basis, const Vector3 &p_origin) :
 		basis(p_basis),
-		origin(p_origin) {
-}
+		origin(p_origin) {}
 
-Transform::Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {
-	basis = Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz);
-	origin = Vector3(ox, oy, oz);
-}
+Transform::Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) :
+		basis(Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz)),
+		origin(Vector3(ox, oy, oz)) {}
