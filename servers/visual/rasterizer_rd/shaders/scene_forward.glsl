@@ -552,9 +552,9 @@ LIGHT_SHADER_CODE
 
 		//normalized blinn
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
-		float blinn = pow(cNdotH, shininess);
+		float blinn = pow(cNdotH, shininess) * cNdotL;
 		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-		float intensity = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+		float intensity = blinn;
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
 
