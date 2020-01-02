@@ -99,12 +99,12 @@
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
-				Calls the [code]method[/code] on the object during idle time and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblock]
 				call_deferred("set", "position", Vector2(42.0, 0.0))
 				[/codeblock]
@@ -178,7 +178,7 @@
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="signal" type="String">
 			</argument>

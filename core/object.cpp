@@ -1688,7 +1688,7 @@ void Object::_bind_methods() {
 		mi.name = "emit_signal";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "emit_signal", &Object::_emit_signal, mi, varray(), false);
 	}
 
 	{
@@ -1704,7 +1704,7 @@ void Object::_bind_methods() {
 		mi.name = "call_deferred";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "method"));
 
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi, varray(), false);
 	}
 
 	ClassDB::bind_method(D_METHOD("set_deferred", "property", "value"), &Object::set_deferred);
