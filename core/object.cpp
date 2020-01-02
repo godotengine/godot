@@ -1517,9 +1517,11 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 
 	ERR_FAIL_NULL(p_to_object);
 	Signal *s = signal_map.getptr(p_signal);
-	ERR_FAIL_COND_MSG(!s, "Nonexistent signal: " + p_signal + ".");
+	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_MSG(s->lock > 0, "Attempt to disconnect signal '" + p_signal + "' while in emission callback. Use CONNECT_DEFERRED (to be able to safely disconnect) or CONNECT_ONESHOT (for automatic disconnection) as connection flags.");
+	ERR_FAIL_COND_MSG(s->lock > 0,
+			vformat("Attempt to disconnect %s signal '%s' while in emission callback '%s' (in target %s). Use CONNECT_DEFERRED (to be able to safely disconnect) or CONNECT_ONESHOT (for automatic disconnection) as connection flags.",
+					to_string(), p_signal, p_to_method, p_to_object->to_string()));
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
