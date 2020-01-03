@@ -139,11 +139,16 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		return;
 	}
 
-	if (img_format >= Image::FORMAT_RGBA8 && force_etc1_format) {
-		// If VRAM compression is using ETC, but image has alpha, convert to RGBA4444
+	if (force_etc1_format) {
+		// If VRAM compression is using ETC, but image has alpha, convert to RGBA4444 or LA8
 		// This saves space while maintaining the alpha channel
-		p_img->convert(Image::FORMAT_RGBA4444);
-		return;
+		if (detected_channels == Image::DETECTED_RGBA) {
+			p_img->convert(Image::FORMAT_RGBA4444);
+			return;
+		} else if (detected_channels == Image::DETECTED_LA) {
+			p_img->convert(Image::FORMAT_LA8);
+			return;
+		}
 	}
 
 	uint32_t imgw = p_img->get_width(), imgh = p_img->get_height();
