@@ -266,12 +266,14 @@ namespace Godot
 
         public static int Sign(int s)
         {
+            if (s == 0) return 0;
             return s < 0 ? -1 : 1;
         }
 
-        public static real_t Sign(real_t s)
+        public static int Sign(real_t s)
         {
-            return s < 0f ? -1f : 1f;
+            if (s == 0) return 0;
+            return s < 0 ? -1 : 1;
         }
 
         public static real_t Sin(real_t s)
