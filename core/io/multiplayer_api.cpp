@@ -139,6 +139,9 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 
 	if (p_peer == network_peer) return; // Nothing to do
 
+	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED,
+			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
+
 	if (network_peer.is_valid()) {
 		network_peer->disconnect("peer_connected", this, "_add_peer");
 		network_peer->disconnect("peer_disconnected", this, "_del_peer");
@@ -149,8 +152,6 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 	}
 
 	network_peer = p_peer;
-
-	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED, "Supplied NetworkedNetworkPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
 		network_peer->connect("peer_connected", this, "_add_peer");
