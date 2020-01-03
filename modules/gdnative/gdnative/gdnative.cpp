@@ -170,6 +170,19 @@ bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
 	return ObjectDB::instance_validate((Object *)p_object);
 }
 
+void *godot_get_class_tag(const godot_string_name *p_class) {
+	StringName class_name = *(StringName *)p_class;
+	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(class_name);
+	return class_info ? class_info->class_ptr : NULL;
+}
+
+godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
+	if (!p_object) return NULL;
+	Object *o = (Object *)p_object;
+
+	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : NULL;
+}
+
 #ifdef __cplusplus
 }
 #endif
