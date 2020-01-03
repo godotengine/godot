@@ -457,8 +457,8 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
-	if (get_script_instance())
-		get_script_instance()->call("_integrate_forces", state);
+	if (has_method("_integrate_forces"))
+		call("_integrate_forces", state);
 	set_ignore_transform_notification(false);
 
 	if (contact_monitor) {
