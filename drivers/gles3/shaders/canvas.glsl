@@ -55,7 +55,7 @@ out highp vec2 pixel_size_interp;
 #endif
 
 #ifdef USE_SKELETON
-uniform mediump sampler2D skeleton_texture; // texunit:-1
+uniform mediump sampler2D skeleton_texture; // texunit:-4
 uniform highp mat4 skeleton_transform;
 uniform highp mat4 skeleton_transform_inverse;
 #endif
