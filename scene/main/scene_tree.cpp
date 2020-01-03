@@ -631,7 +631,13 @@ void SceneTree::finish() {
 	timers.clear();
 }
 
-void SceneTree::quit() {
+void SceneTree::quit(int p_exit_code) {
+
+	if (p_exit_code >= 0) {
+		// Override the exit code if a positive argument is given (the default is `-1`).
+		// This is a shorthand for calling `set_exit_code()` on the OS singleton then quitting.
+		OS::get_singleton()->set_exit_code(p_exit_code);
+	}
 
 	_quit = true;
 }
@@ -1812,8 +1818,6 @@ bool SceneTree::is_refusing_new_network_connections() const {
 
 void SceneTree::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
 
@@ -1837,7 +1841,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
-	ClassDB::bind_method(D_METHOD("quit"), &SceneTree::quit);
+	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_screen_stretch", "mode", "aspect", "minsize", "shrink"), &SceneTree::set_screen_stretch, DEFVAL(1));
 
