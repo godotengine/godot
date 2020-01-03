@@ -3176,6 +3176,7 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		p_item->cells.write[p_column].selected = true;
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
 
+		selected_item = p_item;
 		selected_col = p_column;
 	} else {
 
@@ -3188,6 +3189,9 @@ void Tree::item_deselected(int p_column, TreeItem *p_item) {
 
 	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
 		p_item->cells.write[p_column].selected = false;
+
+		selected_item = p_item;
+		selected_col = p_column;
 	}
 	update();
 }
