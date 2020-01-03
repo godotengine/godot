@@ -171,9 +171,17 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		}
 	}
 
-	if (!p_event->is_pressed()) { // pressed state should be correct with button_up signal
+	if (!p_event->is_pressed()) {
+		Ref<InputEventMouseButton> mouse_button = p_event;
+		if (mouse_button.is_valid()) {
+			if (!has_point(mouse_button->get_position())) {
+				status.hovering = false;
+			}
+		}
+		// pressed state should be correct with button_up signal
 		emit_signal("button_up");
 		status.press_attempt = false;
+		status.pressing_inside = false;
 	}
 
 	update();
