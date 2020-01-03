@@ -1165,9 +1165,9 @@ Environment::Environment() :
 	set_ambient_light_sky_contribution(1.0);
 	set_camera_feed_id(1);
 
-	tone_mapper = TONE_MAPPER_LINEAR;
+	tone_mapper = TONE_MAPPER_FILMIC;
 	tonemap_exposure = 1.0;
-	tonemap_white = 1.0;
+	tonemap_white = 6.0;
 	tonemap_auto_exposure = false;
 	tonemap_auto_exposure_max = 8;
 	tonemap_auto_exposure_min = 0.05;
