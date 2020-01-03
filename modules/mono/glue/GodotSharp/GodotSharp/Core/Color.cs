@@ -541,7 +541,7 @@ namespace Godot
             return true;
         }
 
-        public static Color Color8(byte r8, byte g8, byte b8, byte a8)
+        public static Color Color8(byte r8, byte g8, byte b8, byte a8 = 255)
         {
             return new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
         }
@@ -603,6 +603,74 @@ namespace Godot
 
             if (b < 0)
                 throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
+        }
+
+        public static Color operator +(Color left, Color right)
+        {
+            left.r += right.r;
+            left.g += right.g;
+            left.b += right.b;
+            left.a += right.a;
+            return left;
+        }
+
+        public static Color operator -(Color left, Color right)
+        {
+            left.r -= right.r;
+            left.g -= right.g;
+            left.b -= right.b;
+            left.a -= right.a;
+            return left;
+        }
+
+        public static Color operator -(Color color)
+        {
+            return Colors.White - color;
+        }
+
+        public static Color operator *(Color color, float scale)
+        {
+            color.r *= scale;
+            color.g *= scale;
+            color.b *= scale;
+            color.a *= scale;
+            return color;
+        }
+
+        public static Color operator *(float scale, Color color)
+        {
+            color.r *= scale;
+            color.g *= scale;
+            color.b *= scale;
+            color.a *= scale;
+            return color;
+        }
+
+        public static Color operator *(Color left, Color right)
+        {
+            left.r *= right.r;
+            left.g *= right.g;
+            left.b *= right.b;
+            left.a *= right.a;
+            return left;
+        }
+
+        public static Color operator /(Color color, float scale)
+        {
+            color.r /= scale;
+            color.g /= scale;
+            color.b /= scale;
+            color.a /= scale;
+            return color;
+        }
+
+        public static Color operator /(Color left, Color right)
+        {
+            left.r /= right.r;
+            left.g /= right.g;
+            left.b /= right.b;
+            left.a /= right.a;
+            return left;
         }
 
         public static bool operator ==(Color left, Color right)
