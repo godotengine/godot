@@ -479,23 +479,23 @@ void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
 	ERR_FAIL_COND(!peer_map.has(p_peer));
 
 	if (now) {
+		int *id = (int *)peer_map[p_peer]->data;
 		enet_peer_disconnect_now(peer_map[p_peer], 0);
 
 		// enet_peer_disconnect_now doesn't generate ENET_EVENT_TYPE_DISCONNECT,
 		// notify everyone else, send disconnect signal & remove from peer_map like in poll()
+		if (server_relay) {
+			for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
-		int *id = NULL;
-		for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
+				if (E->key() == p_peer) {
+					continue;
+				}
 
-			if (E->key() == p_peer) {
-				id = (int *)(E->get()->data);
-				continue;
+				ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
+				encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
+				encode_uint32(p_peer, &packet->data[4]);
+				enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 			}
-
-			ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
-			encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
-			encode_uint32(p_peer, &packet->data[4]);
-			enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 		}
 
 		if (id)
