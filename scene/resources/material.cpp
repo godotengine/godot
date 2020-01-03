@@ -30,6 +30,8 @@
 
 #include "material.h"
 
+#include "core/engine.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
@@ -191,7 +193,10 @@ Variant ShaderMaterial::property_get_revert(const String &p_name) {
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 
-	if (shader.is_valid()) {
+	// Only connect/disconnect the signal when running in the editor.
+	// This can be a slow operation, and `_change_notify()` (which is called by `_shader_changed()`)
+	// does nothing in non-editor builds anyway. See GH-34741 for details.
+	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
 		shader->disconnect("changed", this, "_shader_changed");
 	}
 
@@ -200,7 +205,10 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	RID rid;
 	if (shader.is_valid()) {
 		rid = shader->get_rid();
-		shader->connect("changed", this, "_shader_changed");
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			shader->connect("changed", this, "_shader_changed");
+		}
 	}
 
 	VS::get_singleton()->material_set_shader(_get_material(), rid);
