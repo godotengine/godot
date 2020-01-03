@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="float" category="Built-In Types" version="3.2">
 	<brief_description>
-		Float built-in type
+		Float built-in type.
 	</brief_description>
 	<description>
 		Float built-in type.
