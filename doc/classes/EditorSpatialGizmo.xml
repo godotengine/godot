@@ -51,6 +51,8 @@
 			</argument>
 			<argument index="2" name="billboard" type="bool" default="false">
 			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
 				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
 			</description>
@@ -75,6 +77,8 @@
 			<argument index="0" name="material" type="Material">
 			</argument>
 			<argument index="1" name="default_scale" type="float" default="1">
+			</argument>
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
 				Adds an unscaled billboard for visualization. Call this function during [method redraw].
