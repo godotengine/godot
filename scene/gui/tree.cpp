@@ -2745,9 +2745,13 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 
-		double prev_value = v_scroll->get_value();
+		double prev_v = v_scroll->get_value();
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
-		if (v_scroll->get_value() != prev_value) {
+
+		double prev_h = h_scroll->get_value();
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+
+		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
 			accept_event();
 		}
 	}
@@ -3455,30 +3459,48 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 }
 
 void Tree::ensure_cursor_is_visible() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
+	if (!selected_item || (selected_col == -1)) {
+		return; // Nothing under cursor.
+	}
 
-	TreeItem *selected = get_selected();
-	if (!selected)
-		return;
-	int ofs = get_item_offset(selected);
-	if (ofs == -1)
-		return;
+	const Size2 area_size = get_size() - cache.bg->get_minimum_size();
 
-	const int tbh = _get_title_button_height();
-	ofs -= tbh;
+	int y_offset = get_item_offset(selected_item);
+	if (y_offset != -1) {
+		const int tbh = _get_title_button_height();
+		y_offset -= tbh;
 
-	const int marginh = cache.bg->get_margin(MARGIN_TOP) + cache.bg->get_margin(MARGIN_BOTTOM);
-	int h = compute_item_height(selected) + cache.vseparation;
-	int screenh = get_size().height - h_scroll->get_combined_minimum_size().height - marginh - tbh;
+		const int cell_h = compute_item_height(selected_item) + cache.vseparation;
+		const int screen_h = area_size.height - h_scroll->get_combined_minimum_size().height - tbh;
 
-	if (h > screenh) { //screen size is too small, maybe it was not resized yet.
-		v_scroll->set_value(ofs);
-	} else if (ofs + h > v_scroll->get_value() + screenh) {
-		v_scroll->call_deferred("set_value", ofs - screenh + h);
-	} else if (ofs < v_scroll->get_value()) {
-		v_scroll->set_value(ofs);
+		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
+			v_scroll->set_value(y_offset);
+		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
+			v_scroll->call_deferred("set_value", y_offset - screen_h + cell_h);
+		} else if (y_offset < v_scroll->get_value()) {
+			v_scroll->set_value(y_offset);
+		}
+	}
+
+	if (select_mode != SELECT_ROW) { // Cursor always at col 0 in this mode.
+		int x_offset = 0;
+		for (int i = 0; i < selected_col; i++) {
+			x_offset += get_column_width(i);
+		}
+
+		const int cell_w = get_column_width(selected_col);
+		const int screen_w = area_size.width - v_scroll->get_combined_minimum_size().width;
+
+		if (cell_w > screen_w) {
+			h_scroll->set_value(x_offset);
+		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
+			h_scroll->call_deferred("set_value", x_offset - screen_w + cell_w);
+		} else if (x_offset < h_scroll->get_value()) {
+			h_scroll->set_value(x_offset);
+		}
 	}
 }
 
