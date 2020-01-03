@@ -309,6 +309,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 					bool was_during_grabbed_click = during_grabbed_click;
 					during_grabbed_click = false;
+					initial_button_mask = 0;
 
 					int over = _get_mouse_over(b->get_position());
 
