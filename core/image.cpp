@@ -2432,19 +2432,19 @@ Color Image::get_pixel(int p_x, int p_y) const {
 		}
 		case FORMAT_RGBA4444: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0xF) / 15.0;
-			float g = ((u >> 4) & 0xF) / 15.0;
-			float b = ((u >> 8) & 0xF) / 15.0;
-			float a = ((u >> 12) & 0xF) / 15.0;
+			float r = ((u >> 12) & 0xF) / 15.0;
+			float g = ((u >> 8) & 0xF) / 15.0;
+			float b = ((u >> 4) & 0xF) / 15.0;
+			float a = (u & 0xF) / 15.0;
 			return Color(r, g, b, a);
 		}
 		case FORMAT_RGBA5551: {
 
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 15.0;
-			float g = ((u >> 5) & 0x1F) / 15.0;
-			float b = ((u >> 10) & 0x1F) / 15.0;
-			float a = ((u >> 15) & 0x1) / 1.0;
+			float r = ((u >> 11) & 0x1F) / 15.0;
+			float g = ((u >> 6) & 0x1F) / 15.0;
+			float b = ((u >> 1) & 0x1F) / 15.0;
+			float a = (u & 0x1) / 1.0;
 			return Color(r, g, b, a);
 		}
 		case FORMAT_RF: {
@@ -2558,10 +2558,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15));
-			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 4;
-			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 8;
-			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15)) << 12;
+			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15)) << 12;
+			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 8;
+			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 4;
+			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 
@@ -2570,10 +2570,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
-			rgba |= uint16_t(CLAMP(p_color.g * 31.0, 0, 31)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 10;
-			rgba |= uint16_t(p_color.a > 0.5 ? 1 : 0) << 15;
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31)) << 11;
+			rgba |= uint16_t(CLAMP(p_color.g * 31.0, 0, 31)) << 6;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 1;
+			rgba |= uint16_t(p_color.a > 0.5 ? 1 : 0);
 
 			((uint16_t *)ptr)[ofs] = rgba;
 
