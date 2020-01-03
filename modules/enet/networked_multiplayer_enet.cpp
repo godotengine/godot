@@ -75,7 +75,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_max_clients < 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_in_bandwidth < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_out_bandwidth < 0, ERR_INVALID_PARAMETER);
 
