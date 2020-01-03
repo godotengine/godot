@@ -47,6 +47,7 @@
 #include <execinfo.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
@@ -142,7 +143,13 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
+			if (isatty(fileno(stdout))) {
+				// Print colors using ANSI escape codes for easier visual grepping
+				fprintf(stderr, "\e[94m[%zu] \e[96m%ls[0m\n", i, output.c_str());
+			} else {
+				// Not a TTY (could be writing to a file), don't use ANSI escape codes
+				fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
+			}
 		}
 
 		free(strings);
