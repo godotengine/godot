@@ -32,7 +32,7 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.Build" />
     <Reference Include="DotNet.Glob, Version=2.1.1.0, Culture=neutral, PublicKeyToken=b68cc888b4f632d1, processorArchitecture=MSIL">
-      <HintPath>packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
+      <HintPath>$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
