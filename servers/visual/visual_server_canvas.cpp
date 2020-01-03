@@ -778,12 +778,13 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	polygon->indices = indices;
 	polygon->count = indices.size();
 	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = false;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, bool p_antialiased) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, bool p_antialiased, bool p_antialiasing_use_indices) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -823,6 +824,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->indices = indices;
 	polygon->count = count;
 	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = p_antialiasing_use_indices;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
