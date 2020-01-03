@@ -52,6 +52,7 @@ public:
 		Color ysort_modulate;
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
+		int layer_mask;
 
 		Vector<Item *> child_items;
 
@@ -68,6 +69,7 @@ public:
 			ysort_children_count = -1;
 			ysort_xform = Transform2D();
 			ysort_pos = Vector2();
+			layer_mask = 0xfffff;
 		}
 	};
 
@@ -157,15 +159,15 @@ public:
 	bool disable_scale;
 
 private:
-	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
-	void _render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, int mask);
+	void _render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner, int mask);
 	void _light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights);
 
 	RasterizerCanvas::Item **z_list;
 	RasterizerCanvas::Item **z_last_list;
 
 public:
-	void render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect);
+	void render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, int layer_mask);
 
 	RID canvas_create();
 	void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring);
@@ -178,6 +180,9 @@ public:
 
 	void canvas_item_set_visible(RID p_item, bool p_visible);
 	void canvas_item_set_light_mask(RID p_item, int p_mask);
+
+	void canvas_item_set_layer_mask(RID p_item, int p_mask);
+	int canvas_item_get_layer_mask(RID p_item);
 
 	void canvas_item_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_set_clip(RID p_item, bool p_clip);
