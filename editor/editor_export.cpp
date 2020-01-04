@@ -974,7 +974,11 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	f->store_32(1); //pack version
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
+#ifdef VERSION_PATCH
+	f->store_32(VERSION_PATCH);
+#else
 	f->store_32(0); //hmph
+#endif
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->store_32(0);
