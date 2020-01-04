@@ -203,7 +203,7 @@
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
-				Returns the [Variant] value of the given [code]property[/code].
+				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
