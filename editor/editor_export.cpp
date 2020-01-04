@@ -977,7 +977,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 #ifdef VERSION_PATCH
 	f->store_32(VERSION_PATCH);
 #else
-	f->store_32(0); //hmph
+	// Patch version is always 0 for initial minor release versions (e.g. 3.2 is considered to be 3.2.0).
+ 	f->store_32(0);
 #endif
 	for (int i = 0; i < 16; i++) {
 		//reserved
