@@ -43,14 +43,18 @@
 			<argument index="1" name="idx" type="int" default="-1">
 			</argument>
 			<description>
-				Create an item in the tree and add it as the last child of [code]parent[/code]. If [code]parent[/code] is [code]null[/code], it will be added as the root's last child, or it'll be the the root itself if the tree is empty.
+				Creates an item in the tree and adds it as a child of [code]parent[/code].
+				If [code]parent[/code] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
+				The new item will be the [code]idx[/code]th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<return type="void">
 			</return>
 			<description>
-				Makes the currently selected item visible. This will scroll the tree to make sure the selected item is visible.
+				Makes the currently focused cell visible.
+				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row is focused logically.
+				[b]Note:[/b] Despite the name of this method, the focus cursor itself is only visible in [constant SELECT_MULTI] mode.
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
@@ -59,7 +63,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Returns the column index under the given point.
+				Returns the column index at [code]position[/code], or -1 if no item is there.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -93,8 +97,9 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				If [member drop_mode_flags] includes [constant DROP_MODE_INBETWEEN], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [constant DROP_MODE_ON_ITEM].
-				Otherwise, returns 0. If there are no tree items at [code]position[/code], returns -100.
+				Returns the drop section at [code]position[/code], or -100 if no item is there.
+				Values -1, 0, or 1 will be returned for the "above item", "on item", and "below item" drop sections, respectively. See [enum DropModeFlags] for a description of each drop section.
+				To get the item which the returned drop section is relative to, use [method get_item_at_position].
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
@@ -119,7 +124,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the rectangle area for the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified item. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -137,7 +142,8 @@
 			<argument index="0" name="from" type="Object">
 			</argument>
 			<description>
-				Returns the next selected item after the given one.
+				Returns the next selected item after the given one, or [code]null[/code] if the end is reached.
+				If [code]from[/code] is [code]null[/code], this returns the first selected item.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
@@ -151,7 +157,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the tree's root item.
+				Returns the tree's root item, or [code]null[/code] if the tree is empty.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
@@ -165,14 +171,18 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the currently selected item.
+				Returns the currently focused item, or [code]null[/code] if no item is focused.
+				In [constant SELECT_ROW] and [constant SELECT_SINGLE] modes, the focused item is same as the selected item. In [constant SELECT_MULTI] mode, the focused item is the item under the focus cursor, not necessarily selected.
+				To get the currently selected item(s), use [method get_next_selected].
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the current selection's column.
+				Returns the currently focused column, or -1 if no column is focused.
+				In [constant SELECT_SINGLE] mode, the focused column is the selected column. In [constant SELECT_ROW] mode, the focused column is always 0 if any item is selected. In [constant SELECT_MULTI] mode, the focused column is the column under the focus cursor, and there are not necessarily any column selected.
+				To tell whether a column of an item is selected, use [method TreeItem.is_selected].
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -230,6 +240,7 @@
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
 			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control.can_drop_data] is recommended.
+			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden" default="false">
@@ -278,6 +289,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the right mouse button is pressed in the empty space of the tree.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
@@ -343,23 +355,34 @@
 		</signal>
 		<signal name="nothing_selected">
 			<description>
+				Emitted when a left mouse button click does not select any item.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
-			Allows selection of a single item at a time.
+			Allows selection of a single cell at a time. From the perspective of items, only a single item is allowed to be selected. And there is only one column selected in the selected item.
+			The focus cursor is always hidden in this mode, but it is positioned at the current selection, making the currently selected item the currently focused item.
 		</constant>
 		<constant name="SELECT_ROW" value="1" enum="SelectMode">
+			Allows selection of a single row at a time. From the perspective of items, only a single items is allowed to be selected. And all the columns are selected in the selected item.
+			The focus cursor is always hidden in this mode, but it is positioned at the first column of the current selection, making the currently selected item the currently focused item.
 		</constant>
 		<constant name="SELECT_MULTI" value="2" enum="SelectMode">
-			Allows selection of multiple items at the same time.
+			Allows selection of multiple cells at the same time. From the perspective of items, multiple items are allowed to be selected. And there can be multiple columns selected in each selected item.
+			The focus cursor is visible in this mode, the item or column under the cursor is not necessarily selected.
 		</constant>
 		<constant name="DROP_MODE_DISABLED" value="0" enum="DropModeFlags">
+			Disables all drop sections, but still allows to detect the "on item" drop section by [method get_drop_section_at_position].
+			[b]Note:[/b] This is the default flag, it has no effect when combined with other flags.
 		</constant>
 		<constant name="DROP_MODE_ON_ITEM" value="1" enum="DropModeFlags">
+			Enables the "on item" drop section. This drop section covers the entire item.
+			When combined with [constant DROP_MODE_INBETWEEN], this drop section halves the height and stays centered vertically.
 		</constant>
 		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
+			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, and the "below item" drop section covers the bottom half.
+			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halves the height and stays on top / bottom accordingly.
 		</constant>
 	</constants>
 	<theme_items>
