@@ -330,7 +330,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			ERR_FAIL_COND(inheritors_array.is_empty());
 
-			String intype = inheritors_array[p_which - TYPE_BASE_ID];
+			Inheritor inheritor = inheritors_array[p_which - TYPE_BASE_ID];
+			String intype = inheritor.type;
 			Variant obj;
 
 			if (ScriptServer::is_global_class(intype)) {
@@ -341,6 +342,9 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 						((Object *)obj)->set_script(script);
 					}
 				}
+				
+			} else if (inheritor.custom_resource) {
+				obj = EditorNode::get_editor_data().instance_custom_type(intype, inheritor.custom_resource->base);
 			} else {
 				obj = ClassDB::instantiate(intype);
 			}
@@ -371,35 +375,43 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		int idx = 0;
 
 		Set<String> allowed_types;
+		Vector<EditorData::CustomType> custom_types;
+		
 		_get_allowed_types(false, &allowed_types);
+		_get_custom_resources_from_allowed_types(&allowed_types, &custom_types);
+		// First add custom resources to edit menu
+		for (int i = 0; i < custom_types.size(); i++) {
+			const EditorData::CustomType &ct = custom_types[i];
+			Ref<Texture2D> icon = ct.icon;
 
-		Vector<EditorData::CustomType> custom_resources;
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-		}
+			Inheritor inheritor;
+			inheritor.type = ct.name;
+			// Setting custom_resource flags this inheritor as a custom resource.
+			inheritor.custom_resource = &ct;
+			inheritors_array.push_back(inheritor);
 
-		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-			const String &t = E->get();
-
-			bool is_custom_resource = false;
-			Ref<Texture2D> icon;
-			if (!custom_resources.is_empty()) {
-				for (int j = 0; j < custom_resources.size(); j++) {
-					if (custom_resources[j].name == t) {
-						is_custom_resource = true;
-						if (custom_resources[j].icon.is_valid()) {
-							icon = custom_resources[j].icon;
-						}
-						break;
-					}
-				}
+			if (!icon.is_valid()) {
+				icon = get_theme_icon("Object", "EditorIcons");
 			}
 
-			if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instantiate(t))) {
+			int id = TYPE_BASE_ID + idx;
+			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), ct.name), id);
+
+			idx++;
+		}
+		// Add the other allowed types to edit menu
+		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
+			const String &t = E->get();
+			Ref<Texture2D> icon;
+
+
+			if (!(ScriptServer::is_global_class(t) || ClassDB::can_instantiate(t))) {
 				continue;
 			}
 
-			inheritors_array.push_back(t);
+			Inheritor inheritor;
+			inheritor.type = t;
+			inheritors_array.push_back(inheritor);
 
 			if (!icon.is_valid()) {
 				icon = get_theme_icon(has_theme_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
@@ -410,7 +422,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			idx++;
 		}
-
+		
 		if (edit_menu->get_item_count()) {
 			edit_menu->add_separator();
 		}
@@ -451,7 +463,19 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *p_vector) const {
+void EditorResourcePicker::_get_custom_resources_from_allowed_types(Set<String> *p_allowed_types, Vector<EditorData::CustomType> *p_vector) const {
+	for (Set<String>::Element *E = p_allowed_types->front(); E; E = E->next()) {
+		String type = E->get();
+		if (EditorNode::get_editor_data().get_custom_types().has(type)) {
+			Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()[type];
+			for (int i = 0; i < custom_resources.size(); i++) {
+				p_vector->push_back(custom_resources[i]);
+			}
+		}
+	}
+}
+
+void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *p_set) const {
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
@@ -460,39 +484,33 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 
 	for (int i = 0; i < size; i++) {
 		String base = allowed_types[i].strip_edges();
-		p_vector->insert(base);
+		p_set->insert(base);
 
-		List<StringName> inheriters;
+		List<StringName> inheritors;
 
-		ClassDB::get_inheriters_from_class(base, &inheriters);
-		for (List<StringName>::Element *E = inheriters.front(); E; E = E->next()) {
-			p_vector->insert(E->get());
+		ClassDB::get_inheriters_from_class(base, &inheritors);
+		for (List<StringName>::Element *E = inheritors.front(); E; E = E->next()) {
+			p_set->insert(E->get());
 		}
 
 		for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
 			if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base)) {
-				p_vector->insert(E->get());
+				p_set->insert(E->get());
 			}
 		}
 
 		if (p_with_convert) {
 			if (base == "StandardMaterial3D") {
-				p_vector->insert("Texture2D");
+				p_set->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
+				p_set->insert("Shader");
 			} else if (base == "Font") {
-				p_vector->insert("FontData");
+				p_set->insert("FontData");
 			}
 		}
 	}
 
-	if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-		Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-
-		for (int i = 0; i < custom_resources.size(); i++) {
-			p_vector->insert(custom_resources[i].name);
-		}
-	}
+	
 }
 
 bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
