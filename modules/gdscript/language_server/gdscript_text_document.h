@@ -51,6 +51,7 @@ protected:
 	Array native_member_completions;
 
 private:
+	Array find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list);
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
 	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
 
@@ -65,6 +66,7 @@ public:
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);
+	Variant declaration(const Dictionary &p_params);
 
 	void initialize();
 
