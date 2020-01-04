@@ -4216,11 +4216,13 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 
 void CanvasItemEditor::_update_zoom_label() {
 	String zoom_text;
+	// The zoom level displayed is relative to the editor scale
+	// (like in most image editors).
 	if (zoom >= 10) {
-		// Don't show a decimal when the zoom level is higher than 1000 %
-		zoom_text = rtos(Math::round(zoom * 100)) + " %";
+		// Don't show a decimal when the zoom level is higher than 1000 %.
+		zoom_text = rtos(Math::round((zoom / EDSCALE) * 100)) + " %";
 	} else {
-		zoom_text = rtos(Math::stepify(zoom * 100, 0.1)) + " %";
+		zoom_text = rtos(Math::stepify((zoom / EDSCALE) * 100, 0.1)) + " %";
 	}
 
 	zoom_reset->set_text(zoom_text);
@@ -4231,7 +4233,7 @@ void CanvasItemEditor::_button_zoom_minus() {
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
-	_zoom_on_position(1.0, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(1.0 * EDSCALE, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
@@ -4993,7 +4995,8 @@ void CanvasItemEditor::_bind_methods() {
 Dictionary CanvasItemEditor::get_state() const {
 
 	Dictionary state;
-	state["zoom"] = zoom;
+	// Take the editor scale into account.
+	state["zoom"] = zoom / EDSCALE;
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
@@ -5030,7 +5033,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	bool update_scrollbars = false;
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
-		zoom = p_state["zoom"];
+		// Compensate the editor scale, so that the editor scale can be changed
+		// and the zoom level will still be the same (relative to the editor scale).
+		zoom = float(p_state["zoom"]) * EDSCALE;
 		_update_zoom_label();
 	}
 
@@ -5246,7 +5251,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_rulers = true;
 	show_guides = true;
 	show_edit_locks = true;
-	zoom = 1;
+	zoom = 1.0 / EDSCALE;
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
