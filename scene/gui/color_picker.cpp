@@ -573,9 +573,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		}
 		if (index < 0 || index >= presets.size())
 			return;
-		preset->set_tooltip("Color: #" + presets[index].to_html(presets[index].a < 1) + "\n"
-																						"LMB: Set color\n"
-																						"RMB: Remove preset");
+		preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Set color\nRMB: Remove preset"), presets[index].to_html(presets[index].a < 1)));
 	}
 }
 

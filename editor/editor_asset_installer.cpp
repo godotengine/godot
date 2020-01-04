@@ -195,7 +195,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
 				ti->set_custom_color(0, get_color("error_color", "Editor"));
-				ti->set_tooltip(0, res_path + " (Already Exists)");
+				ti->set_tooltip(0, vformat(TTR("%s (Already Exists)"), res_path));
 				ti->set_checked(0, false);
 			} else {
 				ti->set_tooltip(0, res_path);
@@ -288,11 +288,11 @@ void EditorAssetInstaller::ok_pressed() {
 	unzClose(pkg);
 
 	if (failed_files.size()) {
-		String msg = "The following files failed extraction from package:\n\n";
+		String msg = TTR("The following files failed extraction from package:") + "\n\n";
 		for (int i = 0; i < failed_files.size(); i++) {
 
 			if (i > 15) {
-				msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+				msg += "\n" + vformat(TTR("And %s more files."), itos(failed_files.size() - i));
 				break;
 			}
 			msg += failed_files[i];
@@ -317,7 +317,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	add_child(vb);
 
 	tree = memnew(Tree);
-	vb->add_margin_child("Package Contents:", tree, true);
+	vb->add_margin_child(TTR("Package Contents:"), tree, true);
 	tree->connect("item_edited", this, "_item_edited");
 
 	error = memnew(AcceptDialog);
