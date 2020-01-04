@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,14 +46,37 @@ Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::Call
 	return obj->call(function, p_args, p_argcount, r_error);
 }
 
+Variant FuncRef::call_funcv(const Array &p_args) {
+
+	ERR_FAIL_COND_V(id == 0, Variant());
+
+	Object *obj = ObjectDB::get_instance(id);
+
+	ERR_FAIL_COND_V(!obj, Variant());
+
+	return obj->callv(function, p_args);
+}
+
 void FuncRef::set_instance(Object *p_obj) {
 
 	ERR_FAIL_NULL(p_obj);
 	id = p_obj->get_instance_id();
 }
+
 void FuncRef::set_function(const StringName &p_func) {
 
 	function = p_func;
+}
+
+bool FuncRef::is_valid() const {
+	if (id == 0)
+		return false;
+
+	Object *obj = ObjectDB::get_instance(id);
+	if (!obj)
+		return false;
+
+	return obj->has_method(function);
 }
 
 void FuncRef::_bind_methods() {
@@ -65,8 +88,11 @@ void FuncRef::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_func", &FuncRef::call_func, mi, defargs);
 	}
 
+	ClassDB::bind_method(D_METHOD("call_funcv", "arg_array"), &FuncRef::call_funcv);
+
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
 	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
+	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
 }
 
 FuncRef::FuncRef() :

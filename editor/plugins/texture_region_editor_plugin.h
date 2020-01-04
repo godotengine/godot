@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/sprite.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -83,8 +84,9 @@ class TextureRegionEditor : public VBoxContainer {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-	NinePatchRect *node_ninepatch;
 	Sprite *node_sprite;
+	Sprite3D *node_sprite_3d;
+	NinePatchRect *node_ninepatch;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
@@ -108,6 +110,7 @@ class TextureRegionEditor : public VBoxContainer {
 	void _set_snap_step_y(float p_val);
 	void _set_snap_sep_x(float p_val);
 	void _set_snap_sep_y(float p_val);
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
@@ -132,6 +135,7 @@ public:
 	bool is_stylebox();
 	bool is_atlas_texture();
 	bool is_ninepatch();
+	Sprite3D *get_sprite_3d();
 	Sprite *get_sprite();
 
 	void edit(Object *p_obj);
@@ -141,9 +145,15 @@ public:
 class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
+	bool manually_hidden;
 	Button *texture_region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
+
+protected:
+	static void _bind_methods();
+
+	void _editor_visiblity_changed();
 
 public:
 	virtual String get_name() const { return "TextureRegion"; }

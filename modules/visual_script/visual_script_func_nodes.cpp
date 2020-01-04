@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,10 +51,7 @@ int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 
 bool VisualScriptFunctionCall::has_input_sequence_port() const {
 
-	if ((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)))
-		return false;
-	else
-		return true;
+	return !((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)));
 }
 #ifdef TOOLS_ENABLED
 
@@ -129,18 +126,19 @@ StringName VisualScriptFunctionCall::_get_base_type() const {
 int VisualScriptFunctionCall::get_input_value_port_count() const {
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-
-		Vector<StringName> names = Variant::get_method_argument_names(basic_type, function);
-		return names.size() + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) + 1;
+		Vector<Variant::Type> types = Variant::get_method_argument_types(basic_type, function);
+		return types.size() + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) + 1;
 
 	} else {
 
 		MethodBind *mb = ClassDB::get_method(_get_base_type(), function);
 		if (mb) {
-			return mb->get_argument_count() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - use_default_args;
+			int defaulted_args = mb->get_argument_count() < use_default_args ? mb->get_argument_count() : use_default_args;
+			return mb->get_argument_count() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - defaulted_args;
 		}
 
-		return method_cache.arguments.size() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - use_default_args;
+		int defaulted_args = method_cache.arguments.size() < use_default_args ? method_cache.arguments.size() : use_default_args;
+		return method_cache.arguments.size() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - defaulted_args;
 	}
 }
 int VisualScriptFunctionCall::get_output_value_port_count() const {
@@ -574,7 +572,6 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}
@@ -950,7 +947,7 @@ int VisualScriptPropertySet::get_output_sequence_port_count() const {
 
 bool VisualScriptPropertySet::has_input_sequence_port() const {
 
-	return call_mode != CALL_MODE_BASIC_TYPE ? true : false;
+	return call_mode != CALL_MODE_BASIC_TYPE;
 }
 
 Node *VisualScriptPropertySet::_get_base_node() const {
@@ -1031,7 +1028,6 @@ void VisualScriptPropertySet::_adjust_input_index(PropertyInfo &pinfo) const {
 }
 
 PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const {
-
 	if (call_mode == CALL_MODE_INSTANCE || call_mode == CALL_MODE_BASIC_TYPE) {
 		if (p_idx == 0) {
 			PropertyInfo pi;
@@ -1039,8 +1035,16 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
 			_adjust_input_index(pi);
 			return pi;
-		} else {
-			p_idx--;
+		}
+	}
+
+	List<PropertyInfo> props;
+	ClassDB::get_property_list(_get_base_type(), &props, false);
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (E->get().name == property) {
+			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
+			_adjust_input_index(pinfo);
+			return pinfo;
 		}
 	}
 
@@ -1356,7 +1360,6 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}
@@ -1563,7 +1566,8 @@ public:
 				case VisualScriptPropertySet::ASSIGN_OP_BIT_XOR: {
 					value = Variant::evaluate(Variant::OP_BIT_XOR, value, p_argument);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (index != StringName()) {
@@ -1797,22 +1801,18 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 			pi.type = (call_mode == CALL_MODE_INSTANCE ? Variant::OBJECT : basic_type);
 			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
 			return pi;
-		} else {
-			p_idx--;
 		}
 	}
 	return PropertyInfo();
 }
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
-
-	if (index != StringName()) {
-
-		Variant v;
-		Variant::CallError ce;
-		v = Variant::construct(type_cache, NULL, 0, ce);
-		Variant i = v.get(index);
-		return PropertyInfo(i.get_type(), "value." + String(index));
+	List<PropertyInfo> props;
+	ClassDB::get_property_list(_get_base_type(), &props, false);
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		if (E->get().name == property) {
+			return PropertyInfo(E->get().type, "value." + String(index));
+		}
 	}
 
 	return PropertyInfo(type_cache, "value");
@@ -2076,7 +2076,6 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}

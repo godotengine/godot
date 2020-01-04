@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" category="Core" version="3.1">
+<class name="EditorInterface" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="edit_resource">
 			<return type="void">
@@ -25,6 +23,12 @@
 			</return>
 			<description>
 				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
+			</description>
+		</method>
+		<method name="get_current_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
@@ -46,6 +50,12 @@
 			</return>
 			<description>
 				Returns the editor [Viewport].
+			</description>
+		</method>
+		<method name="get_inspector" qualifiers="const">
+			<return type="EditorInspector">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
@@ -142,7 +152,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Saves the scene. Returns either OK or ERR_CANT_CREATE. See [@GlobalScope] constants.
+				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
 			</description>
 		</method>
 		<method name="save_scene_as">
@@ -159,7 +169,24 @@
 		<method name="select_file">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_file" type="String">
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+				Selects the file, with the path provided by [code]file[/code], in the FileSystem dock.
+			</description>
+		</method>
+		<method name="set_distraction_free_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enter" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_main_screen_editor">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>

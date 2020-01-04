@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afhints.h                                                              */
-/*                                                                         */
-/*    Auto-fitter hinting routines (specification).                        */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afhints.h
+ *
+ *   Auto-fitter hinting routines (specification).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef AFHINTS_H_
@@ -26,8 +26,8 @@
 FT_BEGIN_HEADER
 
   /*
-   *  The definition of outline glyph hints.  These are shared by all
-   *  writing system analysis routines (until now).
+   * The definition of outline glyph hints.  These are shared by all
+   * writing system analysis routines (until now).
    */
 
   typedef enum  AF_Dimension_
@@ -56,153 +56,153 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  The following explanations are mostly taken from the article
+   * The following explanations are mostly taken from the article
    *
-   *    Real-Time Grid Fitting of Typographic Outlines
+   *   Real-Time Grid Fitting of Typographic Outlines
    *
-   *  by David Turner and Werner Lemberg
+   * by David Turner and Werner Lemberg
    *
-   *    https://www.tug.org/TUGboat/Articles/tb24-3/lemberg.pdf
+   *   https://www.tug.org/TUGboat/Articles/tb24-3/lemberg.pdf
    *
-   *  with appropriate updates.
-   *
-   *
-   *  Segments
-   *
-   *    `af_{cjk,latin,...}_hints_compute_segments' are the functions to
-   *    find segments in an outline.
-   *
-   *    A segment is a series of at least two consecutive points that are
-   *    approximately aligned along a coordinate axis.  The analysis to do
-   *    so is specific to a writing system.
+   * with appropriate updates.
    *
    *
-   *  Edges
+   * Segments
    *
-   *    `af_{cjk,latin,...}_hints_compute_edges' are the functions to find
-   *    edges.
+   *   `af_{cjk,latin,...}_hints_compute_segments' are the functions to
+   *   find segments in an outline.
    *
-   *    As soon as segments are defined, the auto-hinter groups them into
-   *    edges.  An edge corresponds to a single position on the main
-   *    dimension that collects one or more segments (allowing for a small
-   *    threshold).
-   *
-   *    As an example, the `latin' writing system first tries to grid-fit
-   *    edges, then to align segments on the edges unless it detects that
-   *    they form a serif.
+   *   A segment is a series of at least two consecutive points that are
+   *   approximately aligned along a coordinate axis.  The analysis to do
+   *   so is specific to a writing system.
    *
    *
-   *                      A          H
-   *                       |        |
-   *                       |        |
-   *                       |        |
-   *                       |        |
-   *         C             |        |             F
-   *          +------<-----+        +-----<------+
-   *          |             B      G             |
-   *          |                                  |
-   *          |                                  |
-   *          +--------------->------------------+
-   *         D                                    E
+   * Edges
+   *
+   *   `af_{cjk,latin,...}_hints_compute_edges' are the functions to find
+   *   edges.
+   *
+   *   As soon as segments are defined, the auto-hinter groups them into
+   *   edges.  An edge corresponds to a single position on the main
+   *   dimension that collects one or more segments (allowing for a small
+   *   threshold).
+   *
+   *   As an example, the `latin' writing system first tries to grid-fit
+   *   edges, then to align segments on the edges unless it detects that
+   *   they form a serif.
    *
    *
-   *  Stems
-   *
-   *    Stems are detected by `af_{cjk,latin,...}_hint_edges'.
-   *
-   *    Segments need to be `linked' to other ones in order to detect stems.
-   *    A stem is made of two segments that face each other in opposite
-   *    directions and that are sufficiently close to each other.  Using
-   *    vocabulary from the TrueType specification, stem segments form a
-   *    `black distance'.
-   *
-   *    In the above ASCII drawing, the horizontal segments are BC, DE, and
-   *    FG; the vertical segments are AB, CD, EF, and GH.
-   *
-   *    Each segment has at most one `best' candidate to form a black
-   *    distance, or no candidate at all.  Notice that two distinct segments
-   *    can have the same candidate, which frequently means a serif.
-   *
-   *    A stem is recognized by the following condition:
-   *
-   *      best segment_1 = segment_2 && best segment_2 = segment_1
-   *
-   *    The best candidate is stored in field `link' in structure
-   *    `AF_Segment'.
-   *
-   *    In the above ASCII drawing, the best candidate for both AB and CD is
-   *    GH, while the best candidate for GH is AB.  Similarly, the best
-   *    candidate for EF and GH is AB, while the best candidate for AB is
-   *    GH.
-   *
-   *    The detection and handling of stems is dependent on the writing
-   *    system.
+   *                     A          H
+   *                      |        |
+   *                      |        |
+   *                      |        |
+   *                      |        |
+   *        C             |        |             F
+   *         +------<-----+        +-----<------+
+   *         |             B      G             |
+   *         |                                  |
+   *         |                                  |
+   *         +--------------->------------------+
+   *        D                                    E
    *
    *
-   *  Serifs
+   * Stems
    *
-   *    Serifs are detected by `af_{cjk,latin,...}_hint_edges'.
+   *   Stems are detected by `af_{cjk,latin,...}_hint_edges'.
    *
-   *    In comparison to a stem, a serif (as handled by the auto-hinter
-   *    module that takes care of the `latin' writing system) has
+   *   Segments need to be `linked' to other ones in order to detect stems.
+   *   A stem is made of two segments that face each other in opposite
+   *   directions and that are sufficiently close to each other.  Using
+   *   vocabulary from the TrueType specification, stem segments form a
+   *   `black distance'.
    *
-   *      best segment_1 = segment_2 && best segment_2 != segment_1
+   *   In the above ASCII drawing, the horizontal segments are BC, DE, and
+   *   FG; the vertical segments are AB, CD, EF, and GH.
    *
-   *    where segment_1 corresponds to the serif segment (CD and EF in the
-   *    above ASCII drawing).
+   *   Each segment has at most one `best' candidate to form a black
+   *   distance, or no candidate at all.  Notice that two distinct segments
+   *   can have the same candidate, which frequently means a serif.
    *
-   *    The best candidate is stored in field `serif' in structure
-   *    `AF_Segment' (and `link' is set to NULL).
+   *   A stem is recognized by the following condition:
    *
+   *     best segment_1 = segment_2 && best segment_2 = segment_1
    *
-   *  Touched points
+   *   The best candidate is stored in field `link' in structure
+   *   `AF_Segment'.
    *
-   *    A point is called `touched' if it has been processed somehow by the
-   *    auto-hinter.  It basically means that it shouldn't be moved again
-   *    (or moved only under certain constraints to preserve the already
-   *    applied processing).
+   *   In the above ASCII drawing, the best candidate for both AB and CD is
+   *   GH, while the best candidate for GH is AB.  Similarly, the best
+   *   candidate for EF and GH is AB, while the best candidate for AB is
+   *   GH.
    *
-   *
-   *  Flat and round segments
-   *
-   *    Segments are `round' or `flat', depending on the series of points
-   *    that define them.  A segment is round if the next and previous point
-   *    of an extremum (which can be either a single point or sequence of
-   *    points) are both conic or cubic control points.  Otherwise, a
-   *    segment with an extremum is flat.
-   *
-   *
-   *  Strong Points
-   *
-   *    Experience has shown that points not part of an edge need to be
-   *    interpolated linearly between their two closest edges, even if these
-   *    are not part of the contour of those particular points.  Typical
-   *    candidates for this are
-   *
-   *    - angle points (i.e., points where the `in' and `out' direction
-   *      differ greatly)
-   *
-   *    - inflection points (i.e., where the `in' and `out' angles are the
-   *      same, but the curvature changes sign) [currently, such points
-   *      aren't handled specially in the auto-hinter]
-   *
-   *    `af_glyph_hints_align_strong_points' is the function that takes
-   *    care of such situations; it is equivalent to the TrueType `IP'
-   *    hinting instruction.
+   *   The detection and handling of stems is dependent on the writing
+   *   system.
    *
    *
-   *  Weak Points
+   * Serifs
    *
-   *    Other points in the outline must be interpolated using the
-   *    coordinates of their previous and next unfitted contour neighbours.
-   *    These are called `weak points' and are touched by the function
-   *    `af_glyph_hints_align_weak_points', equivalent to the TrueType `IUP'
-   *    hinting instruction.  Typical candidates are control points and
-   *    points on the contour without a major direction.
+   *   Serifs are detected by `af_{cjk,latin,...}_hint_edges'.
    *
-   *    The major effect is to reduce possible distortion caused by
-   *    alignment of edges and strong points, thus weak points are processed
-   *    after strong points.
+   *   In comparison to a stem, a serif (as handled by the auto-hinter
+   *   module that takes care of the `latin' writing system) has
+   *
+   *     best segment_1 = segment_2 && best segment_2 != segment_1
+   *
+   *   where segment_1 corresponds to the serif segment (CD and EF in the
+   *   above ASCII drawing).
+   *
+   *   The best candidate is stored in field `serif' in structure
+   *   `AF_Segment' (and `link' is set to NULL).
+   *
+   *
+   * Touched points
+   *
+   *   A point is called `touched' if it has been processed somehow by the
+   *   auto-hinter.  It basically means that it shouldn't be moved again
+   *   (or moved only under certain constraints to preserve the already
+   *   applied processing).
+   *
+   *
+   * Flat and round segments
+   *
+   *   Segments are `round' or `flat', depending on the series of points
+   *   that define them.  A segment is round if the next and previous point
+   *   of an extremum (which can be either a single point or sequence of
+   *   points) are both conic or cubic control points.  Otherwise, a
+   *   segment with an extremum is flat.
+   *
+   *
+   * Strong Points
+   *
+   *   Experience has shown that points not part of an edge need to be
+   *   interpolated linearly between their two closest edges, even if these
+   *   are not part of the contour of those particular points.  Typical
+   *   candidates for this are
+   *
+   *   - angle points (i.e., points where the `in' and `out' direction
+   *     differ greatly)
+   *
+   *   - inflection points (i.e., where the `in' and `out' angles are the
+   *     same, but the curvature changes sign) [currently, such points
+   *     aren't handled specially in the auto-hinter]
+   *
+   *   `af_glyph_hints_align_strong_points' is the function that takes
+   *   care of such situations; it is equivalent to the TrueType `IP'
+   *   hinting instruction.
+   *
+   *
+   * Weak Points
+   *
+   *   Other points in the outline must be interpolated using the
+   *   coordinates of their previous and next unfitted contour neighbours.
+   *   These are called `weak points' and are touched by the function
+   *   `af_glyph_hints_align_weak_points', equivalent to the TrueType `IUP'
+   *   hinting instruction.  Typical candidates are control points and
+   *   points on the contour without a major direction.
+   *
+   *   The major effect is to reduce possible distortion caused by
+   *   alignment of edges and strong points, thus weak points are processed
+   *   after strong points.
    */
 
 
@@ -251,6 +251,12 @@ FT_BEGIN_HEADER
 
     AF_Point   next;     /* next point in contour     */
     AF_Point   prev;     /* previous point in contour */
+
+#ifdef FT_DEBUG_AUTOFIT
+    /* track `before' and `after' edges for strong points */
+    AF_Edge    before[2];
+    AF_Edge    after[2];
+#endif
 
   } AF_PointRec;
 

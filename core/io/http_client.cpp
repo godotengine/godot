@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,8 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
+	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
@@ -171,6 +173,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -226,6 +229,7 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	}
 
 	status = STATUS_REQUESTING;
+	head_request = p_method == METHOD_HEAD;
 
 	return OK;
 }
@@ -267,6 +271,7 @@ void HTTPClient::close() {
 
 	connection.unref();
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	if (resolving != IP::RESOLVER_INVALID_ID) {
 
 		IP::get_singleton()->erase_resolve_item(resolving);
@@ -278,6 +283,7 @@ void HTTPClient::close() {
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
+	chunk_trailer_part = 0;
 	read_until_eof = false;
 	response_num = 0;
 	handshaking = false;
@@ -345,6 +351,12 @@ Error HTTPClient::poll() {
 						} else {
 							// We are already handshaking, which means we can use your already active SSL connection
 							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							if (ssl.is_null()) {
+								close();
+								status = STATUS_SSL_HANDSHAKE_ERROR;
+								return ERR_CANT_CONNECT;
+							}
+
 							ssl->poll(); // Try to finish the handshake
 						}
 
@@ -421,16 +433,16 @@ Error HTTPClient::poll() {
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
+					chunk_trailer_part = false;
 					read_until_eof = false;
 					response_str.clear();
 					response_headers.clear();
 					response_num = RESPONSE_OK;
 
-					// Per the HTTP 1.1 spec, keep-alive is the default, but in practice
-					// it's safe to assume it only if the explicit header is found, allowing
-					// to handle body-up-to-EOF responses on naive servers; that's what Curl
-					// and browsers do
-					bool keep_alive = false;
+					// Per the HTTP 1.1 spec, keep-alive is the default.
+					// Not following that specification breaks standard implementations.
+					// Broken web servers should be fixed.
+					bool keep_alive = true;
 
 					for (int i = 0; i < responses.size(); i++) {
 
@@ -447,8 +459,8 @@ Error HTTPClient::poll() {
 							if (encoding == "chunked") {
 								chunked = true;
 							}
-						} else if (s.begins_with("connection: keep-alive")) {
-							keep_alive = true;
+						} else if (s.begins_with("connection: close")) {
+							keep_alive = false;
 						}
 
 						if (i == 0 && responses[i].begins_with("HTTP")) {
@@ -459,6 +471,12 @@ Error HTTPClient::poll() {
 
 							response_headers.push_back(header);
 						}
+					}
+
+					// This is a HEAD request, we wont receive anything.
+					if (head_request) {
+						body_size = 0;
+						body_left = 0;
 					}
 
 					if (body_size != -1 || chunked) {
@@ -475,8 +493,6 @@ Error HTTPClient::poll() {
 					return OK;
 				}
 			}
-			// Wait for response
-			return OK;
 		} break;
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
@@ -505,13 +521,37 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
 
+	PoolByteArray ret;
 	Error err = OK;
 
 	if (chunked) {
 
 		while (true) {
 
-			if (chunk_left == 0) {
+			if (chunk_trailer_part) {
+				// We need to consume the trailer part too or keep-alive will break
+				uint8_t b;
+				int rec = 0;
+				err = _get_http_data(&b, 1, rec);
+
+				if (rec == 0)
+					break;
+
+				chunk.push_back(b);
+				int cs = chunk.size();
+				if ((cs >= 2 && chunk[cs - 2] == '\r' && chunk[cs - 1] == '\n')) {
+					if (cs == 2) {
+						// Finally over
+						chunk_trailer_part = false;
+						status = STATUS_CONNECTED;
+						chunk.clear();
+						break;
+					} else {
+						// We do not process nor return the trailer data
+						chunk.clear();
+					}
+				}
+			} else if (chunk_left == 0) {
 				// Reading length
 				uint8_t b;
 				int rec = 0;
@@ -525,7 +565,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				if (chunk.size() > 32) {
 					ERR_PRINT("HTTP Invalid chunk hex len");
 					status = STATUS_CONNECTION_ERROR;
-					return PoolByteArray();
+					break;
 				}
 
 				if (chunk.size() > 2 && chunk[chunk.size() - 2] == '\r' && chunk[chunk.size() - 1] == '\n') {
@@ -543,22 +583,22 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 						else {
 							ERR_PRINT("HTTP Chunk len not in hex!!");
 							status = STATUS_CONNECTION_ERROR;
-							return PoolByteArray();
+							break;
 						}
 						len <<= 4;
 						len |= v;
 						if (len > (1 << 24)) {
 							ERR_PRINT("HTTP Chunk too big!! >16mb");
 							status = STATUS_CONNECTION_ERROR;
-							return PoolByteArray();
+							break;
 						}
 					}
 
 					if (len == 0) {
 						// End reached!
-						status = STATUS_CONNECTED;
+						chunk_trailer_part = true;
 						chunk.clear();
-						return PoolByteArray();
+						break;
 					}
 
 					chunk_left = len + 2;
@@ -578,18 +618,13 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					if (chunk[chunk.size() - 2] != '\r' || chunk[chunk.size() - 1] != '\n') {
 						ERR_PRINT("HTTP Invalid chunk terminator (not \\r\\n)");
 						status = STATUS_CONNECTION_ERROR;
-						return PoolByteArray();
+						break;
 					}
 
-					PoolByteArray ret;
 					ret.resize(chunk.size() - 2);
-					{
-						PoolByteArray::Write w = ret.write();
-						copymem(w.ptr(), chunk.ptr(), chunk.size() - 2);
-					}
+					PoolByteArray::Write w = ret.write();
+					copymem(w.ptr(), chunk.ptr(), chunk.size() - 2);
 					chunk.clear();
-
-					return ret;
 				}
 
 				break;
@@ -599,45 +634,26 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 	} else {
 
 		int to_read = !read_until_eof ? MIN(body_left, read_chunk_size) : read_chunk_size;
-		PoolByteArray ret;
 		ret.resize(to_read);
 		int _offset = 0;
-		while (read_until_eof || to_read > 0) {
+		while (to_read > 0) {
 			int rec = 0;
 			{
 				PoolByteArray::Write w = ret.write();
 				err = _get_http_data(w.ptr() + _offset, to_read, rec);
 			}
-			if (rec < 0) {
-				if (to_read > 0) // Ended up reading less
-					ret.resize(_offset);
+			if (rec <= 0) { // Ended up reading less
+				ret.resize(_offset);
 				break;
 			} else {
 				_offset += rec;
+				to_read -= rec;
 				if (!read_until_eof) {
 					body_left -= rec;
-					to_read -= rec;
-				} else {
-					if (rec < to_read) {
-						ret.resize(_offset);
-						err = ERR_FILE_EOF;
-						break;
-					}
-					ret.resize(_offset + to_read);
 				}
 			}
-		}
-		if (!read_until_eof) {
-			if (body_left == 0) {
-				status = STATUS_CONNECTED;
-			}
-			return ret;
-		} else {
-			if (err == ERR_FILE_EOF) {
-				err = OK; // EOF is expected here
-				close();
-				return ret;
-			}
+			if (err != OK)
+				break;
 		}
 	}
 
@@ -652,12 +668,12 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 			status = STATUS_CONNECTION_ERROR;
 		}
-	} else if (body_left == 0 && !chunked) {
+	} else if (body_left == 0 && !chunked && !read_until_eof) {
 
 		status = STATUS_CONNECTED;
 	}
 
-	return PoolByteArray();
+	return ret;
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
@@ -708,17 +724,23 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 	read_chunk_size = p_size;
 }
 
+int HTTPClient::get_read_chunk_size() const {
+	return read_chunk_size;
+}
+
 HTTPClient::HTTPClient() {
 
 	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
+	head_request = false;
 	conn_port = -1;
 	body_size = -1;
 	chunked = false;
 	body_left = 0;
 	read_until_eof = false;
 	chunk_left = 0;
+	chunk_trailer_part = false;
 	response_num = 0;
 	ssl = false;
 	blocking = false;
@@ -767,7 +789,7 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	get_response_headers(&rh);
 	Dictionary ret;
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		String s = E->get();
+		const String &s = E->get();
 		int sp = s.find(":");
 		if (sp == -1)
 			continue;
@@ -810,6 +832,7 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
 	ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
 	ClassDB::bind_method(D_METHOD("set_read_chunk_size", "bytes"), &HTTPClient::set_read_chunk_size);
+	ClassDB::bind_method(D_METHOD("get_read_chunk_size"), &HTTPClient::get_read_chunk_size);
 
 	ClassDB::bind_method(D_METHOD("set_blocking_mode", "enabled"), &HTTPClient::set_blocking_mode);
 	ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
@@ -821,6 +844,7 @@ void HTTPClient::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", 0), "set_connection", "get_connection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);
 	BIND_ENUM_CONSTANT(METHOD_HEAD);

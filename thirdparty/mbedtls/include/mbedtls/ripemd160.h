@@ -33,6 +33,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED is deprecated and should not be used.
+ */
 #define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031  /**< RIPEMD160 hardware accelerator failed */
 
 #ifdef __cplusplus
@@ -46,7 +48,7 @@ extern "C" {
 /**
  * \brief          RIPEMD-160 context structure
  */
-typedef struct
+typedef struct mbedtls_ripemd160_context
 {
     uint32_t total[2];          /*!< number of bytes processed  */
     uint32_t state[5];          /*!< intermediate digest state  */
@@ -217,12 +219,16 @@ MBEDTLS_DEPRECATED void mbedtls_ripemd160( const unsigned char *input,
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief          Checkup routine
  *
  * \return         0 if successful, or 1 if the test failed
  */
 int mbedtls_ripemd160_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

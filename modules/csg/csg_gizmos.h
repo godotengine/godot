@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ class CSGShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool is_selectable_when_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
@@ -54,7 +55,8 @@ public:
 };
 
 class EditorPluginCSG : public EditorPlugin {
-	GDCLASS(EditorPluginCSG, EditorPlugin)
+	GDCLASS(EditorPluginCSG, EditorPlugin);
+
 public:
 	EditorPluginCSG(EditorNode *p_editor);
 };

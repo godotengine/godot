@@ -1,101 +1,101 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftcglyph.h                                                             */
-/*                                                                         */
-/*    FreeType abstract glyph cache (specification).                       */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftcglyph.h
+ *
+ *   FreeType abstract glyph cache (specification).
+ *
+ * Copyright (C) 2000-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /*
    *
-   *  FTC_GCache is an _abstract_ cache object optimized to store glyph
-   *  data.  It works as follows:
+   * FTC_GCache is an _abstract_ cache object optimized to store glyph
+   * data.  It works as follows:
    *
-   *   - It manages FTC_GNode objects. Each one of them can hold one or more
-   *     glyph `items'.  Item types are not specified in the FTC_GCache but
-   *     in classes that extend it.
+   * - It manages FTC_GNode objects. Each one of them can hold one or more
+   *   glyph `items'.  Item types are not specified in the FTC_GCache but
+   *   in classes that extend it.
    *
-   *   - Glyph attributes, like face ID, character size, render mode, etc.,
-   *     can be grouped into abstract `glyph families'.  This avoids storing
-   *     the attributes within the FTC_GCache, since it is likely that many
-   *     FTC_GNodes will belong to the same family in typical uses.
+   * - Glyph attributes, like face ID, character size, render mode, etc.,
+   *   can be grouped into abstract `glyph families'.  This avoids storing
+   *   the attributes within the FTC_GCache, since it is likely that many
+   *   FTC_GNodes will belong to the same family in typical uses.
    *
-   *   - Each FTC_GNode is thus an FTC_Node with two additional fields:
+   * - Each FTC_GNode is thus an FTC_Node with two additional fields:
    *
-   *       * gindex: A glyph index, or the first index in a glyph range.
-   *       * family: A pointer to a glyph `family'.
+   *   * gindex: A glyph index, or the first index in a glyph range.
+   *   * family: A pointer to a glyph `family'.
    *
-   *   - Family types are not fully specific in the FTC_Family type, but
-   *     by classes that extend it.
+   * - Family types are not fully specific in the FTC_Family type, but
+   *   by classes that extend it.
    *
-   *  Note that both FTC_ImageCache and FTC_SBitCache extend FTC_GCache.
-   *  They share an FTC_Family sub-class called FTC_BasicFamily which is
-   *  used to store the following data: face ID, pixel/point sizes, load
-   *  flags.  For more details see the file `src/cache/ftcbasic.c'.
+   * Note that both FTC_ImageCache and FTC_SBitCache extend FTC_GCache.
+   * They share an FTC_Family sub-class called FTC_BasicFamily which is
+   * used to store the following data: face ID, pixel/point sizes, load
+   * flags.  For more details see the file `src/cache/ftcbasic.c'.
    *
-   *  Client applications can extend FTC_GNode with their own FTC_GNode
-   *  and FTC_Family sub-classes to implement more complex caches (e.g.,
-   *  handling automatic synthesis, like obliquing & emboldening, colored
-   *  glyphs, etc.).
+   * Client applications can extend FTC_GNode with their own FTC_GNode
+   * and FTC_Family sub-classes to implement more complex caches (e.g.,
+   * handling automatic synthesis, like obliquing & emboldening, colored
+   * glyphs, etc.).
    *
-   *  See also the FTC_ICache & FTC_SCache classes in `ftcimage.h' and
-   *  `ftcsbits.h', which both extend FTC_GCache with additional
-   *  optimizations.
+   * See also the FTC_ICache & FTC_SCache classes in `ftcimage.h' and
+   * `ftcsbits.h', which both extend FTC_GCache with additional
+   * optimizations.
    *
-   *  A typical FTC_GCache implementation must provide at least the
-   *  following:
+   * A typical FTC_GCache implementation must provide at least the
+   * following:
    *
-   *  - FTC_GNode sub-class, e.g. MyNode, with relevant methods:
-   *        my_node_new            (must call FTC_GNode_Init)
-   *        my_node_free           (must call FTC_GNode_Done)
-   *        my_node_compare        (must call FTC_GNode_Compare)
-   *        my_node_remove_faceid  (must call ftc_gnode_unselect in case
-   *                                of match)
+   * - FTC_GNode sub-class, e.g. MyNode, with relevant methods:
+   *     my_node_new            (must call FTC_GNode_Init)
+   *     my_node_free           (must call FTC_GNode_Done)
+   *     my_node_compare        (must call FTC_GNode_Compare)
+   *     my_node_remove_faceid  (must call ftc_gnode_unselect in case
+   *                             of match)
    *
-   *  - FTC_Family sub-class, e.g. MyFamily, with relevant methods:
-   *        my_family_compare
-   *        my_family_init
-   *        my_family_reset (optional)
-   *        my_family_done
+   * - FTC_Family sub-class, e.g. MyFamily, with relevant methods:
+   *     my_family_compare
+   *     my_family_init
+   *     my_family_reset (optional)
+   *     my_family_done
    *
-   *  - FTC_GQuery sub-class, e.g. MyQuery, to hold cache-specific query
-   *    data.
+   * - FTC_GQuery sub-class, e.g. MyQuery, to hold cache-specific query
+   *   data.
    *
-   *  - Constant structures for a FTC_GNodeClass.
+   * - Constant structures for a FTC_GNodeClass.
    *
-   *  - MyCacheNew() can be implemented easily as a call to the convenience
-   *    function FTC_GCache_New.
+   * - MyCacheNew() can be implemented easily as a call to the convenience
+   *   function FTC_GCache_New.
    *
-   *  - MyCacheLookup with a call to FTC_GCache_Lookup.  This function will
-   *    automatically:
+   * - MyCacheLookup with a call to FTC_GCache_Lookup.  This function will
+   *   automatically:
    *
-   *    - Search for the corresponding family in the cache, or create
-   *      a new one if necessary.  Put it in FTC_GQUERY(myquery).family
+   *   - Search for the corresponding family in the cache, or create
+   *     a new one if necessary.  Put it in FTC_GQUERY(myquery).family
    *
-   *    - Call FTC_Cache_Lookup.
+   *   - Call FTC_Cache_Lookup.
    *
-   *    If it returns NULL, you should create a new node, then call
-   *    ftc_cache_add as usual.
+   *   If it returns NULL, you should create a new node, then call
+   *   ftc_cache_add as usual.
    */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Important: The functions defined in this file are only used to        */
-  /*            implement an abstract glyph cache class.  You need to      */
-  /*            provide additional logic to implement a complete cache.    */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Important: The functions defined in this file are only used to
+   *            implement an abstract glyph cache class.  You need to
+   *            provide additional logic to implement a complete cache.
+   *
+   */
 
 
   /*************************************************************************/
@@ -125,11 +125,11 @@ FT_BEGIN_HEADER
 
 
  /*
-  *  We can group glyphs into `families'.  Each family correspond to a
-  *  given face ID, character size, transform, etc.
+  * We can group glyphs into `families'.  Each family correspond to a
+  * given face ID, character size, transform, etc.
   *
-  *  Families are implemented as MRU list nodes.  They are
-  *  reference-counted.
+  * Families are implemented as MRU list nodes.  They are
+  * reference-counted.
   */
 
   typedef struct  FTC_FamilyRec_
@@ -167,12 +167,12 @@ FT_BEGIN_HEADER
 #define FTC_GQUERY( x )  ( (FTC_GQuery)(x) )
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* These functions are exported so that they can be called from          */
-  /* user-provided cache classes; otherwise, they are really part of the   */
-  /* cache sub-system internals.                                           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * These functions are exported so that they can be called from
+   * user-provided cache classes; otherwise, they are really part of the
+   * cache sub-system internals.
+   */
 
   /* must be called by derived FTC_Node_InitFunc routines */
   FT_LOCAL( void )

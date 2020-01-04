@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttinterp.h                                                             */
-/*                                                                         */
-/*    TrueType bytecode interpreter (specification).                       */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttinterp.h
+ *
+ *   TrueType bytecode interpreter (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTINTERP_H_
@@ -26,10 +26,10 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Rounding mode constants.                                              */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Rounding mode constants.
+   */
 #define TT_Round_Off             5
 #define TT_Round_To_Half_Grid    0
 #define TT_Round_To_Grid         1
@@ -40,13 +40,13 @@ FT_BEGIN_HEADER
 #define TT_Round_Super_45        7
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Function types used by the interpreter, depending on various modes    */
-  /* (e.g. the rounding mode, whether to render a vertical or horizontal   */
-  /* line etc).                                                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Function types used by the interpreter, depending on various modes
+   * (e.g. the rounding mode, whether to render a vertical or horizontal
+   * line etc).
+   *
+   */
 
   /* Rounding function */
   typedef FT_F26Dot6
@@ -84,10 +84,10 @@ FT_BEGIN_HEADER
                       FT_F26Dot6      value );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This structure defines a call record, used to manage function calls.  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * This structure defines a call record, used to manage function calls.
+   */
   typedef struct  TT_CallRec_
   {
     FT_Int   Caller_Range;
@@ -101,11 +101,11 @@ FT_BEGIN_HEADER
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* These structures define rules used to tweak subpixel hinting for      */
-  /* various fonts.  "", 0, "", NULL value indicates to match any value.   */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * These structures define rules used to tweak subpixel hinting for
+   * various fonts.  "", 0, "", NULL value indicates to match any value.
+   */
 
 #define SPH_MAX_NAME_SIZE      32
 #define SPH_MAX_CLASS_MEMBERS  100
@@ -141,11 +141,11 @@ FT_BEGIN_HEADER
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The main structure for the interpreter which collects all necessary   */
-  /* variables and states.                                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The main structure for the interpreter which collects all necessary
+   * variables and states.
+   */
   typedef struct  TT_ExecContextRec_
   {
     TT_Face            face;
@@ -352,7 +352,7 @@ FT_BEGIN_HEADER
      *     https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
      *
      * [3] Beat Stamm describes it in more detail:
-     *     http://www.beatstamm.com/typography/RTRCh4.htm#Sec12
+     *     http://rastertragedy.com/RTRCh4.htm#Sec12.
      *
      * [4] The list of `native ClearType' fonts is small at the time of this
      *     writing; I found the following on a Windows 10 Update 1511
@@ -464,26 +464,27 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    TT_New_Context                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Queries the face context for a given font.  Note that there is     */
-  /*    now a _single_ execution context in the TrueType driver which is   */
-  /*    shared among faces.                                                */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face :: A handle to the source face object.                        */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    A handle to the execution context.  Initialized for `face'.        */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Only the glyph loader and debugger should call this function.      */
-  /*    (And right now only the glyph loader uses it.)                     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   TT_New_Context
+   *
+   * @Description:
+   *   Queries the face context for a given font.  Note that there is
+   *   now a _single_ execution context in the TrueType driver which is
+   *   shared among faces.
+   *
+   * @Input:
+   *   face ::
+   *     A handle to the source face object.
+   *
+   * @Return:
+   *   A handle to the execution context.  Initialized for `face'.
+   *
+   * @Note:
+   *   Only the glyph loader and debugger should call this function.
+   *   (And right now only the glyph loader uses it.)
+   */
   FT_EXPORT( TT_ExecContext )
   TT_New_Context( TT_Driver  driver );
 
@@ -506,27 +507,28 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    TT_RunIns                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Executes one or more instruction in the execution context.  This   */
-  /*    is the main function of the TrueType opcode interpreter.           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    exec :: A handle to the target execution context.                  */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Only the object manager and debugger should call this function.    */
-  /*                                                                       */
-  /*    This function is publicly exported because it is directly          */
-  /*    invoked by the TrueType debugger.                                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   TT_RunIns
+   *
+   * @Description:
+   *   Executes one or more instruction in the execution context.  This
+   *   is the main function of the TrueType opcode interpreter.
+   *
+   * @Input:
+   *   exec ::
+   *     A handle to the target execution context.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   *
+   * @Note:
+   *   Only the object manager and debugger should call this function.
+   *
+   *   This function is publicly exported because it is directly
+   *   invoked by the TrueType debugger.
+   */
   FT_EXPORT( FT_Error )
   TT_RunIns( TT_ExecContext  exec );
 

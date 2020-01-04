@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,18 @@
 
 CSGShapeSpatialGizmoPlugin::CSGShapeSpatialGizmoPlugin() {
 
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.2, 0.5, 1, 0.1));
-	create_material("shape_material", gizmo_color);
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.0, 0.4, 1, 0.15));
+	create_material("shape_union_material", gizmo_color);
+	create_material("shape_union_solid_material", gizmo_color);
+	gizmo_color.invert();
+	create_material("shape_subtraction_material", gizmo_color);
+	create_material("shape_subtraction_solid_material", gizmo_color);
+	gizmo_color.r = 0.95;
+	gizmo_color.g = 0.95;
+	gizmo_color.b = 0.95;
+	create_material("shape_intersection_material", gizmo_color);
+	create_material("shape_intersection_solid_material", gizmo_color);
+
 	create_handle_material("handles");
 }
 
@@ -120,6 +130,10 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
 		float d = ra.x;
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
+
 		if (d < 0.001)
 			d = 0.001;
 
@@ -135,6 +149,10 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
+
 		if (d < 0.001)
 			d = 0.001;
 
@@ -154,6 +172,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
 
 		if (d < 0.001)
 			d = 0.001;
@@ -173,6 +194,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+		}
 
 		if (d < 0.001)
 			d = 0.001;
@@ -283,6 +307,10 @@ String CSGShapeSpatialGizmoPlugin::get_name() const {
 	return "CSGShapes";
 }
 
+int CSGShapeSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 bool CSGShapeSpatialGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
@@ -293,7 +321,19 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Ref<Material> material = get_material("shape_material", p_gizmo);
+	Ref<Material> material;
+	switch (cs->get_operation()) {
+		case CSGShape::OPERATION_UNION:
+			material = get_material("shape_union_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_INTERSECTION:
+			material = get_material("shape_intersection_material", p_gizmo);
+			break;
+		case CSGShape::OPERATION_SUBTRACTION:
+			material = get_material("shape_subtraction_material", p_gizmo);
+			break;
+	}
+
 	Ref<Material> handles_material = get_material("handles");
 
 	PoolVector<Vector3> faces = cs->get_brush_faces();
@@ -315,6 +355,30 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
+
+	if (p_gizmo->is_selected()) {
+		// Draw a translucent representation of the CSG node
+		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+		array[Mesh::ARRAY_VERTEX] = faces;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
+
+		Ref<Material> solid_material;
+		switch (cs->get_operation()) {
+			case CSGShape::OPERATION_UNION:
+				solid_material = get_material("shape_union_solid_material", p_gizmo);
+				break;
+			case CSGShape::OPERATION_INTERSECTION:
+				solid_material = get_material("shape_intersection_solid_material", p_gizmo);
+				break;
+			case CSGShape::OPERATION_SUBTRACTION:
+				solid_material = get_material("shape_subtraction_solid_material", p_gizmo);
+				break;
+		}
+
+		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), solid_material);
+	}
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 		CSGSphere *s = Object::cast_to<CSGSphere>(cs);
@@ -356,5 +420,5 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 EditorPluginCSG::EditorPluginCSG(EditorNode *p_editor) {
 	Ref<CSGShapeSpatialGizmoPlugin> gizmo_plugin = Ref<CSGShapeSpatialGizmoPlugin>(memnew(CSGShapeSpatialGizmoPlugin));
-	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
+	SpatialEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }

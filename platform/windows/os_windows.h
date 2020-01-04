@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,17 @@
 
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
-#include "context_gl_win.h"
+
+#include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "crash_handler_win.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "crash_handler_windows.h"
+#include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/win_midi.h"
+#include "drivers/winmidi/midi_driver_winmidi.h"
+#include "key_mapping_windows.h"
+#include "main/input_default.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -45,9 +48,6 @@
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
-#include "drivers/unix/ip_unix.h"
-#include "key_mapping_win.h"
-#include "main/input_default.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -55,17 +55,102 @@
 #include <windows.h>
 #include <windowsx.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#ifndef POINTER_STRUCTURES
+
+#define POINTER_STRUCTURES
+
+typedef DWORD POINTER_INPUT_TYPE;
+typedef UINT32 POINTER_FLAGS;
+typedef UINT32 PEN_FLAGS;
+typedef UINT32 PEN_MASK;
+
+enum tagPOINTER_INPUT_TYPE {
+	PT_POINTER = 0x00000001,
+	PT_TOUCH = 0x00000002,
+	PT_PEN = 0x00000003,
+	PT_MOUSE = 0x00000004,
+	PT_TOUCHPAD = 0x00000005
+};
+
+typedef enum tagPOINTER_BUTTON_CHANGE_TYPE {
+	POINTER_CHANGE_NONE,
+	POINTER_CHANGE_FIRSTBUTTON_DOWN,
+	POINTER_CHANGE_FIRSTBUTTON_UP,
+	POINTER_CHANGE_SECONDBUTTON_DOWN,
+	POINTER_CHANGE_SECONDBUTTON_UP,
+	POINTER_CHANGE_THIRDBUTTON_DOWN,
+	POINTER_CHANGE_THIRDBUTTON_UP,
+	POINTER_CHANGE_FOURTHBUTTON_DOWN,
+	POINTER_CHANGE_FOURTHBUTTON_UP,
+	POINTER_CHANGE_FIFTHBUTTON_DOWN,
+	POINTER_CHANGE_FIFTHBUTTON_UP,
+} POINTER_BUTTON_CHANGE_TYPE;
+
+typedef struct tagPOINTER_INFO {
+	POINTER_INPUT_TYPE pointerType;
+	UINT32 pointerId;
+	UINT32 frameId;
+	POINTER_FLAGS pointerFlags;
+	HANDLE sourceDevice;
+	HWND hwndTarget;
+	POINT ptPixelLocation;
+	POINT ptHimetricLocation;
+	POINT ptPixelLocationRaw;
+	POINT ptHimetricLocationRaw;
+	DWORD dwTime;
+	UINT32 historyCount;
+	INT32 InputData;
+	DWORD dwKeyStates;
+	UINT64 PerformanceCount;
+	POINTER_BUTTON_CHANGE_TYPE ButtonChangeType;
+} POINTER_INFO;
+
+typedef struct tagPOINTER_PEN_INFO {
+	POINTER_INFO pointerInfo;
+	PEN_FLAGS penFlags;
+	PEN_MASK penMask;
+	UINT32 pressure;
+	UINT32 rotation;
+	INT32 tiltX;
+	INT32 tiltY;
+} POINTER_PEN_INFO;
+
+#endif
+
+typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
+typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
+
+typedef struct {
+	BYTE bWidth; // Width, in pixels, of the image
+	BYTE bHeight; // Height, in pixels, of the image
+	BYTE bColorCount; // Number of colors in image (0 if >=8bpp)
+	BYTE bReserved; // Reserved ( must be 0)
+	WORD wPlanes; // Color Planes
+	WORD wBitCount; // Bits per pixel
+	DWORD dwBytesInRes; // How many bytes in this resource?
+	DWORD dwImageOffset; // Where in the file is this image?
+} ICONDIRENTRY, *LPICONDIRENTRY;
+
+typedef struct {
+	WORD idReserved; // Reserved (must be 0)
+	WORD idType; // Resource Type (1 for icons)
+	WORD idCount; // How many images?
+	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
+} ICONDIR, *LPICONDIR;
+
 class JoypadWindows;
 class OS_Windows : public OS {
+
+	static GetPointerTypePtr win8p_GetPointerType;
+	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 
+#ifdef STDOUT_FILE
 	FILE *stdo;
+#endif
 
 	struct KeyEvent {
 
@@ -86,11 +171,10 @@ class OS_Windows : public OS {
 	int old_x, old_y;
 	Point2i center;
 #if defined(OPENGL_ENABLED)
-	ContextGL_Win *gl_context;
+	ContextGL_Windows *gl_context;
 #endif
 	VisualServer *visual_server;
 	int pressrc;
-	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
 	Point2 last_pos;
@@ -104,6 +188,9 @@ class OS_Windows : public OS {
 	uint32_t move_timer_id;
 
 	HCURSOR hCursor;
+
+	Size2 min_size;
+	Size2 max_size;
 
 	Size2 window_rect;
 	VideoMode video_mode;
@@ -127,9 +214,11 @@ class OS_Windows : public OS {
 	bool window_has_focus;
 	uint32_t last_button_state;
 	bool use_raw_input;
+	bool drop_events;
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 	JoypadWindows *joypad;
@@ -140,9 +229,6 @@ class OS_Windows : public OS {
 	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
-#endif
-#ifdef RTAUDIO_ENABLED
-	AudioDriverRtAudio driver_rtaudio;
 #endif
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;
@@ -156,7 +242,7 @@ class OS_Windows : public OS {
 	void _drag_event(float p_x, float p_y, int idx);
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
-	void _update_window_style(bool repaint = true);
+	void _update_window_style(bool p_repaint = true, bool p_maximized = false);
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
@@ -188,6 +274,8 @@ protected:
 	bool maximized;
 	bool minimized;
 	bool borderless;
+	bool console_visible;
+	bool was_maximized;
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -200,6 +288,7 @@ public:
 
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
+	void update_real_mouse_position();
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
@@ -218,6 +307,10 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -229,6 +322,8 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual void set_console_visible(bool p_enabled);
+	virtual bool is_console_visible() const;
 	virtual void request_attention();
 
 	virtual void set_borderless_window(bool p_borderless);
@@ -247,13 +342,14 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
+	virtual uint64_t get_system_time_msecs() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String &p_cwd);
@@ -261,19 +357,23 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
+	virtual bool set_environment(const String &p_var, const String &p_value) const;
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
 
 	void set_cursor_shape(CursorShape p_shape);
+	CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
+
+	void set_native_icon(const String &p_filename);
 	void set_icon(const Ref<Image> &p_icon);
 
 	virtual String get_executable_path() const;
@@ -329,6 +429,8 @@ public:
 	void force_process_input();
 
 	virtual Error move_to_trash(const String &p_path);
+
+	virtual void process_and_drop_events();
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

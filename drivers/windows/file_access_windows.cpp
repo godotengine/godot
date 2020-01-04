@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include <shlwapi.h>
 #include <windows.h>
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
@@ -93,9 +94,9 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	// a file using the wrong case (which *works* on Windows, but won't on other
 	// platforms).
 	if (p_mode_flags == READ) {
-		WIN32_FIND_DATAW d = { 0 };
+		WIN32_FIND_DATAW d;
 		HANDLE f = FindFirstFileW(path.c_str(), &d);
-		if (f) {
+		if (f != INVALID_HANDLE_VALUE) {
 			String fname = d.cFileName;
 			if (fname != String()) {
 
@@ -114,17 +115,25 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	_wfopen_s(&f, path.c_str(), mode_string);
+	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
 
 	if (f == NULL) {
-		last_error = ERR_FILE_CANT_OPEN;
-		return ERR_FILE_CANT_OPEN;
+		switch (errcode) {
+			case ENOENT: {
+				last_error = ERR_FILE_NOT_FOUND;
+			} break;
+			default: {
+				last_error = ERR_FILE_CANT_OPEN;
+			} break;
+		}
+		return last_error;
 	} else {
 		last_error = OK;
 		flags = p_mode_flags;
 		return OK;
 	}
 }
+
 void FileAccessWindows::close() {
 
 	if (!f)
@@ -167,13 +176,11 @@ void FileAccessWindows::close() {
 			if (close_fail_notify) {
 				close_fail_notify(save_path);
 			}
-
-			ERR_EXPLAIN("Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 		}
 
 		save_path = "";
 
-		ERR_FAIL_COND(rename_error);
+		ERR_FAIL_COND_MSG(rename_error, "Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 	}
 }
 
@@ -197,12 +204,14 @@ void FileAccessWindows::seek(size_t p_position) {
 	last_error = OK;
 	if (fseek(f, p_position, SEEK_SET))
 		check_errors();
+	prev_op = 0;
 }
 void FileAccessWindows::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!f);
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
+	prev_op = 0;
 }
 size_t FileAccessWindows::get_position() const {
 
@@ -234,6 +243,12 @@ bool FileAccessWindows::eof_reached() const {
 uint8_t FileAccessWindows::get_8() const {
 
 	ERR_FAIL_COND_V(!f, 0);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
@@ -246,6 +261,12 @@ uint8_t FileAccessWindows::get_8() const {
 int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
 
 	ERR_FAIL_COND_V(!f, -1);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
@@ -260,17 +281,35 @@ void FileAccessWindows::flush() {
 
 	ERR_FAIL_COND(!f);
 	fflush(f);
+	if (prev_op == WRITE)
+		prev_op = 0;
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
 	fwrite(&p_dest, 1, 1, f);
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 	ERR_FAIL_COND(!f);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != (size_t)p_length);
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
@@ -302,14 +341,22 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 
 		return st.st_mtime;
 	} else {
-		ERR_EXPLAIN("Failed to get modified time for: " + file);
-		ERR_FAIL_V(0);
+		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
 	}
+}
+
+uint32_t FileAccessWindows::_get_unix_permissions(const String &p_file) {
+	return 0;
+}
+
+Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	return ERR_UNAVAILABLE;
 }
 
 FileAccessWindows::FileAccessWindows() :
 		f(NULL),
 		flags(0),
+		prev_op(0),
 		last_error(OK) {
 }
 FileAccessWindows::~FileAccessWindows() {

@@ -1,39 +1,39 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pshints.c                                                              */
-/*                                                                         */
-/*    Adobe's code for handling CFF hints (body).                          */
-/*                                                                         */
-/*  Copyright 2007-2014 Adobe Systems Incorporated.                        */
-/*                                                                         */
-/*  This software, and all works of authorship, whether in source or       */
-/*  object code form as indicated by the copyright notice(s) included      */
-/*  herein (collectively, the "Work") is made available, and may only be   */
-/*  used, modified, and distributed under the FreeType Project License,    */
-/*  LICENSE.TXT.  Additionally, subject to the terms and conditions of the */
-/*  FreeType Project License, each contributor to the Work hereby grants   */
-/*  to any individual or legal entity exercising permissions granted by    */
-/*  the FreeType Project License and this section (hereafter, "You" or     */
-/*  "Your") a perpetual, worldwide, non-exclusive, no-charge,              */
-/*  royalty-free, irrevocable (except as stated in this section) patent    */
-/*  license to make, have made, use, offer to sell, sell, import, and      */
-/*  otherwise transfer the Work, where such license applies only to those  */
-/*  patent claims licensable by such contributor that are necessarily      */
-/*  infringed by their contribution(s) alone or by combination of their    */
-/*  contribution(s) with the Work to which such contribution(s) was        */
-/*  submitted.  If You institute patent litigation against any entity      */
-/*  (including a cross-claim or counterclaim in a lawsuit) alleging that   */
-/*  the Work or a contribution incorporated within the Work constitutes    */
-/*  direct or contributory patent infringement, then any patent licenses   */
-/*  granted to You under this License for that Work shall terminate as of  */
-/*  the date such litigation is filed.                                     */
-/*                                                                         */
-/*  By using, modifying, or distributing the Work you indicate that you    */
-/*  have read and understood the terms and conditions of the               */
-/*  FreeType Project License as well as those provided in this section,    */
-/*  and you accept them fully.                                             */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pshints.c
+ *
+ *   Adobe's code for handling CFF hints (body).
+ *
+ * Copyright 2007-2014 Adobe Systems Incorporated.
+ *
+ * This software, and all works of authorship, whether in source or
+ * object code form as indicated by the copyright notice(s) included
+ * herein (collectively, the "Work") is made available, and may only be
+ * used, modified, and distributed under the FreeType Project License,
+ * LICENSE.TXT.  Additionally, subject to the terms and conditions of the
+ * FreeType Project License, each contributor to the Work hereby grants
+ * to any individual or legal entity exercising permissions granted by
+ * the FreeType Project License and this section (hereafter, "You" or
+ * "Your") a perpetual, worldwide, non-exclusive, no-charge,
+ * royalty-free, irrevocable (except as stated in this section) patent
+ * license to make, have made, use, offer to sell, sell, import, and
+ * otherwise transfer the Work, where such license applies only to those
+ * patent claims licensable by such contributor that are necessarily
+ * infringed by their contribution(s) alone or by combination of their
+ * contribution(s) with the Work to which such contribution(s) was
+ * submitted.  If You institute patent litigation against any entity
+ * (including a cross-claim or counterclaim in a lawsuit) alleging that
+ * the Work or a contribution incorporated within the Work constitutes
+ * direct or contributory patent infringement, then any patent licenses
+ * granted to You under this License for that Work shall terminate as of
+ * the date such litigation is filed.
+ *
+ * By using, modifying, or distributing the Work you indicate that you
+ * have read and understood the terms and conditions of the
+ * FreeType Project License as well as those provided in this section,
+ * and you accept them fully.
+ *
+ */
 
 
 #include "psft.h"
@@ -45,14 +45,14 @@
 #include "psintrp.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cf2hints
+#define FT_COMPONENT  cf2hints
 
 
   typedef struct  CF2_HintMoveRec_
@@ -217,52 +217,49 @@
   FT_LOCAL_DEF( FT_Bool )
   cf2_hint_isValid( const CF2_Hint  hint )
   {
-    return (FT_Bool)( hint->flags != 0 );
+    return FT_BOOL( hint->flags );
   }
 
 
   static FT_Bool
   cf2_hint_isPair( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags                      &
-                        ( CF2_PairBottom | CF2_PairTop ) ) != 0 );
+    return FT_BOOL( hint->flags & ( CF2_PairBottom | CF2_PairTop ) );
   }
 
 
   static FT_Bool
   cf2_hint_isPairTop( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags & CF2_PairTop ) != 0 );
+    return FT_BOOL( hint->flags & CF2_PairTop );
   }
 
 
   FT_LOCAL_DEF( FT_Bool )
   cf2_hint_isTop( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags                    &
-                        ( CF2_PairTop | CF2_GhostTop ) ) != 0 );
+    return FT_BOOL( hint->flags & ( CF2_PairTop | CF2_GhostTop ) );
   }
 
 
   FT_LOCAL_DEF( FT_Bool )
   cf2_hint_isBottom( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags                          &
-                        ( CF2_PairBottom | CF2_GhostBottom ) ) != 0 );
+    return FT_BOOL( hint->flags & ( CF2_PairBottom | CF2_GhostBottom ) );
   }
 
 
   static FT_Bool
   cf2_hint_isLocked( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags & CF2_Locked ) != 0 );
+    return FT_BOOL( hint->flags & CF2_Locked );
   }
 
 
   static FT_Bool
   cf2_hint_isSynthetic( const CF2_Hint  hint )
   {
-    return (FT_Bool)( ( hint->flags & CF2_Synthetic ) != 0 );
+    return FT_BOOL( hint->flags & CF2_Synthetic );
   }
 
 
@@ -334,7 +331,7 @@
   cf2_hintmap_map( CF2_HintMap  hintmap,
                    CF2_Fixed    csCoord )
   {
-    if ( hintmap->count == 0 || ! hintmap->hinted )
+    if ( hintmap->count == 0 || !hintmap->hinted )
     {
       /* there are no hints; use uniform scale and zero offset */
       return FT_MulFix( csCoord, hintmap->scale );
@@ -497,7 +494,7 @@
           {
             move     = moveDown;
             /* true if non-optimum move */
-            saveEdge = (FT_Bool)( moveUp < -moveDown );
+            saveEdge = FT_BOOL( moveUp < -moveDown );
           }
           else
           {
@@ -1025,10 +1022,10 @@
       }
     }
 
-    FT_TRACE6(( initialMap ? "flags: [p]air [g]host [t]op "
-                             "[b]ottom [L]ocked [S]ynthetic\n"
-                             "Initial hintmap\n"
-                           : "Hints:\n" ));
+    FT_TRACE6(( "%s\n", initialMap ? "flags: [p]air [g]host [t]op"
+                                     " [b]ottom [L]ocked [S]ynthetic\n"
+                                     "Initial hintmap"
+                                   : "Hints:" ));
     cf2_hintmap_dump( hintmap );
 
     /*
@@ -1215,7 +1212,7 @@
      * (`u').
      *
      * See notation in
-     * http://softsurfer.com/Archive/algorithm_0104/algorithm_0104B.htm.
+     * http://geomalgorithms.com/a05-_intersect-1.html.
      * Calculations are done in 16.16, but must handle the squaring of
      * line lengths in character space.  We scale all vectors by 1/32 to
      * avoid overflow.  This allows values up to 4095 to be squared.  The

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,14 @@
 #include "core/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
+#include "editor_feature_profile.h"
 #include "editor_help.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -93,14 +95,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-
-		Size2 popup_size = Size2(900, 700) * editor_get_scale();
-		Size2 window_size = get_viewport_rect().size;
-
-		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-		popup_centered(popup_size);
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
 
 	if (p_dont_clear) {
@@ -113,21 +108,10 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 
 	_update_search();
 
-	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-	if (enable_rl) {
-		search_options->add_constant_override("draw_relationship_lines", 1);
-		search_options->add_color_override("relationship_line_color", rl_color);
-		search_options->add_constant_override("draw_guides", 0);
-	} else {
-		search_options->add_constant_override("draw_relationship_lines", 0);
-		search_options->add_constant_override("draw_guides", 1);
-	}
-
 	is_replace_mode = p_replace_mode;
 
 	if (p_replace_mode) {
+		select_type(p_select_type);
 		set_title(vformat(TTR("Change %s Type"), base_type));
 		get_ok()->set_text(TTR("Change"));
 	} else {
@@ -169,6 +153,10 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		if (!ClassDB::is_parent_class(p_type, base_type))
 			return;
 	} else {
+		if (!search_loaded_scripts.has(p_type)) {
+			search_loaded_scripts[p_type] = ed.script_class_load_script(p_type);
+		}
+
 		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type))
 			return;
 
@@ -208,25 +196,44 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	if (!can_instance) {
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
-	} else {
-		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
-		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
-		to_select_type = to_select_type.split(" ")[0];
-		bool current_item_is_preferred;
-		if (cpp_type) {
-			String cpp_to_select_type = to_select_type;
-			if (ScriptServer::is_global_class(to_select_type))
-				cpp_to_select_type = ScriptServer::get_global_class_base(to_select_type);
-			current_item_is_preferred = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(cpp_to_select_type, preferred_search_result_type);
-		} else {
-			current_item_is_preferred = ed.script_class_is_parent(p_type, preferred_search_result_type) && !ed.script_class_is_parent(to_select_type, preferred_search_result_type) && search_box->get_text() != to_select_type;
-		}
-		if (*to_select && p_type.length() < (*to_select)->get_text(0).length()) {
-			current_item_is_preferred = true;
-		}
+	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
+		String search_term = search_box->get_text().to_lower();
 
-		if (((!*to_select || current_item_is_preferred) && is_search_subsequence) || search_box->get_text() == p_type) {
+		// if the node name matches exactly as the search, the node should be selected.
+		// this also fixes when the user clicks on recent nodes.
+		if (p_type.to_lower() == search_term) {
 			*to_select = item;
+		} else {
+			bool current_type_prefered = _is_type_prefered(p_type);
+			bool selected_type_prefered = *to_select ? _is_type_prefered((*to_select)->get_text(0).split(" ")[0]) : false;
+
+			bool is_subsequence_of_type = search_box->get_text().is_subsequence_ofi(p_type);
+			bool is_substring_of_type = p_type.to_lower().find(search_term) >= 0;
+			bool is_substring_of_selected = false;
+			bool is_subsequence_of_selected = false;
+			bool is_selected_equal = false;
+
+			if (*to_select) {
+				String name = (*to_select)->get_text(0).split(" ")[0].to_lower();
+				is_substring_of_selected = name.find(search_term) >= 0;
+				is_subsequence_of_selected = search_term.is_subsequence_of(name);
+				is_selected_equal = name == search_term;
+			}
+
+			if (is_subsequence_of_type && !is_selected_equal) {
+				if (is_substring_of_type) {
+					if (!is_substring_of_selected || (current_type_prefered && !selected_type_prefered)) {
+						*to_select = item;
+					}
+				} else {
+					// substring results weigh more than subsequences, so let's make sure we don't override them
+					if (!is_substring_of_selected) {
+						if (!is_subsequence_of_selected || (current_type_prefered && !selected_type_prefered)) {
+							*to_select = item;
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -250,18 +257,65 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	p_types[p_type] = item;
 }
 
-void CreateDialog::_update_search() {
+bool CreateDialog::_is_type_prefered(const String &type) {
+	bool cpp_type = ClassDB::class_exists(type);
+	EditorData &ed = EditorNode::get_editor_data();
 
+	if (cpp_type) {
+		return ClassDB::is_parent_class(type, preferred_search_result_type);
+	}
+	return ed.script_class_is_parent(type, preferred_search_result_type);
+}
+
+bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_class) {
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = p_class;
+
+	while (class_name != StringName()) {
+
+		if (profile->is_class_disabled(class_name)) {
+			return true;
+		}
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+
+	return false;
+}
+
+void CreateDialog::select_type(const String &p_type) {
+
+	TreeItem *to_select;
+	if (search_options_types.has(p_type)) {
+		to_select = search_options_types[p_type];
+	} else {
+		to_select = search_options->get_root();
+	}
+
+	// uncollapse from selected type to top level
+	// TODO: should this be in tree?
+	TreeItem *cur = to_select;
+	while (cur) {
+		cur->set_collapsed(false);
+		cur = cur->get_parent();
+	}
+
+	to_select->select(0);
+
+	search_options->scroll_to_item(to_select);
+}
+
+void CreateDialog::_update_search() {
 	search_options->clear();
 	favorite->set_disabled(true);
 
 	help_bit->set_text("");
-	/*
-	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
-*/
 
-	HashMap<String, TreeItem *> types;
+	search_options_types.clear();
 
 	TreeItem *root = search_options->create_item();
 	EditorData &ed = EditorNode::get_editor_data();
@@ -276,6 +330,10 @@ void CreateDialog::_update_search() {
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 
 		String type = I->get();
+
+		if (_is_class_disabled_by_feature_profile(type)) {
+			continue;
+		}
 		bool cpp_type = ClassDB::class_exists(type);
 
 		if (base_type == "Node" && type.begins_with("Editor"))
@@ -284,8 +342,9 @@ void CreateDialog::_update_search() {
 		if (cpp_type && !ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 
-		bool skip = false;
 		if (cpp_type) {
+			bool skip = false;
+
 			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
 				if (ClassDB::is_parent_class(type, E->get()))
 					skip = true;
@@ -295,23 +354,33 @@ void CreateDialog::_update_search() {
 		}
 
 		if (search_box->get_text() == "") {
-			add_type(type, types, root, &to_select);
+			add_type(type, search_options_types, root, &to_select);
 		} else {
 
 			bool found = false;
-			String type = I->get();
-			while (type != "" && (cpp_type ? ClassDB::is_parent_class(type, base_type) : ed.script_class_is_parent(type, base_type)) && type != base_type) {
-				if (search_box->get_text().is_subsequence_ofi(type)) {
+			String type2 = type;
+
+			if (!cpp_type && !search_loaded_scripts.has(type)) {
+				search_loaded_scripts[type] = ed.script_class_load_script(type);
+			}
+
+			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
+				if (search_box->get_text().is_subsequence_ofi(type2)) {
 
 					found = true;
 					break;
 				}
 
-				type = cpp_type ? ClassDB::get_parent_class(type) : ed.script_class_get_base(type);
+				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+
+				if (!cpp_type && !search_loaded_scripts.has(type2)) {
+					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
+				}
 			}
 
-			if (found)
-				add_type(I->get(), types, root, &to_select);
+			if (found) {
+				add_type(type, search_options_types, root, &to_select);
+			}
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -325,12 +394,12 @@ void CreateDialog::_update_search() {
 				if (!show)
 					continue;
 
-				if (!types.has(type))
-					add_type(type, types, root, &to_select);
+				if (!search_options_types.has(type))
+					add_type(type, search_options_types, root, &to_select);
 
 				TreeItem *ti;
-				if (types.has(type))
-					ti = types[type];
+				if (search_options_types.has(type))
+					ti = search_options_types[type];
 				else
 					ti = search_options->get_root();
 
@@ -417,6 +486,7 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", get_rect());
+			search_loaded_scripts.clear();
 		} break;
 	}
 }
@@ -706,9 +776,11 @@ CreateDialog::CreateDialog() {
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
+	favorites->set_allow_reselect(true);
 	favorites->connect("cell_selected", this, "_favorite_selected");
 	favorites->connect("item_activated", this, "_favorite_activated");
 	favorites->set_drag_forwarding(this);
+	favorites->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -719,8 +791,10 @@ CreateDialog::CreateDialog() {
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_hide_root(true);
 	recent->set_hide_folding(true);
+	recent->set_allow_reselect(true);
 	recent->connect("cell_selected", this, "_history_selected");
 	recent->connect("item_activated", this, "_history_activated");
+	recent->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	hsc->add_child(vbc);
@@ -754,6 +828,4 @@ CreateDialog::CreateDialog() {
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
-
-	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
 }

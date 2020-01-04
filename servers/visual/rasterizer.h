@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,12 @@ public:
 	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg) = 0;
 	virtual void environment_set_sky(RID p_env, RID p_sky) = 0;
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
+	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) = 0;
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) = 0;
@@ -140,6 +142,7 @@ public:
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
+	virtual bool light_instances_can_render_shadow_cube() const { return true; }
 
 	virtual RID reflection_atlas_create() = 0;
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size) = 0;
@@ -202,6 +205,7 @@ public:
 	virtual uint32_t texture_get_height(RID p_texture) const = 0;
 	virtual uint32_t texture_get_depth(RID p_texture) const = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) = 0;
+	virtual void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -219,6 +223,7 @@ public:
 	virtual void textures_keep_original(bool p_enable) = 0;
 
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
+	virtual Size2 texture_size_with_proxy(RID p_texture) const = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	/* SKY API */
@@ -369,6 +374,7 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
+	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) = 0;
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) = 0;
@@ -388,6 +394,7 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const = 0;
 	virtual float light_get_param(RID p_light, VS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
+	virtual bool light_get_use_gi(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
 	/* PROBE API */
@@ -544,12 +551,15 @@ public:
 		RENDER_TARGET_NO_SAMPLING,
 		RENDER_TARGET_HDR,
 		RENDER_TARGET_KEEP_3D_LINEAR,
+		RENDER_TARGET_DIRECT_TO_SCREEN,
 		RENDER_TARGET_FLAG_MAX
 	};
 
 	virtual RID render_target_create() = 0;
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height) = 0;
 	virtual RID render_target_get_texture(RID p_render_target) const = 0;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;
 	virtual void render_target_clear_used(RID p_render_target) = 0;
@@ -655,7 +665,7 @@ public:
 			next_ptr = NULL;
 			mask_next_ptr = NULL;
 			filter_next_ptr = NULL;
-			shadow_buffer_size = 256;
+			shadow_buffer_size = 2048;
 			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;
@@ -772,6 +782,7 @@ public:
 			RID normal_map;
 			int count;
 			bool antialiased;
+			bool antialiasing_use_indices;
 
 			CommandPolygon() {
 				type = TYPE_POLYGON;
@@ -784,6 +795,8 @@ public:
 			RID mesh;
 			RID texture;
 			RID normal_map;
+			Transform2D transform;
+			Color modulate;
 			CommandMesh() { type = TYPE_MESH; }
 		};
 
@@ -867,7 +880,7 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || !rect_dirty)
+			if (custom_rect || (!rect_dirty && !update_when_visible))
 				return rect;
 
 			//must update rect
@@ -937,9 +950,8 @@ public:
 
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 						r.position = primitive->points[0];
-						for (int i = 1; i < primitive->points.size(); i++) {
-
-							r.expand_to(primitive->points[i]);
+						for (int j = 1; j < primitive->points.size(); j++) {
+							r.expand_to(primitive->points[j]);
 						}
 					} break;
 					case Item::Command::TYPE_POLYGON: {
@@ -948,9 +960,8 @@ public:
 						int l = polygon->points.size();
 						const Point2 *pp = &polygon->points[0];
 						r.position = pp[0];
-						for (int i = 1; i < l; i++) {
-
-							r.expand_to(pp[i]);
+						for (int j = 1; j < l; j++) {
+							r.expand_to(pp[j]);
 						}
 					} break;
 					case Item::Command::TYPE_MESH: {
@@ -1094,12 +1105,12 @@ public:
 	virtual RasterizerCanvas *get_canvas() = 0;
 	virtual RasterizerScene *get_scene() = 0;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 	virtual void set_current_render_target(RID p_render_target) = 0;
-	virtual void restore_render_target() = 0;
+	virtual void restore_render_target(bool p_3d) = 0;
 	virtual void clear_render_target(const Color &p_color) = 0;
 	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) = 0;
 	virtual void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) = 0;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,6 +70,9 @@ class Physics2DServerSW : public Physics2DServer {
 	static Physics2DServerSW *singletonsw;
 
 	//void _clear_query(Query2DSW *p_query);
+	friend class CollisionObject2DSW;
+	SelfList<CollisionObject2DSW>::List pending_shape_update_list;
+	void _update_shapes();
 
 	RID _shape_create(ShapeType p_shape);
 
@@ -80,6 +83,7 @@ public:
 		real_t valid_depth;
 		int max;
 		int amount;
+		int passed;
 		int invalid_by_dir;
 		Vector2 *ptr;
 	};
@@ -130,7 +134,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space);
 	virtual RID area_get_space(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D());
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape);
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform);
 
@@ -143,10 +147,10 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
-	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
@@ -174,7 +178,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D());
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform);
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata);
@@ -188,12 +192,12 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable);
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_canvas_instance_id(RID p_body) const;
 
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode);

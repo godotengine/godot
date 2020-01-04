@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ void DictionaryPropertyEdit::_notif_changev(const String &p_v) {
 void DictionaryPropertyEdit::_set_key(const Variant &p_old_key, const Variant &p_new_key) {
 
 	// TODO: Set key of a dictionary is not allowed yet
-	return;
 }
 
 void DictionaryPropertyEdit::_set_value(const Variant &p_key, const Variant &p_value) {
@@ -102,12 +101,17 @@ Node *DictionaryPropertyEdit::get_node() {
 	return cast_to<Node>(o);
 }
 
+bool DictionaryPropertyEdit::_dont_undo_redo() {
+	return true;
+}
+
 void DictionaryPropertyEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_key"), &DictionaryPropertyEdit::_set_key);
 	ClassDB::bind_method(D_METHOD("_set_value"), &DictionaryPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &DictionaryPropertyEdit::_notif_change);
 	ClassDB::bind_method(D_METHOD("_notif_changev"), &DictionaryPropertyEdit::_notif_changev);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &DictionaryPropertyEdit::_dont_undo_redo);
 }
 
 bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
@@ -124,7 +128,7 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 		if (type == "key" && index < keys.size()) {
 
 			const Variant &key = keys[index];
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 
 			ur->create_action(TTR("Change Dictionary Key"));
 			ur->add_do_method(this, "_set_key", key, p_value);
@@ -139,7 +143,7 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 			if (dict.has(key)) {
 
 				Variant value = dict[key];
-				UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Dictionary Value"));
 				ur->add_do_method(this, "_set_value", key, p_value);

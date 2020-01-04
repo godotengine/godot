@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +41,13 @@ class SpriteEditor : public Control {
 	GDCLASS(SpriteEditor, Control);
 
 	enum Menu {
-		MENU_OPTION_CREATE_MESH_2D,
+		MENU_OPTION_CONVERT_TO_MESH_2D,
+		MENU_OPTION_CONVERT_TO_POLYGON_2D,
+		MENU_OPTION_CREATE_COLLISION_POLY_2D,
+		MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D
 	};
+
+	Menu selected_menu_item;
 
 	Sprite *node;
 
@@ -55,13 +60,15 @@ class SpriteEditor : public Control {
 	ConfirmationDialog *debug_uv_dialog;
 	Control *debug_uv;
 	Vector<Vector2> uv_lines;
-
+	Vector<Vector<Vector2> > outline_lines;
+	Vector<Vector<Vector2> > computed_outline_lines;
 	Vector<Vector2> computed_vertices;
 	Vector<Vector2> computed_uv;
 	Vector<int> computed_indices;
 
 	SpinBox *simplification;
-	SpinBox *island_merging;
+	SpinBox *grow_pixels;
+	SpinBox *shrink_pixels;
 	Button *update_preview;
 
 	void _menu_option(int p_option);
@@ -71,7 +78,14 @@ class SpriteEditor : public Control {
 
 	void _debug_uv_draw();
 	void _update_mesh_data();
-	void _create_mesh_node();
+
+	void _create_node();
+	void _convert_to_mesh_2d_node();
+	void _convert_to_polygon_2d_node();
+	void _create_collision_polygon_2d_node();
+	void _create_light_occluder_2d_node();
+
+	void _add_as_sibling_or_child(Node *p_own_node, Node *p_new_node);
 
 protected:
 	void _node_removed(Node *p_node);

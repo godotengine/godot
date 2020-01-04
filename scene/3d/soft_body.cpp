@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,7 +73,7 @@ void SoftBodyVisualServerHandler::open() {
 }
 
 void SoftBodyVisualServerHandler::close() {
-	write_buffer = PoolVector<uint8_t>::Write();
+	write_buffer.release();
 }
 
 void SoftBodyVisualServerHandler::commit_changes() {
@@ -104,10 +104,18 @@ SoftBody::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
+SoftBody::PinnedPoint SoftBody::PinnedPoint::operator=(const PinnedPoint &obj) {
+	point_index = obj.point_index;
+	spatial_attachment_path = obj.spatial_attachment_path;
+	spatial_attachment = obj.spatial_attachment;
+	offset = obj.offset;
+	return *this;
+}
+
 void SoftBody::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = ray_pickable && is_inside_tree() && is_visible_in_tree();
+	bool pickable = ray_pickable && is_visible_in_tree();
 	PhysicsServer::get_singleton()->soft_body_set_ray_pickable(physics_rid, pickable);
 }
 
@@ -387,6 +395,8 @@ void SoftBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pose_matching_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pose_matching_coefficient", "get_pose_matching_coefficient");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 }
 
 String SoftBody::get_configuration_warning() const {
@@ -397,7 +407,7 @@ String SoftBody::get_configuration_warning() const {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("This body will be ignored until you set a mesh");
+		warning += TTR("This body will be ignored until you set a mesh.");
 	}
 
 	Transform t = get_transform();
@@ -452,7 +462,9 @@ void SoftBody::update_physics_server() {
 	} else {
 
 		PhysicsServer::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
-		VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
+		if (VS::get_singleton()->is_connected("frame_pre_draw", this, "_draw_soft_mesh")) {
+			VS::get_singleton()->disconnect("frame_pre_draw", this, "_draw_soft_mesh");
+		}
 	}
 }
 
@@ -569,20 +581,14 @@ Array SoftBody::get_collision_exceptions() {
 void SoftBody::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 void SoftBody::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
 }
 
@@ -691,13 +697,13 @@ bool SoftBody::is_ray_pickable() const {
 }
 
 SoftBody::SoftBody() :
-		MeshInstance(),
 		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
 		mesh_owner(false),
 		collision_mask(1),
 		collision_layer(1),
 		simulation_started(false),
-		pinned_points_cache_dirty(true) {
+		pinned_points_cache_dirty(true),
+		ray_pickable(true) {
 
 	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 	//set_notify_transform(true);
@@ -705,6 +711,7 @@ SoftBody::SoftBody() :
 }
 
 SoftBody::~SoftBody() {
+	PhysicsServer::get_singleton()->free(physics_rid);
 }
 
 void SoftBody::reset_softbody_pin() {

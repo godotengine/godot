@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,8 +57,7 @@ void image_decompress_squish(Image *p_image) {
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
-		ERR_EXPLAIN("Squish: Can't decompress unknown format: " + itos(p_image->get_format()));
-		ERR_FAIL_COND(true);
+		ERR_FAIL_MSG("Squish: Can't decompress unknown format: " + itos(p_image->get_format()) + ".");
 		return;
 	}
 
@@ -119,7 +118,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 				case Image::FORMAT_RGBA5551: {
 					dc = Image::DETECTED_RGBA;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 
@@ -197,8 +197,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			h = MAX(h / 2, 1);
 		}
 
-		rb = PoolVector<uint8_t>::Read();
-		wb = PoolVector<uint8_t>::Write();
+		rb.release();
+		wb.release();
 
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}

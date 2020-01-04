@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,29 +53,19 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 	if (b.is_valid()) {
 		accept_event();
 
-		if (b->get_button_index() == 5 && b->is_pressed()) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
 
-			/*
-			if (orientation==VERTICAL)
-				set_val( get_val() + get_page() / 4.0 );
-			else
-			*/
 			set_value(get_value() + get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() == 4 && b->is_pressed()) {
+		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
 
-			/*
-			if (orientation==HORIZONTAL)
-				set_val( get_val() - get_page() / 4.0 );
-			else
-			*/
 			set_value(get_value() - get_page() / 4.0);
 			accept_event();
 		}
 
-		if (b->get_button_index() != 1)
+		if (b->get_button_index() != BUTTON_LEFT)
 			return;
 
 		if (b->is_pressed()) {
@@ -449,27 +439,26 @@ double ScrollBar::get_grabber_size() const {
 }
 
 double ScrollBar::get_area_size() const {
-
-	if (orientation == VERTICAL) {
-
-		double area = get_size().height;
-		area -= get_stylebox("scroll")->get_minimum_size().height;
-		area -= get_icon("increment")->get_height();
-		area -= get_icon("decrement")->get_height();
-		area -= get_grabber_min_size();
-		return area;
-
-	} else if (orientation == HORIZONTAL) {
-
-		double area = get_size().width;
-		area -= get_stylebox("scroll")->get_minimum_size().width;
-		area -= get_icon("increment")->get_width();
-		area -= get_icon("decrement")->get_width();
-		area -= get_grabber_min_size();
-		return area;
-	} else {
-
-		return 0;
+	switch (orientation) {
+		case VERTICAL: {
+			double area = get_size().height;
+			area -= get_stylebox("scroll")->get_minimum_size().height;
+			area -= get_icon("increment")->get_height();
+			area -= get_icon("decrement")->get_height();
+			area -= get_grabber_min_size();
+			return area;
+		} break;
+		case HORIZONTAL: {
+			double area = get_size().width;
+			area -= get_stylebox("scroll")->get_minimum_size().width;
+			area -= get_icon("increment")->get_width();
+			area -= get_icon("decrement")->get_width();
+			area -= get_grabber_min_size();
+			return area;
+		} break;
+		default: {
+			return 0.0;
+		}
 	}
 }
 

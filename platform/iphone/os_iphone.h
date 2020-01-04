@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
+#include "ios.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -69,6 +70,7 @@ private:
 #ifdef ICLOUD_ENABLED
 	ICloud *icloud;
 #endif
+	iOS *ios;
 
 	MainLoop *main_loop;
 
@@ -107,7 +109,7 @@ private:
 	void queue_event(const Ref<InputEvent> &p_event);
 
 	String data_dir;
-	String unique_ID;
+	String unique_id;
 	String locale_code;
 
 	InputDefault *input;
@@ -167,9 +169,6 @@ public:
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
-
 	virtual Size2 get_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
 
@@ -177,7 +176,8 @@ public:
 
 	void set_data_dir(String p_dir);
 
-	virtual String get_name();
+	virtual String get_name() const;
+	virtual String get_model_name() const;
 
 	Error shell_open(String p_uri);
 
@@ -186,7 +186,7 @@ public:
 	void set_locale(String p_locale);
 	String get_locale() const;
 
-	void set_unique_id(String p_ID);
+	void set_unique_id(String p_id);
 	String get_unique_id() const;
 
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
@@ -195,6 +195,7 @@ public:
 	virtual void native_video_unpause();
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
+	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OSIPhone(int width, int height, String p_data_dir);

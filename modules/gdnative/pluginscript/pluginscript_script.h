@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,6 @@
 // PluginScript imports
 #include "pluginscript_language.h"
 #include <pluginscript/godot_pluginscript.h>
-
-class PyInstance;
 
 class PluginScript : public Script {
 
@@ -73,6 +71,9 @@ private:
 
 protected:
 	static void _bind_methods();
+
+	PluginScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error);
+	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;

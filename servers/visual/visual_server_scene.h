@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 
 #include "servers/visual/rasterizer.h"
 
-#include "core/allocators.h"
 #include "core/math/geometry.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
@@ -78,12 +77,14 @@ public:
 
 		enum Type {
 			PERSPECTIVE,
-			ORTHOGONAL
+			ORTHOGONAL,
+			FRUSTUM
 		};
 		Type type;
 		float fov;
 		float znear, zfar;
 		float size;
+		Vector2 offset;
 		uint32_t visible_layers;
 		bool vaspect;
 		RID env;
@@ -98,6 +99,7 @@ public:
 			znear = 0.05;
 			zfar = 100;
 			size = 1.0;
+			offset = Vector2();
 			vaspect = false;
 		}
 	};
@@ -107,6 +109,7 @@ public:
 	virtual RID camera_create();
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
+	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
@@ -120,7 +123,6 @@ public:
 
 		VS::ScenarioDebugMode debug;
 		RID self;
-		// well wtf, balloon allocator is slower?
 
 		Octree<Instance, true> octree;
 
@@ -172,7 +174,7 @@ public:
 		AABB transformed_aabb;
 		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;
-		uint32_t object_ID;
+		uint32_t object_id;
 
 		float lod_begin;
 		float lod_end;
@@ -209,7 +211,7 @@ public:
 
 			extra_margin = 0;
 
-			object_ID = 0;
+			object_id = 0;
 			visible = true;
 
 			lod_begin = 0;
@@ -455,7 +457,7 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario); // from can be mesh, light, poly, area and portal so far.
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
-	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_ID);
+	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);

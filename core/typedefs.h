@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,13 +108,14 @@ T *_nullptr() {
 #include "core/int_types.h"
 
 #include "core/error_list.h"
-#include "core/error_macros.h"
 
 /** Generic ABS function, for math uses please use Math::abs */
 
 #ifndef ABS
 #define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
+
+#define ABSDIFF(x, y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
 
 #ifndef SGN
 #define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
@@ -135,7 +136,7 @@ T *_nullptr() {
 /** Generic swap template */
 #ifndef SWAP
 
-#define SWAP(m_x, m_y) __swap_tmpl(m_x, m_y)
+#define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
 template <class T>
 inline void __swap_tmpl(T &x, T &y) {
 
@@ -172,6 +173,9 @@ inline void __swap_tmpl(T &x, T &y) {
 /** Function to find the next power of 2 to an integer */
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+
+	if (x == 0)
+		return 0;
 
 	--x;
 	x |= x >> 1;
@@ -248,21 +252,34 @@ static inline int get_shift_from_power_of_2(unsigned int p_pixel) {
 }
 
 /** Swap 16 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap16)
+#define BSWAP16(x) __builtin_bswap16(x)
+#else
 static inline uint16_t BSWAP16(uint16_t x) {
 	return (x >> 8) | (x << 8);
 }
+#endif
+
 /** Swap 32 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap32)
+#define BSWAP32(x) __builtin_bswap32(x)
+#else
 static inline uint32_t BSWAP32(uint32_t x) {
 	return ((x << 24) | ((x << 8) & 0x00FF0000) | ((x >> 8) & 0x0000FF00) | (x >> 24));
 }
-/** Swap 64 bits value for endianness */
+#endif
 
+/** Swap 64 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap64)
+#define BSWAP64(x) __builtin_bswap64(x)
+#else
 static inline uint64_t BSWAP64(uint64_t x) {
 	x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
 	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
 	x = (x & 0x00FF00FF00FF00FF) << 8 | (x & 0xFF00FF00FF00FF00) >> 8;
 	return x;
 }
+#endif
 
 /** When compiling with RTTI, we can add an "extra"
  * layer of safeness in many operations, so dynamic_cast
@@ -303,6 +320,41 @@ struct _GlobalLock {
 #else
 #define likely(x) x
 #define unlikely(x) x
+#endif
+
+#if defined(__GNUC__)
+#define _PRINTF_FORMAT_ATTRIBUTE_2_0 __attribute__((format(printf, 2, 0)))
+#define _PRINTF_FORMAT_ATTRIBUTE_2_3 __attribute__((format(printf, 2, 3)))
+#else
+#define _PRINTF_FORMAT_ATTRIBUTE_2_0
+#define _PRINTF_FORMAT_ATTRIBUTE_2_3
+#endif
+
+/** This is needed due to a strange OpenGL API that expects a pointer
+ *  type for an argument that is actually an offset.
+ */
+#define CAST_INT_TO_UCHAR_PTR(ptr) ((uint8_t *)(uintptr_t)(ptr))
+
+/** Hint for compilers that this fallthrough in a switch is intentional.
+ *  Can be replaced by [[fallthrough]] annotation if we move to C++17.
+ *  Including conditional support for it for people who set -std=c++17
+ *  themselves.
+ *  Requires a trailing semicolon when used.
+ */
+#if __cplusplus >= 201703L
+#define FALLTHROUGH [[fallthrough]]
+#elif defined(__GNUC__) && __GNUC__ >= 7
+#define FALLTHROUGH __attribute__((fallthrough))
+#elif defined(__llvm__) && __cplusplus >= 201103L && defined(__has_feature)
+#if __has_feature(cxx_attributes) && defined(__has_warning)
+#if __has_warning("-Wimplicit-fallthrough")
+#define FALLTHROUGH [[clang::fallthrough]]
+#endif
+#endif
+#endif
+
+#ifndef FALLTHROUGH
+#define FALLTHROUGH
 #endif
 
 #endif // TYPEDEFS_H

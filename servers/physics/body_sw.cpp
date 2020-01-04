@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -196,7 +196,8 @@ void BodySW::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
 
 			angular_damp = p_value;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -226,7 +227,8 @@ real_t BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 			return angular_damp;
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -258,12 +260,15 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
+			set_active(true);
 
 		} break;
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
+			set_active(true);
+			angular_velocity = Vector3();
 		} break;
 	}
 
@@ -344,8 +349,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 				//biased_angular_velocity=Vector3();
 				set_active(false);
 			} else {
-				if (mode != PhysicsServer::BODY_MODE_STATIC)
-					set_active(true);
+				set_active(true);
 			}
 		} break;
 		case PhysicsServer::BODY_STATE_CAN_SLEEP: {
@@ -474,7 +478,8 @@ void BodySW::integrate_forces(real_t p_step) {
 					_compute_area_gravity_and_dampenings(aa[i].area);
 					stopped = mode == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 	}
@@ -652,7 +657,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	linear_velocity=(p_xform.origin - get_transform().origin)/p_step;
 
 	//compute a FAKE angular velocity, not so easy
-	Matrix3 rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
+	Basis rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
 	Vector3 axis;
 	real_t angle;
 
@@ -791,7 +796,7 @@ BodySW::BodySW() :
 
 	still_time = 0;
 	continuous_cd = false;
-	can_sleep = false;
+	can_sleep = true;
 	fi_callback = NULL;
 }
 

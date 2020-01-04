@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttobjs.h                                                               */
-/*                                                                         */
-/*    Objects manager (specification).                                     */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttobjs.h
+ *
+ *   Objects manager (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTOBJS_H_
@@ -28,40 +28,40 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    TT_Driver                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a TrueType driver object.                              */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   TT_Driver
+   *
+   * @Description:
+   *   A handle to a TrueType driver object.
+   */
   typedef struct TT_DriverRec_*  TT_Driver;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    TT_GlyphSlot                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a TrueType glyph slot object.                          */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    This is a direct typedef of FT_GlyphSlot, as there is nothing      */
-  /*    specific about the TrueType glyph slot.                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   TT_GlyphSlot
+   *
+   * @Description:
+   *   A handle to a TrueType glyph slot object.
+   *
+   * @Note:
+   *   This is a direct typedef of FT_GlyphSlot, as there is nothing
+   *   specific about the TrueType glyph slot.
+   */
   typedef FT_GlyphSlot  TT_GlyphSlot;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    TT_GraphicsState                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The TrueType graphics state used during bytecode interpretation.   */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Struct:
+   *   TT_GraphicsState
+   *
+   * @Description:
+   *   The TrueType graphics state used during bytecode interpretation.
+   */
   typedef struct  TT_GraphicsState_
   {
     FT_UShort      rp0;
@@ -113,25 +113,25 @@ FT_BEGIN_HEADER
 
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*  EXECUTION SUBTABLES                                                  */
-  /*                                                                       */
-  /*  These sub-tables relate to instruction execution.                    */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * EXECUTION SUBTABLES
+   *
+   * These sub-tables relate to instruction execution.
+   *
+   */
 
 
 #define TT_MAX_CODE_RANGES  3
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* There can only be 3 active code ranges at once:                       */
-  /*   - the Font Program                                                  */
-  /*   - the CVT Program                                                   */
-  /*   - a glyph's instructions set                                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * There can only be 3 active code ranges at once:
+   *   - the Font Program
+   *   - the CVT Program
+   *   - a glyph's instructions set
+   */
   typedef enum  TT_CodeRange_Tag_
   {
     tt_coderange_none = 0,
@@ -152,10 +152,10 @@ FT_BEGIN_HEADER
   typedef TT_CodeRange  TT_CodeRangeTable[TT_MAX_CODE_RANGES];
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Defines a function/instruction definition record.                     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Defines a function/instruction definition record.
+   */
   typedef struct  TT_DefRecord_
   {
     FT_Int    range;          /* in which code range is it located?     */
@@ -169,10 +169,10 @@ FT_BEGIN_HEADER
   } TT_DefRecord, *TT_DefArray;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Subglyph transformation record.                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Subglyph transformation record.
+   */
   typedef struct  TT_Transform_
   {
     FT_Fixed    xx, xy;     /* transformation matrix coefficients */
@@ -182,72 +182,72 @@ FT_BEGIN_HEADER
   } TT_Transform;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* A note regarding non-squared pixels:                                  */
-  /*                                                                       */
-  /* (This text will probably go into some docs at some time; for now, it  */
-  /* is kept here to explain some definitions in the TT_Size_Metrics       */
-  /* record).                                                              */
-  /*                                                                       */
-  /* The CVT is a one-dimensional array containing values that control     */
-  /* certain important characteristics in a font, like the height of all   */
-  /* capitals, all lowercase letter, default spacing or stem width/height. */
-  /*                                                                       */
-  /* These values are found in FUnits in the font file, and must be scaled */
-  /* to pixel coordinates before being used by the CVT and glyph programs. */
-  /* Unfortunately, when using distinct x and y resolutions (or distinct x */
-  /* and y pointsizes), there are two possible scalings.                   */
-  /*                                                                       */
-  /* A first try was to implement a `lazy' scheme where all values were    */
-  /* scaled when first used.  However, while some values are always used   */
-  /* in the same direction, some others are used under many different      */
-  /* circumstances and orientations.                                       */
-  /*                                                                       */
-  /* I have found a simpler way to do the same, and it even seems to work  */
-  /* in most of the cases:                                                 */
-  /*                                                                       */
-  /* - All CVT values are scaled to the maximum ppem size.                 */
-  /*                                                                       */
-  /* - When performing a read or write in the CVT, a ratio factor is used  */
-  /*   to perform adequate scaling.  Example:                              */
-  /*                                                                       */
-  /*     x_ppem = 14                                                       */
-  /*     y_ppem = 10                                                       */
-  /*                                                                       */
-  /*   We choose ppem = x_ppem = 14 as the CVT scaling size.  All cvt      */
-  /*   entries are scaled to it.                                           */
-  /*                                                                       */
-  /*     x_ratio = 1.0                                                     */
-  /*     y_ratio = y_ppem/ppem (< 1.0)                                     */
-  /*                                                                       */
-  /*   We compute the current ratio like:                                  */
-  /*                                                                       */
-  /*   - If projVector is horizontal,                                      */
-  /*       ratio = x_ratio = 1.0                                           */
-  /*                                                                       */
-  /*   - if projVector is vertical,                                        */
-  /*       ratio = y_ratio                                                 */
-  /*                                                                       */
-  /*   - else,                                                             */
-  /*       ratio = sqrt( (proj.x * x_ratio) ^ 2 + (proj.y * y_ratio) ^ 2 ) */
-  /*                                                                       */
-  /*   Reading a cvt value returns                                         */
-  /*     ratio * cvt[index]                                                */
-  /*                                                                       */
-  /*   Writing a cvt value in pixels:                                      */
-  /*     cvt[index] / ratio                                                */
-  /*                                                                       */
-  /*   The current ppem is simply                                          */
-  /*     ratio * ppem                                                      */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * A note regarding non-squared pixels:
+   *
+   * (This text will probably go into some docs at some time; for now, it
+   * is kept here to explain some definitions in the TT_Size_Metrics
+   * record).
+   *
+   * The CVT is a one-dimensional array containing values that control
+   * certain important characteristics in a font, like the height of all
+   * capitals, all lowercase letter, default spacing or stem width/height.
+   *
+   * These values are found in FUnits in the font file, and must be scaled
+   * to pixel coordinates before being used by the CVT and glyph programs.
+   * Unfortunately, when using distinct x and y resolutions (or distinct x
+   * and y pointsizes), there are two possible scalings.
+   *
+   * A first try was to implement a `lazy' scheme where all values were
+   * scaled when first used.  However, while some values are always used
+   * in the same direction, some others are used under many different
+   * circumstances and orientations.
+   *
+   * I have found a simpler way to do the same, and it even seems to work
+   * in most of the cases:
+   *
+   * - All CVT values are scaled to the maximum ppem size.
+   *
+   * - When performing a read or write in the CVT, a ratio factor is used
+   *   to perform adequate scaling.  Example:
+   *
+   *     x_ppem = 14
+   *     y_ppem = 10
+   *
+   *   We choose ppem = x_ppem = 14 as the CVT scaling size.  All cvt
+   *   entries are scaled to it.
+   *
+   *     x_ratio = 1.0
+   *     y_ratio = y_ppem/ppem (< 1.0)
+   *
+   *   We compute the current ratio like:
+   *
+   *   - If projVector is horizontal,
+   *       ratio = x_ratio = 1.0
+   *
+   *   - if projVector is vertical,
+   *       ratio = y_ratio
+   *
+   *   - else,
+   *       ratio = sqrt( (proj.x * x_ratio) ^ 2 + (proj.y * y_ratio) ^ 2 )
+   *
+   *   Reading a cvt value returns
+   *     ratio * cvt[index]
+   *
+   *   Writing a cvt value in pixels:
+   *     cvt[index] / ratio
+   *
+   *   The current ppem is simply
+   *     ratio * ppem
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Metrics used by the TrueType size and context objects.                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Metrics used by the TrueType size and context objects.
+   */
   typedef struct  TT_Size_Metrics_
   {
     /* for non-square pixels */
@@ -268,10 +268,10 @@ FT_BEGIN_HEADER
   } TT_Size_Metrics;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* TrueType size class.                                                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * TrueType size class.
+   */
   typedef struct  TT_SizeRec_
   {
     FT_SizeRec         root;
@@ -324,10 +324,10 @@ FT_BEGIN_HEADER
   } TT_SizeRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* TrueType driver class.                                                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * TrueType driver class.
+   */
   typedef struct  TT_DriverRec_
   {
     FT_DriverRec  root;
@@ -348,10 +348,10 @@ FT_BEGIN_HEADER
   /* will always use the TT driver to create them.                         */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Face functions                                                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Face functions
+   */
   FT_LOCAL( FT_Error )
   tt_face_init( FT_Stream      stream,
                 FT_Face        ttface,      /* TT_Face */
@@ -363,10 +363,10 @@ FT_BEGIN_HEADER
   tt_face_done( FT_Face  ttface );          /* TT_Face */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Size functions                                                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Size functions
+   */
   FT_LOCAL( FT_Error )
   tt_size_init( FT_Size  ttsize );          /* TT_Size */
 
@@ -394,10 +394,10 @@ FT_BEGIN_HEADER
                  FT_Bool  only_height );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Driver functions                                                      */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Driver functions
+   */
   FT_LOCAL( FT_Error )
   tt_driver_init( FT_Module  ttdriver );    /* TT_Driver */
 
@@ -405,10 +405,10 @@ FT_BEGIN_HEADER
   tt_driver_done( FT_Module  ttdriver );    /* TT_Driver */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Slot functions                                                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Slot functions
+   */
   FT_LOCAL( FT_Error )
   tt_slot_init( FT_GlyphSlot  slot );
 

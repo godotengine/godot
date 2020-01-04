@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 #include "../utils/mono_reg_utils.h"
 #endif
 
-namespace APIAssembly {
+namespace ApiAssemblyInfo {
 enum Type {
 	API_CORE,
 	API_EDITOR
@@ -76,69 +76,85 @@ struct Version {
 };
 
 String to_string(Type p_type);
-} // namespace APIAssembly
-
-#define SCRIPTS_DOMAIN GDMono::get_singleton()->get_scripts_domain()
-#ifdef TOOLS_ENABLED
-#define TOOLS_DOMAIN GDMono::get_singleton()->get_tools_domain()
-#endif
+} // namespace ApiAssemblyInfo
 
 class GDMono {
 
+public:
+	enum UnhandledExceptionPolicy {
+		POLICY_TERMINATE_APP,
+		POLICY_LOG_ERROR
+	};
+
+	struct LoadedApiAssembly {
+		GDMonoAssembly *assembly;
+		bool out_of_sync;
+
+		LoadedApiAssembly() :
+				assembly(NULL),
+				out_of_sync(false) {
+		}
+	};
+
+private:
 	bool runtime_initialized;
 	bool finalizing_scripts_domain;
 
+	UnhandledExceptionPolicy unhandled_exception_policy;
+
 	MonoDomain *root_domain;
 	MonoDomain *scripts_domain;
-#ifdef TOOLS_ENABLED
-	MonoDomain *tools_domain;
-#endif
-
-	bool core_api_assembly_out_of_sync;
-	bool editor_api_assembly_out_of_sync;
-
-	GDMonoAssembly *corlib_assembly;
-	GDMonoAssembly *core_api_assembly;
-	GDMonoAssembly *project_assembly;
-#ifdef TOOLS_ENABLED
-	GDMonoAssembly *editor_api_assembly;
-	GDMonoAssembly *editor_tools_assembly;
-#endif
 
 	HashMap<uint32_t, HashMap<String, GDMonoAssembly *> > assemblies;
 
-	void _domain_assemblies_cleanup(uint32_t p_domain_id);
+	GDMonoAssembly *corlib_assembly;
+	GDMonoAssembly *project_assembly;
+#ifdef TOOLS_ENABLED
+	GDMonoAssembly *tools_assembly;
+	GDMonoAssembly *tools_project_editor_assembly;
+#endif
+
+	LoadedApiAssembly core_api_assembly;
+	LoadedApiAssembly editor_api_assembly;
+
+	typedef bool (*CoreApiAssemblyLoadedCallback)();
+
+	bool _are_api_assemblies_out_of_sync();
+	bool _temp_domain_load_are_assemblies_out_of_sync(const String &p_config);
+
+	bool _load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, const String &p_config, bool p_refonly);
+#ifdef TOOLS_ENABLED
+	bool _load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, const String &p_config, bool p_refonly);
+#endif
+
+	static bool _on_core_api_assembly_loaded();
 
 	bool _load_corlib_assembly();
-	bool _load_core_api_assembly();
 #ifdef TOOLS_ENABLED
-	bool _load_editor_api_assembly();
-	bool _load_editor_tools_assembly();
+	bool _load_tools_assemblies();
 #endif
 	bool _load_project_assembly();
 
-	bool _load_api_assemblies();
+	bool _try_load_api_assemblies(LoadedApiAssembly &r_core_api_assembly, LoadedApiAssembly &r_editor_api_assembly,
+			const String &p_config, bool p_refonly, CoreApiAssemblyLoadedCallback p_callback);
+	bool _try_load_api_assemblies_preset();
+	void _load_api_assemblies();
 
-#ifdef TOOLS_ENABLED
-	String _get_api_assembly_metadata_path();
-#endif
+	void _install_trace_listener();
 
 	void _register_internal_calls();
 
 	Error _load_scripts_domain();
 	Error _unload_scripts_domain();
 
-#ifdef TOOLS_ENABLED
-	Error _load_tools_domain();
-#endif
+	void _domain_assemblies_cleanup(uint32_t p_domain_id);
 
-#ifdef DEBUG_METHODS_ENABLED
 	uint64_t api_core_hash;
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash;
 #endif
-	void _initialize_and_check_api_hashes();
-#endif
+	void _init_godot_api_hashes();
+	void _init_exception_policy();
 
 	GDMonoLog *gdmono_log;
 
@@ -146,25 +162,50 @@ class GDMono {
 	MonoRegInfo mono_reg_info;
 #endif
 
+	void add_mono_shared_libs_dir_to_path();
+	void determine_mono_dirs(String &r_assembly_rootdir, String &r_config_dir);
+
 protected:
 	static GDMono *singleton;
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
-	uint64_t get_api_core_hash() { return api_core_hash; }
+	uint64_t get_api_core_hash() {
+		if (api_core_hash == 0)
+			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+		return api_core_hash;
+	}
 #ifdef TOOLS_ENABLED
-	uint64_t get_api_editor_hash() { return api_editor_hash; }
+	uint64_t get_api_editor_hash() {
+		if (api_editor_hash == 0)
+			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+		return api_editor_hash;
+	}
+#endif // TOOLS_ENABLED
+#endif // DEBUG_METHODS_ENABLED
+
+	_FORCE_INLINE_ static String get_expected_api_build_config() {
+#ifdef TOOLS_ENABLED
+		return "Debug";
+#else
+#ifdef DEBUG_ENABLED
+		return "Debug";
+#else
+		return "Release";
 #endif
 #endif
+	}
 
 #ifdef TOOLS_ENABLED
-	void metadata_set_api_assembly_invalidated(APIAssembly::Type p_api_type, bool p_invalidated);
-	bool metadata_is_api_assembly_invalidated(APIAssembly::Type p_api_type);
+	bool copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const String &p_config);
+	String update_api_assemblies_from_prebuilt(const String &p_config, const bool *p_core_api_out_of_sync = NULL, const bool *p_editor_api_out_of_sync = NULL);
 #endif
 
 	static GDMono *get_singleton() { return singleton; }
 
-	static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
+	GD_NORETURN static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
+
+	UnhandledExceptionPolicy get_unhandled_exception_policy() const { return unhandled_exception_policy; }
 
 	// Do not use these, unless you know what you're doing
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
@@ -175,16 +216,14 @@ public:
 	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
 
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
-#ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ MonoDomain *get_tools_domain() { return tools_domain; }
-#endif
 
 	_FORCE_INLINE_ GDMonoAssembly *get_corlib_assembly() const { return corlib_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_core_api_assembly() const { return core_api_assembly.assembly; }
 	_FORCE_INLINE_ GDMonoAssembly *get_project_assembly() const { return project_assembly; }
 #ifdef TOOLS_ENABLED
-	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const { return editor_api_assembly; }
-	_FORCE_INLINE_ GDMonoAssembly *get_editor_tools_assembly() const { return editor_tools_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_editor_api_assembly() const { return editor_api_assembly.assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_tools_assembly() const { return tools_assembly; }
+	_FORCE_INLINE_ GDMonoAssembly *get_tools_project_editor_assembly() const { return tools_project_editor_assembly; }
 #endif
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
@@ -192,8 +231,9 @@ public:
 #endif
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
+	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
 #endif
 
@@ -204,6 +244,7 @@ public:
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
+	void initialize_load_assemblies();
 
 	GDMono();
 	~GDMono();
@@ -257,7 +298,7 @@ public:
 	(void)__gdmono__scope__exit__domain__unload__;
 
 class _GodotSharp : public Object {
-	GDCLASS(_GodotSharp, Object)
+	GDCLASS(_GodotSharp, Object);
 
 	friend class GDMono;
 
@@ -266,11 +307,7 @@ class _GodotSharp : public Object {
 	List<NodePath *> np_delete_queue;
 	List<RID *> rid_delete_queue;
 
-	bool queue_empty;
-
-#ifndef NO_THREADS
-	Mutex *queue_mutex;
-#endif
+	void _reload_assemblies(bool p_soft_reload);
 
 protected:
 	static _GodotSharp *singleton;

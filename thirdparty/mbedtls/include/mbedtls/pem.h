@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_PEM_H
 #define MBEDTLS_PEM_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include <stddef.h>
 
 /**
@@ -51,7 +57,7 @@ extern "C" {
 /**
  * \brief       PEM context structure
  */
-typedef struct
+typedef struct mbedtls_pem_context
 {
     unsigned char *buf;     /*!< buffer for decoded data             */
     size_t buflen;          /*!< length of the buffer                */

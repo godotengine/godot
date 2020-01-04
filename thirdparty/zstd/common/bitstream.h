@@ -1,8 +1,7 @@
 /* ******************************************************************
    bitstream
    Part of FSE library
-   header file (to include)
-   Copyright (C) 2013-2017, Yann Collet.
+   Copyright (C) 2013-present, Yann Collet.
 
    BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
 
@@ -49,19 +48,8 @@ extern "C" {
 *  Dependencies
 ******************************************/
 #include "mem.h"            /* unaligned access routines */
+#include "debug.h"          /* assert(), DEBUGLOG(), RAWLOG() */
 #include "error_private.h"  /* error codes and messages */
-
-
-/*-*************************************
-*  Debug
-***************************************/
-#if defined(BIT_DEBUG) && (BIT_DEBUG>=1)
-#  include <assert.h>
-#else
-#  ifndef assert
-#    define assert(condition) ((void)0)
-#  endif
-#endif
 
 
 /*=========================================
@@ -69,6 +57,8 @@ extern "C" {
 =========================================*/
 #if defined(__BMI__) && defined(__GNUC__)
 #  include <immintrin.h>   /* support for bextr (experimental) */
+#elif defined(__ICCARM__)
+#  include <intrinsics.h>
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
@@ -83,8 +73,7 @@ extern "C" {
  * A critical property of these streams is that they encode and decode in **reverse** direction.
  * So the first bit sequence you add will be the last to be read, like a LIFO stack.
  */
-typedef struct
-{
+typedef struct {
     size_t bitContainer;
     unsigned bitPos;
     char*  startPtr;
@@ -118,8 +107,7 @@ MEM_STATIC size_t BIT_closeCStream(BIT_CStream_t* bitC);
 /*-********************************************
 *  bitStream decoding API (read backward)
 **********************************************/
-typedef struct
-{
+typedef struct {
     size_t   bitContainer;
     unsigned bitsConsumed;
     const char* ptr;
@@ -176,7 +164,9 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
         _BitScanReverse ( &r, val );
         return (unsigned) r;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
-        return 31 - __builtin_clz (val);
+        return __builtin_clz (val) ^ 31;
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return 31 - __CLZ(val);
 #   else   /* Software version */
         static const unsigned DeBruijnClz[32] = { 0,  9,  1, 10, 13, 21,  2, 29,
                                                  11, 14, 16, 18, 22, 25,  3, 30,
@@ -236,7 +226,8 @@ MEM_STATIC void BIT_addBits(BIT_CStream_t* bitC,
 }
 
 /*! BIT_addBitsFast() :
- *  works only if `value` is _clean_, meaning all high bits above nbBits are 0 */
+ *  works only if `value` is _clean_,
+ *  meaning all high bits above nbBits are 0 */
 MEM_STATIC void BIT_addBitsFast(BIT_CStream_t* bitC,
                                 size_t value, unsigned nbBits)
 {
@@ -253,9 +244,9 @@ MEM_STATIC void BIT_flushBitsFast(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
-    assert(bitC->ptr <= bitC->endPtr);
     bitC->bitPos &= 7;
     bitC->bitContainer >>= nbBytes*8;
 }
@@ -269,6 +260,7 @@ MEM_STATIC void BIT_flushBits(BIT_CStream_t* bitC)
 {
     size_t const nbBytes = bitC->bitPos >> 3;
     assert(bitC->bitPos < sizeof(bitC->bitContainer) * 8);
+    assert(bitC->ptr <= bitC->endPtr);
     MEM_writeLEST(bitC->ptr, bitC->bitContainer);
     bitC->ptr += nbBytes;
     if (bitC->ptr > bitC->endPtr) bitC->ptr = bitC->endPtr;
@@ -352,17 +344,10 @@ MEM_STATIC size_t BIT_getUpperBits(size_t bitContainer, U32 const start)
 
 MEM_STATIC size_t BIT_getMiddleBits(size_t bitContainer, U32 const start, U32 const nbBits)
 {
-#if defined(__BMI__) && defined(__GNUC__) && __GNUC__*1000+__GNUC_MINOR__ >= 4008  /* experimental */
-#  if defined(__x86_64__)
-    if (sizeof(bitContainer)==8)
-        return _bextr_u64(bitContainer, start, nbBits);
-    else
-#  endif
-        return _bextr_u32(bitContainer, start, nbBits);
-#else
+    U32 const regMask = sizeof(bitContainer)*8 - 1;
+    /* if start > regMask, bitstream is corrupted, and result is undefined */
     assert(nbBits < BIT_MASK_SIZE);
-    return (bitContainer >> start) & BIT_mask[nbBits];
-#endif
+    return (bitContainer >> (start & regMask)) & BIT_mask[nbBits];
 }
 
 MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
@@ -379,9 +364,13 @@ MEM_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
  * @return : value extracted */
 MEM_STATIC size_t BIT_lookBits(const BIT_DStream_t* bitD, U32 nbBits)
 {
-#if defined(__BMI__) && defined(__GNUC__)   /* experimental; fails if bitD->bitsConsumed + nbBits > sizeof(bitD->bitContainer)*8 */
+    /* arbitrate between double-shift and shift+mask */
+#if 1
+    /* if bitD->bitsConsumed + nbBits > sizeof(bitD->bitContainer)*8,
+     * bitstream is likely corrupted, and result is undefined */
     return BIT_getMiddleBits(bitD->bitContainer, (sizeof(bitD->bitContainer)*8) - bitD->bitsConsumed - nbBits, nbBits);
 #else
+    /* this code path is slower on my os-x laptop */
     U32 const regMask = sizeof(bitD->bitContainer)*8 - 1;
     return ((bitD->bitContainer << (bitD->bitsConsumed & regMask)) >> 1) >> ((regMask-nbBits) & regMask);
 #endif
@@ -405,7 +394,7 @@ MEM_STATIC void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
  *  Read (consume) next n bits from local register and update.
  *  Pay attention to not read more than nbBits contained into local register.
  * @return : extracted value. */
-MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, unsigned nbBits)
 {
     size_t const value = BIT_lookBits(bitD, nbBits);
     BIT_skipBits(bitD, nbBits);
@@ -414,7 +403,7 @@ MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, U32 nbBits)
 
 /*! BIT_readBitsFast() :
  *  unsafe version; only works only if nbBits >= 1 */
-MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, U32 nbBits)
+MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, unsigned nbBits)
 {
     size_t const value = BIT_lookBitsFast(bitD, nbBits);
     assert(nbBits >= 1);

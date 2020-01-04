@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,4 +104,6 @@ void ConcavePolygonShape2D::_bind_methods() {
 
 ConcavePolygonShape2D::ConcavePolygonShape2D() :
 		Shape2D(Physics2DServer::get_singleton()->concave_polygon_shape_create()) {
+	PoolVector<Vector2> empty;
+	set_segments(empty);
 }

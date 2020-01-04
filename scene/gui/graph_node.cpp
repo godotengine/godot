@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -159,12 +159,9 @@ void GraphNode::_resort() {
 		fit_child_in_rect(c, r);
 		cache_y.push_back(vofs + size.y * 0.5);
 
-		if (vofs > 0)
-			vofs += sep;
-		vofs += size.y;
+		vofs += size.y + sep;
 	}
 
-	_change_notify();
 	update();
 	connpos_dirty = true;
 }
@@ -192,97 +189,105 @@ bool GraphNode::has_point(const Point2 &p_point) const {
 
 void GraphNode::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
 
-		Ref<StyleBox> sb;
+			Ref<StyleBox> sb;
 
-		if (comment) {
-			sb = get_stylebox(selected ? "commentfocus" : "comment");
+			if (comment) {
+				sb = get_stylebox(selected ? "commentfocus" : "comment");
 
-		} else {
+			} else {
 
-			sb = get_stylebox(selected ? "selectedframe" : "frame");
-		}
-
-		//sb=sb->duplicate();
-		//sb->call("set_modulate",modulate);
-		Ref<Texture> port = get_icon("port");
-		Ref<Texture> close = get_icon("close");
-		Ref<Texture> resizer = get_icon("resizer");
-		int close_offset = get_constant("close_offset");
-		int close_h_offset = get_constant("close_h_offset");
-		Color close_color = get_color("close_color");
-		Ref<Font> title_font = get_font("title_font");
-		int title_offset = get_constant("title_offset");
-		int title_h_offset = get_constant("title_h_offset");
-		Color title_color = get_color("title_color");
-		Point2i icofs = -port->get_size() * 0.5;
-		int edgeofs = get_constant("port_offset");
-		icofs.y += sb->get_margin(MARGIN_TOP);
-
-		draw_style_box(sb, Rect2(Point2(), get_size()));
-
-		switch (overlay) {
-			case OVERLAY_DISABLED: {
-
-			} break;
-			case OVERLAY_BREAKPOINT: {
-
-				draw_style_box(get_stylebox("breakpoint"), Rect2(Point2(), get_size()));
-			} break;
-			case OVERLAY_POSITION: {
-				draw_style_box(get_stylebox("position"), Rect2(Point2(), get_size()));
-
-			} break;
-		}
-
-		int w = get_size().width - sb->get_minimum_size().x;
-
-		if (show_close)
-			w -= close->get_width();
-
-		draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
-		if (show_close) {
-			Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
-			draw_texture(close, cpos, close_color);
-			close_rect.position = cpos;
-			close_rect.size = close->get_size();
-		} else {
-			close_rect = Rect2();
-		}
-
-		for (Map<int, Slot>::Element *E = slot_info.front(); E; E = E->next()) {
-
-			if (E->key() < 0 || E->key() >= cache_y.size())
-				continue;
-			if (!slot_info.has(E->key()))
-				continue;
-			const Slot &s = slot_info[E->key()];
-			//left
-			if (s.enable_left) {
-				Ref<Texture> p = port;
-				if (s.custom_slot_left.is_valid()) {
-					p = s.custom_slot_left;
-				}
-				p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E->key()]), s.color_left);
+				sb = get_stylebox(selected ? "selectedframe" : "frame");
 			}
-			if (s.enable_right) {
-				Ref<Texture> p = port;
-				if (s.custom_slot_right.is_valid()) {
-					p = s.custom_slot_right;
-				}
-				p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E->key()]), s.color_right);
+
+			//sb=sb->duplicate();
+			//sb->call("set_modulate",modulate);
+			Ref<Texture> port = get_icon("port");
+			Ref<Texture> close = get_icon("close");
+			Ref<Texture> resizer = get_icon("resizer");
+			int close_offset = get_constant("close_offset");
+			int close_h_offset = get_constant("close_h_offset");
+			Color close_color = get_color("close_color");
+			Color resizer_color = get_color("resizer_color");
+			Ref<Font> title_font = get_font("title_font");
+			int title_offset = get_constant("title_offset");
+			int title_h_offset = get_constant("title_h_offset");
+			Color title_color = get_color("title_color");
+			Point2i icofs = -port->get_size() * 0.5;
+			int edgeofs = get_constant("port_offset");
+			icofs.y += sb->get_margin(MARGIN_TOP);
+
+			draw_style_box(sb, Rect2(Point2(), get_size()));
+
+			switch (overlay) {
+				case OVERLAY_DISABLED: {
+
+				} break;
+				case OVERLAY_BREAKPOINT: {
+
+					draw_style_box(get_stylebox("breakpoint"), Rect2(Point2(), get_size()));
+				} break;
+				case OVERLAY_POSITION: {
+					draw_style_box(get_stylebox("position"), Rect2(Point2(), get_size()));
+
+				} break;
 			}
-		}
 
-		if (resizable) {
-			draw_texture(resizer, get_size() - resizer->get_size());
-		}
-	}
+			int w = get_size().width - sb->get_minimum_size().x;
 
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
+			if (show_close)
+				w -= close->get_width();
 
-		_resort();
+			draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
+			if (show_close) {
+				Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
+				draw_texture(close, cpos, close_color);
+				close_rect.position = cpos;
+				close_rect.size = close->get_size();
+			} else {
+				close_rect = Rect2();
+			}
+
+			for (Map<int, Slot>::Element *E = slot_info.front(); E; E = E->next()) {
+
+				if (E->key() < 0 || E->key() >= cache_y.size())
+					continue;
+				if (!slot_info.has(E->key()))
+					continue;
+				const Slot &s = slot_info[E->key()];
+				//left
+				if (s.enable_left) {
+					Ref<Texture> p = port;
+					if (s.custom_slot_left.is_valid()) {
+						p = s.custom_slot_left;
+					}
+					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E->key()]), s.color_left);
+				}
+				if (s.enable_right) {
+					Ref<Texture> p = port;
+					if (s.custom_slot_right.is_valid()) {
+						p = s.custom_slot_right;
+					}
+					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E->key()]), s.color_right);
+				}
+			}
+
+			if (resizable) {
+				draw_texture(resizer, get_size() - resizer->get_size(), resizer_color);
+			}
+		} break;
+
+		case NOTIFICATION_SORT_CHILDREN: {
+
+			_resort();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+
+			minimum_size_changed();
+		} break;
 	}
 }
 
@@ -402,9 +407,12 @@ Size2 GraphNode::get_minimum_size() const {
 
 void GraphNode::set_title(const String &p_title) {
 
+	if (title == p_title)
+		return;
 	title = p_title;
-	minimum_size_changed();
 	update();
+	_change_notify("title");
+	minimum_size_changed();
 }
 
 String GraphNode::get_title() const {
@@ -585,13 +593,14 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 
-		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
-		ERR_FAIL_COND(get_parent_control() == NULL);
+		ERR_FAIL_COND_MSG(get_parent_control() == NULL, "GraphNode must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
+				//send focus to parent
+				get_parent_control()->grab_focus();
 				emit_signal("close_request");
 				accept_event();
 				return;
@@ -608,9 +617,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 				return;
 			}
 
-			//send focus to parent
 			emit_signal("raise_request");
-			get_parent_control()->grab_focus();
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {

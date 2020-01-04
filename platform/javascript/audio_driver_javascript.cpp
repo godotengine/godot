@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ void AudioDriverJavaScript::mix_to_js() {
 void AudioDriverJavaScript::process_capture(float sample) {
 
 	int32_t sample32 = int32_t(sample * 32768.f) * (1U << 16);
-	input_buffer_write(sample32);
+	capture_buffer_write(sample32);
 }
 
 Error AudioDriverJavaScript::init() {
@@ -99,7 +99,7 @@ Error AudioDriverJavaScript::init() {
 		return FAILED;
 	}
 
-	if (!internal_buffer || memarr_len(internal_buffer) != buffer_length * channel_count) {
+	if (!internal_buffer || (int)memarr_len(internal_buffer) != buffer_length * channel_count) {
 		if (internal_buffer)
 			memdelete_arr(internal_buffer);
 		internal_buffer = memnew_arr(float, buffer_length *channel_count);
@@ -146,6 +146,15 @@ void AudioDriverJavaScript::start() {
 	/* clang-format on */
 }
 
+void AudioDriverJavaScript::resume() {
+	/* clang-format off */
+	EM_ASM({
+		if (_audioDriver_audioContext.resume)
+			_audioDriver_audioContext.resume();
+	});
+	/* clang-format on */
+}
+
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	/* clang-format off */
@@ -189,7 +198,7 @@ void AudioDriverJavaScript::finish() {
 
 Error AudioDriverJavaScript::capture_start() {
 
-	input_buffer_init(buffer_length);
+	capture_buffer_init(buffer_length);
 
 	/* clang-format off */
 	EM_ASM({
@@ -200,7 +209,7 @@ Error AudioDriverJavaScript::capture_start() {
 		}
 
 		function gotMediaInputError(e) {
-			console.log(e);
+			out(e);
 		}
 
 		if (navigator.mediaDevices.getUserMedia) {
@@ -235,8 +244,6 @@ Error AudioDriverJavaScript::capture_stop() {
 
 	});
 	/* clang-format on */
-
-	input_buffer.clear();
 
 	return OK;
 }

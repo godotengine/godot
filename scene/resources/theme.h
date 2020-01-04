@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,15 +38,11 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Theme : public Resource {
 
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
-	static Ref<Theme> default_theme;
 	void _emit_theme_changed();
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
@@ -56,86 +52,35 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Color> > color_map;
 	HashMap<StringName, HashMap<StringName, int> > constant_map;
 
+	PoolVector<String> _get_icon_list(const String &p_type) const;
+	PoolVector<String> _get_stylebox_list(const String &p_type) const;
+	PoolVector<String> _get_stylebox_types(void) const;
+	PoolVector<String> _get_font_list(const String &p_type) const;
+	PoolVector<String> _get_color_list(const String &p_type) const;
+	PoolVector<String> _get_constant_list(const String &p_type) const;
+	PoolVector<String> _get_type_list(const String &p_type) const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	static Ref<Theme> project_default_theme;
+	static Ref<Theme> default_theme;
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
 
 	Ref<Font> default_theme_font;
 
-	PoolVector<String> _get_icon_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_icon_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_stylebox_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_stylebox_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_stylebox_types(void) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_stylebox_types(&il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_font_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_font_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_color_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_color_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_constant_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_constant_list(p_type, &il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-	PoolVector<String> _get_type_list(const String &p_type) const {
-		PoolVector<String> ilret;
-		List<StringName> il;
-		get_type_list(&il);
-		for (List<StringName>::Element *E = il.front(); E; E = E->next()) {
-			ilret.push_back(E->get());
-		}
-		return ilret;
-	}
-
 	static void _bind_methods();
 
 public:
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme> &p_default);
+
+	static Ref<Theme> get_project_default();
+	static void set_project_default(const Ref<Theme> &p_project_default);
 
 	static void set_default_icon(const Ref<Texture> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);
@@ -184,6 +129,7 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 
 	void copy_default_theme();
+	void copy_theme(const Ref<Theme> &p_other);
 	void clear();
 
 	Theme();

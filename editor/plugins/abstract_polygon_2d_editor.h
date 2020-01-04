@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,6 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/tool_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
@@ -80,6 +77,8 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 	bool wip_destructive;
+
+	bool _polygon_editing_enabled;
 
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
@@ -135,6 +134,8 @@ protected:
 	virtual void _create_resource();
 
 public:
+	void disable_polygon_editing(bool p_disable, String p_reason);
+
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 

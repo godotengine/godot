@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ class LightSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -60,6 +61,7 @@ class AudioStreamPlayer3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -77,6 +79,7 @@ class CameraSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -94,6 +97,7 @@ class MeshInstanceSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool can_be_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
@@ -107,6 +111,7 @@ class Sprite3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool can_be_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
@@ -123,6 +128,7 @@ class Position3DSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	Position3DSpatialGizmoPlugin();
@@ -135,6 +141,7 @@ class SkeletonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	SkeletonSpatialGizmoPlugin();
@@ -147,6 +154,7 @@ class PhysicalBoneSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	PhysicalBoneSpatialGizmoPlugin();
@@ -172,6 +180,7 @@ class RayCastSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	RayCastSpatialGizmoPlugin();
@@ -184,6 +193,7 @@ class SpringArmSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	SpringArmSpatialGizmoPlugin();
@@ -196,6 +206,7 @@ class VehicleWheelSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	VehicleWheelSpatialGizmoPlugin();
@@ -208,13 +219,14 @@ class SoftBodySpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool is_selectable_when_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
-	bool is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const;
+	bool is_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const;
 
 	SoftBodySpatialGizmoPlugin();
 };
@@ -226,6 +238,7 @@ class VisibilityNotifierGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -236,6 +249,18 @@ public:
 	VisibilityNotifierGizmoPlugin();
 };
 
+class CPUParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
+	GDCLASS(CPUParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
+
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	bool is_selectable_when_hidden() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+	CPUParticlesGizmoPlugin();
+};
+
 class ParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(ParticlesGizmoPlugin, EditorSpatialGizmoPlugin);
@@ -243,6 +268,7 @@ class ParticlesGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool is_selectable_when_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
@@ -261,6 +287,7 @@ class ReflectionProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -278,6 +305,7 @@ class GIProbeGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -295,6 +323,7 @@ class BakedIndirectLightGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -312,6 +341,7 @@ class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
@@ -328,6 +358,7 @@ class CollisionPolygonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 	CollisionPolygonSpatialGizmoPlugin();
 };
@@ -347,6 +378,7 @@ class NavigationMeshSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	NavigationMeshSpatialGizmoPlugin();
@@ -374,6 +406,7 @@ class JointSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 
 	static void CreatePinJointGizmo(const Transform &p_offset, Vector<Vector3> &r_cursor_points);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
  */
 
 enum Error {
-	OK,
+	OK, // (0)
 	FAILED, ///< Generic fail error
 	ERR_UNAVAILABLE, ///< What is requested is unsupported/unavailable
 	ERR_UNCONFIGURED, ///< The object being used hasn't been properly set up yet
@@ -69,12 +69,12 @@ enum Error {
 	ERR_CONNECTION_ERROR,
 	ERR_CANT_ACQUIRE_RESOURCE,
 	ERR_CANT_FORK,
-	ERR_INVALID_DATA, ///< Data passed is invalid	(30)
+	ERR_INVALID_DATA, ///< Data passed is invalid (30)
 	ERR_INVALID_PARAMETER, ///< Parameter passed is invalid
 	ERR_ALREADY_EXISTS, ///< When adding, item already exists
-	ERR_DOES_NOT_EXIST, ///< When retrieving/erasing, it item does not exist
+	ERR_DOES_NOT_EXIST, ///< When retrieving/erasing, if item does not exist
 	ERR_DATABASE_CANT_READ, ///< database is full
-	ERR_DATABASE_CANT_WRITE, ///< database is full	(35)
+	ERR_DATABASE_CANT_WRITE, ///< database is full (35)
 	ERR_COMPILATION_FAILED,
 	ERR_METHOD_NOT_FOUND,
 	ERR_LINK_FAILED,

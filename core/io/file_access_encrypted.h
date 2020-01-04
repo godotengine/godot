@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,9 @@ public:
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
+	virtual String get_path() const; /// returns the path for the current open file
+	virtual String get_path_absolute() const; /// returns the absolute path for the current open file
+
 	virtual void seek(size_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
 	virtual size_t get_position() const; ///< get position in the file
@@ -79,6 +82,8 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file);
+	virtual uint32_t _get_unix_permissions(const String &p_file);
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
 	FileAccessEncrypted();
 	~FileAccessEncrypted();

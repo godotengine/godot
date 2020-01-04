@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afscript.h                                                             */
-/*                                                                         */
-/*    Auto-fitter scripts (specification only).                            */
-/*                                                                         */
-/*  Copyright 2013-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afscript.h
+ *
+ *   Auto-fitter scripts (specification only).
+ *
+ * Copyright (C) 2013-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /* The following part can be included multiple times. */
@@ -242,6 +242,12 @@
           HB_SCRIPT_MALAYALAM,
           HINTING_BOTTOM_TO_TOP,
           "\xE0\xB4\xA0 \xE0\xB4\xB1" ) /* ഠ റ */
+
+  SCRIPT( mong, MONG,
+          "Mongolian",
+          HB_SCRIPT_MONGOLIAN,
+          HINTING_TOP_TO_BOTTOM,
+          "\xE1\xA1\x82 \xE1\xA0\xAA" ) /* ᡂ ᠪ */
 
   SCRIPT( mymr, MYMR,
           "Myanmar",

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define IMAGE_H
 
 #include "core/color.h"
-#include "core/dvector.h"
 #include "core/math/rect2.h"
+#include "core/pool_vector.h"
 #include "core/resource.h"
 
 /**
@@ -49,16 +49,19 @@ class Image;
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
+typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
+
 class Image : public Resource {
 	GDCLASS(Image, Resource);
+
+public:
+	static SavePNGFunc save_png_func;
+	static SaveEXRFunc save_exr_func;
 
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
 		MAX_HEIGHT = 16384 // force a limit somehow
 	};
-
-public:
-	static SavePNGFunc save_png_func;
 
 	enum Format {
 
@@ -109,6 +112,7 @@ public:
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
 		INTERPOLATE_TRILINEAR,
+		INTERPOLATE_LANCZOS,
 		/* INTERPOLATE_TRICUBIC, */
 		/* INTERPOLATE GAUSS */
 	};
@@ -216,13 +220,12 @@ public:
 
 	/**
 	 * Resize the image, using the preferred interpolation method.
-	 * Indexed-Color images always use INTERPOLATE_NEAREST.
 	 */
-
 	void resize_to_po2(bool p_square = false);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
+	bool is_size_po2() const;
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */
@@ -256,6 +259,7 @@ public:
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
+	Error save_exr(const String &p_path, bool p_grayscale) const;
 
 	/**
 	 * create an empty image
@@ -348,11 +352,11 @@ public:
 
 	Color get_pixelv(const Point2 &p_src) const;
 	Color get_pixel(int p_x, int p_y) const;
-	void set_pixelv(const Point2 &p_dest, const Color &p_color);
+	void set_pixelv(const Point2 &p_dst, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {
-		ERR_FAIL_COND(p_image.is_null());
+		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;

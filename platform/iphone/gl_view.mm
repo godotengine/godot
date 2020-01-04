@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@
 @end
 */
 
+bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
 static GLView *_instance = NULL;
@@ -283,12 +284,34 @@ static void clear_touches() {
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
+	bool fallback_gl2 = false;
+	// Create a GL ES 3 context based on the gl driver from project settings
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3") {
+		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+		NSLog(@"Setting up an OpenGL ES 3.0 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
+		if (!context && GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+			gles3_available = false;
+			fallback_gl2 = true;
+			NSLog(@"Failed to create OpenGL ES 3.0 context. Falling back to OpenGL ES 2.0");
+		}
+	}
 
-	// Create our EAGLContext, and if successful make it current and create our framebuffer.
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+	// Create GL ES 2 context
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2" || fallback_gl2) {
+		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+		NSLog(@"Setting up an OpenGL ES 2.0 context.");
+		if (!context) {
+			NSLog(@"Failed to create OpenGL ES 2.0 context!");
+			return nil;
+		}
+	}
 
-	if (!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
-		[self release];
+	if (![EAGLContext setCurrentContext:context]) {
+		NSLog(@"Failed to set EAGLContext!");
+		return nil;
+	}
+	if (![self createFramebuffer]) {
+		NSLog(@"Failed to create frame buffer!");
 		return nil;
 	}
 
@@ -314,11 +337,9 @@ static void clear_touches() {
 // the same size as our display area.
 
 - (void)layoutSubviews {
-	//printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
-	[self drawView];
 	[self drawView];
 }
 
@@ -435,22 +456,22 @@ static void clear_touches() {
 
 // Updates the OpenGL view when the timer fires
 - (void)drawView {
-	if (useCADisplayLink) {
-		// Pause the CADisplayLink to avoid recursion
-		[displayLink setPaused:YES];
-
-		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource)
-			;
-
-		// We are good to go, resume the CADisplayLink
-		[displayLink setPaused:NO];
-	}
 
 	if (!active) {
 		printf("draw view not active!\n");
 		return;
 	};
+	if (useCADisplayLink) {
+		// Pause the CADisplayLink to avoid recursion
+		[displayLink setPaused:YES];
+
+		// Process all input events
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
+			;
+
+		// We are good to go, resume the CADisplayLink
+		[displayLink setPaused:NO];
+	}
 
 	// Make sure that you are drawing to the current context
 	[EAGLContext setCurrentContext:context];
@@ -471,7 +492,7 @@ static void clear_touches() {
 #ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if (err)
-		NSLog(@"%x error", err);
+		NSLog(@"DrawView: %x error", err);
 #endif
 }
 
@@ -578,7 +599,7 @@ static void clear_touches() {
 	character.parse_utf8([p_text UTF8String]);
 	keyboard_text = keyboard_text + character;
 	OSIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-	printf("inserting text with character %i\n", character[0]);
+	printf("inserting text with character %lc\n", (CharType)character[0]);
 };
 
 - (void)audioRouteChangeListenerCallback:(NSNotification *)notification {
@@ -708,41 +729,5 @@ static void clear_touches() {
 - (void)playerItemDidReachEnd:(NSNotification *)notification {
 	_stop_video();
 }
-
-/*
-- (void)moviePlayBackDidFinish:(NSNotification*)notification {
-
-
-		NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
-		switch ([reason intValue]) {
-				case MPMovieFinishReasonPlaybackEnded:
-						//NSLog(@"Playback Ended");
-						break;
-				case MPMovieFinishReasonPlaybackError:
-						//NSLog(@"Playback Error");
-						video_found_error = true;
-						break;
-				case MPMovieFinishReasonUserExited:
-						//NSLog(@"User Exited");
-						video_found_error = true;
-						break;
-				default:
-					//NSLog(@"Unsupported reason!");
-					break;
-		}
-
-		MPMoviePlayerController *player = [notification object];
-
-		[[NSNotificationCenter defaultCenter]
-			removeObserver:self
-			name:MPMoviePlayerPlaybackDidFinishNotification
-			object:player];
-
-		[_instance.moviePlayerController stop];
-		[_instance.moviePlayerController.view removeFromSuperview];
-
-	video_playing = false;
-}
-*/
 
 @end

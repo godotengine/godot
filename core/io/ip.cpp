@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -234,6 +234,41 @@ Array IP::_get_local_addresses() const {
 	return addresses;
 }
 
+Array IP::_get_local_interfaces() const {
+
+	Array results;
+	Map<String, Interface_Info> interfaces;
+	get_local_interfaces(&interfaces);
+	for (Map<String, Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
+		Interface_Info &c = E->get();
+		Dictionary rc;
+		rc["name"] = c.name;
+		rc["friendly"] = c.name_friendly;
+		rc["index"] = c.index;
+
+		Array ips;
+		for (const List<IP_Address>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
+			ips.push_front(F->get());
+		}
+		rc["addresses"] = ips;
+
+		results.push_front(rc);
+	}
+
+	return results;
+}
+
+void IP::get_local_addresses(List<IP_Address> *r_addresses) const {
+
+	Map<String, Interface_Info> interfaces;
+	get_local_interfaces(&interfaces);
+	for (Map<String, Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
+		for (const List<IP_Address>::Element *F = E->get().ip_addresses.front(); F; F = F->next()) {
+			r_addresses->push_front(F->get());
+		}
+	}
+}
+
 void IP::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("resolve_hostname", "host", "ip_type"), &IP::resolve_hostname, DEFVAL(IP::TYPE_ANY));
@@ -242,6 +277,7 @@ void IP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
 	ClassDB::bind_method(D_METHOD("erase_resolve_item", "id"), &IP::erase_resolve_item);
 	ClassDB::bind_method(D_METHOD("get_local_addresses"), &IP::_get_local_addresses);
+	ClassDB::bind_method(D_METHOD("get_local_interfaces"), &IP::_get_local_interfaces);
 	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, DEFVAL(""));
 
 	BIND_ENUM_CONSTANT(RESOLVER_STATUS_NONE);
@@ -269,7 +305,7 @@ IP *(*IP::_create)() = NULL;
 
 IP *IP::create() {
 
-	ERR_FAIL_COND_V(singleton, NULL);
+	ERR_FAIL_COND_V_MSG(singleton, NULL, "IP singleton already exist.");
 	ERR_FAIL_COND_V(!_create, NULL);
 	return _create();
 }

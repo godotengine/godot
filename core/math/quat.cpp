@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "quat.h"
 
-#include "core/math/matrix3.h"
+#include "core/math/basis.h"
 #include "core/print_string.h"
 
 // set_euler_xyz expects a vector containing the Euler angles in the format
@@ -121,6 +121,11 @@ Quat Quat::operator*(const Quat &q) const {
 	return r;
 }
 
+bool Quat::is_equal_approx(const Quat &p_quat) const {
+
+	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
+}
+
 real_t Quat::length() const {
 
 	return Math::sqrt(length_squared());
@@ -135,7 +140,7 @@ Quat Quat::normalized() const {
 }
 
 bool Quat::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1.0);
+	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON); //use less epsilon
 }
 
 Quat Quat::inverse() const {

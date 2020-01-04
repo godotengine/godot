@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,8 @@
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
 
-	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode)
+	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
+
 public:
 	enum BuiltinFunc {
 		MATH_SIN,
@@ -67,6 +68,7 @@ public:
 		MATH_LERP,
 		MATH_INVERSE_LERP,
 		MATH_RANGE_LERP,
+		MATH_MOVE_TOWARD,
 		MATH_DECTIME,
 		MATH_RANDOMIZE,
 		MATH_RAND,
@@ -101,6 +103,10 @@ public:
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
 		COLORN,
+		MATH_SMOOTHSTEP,
+		MATH_POSMOD,
+		MATH_LERP_ANGLE,
+		TEXT_ORD,
 		FUNC_MAX
 	};
 

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffdecode.c                                                            */
-/*                                                                         */
-/*    PostScript CFF (Type 2) decoding routines (body).                    */
-/*                                                                         */
-/*  Copyright 2017-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffdecode.c
+ *
+ *   PostScript CFF (Type 2) decoding routines (body).
+ *
+ * Copyright (C) 2017-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -28,14 +28,14 @@
 #include "psauxerr.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cffdecode
+#define FT_COMPONENT  cffdecode
 
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
@@ -235,8 +235,8 @@
       return FT_THROW( Syntax_Error );
     }
 
-    adx += decoder->builder.left_bearing.x;
-    ady += decoder->builder.left_bearing.y;
+    adx = ADD_LONG( adx, decoder->builder.left_bearing.x );
+    ady = ADD_LONG( ady, decoder->builder.left_bearing.y );
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     /* Incremental fonts don't necessarily have valid charsets.        */
@@ -378,23 +378,26 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    cff_compute_bias                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Computes the bias value in dependence of the number of glyph       */
-  /*    subroutines.                                                       */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    in_charstring_type :: The `CharstringType' value of the top DICT   */
-  /*                          dictionary.                                  */
-  /*                                                                       */
-  /*    num_subrs          :: The number of glyph subroutines.             */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    The bias value.                                                    */
+  /**************************************************************************
+   *
+   * @Function:
+   *   cff_compute_bias
+   *
+   * @Description:
+   *   Computes the bias value in dependence of the number of glyph
+   *   subroutines.
+   *
+   * @Input:
+   *   in_charstring_type ::
+   *     The `CharstringType' value of the top DICT
+   *     dictionary.
+   *
+   *   num_subrs ::
+   *     The number of glyph subroutines.
+   *
+   * @Return:
+   *   The bias value.
+   */
   static FT_Int
   cff_compute_bias( FT_Int   in_charstring_type,
                     FT_UInt  num_subrs )
@@ -464,28 +467,32 @@
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    cff_decoder_parse_charstrings                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Parses a given Type 2 charstrings program.                         */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    decoder         :: The current Type 1 decoder.                     */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    charstring_base :: The base of the charstring stream.              */
-  /*                                                                       */
-  /*    charstring_len  :: The length in bytes of the charstring stream.   */
-  /*                                                                       */
-  /*    in_dict         :: Set to 1 if function is called from top or      */
-  /*                       private DICT (needed for Multiple Master CFFs). */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   cff_decoder_parse_charstrings
+   *
+   * @Description:
+   *   Parses a given Type 2 charstrings program.
+   *
+   * @InOut:
+   *   decoder ::
+   *     The current Type 1 decoder.
+   *
+   * @Input:
+   *   charstring_base ::
+   *     The base of the charstring stream.
+   *
+   *   charstring_len ::
+   *     The length in bytes of the charstring stream.
+   *
+   *   in_dict ::
+   *     Set to 1 if function is called from top or
+   *     private DICT (needed for Multiple Master CFFs).
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   cff_decoder_parse_charstrings( CFF_Decoder*  decoder,
                                  FT_Byte*      charstring_base,
@@ -543,10 +550,10 @@
       FT_Byte       v;
 
 
-      /********************************************************************/
-      /*                                                                  */
-      /* Decode operator or operand                                       */
-      /*                                                                  */
+      /*********************************************************************
+       *
+       * Decode operator or operand
+       */
       v = *ip++;
       if ( v >= 32 || v == 28 )
       {
@@ -853,6 +860,15 @@
           case cff_op_flex1:
           case cff_op_callsubr:
           case cff_op_callgsubr:
+            /* deprecated opcodes */
+          case cff_op_dotsection:
+            /* invalid Type 1 opcodes */
+          case cff_op_hsbw:
+          case cff_op_closepath:
+          case cff_op_callothersubr:
+          case cff_op_seac:
+          case cff_op_sbw:
+          case cff_op_setcurrentpoint:
             goto MM_Error;
 
           default:
@@ -948,10 +964,10 @@
         case cff_op_hstemhm:
         case cff_op_vstemhm:
           /* the number of arguments is always even here */
-          FT_TRACE4((
-              op == cff_op_hstem   ? " hstem\n"   :
-            ( op == cff_op_vstem   ? " vstem\n"   :
-            ( op == cff_op_hstemhm ? " hstemhm\n" : " vstemhm\n" ) ) ));
+          FT_TRACE4(( "%s\n",
+              op == cff_op_hstem   ? " hstem"   :
+            ( op == cff_op_vstem   ? " vstem"   :
+            ( op == cff_op_hstemhm ? " hstemhm" : " vstemhm" ) ) ));
 
           if ( hinter )
             hinter->stems( hinter->hints,
@@ -965,7 +981,8 @@
 
         case cff_op_hintmask:
         case cff_op_cntrmask:
-          FT_TRACE4(( op == cff_op_hintmask ? " hintmask" : " cntrmask" ));
+          FT_TRACE4(( "%s", op == cff_op_hintmask ? " hintmask"
+                                                  : " cntrmask" ));
 
           /* implement vstem when needed --                        */
           /* the specification doesn't say it, but this also works */
@@ -1078,8 +1095,8 @@
             FT_Int  phase = ( op == cff_op_hlineto );
 
 
-            FT_TRACE4(( op == cff_op_hlineto ? " hlineto\n"
-                                             : " vlineto\n" ));
+            FT_TRACE4(( "%s\n", op == cff_op_hlineto ? " hlineto"
+                                                     : " vlineto" ));
 
             if ( num_args < 0 )
               goto Stack_Underflow;
@@ -1250,8 +1267,8 @@
             FT_Int  nargs;
 
 
-            FT_TRACE4(( op == cff_op_vhcurveto ? " vhcurveto\n"
-                                               : " hvcurveto\n" ));
+            FT_TRACE4(( "%s\n", op == cff_op_vhcurveto ? " vhcurveto"
+                                                       : " hvcurveto" ));
 
             if ( cff_builder_start_point( builder, x, y ) )
               goto Fail;
@@ -1539,9 +1556,9 @@
             }
 
             if ( dx < 0 )
-              dx = -dx;
+              dx = NEG_LONG( dx );
             if ( dy < 0 )
-              dy = -dy;
+              dy = NEG_LONG( dy );
 
             /* strange test, but here it is... */
             horizontal = ( dx > dy );
@@ -1551,7 +1568,7 @@
               x = ADD_LONG( x, args[0] );
               y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y,
-                                     (FT_Bool)( count == 3 ) );
+                                     FT_BOOL( count == 3 ) );
               args += 2;
             }
 
@@ -1589,7 +1606,7 @@
               x = ADD_LONG( x, args[0] );
               y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y,
-                                     (FT_Bool)( count == 4 || count == 1 ) );
+                                     FT_BOOL( count == 4 || count == 1 ) );
               args += 2;
             }
 
@@ -1705,16 +1722,20 @@
           break;
 
         case cff_op_random:
-          FT_TRACE4(( " random\n" ));
+          {
+            FT_UInt32*  randval = in_dict ? &decoder->cff->top_font.random
+                                          : &decoder->current_subfont->random;
 
-          /* only use the lower 16 bits of `random'  */
-          /* to generate a number in the range (0;1] */
-          args[0] = (FT_Fixed)
-                      ( ( decoder->current_subfont->random & 0xFFFF ) + 1 );
-          args++;
 
-          decoder->current_subfont->random =
-            cff_random( decoder->current_subfont->random );
+            FT_TRACE4(( " random\n" ));
+
+            /* only use the lower 16 bits of `random'  */
+            /* to generate a number in the range (0;1] */
+            args[0] = (FT_Fixed)( ( *randval & 0xFFFF ) + 1 );
+            args++;
+
+            *randval = cff_random( *randval );
+          }
           break;
 
         case cff_op_mul:
@@ -1727,7 +1748,10 @@
         case cff_op_sqrt:
           FT_TRACE4(( " sqrt\n" ));
 
-          if ( args[0] > 0 )
+          /* without upper limit the loop below might not finish */
+          if ( args[0] > 0x7FFFFFFFL )
+            args[0] = 46341;
+          else if ( args[0] > 0 )
           {
             FT_Fixed  root = args[0];
             FT_Fixed  new_root;
@@ -1800,6 +1824,7 @@
 
             if ( idx >= 0 )
             {
+              idx = idx % count;
               while ( idx > 0 )
               {
                 FT_Fixed  tmp = args[count - 1];
@@ -1814,6 +1839,10 @@
             }
             else
             {
+              /* before C99 it is implementation-defined whether    */
+              /* the result of `%' is negative if the first operand */
+              /* is negative                                        */
+              idx = -( NEG_INT( idx ) % count );
               while ( idx < 0 )
               {
                 FT_Fixed  tmp = args[0];
@@ -1914,6 +1943,7 @@
         case cff_op_blend:
           /* this operator was removed from the Type2 specification */
           /* in version 16-March-2000                               */
+          if ( num_designs )
           {
             FT_Int  num_results = (FT_Int)( args[0] >> 16 );
 
@@ -1923,7 +1953,8 @@
             if ( num_results < 0 )
               goto Syntax_Error;
 
-            if ( num_results * (FT_Int)num_designs > num_args )
+            if ( num_results > num_args                       ||
+                 num_results * (FT_Int)num_designs > num_args )
               goto Stack_Underflow;
 
             /* since we currently don't handle interpolation of multiple */
@@ -1932,6 +1963,8 @@
             args     -= num_results * ( num_designs - 1 );
             num_args -= num_results * ( num_designs - 1 );
           }
+          else
+            goto Syntax_Error;
           break;
 
         case cff_op_dotsection:
@@ -1998,20 +2031,31 @@
           break;
 
         case cff_op_callothersubr:
-          /* this is an invalid Type 2 operator; however, there        */
-          /* exist fonts which are incorrectly converted from probably */
-          /* Type 1 to CFF, and some parsers seem to accept it         */
+          {
+            FT_Fixed  arg;
 
-          FT_TRACE4(( " callothersubr (invalid op)\n" ));
 
-          /* subsequent `pop' operands should add the arguments,       */
-          /* this is the implementation described for `unknown' other  */
-          /* subroutines in the Type1 spec.                            */
-          /*                                                           */
-          /* XXX Fix return arguments (see discussion below).          */
-          args -= 2 + ( args[-2] >> 16 );
-          if ( args < stack )
-            goto Stack_Underflow;
+            /* this is an invalid Type 2 operator; however, there      */
+            /* exist fonts which are incorrectly converted from        */
+            /* probably Type 1 to CFF, and some parsers seem to accept */
+            /* it                                                      */
+
+            FT_TRACE4(( " callothersubr (invalid op)\n" ));
+
+            /* subsequent `pop' operands should add the arguments,     */
+            /* this is the implementation described for `unknown'      */
+            /* other subroutines in the Type1 spec.                    */
+            /*                                                         */
+            /* XXX Fix return arguments (see discussion below).        */
+
+            arg = 2 + ( args[-2] >> 16 );
+            if ( arg >= CFF_MAX_OPERANDS )
+              goto Stack_Underflow;
+
+            args -= arg;
+            if ( args < stack )
+              goto Stack_Underflow;
+          }
           break;
 
         case cff_op_pop:
@@ -2251,28 +2295,34 @@
 #endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    cff_decoder_init                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given glyph decoder.                                 */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    decoder :: A pointer to the glyph builder to initialize.           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face      :: The current face object.                              */
-  /*                                                                       */
-  /*    size      :: The current size object.                              */
-  /*                                                                       */
-  /*    slot      :: The current glyph object.                             */
-  /*                                                                       */
-  /*    hinting   :: Whether hinting is active.                            */
-  /*                                                                       */
-  /*    hint_mode :: The hinting mode.                                     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   cff_decoder_init
+   *
+   * @Description:
+   *   Initializes a given glyph decoder.
+   *
+   * @InOut:
+   *   decoder ::
+   *     A pointer to the glyph builder to initialize.
+   *
+   * @Input:
+   *   face ::
+   *     The current face object.
+   *
+   *   size ::
+   *     The current size object.
+   *
+   *   slot ::
+   *     The current glyph object.
+   *
+   *   hinting ::
+   *     Whether hinting is active.
+   *
+   *   hint_mode ::
+   *     The hinting mode.
+   */
   FT_LOCAL_DEF( void )
   cff_decoder_init( CFF_Decoder*                     decoder,
                     TT_Face                          face,

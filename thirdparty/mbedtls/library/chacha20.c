@@ -53,15 +53,21 @@
 #define inline __inline
 #endif
 
+/* Parameter validation macros */
+#define CHACHA20_VALIDATE_RET( cond )                                       \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA )
+#define CHACHA20_VALIDATE( cond )                                           \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
+
 #define BYTES_TO_U32_LE( data, offset )                           \
-    ( (uint32_t) data[offset]                                     \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 1] << 8 )   \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 2] << 16 )  \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 3] << 24 )  \
+    ( (uint32_t) (data)[offset]                                   \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 1] << 8 )     \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 2] << 16 )    \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 3] << 24 )    \
     )
 
 #define ROTL32( value, amount ) \
-        ( (uint32_t) ( value << amount ) | ( value >> ( 32 - amount ) ) )
+    ( (uint32_t) ( (value) << (amount) ) | ( (value) >> ( 32 - (amount) ) ) )
 
 #define CHACHA20_CTR_INDEX ( 12U )
 
@@ -181,14 +187,13 @@ static void chacha20_block( const uint32_t initial_state[16],
 
 void mbedtls_chacha20_init( mbedtls_chacha20_context *ctx )
 {
-    if( ctx != NULL )
-    {
-        mbedtls_platform_zeroize( ctx->state, sizeof( ctx->state ) );
-        mbedtls_platform_zeroize( ctx->keystream8, sizeof( ctx->keystream8 ) );
+    CHACHA20_VALIDATE( ctx != NULL );
 
-        /* Initially, there's no keystream bytes available */
-        ctx->keystream_bytes_used = CHACHA20_BLOCK_SIZE_BYTES;
-    }
+    mbedtls_platform_zeroize( ctx->state, sizeof( ctx->state ) );
+    mbedtls_platform_zeroize( ctx->keystream8, sizeof( ctx->keystream8 ) );
+
+    /* Initially, there's no keystream bytes available */
+    ctx->keystream_bytes_used = CHACHA20_BLOCK_SIZE_BYTES;
 }
 
 void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx )
@@ -202,10 +207,8 @@ void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx )
 int mbedtls_chacha20_setkey( mbedtls_chacha20_context *ctx,
                             const unsigned char key[32] )
 {
-    if( ( ctx == NULL ) || ( key == NULL ) )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( key != NULL );
 
     /* ChaCha20 constants - the string "expand 32-byte k" */
     ctx->state[0] = 0x61707865;
@@ -230,10 +233,8 @@ int mbedtls_chacha20_starts( mbedtls_chacha20_context* ctx,
                              const unsigned char nonce[12],
                              uint32_t counter )
 {
-    if( ( ctx == NULL ) || ( nonce == NULL ) )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( nonce != NULL );
 
     /* Counter */
     ctx->state[12] = counter;
@@ -259,15 +260,9 @@ int mbedtls_chacha20_update( mbedtls_chacha20_context *ctx,
     size_t offset = 0U;
     size_t i;
 
-    if( ctx == NULL )
-    {
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
-    else if( ( size > 0U ) && ( ( input == NULL ) || ( output == NULL ) ) )
-    {
-        /* input and output pointers are allowed to be NULL only if size == 0 */
-        return( MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA );
-    }
+    CHACHA20_VALIDATE_RET( ctx != NULL );
+    CHACHA20_VALIDATE_RET( size == 0 || input  != NULL );
+    CHACHA20_VALIDATE_RET( size == 0 || output != NULL );
 
     /* Use leftover keystream bytes, if available */
     while( size > 0U && ctx->keystream_bytes_used < CHACHA20_BLOCK_SIZE_BYTES )
@@ -331,6 +326,11 @@ int mbedtls_chacha20_crypt( const unsigned char key[32],
 {
     mbedtls_chacha20_context ctx;
     int ret;
+
+    CHACHA20_VALIDATE_RET( key != NULL );
+    CHACHA20_VALIDATE_RET( nonce != NULL );
+    CHACHA20_VALIDATE_RET( data_len == 0 || input  != NULL );
+    CHACHA20_VALIDATE_RET( data_len == 0 || output != NULL );
 
     mbedtls_chacha20_init( &ctx );
 

@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2018 by
+# Copyright (C) 1996-2019 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -36,17 +36,17 @@ BASE_COMPILE := $(CC) $(ANSIFLAGS)                             \
 # All files listed here should be included in `ftbase.c' (for a `single'
 # build).
 #
-BASE_SRC := $(BASE_DIR)/basepic.c  \
-            $(BASE_DIR)/ftadvanc.c \
+BASE_SRC := $(BASE_DIR)/ftadvanc.c \
             $(BASE_DIR)/ftcalc.c   \
+            $(BASE_DIR)/ftcolor.c  \
             $(BASE_DIR)/ftdbgmem.c \
+            $(BASE_DIR)/fterrors.c \
             $(BASE_DIR)/ftfntfmt.c \
             $(BASE_DIR)/ftgloadr.c \
             $(BASE_DIR)/fthash.c   \
             $(BASE_DIR)/ftlcdfil.c \
             $(BASE_DIR)/ftobjs.c   \
             $(BASE_DIR)/ftoutln.c  \
-            $(BASE_DIR)/ftpic.c    \
             $(BASE_DIR)/ftpsprop.c \
             $(BASE_DIR)/ftrfork.c  \
             $(BASE_DIR)/ftsnames.c \
@@ -60,8 +60,7 @@ ifneq ($(ftmac_c),)
 endif
 
 # for simplicity, we also handle `md5.c' (which gets included by `ftobjs.h')
-BASE_H := $(BASE_DIR)/basepic.h \
-          $(BASE_DIR)/ftbase.h  \
+BASE_H := $(BASE_DIR)/ftbase.h  \
           $(BASE_DIR)/md5.c     \
           $(BASE_DIR)/md5.h
 

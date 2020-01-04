@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class VisualScriptReturn : public VisualScriptNode {
 
-	GDCLASS(VisualScriptReturn, VisualScriptNode)
+	GDCLASS(VisualScriptReturn, VisualScriptNode);
 
 	Variant::Type type;
 	bool with_value;
@@ -72,7 +72,7 @@ public:
 
 class VisualScriptCondition : public VisualScriptNode {
 
-	GDCLASS(VisualScriptCondition, VisualScriptNode)
+	GDCLASS(VisualScriptCondition, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -100,7 +100,7 @@ public:
 
 class VisualScriptWhile : public VisualScriptNode {
 
-	GDCLASS(VisualScriptWhile, VisualScriptNode)
+	GDCLASS(VisualScriptWhile, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -128,7 +128,7 @@ public:
 
 class VisualScriptIterator : public VisualScriptNode {
 
-	GDCLASS(VisualScriptIterator, VisualScriptNode)
+	GDCLASS(VisualScriptIterator, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -156,7 +156,7 @@ public:
 
 class VisualScriptSequence : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSequence, VisualScriptNode)
+	GDCLASS(VisualScriptSequence, VisualScriptNode);
 
 	int steps;
 
@@ -189,7 +189,7 @@ public:
 
 class VisualScriptSwitch : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSwitch, VisualScriptNode)
+	GDCLASS(VisualScriptSwitch, VisualScriptNode);
 
 	struct Case {
 		Variant::Type type;
@@ -231,7 +231,7 @@ public:
 
 class VisualScriptTypeCast : public VisualScriptNode {
 
-	GDCLASS(VisualScriptTypeCast, VisualScriptNode)
+	GDCLASS(VisualScriptTypeCast, VisualScriptNode);
 
 	StringName base_type;
 	String script;

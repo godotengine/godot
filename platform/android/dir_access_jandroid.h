@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define DIR_ACCESS_JANDROID_H
 
 #include "core/os/dir_access.h"
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 #include <stdio.h>
 
 class DirAccessJAndroid : public DirAccess {
@@ -74,6 +74,8 @@ public:
 
 	virtual Error rename(String p_from, String p_to);
 	virtual Error remove(String p_name);
+
+	virtual String get_filesystem_type() const;
 
 	//virtual FileType get_file_type() const;
 	size_t get_space_left();

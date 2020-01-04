@@ -70,7 +70,7 @@ static void Flush(VP8BitWriter* const bw) {
       const int value = (bits & 0x100) ? 0x00 : 0xff;
       for (; bw->run_ > 0; --bw->run_) bw->buf_[pos++] = value;
     }
-    bw->buf_[pos++] = bits;
+    bw->buf_[pos++] = bits & 0xff;
     bw->pos_ = pos;
   } else {
     bw->run_++;   // delay writing of bytes 0xff, pending eventual carry.
@@ -248,6 +248,7 @@ int VP8LBitWriterClone(const VP8LBitWriter* const src,
   dst->bits_ = src->bits_;
   dst->used_ = src->used_;
   dst->error_ = src->error_;
+  dst->cur_ = dst->buf_ + current_size;
   return 1;
 }
 

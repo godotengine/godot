@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 class ExportTemplateVersion;
 
 class ExportTemplateManager : public ConfirmationDialog {
-	GDCLASS(ExportTemplateManager, ConfirmationDialog)
+	GDCLASS(ExportTemplateManager, ConfirmationDialog);
 
 	AcceptDialog *template_downloader;
 	VBoxContainer *template_list;
@@ -84,6 +84,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool can_install_android_template();
+	Error install_android_template();
+
 	void popup_manager();
 
 	ExportTemplateManager();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "editor_node.h"
+#include "progress_dialog.h"
 
 void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
 
@@ -90,7 +91,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text(TTR("Error opening package file, not in zip format."));
+		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
 
@@ -111,18 +112,14 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	Map<String, Ref<Texture> > extension_guess;
 	{
-		extension_guess["png"] = get_icon("Texture", "EditorIcons");
-		extension_guess["jpg"] = get_icon("Texture", "EditorIcons");
-		extension_guess["tex"] = get_icon("Texture", "EditorIcons");
-		extension_guess["atlastex"] = get_icon("Texture", "EditorIcons");
-		extension_guess["dds"] = get_icon("Texture", "EditorIcons");
+		extension_guess["png"] = get_icon("ImageTexture", "EditorIcons");
+		extension_guess["jpg"] = get_icon("ImageTexture", "EditorIcons");
+		extension_guess["atlastex"] = get_icon("AtlasTexture", "EditorIcons");
 		extension_guess["scn"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["xml"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["xscn"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["material"] = get_icon("Material", "EditorIcons");
-		extension_guess["shd"] = get_icon("Shader", "EditorIcons");
+		extension_guess["shader"] = get_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = get_icon("GDScript", "EditorIcons");
+		extension_guess["vs"] = get_icon("VisualScript", "EditorIcons");
 	}
 
 	Ref<Texture> generic_extension = get_icon("Object", "EditorIcons");
@@ -221,7 +218,7 @@ void EditorAssetInstaller::ok_pressed() {
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text(TTR("Error opening package file, not in zip format."));
+		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
 
@@ -304,7 +301,7 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
 		if (EditorNode::get_singleton() != NULL)
-			EditorNode::get_singleton()->show_warning(TTR("Package Installed Successfully!"), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }

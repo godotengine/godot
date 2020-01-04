@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,11 +178,11 @@ float AnimationNodeStateMachinePlayback::get_current_length() const {
 	return len_current;
 }
 
-bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *sm, const StringName &p_travel) {
+bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel) {
 
 	ERR_FAIL_COND_V(!playing, false);
-	ERR_FAIL_COND_V(!sm->states.has(p_travel), false);
-	ERR_FAIL_COND_V(!sm->states.has(current), false);
+	ERR_FAIL_COND_V(!p_state_machine->states.has(p_travel), false);
+	ERR_FAIL_COND_V(!p_state_machine->states.has(current), false);
 
 	path.clear(); //a new one will be needed
 
@@ -191,25 +191,25 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *sm, c
 
 	loops_current = 0; // reset loops, so fade does not happen immediately
 
-	Vector2 current_pos = sm->states[current].position;
-	Vector2 target_pos = sm->states[p_travel].position;
+	Vector2 current_pos = p_state_machine->states[current].position;
+	Vector2 target_pos = p_state_machine->states[p_travel].position;
 
 	Map<StringName, AStarCost> cost_map;
 
 	List<int> open_list;
 
 	//build open list
-	for (int i = 0; i < sm->transitions.size(); i++) {
-		if (sm->transitions[i].from == current) {
+	for (int i = 0; i < p_state_machine->transitions.size(); i++) {
+		if (p_state_machine->transitions[i].from == current) {
 			open_list.push_back(i);
-			float cost = sm->states[sm->transitions[i].to].position.distance_to(current_pos);
-			cost *= sm->transitions[i].transition->get_priority();
+			float cost = p_state_machine->states[p_state_machine->transitions[i].to].position.distance_to(current_pos);
+			cost *= p_state_machine->transitions[i].transition->get_priority();
 			AStarCost ap;
 			ap.prev = current;
 			ap.distance = cost;
-			cost_map[sm->transitions[i].to] = ap;
+			cost_map[p_state_machine->transitions[i].to] = ap;
 
-			if (sm->transitions[i].to == p_travel) { //prematurely found it! :D
+			if (p_state_machine->transitions[i].to == p_travel) { //prematurely found it! :D
 				path.push_back(p_travel);
 				return true;
 			}
@@ -230,42 +230,43 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *sm, c
 
 		for (List<int>::Element *E = open_list.front(); E; E = E->next()) {
 
-			float cost = cost_map[sm->transitions[E->get()].to].distance;
-			cost += sm->states[sm->transitions[E->get()].to].position.distance_to(target_pos);
+			float cost = cost_map[p_state_machine->transitions[E->get()].to].distance;
+			cost += p_state_machine->states[p_state_machine->transitions[E->get()].to].position.distance_to(target_pos);
 
 			if (cost < least_cost) {
 				least_cost_transition = E;
+				least_cost = cost;
 			}
 		}
 
-		StringName transition_prev = sm->transitions[least_cost_transition->get()].from;
-		StringName transition = sm->transitions[least_cost_transition->get()].to;
+		StringName transition_prev = p_state_machine->transitions[least_cost_transition->get()].from;
+		StringName transition = p_state_machine->transitions[least_cost_transition->get()].to;
 
-		for (int i = 0; i < sm->transitions.size(); i++) {
-			if (sm->transitions[i].from != transition || sm->transitions[i].to == transition_prev) {
+		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
+			if (p_state_machine->transitions[i].from != transition || p_state_machine->transitions[i].to == transition_prev) {
 				continue; //not interested on those
 			}
 
-			float distance = sm->states[sm->transitions[i].from].position.distance_to(sm->states[sm->transitions[i].to].position);
-			distance *= sm->transitions[i].transition->get_priority();
-			distance += cost_map[sm->transitions[i].from].distance;
+			float distance = p_state_machine->states[p_state_machine->transitions[i].from].position.distance_to(p_state_machine->states[p_state_machine->transitions[i].to].position);
+			distance *= p_state_machine->transitions[i].transition->get_priority();
+			distance += cost_map[p_state_machine->transitions[i].from].distance;
 
-			if (cost_map.has(sm->transitions[i].to)) {
+			if (cost_map.has(p_state_machine->transitions[i].to)) {
 				//oh this was visited already, can we win the cost?
-				if (distance < cost_map[sm->transitions[i].to].distance) {
-					cost_map[sm->transitions[i].to].distance = distance;
-					cost_map[sm->transitions[i].to].prev = sm->transitions[i].from;
+				if (distance < cost_map[p_state_machine->transitions[i].to].distance) {
+					cost_map[p_state_machine->transitions[i].to].distance = distance;
+					cost_map[p_state_machine->transitions[i].to].prev = p_state_machine->transitions[i].from;
 				}
 			} else {
 				//add to open list
 				AStarCost ac;
-				ac.prev = sm->transitions[i].from;
+				ac.prev = p_state_machine->transitions[i].from;
 				ac.distance = distance;
-				cost_map[sm->transitions[i].to] = ac;
+				cost_map[p_state_machine->transitions[i].to] = ac;
 
 				open_list.push_back(i);
 
-				if (sm->transitions[i].to == p_travel) {
+				if (p_state_machine->transitions[i].to == p_travel) {
 					found_route = true;
 					break;
 				}
@@ -291,12 +292,12 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *sm, c
 	return true;
 }
 
-float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, float p_time, bool p_seek) {
+float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, float p_time, bool p_seek) {
 
 	//if not playing and it can restart, then restart
 	if (!playing && start_request == StringName()) {
-		if (!stop_request && sm->start_node) {
-			start(sm->start_node);
+		if (!stop_request && p_state_machine->start_node) {
+			start(p_state_machine->start_node);
 		} else {
 			return 0;
 		}
@@ -311,43 +312,52 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 	bool play_start = false;
 
 	if (start_request != StringName()) {
-
 		if (start_request_travel) {
 			if (!playing) {
-				start_request = StringName();
-				ERR_EXPLAIN("Can't travel to '" + String(start_request) + "' if state machine is not active.");
-				ERR_FAIL_V(0);
-			}
-
-			if (!_travel(sm, start_request)) {
-				//can't travel, then teleport
-				path.clear();
-				current = start_request;
+				if (!stop_request && p_state_machine->start_node) {
+					// can restart, just postpone traveling
+					path.clear();
+					current = p_state_machine->start_node;
+					playing = true;
+					play_start = true;
+				} else {
+					// stopped, invalid state
+					String node_name = start_request;
+					start_request = StringName(); //clear start request
+					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing.");
+				}
+			} else {
+				if (!_travel(p_state_machine, start_request)) {
+					// can't travel, then teleport
+					path.clear();
+					current = start_request;
+				}
+				start_request = StringName(); //clear start request
 			}
 		} else {
+			// teleport to start
 			path.clear();
 			current = start_request;
 			playing = true;
 			play_start = true;
+			start_request = StringName(); //clear start request
 		}
-
-		start_request = StringName(); //clear start request
 	}
 
 	bool do_start = (p_seek && p_time == 0) || play_start || current == StringName();
 
 	if (do_start) {
 
-		if (sm->start_node != StringName() && p_seek && p_time == 0) {
-			current = sm->start_node;
+		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
+			current = p_state_machine->start_node;
 		}
 
-		len_current = sm->blend_node(current, sm->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
+		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
 		loops_current = 0;
 	}
 
-	if (!sm->states.has(current)) {
+	if (!p_state_machine->states.has(current)) {
 		playing = false; //current does not exist
 		current = StringName();
 		return 0;
@@ -356,7 +366,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 
 	if (fading_from != StringName()) {
 
-		if (!sm->states.has(fading_from)) {
+		if (!p_state_machine->states.has(fading_from)) {
 			fading_from = StringName();
 		} else {
 			if (!p_seek) {
@@ -369,11 +379,11 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 		}
 	}
 
-	float rem = sm->blend_node(current, sm->states[current].node, p_time, p_seek, fade_blend, AnimationNode::FILTER_IGNORE, false);
+	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, fade_blend, AnimationNode::FILTER_IGNORE, false);
 
 	if (fading_from != StringName()) {
 
-		sm->blend_node(current, sm->states[fading_from].node, p_time, p_seek, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, false);
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, false);
 	}
 
 	//guess playback position
@@ -398,39 +408,40 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 
 	if (path.size()) {
 
-		for (int i = 0; i < sm->transitions.size(); i++) {
-			if (sm->transitions[i].from == current && sm->transitions[i].to == path[0]) {
-				next_xfade = sm->transitions[i].transition->get_xfade_time();
-				switch_mode = sm->transitions[i].transition->get_switch_mode();
+		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
+			if (p_state_machine->transitions[i].from == current && p_state_machine->transitions[i].to == path[0]) {
+				next_xfade = p_state_machine->transitions[i].transition->get_xfade_time();
+				switch_mode = p_state_machine->transitions[i].transition->get_switch_mode();
 				next = path[0];
 			}
 		}
 	} else {
 		float priority_best = 1e20;
 		int auto_advance_to = -1;
-		for (int i = 0; i < sm->transitions.size(); i++) {
+		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
 
 			bool auto_advance = false;
-			if (sm->transitions[i].transition->has_auto_advance()) {
+			if (p_state_machine->transitions[i].transition->has_auto_advance()) {
 				auto_advance = true;
 			}
-			StringName advance_condition_name = sm->transitions[i].transition->get_advance_condition_name();
-			if (advance_condition_name != StringName() && bool(sm->get_parameter(advance_condition_name))) {
+			StringName advance_condition_name = p_state_machine->transitions[i].transition->get_advance_condition_name();
+			if (advance_condition_name != StringName() && bool(p_state_machine->get_parameter(advance_condition_name))) {
 				auto_advance = true;
 			}
 
-			if (sm->transitions[i].from == current && auto_advance) {
+			if (p_state_machine->transitions[i].from == current && auto_advance) {
 
-				if (sm->transitions[i].transition->get_priority() < priority_best) {
+				if (p_state_machine->transitions[i].transition->get_priority() <= priority_best) {
+					priority_best = p_state_machine->transitions[i].transition->get_priority();
 					auto_advance_to = i;
 				}
 			}
 		}
 
 		if (auto_advance_to != -1) {
-			next = sm->transitions[auto_advance_to].to;
-			next_xfade = sm->transitions[auto_advance_to].transition->get_xfade_time();
-			switch_mode = sm->transitions[auto_advance_to].transition->get_switch_mode();
+			next = p_state_machine->transitions[auto_advance_to].to;
+			next_xfade = p_state_machine->transitions[auto_advance_to].transition->get_xfade_time();
+			switch_mode = p_state_machine->transitions[auto_advance_to].transition->get_switch_mode();
 		}
 	}
 
@@ -439,13 +450,13 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 
 		bool goto_next = false;
 
-		if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE) {
-			goto_next = fading_from == StringName();
-		} else {
+		if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
 			goto_next = next_xfade >= (len_current - pos_current) || loops_current > 0;
 			if (loops_current > 0) {
 				next_xfade = 0;
 			}
+		} else {
+			goto_next = fading_from == StringName();
 		}
 
 		if (goto_next) { //loops should be used because fade time may be too small or zero and animation may have looped
@@ -465,12 +476,12 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 			}
 			current = next;
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = sm->blend_node(current, sm->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
-				sm->blend_node(current, sm->states[current].node, pos_current, true, 0, AnimationNode::FILTER_IGNORE, false);
+				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, 0, AnimationNode::FILTER_IGNORE, false);
 
 			} else {
-				len_current = sm->blend_node(current, sm->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = 0;
 			}
 
@@ -480,10 +491,9 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 	}
 
 	//compute time left for transitions by using the end node
+	if (p_state_machine->end_node != StringName() && p_state_machine->end_node != current) {
 
-	if (sm->end_node != StringName() && sm->end_node != current) {
-
-		rem = sm->blend_node(current, sm->states[sm->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+		rem = p_state_machine->blend_node(p_state_machine->end_node, p_state_machine->states[p_state_machine->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 	}
 
 	return rem;
@@ -598,6 +608,9 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 
 	{
 		Ref<AnimationNode> node = states[p_name].node;
+
+		ERR_FAIL_COND(node.is_null());
+
 		node->disconnect("tree_changed", this, "_tree_changed");
 	}
 
@@ -960,7 +973,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_end_node", "name"), &AnimationNodeStateMachine::set_end_node);
 	ClassDB::bind_method(D_METHOD("get_end_node"), &AnimationNodeStateMachine::get_end_node);
 
-	ClassDB::bind_method(D_METHOD("set_graph_offset", "name"), &AnimationNodeStateMachine::set_graph_offset);
+	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeStateMachine::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeStateMachine::get_graph_offset);
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeStateMachine::_tree_changed);

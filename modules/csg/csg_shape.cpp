@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,16 +48,74 @@ void CSGShape::set_use_collision(bool p_enable) {
 		PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 		PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		set_collision_layer(collision_layer);
+		set_collision_mask(collision_mask);
 		_make_dirty(); //force update
 	} else {
 		PhysicsServer::get_singleton()->free(root_collision_instance);
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
+	_change_notify();
 }
 
 bool CSGShape::is_using_collision() const {
 	return use_collision;
+}
+
+void CSGShape::set_collision_layer(uint32_t p_layer) {
+	collision_layer = p_layer;
+	if (root_collision_instance.is_valid()) {
+		PhysicsServer::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
+	}
+}
+
+uint32_t CSGShape::get_collision_layer() const {
+
+	return collision_layer;
+}
+
+void CSGShape::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask = p_mask;
+	if (root_collision_instance.is_valid()) {
+		PhysicsServer::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
+	}
+}
+
+uint32_t CSGShape::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void CSGShape::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool CSGShape::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
+void CSGShape::set_collision_layer_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_layer();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_layer(mask);
+}
+
+bool CSGShape::get_collision_layer_bit(int p_bit) const {
+
+	return get_collision_layer() & (1 << p_bit);
 }
 
 bool CSGShape::is_root_shape() const {
@@ -224,7 +282,7 @@ void CSGShape::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -378,10 +436,10 @@ void CSGShape::_update_shape() {
 		}
 
 		// unset write access
-		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
-		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
-		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
-		surfaces.write[i].tansw = PoolVector<float>::Write();
+		surfaces.write[i].verticesw.release();
+		surfaces.write[i].normalsw.release();
+		surfaces.write[i].uvsw.release();
+		surfaces.write[i].tansw.release();
 
 		if (surfaces[i].last_added == 0)
 			continue;
@@ -459,6 +517,8 @@ void CSGShape::_notification(int p_what) {
 			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 			PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
 			PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+			set_collision_layer(collision_layer);
+			set_collision_mask(collision_mask);
 		}
 
 		_make_dirty();
@@ -471,13 +531,20 @@ void CSGShape::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (parent) {
+			parent->_make_dirty();
+		}
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (parent)
 			parent->_make_dirty();
 		parent = NULL;
 
-		if (use_collision && is_root_shape()) {
+		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
 			PhysicsServer::get_singleton()->free(root_collision_instance);
 			root_collision_instance = RID();
 			root_collision_shape.unref();
@@ -490,6 +557,7 @@ void CSGShape::set_operation(Operation p_operation) {
 
 	operation = p_operation;
 	_make_dirty();
+	update_gizmo();
 }
 
 CSGShape::Operation CSGShape::get_operation() const {
@@ -506,12 +574,27 @@ bool CSGShape::is_calculating_tangents() const {
 }
 
 void CSGShape::_validate_property(PropertyInfo &property) const {
-	if (is_inside_tree() && property.name.begins_with("use_collision") && !is_root_shape()) {
+	bool is_collision_prefixed = property.name.begins_with("collision_");
+	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NOEDITOR;
+	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 }
 
+Array CSGShape::get_meshes() const {
+
+	if (root_mesh.is_valid()) {
+		Array arr;
+		arr.resize(2);
+		arr[0] = Transform();
+		arr[1] = root_mesh;
+		return arr;
+	}
+
+	return Array();
+}
 void CSGShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape::_update_shape);
@@ -520,19 +603,37 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_operation", "operation"), &CSGShape::set_operation);
 	ClassDB::bind_method(D_METHOD("get_operation"), &CSGShape::get_operation);
 
+	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
+	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape::is_using_collision);
 
-	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
-	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CSGShape::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CSGShape::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CSGShape::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CSGShape::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CSGShape::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CSGShape::get_collision_mask_bit);
+
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CSGShape::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CSGShape::get_collision_layer_bit);
 
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
 
+	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape::get_meshes);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
+
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
@@ -540,14 +641,16 @@ void CSGShape::_bind_methods() {
 }
 
 CSGShape::CSGShape() {
-	brush = NULL;
-	set_notify_local_transform(true);
-	dirty = false;
-	parent = NULL;
-	use_collision = false;
 	operation = OPERATION_UNION;
+	parent = NULL;
+	brush = NULL;
+	dirty = false;
 	snap = 0.001;
+	use_collision = false;
+	collision_layer = 1;
+	collision_mask = 1;
 	calculate_tangents = true;
+	set_notify_local_transform(true);
 }
 
 CSGShape::~CSGShape() {
@@ -622,6 +725,7 @@ CSGBrush *CSGMesh::_build_brush() {
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<Vector2> uvs;
+	Ref<Material> material = get_material();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -658,7 +762,12 @@ CSGBrush *CSGMesh::_build_brush() {
 			uvr_used = true;
 		}
 
-		Ref<Material> mat = mesh->surface_get_material(i);
+		Ref<Material> mat;
+		if (material.is_valid()) {
+			mat = material;
+		} else {
+			mat = mesh->surface_get_material(i);
+		}
 
 		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
@@ -704,8 +813,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		} else {
 			int as = vertices.size();
@@ -747,8 +856,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		}
 	}
@@ -764,6 +873,18 @@ void CSGMesh::_mesh_changed() {
 	update_gizmo();
 }
 
+void CSGMesh::set_material(const Ref<Material> &p_material) {
+	if (material == p_material)
+		return;
+	material = p_material;
+	_make_dirty();
+}
+
+Ref<Material> CSGMesh::get_material() const {
+
+	return material;
+}
+
 void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
@@ -771,7 +892,11 @@ void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
 
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh::get_material);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -942,6 +1067,7 @@ void CSGSphere::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("radius");
 }
 
 float CSGSphere::get_radius() const {
@@ -1051,9 +1177,9 @@ CSGBrush *CSGBox::_build_brush() {
 					for (int k = 0; k < 3; k++) {
 
 						if (i < 3)
-							face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+							face_points[j][(i + k) % 3] = v[k];
 						else
-							face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+							face_points[3 - j][(i + k) % 3] = -v[k];
 					}
 				}
 
@@ -1126,6 +1252,7 @@ void CSGBox::set_width(const float p_width) {
 	width = p_width;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("width");
 }
 
 float CSGBox::get_width() const {
@@ -1136,6 +1263,7 @@ void CSGBox::set_height(const float p_height) {
 	height = p_height;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("height");
 }
 
 float CSGBox::get_height() const {
@@ -1146,6 +1274,7 @@ void CSGBox::set_depth(const float p_depth) {
 	depth = p_depth;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("depth");
 }
 
 float CSGBox::get_depth() const {
@@ -1340,6 +1469,7 @@ void CSGCylinder::set_radius(const float p_radius) {
 	radius = p_radius;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("radius");
 }
 
 float CSGCylinder::get_radius() const {
@@ -1350,6 +1480,7 @@ void CSGCylinder::set_height(const float p_height) {
 	height = p_height;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("height");
 }
 
 float CSGCylinder::get_height() const {
@@ -1565,6 +1696,7 @@ void CSGTorus::set_inner_radius(const float p_inner_radius) {
 	inner_radius = p_inner_radius;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("inner_radius");
 }
 
 float CSGTorus::get_inner_radius() const {
@@ -1575,6 +1707,7 @@ void CSGTorus::set_outer_radius(const float p_outer_radius) {
 	outer_radius = p_outer_radius;
 	_make_dirty();
 	update_gizmo();
+	_change_notify("outer_radius");
 }
 
 float CSGTorus::get_outer_radius() const {
@@ -1692,11 +1825,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 			path_cache = path;
 
-			if (path_cache) {
-				path_cache->connect("tree_exited", this, "_path_exited");
-				path_cache->connect("curve_changed", this, "_path_changed");
-				path_cache = NULL;
-			}
+			path_cache->connect("tree_exited", this, "_path_exited");
+			path_cache->connect("curve_changed", this, "_path_changed");
+			path_cache = NULL;
 		}
 		curve = path->get_curve();
 		if (curve.is_null())
@@ -1958,6 +2089,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 				for (int i = 0; i <= splits; i++) {
 
 					float ofs = i * path_interval;
+					if (ofs > bl) {
+						ofs = bl;
+					}
 					if (i == splits && path_joined) {
 						ofs = 0.0;
 					}
@@ -2281,7 +2415,7 @@ NodePath CSGPolygon::get_path_node() const {
 }
 
 void CSGPolygon::set_path_interval(float p_interval) {
-	ERR_FAIL_COND(p_interval < 0.001);
+	ERR_FAIL_COND_MSG(p_interval < 0.001, "Path interval cannot be smaller than 0.001.");
 	path_interval = p_interval;
 	_make_dirty();
 	update_gizmo();

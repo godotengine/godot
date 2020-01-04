@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  svcfftl.h                                                              */
-/*                                                                         */
-/*    The FreeType CFF tables loader service (specification).              */
-/*                                                                         */
-/*  Copyright 2017-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * svcfftl.h
+ *
+ *   The FreeType CFF tables loader service (specification).
+ *
+ * Copyright (C) 2017-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef SVCFFTL_H_
@@ -65,8 +65,6 @@ FT_BEGIN_HEADER
   };
 
 
-#ifndef FT_CONFIG_OPTION_PIC
-
 #define FT_DEFINE_SERVICE_CFFLOADREC( class_,                  \
                                       get_standard_encoding_,  \
                                       load_private_dict_,      \
@@ -81,26 +79,6 @@ FT_BEGIN_HEADER
     blend_check_vector_,                                       \
     blend_build_vector_                                        \
   };
-
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DEFINE_SERVICE_CFFLOADREC( class_,                  \
-                                      get_standard_encoding_,  \
-                                      load_private_dict_,      \
-                                      fd_select_get_,          \
-                                      blend_check_vector_,     \
-                                      blend_build_vector_ )    \
-  void                                                         \
-  FT_Init_Class_ ## class_( FT_Service_CFFLoadRec*  clazz )    \
-  {                                                            \
-    clazz->get_standard_encoding = get_standard_encoding_;     \
-    clazz->load_private_dict     = load_private_dict_;         \
-    clazz->fd_select_get         = fd_select_get_;             \
-    clazz->blend_check_vector    = blend_check_vector_;        \
-    clazz->blend_build_vector    = blend_build_vector_;        \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
 
 FT_END_HEADER

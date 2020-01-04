@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,7 @@ struct ClassAPI {
 	ClassDB::APIType api_type;
 
 	bool is_singleton;
+	String singleton_name;
 	bool is_instanciable;
 	// @Unclear
 	bool is_reference;
@@ -139,6 +140,34 @@ static String get_type_name(const PropertyInfo &info) {
 }
 
 /*
+ * Some comparison helper functions we need 
+ */
+
+struct MethodInfoComparator {
+	StringName::AlphCompare compare;
+	bool operator()(const MethodInfo &p_a, const MethodInfo &p_b) const {
+
+		return compare(p_a.name, p_b.name);
+	}
+};
+
+struct PropertyInfoComparator {
+	StringName::AlphCompare compare;
+	bool operator()(const PropertyInfo &p_a, const PropertyInfo &p_b) const {
+
+		return compare(p_a.name, p_b.name);
+	}
+};
+
+struct ConstantAPIComparator {
+	NoCaseComparator compare;
+	bool operator()(const ConstantAPI &p_a, const ConstantAPI &p_b) const {
+
+		return compare(p_a.constant_name, p_b.constant_name);
+	}
+};
+
+/*
  * Reads the entire Godot API to a list
  */
 List<ClassAPI> generate_c_api_classes() {
@@ -147,6 +176,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
+	classes.sort_custom<StringName::AlphCompare>();
 
 	// Register global constants as a fake GlobalConstants singleton class
 	{
@@ -154,6 +184,7 @@ List<ClassAPI> generate_c_api_classes() {
 		global_constants_api.class_name = L"GlobalConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
+		global_constants_api.singleton_name = L"GlobalConstants";
 		global_constants_api.is_instanciable = false;
 		const int constants_count = GlobalConstants::get_global_constant_count();
 		for (int i = 0; i < constants_count; ++i) {
@@ -162,6 +193,7 @@ List<ClassAPI> generate_c_api_classes() {
 			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
 			global_constants_api.constants.push_back(constant_api);
 		}
+		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);
 	}
 
@@ -178,6 +210,9 @@ List<ClassAPI> generate_c_api_classes() {
 				name.remove(0);
 			}
 			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
+			if (class_api.is_singleton) {
+				class_api.singleton_name = name;
+			}
 		}
 		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 
@@ -193,6 +228,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<String> constant;
 			ClassDB::get_integer_constant_list(class_name, &constant, true);
+			constant.sort_custom<NoCaseComparator>();
 			for (List<String>::Element *c = constant.front(); c != NULL; c = c->next()) {
 				ConstantAPI constant_api;
 				constant_api.constant_name = c->get();
@@ -206,6 +242,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<MethodInfo> signals_;
 			ClassDB::get_signal_list(class_name, &signals_, true);
+			signals_.sort_custom<MethodInfoComparator>();
 
 			for (int i = 0; i < signals_.size(); i++) {
 				SignalAPI signal;
@@ -245,6 +282,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<PropertyInfo> properties;
 			ClassDB::get_property_list(class_name, &properties, true);
+			properties.sort_custom<PropertyInfoComparator>();
 
 			for (List<PropertyInfo>::Element *p = properties.front(); p != NULL; p = p->next()) {
 				PropertyAPI property_api;
@@ -272,6 +310,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<MethodInfo> methods;
 			ClassDB::get_method_list(class_name, &methods, true);
+			methods.sort_custom<MethodInfoComparator>();
 
 			for (List<MethodInfo>::Element *m = methods.front(); m != NULL; m = m->next()) {
 				MethodAPI method_api;
@@ -279,7 +318,7 @@ List<ClassAPI> generate_c_api_classes() {
 				MethodInfo &method_info = m->get();
 
 				//method name
-				method_api.method_name = m->get().name;
+				method_api.method_name = method_info.name;
 				//method return type
 				if (method_api.method_name.find(":") != -1) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
@@ -321,6 +360,11 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = arg_info.hint_string;
 					} else if (arg_info.type == Variant::NIL) {
 						arg_type = "Variant";
+					} else if (arg_info.type == Variant::OBJECT) {
+						arg_type = arg_info.class_name;
+						if (arg_type == "") {
+							arg_type = Variant::get_type_name(arg_info.type);
+						}
 					} else {
 						arg_type = Variant::get_type_name(arg_info.type);
 					}
@@ -382,6 +426,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back("\t\t\"base_class\": \"" + api.super_class_name + "\",\n");
 		source.push_back(String("\t\t\"api_type\": \"") + (api.api_type == ClassDB::API_CORE ? "core" : (api.api_type == ClassDB::API_EDITOR ? "tools" : "none")) + "\",\n");
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
+		source.push_back("\t\t\"singleton_name\": \"" + api.singleton_name + "\",\n");
 		source.push_back(String("\t\t\"instanciable\": ") + (api.is_instanciable ? "true" : "false") + ",\n");
 		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
 		// @Unclear

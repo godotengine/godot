@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -319,15 +319,13 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 
 	if (!visible)
 		_change_node_state(p_node, true);
-	//changed to one shot, not needed
-	//p_node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,"_node_removed");
 	nodes.erase(p_node);
 }
 
 String VisibilityEnabler2D::get_configuration_warning() const {
 #ifdef TOOLS_ENABLED
 	if (is_inside_tree() && get_parent() && (get_parent()->get_filename() == String() && get_parent() != get_tree()->get_edited_scene_root())) {
-		return TTR("VisibilityEnable2D works best when used with the edited scene root directly as parent.");
+		return TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent.");
 	}
 #endif
 	return String();

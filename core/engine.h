@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,6 +63,7 @@ private:
 	float _time_scale;
 	bool _pixel_snap;
 	uint64_t _physics_frames;
+	float _physics_interpolation_fraction;
 
 	uint64_t _idle_frames;
 	bool _in_physics;
@@ -95,6 +96,7 @@ public:
 	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
 	float get_idle_frame_step() const { return _frame_step; }
+	float get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;

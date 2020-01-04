@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 #define RENAME_DIALOG_H
 
 #include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
@@ -75,9 +74,9 @@ class RenameDialog : public ConfirmationDialog {
 
 	TabContainer *tabc_features;
 
-	CheckButton *cbut_substitute;
-	CheckButton *cbut_regex;
-	CheckButton *cbut_process;
+	CheckBox *cbut_substitute;
+	CheckBox *cbut_regex;
+	CheckBox *cbut_process;
 	CheckBox *chk_per_level_counter;
 
 	Button *but_insert_name;

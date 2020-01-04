@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@ class PluginScriptLanguage : public ScriptLanguage {
 	friend class PluginScript;
 	friend class PluginScriptInstance;
 
-	ResourceFormatLoaderPluginScript *_resource_loader;
-	ResourceFormatSaverPluginScript *_resource_saver;
+	Ref<ResourceFormatLoaderPluginScript> _resource_loader;
+	Ref<ResourceFormatSaverPluginScript> _resource_saver;
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
@@ -59,8 +59,8 @@ class PluginScriptLanguage : public ScriptLanguage {
 public:
 	virtual String get_name() const;
 
-	_FORCE_INLINE_ ResourceFormatLoaderPluginScript *get_resource_loader() { return _resource_loader; };
-	_FORCE_INLINE_ ResourceFormatSaverPluginScript *get_resource_saver() { return _resource_saver; };
+	_FORCE_INLINE_ Ref<ResourceFormatLoaderPluginScript> get_resource_loader() { return _resource_loader; }
+	_FORCE_INLINE_ Ref<ResourceFormatSaverPluginScript> get_resource_saver() { return _resource_saver; }
 
 	/* LANGUAGE FUNCTIONS */
 	virtual void init();
@@ -81,7 +81,7 @@ public:
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint);
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint);
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 

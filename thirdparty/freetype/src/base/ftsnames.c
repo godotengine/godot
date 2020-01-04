@@ -1,22 +1,22 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftsnames.c                                                             */
-/*                                                                         */
-/*    Simple interface to access SFNT name tables (which are used          */
-/*    to hold font names, copyright info, notices, etc.) (body).           */
-/*                                                                         */
-/*    This is _not_ used to retrieve glyph names!                          */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftsnames.c
+ *
+ *   Simple interface to access SFNT name tables (which are used
+ *   to hold font names, copyright info, notices, etc.) (body).
+ *
+ *   This is _not_ used to retrieve glyph names!
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -142,7 +142,45 @@
   }
 
 
-#endif /* TT_CONFIG_OPTION_SFNT_NAMES */
+#else /* !TT_CONFIG_OPTION_SFNT_NAMES */
+
+
+  FT_EXPORT_DEF( FT_UInt )
+  FT_Get_Sfnt_Name_Count( FT_Face  face )
+  {
+    FT_UNUSED( face );
+
+    return 0;
+  }
+
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Get_Sfnt_Name( FT_Face       face,
+                    FT_UInt       idx,
+                    FT_SfntName  *aname )
+  {
+    FT_UNUSED( face );
+    FT_UNUSED( idx );
+    FT_UNUSED( aname );
+
+    return FT_THROW( Unimplemented_Feature );
+  }
+
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Get_Sfnt_LangTag( FT_Face          face,
+                       FT_UInt          langID,
+                       FT_SfntLangTag  *alangTag )
+  {
+    FT_UNUSED( face );
+    FT_UNUSED( langID );
+    FT_UNUSED( alangTag );
+
+    return FT_THROW( Unimplemented_Feature );
+  }
+
+
+#endif /* !TT_CONFIG_OPTION_SFNT_NAMES */
 
 
 /* END */

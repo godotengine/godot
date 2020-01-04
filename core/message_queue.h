@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ class MessageQueue {
 
 	struct Message {
 
-		ObjectID instance_ID;
+		ObjectID instance_id;
 		StringName target;
 		int16_t type;
 		union {
@@ -72,6 +72,8 @@ class MessageQueue {
 
 	static MessageQueue *singleton;
 
+	bool flushing;
+
 public:
 	static MessageQueue *get_singleton();
 
@@ -86,6 +88,8 @@ public:
 
 	void statistics();
 	void flush();
+
+	bool is_flushing() const;
 
 	int get_max_buffer_usage() const;
 

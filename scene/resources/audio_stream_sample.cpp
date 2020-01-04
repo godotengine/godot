@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,8 +95,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	// this function will be compiled branchless by any decent compiler
 
 	int32_t final, final_r, next, next_r;
-	while (amount--) {
-
+	while (amount) {
+		amount--;
 		int64_t pos = offset >> MIX_FRAC_BITS;
 		if (is_stereo && !is_ima_adpcm)
 			pos <<= 1;
@@ -444,6 +444,7 @@ int AudioStreamSample::get_loop_end() const {
 
 void AudioStreamSample::set_mix_rate(int p_hz) {
 
+	ERR_FAIL_COND(p_hz == 0);
 	mix_rate = p_hz;
 }
 int AudioStreamSample::get_mix_rate() const {
@@ -515,10 +516,10 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 	return pv;
 }
 
-void AudioStreamSample::save_to_wav(String p_path) {
+Error AudioStreamSample::save_to_wav(const String &p_path) {
 	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
 		WARN_PRINTS("Saving IMA_ADPC samples are not supported yet");
-		return;
+		return ERR_UNAVAILABLE;
 	}
 
 	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
@@ -544,8 +545,9 @@ void AudioStreamSample::save_to_wav(String p_path) {
 		file_path += ".wav";
 	}
 
-	Error err;
-	FileAccess *file = FileAccess::open(file_path, FileAccess::WRITE, &err); //Overrides existing file if present
+	FileAccessRef file = FileAccess::open(file_path, FileAccess::WRITE); //Overrides existing file if present
+
+	ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
 
 	// Create WAV Header
 	file->store_string("RIFF"); //ChunkID
@@ -563,7 +565,8 @@ void AudioStreamSample::save_to_wav(String p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	PoolVector<uint8_t>::Read read_data = get_data().read();
+	PoolVector<uint8_t> data = get_data();
+	PoolVector<uint8_t>::Read read_data = data.read();
 	switch (format) {
 		case AudioStreamSample::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
@@ -583,6 +586,8 @@ void AudioStreamSample::save_to_wav(String p_path) {
 	}
 
 	file->close();
+
+	return OK;
 }
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {

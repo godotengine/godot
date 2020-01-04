@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.1">
+<class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.2">
 	<brief_description>
 		A body that is controlled by the 2D physics engine.
 	</brief_description>
@@ -7,12 +7,11 @@
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
 		A RigidBody2D has 4 behavior [member mode]s: Rigid, Static, Character, and Kinematic.
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
-		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
+		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
+		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void">
@@ -20,7 +19,7 @@
 			<argument index="0" name="state" type="Physics2DDirectBodyState">
 			</argument>
 			<description>
-				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
+				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_central_force">
@@ -69,7 +68,7 @@
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-				Applies a positioned impulse to the body (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied instantaneously. Both the impulse and the offset from the body origin are in global coordinates.
+				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The position uses the rotation of the global coordinate system, but is centered at the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -85,7 +84,8 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code]. Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -114,65 +114,69 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
-			Damps the body's [member angular_velocity]. If [code]-1[/code] the body will use the "Default Angular Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
+			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
-		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
+		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity.
 		</member>
-		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force">
+		<member name="applied_force" type="Vector2" setter="set_applied_force" getter="get_applied_force" default="Vector2( 0, 0 )">
 			The body's total applied force.
 		</member>
-		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque">
+		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque" default="0.0">
 			The body's total applied torque.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			The body's bounciness. Default value: [code]0[/code].
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
 		</member>
-		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code] the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force]. Default value: [code]true[/code].
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
+			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force].
 		</member>
-		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If [code]true[/code] the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported]. Default value: [code]false[/code].
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
+			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported].
 		</member>
-		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
-			The maximum number of contacts to report. Default value: [code]0[/code].
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
+			The maximum number of contacts to report.
 		</member>
-		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
-			Continuous collision detection mode. Default value: [code]CCD_MODE_DISABLED[/code].
-			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [code]CCD_MODE_[/code] constants for details.
+		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
+			Continuous collision detection mode.
+			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
 		</member>
-		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
-			If [code]true[/code] internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
+			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
+			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
 		</member>
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia">
-			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
+			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 inertia to return to automatically computing it.
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			Damps the body's [member linear_velocity]. If [code]-1[/code] the body will use the "Default Linear Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
+			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
-		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
 			The body's linear velocity.
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass">
-			The body's mass. Default value: [code]1[/code].
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
+			The body's mass.
 		</member>
-		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
-			The body's mode. See [code]MODE_*[/code] constants. Default value: [code]MODE_RIGID[/code].
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="0">
+			The body's mode. See [enum Mode] for possible values.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
-		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
-			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
+			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight">
-			The body's weight based on its mass and the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d".
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="9.8">
+			The body's weight based on its mass and the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
 		</member>
 	</members>
 	<signals>
@@ -230,7 +234,7 @@
 			Static mode. The body behaves like a [StaticBody2D] and does not move.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character mode. Similar to [code]MODE_RIGID[/code], but the body can not rotate.
+			Character mode. Similar to [constant MODE_RIGID], but the body can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
 			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.

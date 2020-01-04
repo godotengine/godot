@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,8 @@
 #include "core/reference.h"
 
 class Expression : public Reference {
-	GDCLASS(Expression, Reference)
+	GDCLASS(Expression, Reference);
+
 public:
 	enum BuiltinFunc {
 		MATH_SIN,
@@ -50,6 +51,7 @@ public:
 		MATH_SQRT,
 		MATH_FMOD,
 		MATH_FPOSMOD,
+		MATH_POSMOD,
 		MATH_FLOOR,
 		MATH_CEIL,
 		MATH_ROUND,
@@ -62,10 +64,14 @@ public:
 		MATH_ISINF,
 		MATH_EASE,
 		MATH_DECIMALS,
+		MATH_STEP_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
+		MATH_LERP_ANGLE,
 		MATH_INVERSE_LERP,
 		MATH_RANGE_LERP,
+		MATH_SMOOTHSTEP,
+		MATH_MOVE_TOWARD,
 		MATH_DECTIME,
 		MATH_RANDOMIZE,
 		MATH_RAND,
@@ -91,6 +97,7 @@ public:
 		TYPE_OF,
 		TYPE_EXISTS,
 		TEXT_CHAR,
+		TEXT_ORD,
 		TEXT_STR,
 		TEXT_PRINT,
 		TEXT_PRINTERR,

@@ -1,31 +1,30 @@
-/***************************************************************************/
-/*                                                                         */
-/*  internal.h                                                             */
-/*                                                                         */
-/*    Internal header files (specification only).                          */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * internal.h
+ *
+ *   Internal header files (specification only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This file is automatically included by `ft2build.h'.                  */
-  /* Do not include it manually!                                           */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file is automatically included by `ft2build.h`.  Do not include it
+   * manually!
+   *
+   */
 
 
 #define FT_INTERNAL_OBJECTS_H             <freetype/internal/ftobjs.h>
-#define FT_INTERNAL_PIC_H                 <freetype/internal/ftpic.h>
 #define FT_INTERNAL_STREAM_H              <freetype/internal/ftstream.h>
 #define FT_INTERNAL_MEMORY_H              <freetype/internal/ftmemory.h>
 #define FT_INTERNAL_DEBUG_H               <freetype/internal/ftdebug.h>
@@ -41,6 +40,7 @@
 
 #define FT_INTERNAL_TRUETYPE_TYPES_H      <freetype/internal/tttypes.h>
 #define FT_INTERNAL_TYPE1_TYPES_H         <freetype/internal/t1types.h>
+#define FT_INTERNAL_WOFF_TYPES_H          <freetype/internal/wofftypes.h>
 
 #define FT_INTERNAL_POSTSCRIPT_AUX_H      <freetype/internal/psaux.h>
 #define FT_INTERNAL_POSTSCRIPT_HINTS_H    <freetype/internal/pshints.h>

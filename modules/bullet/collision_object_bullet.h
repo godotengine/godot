@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,6 +109,7 @@ public:
 
 		void set_transform(const Transform &p_transform);
 		void set_transform(const btTransform &p_transform);
+		btTransform get_adjusted_transform() const;
 
 		void claim_bt_shape(const btVector3 &body_scale);
 	};
@@ -166,14 +167,18 @@ public:
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
-		collisionLayer = p_layer;
-		on_collision_filters_change();
+		if (collisionLayer != p_layer) {
+			collisionLayer = p_layer;
+			on_collision_filters_change();
+		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collisionLayer; }
 
 	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
-		collisionMask = p_mask;
-		on_collision_filters_change();
+		if (collisionMask != p_mask) {
+			collisionMask = p_mask;
+			on_collision_filters_change();
+		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collisionMask; }
 
@@ -224,7 +229,7 @@ public:
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
+	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	void set_shape(int p_index, ShapeBullet *p_shape);
 
 	int get_shape_count() const;

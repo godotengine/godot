@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,8 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 }
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
+
+	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
 	ad->capture_default_device = i->default_source_name;
@@ -191,6 +193,14 @@ Error AudioDriverPulseAudio::init_device() {
 	spec.format = PA_SAMPLE_S16LE;
 	spec.channels = pa_map.channels;
 	spec.rate = mix_rate;
+	pa_map.map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
+	pa_map.map[1] = PA_CHANNEL_POSITION_FRONT_RIGHT;
+	pa_map.map[2] = PA_CHANNEL_POSITION_FRONT_CENTER;
+	pa_map.map[3] = PA_CHANNEL_POSITION_LFE;
+	pa_map.map[4] = PA_CHANNEL_POSITION_REAR_LEFT;
+	pa_map.map[5] = PA_CHANNEL_POSITION_REAR_RIGHT;
+	pa_map.map[6] = PA_CHANNEL_POSITION_SIDE_LEFT;
+	pa_map.map[7] = PA_CHANNEL_POSITION_SIDE_RIGHT;
 
 	pa_str = pa_stream_new(pa_ctx, "Sound", &spec, &pa_map);
 	if (pa_str == NULL) {
@@ -219,8 +229,8 @@ Error AudioDriverPulseAudio::init_device() {
 	samples_out.resize(pa_buffer_size);
 
 	// Reset audio input to keep synchronisation.
-	input_position = 0;
-	input_size = 0;
+	capture_position = 0;
+	capture_size = 0;
 
 	return OK;
 }
@@ -258,7 +268,10 @@ Error AudioDriverPulseAudio::init() {
 	}
 
 	while (pa_ready == 0) {
-		pa_mainloop_iterate(pa_ml, 1, NULL);
+		ret = pa_mainloop_iterate(pa_ml, 1, NULL);
+		if (ret < 0) {
+			ERR_PRINT("pa_mainloop_iterate error");
+		}
 	}
 
 	if (pa_ready < 0) {
@@ -316,6 +329,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
+	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
 
@@ -406,11 +420,52 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			write_ofs = 0;
 		}
 
+		// If we're using the default device check that the current device is still the default
+		if (ad->device_name == "Default") {
+
+			uint32_t msec = OS::get_singleton()->get_ticks_msec();
+			if (msec > (default_device_msec + 1000)) {
+				String old_default_device = ad->default_device;
+
+				default_device_msec = msec;
+
+				ad->pa_status = 0;
+				pa_operation *pa_op = pa_context_get_server_info(ad->pa_ctx, &AudioDriverPulseAudio::pa_server_info_cb, (void *)ad);
+				if (pa_op) {
+					while (ad->pa_status == 0) {
+						ret = pa_mainloop_iterate(ad->pa_ml, 1, NULL);
+						if (ret < 0) {
+							ERR_PRINT("pa_mainloop_iterate error");
+						}
+					}
+
+					pa_operation_unref(pa_op);
+				} else {
+					ERR_PRINT("pa_context_get_server_info error");
+				}
+
+				if (old_default_device != ad->default_device) {
+					ad->finish_device();
+
+					Error err = ad->init_device();
+					if (err != OK) {
+						ERR_PRINT("PulseAudio: init_device error");
+						ad->active = false;
+						ad->exit_thread = true;
+						break;
+					}
+
+					avail_bytes = 0;
+					write_ofs = 0;
+				}
+			}
+		}
+
 		if (ad->pa_rec_str && pa_stream_get_state(ad->pa_rec_str) == PA_STREAM_READY) {
 			size_t bytes = pa_stream_readable_size(ad->pa_rec_str);
 			if (bytes > 0) {
 				const void *ptr = NULL;
-				size_t maxbytes = ad->input_buffer.size() * sizeof(int16_t);
+				size_t maxbytes = ad->capture_buffer.size() * sizeof(int16_t);
 
 				bytes = MIN(bytes, maxbytes);
 				ret = pa_stream_peek(ad->pa_rec_str, &ptr, &bytes);
@@ -420,11 +475,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					int16_t *srcptr = (int16_t *)ptr;
 					for (size_t i = bytes >> 1; i > 0; i--) {
 						int32_t sample = int32_t(*srcptr++) << 16;
-						ad->input_buffer_write(sample);
+						ad->capture_buffer_write(sample);
 
 						if (ad->pa_rec_map.channels == 1) {
-							// In case input device is single channel convert it to Stereo
-							ad->input_buffer_write(sample);
+							// In case capture device is single channel convert it to Stereo
+							ad->capture_buffer_write(sample);
 						}
 					}
 
@@ -611,7 +666,7 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of input channels: " + itos(pa_rec_map.channels));
+			WARN_PRINTS("PulseAudio: Unsupported number of capture channels: " + itos(pa_rec_map.channels));
 			pa_channel_map_init_stereo(&pa_rec_map);
 			break;
 	}
@@ -643,10 +698,10 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	input_buffer_init(input_buffer_frames);
+	capture_buffer_init(input_buffer_frames);
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
-	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " capture channels");
+	print_verbose("PulseAudio: capture buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define FILE_ACCESS_JANDROID_H
 
 #include "core/os/file_access.h"
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 class FileAccessJAndroid : public FileAccess {
 
 	static jobject io;
@@ -74,6 +74,8 @@ public:
 	static void setup(jobject p_io);
 
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 	FileAccessJAndroid();
 	~FileAccessJAndroid();

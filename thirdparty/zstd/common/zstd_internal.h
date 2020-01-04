@@ -21,6 +21,7 @@
 ***************************************/
 #include "compiler.h"
 #include "mem.h"
+#include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
 #include "error_private.h"
 #define ZSTD_STATIC_LINKING_ONLY
 #include "zstd.h"
@@ -33,48 +34,15 @@
 #endif
 #include "xxhash.h"                /* XXH_reset, update, digest */
 
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
 
-
-/*-*************************************
-*  Debug
-***************************************/
-#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=1)
-#  include <assert.h>
-#else
-#  ifndef assert
-#    define assert(condition) ((void)0)
-#  endif
-#endif
-
-#define ZSTD_STATIC_ASSERT(c) { enum { ZSTD_static_assert = 1/(int)(!!(c)) }; }
-
-#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=2)
-#  include <stdio.h>
-extern int g_debuglog_enable;
-/* recommended values for ZSTD_DEBUG display levels :
- * 1 : no display, enables assert() only
- * 2 : reserved for currently active debug path
- * 3 : events once per object lifetime (CCtx, CDict, etc.)
- * 4 : events once per frame
- * 5 : events once per block
- * 6 : events once per sequence (*very* verbose) */
-#  define RAWLOG(l, ...) {                                      \
-                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
-                    fprintf(stderr, __VA_ARGS__);               \
-            }   }
-#  define DEBUGLOG(l, ...) {                                    \
-                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
-                    fprintf(stderr, __FILE__ ": " __VA_ARGS__); \
-                    fprintf(stderr, " \n");                     \
-            }   }
-#else
-#  define RAWLOG(l, ...)      {}    /* disabled */
-#  define DEBUGLOG(l, ...)    {}    /* disabled */
-#endif
+/* ---- static assert (debug) --- */
+#define ZSTD_STATIC_ASSERT(c) DEBUG_STATIC_ASSERT(c)
+#define ZSTD_isError ERR_isError   /* for inlining */
+#define FSE_isError  ERR_isError
+#define HUF_isError  ERR_isError
 
 
 /*-*************************************
@@ -84,8 +52,50 @@ extern int g_debuglog_enable;
 #undef MAX
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
-#define CHECK_F(f) { size_t const errcod = f; if (ERR_isError(errcod)) return errcod; }  /* check and Forward error code */
-#define CHECK_E(f, e) { size_t const errcod = f; if (ERR_isError(errcod)) return ERROR(e); }  /* check and send Error code */
+
+/**
+ * Return the specified error if the condition evaluates to true.
+ *
+ * In debug modes, prints additional information.
+ * In order to do that (particularly, printing the conditional that failed),
+ * this can't just wrap RETURN_ERROR().
+ */
+#define RETURN_ERROR_IF(cond, err, ...) \
+  if (cond) { \
+    RAWLOG(3, "%s:%d: ERROR!: check %s failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(cond), ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, ": " __VA_ARGS__); \
+    RAWLOG(3, "\n"); \
+    return ERROR(err); \
+  }
+
+/**
+ * Unconditionally return the specified error.
+ *
+ * In debug modes, prints additional information.
+ */
+#define RETURN_ERROR(err, ...) \
+  do { \
+    RAWLOG(3, "%s:%d: ERROR!: unconditional check failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, ": " __VA_ARGS__); \
+    RAWLOG(3, "\n"); \
+    return ERROR(err); \
+  } while(0);
+
+/**
+ * If the provided expression evaluates to an error code, returns that error code.
+ *
+ * In debug modes, prints additional information.
+ */
+#define FORWARD_IF_ERROR(err, ...) \
+  do { \
+    size_t const err_code = (err); \
+    if (ERR_isError(err_code)) { \
+      RAWLOG(3, "%s:%d: ERROR!: forwarding error in %s: %s", __FILE__, __LINE__, ZSTD_QUOTE(err), ERR_getErrorName(err_code)); \
+      RAWLOG(3, ": " __VA_ARGS__); \
+      RAWLOG(3, "\n"); \
+      return err_code; \
+    } \
+  } while(0);
 
 
 /*-*************************************
@@ -109,12 +119,10 @@ static const U32 repStartValue[ZSTD_REP_NUM] = { 1, 4, 8 };
 #define BIT0   1
 
 #define ZSTD_WINDOWLOG_ABSOLUTEMIN 10
-#define ZSTD_WINDOWLOG_DEFAULTMAX 27 /* Default maximum allowed window log */
 static const size_t ZSTD_fcs_fieldSize[4] = { 0, 2, 4, 8 };
 static const size_t ZSTD_did_fieldSize[4] = { 0, 1, 2, 4 };
 
-#define ZSTD_FRAMEIDSIZE 4
-static const size_t ZSTD_frameIdSize = ZSTD_FRAMEIDSIZE;  /* magic number size */
+#define ZSTD_FRAMEIDSIZE 4   /* magic number size */
 
 #define ZSTD_BLOCKHEADERSIZE 3   /* C standard doesn't allow `static const` variable to be init using another `static const` variable */
 static const size_t ZSTD_blockHeaderSize = ZSTD_BLOCKHEADERSIZE;
@@ -184,29 +192,59 @@ static const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 *  Shared functions to include for inlining
 *********************************************/
 static void ZSTD_copy8(void* dst, const void* src) { memcpy(dst, src, 8); }
+
 #define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
+static void ZSTD_copy16(void* dst, const void* src) { memcpy(dst, src, 16); }
+#define COPY16(d,s) { ZSTD_copy16(d,s); d+=16; s+=16; }
+
+#define WILDCOPY_OVERLENGTH 32
+#define WILDCOPY_VECLEN 16
+
+typedef enum {
+    ZSTD_no_overlap,
+    ZSTD_overlap_src_before_dst
+    /*  ZSTD_overlap_dst_before_src, */
+} ZSTD_overlap_e;
 
 /*! ZSTD_wildcopy() :
- *  custom version of memcpy(), can overwrite up to WILDCOPY_OVERLENGTH bytes (if length==0) */
-#define WILDCOPY_OVERLENGTH 8
-MEM_STATIC void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length)
+ *  Custom version of memcpy(), can over read/write up to WILDCOPY_OVERLENGTH bytes (if length==0)
+ *  @param ovtype controls the overlap detection
+ *         - ZSTD_no_overlap: The source and destination are guaranteed to be at least WILDCOPY_VECLEN bytes apart.
+ *         - ZSTD_overlap_src_before_dst: The src and dst may overlap, but they MUST be at least 8 bytes apart.
+ *           The src buffer must be before the dst buffer.
+ */
+MEM_STATIC FORCE_INLINE_ATTR DONT_VECTORIZE
+void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e const ovtype)
 {
+    ptrdiff_t diff = (BYTE*)dst - (const BYTE*)src;
     const BYTE* ip = (const BYTE*)src;
     BYTE* op = (BYTE*)dst;
     BYTE* const oend = op + length;
-    do
-        COPY8(op, ip)
-    while (op < oend);
-}
 
-MEM_STATIC void ZSTD_wildcopy_e(void* dst, const void* src, void* dstEnd)   /* should be faster for decoding, but strangely, not verified on all platform */
-{
-    const BYTE* ip = (const BYTE*)src;
-    BYTE* op = (BYTE*)dst;
-    BYTE* const oend = (BYTE*)dstEnd;
-    do
-        COPY8(op, ip)
-    while (op < oend);
+    assert(diff >= 8 || (ovtype == ZSTD_no_overlap && diff <= -WILDCOPY_VECLEN));
+
+    if (ovtype == ZSTD_overlap_src_before_dst && diff < WILDCOPY_VECLEN) {
+        /* Handle short offset copies. */
+        do {
+            COPY8(op, ip)
+        } while (op < oend);
+    } else {
+        assert(diff >= WILDCOPY_VECLEN || diff <= -WILDCOPY_VECLEN);
+        /* Separate out the first two COPY16() calls because the copy length is
+         * almost certain to be short, so the branches have different
+         * probabilities.
+         * On gcc-9 unrolling once is +1.6%, twice is +2%, thrice is +1.8%.
+         * On clang-8 unrolling once is +1.4%, twice is +3.3%, thrice is +3%.
+         */
+        COPY16(op, ip);
+        COPY16(op, ip);
+        if (op >= oend) return;
+        do {
+            COPY16(op, ip);
+            COPY16(op, ip);
+        }
+        while (op < oend);
+    }
 }
 
 
@@ -227,9 +265,22 @@ typedef struct {
     BYTE* llCode;
     BYTE* mlCode;
     BYTE* ofCode;
+    size_t maxNbSeq;
+    size_t maxNbLit;
     U32   longLengthID;   /* 0 == no longLength; 1 == Lit.longLength; 2 == Match.longLength; */
     U32   longLengthPos;
 } seqStore_t;
+
+/**
+ * Contains the compressed frame size and an upper-bound for the decompressed frame size.
+ * Note: before using `compressedSize`, check for errors using ZSTD_isError().
+ *       similarly, before using `decompressedBound`, check for errors using:
+ *          `decompressedBound != ZSTD_CONTENTSIZE_ERROR`
+ */
+typedef struct {
+    size_t compressedSize;
+    unsigned long long decompressedBound;
+} ZSTD_frameSizeInfo;   /* decompress & legacy */
 
 const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);   /* compress & dictBuilder */
 void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);   /* compress, dictBuilder, decodeCorpus (shouldn't get its definition from here) */
@@ -249,7 +300,9 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus 
         _BitScanReverse(&r, val);
         return (unsigned)r;
 #   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
-        return 31 - __builtin_clz(val);
+        return __builtin_clz (val) ^ 31;
+#   elif defined(__ICCARM__)    /* IAR Intrinsic */
+        return 31 - __CLZ(val);
 #   else   /* Software version */
         static const U32 DeBruijnClz[32] = { 0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31 };
         U32 v = val;
@@ -275,13 +328,20 @@ typedef struct {
     blockType_e blockType;
     U32 lastBlock;
     U32 origSize;
-} blockProperties_t;
+} blockProperties_t;   /* declared here for decompress and fullbench */
 
 /*! ZSTD_getcBlockSize() :
  *  Provides the size of compressed block from block header `src` */
 /* Used by: decompress, fullbench (does not get its definition from here) */
 size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
                           blockProperties_t* bpPtr);
+
+/*! ZSTD_decodeSeqHeaders() :
+ *  decode sequence header from src */
+/* Used by: decompress, fullbench (does not get its definition from here) */
+size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
+                       const void* src, size_t srcSize);
+
 
 #if defined (__cplusplus)
 }

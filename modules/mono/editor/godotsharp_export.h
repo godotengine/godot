@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,29 +31,19 @@
 #ifndef GODOTSHARP_EXPORT_H
 #define GODOTSHARP_EXPORT_H
 
-#include <mono/metadata/image.h>
-
-#include "editor/editor_export.h"
+#include "core/dictionary.h"
+#include "core/error_list.h"
+#include "core/ustring.h"
 
 #include "../mono_gd/gd_mono_header.h"
 
-class GodotSharpExport : public EditorExportPlugin {
+namespace GodotSharpExport {
 
-	MonoAssemblyName *aname_prealloc;
+Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_dependencies);
 
-	bool _add_file(const String &p_src_path, const String &p_dst_path, bool p_remap = false);
+Error get_exported_assembly_dependencies(const Dictionary &p_initial_dependencies,
+		const String &p_build_config, const String &p_custom_lib_dir, Dictionary &r_dependencies);
 
-	Error _get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Map<String, String> &r_dependencies);
-
-protected:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
-	virtual void _export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags);
-
-public:
-	static void register_internal_calls();
-
-	GodotSharpExport();
-	~GodotSharpExport();
-};
+} // namespace GodotSharpExport
 
 #endif // GODOTSHARP_EXPORT_H

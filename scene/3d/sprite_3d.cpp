@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,6 +163,7 @@ float SpriteBase3D::get_opacity() const {
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 
+	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
 	_queue_update();
 }
@@ -253,7 +254,7 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 		facesw[j] = vtx;
 	}
 
-	facesw = PoolVector<Vector3>::Write();
+	facesw.release();
 
 	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
 	triangle_mesh->create(faces);
@@ -283,6 +284,18 @@ void SpriteBase3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
 SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 
 	return alpha_cut;
+}
+
+void SpriteBase3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+
+	ERR_FAIL_INDEX(p_mode, 3);
+	billboard_mode = p_mode;
+	_queue_update();
+}
+
+SpatialMaterial::BillboardMode SpriteBase3D::get_billboard_mode() const {
+
+	return billboard_mode;
 }
 
 void SpriteBase3D::_bind_methods() {
@@ -317,6 +330,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_cut_mode", "mode"), &SpriteBase3D::set_alpha_cut_mode);
 	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"), &SpriteBase3D::get_alpha_cut_mode);
 
+	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
+	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
+
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
@@ -332,6 +348,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shaded"), "set_draw_flag", "get_draw_flag", FLAG_SHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
@@ -360,6 +377,7 @@ SpriteBase3D::SpriteBase3D() {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
 	alpha_cut = ALPHA_CUT_DISABLED;
+	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);
@@ -382,36 +400,30 @@ void Sprite3D::_draw() {
 
 	VS::get_singleton()->immediate_clear(immediate);
 	if (!texture.is_valid())
-		return; //no texuture no life
+		return;
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0)
 		return;
 
-	Size2i s;
-	Rect2 src_rect;
+	Rect2 base_rect;
+	if (region)
+		base_rect = region_rect;
+	else
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 
-	if (region) {
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
 
-		s = region_rect.size;
-		src_rect = region_rect;
-	} else {
-		s = texture->get_size();
-		s = s / Size2(hframes, vframes);
-
-		src_rect.size = s;
-		src_rect.position.x += (frame % hframes) * s.x;
-		src_rect.position.y += (frame / hframes) * s.y;
-	}
-
-	Point2 ofs = get_offset();
+	Point2 dest_offset = get_offset();
 	if (is_centered())
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 
-	Rect2 dst_rect(ofs, s);
-
+	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
+	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
@@ -468,7 +480,7 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
@@ -563,18 +575,31 @@ Rect2 Sprite3D::get_region_rect() const {
 
 void Sprite3D::set_frame(int p_frame) {
 
-	ERR_FAIL_INDEX(p_frame, vframes * hframes);
+	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
-	if (frame != p_frame)
+	frame = p_frame;
 
-		frame = p_frame;
 	_queue_update();
+
+	_change_notify("frame");
+	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
 int Sprite3D::get_frame() const {
 
 	return frame;
+}
+
+void Sprite3D::set_frame_coords(const Vector2 &p_coord) {
+	ERR_FAIL_INDEX(int(p_coord.x), hframes);
+	ERR_FAIL_INDEX(int(p_coord.y), vframes);
+
+	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
+}
+
+Vector2 Sprite3D::get_frame_coords() const {
+	return Vector2(frame % hframes, frame / hframes);
 }
 
 void Sprite3D::set_vframes(int p_amount) {
@@ -633,10 +658,13 @@ Rect2 Sprite3D::get_item_rect() const {
 void Sprite3D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
-
-		property.hint = PROPERTY_HINT_SPRITE_FRAME;
-
+		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	}
+
+	if (property.name == "frame_coords") {
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -654,6 +682,9 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &Sprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &Sprite3D::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_frame_coords", "coords"), &Sprite3D::set_frame_coords);
+	ClassDB::bind_method(D_METHOD("get_frame_coords"), &Sprite3D::get_frame_coords);
+
 	ClassDB::bind_method(D_METHOD("set_vframes", "vframes"), &Sprite3D::set_vframes);
 	ClassDB::bind_method(D_METHOD("get_vframes"), &Sprite3D::get_vframes);
 
@@ -664,7 +695,8 @@ void Sprite3D::_bind_methods() {
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
@@ -776,7 +808,7 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
@@ -856,14 +888,11 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "frame") {
-
 		property.hint = PROPERTY_HINT_RANGE;
-
-		if (frames->has_animation(animation)) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
-		} else {
-			property.hint_string = "0,0,0";
 		}
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -1066,7 +1095,7 @@ StringName AnimatedSprite3D::get_animation() const {
 String AnimatedSprite3D::get_configuration_warning() const {
 
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the 'Frames' property in order for AnimatedSprite3D to display frames.");
+		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
 	return String();
@@ -1096,7 +1125,7 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 }
 

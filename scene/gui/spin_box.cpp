@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "spin_box.h"
+#include "core/math/expression.h"
 #include "core/os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
@@ -40,7 +41,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 
-	String value = String::num(get_value(), Math::step_decimals(get_step()));
+	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (prefix != "")
 		value = prefix + " " + value;
 	if (suffix != "")
@@ -50,15 +51,19 @@ void SpinBox::_value_changed(double) {
 
 void SpinBox::_text_entered(const String &p_string) {
 
-	/*
-	if (!p_string.is_numeric())
+	Ref<Expression> expr;
+	expr.instance();
+	// Ignore the prefix and suffix in the expression
+	Error err = expr->parse(p_string.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	if (err != OK) {
 		return;
-	*/
-	String value = p_string;
-	if (prefix != "" && p_string.begins_with(prefix))
-		value = p_string.substr(prefix.length(), p_string.length() - prefix.length());
-	set_value(value.to_double());
-	_value_changed(0);
+	}
+
+	Variant value = expr->execute(Array(), NULL, false);
+	if (value.get_type() != Variant::NIL) {
+		set_value(value);
+		_value_changed(0);
+	}
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -103,21 +108,21 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_LEFT: {
 
+				line_edit->grab_focus();
+
 				set_value(get_value() + (up ? get_step() : -get_step()));
 
 				range_click_timer->set_wait_time(0.6);
 				range_click_timer->set_one_shot(true);
 				range_click_timer->start();
 
-				line_edit->grab_focus();
-
 				drag.allowed = true;
 				drag.capture_pos = mb->get_position();
 			} break;
 			case BUTTON_RIGHT: {
 
-				set_value((up ? get_max() : get_min()));
 				line_edit->grab_focus();
+				set_value((up ? get_max() : get_min()));
 			} break;
 			case BUTTON_WHEEL_UP: {
 				if (line_edit->has_focus()) {
@@ -170,10 +175,14 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_exit() {
 
+	// discontinue because the focus_exit was caused by right-click context menu
+	if (line_edit->get_menu()->is_visible())
+		return;
+
 	_text_entered(line_edit->get_text());
 }
 
-inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> icon) {
+inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> &icon) {
 
 	int w = icon->get_width();
 	if (w != last_w) {
@@ -202,6 +211,10 @@ void SpinBox::_notification(int p_what) {
 
 		_adjust_width_for_icon(get_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+
+		call_deferred("minimum_size_changed");
+		get_line_edit()->call_deferred("minimum_size_changed");
 	}
 }
 
@@ -277,6 +290,7 @@ SpinBox::SpinBox() {
 	add_child(line_edit);
 
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);

@@ -12,7 +12,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #ifndef B3_GEOMETRY_UTIL_H
 #define B3_GEOMETRY_UTIL_H
 
@@ -22,21 +21,16 @@ subject to the following restrictions:
 ///The b3GeometryUtil helper class provides a few methods to convert between plane equations and vertices.
 class b3GeometryUtil
 {
-	public:
-	
-	
-		static void	getPlaneEquationsFromVertices(b3AlignedObjectArray<b3Vector3>& vertices, b3AlignedObjectArray<b3Vector3>& planeEquationsOut );
+public:
+	static void getPlaneEquationsFromVertices(b3AlignedObjectArray<b3Vector3>& vertices, b3AlignedObjectArray<b3Vector3>& planeEquationsOut);
 
-		static void	getVerticesFromPlaneEquations(const b3AlignedObjectArray<b3Vector3>& planeEquations , b3AlignedObjectArray<b3Vector3>& verticesOut );
-	
-		static bool	isInside(const b3AlignedObjectArray<b3Vector3>& vertices, const b3Vector3& planeNormal, b3Scalar	margin);
-		
-		static bool	isPointInsidePlanes(const b3AlignedObjectArray<b3Vector3>& planeEquations, const b3Vector3& point, b3Scalar	margin);
+	static void getVerticesFromPlaneEquations(const b3AlignedObjectArray<b3Vector3>& planeEquations, b3AlignedObjectArray<b3Vector3>& verticesOut);
 
-		static bool	areVerticesBehindPlane(const b3Vector3& planeNormal, const b3AlignedObjectArray<b3Vector3>& vertices, b3Scalar	margin);
+	static bool isInside(const b3AlignedObjectArray<b3Vector3>& vertices, const b3Vector3& planeNormal, b3Scalar margin);
 
+	static bool isPointInsidePlanes(const b3AlignedObjectArray<b3Vector3>& planeEquations, const b3Vector3& point, b3Scalar margin);
+
+	static bool areVerticesBehindPlane(const b3Vector3& planeNormal, const b3AlignedObjectArray<b3Vector3>& vertices, b3Scalar margin);
 };
 
-
-#endif //B3_GEOMETRY_UTIL_H
-
+#endif  //B3_GEOMETRY_UTIL_H

@@ -12,60 +12,58 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
-
 #ifndef B3_GEN_MINMAX_H
 #define B3_GEN_MINMAX_H
 
 #include "b3Scalar.h"
 
 template <class T>
-B3_FORCE_INLINE const T& b3Min(const T& a, const T& b) 
+B3_FORCE_INLINE const T& b3Min(const T& a, const T& b)
 {
-  return a < b ? a : b ;
+	return a < b ? a : b;
 }
 
 template <class T>
-B3_FORCE_INLINE const T& b3Max(const T& a, const T& b) 
+B3_FORCE_INLINE const T& b3Max(const T& a, const T& b)
 {
-  return  a > b ? a : b;
+	return a > b ? a : b;
 }
 
 template <class T>
-B3_FORCE_INLINE const T& b3Clamped(const T& a, const T& lb, const T& ub) 
+B3_FORCE_INLINE const T& b3Clamped(const T& a, const T& lb, const T& ub)
 {
-	return a < lb ? lb : (ub < a ? ub : a); 
+	return a < lb ? lb : (ub < a ? ub : a);
 }
 
 template <class T>
-B3_FORCE_INLINE void b3SetMin(T& a, const T& b) 
+B3_FORCE_INLINE void b3SetMin(T& a, const T& b)
 {
-    if (b < a) 
+	if (b < a)
 	{
 		a = b;
 	}
 }
 
 template <class T>
-B3_FORCE_INLINE void b3SetMax(T& a, const T& b) 
+B3_FORCE_INLINE void b3SetMax(T& a, const T& b)
 {
-    if (a < b) 
+	if (a < b)
 	{
 		a = b;
 	}
 }
 
 template <class T>
-B3_FORCE_INLINE void b3Clamp(T& a, const T& lb, const T& ub) 
+B3_FORCE_INLINE void b3Clamp(T& a, const T& lb, const T& ub)
 {
-	if (a < lb) 
+	if (a < lb)
 	{
-		a = lb; 
+		a = lb;
 	}
-	else if (ub < a) 
+	else if (ub < a)
 	{
 		a = ub;
 	}
 }
 
-#endif //B3_GEN_MINMAX_H
+#endif  //B3_GEN_MINMAX_H

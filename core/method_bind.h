@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +37,6 @@
 #include "core/variant.h"
 
 #include <stdio.h>
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
@@ -273,6 +269,8 @@ public:
 	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, can't be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
+
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -329,6 +327,10 @@ public:
 		return _gen_argument_type_info(p_arg).type;
 	}
 
+	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
+		return GodotTypeInfo::METADATA_NONE;
+	}
+
 #else
 
 	virtual Variant::Type _gen_argument_type(int p_arg) const {
@@ -342,7 +344,7 @@ public:
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
 	}
 
-	void set_method_info(const MethodInfo &p_info) {
+	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
 
 		set_argument_count(p_info.arguments.size());
 #ifdef DEBUG_METHODS_ENABLED
@@ -362,7 +364,9 @@ public:
 		}
 		argument_types = at;
 		arguments = p_info;
-		arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		if (p_return_nil_is_variant) {
+			arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
 #endif
 	}
 
@@ -385,11 +389,11 @@ public:
 };
 
 template <class T>
-MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Variant::CallError &), const MethodInfo &p_info) {
+MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Variant::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 
 	MethodBindVarArg<T> *a = memnew((MethodBindVarArg<T>));
 	a->set_method(p_method);
-	a->set_method_info(p_info);
+	a->set_method_info(p_info, p_return_nil_is_variant);
 	return a;
 }
 

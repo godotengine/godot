@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,6 @@
 #include "core/pair.h"
 #include "core/resource.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
@@ -54,6 +50,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
+	static bool languages_finished;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -86,11 +83,14 @@ public:
 	static StringName get_global_class_language(const StringName &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
+	static StringName get_global_class_native_base(const String &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 
 	static void init_languages();
 	static void finish_languages();
+
+	static bool are_languages_finished() { return languages_finished; }
 };
 
 class ScriptInstance;
@@ -108,6 +108,12 @@ protected:
 
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
+
+	Variant _get_property_default_value(const StringName &p_property);
+	Array _get_script_property_list();
+	Array _get_script_method_list();
+	Array _get_script_signal_list();
+	Dictionary _get_script_constant_map();
 
 public:
 	virtual bool can_instance() const = 0;
@@ -146,6 +152,8 @@ public:
 	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
 	virtual void get_members(Set<StringName> *p_constants) {}
 
+	virtual bool is_placeholder_fallback_enabled() const { return false; }
+
 	Script() {}
 };
 
@@ -167,6 +175,11 @@ public:
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void notification(int p_notification) = 0;
+	virtual String to_string(bool *r_valid) {
+		if (r_valid)
+			*r_valid = false;
+		return String();
+	}
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
@@ -189,6 +202,35 @@ public:
 	virtual ~ScriptInstance();
 };
 
+struct ScriptCodeCompletionOption {
+	enum Kind {
+		KIND_CLASS,
+		KIND_FUNCTION,
+		KIND_SIGNAL,
+		KIND_VARIABLE,
+		KIND_MEMBER,
+		KIND_ENUM,
+		KIND_CONSTANT,
+		KIND_NODE_PATH,
+		KIND_FILE_PATH,
+		KIND_PLAIN_TEXT,
+	};
+	Kind kind;
+	String display;
+	String insert_text;
+	RES icon;
+
+	ScriptCodeCompletionOption() {
+		kind = KIND_PLAIN_TEXT;
+	}
+
+	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
+		display = p_text;
+		insert_text = p_text;
+		kind = p_kind;
+	}
+};
+
 class ScriptCodeCompletionCache {
 
 	static ScriptCodeCompletionCache *singleton;
@@ -199,6 +241,8 @@ public:
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();
+
+	virtual ~ScriptCodeCompletionCache() {}
 };
 
 class ScriptLanguage {
@@ -237,7 +281,7 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	struct LookupResult {
 		enum Type {
@@ -256,7 +300,7 @@ public:
 		int location;
 	};
 
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
@@ -331,10 +375,9 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
+	Map<StringName, Variant> constants;
 	ScriptLanguage *language;
 	Ref<Script> script;
-
-	bool build_failed;
 
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
@@ -361,13 +404,10 @@ public:
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
-	void set_build_failed(bool p_build_failed) { build_failed = p_build_failed; }
-	bool get_build_failed() const { return build_failed; }
-
 	virtual bool is_placeholder() const { return true; }
 
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = NULL);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
@@ -387,31 +427,6 @@ class ScriptDebugger {
 	ScriptLanguage *break_lang;
 
 public:
-	typedef void (*RequestSceneTreeMessageFunc)(void *);
-
-	struct LiveEditFuncs {
-
-		void *udata;
-		void (*node_path_func)(void *, const NodePath &p_path, int p_id);
-		void (*res_path_func)(void *, const String &p_path, int p_id);
-
-		void (*node_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*node_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*node_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*res_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*res_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*res_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*root_func)(void *, const NodePath &p_scene_path, const String &p_scene_from);
-
-		void (*tree_create_node_func)(void *, const NodePath &p_parent, const String &p_type, const String &p_name);
-		void (*tree_instance_node_func)(void *, const NodePath &p_parent, const String &p_path, const String &p_name);
-		void (*tree_remove_node_func)(void *, const NodePath &p_at);
-		void (*tree_remove_and_keep_node_func)(void *, const NodePath &p_at, ObjectID p_keep_id);
-		void (*tree_restore_node_func)(void *, ObjectID p_id, const NodePath &p_at, int p_at_pos);
-		void (*tree_duplicate_node_func)(void *, const NodePath &p_at, const String &p_new_name);
-		void (*tree_reparent_node_func)(void *, const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-	};
-
 	_FORCE_INLINE_ static ScriptDebugger *get_singleton() { return singleton; }
 	void set_lines_left(int p_left);
 	int get_lines_left() const;
@@ -427,7 +442,7 @@ public:
 	void clear_breakpoints();
 	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
+	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 	virtual void idle_poll();
 	virtual void line_poll();
 
@@ -440,8 +455,7 @@ public:
 	virtual bool is_remote() const { return false; }
 	virtual void request_quit() {}
 
-	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
-	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
 
 	virtual bool is_profiling() const = 0;
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;

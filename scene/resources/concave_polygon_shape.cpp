@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
+Vector<Vector3> ConcavePolygonShape::get_debug_mesh_lines() {
 
 	Set<DrawEdge> edges;
 
@@ -65,6 +65,7 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 }
 
 void ConcavePolygonShape::_update_shape() {
+	Shape::_update_shape();
 }
 
 void ConcavePolygonShape::set_faces(const PoolVector<Vector3> &p_faces) {

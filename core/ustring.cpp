@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
+#endif
+
 #include "ustring.h"
 
 #include "core/color.h"
+#include "core/crypto/crypto_core.h"
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/print_string.h"
@@ -38,10 +43,8 @@
 #include "core/ucaps.h"
 #include "core/variant.h"
 
-#include "thirdparty/misc/md5.h"
-#include "thirdparty/misc/sha256.h"
-
 #include <wchar.h>
+#include <cstdint>
 
 #ifndef NO_USE_STDLIB
 #include <stdio.h>
@@ -57,6 +60,9 @@
 #define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
 #define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
 #define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
+
+const char CharString::_null = 0;
+const CharType String::_null = 0;
 
 bool is_symbol(CharType c) {
 	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
@@ -120,6 +126,31 @@ const char *CharString::get_data() const {
 		return "";
 }
 
+CharString &CharString::operator=(const char *p_cstr) {
+
+	copy_from(p_cstr);
+	return *this;
+}
+
+void CharString::copy_from(const char *p_cstr) {
+
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	size_t len = strlen(p_cstr);
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	resize(len + 1); // include terminating null char
+
+	strcpy(ptrw(), p_cstr);
+}
+
 void String::copy_from(const char *p_cstr) {
 
 	if (!p_cstr) {
@@ -179,7 +210,7 @@ void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
 	set(p_length, 0);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	for (int i = 0; i < p_length; i++) {
 		dst[i] = p_char[i];
@@ -250,7 +281,7 @@ String &String::operator+=(const String &p_str) {
 	resize(length() + p_str.size());
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -289,7 +320,7 @@ String &String::operator+=(const char *p_str) {
 
 	resize(from + src_len + 1);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -453,8 +484,6 @@ signed char String::nocasecmp_to(const String &p_str) const {
 		this_str++;
 		that_str++;
 	}
-
-	return 0; //should never reach anyway
 }
 
 signed char String::casecmp_to(const String &p_str) const {
@@ -485,8 +514,6 @@ signed char String::casecmp_to(const String &p_str) const {
 		this_str++;
 		that_str++;
 	}
-
-	return 0; //should never reach anyway
 }
 
 signed char String::naturalnocasecmp_to(const String &p_str) const {
@@ -600,13 +627,13 @@ String String::camelcase_to_underscore(bool lowercase) const {
 			is_next_number = cstr[i + 1] >= '0' && cstr[i + 1] <= '9';
 		}
 
-		const bool a = is_upper && !was_precedent_upper && !was_precedent_number;
-		const bool b = was_precedent_upper && is_upper && are_next_2_lower;
-		const bool c = is_number && !was_precedent_number;
+		const bool cond_a = is_upper && !was_precedent_upper && !was_precedent_number;
+		const bool cond_b = was_precedent_upper && is_upper && are_next_2_lower;
+		const bool cond_c = is_number && !was_precedent_number;
 		const bool can_break_number_letter = is_number && !was_precedent_number && is_next_lower;
 		const bool can_break_letter_number = !is_number && was_precedent_number && (is_next_lower || is_next_number);
 
-		bool should_split = a || b || c || can_break_number_letter || can_break_letter_number;
+		bool should_split = cond_a || cond_b || cond_c || can_break_number_letter || can_break_letter_number;
 		if (should_split) {
 			new_string += this->substr(start_index, i - start_index) + "_";
 			start_index = i;
@@ -703,8 +730,6 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 
 		i++;
 	}
-
-	return String(); //no find!
 }
 
 Vector<String> String::split_spaces() const {
@@ -758,7 +783,7 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p
 		if (p_allow_empty || (end > from)) {
 			if (p_maxsplit <= 0)
 				ret.push_back(substr(from, end - from));
-			else if (p_maxsplit > 0) {
+			else {
 
 				// Put rest of the string and leave cycle.
 				if (p_maxsplit == ret.size()) {
@@ -1316,7 +1341,17 @@ String String::num_scientific(double p_num) {
 	char buf[256];
 
 #if defined(__GNUC__) || defined(_MSC_VER)
+
+#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	// MinGW and old MSC require _set_output_format() to conform to C99 output for printf
+	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 	snprintf(buf, 256, "%lg", p_num);
+
+#if (defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900)) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
+	_set_output_format(old_exponent_format);
+#endif
+
 #else
 	sprintf(buf, "%.16lg", p_num);
 #endif
@@ -1356,6 +1391,9 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 #define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
+	if (!p_utf8)
+		return true;
+
 	String aux;
 
 	int cstr_size = 0;
@@ -1382,7 +1420,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			if (skip == 0) {
 
-				uint8_t c = *ptrtmp;
+				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0)
@@ -1431,7 +1469,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	resize(str_size + 1);
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 	dst[str_size] = 0;
 
 	while (cstr_size) {
@@ -1645,6 +1683,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 			return 0;
 		}
 
+		ERR_FAIL_COND_V_MSG(hex > INT32_MAX / 16, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1686,12 +1725,53 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 			return 0;
 		}
 
+		ERR_FAIL_COND_V_MSG(hex > INT64_MAX / 16, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
 	}
 
 	return hex * sign;
+}
+
+int64_t String::bin_to_int64(bool p_with_prefix) const {
+
+	if (p_with_prefix && length() < 3)
+		return 0;
+
+	const CharType *s = ptr();
+
+	int64_t sign = s[0] == '-' ? -1 : 1;
+
+	if (sign < 0) {
+		s++;
+	}
+
+	if (p_with_prefix) {
+		if (s[0] != '0' || s[1] != 'b')
+			return 0;
+		s += 2;
+	}
+
+	int64_t binary = 0;
+
+	while (*s) {
+
+		CharType c = LOWERCASE(*s);
+		int64_t n;
+		if (c == '0' || c == '1') {
+			n = c - '0';
+		} else {
+			return 0;
+		}
+
+		ERR_FAIL_COND_V_MSG(binary > INT64_MAX / 2, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		binary *= 2;
+		binary += n;
+		s++;
+	}
+
+	return binary * sign;
 }
 
 int String::to_int() const {
@@ -1709,6 +1789,7 @@ int String::to_int() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1736,6 +1817,7 @@ int64_t String::to_int64() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1766,6 +1848,7 @@ int String::to_int(const char *p_str, int p_len) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1838,7 +1921,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 		1.0e256
 	};
 
-	int sign, expSign = false;
+	bool sign, expSign = false;
 	double fraction, dblExp;
 	const double *d;
 	const C *p;
@@ -2078,6 +2161,14 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 
 				if (c >= '0' && c <= '9') {
 
+					if (integer > INT64_MAX / 10) {
+						String number("");
+						str = p_str;
+						while (*str && str != limit) {
+							number += *(str++);
+						}
+						ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+					}
 					integer *= 10;
 					integer += c - '0';
 				} else {
@@ -2190,54 +2281,63 @@ uint64_t String::hash64() const {
 String String::md5_text() const {
 
 	CharString cs = utf8();
-	MD5_CTX ctx;
-	MD5Init(&ctx);
-	MD5Update(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	MD5Final(&ctx);
-	return String::md5(ctx.digest);
+	unsigned char hash[16];
+	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 16);
+}
+
+String String::sha1_text() const {
+	CharString cs = utf8();
+	unsigned char hash[20];
+	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+	return String::hex_encode_buffer(hash, 20);
 }
 
 String String::sha256_text() const {
 	CharString cs = utf8();
 	unsigned char hash[32];
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	sha256_done(&ctx, hash);
+	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
 	return String::hex_encode_buffer(hash, 32);
 }
 
 Vector<uint8_t> String::md5_buffer() const {
 
 	CharString cs = utf8();
-	MD5_CTX ctx;
-	MD5Init(&ctx);
-	MD5Update(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	MD5Final(&ctx);
+	unsigned char hash[16];
+	CryptoCore::md5((unsigned char *)cs.ptr(), cs.length(), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize(16);
 	for (int i = 0; i < 16; i++) {
-		ret.write[i] = ctx.digest[i];
-	};
-
+		ret.write[i] = hash[i];
+	}
 	return ret;
 };
+
+Vector<uint8_t> String::sha1_buffer() const {
+	CharString cs = utf8();
+	unsigned char hash[20];
+	CryptoCore::sha1((unsigned char *)cs.ptr(), cs.length(), hash);
+
+	Vector<uint8_t> ret;
+	ret.resize(20);
+	for (int i = 0; i < 20; i++) {
+		ret.write[i] = hash[i];
+	}
+
+	return ret;
+}
 
 Vector<uint8_t> String::sha256_buffer() const {
 	CharString cs = utf8();
 	unsigned char hash[32];
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (unsigned char *)cs.ptr(), cs.length());
-	sha256_done(&ctx, hash);
+	CryptoCore::sha256((unsigned char *)cs.ptr(), cs.length(), hash);
 
 	Vector<uint8_t> ret;
 	ret.resize(32);
 	for (int i = 0; i < 32; i++) {
 		ret.write[i] = hash[i];
 	}
-
 	return ret;
 }
 
@@ -2260,6 +2360,9 @@ String String::insert(int p_at_pos, const String &p_string) const {
 	return pre + p_string + post;
 }
 String String::substr(int p_from, int p_chars) const {
+
+	if (p_chars == -1)
+		p_chars = length() - p_from;
 
 	if (empty() || p_from < 0 || p_from >= length() || p_chars <= 0)
 		return "";
@@ -2388,6 +2491,10 @@ int String::find(const char *p_str, int p_from) const {
 	}
 
 	return -1;
+}
+
+int String::find_char(const CharType &p_char, int p_from) const {
+	return _cowdata.find(p_char, p_from);
 }
 
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
@@ -2651,6 +2758,51 @@ bool String::is_quoted() const {
 	return is_enclosed_in("\"") || is_enclosed_in("'");
 }
 
+int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
+	if (p_string.empty()) {
+		return 0;
+	}
+	int len = length();
+	int slen = p_string.length();
+	if (len < slen) {
+		return 0;
+	}
+	String str;
+	if (p_from >= 0 && p_to >= 0) {
+		if (p_to == 0) {
+			p_to = len;
+		} else if (p_from >= p_to) {
+			return 0;
+		}
+		if (p_from == 0 && p_to == len) {
+			str = String();
+			str.copy_from_unchecked(&c_str()[0], len);
+		} else {
+			str = substr(p_from, p_to - p_from);
+		}
+	} else {
+		return 0;
+	}
+	int c = 0;
+	int idx = -1;
+	do {
+		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
+		if (idx != -1) {
+			str = str.substr(idx + slen, str.length() - slen);
+			++c;
+		}
+	} while (idx != -1);
+	return c;
+}
+
+int String::count(const String &p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, false);
+}
+
+int String::countn(const String &p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, true);
+}
+
 bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive) const {
 
 	int len = length();
@@ -2882,26 +3034,12 @@ String String::replace(const char *p_key, const char *p_with) const {
 
 String String::replace_first(const String &p_key, const String &p_with) const {
 
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-		break;
+	int pos = find(p_key);
+	if (pos >= 0) {
+		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
 	}
 
-	if (search_from == 0) {
-
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return *this;
 }
 String String::replacen(const String &p_key, const String &p_with) const {
 
@@ -2925,6 +3063,22 @@ String String::replacen(const String &p_key, const String &p_with) const {
 	return new_string;
 }
 
+String String::repeat(int p_count) const {
+
+	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
+
+	String new_string;
+	const CharType *src = this->c_str();
+
+	new_string.resize(length() * p_count + 1);
+
+	for (int i = 0; i < p_count; i++)
+		for (int j = 0; j < length(); j++)
+			new_string[i * length() + j] = src[j];
+
+	return new_string;
+}
+
 String String::left(int p_pos) const {
 
 	if (p_pos <= 0)
@@ -2938,11 +3092,11 @@ String String::left(int p_pos) const {
 
 String String::right(int p_pos) const {
 
-	if (p_pos >= size())
-		return *this;
-
-	if (p_pos < 0)
+	if (p_pos >= length())
 		return "";
+
+	if (p_pos <= 0)
+		return *this;
 
 	return substr(p_pos, (length() - p_pos));
 }
@@ -3028,29 +3182,16 @@ String String::strip_edges(bool left, bool right) const {
 
 String String::strip_escapes() const {
 
-	int len = length();
-	int beg = 0, end = len;
-
+	String new_string;
 	for (int i = 0; i < length(); i++) {
 
-		if (operator[](i) <= 31)
-			beg++;
-		else
-			break;
+		// Escape characters on first page of the ASCII table, before 32 (Space).
+		if (operator[](i) < 32)
+			continue;
+		new_string += operator[](i);
 	}
 
-	for (int i = (int)(length() - 1); i >= 0; i--) {
-
-		if (operator[](i) <= 31)
-			end--;
-		else
-			break;
-	}
-
-	if (beg == 0 && end == len)
-		return *this;
-
-	return substr(beg, end - beg);
+	return new_string;
 }
 
 String String::lstrip(const String &p_chars) const {
@@ -3060,7 +3201,7 @@ String String::lstrip(const String &p_chars) const {
 
 	for (beg = 0; beg < len; beg++) {
 
-		if (p_chars.find(&ptr()[beg]) == -1)
+		if (p_chars.find_char(get(beg)) == -1)
 			break;
 	}
 
@@ -3077,7 +3218,7 @@ String String::rstrip(const String &p_chars) const {
 
 	for (end = len - 1; end >= 0; end--) {
 
-		if (p_chars.find(&ptr()[end]) == -1)
+		if (p_chars.find_char(get(end)) == -1)
 			break;
 	}
 
@@ -3161,9 +3302,7 @@ String String::simplify_path() const {
 
 static int _humanize_digits(int p_num) {
 
-	if (p_num < 10)
-		return 2;
-	else if (p_num < 100)
+	if (p_num < 100)
 		return 2;
 	else if (p_num < 1024)
 		return 1;
@@ -3171,21 +3310,29 @@ static int _humanize_digits(int p_num) {
 		return 0;
 }
 
-String String::humanize_size(size_t p_size) {
+String String::humanize_size(uint64_t p_size) {
 
 	uint64_t _div = 1;
-	static const char *prefix[] = { " Bytes", " KB", " MB", " GB", "TB", " PB", "HB", "" };
+	Vector<String> prefixes;
+	prefixes.push_back(RTR("B"));
+	prefixes.push_back(RTR("KiB"));
+	prefixes.push_back(RTR("MiB"));
+	prefixes.push_back(RTR("GiB"));
+	prefixes.push_back(RTR("TiB"));
+	prefixes.push_back(RTR("PiB"));
+	prefixes.push_back(RTR("EiB"));
+
 	int prefix_idx = 0;
 
-	while (p_size > (_div * 1024) && prefix[prefix_idx][0]) {
+	while (prefix_idx < prefixes.size() && p_size > (_div * 1024)) {
 		_div *= 1024;
 		prefix_idx++;
 	}
 
-	int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
-	double divisor = prefix_idx > 0 ? _div : 1;
+	const int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
+	const double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor, digits) + prefix[prefix_idx];
+	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
 bool String::is_abs_path() const {
 
@@ -3287,7 +3434,7 @@ String String::http_unescape() const {
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
 				CharType ord2 = ord_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
-					char bytes[2] = { (char)ord1, (char)ord2 };
+					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, NULL, 16);
 					i += 2;
 				}
@@ -3476,7 +3623,7 @@ String String::xml_unescape() const {
 	if (len == 0)
 		return String();
 	str.resize(len + 1);
-	_xml_unescape(c_str(), l, &str[0]);
+	_xml_unescape(c_str(), l, str.ptrw());
 	str[len] = 0;
 	return str;
 }
@@ -3578,9 +3725,12 @@ bool String::is_valid_integer() const {
 
 bool String::is_valid_hex_number(bool p_with_prefix) const {
 
-	int from = 0;
 	int len = length();
 
+	if (len == 0)
+		return false;
+
+	int from = 0;
 	if (len != 1 && (operator[](0) == '+' || operator[](0) == '-'))
 		from++;
 
@@ -3646,7 +3796,8 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 
-	String src = this->replace("\\", "/").get_base_dir();
+	// Don't get base dir for src, this is expected to be a dir already.
+	String src = this->replace("\\", "/");
 	String dst = p_path.replace("\\", "/").get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) // failed
@@ -3733,6 +3884,20 @@ String String::path_to(const String &p_path) const {
 bool String::is_valid_html_color() const {
 
 	return Color::html_is_valid(*this);
+}
+
+bool String::is_valid_filename() const {
+
+	String stripped = strip_edges();
+	if (*this != stripped) {
+		return false;
+	}
+
+	if (stripped == String()) {
+		return false;
+	}
+
+	return !(find(":") != -1 || find("/") != -1 || find("\\") != -1 || find("?") != -1 || find("*") != -1 || find("\"") != -1 || find("|") != -1 || find("%") != -1 || find("<") != -1 || find(">") != -1);
 }
 
 bool String::is_valid_ip_address() const {
@@ -3870,7 +4035,6 @@ String String::percent_decode() const {
 			uint8_t a = LOWERCASE(cs[i + 1]);
 			uint8_t b = LOWERCASE(cs[i + 2]);
 
-			c = 0;
 			if (a >= '0' && a <= '9')
 				c = (a - '0') << 4;
 			else if (a >= 'a' && a <= 'f')
@@ -3895,6 +4059,19 @@ String String::percent_decode() const {
 	return String::utf8(pe.ptr());
 }
 
+String String::property_name_encode() const {
+	// Escape and quote strings with extended ASCII or further Unicode characters
+	// as well as '"', '=' or ' ' (32)
+	const CharType *cstr = c_str();
+	for (int i = 0; cstr[i]; i++) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+			return "\"" + c_escape_multiline() + "\"";
+		}
+	}
+	// Keep as is
+	return *this;
+}
+
 String String::get_basename() const {
 
 	int pos = find_last(".");
@@ -3907,6 +4084,11 @@ String String::get_basename() const {
 String itos(int64_t p_val) {
 
 	return String::num_int64(p_val);
+}
+
+String uitos(uint64_t p_val) {
+
+	return String::num_uint64(p_val);
 }
 
 String rtos(double p_val) {

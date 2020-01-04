@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 
 void Engine::set_iterations_per_second(int p_ips) {
 
+	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
 }
 int Engine::get_iterations_per_second() const {
@@ -98,6 +99,7 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
+	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
@@ -195,8 +197,7 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 Object *Engine::get_singleton_object(const String &p_name) const {
 
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	ERR_EXPLAIN("Failed to retrieve non-existent singleton '" + p_name + "'");
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V_MSG(!E, NULL, "Failed to retrieve non-existent singleton '" + p_name + "'.");
 	return E->get();
 };
 
@@ -223,6 +224,7 @@ Engine::Engine() {
 	frames_drawn = 0;
 	ips = 60;
 	physics_jitter_fix = 0.5;
+	_physics_interpolation_fraction = 0.0f;
 	_frame_delay = 0;
 	_fps = 1;
 	_target_fps = 0;

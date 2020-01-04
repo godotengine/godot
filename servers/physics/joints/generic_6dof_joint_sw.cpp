@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,7 +107,7 @@ real_t G6DOFRotationalLimitMotorSW::solveAngularLimits(
 	// correction velocity
 	real_t motor_relvel = m_limitSoftness * (target_velocity - m_damping * rel_vel);
 
-	if (motor_relvel < CMP_EPSILON && motor_relvel > -CMP_EPSILON) {
+	if (Math::is_zero_approx(motor_relvel)) {
 		return 0.0f; //no need for applying force
 	}
 
@@ -421,7 +421,6 @@ void Generic6DOFJointSW::calcAnchorPos(void) {
 	const Vector3 &pA = m_calculatedTransformA.origin;
 	const Vector3 &pB = m_calculatedTransformB.origin;
 	m_AnchorPos = pA * weight + pB * (real_t(1.0) - weight);
-	return;
 } // Generic6DOFJointSW::calcAnchorPos()
 
 void Generic6DOFJointSW::set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value) {

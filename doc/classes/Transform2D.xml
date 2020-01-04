@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" category="Built-In Types" version="3.1">
+<class name="Transform2D" category="Built-In Types" version="3.2">
 	<brief_description>
-		2D Transformation. 3x2 matrix.
+		2D transformation (3×2 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of a two [Vector2] x, y and [Vector2] "origin". It is similar to a 3x2 matrix.
+		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of two [member x] and [member y] [Vector2]s and an [member origin]. It is similar to a 3×2 matrix.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Transform2D">
 			<return type="Transform2D">
@@ -108,6 +106,15 @@
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
 		<method name="orthonormalized">
 			<return type="Transform2D">
 			</return>
@@ -121,7 +128,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform by the given angle (in radians).
+				Rotates the transform by the given angle (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled">
@@ -130,7 +137,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Scales the transform by the given factor.
+				Scales the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
@@ -139,7 +146,8 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translates the transform by the given offset.
+				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
 		<method name="xform">
@@ -148,7 +156,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector2] or [Rect2] by this transform.
+				Transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -157,27 +165,30 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector2] or [Rect2] by this transform.
+				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="origin" type="Vector2" setter="" getter="">
+		<member name="origin" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
 			The transform's translation offset.
 		</member>
-		<member name="x" type="Vector2" setter="" getter="">
-			The X axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+		<member name="x" type="Vector2" setter="" getter="" default="Vector2( 1, 0 )">
+			The X axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
-		<member name="y" type="Vector2" setter="" getter="">
-			The Y axis of 2x2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+		<member name="y" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+			The Y axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the X axis.
 		</constant>
 		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+			[Transform2D] with mirroring applied parallel to the Y axis.
 		</constant>
 	</constants>
 </class>

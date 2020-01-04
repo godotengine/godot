@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.1">
+<class name="HTTPClient" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>
 	<description>
-		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases.
-		Note that this client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
-		A [code]HTTPClient[/code] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports SSL and SSL server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
+		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases. See [HTTPRequest] for an higher-level alternative.
+		[b]Note:[/b] This client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
+		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports SSL and SSL server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="close">
 			<return type="void">
 			</return>
 			<description>
-				Closes the current connection, allowing reuse of this [code]HTTPClient[/code].
+				Closes the current connection, allowing reuse of this [HTTPClient].
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -35,7 +33,7 @@
 			<argument index="3" name="verify_host" type="bool" default="true">
 			</argument>
 			<description>
-				Connect to a host. This needs to be done before any requests are sent.
+				Connects to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
 				If no [code]port[/code] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [code]use_ssl[/code] is enabled).
 				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
@@ -46,6 +44,7 @@
 			</return>
 			<description>
 				Returns the response's body length.
+				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
@@ -66,30 +65,35 @@
 			<return type="Dictionary">
 			</return>
 			<description>
-				Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-				Structure: ("key":"value1; value2")
-				Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
+				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
+				[b]Example:[/b]
+				[codeblock]
+				{
+				    "content-length": 12,
+				    "Content-Type": "application/json; charset=UTF-8",
+				}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
+				Returns a [enum Status] constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this [code]HTTPClient[/code] has a response available.
+				If [code]true[/code], this [HTTPClient] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this [code]HTTPClient[/code] has a response that is chunked.
+				If [code]true[/code], this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">
@@ -108,14 +112,14 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblock]
 				var fields = {"username": "user", "password": "pass"}
-				String queryString = httpClient.query_string_from_dict(fields)
-				returns:= "username=user&amp;password=pass"
+				var query_string = http_client.query_string_from_dict(fields)
+				# Returns "username=user&amp;password=pass"
 				[/codeblock]
-				Furthermore, if a key has a null value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
+				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblock]
 				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
-				String queryString = httpClient.query_string_from_dict(fields)
-				returns:= "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
+				var query_string = http_client.query_string_from_dict(fields)
+				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>
 		</method>
@@ -139,13 +143,13 @@
 			</argument>
 			<description>
 				Sends a request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblock]
 				var fields = {"username" : "user", "password" : "pass"}
-				var queryString = httpClient.query_string_from_dict(fields)
-				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
-				var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+				var query_string = http_client.query_string_from_dict(fields)
+				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
+				var result = http_client.request(http_client.METHOD_POST, "index.php", headers, query_string)
 				[/codeblock]
 			</description>
 		</method>
@@ -162,26 +166,20 @@
 			</argument>
 			<description>
 				Sends a raw request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
-			</description>
-		</method>
-		<method name="set_read_chunk_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="bytes" type="int">
-			</argument>
-			<description>
-				Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled">
+		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
 			If [code]true[/code], execution will block until all data is read from the response.
 		</member>
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
 			The connection to use for this client.
+		</member>
+		<member name="read_chunk_size" type="int" setter="set_read_chunk_size" getter="get_read_chunk_size" default="4096">
+			The size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
 		</member>
 	</members>
 	<constants>
@@ -195,7 +193,7 @@
 			HTTP POST method. The POST method is used to submit an entity to the specified resource, often causing a change in state or side effects on the server. This is often used for forms and submitting data or uploading files.
 		</constant>
 		<constant name="METHOD_PUT" value="3" enum="Method">
-			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of [code]POST[/code] as "create or update" and [code]PUT[/code] as "update", although many services tend to not make a clear distinction or change their meaning).
+			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of POST as "create or update" and PUT as "update", although many services tend to not make a clear distinction or change their meaning).
 		</constant>
 		<constant name="METHOD_DELETE" value="4" enum="Method">
 			HTTP DELETE method. The DELETE method requests to delete the specified resource.
@@ -213,7 +211,7 @@
 			HTTP PATCH method. The PATCH method is used to apply partial modifications to a resource.
 		</constant>
 		<constant name="METHOD_MAX" value="9" enum="Method">
-			Marker for end of [code]METHOD_*[/code] enum. Not used.
+			Represents the size of the [enum Method] enum.
 		</constant>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			Status: Disconnected from the server.
@@ -297,13 +295,13 @@
 			HTTP status code [code]303 See Other[/code]. The server is redirecting the user agent to a different resource, as indicated by a URI in the Location header field, which is intended to provide an indirect response to the original request.
 		</constant>
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
-			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to false.
+			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
 		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
-			HTTP status code [code]305 Use Proxy[/code]. Deprecated. Do not use.
+			HTTP status code [code]305 Use Proxy[/code]. [i]Deprecated. Do not use.[/i]
 		</constant>
 		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode">
-			HTTP status code [code]306 Switch Proxy[/code]. Deprecated. Do not use.
+			HTTP status code [code]306 Switch Proxy[/code]. [i]Deprecated. Do not use.[/i]
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.
@@ -348,7 +346,7 @@
 			HTTP status code [code]411 Length Required[/code]. The server refuses to accept the request without a defined Content-Length header.
 		</constant>
 		<constant name="RESPONSE_PRECONDITION_FAILED" value="412" enum="ResponseCode">
-			HTTP status code [code]412 Precondition Failed[/code]. One or more conditions given in the request header fields evaluated to false when tested on the server.
+			HTTP status code [code]412 Precondition Failed[/code]. One or more conditions given in the request header fields evaluated to [code]false[/code] when tested on the server.
 		</constant>
 		<constant name="RESPONSE_REQUEST_ENTITY_TOO_LARGE" value="413" enum="ResponseCode">
 			HTTP status code [code]413 Entity Too Large[/code]. The server is refusing to process a request because the request payload is larger than the server is willing or able to process.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,23 +51,29 @@ void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value);
 
 int godot_icall_Array_Count(Array *ptr);
 
-void godot_icall_Array_Add(Array *ptr, MonoObject *item);
+int godot_icall_Array_Add(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Clear(Array *ptr);
 
-bool godot_icall_Array_Contains(Array *ptr, MonoObject *item);
+MonoBoolean godot_icall_Array_Contains(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index);
+
+Array *godot_icall_Array_Duplicate(Array *ptr, MonoBoolean deep);
 
 int godot_icall_Array_IndexOf(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Insert(Array *ptr, int index, MonoObject *item);
 
-bool godot_icall_Array_Remove(Array *ptr, MonoObject *item);
+MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_RemoveAt(Array *ptr, int index);
 
+Error godot_icall_Array_Resize(Array *ptr, int new_size);
+
 void godot_icall_Array_Generic_GetElementTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
+
+MonoString *godot_icall_Array_ToString(Array *ptr);
 
 // Dictionary
 
@@ -91,19 +97,23 @@ void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *va
 
 void godot_icall_Dictionary_Clear(Dictionary *ptr);
 
-bool godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
+MonoBoolean godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
-bool godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
+MonoBoolean godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
 
-bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
+Dictionary *godot_icall_Dictionary_Duplicate(Dictionary *ptr, MonoBoolean deep);
 
-bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
+MonoBoolean godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
 
-bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
+MonoBoolean godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
-bool godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
+MonoBoolean godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
+
+MonoBoolean godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
 
 void godot_icall_Dictionary_Generic_GetValueTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
+
+MonoString *godot_icall_Dictionary_ToString(Dictionary *ptr);
 
 // Register internal calls
 

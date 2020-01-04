@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftbase.h                                                               */
-/*                                                                         */
-/*    Private functions used in the `base' module (specification).         */
-/*                                                                         */
-/*  Copyright 2008-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya.      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftbase.h
+ *
+ *   Private functions used in the `base' module (specification).
+ *
+ * Copyright (C) 2008-2019 by
+ * David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTBASE_H_

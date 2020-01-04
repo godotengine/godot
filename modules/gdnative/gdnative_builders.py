@@ -45,7 +45,9 @@ def _build_gdnative_api_struct_header(api):
         '#include <android/godot_android.h>',
         '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
+        '#include <net/godot_net.h>',
         '#include <pluginscript/godot_pluginscript.h>',
+        '#include <videodecoder/godot_videodecoder.h>',
         '',
         '#define GDNATIVE_API_INIT(options) do {  \\\n' + '  \\\n'.join(gdnative_api_init_macro) + '  \\\n } while (0)',
         '',
@@ -183,7 +185,7 @@ def _build_gdnative_api_struct_source(api):
             'extern const godot_gdnative_core_' + ('{0}_{1}_api_struct api_{0}_{1}'.format(core['version']['major'], core['version']['minor'])) + ' = {',
             '\tGDNATIVE_' + core['type'] + ',',
             '\t{' + str(core['version']['major']) + ', ' + str(core['version']['minor']) + '},',
-            '\t' + ('NULL' if not core['next'] else ('(const godot_gdnative_api_struct *)& api_{0}_{1}'.format(core['version']['major'], core['version']['minor']))) + ','
+            '\t' + ('NULL' if not core['next'] else ('(const godot_gdnative_api_struct *)& api_{0}_{1}'.format(core['next']['version']['major'], core['next']['version']['minor']))) + ','
         ]
 
         for funcdef in core['api']:
@@ -212,7 +214,7 @@ def _build_gdnative_api_struct_source(api):
         'extern const godot_gdnative_core_api_struct api_struct = {',
         '\tGDNATIVE_' + api['core']['type'] + ',',
         '\t{' + str(api['core']['version']['major']) + ', ' + str(api['core']['version']['minor']) + '},',
-        '\tNULL,',
+        '\t(const godot_gdnative_api_struct *)&api_1_1,',
         '\t' + str(len(api['extensions'])) + ',',
         '\tgdnative_extensions_pointers,',
     ]
@@ -244,6 +246,7 @@ def _build_gdnative_wrapper_code(api):
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '#include <arvr/godot_arvr.h>',
+        '#include <videodecoder/godot_videodecoder.h>',
         '',
         '#include <gdnative_api_struct.gen.h>',
         '',

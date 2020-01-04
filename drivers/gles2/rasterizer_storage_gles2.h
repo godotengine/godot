@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
-#include "core/dvector.h"
+#include "core/pool_vector.h"
 #include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
@@ -60,7 +60,9 @@ public:
 
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
+		bool use_skeleton_software;
 
+		int max_vertex_texture_image_units;
 		int max_texture_image_units;
 		int max_texture_size;
 
@@ -72,10 +74,33 @@ public:
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
+		bool pvrtc_supported;
+		bool rgtc_supported;
+		bool bptc_supported;
 
 		bool keep_original_textures;
 
 		bool force_vertex_shading;
+
+		bool use_rgba_2d_shadows;
+		bool use_rgba_3d_shadows;
+
+		bool support_32_bits_indices;
+		bool support_write_depth;
+		bool support_half_float_vertices;
+		bool support_npot_repeat_mipmap;
+		bool support_depth_texture;
+		bool support_depth_cubemaps;
+
+		bool support_shadow_cubemaps;
+
+		bool multisample_supported;
+		bool render_to_mipmap_supported;
+
+		GLuint depth_internalformat;
+		GLuint depth_type;
+		GLuint depth_buffer_internalformat;
+
 	} config;
 
 	struct Resources {
@@ -85,7 +110,11 @@ public:
 		GLuint normal_tex;
 		GLuint aniso_tex;
 
+		GLuint mipmap_blur_fbo;
+		GLuint mipmap_blur_color;
+
 		GLuint radical_inverse_vdc_cache_tex;
+		bool use_rgba_2d_shadows;
 
 		GLuint quadie;
 
@@ -233,6 +262,8 @@ public:
 
 		int mipmaps;
 
+		bool resize_to_po2;
+
 		bool active;
 		GLenum tex_id;
 
@@ -261,12 +292,14 @@ public:
 				alloc_width(0),
 				alloc_height(0),
 				format(Image::FORMAT_L8),
+				type(VS::TEXTURE_TYPE_2D),
 				target(0),
 				data_size(0),
 				total_data_size(0),
 				ignore_mipmaps(false),
 				compressed(false),
 				mipmaps(0),
+				resize_to_po2(false),
 				active(false),
 				tex_id(0),
 				stored_cube_sides(0),
@@ -305,7 +338,7 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed) const;
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VS::TextureType p_type, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
@@ -321,6 +354,7 @@ public:
 	virtual uint32_t texture_get_height(RID p_texture) const;
 	virtual uint32_t texture_get_depth(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth);
+	virtual void texture_bind(RID p_texture, uint32_t p_texture_no);
 
 	virtual void texture_set_path(RID p_texture, const String &p_path);
 	virtual String texture_get_path(RID p_texture) const;
@@ -334,6 +368,7 @@ public:
 	virtual void textures_keep_original(bool p_enable);
 
 	virtual void texture_set_proxy(RID p_texture, RID p_proxy);
+	virtual Size2 texture_size_with_proxy(RID p_texture) const;
 
 	virtual void texture_set_detect_3d_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_srgb_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
@@ -400,7 +435,6 @@ public:
 
 			int blend_mode;
 
-			/*
 			enum LightMode {
 				LIGHT_MODE_NORMAL,
 				LIGHT_MODE_UNSHADED,
@@ -408,7 +442,6 @@ public:
 			};
 
 			int light_mode;
-			*/
 
 			bool uses_screen_texture;
 			bool uses_screen_uv;
@@ -612,6 +645,7 @@ public:
 
 		PoolVector<uint8_t> data;
 		PoolVector<uint8_t> index_data;
+		Vector<PoolVector<uint8_t> > blend_shape_data;
 
 		int total_data_size;
 
@@ -837,6 +871,8 @@ public:
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances;
 
+		Transform2D base_transform_2d;
+
 		Skeleton() :
 				use_2d(false),
 				size(0),
@@ -876,6 +912,7 @@ public:
 		bool shadow;
 		bool negative;
 		bool reverse_cull;
+		bool use_gi;
 
 		uint32_t cull_mask;
 
@@ -902,6 +939,7 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable);
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
+	virtual void light_set_use_gi(RID p_light, bool p_enabled);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -921,6 +959,7 @@ public:
 	virtual VS::LightType light_get_type(RID p_light) const;
 	virtual float light_get_param(RID p_light, VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
+	virtual bool light_get_use_gi(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
@@ -1095,15 +1134,13 @@ public:
 
 	struct RenderTarget : public RID_Data {
 		GLuint fbo;
-
 		GLuint color;
 		GLuint depth;
 
-		// TODO post processing effects?
-
-		// TODO HDR?
-
-		// TODO this is hardcoded for texscreen copies for now
+		GLuint multisample_fbo;
+		GLuint multisample_color;
+		GLuint multisample_depth;
+		bool multisample_active;
 
 		struct Effect {
 			GLuint fbo;
@@ -1122,7 +1159,41 @@ public:
 
 		Effect copy_screen_effect;
 
-		int width, height;
+		struct MipMaps {
+
+			struct Size {
+				GLuint fbo;
+				GLuint color;
+				int width;
+				int height;
+			};
+
+			Vector<Size> sizes;
+			GLuint color;
+			int levels;
+
+			MipMaps() :
+					color(0),
+					levels(0) {
+			}
+		};
+
+		MipMaps mip_maps[2];
+
+		struct External {
+			GLuint fbo;
+			GLuint color;
+			GLuint depth;
+			RID texture;
+
+			External() :
+					fbo(0),
+					color(0),
+					depth(0) {
+			}
+		} external;
+
+		int x, y, width, height;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
@@ -1131,17 +1202,29 @@ public:
 
 		RID texture;
 
+		bool used_dof_blur_near;
+		bool mip_maps_allocated;
+
 		RenderTarget() :
 				fbo(0),
 				color(0),
 				depth(0),
+				multisample_fbo(0),
+				multisample_color(0),
+				multisample_depth(0),
+				multisample_active(false),
+				x(0),
+				y(0),
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				used_dof_blur_near(false),
+				mip_maps_allocated(false) {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
 				flags[i] = false;
 			}
+			external.fbo = 0;
 		}
 	};
 
@@ -1151,8 +1234,10 @@ public:
 	void _render_target_allocate(RenderTarget *rt);
 
 	virtual RID render_target_create();
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
@@ -1161,9 +1246,30 @@ public:
 
 	/* CANVAS SHADOW */
 
+	struct CanvasLightShadow : public RID_Data {
+
+		int size;
+		int height;
+		GLuint fbo;
+		GLuint depth;
+		GLuint distance; //for older devices
+	};
+
+	RID_Owner<CanvasLightShadow> canvas_light_shadow_owner;
+
 	virtual RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* LIGHT SHADOW MAPPING */
+
+	struct CanvasOccluder : public RID_Data {
+
+		GLuint vertex_id; // 0 means, unconfigured
+		GLuint index_id; // 0 means, unconfigured
+		PoolVector<Vector2> lines;
+		int len;
+	};
+
+	RID_Owner<CanvasOccluder> canvas_occluder_owner;
 
 	virtual RID canvas_light_occluder_create();
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines);

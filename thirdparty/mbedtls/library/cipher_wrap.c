@@ -258,7 +258,7 @@ static const mbedtls_cipher_info_t aes_128_ecb_info = {
     MBEDTLS_MODE_ECB,
     128,
     "AES-128-ECB",
-    16,
+    0,
     0,
     16,
     &aes_info
@@ -269,7 +269,7 @@ static const mbedtls_cipher_info_t aes_192_ecb_info = {
     MBEDTLS_MODE_ECB,
     192,
     "AES-192-ECB",
-    16,
+    0,
     0,
     16,
     &aes_info
@@ -280,7 +280,7 @@ static const mbedtls_cipher_info_t aes_256_ecb_info = {
     MBEDTLS_MODE_ECB,
     256,
     "AES-256-ECB",
-    16,
+    0,
     0,
     16,
     &aes_info

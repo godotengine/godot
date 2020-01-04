@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class AudioEffectFilter;
 
 class AudioEffectFilterInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectFilterInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectFilterInstance, AudioEffectInstance);
 	friend class AudioEffectFilter;
 
 	Ref<AudioEffectFilter> base;
@@ -55,7 +55,8 @@ public:
 };
 
 class AudioEffectFilter : public AudioEffect {
-	GDCLASS(AudioEffectFilter, AudioEffect)
+	GDCLASS(AudioEffectFilter, AudioEffect);
+
 public:
 	enum FilterDB {
 		FILTER_6DB,
@@ -95,7 +96,7 @@ public:
 VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 
 class AudioEffectLowPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter);
 
 	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") property.usage = 0;
@@ -107,7 +108,7 @@ public:
 };
 
 class AudioEffectHighPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter);
 	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") property.usage = 0;
 	}
@@ -118,7 +119,7 @@ public:
 };
 
 class AudioEffectBandPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter);
 	void _validate_property(PropertyInfo &property) const {
 		if (property.name == "gain") property.usage = 0;
 	}
@@ -129,28 +130,32 @@ public:
 };
 
 class AudioEffectNotchFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectNotchFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectNotchFilter, AudioEffectFilter);
+
 public:
 	AudioEffectNotchFilter() :
 			AudioEffectFilter(AudioFilterSW::NOTCH) {}
 };
 
 class AudioEffectBandLimitFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter);
+
 public:
 	AudioEffectBandLimitFilter() :
 			AudioEffectFilter(AudioFilterSW::BANDLIMIT) {}
 };
 
 class AudioEffectLowShelfFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowShelfFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectLowShelfFilter, AudioEffectFilter);
+
 public:
 	AudioEffectLowShelfFilter() :
 			AudioEffectFilter(AudioFilterSW::LOWSHELF) {}
 };
 
 class AudioEffectHighShelfFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighShelfFilter, AudioEffectFilter)
+	GDCLASS(AudioEffectHighShelfFilter, AudioEffectFilter);
+
 public:
 	AudioEffectHighShelfFilter() :
 			AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "drivers/gl_context/context_gl.h"
 
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
@@ -253,11 +252,16 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 	}
 }
 
-void RasterizerGLES3::restore_render_target() {
+void RasterizerGLES3::restore_render_target(bool p_3d_was_drawn) {
 
 	ERR_FAIL_COND(storage->frame.current_rt == NULL);
 	RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	if (p_3d_was_drawn && rt->external.fbo != 0) {
+		// our external render buffer is now leading, render 2d into that.
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
+	} else {
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	}
 	glViewport(0, 0, rt->width, rt->height);
 }
 
@@ -269,7 +273,7 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
-void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
+void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 
 	if (p_image.is_null() || p_image->empty())
 		return;
@@ -292,7 +296,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
@@ -339,7 +343,11 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 #if 1
 
 	Size2 win_size = OS::get_singleton()->get_window_size();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	if (rt->external.fbo != 0) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
+	} else {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);

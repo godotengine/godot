@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
 void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
 
 	CollisionObjectSW *it = octree.get(p_id);
-	octree.set_pairable(p_id, p_static ? false : true, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
+	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
 void BroadPhaseOctree::remove(ID p_id) {
 

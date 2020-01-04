@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,8 @@
 
 // y(x) curve
 class Curve : public Resource {
-	GDCLASS(Curve, Resource)
+	GDCLASS(Curve, Resource);
+
 public:
 	static const int MIN_X = 0.f;
 	static const int MAX_X = 1.f;
@@ -142,6 +143,7 @@ private:
 	int _bake_resolution;
 	float _min_value;
 	float _max_value;
+	int _minmax_set_once; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)

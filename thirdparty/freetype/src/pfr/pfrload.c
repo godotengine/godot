@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pfrload.c                                                              */
-/*                                                                         */
-/*    FreeType PFR loader (body).                                          */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pfrload.c
+ *
+ *   FreeType PFR loader (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "pfrload.h"
@@ -23,92 +23,92 @@
 #include "pfrerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_pfr
+#define FT_COMPONENT  pfr
 
 
   /*
-   *  The overall structure of a PFR file is as follows.
+   * The overall structure of a PFR file is as follows.
    *
-   *    PFR header
-   *      58 bytes (contains nPhysFonts)
+   *   PFR header
+   *     58 bytes (contains nPhysFonts)
    *
-   *    Logical font directory (size at most 2^16 bytes)
-   *      2 bytes (nLogFonts)
-   *      + nLogFonts * 5 bytes
+   *   Logical font directory (size at most 2^16 bytes)
+   *     2 bytes (nLogFonts)
+   *     + nLogFonts * 5 bytes
    *
-   *         ==>   nLogFonts <= 13106
+   *        ==>  nLogFonts <= 13106
    *
-   *    Logical font section (size at most 2^24 bytes)
-   *      nLogFonts * logFontRecord
+   *   Logical font section (size at most 2^24 bytes)
+   *     nLogFonts * logFontRecord
    *
-   *      logFontRecord (size at most 2^16 bytes)
-   *        12 bytes (fontMatrix)
-   *        + 1 byte (flags)
-   *        + 0-5 bytes (depending on `flags')
-   *        + 0-(1+255*(2+255)) = 0-65536 (depending on `flags')
-   *        + 5 bytes (physical font info)
-   *        + 0-1 bytes (depending on PFR header)
+   *     logFontRecord (size at most 2^16 bytes)
+   *       12 bytes (fontMatrix)
+   *       + 1 byte (flags)
+   *       + 0-5 bytes (depending on `flags')
+   *       + 0-(1+255*(2+255)) = 0-65536 (depending on `flags')
+   *       + 5 bytes (physical font info)
+   *       + 0-1 bytes (depending on PFR header)
    *
-   *         ==>   minimum size 18 bytes
+   *        ==>  minimum size 18 bytes
    *
-   *    Physical font section (size at most 2^24 bytes)
-   *      nPhysFonts * (physFontRecord
-   *                    + nBitmapSizes * nBmapChars * bmapCharRecord)
+   *   Physical font section (size at most 2^24 bytes)
+   *     nPhysFonts * (physFontRecord
+   *                   + nBitmapSizes * nBmapChars * bmapCharRecord)
    *
-   *      physFontRecord (size at most 2^24 bytes)
-   *        14 bytes (font info)
-   *        + 1 byte (flags)
-   *        + 0-2 (depending on `flags')
-   *        + 0-? (structure too complicated to be shown here; depending on
-   *               `flags'; contains `nBitmapSizes' and `nBmapChars')
-   *        + 3 bytes (nAuxBytes)
-   *        + nAuxBytes
-   *        + 1 byte (nBlueValues)
-   *        + 2 * nBlueValues
-   *        + 6 bytes (hinting data)
-   *        + 2 bytes (nCharacters)
-   *        + nCharacters * (4-10 bytes) (depending on `flags')
+   *     physFontRecord (size at most 2^24 bytes)
+   *       14 bytes (font info)
+   *       + 1 byte (flags)
+   *       + 0-2 (depending on `flags')
+   *       + 0-? (structure too complicated to be shown here; depending on
+   *              `flags'; contains `nBitmapSizes' and `nBmapChars')
+   *       + 3 bytes (nAuxBytes)
+   *       + nAuxBytes
+   *       + 1 byte (nBlueValues)
+   *       + 2 * nBlueValues
+   *       + 6 bytes (hinting data)
+   *       + 2 bytes (nCharacters)
+   *       + nCharacters * (4-10 bytes) (depending on `flags')
    *
-   *         ==>   minimum size 27 bytes
+   *        ==>  minimum size 27 bytes
    *
-   *      bmapCharRecord
-   *        4-7 bytes
+   *     bmapCharRecord
+   *       4-7 bytes
    *
-   *    Glyph program strings (three possible types: simpleGps, compoundGps,
-   *                           and bitmapGps; size at most 2^24 bytes)
-   *      simpleGps (size at most 2^16 bytes)
-   *        1 byte (flags)
-   *        1-2 bytes (n[XY]orus, depending on `flags')
-   *        0-(64+512*2) = 0-1088 bytes (depending on `n[XY]orus')
-   *        0-? (structure too complicated to be shown here; depending on
-   *             `flags')
-   *        1-? glyph data (faintly resembling PS Type 1 charstrings)
+   *   Glyph program strings (three possible types: simpleGps, compoundGps,
+   *                          and bitmapGps; size at most 2^24 bytes)
+   *     simpleGps (size at most 2^16 bytes)
+   *       1 byte (flags)
+   *       1-2 bytes (n[XY]orus, depending on `flags')
+   *       0-(64+512*2) = 0-1088 bytes (depending on `n[XY]orus')
+   *       0-? (structure too complicated to be shown here; depending on
+   *            `flags')
+   *       1-? glyph data (faintly resembling PS Type 1 charstrings)
    *
-   *         ==>   minimum size 3 bytes
+   *        ==>  minimum size 3 bytes
    *
-   *      compoundGps (size at most 2^16 bytes)
-   *        1 byte (nElements <= 63, flags)
-   *        + 0-(1+255*(2+255)) = 0-65536 (depending on `flags')
-   *        + nElements * (6-14 bytes)
+   *     compoundGps (size at most 2^16 bytes)
+   *       1 byte (nElements <= 63, flags)
+   *       + 0-(1+255*(2+255)) = 0-65536 (depending on `flags')
+   *       + nElements * (6-14 bytes)
    *
-   *      bitmapGps (size at most 2^16 bytes)
-   *        1 byte (flags)
-   *        3-13 bytes (position info, depending on `flags')
-   *        0-? bitmap data
+   *     bitmapGps (size at most 2^16 bytes)
+   *       1 byte (flags)
+   *       3-13 bytes (position info, depending on `flags')
+   *       0-? bitmap data
    *
-   *         ==>   minimum size 4 bytes
+   *        ==>  minimum size 4 bytes
    *
-   *    PFR trailer
-   *        8 bytes
+   *   PFR trailer
+   *       8 bytes
    *
    *
-   * ==>   minimum size of a valid PFR:
-   *         58 (header)
-   *         + 2 (nLogFonts)
-   *         + 27 (1 physFontRecord)
-   *         + 8 (trailer)
-   *        -----
-   *         95 bytes
+   * ==>  minimum size of a valid PFR:
+   *        58 (header)
+   *        + 2 (nLogFonts)
+   *        + 27 (1 physFontRecord)
+   *        + 8 (trailer)
+   *       -----
+   *        95 bytes
    *
    */
 

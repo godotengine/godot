@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "math_funcs.h"
+
+#include "core/error_macros.h"
 
 RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
 
@@ -77,6 +79,15 @@ int Math::step_decimals(double p_step) {
 	}
 
 	return 0;
+}
+
+// Only meant for editor usage in float ranges, where a step of 0
+// means that decimal digits should not be limited in String::num.
+int Math::range_step_decimals(double p_step) {
+	if (p_step < 0.0000000000001) {
+		return 16; // Max value hardcoded in String::num
+	}
+	return step_decimals(p_step);
 }
 
 double Math::dectime(double p_value, double p_amount, double p_step) {
@@ -161,8 +172,6 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 			return primes[idx];
 		idx++;
 	}
-
-	return 0;
 }
 
 double Math::random(double from, double to) {

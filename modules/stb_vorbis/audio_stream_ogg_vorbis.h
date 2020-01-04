@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ class AudioStreamOGGVorbis;
 
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 
-	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled)
+	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
 	stb_vorbis *ogg_stream;
 	stb_vorbis_alloc ogg_alloc;
@@ -72,7 +72,7 @@ public:
 
 class AudioStreamOGGVorbis : public AudioStream {
 
-	GDCLASS(AudioStreamOGGVorbis, AudioStream)
+	GDCLASS(AudioStreamOGGVorbis, AudioStream);
 	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
 	RES_BASE_EXTENSION("oggstr");
 

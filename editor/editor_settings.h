@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,8 +73,6 @@ private:
 		bool restart_if_changed;
 		VariantContainer() :
 				order(0),
-				variant(Variant()),
-				initial(Variant()),
 				has_default_value(false),
 				hide_from_editor(false),
 				save(false),
@@ -83,7 +81,6 @@ private:
 		VariantContainer(const Variant &p_variant, int p_order) :
 				order(p_order),
 				variant(p_variant),
-				initial(Variant()),
 				has_default_value(false),
 				hide_from_editor(false),
 				save(false),
@@ -123,6 +120,7 @@ private:
 	void _load_defaults(Ref<ConfigFile> p_extra_config = NULL);
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
+	bool _is_default_text_editor_theme(String p_theme_name);
 
 protected:
 	static void _bind_methods();
@@ -168,7 +166,9 @@ public:
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
+	String get_project_script_templates_dir() const;
 	String get_cache_dir() const;
+	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
@@ -186,8 +186,9 @@ public:
 	bool import_text_editor_theme(String p_file);
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
+	bool is_default_text_editor_theme();
 
-	Vector<String> get_script_templates(const String &p_extension);
+	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);

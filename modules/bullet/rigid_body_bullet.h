@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ class BulletPhysicsDirectBodyState;
 /// created by BulletPhysicsServer and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState)
+	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
 	static BulletPhysicsDirectBodyState *singleton;
 
@@ -114,8 +114,8 @@ public:
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
 	virtual void add_torque(const Vector3 &p_torque);
 	virtual void apply_central_impulse(const Vector3 &p_impulse);
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j);
-	virtual void apply_torque_impulse(const Vector3 &p_j);
+	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	virtual void apply_torque_impulse(const Vector3 &p_impulse);
 
 	virtual void set_sleep_state(bool p_enable);
 	virtual bool is_sleeping() const;
@@ -167,7 +167,7 @@ public:
 
 		KinematicShape() :
 				shape(NULL) {}
-		const bool is_active() const { return shape; }
+		bool is_active() const { return shape; }
 	};
 
 	struct KinematicUtilities {
@@ -305,7 +305,7 @@ public:
 	void reload_axis_lock();
 
 	/// Doc:
-	/// http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Anti_tunneling_by_Motion_Clamping
+	/// https://web.archive.org/web/20180404091446/http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
 	void set_continuous_collision_detection(bool p_enable);
 	bool is_continuous_collision_detection_enabled() const;
 

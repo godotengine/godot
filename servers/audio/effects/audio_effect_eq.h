@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class AudioEffectEQ;
 
 class AudioEffectEQInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectEQInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectEQInstance, AudioEffectInstance);
 	friend class AudioEffectEQ;
 	Ref<AudioEffectEQ> base;
 
@@ -49,7 +49,7 @@ public:
 };
 
 class AudioEffectEQ : public AudioEffect {
-	GDCLASS(AudioEffectEQ, AudioEffect)
+	GDCLASS(AudioEffectEQ, AudioEffect);
 
 	friend class AudioEffectEQInstance;
 
@@ -75,21 +75,24 @@ public:
 };
 
 class AudioEffectEQ6 : public AudioEffectEQ {
-	GDCLASS(AudioEffectEQ6, AudioEffectEQ)
+	GDCLASS(AudioEffectEQ6, AudioEffectEQ);
+
 public:
 	AudioEffectEQ6() :
 			AudioEffectEQ(EQ::PRESET_6_BANDS) {}
 };
 
 class AudioEffectEQ10 : public AudioEffectEQ {
-	GDCLASS(AudioEffectEQ10, AudioEffectEQ)
+	GDCLASS(AudioEffectEQ10, AudioEffectEQ);
+
 public:
 	AudioEffectEQ10() :
 			AudioEffectEQ(EQ::PRESET_10_BANDS) {}
 };
 
 class AudioEffectEQ21 : public AudioEffectEQ {
-	GDCLASS(AudioEffectEQ21, AudioEffectEQ)
+	GDCLASS(AudioEffectEQ21, AudioEffectEQ);
+
 public:
 	AudioEffectEQ21() :
 			AudioEffectEQ(EQ::PRESET_21_BANDS) {}

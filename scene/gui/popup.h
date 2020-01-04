@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,15 +33,15 @@
 
 #include "scene/gui/control.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Popup : public Control {
 
 	GDCLASS(Popup, Control);
 
 	bool exclusive;
 	bool popped_up;
+
+private:
+	void _popup(const Rect2 &p_bounds = Rect2(), const bool p_centered = false);
 
 protected:
 	virtual void _post_popup() {}
@@ -64,6 +64,7 @@ public:
 	void popup_centered(const Size2 &p_size = Size2());
 	void popup_centered_minsize(const Size2 &p_minsize = Size2());
 	void set_as_minsize();
+	void popup_centered_clamped(const Size2 &p_size = Size2(), float p_fallback_ratio = 0.75);
 	virtual void popup(const Rect2 &p_bounds = Rect2());
 
 	virtual String get_configuration_warning() const;

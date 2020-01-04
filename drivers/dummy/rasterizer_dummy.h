@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,10 +56,12 @@ public:
 	void environment_set_background(RID p_env, VS::EnvironmentBG p_bg) {}
 	void environment_set_sky(RID p_env, RID p_sky) {}
 	void environment_set_sky_custom_fov(RID p_env, float p_scale) {}
+	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {}
 	void environment_set_bg_color(RID p_env, const Color &p_color) {}
 	void environment_set_bg_energy(RID p_env, float p_energy) {}
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
 	void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) {}
+	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id){};
 
 	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
@@ -179,8 +181,8 @@ public:
 		DummyTexture *t = texture_owner.get(p_texture);
 
 		ERR_FAIL_COND(!t);
+		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
 		ERR_FAIL_COND(t->format != p_image->get_format());
-		ERR_FAIL_COND(p_image.is_null());
 		ERR_FAIL_COND(src_w <= 0 || src_h <= 0);
 		ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
 		ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > t->width || dst_y + src_h > t->height);
@@ -215,6 +217,7 @@ public:
 	uint32_t texture_get_height(RID p_texture) const { return 0; }
 	uint32_t texture_get_depth(RID p_texture) const { return 0; }
 	void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) {}
+	void texture_bind(RID p_texture, uint32_t p_texture_no) {}
 
 	void texture_set_path(RID p_texture, const String &p_path) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
@@ -240,6 +243,7 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
+	virtual Size2 texture_size_with_proxy(RID p_texture) const { return Size2(); }
 	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */
@@ -459,6 +463,7 @@ public:
 	RID skeleton_create() { return RID(); }
 	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) {}
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {}
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {}
 	int skeleton_get_bone_count(RID p_skeleton) const { return 0; }
 	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {}
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
@@ -481,6 +486,7 @@ public:
 	void light_set_negative(RID p_light, bool p_enable) {}
 	void light_set_cull_mask(RID p_light, uint32_t p_mask) {}
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {}
+	void light_set_use_gi(RID p_light, bool p_enabled) {}
 
 	void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {}
 	void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) {}
@@ -500,6 +506,7 @@ public:
 	AABB light_get_aabb(RID p_light) const { return AABB(); }
 	float light_get_param(RID p_light, VS::LightParam p_param) { return 0.0; }
 	Color light_get_color(RID p_light) { return Color(); }
+	bool light_get_use_gi(RID p_light) { return false; }
 	uint64_t light_get_version(RID p_light) const { return 0; }
 
 	/* PROBE API */
@@ -687,8 +694,10 @@ public:
 	/* RENDER TARGET */
 
 	RID render_target_create() { return RID(); }
+	void render_target_set_position(RID p_render_target, int p_x, int p_y) {}
 	void render_target_set_size(RID p_render_target, int p_width, int p_height) {}
 	RID render_target_get_texture(RID p_render_target) const { return RID(); }
+	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {}
 	bool render_target_was_used(RID p_render_target) { return false; }
 	void render_target_clear_used(RID p_render_target) {}
@@ -773,12 +782,12 @@ public:
 	RasterizerCanvas *get_canvas() { return &canvas; }
 	RasterizerScene *get_scene() { return &scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) {}
 
 	void initialize() {}
 	void begin_frame(double frame_step) {}
 	void set_current_render_target(RID p_render_target) {}
-	void restore_render_target() {}
+	void restore_render_target(bool p_3d_was_drawn) {}
 	void clear_render_target(const Color &p_color) {}
 	void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) {}
 	void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -51,7 +52,7 @@ class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
 
-	GDCLASS(EditorAudioBus, PanelContainer)
+	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture> disabled_vu;
 	LineEdit *track_name;
@@ -71,12 +72,15 @@ class EditorAudioBus : public PanelContainer {
 		TextureProgress *vu_r;
 	} channel[CHANNELS_MAX];
 
-	TextureRect *scale;
 	OptionButton *send;
 
 	PopupMenu *effect_options;
 	PopupMenu *bus_popup;
 	PopupMenu *delete_effect_popup;
+
+	Panel *audio_value_preview_box;
+	Label *audio_value_preview_label;
+	Timer *preview_timer;
 
 	Button *solo;
 	Button *mute;
@@ -85,15 +89,19 @@ class EditorAudioBus : public PanelContainer {
 	Tree *effects;
 
 	bool updating_bus;
-
 	bool is_master;
+	mutable bool hovering_drop;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
 	void _name_focus_exit() { _name_changed(track_name->get_text()); }
-	void _volume_db_changed(float p_db);
+	void _volume_changed(float p_normalized);
+	float _normalized_volume_to_scaled_db(float normalized);
+	float _scaled_db_to_normalized_volume(float db);
+	void _show_value(float slider_value);
+	void _hide_value_preview();
 	void _solo_toggled();
 	void _mute_toggled();
 	void _bypass_toggled();
@@ -128,15 +136,18 @@ public:
 	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
 };
 
-class EditorAudioBusDrop : public Panel {
+class EditorAudioBusDrop : public Control {
 
-	GDCLASS(EditorAudioBusDrop, Panel);
+	GDCLASS(EditorAudioBusDrop, Control);
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
+	mutable bool hovering_drop;
+
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	EditorAudioBusDrop();
@@ -144,17 +155,18 @@ public:
 
 class EditorAudioBuses : public VBoxContainer {
 
-	GDCLASS(EditorAudioBuses, VBoxContainer)
+	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
 
-	Button *add;
 	ScrollContainer *bus_scroll;
 	HBoxContainer *bus_hb;
 
 	EditorAudioBusDrop *drop_end;
 
-	Button *file;
+	Label *file;
+
+	Button *add;
 	Button *load;
 	Button *save_as;
 	Button *_default;
@@ -198,6 +210,58 @@ public:
 	static EditorAudioBuses *register_editor();
 
 	EditorAudioBuses();
+};
+
+class EditorAudioMeterNotches : public Control {
+	GDCLASS(EditorAudioMeterNotches, Control);
+
+private:
+	struct AudioNotch {
+		float relative_position;
+		float db_value;
+		bool render_db_value;
+
+		_FORCE_INLINE_ AudioNotch(float r_pos, float db_v, bool rndr_val) {
+			relative_position = r_pos;
+			db_value = db_v;
+			render_db_value = rndr_val;
+		}
+
+		_FORCE_INLINE_ AudioNotch(const AudioNotch &n) {
+			relative_position = n.relative_position;
+			db_value = n.db_value;
+			render_db_value = n.render_db_value;
+		}
+
+		_FORCE_INLINE_ AudioNotch operator=(const EditorAudioMeterNotches::AudioNotch &n) {
+			relative_position = n.relative_position;
+			db_value = n.db_value;
+			render_db_value = n.render_db_value;
+			return *this;
+		}
+
+		_FORCE_INLINE_ AudioNotch() {}
+	};
+
+	List<AudioNotch> notches;
+
+public:
+	float line_length;
+	float label_space;
+	float btm_padding;
+	float top_padding;
+	Color notch_color;
+
+	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
+	Size2 get_minimum_size() const;
+
+private:
+	static void _bind_methods();
+	void _notification(int p_what);
+	void _draw_audio_notches();
+
+public:
+	EditorAudioMeterNotches();
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {

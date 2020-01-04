@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +29,13 @@
 /*************************************************************************/
 
 #include "visual_server_canvas.h"
-#include "visual_server_global.h"
+#include "visual_server_globals.h"
 #include "visual_server_raster.h"
 #include "visual_server_viewport.h"
 
-void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
+static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
-	static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
-	RasterizerCanvas::Item *z_list[z_range];
-	RasterizerCanvas::Item *z_last_list[z_range];
+void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
@@ -51,21 +49,36 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	}
 }
 
-void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item **r_items, int &r_index) {
+void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item *p_material_owner, const Color p_modulate, VisualServerCanvas::Item **r_items, int &r_index) {
 	int child_item_count = p_canvas_item->child_items.size();
 	VisualServerCanvas::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
-		if (r_items) {
-			r_items[r_index] = child_items[i];
-			child_items[i]->ysort_xform = p_transform;
-			child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
+		if (child_items[i]->visible) {
+			if (r_items) {
+				r_items[r_index] = child_items[i];
+				child_items[i]->ysort_modulate = p_modulate;
+				child_items[i]->ysort_xform = p_transform;
+				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
+				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : NULL;
+			}
+
+			r_index++;
+
+			if (child_items[i]->sort_y)
+				_collect_ysort_children(child_items[i],
+						p_transform * child_items[i]->xform,
+						child_items[i]->use_parent_material ? p_material_owner : child_items[i],
+						p_modulate * child_items[i]->modulate,
+						r_items, r_index);
 		}
-
-		r_index++;
-
-		if (child_items[i]->sort_y)
-			_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, r_items, r_index);
 	}
+}
+
+void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualServerCanvas::Item> &canvas_item_owner) {
+	do {
+		ysort_owner->ysort_children_count = -1;
+		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+	} while (ysort_owner && ysort_owner->sort_y);
 }
 
 void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
@@ -117,14 +130,14 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 
 		if (ci->ysort_children_count == -1) {
 			ci->ysort_children_count = 0;
-			_collect_ysort_children(ci, Transform2D(), NULL, ci->ysort_children_count);
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), NULL, ci->ysort_children_count);
 		}
 
 		child_item_count = ci->ysort_children_count;
 		child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
 		int i = 0;
-		_collect_ysort_children(ci, Transform2D(), child_items, i);
+		_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), child_items, i);
 
 		SortArray<Item *, ItemPtrSort> sorter;
 		sorter.sort(child_items, child_item_count);
@@ -140,7 +153,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
 			continue;
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
 			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
 		}
@@ -182,7 +195,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
 			continue;
 		if (ci->sort_y) {
-			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
+			_render_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
 			_render_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, p_material_owner);
 		}
@@ -260,24 +273,24 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 		for (int i = 0; i < l; i++) {
 
-			const Canvas::ChildItem &ci = p_canvas->child_items[i];
-			_render_canvas_item_tree(ci.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
+			_render_canvas_item_tree(ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
-			if (ci.mirror.x != 0) {
+			if (ci2.mirror.x != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci.mirror.x, 0));
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
-			if (ci.mirror.y != 0) {
+			if (ci2.mirror.y != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci.mirror.y));
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
-			if (ci.mirror.y != 0 && ci.mirror.x != 0) {
+			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, ci.mirror);
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 		}
 	}
@@ -312,6 +325,19 @@ void VisualServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_color)
 	canvas->modulate = p_color;
 }
 
+void VisualServerCanvas::canvas_set_disable_scale(bool p_disable) {
+	disable_scale = p_disable;
+}
+
+void VisualServerCanvas::canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) {
+
+	Canvas *canvas = canvas_owner.get(p_canvas);
+	ERR_FAIL_COND(!canvas);
+
+	canvas->parent = p_parent;
+	canvas->parent_scale = p_scale;
+}
+
 RID VisualServerCanvas::canvas_item_create() {
 
 	Item *canvas_item = memnew(Item);
@@ -336,10 +362,8 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
 
-			Item *ysort_owner = item_owner;
-			while (ysort_owner && ysort_owner->sort_y) {
-				item_owner->ysort_children_count = -1;
-				ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
 			}
 		}
 
@@ -360,16 +384,13 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
 
-			Item *ysort_owner = item_owner;
-			while (ysort_owner && ysort_owner->sort_y) {
-				item_owner->ysort_children_count = -1;
-				ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
 			}
 
 		} else {
 
-			ERR_EXPLAIN("Invalid parent");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid parent.");
 		}
 	}
 
@@ -381,6 +402,8 @@ void VisualServerCanvas::canvas_item_set_visible(RID p_item, bool p_visible) {
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->visible = p_visible;
+
+	_mark_ysort_dirty(canvas_item, canvas_item_owner);
 }
 void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
 
@@ -617,7 +640,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	if (p_tile) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TILE;
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_REGION;
-		rect->source = Rect2(0, 0, p_rect.size.width, p_rect.size.height);
+		rect->source = Rect2(0, 0, fabsf(p_rect.size.width), fabsf(p_rect.size.height));
 	}
 
 	if (p_rect.size.x < 0) {
@@ -659,11 +682,22 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_H;
 		rect->rect.size.x = -rect->rect.size.x;
 	}
+	if (p_src_rect.size.x < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_H;
+		rect->source.size.x = -rect->source.size.x;
+	}
 	if (p_rect.size.y < 0) {
 
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_src_rect.size.y < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_V;
+		rect->source.size.y = -rect->source.size.y;
+	}
+
 	if (p_transpose) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TRANSPOSE;
 		SWAP(rect->rect.size.x, rect->rect.size.y);
@@ -732,12 +766,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry::triangulate_polygon(p_points);
-
-	if (indices.empty()) {
-
-		ERR_EXPLAIN("Bad Polygon!");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
@@ -749,31 +778,33 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	polygon->indices = indices;
 	polygon->count = indices.size();
 	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = false;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, bool p_antialiased, bool p_antialiasing_use_indices) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	int ps = p_points.size();
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != ps && p_colors.size() != 1);
-	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != ps);
-	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != ps * 4);
-	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != ps * 4);
+	int vertex_count = p_points.size();
+	ERR_FAIL_COND(vertex_count == 0);
+	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
+	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
+	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
 
-	Vector<int> indices = p_indices;
+	const Vector<int> &indices = p_indices;
 
 	int count = p_count * 3;
 
 	if (indices.empty()) {
 
-		ERR_FAIL_COND(ps % 3 != 0);
+		ERR_FAIL_COND(vertex_count % 3 != 0);
 		if (p_count == -1)
-			count = ps;
+			count = vertex_count;
 	} else {
 
 		ERR_FAIL_COND(indices.size() % 3 != 0);
@@ -792,7 +823,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->weights = p_weights;
 	polygon->indices = indices;
 	polygon->count = count;
-	polygon->antialiased = false;
+	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = p_antialiasing_use_indices;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
@@ -810,7 +842,7 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	canvas_item->commands.push_back(tr);
 }
 
-void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_texture, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -820,6 +852,8 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID
 	m->mesh = p_mesh;
 	m->texture = p_texture;
 	m->normal_map = p_normal_map;
+	m->transform = p_transform;
+	m->modulate = p_modulate;
 
 	canvas_item->commands.push_back(m);
 }
@@ -873,7 +907,8 @@ void VisualServerCanvas::canvas_item_set_sort_children_by_y(RID p_item, bool p_e
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->sort_y = p_enable;
-	canvas_item->ysort_children_count = -1;
+
+	_mark_ysort_dirty(canvas_item, canvas_item_owner);
 }
 void VisualServerCanvas::canvas_item_set_z_index(RID p_item, int p_z) {
 
@@ -1351,10 +1386,8 @@ bool VisualServerCanvas::free(RID p_rid) {
 				Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
 
-				Item *ysort_owner = item_owner;
-				while (ysort_owner && ysort_owner->sort_y) {
-					item_owner->ysort_children_count = -1;
-					ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
+				if (item_owner->sort_y) {
+					_mark_ysort_dirty(item_owner, canvas_item_owner);
 				}
 			}
 		}
@@ -1437,4 +1470,15 @@ bool VisualServerCanvas::free(RID p_rid) {
 }
 
 VisualServerCanvas::VisualServerCanvas() {
+
+	z_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
+	z_last_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
+
+	disable_scale = false;
+}
+
+VisualServerCanvas::~VisualServerCanvas() {
+
+	memfree(z_list);
+	memfree(z_last_list);
 }

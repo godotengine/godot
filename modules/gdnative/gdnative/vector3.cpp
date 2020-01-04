@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,6 +124,14 @@ godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_self,
 	return dest;
 }
 
+godot_vector3 GDAPI godot_vector3_move_toward(const godot_vector3 *p_self, const godot_vector3 *p_to, const godot_real p_delta) {
+	godot_vector3 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	const Vector3 *to = (const Vector3 *)p_to;
+	*((Vector3 *)&dest) = self->move_toward(*to, p_delta);
+	return dest;
+}
+
 godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_self, const godot_vector3 *p_b) {
 	const Vector3 *self = (const Vector3 *)p_self;
 	const Vector3 *b = (const Vector3 *)p_b;
@@ -171,6 +179,14 @@ godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_self) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
 	*((Vector3 *)&dest) = self->ceil();
+	return dest;
+}
+
+godot_vector3 GDAPI godot_vector3_direction_to(const godot_vector3 *p_self, const godot_vector3 *p_to) {
+	godot_vector3 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	const Vector3 *to = (const Vector3 *)p_to;
+	*((Vector3 *)&dest) = self->direction_to(*to);
 	return dest;
 }
 

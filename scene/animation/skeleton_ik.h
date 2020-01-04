@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ class FabrikInverseKinematic {
 
 	struct ChainItem {
 
-		Vector<ChainItem> childs;
+		Vector<ChainItem> children;
 		ChainItem *parent_item;
 
 		// Bone info
@@ -165,7 +165,7 @@ protected:
 	_validate_property(PropertyInfo &property) const;
 
 	static void _bind_methods();
-	virtual void _notification(int p_notification);
+	virtual void _notification(int p_what);
 
 public:
 	SkeletonIK();
@@ -192,7 +192,7 @@ public:
 	void set_use_magnet(bool p_use);
 	bool is_using_magnet() const;
 
-	void set_magnet_position(const Vector3 &p_constraint);
+	void set_magnet_position(const Vector3 &p_local_position);
 	const Vector3 &get_magnet_position() const;
 
 	void set_min_distance(real_t p_min_distance);

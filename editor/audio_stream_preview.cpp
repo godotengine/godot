@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmin = 0;
+	uint8_t vmin = 255;
 
 	for (int i = time_from; i < time_to; i++) {
 
@@ -129,7 +129,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			float max = -1000;
 			float min = 1000;
 			int from = uint64_t(i) * to_read / to_write;
-			int to = uint64_t(i + 1) * to_read / to_write;
+			int to = (uint64_t(i) + 1) * to_read / to_write;
 			to = MIN(to, to_read);
 			from = MIN(from, to_read - 1);
 			if (to == from) {

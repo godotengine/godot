@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "scene/animation/animation_tree.h"
 
 class EditorPropertyRootMotion : public EditorProperty {
-	GDCLASS(EditorPropertyRootMotion, EditorProperty)
+	GDCLASS(EditorPropertyRootMotion, EditorProperty);
 	Button *assign;
 	Button *clear;
 	NodePath base_hint;
@@ -60,7 +60,7 @@ public:
 };
 
 class EditorInspectorRootMotionPlugin : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorRootMotionPlugin, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorRootMotionPlugin, EditorInspectorPlugin);
 
 public:
 	virtual bool can_handle(Object *p_object);

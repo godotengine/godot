@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,17 +36,23 @@
 #include "editor/project_settings_editor.h"
 
 class GDNativeLibrarySingletonEditor : public VBoxContainer {
+	GDCLASS(GDNativeLibrarySingletonEditor, VBoxContainer);
+
+private:
 	Tree *libraries;
+	UndoRedo *undo_redo;
 
 	bool updating;
-	void _update_libraries();
 
-	void _find_gdnative_singletons(EditorFileSystemDirectory *p_dir, const Set<String> &enabled_list);
-	void _item_edited();
+	static Set<String> _find_singletons_recursive(EditorFileSystemDirectory *p_dir);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	void _discover_singletons();
+	void _item_edited();
+	void _update_libraries();
 
 public:
 	GDNativeLibrarySingletonEditor();

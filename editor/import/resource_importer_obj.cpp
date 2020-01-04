@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 static Error _parse_material_library(const String &p_path, Map<String, Ref<SpatialMaterial> > &material_map, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
 	Ref<SpatialMaterial> current;
 	String current_name;
@@ -206,21 +206,14 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
 
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
-	bool flip_faces = false;
 	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
-
-	//bool flip_faces = p_options["force/flip_faces"];
-	//bool force_smooth = p_options["force/smooth_shading"];
-	//bool weld_vertices = p_options["force/weld_vertices"];
-	//float weld_tolerance = p_options["force/weld_tolerance"];
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
@@ -297,7 +290,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 					int idx = j;
 
-					if (!flip_faces && idx < 2) {
+					if (idx < 2) {
 						idx = 1 ^ idx;
 					}
 
@@ -503,7 +496,7 @@ bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Ma
 	return true;
 }
 
-Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	List<Ref<Mesh> > meshes;
 
@@ -516,7 +509,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	err = ResourceSaver::save(save_path, meshes.front()->get());
 
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Mesh to file '" + save_path + "'.");
 
 	r_gen_files->push_back(save_path);
 

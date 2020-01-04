@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,8 +54,9 @@ public:
 			struct {
 				uint32_t size : 16;
 				uint32_t outline_size : 8;
-				bool mipmaps : 1;
-				bool filter : 1;
+				uint32_t mipmaps : 1;
+				uint32_t filter : 1;
+				uint32_t unused : 6;
 			};
 			uint32_t key;
 		};
@@ -109,7 +110,7 @@ VARIANT_ENUM_CAST(DynamicFontData::Hinting);
 
 class DynamicFontAtSize : public Reference {
 
-	GDCLASS(DynamicFontAtSize, Reference)
+	GDCLASS(DynamicFontAtSize, Reference);
 
 	_THREAD_SAFE_CLASS_
 
@@ -164,7 +165,6 @@ class DynamicFontAtSize : public Reference {
 
 	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
 	Character _make_outline_char(CharType p_char);
-	float _get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const;
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
 

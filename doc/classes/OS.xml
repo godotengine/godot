@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.1">
+<class name="OS" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as: mouse grabbing, mouse cursors, clipboard, video mode, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="alert">
 			<return type="void">
@@ -19,7 +17,7 @@
 			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
 			</argument>
 			<description>
-				Displays a modal dialog box utilizing the host OS.
+				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
 			</description>
 		</method>
 		<method name="can_draw" qualifiers="const">
@@ -47,6 +45,8 @@
 			<return type="void">
 			</return>
 			<description>
+				Shuts down system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -55,7 +55,7 @@
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by given milliseconds.
+				Delay execution of the current thread by [code]msec[/code] milliseconds.
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -64,7 +64,7 @@
 			<argument index="0" name="usec" type="int">
 			</argument>
 			<description>
-				Delay execution of the current thread by given microseconds.
+				Delay execution of the current thread by [code]usec[/code] microseconds.
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
@@ -99,17 +99,19 @@
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
+			<argument index="4" name="read_stderr" type="bool" default="false">
+			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
-				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
-				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
-				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
-				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
-				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return -1.
+				The arguments are used in the given order and separated by a space, so [code]OS.execute("ping", ["-w", "3", "godotengine.org"], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
+				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
+				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
+				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
+				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
 				Example of blocking mode and retrieving the shell output:
 				[codeblock]
 				var output = []
-				OS.execute('ls', ['-l', '/tmp'], true, output)
+				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
 				[/codeblock]
 				Example of non-blocking mode, running another instance of the project and storing its process ID:
 				[codeblock]
@@ -117,8 +119,9 @@
 				[/codeblock]
 				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
 				[codeblock]
-				OS.execute('CMD.exe', ['/C', 'cd %TEMP% &amp;&amp; dir'], true, output)
+				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], true, output)
 				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="find_scancode_from_string" qualifiers="const">
@@ -127,7 +130,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Returns the scancode of the given string (e.g. "Escape")
+				Returns the scancode of the given string (e.g. "Escape").
 			</description>
 		</method>
 		<method name="get_audio_driver_count" qualifiers="const">
@@ -157,6 +160,16 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns an array of MIDI device names.
+				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_current_video_driver" qualifiers="const">
+			<return type="int" enum="OS.VideoDriver">
+			</return>
+			<description>
+				Returns the currently used video driver, using one of the values from [enum VideoDriver].
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -165,7 +178,7 @@
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current date as a dictionary of keys: year, month, day, weekday, dst (daylight savings time).
+				Returns current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time).
 			</description>
 		</method>
 		<method name="get_datetime" qualifiers="const">
@@ -174,7 +187,7 @@
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current datetime as a dictionary of keys: year, month, day, weekday, dst (daylight savings time), hour, minute, second.
+				Returns current datetime as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time), [code]hour[/code], [code]minute[/code], [code]second[/code].
 			</description>
 		</method>
 		<method name="get_datetime_from_unix_time" qualifiers="const">
@@ -183,8 +196,8 @@
 			<argument index="0" name="unix_time_val" type="int">
 			</argument>
 			<description>
-				Get a dictionary of time values when given epoch time.
-				Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
+				Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
+				The returned Dictionary's values will be the same as [method get_datetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
 			</description>
 		</method>
 		<method name="get_dynamic_memory_usage" qualifiers="const">
@@ -210,18 +223,30 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
-		<method name="get_ime_text" qualifiers="const">
-			<return type="String">
+		<method name="get_granted_permissions" qualifiers="const">
+			<return type="PoolStringArray">
 			</return>
 			<description>
-				Returns IME intermediate text.
+				With this function you can get the list of dangerous permissions that have been granted to the Android application.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="get_ime_selection" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns IME selection range.
+				Returns the IME cursor position (the currently-edited portion of the string) relative to the characters in the composition string.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME cursor position.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="get_ime_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the IME intermediate composition string.
+				[constant MainLoop.NOTIFICATION_OS_IME_UPDATE] is sent to the application to notify it of changes to the IME composition string.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
@@ -229,7 +254,8 @@
 			</return>
 			<description>
 				Returns the current latin keyboard variant as a String.
-				Possible return values are: "QWERTY", "AZERTY", "QZERTY", "DVORAK", "NEO", "COLEMAK" or "ERROR".
+				Possible return values are: [code]"QWERTY"[/code], [code]"AZERTY"[/code], [code]"QZERTY"[/code], [code]"DVORAK"[/code], [code]"NEO"[/code], [code]"COLEMAK"[/code] or [code]"ERROR"[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Returns [code]"QWERTY"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
@@ -244,48 +270,53 @@
 			</return>
 			<description>
 				Returns the model name of the current device.
+				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the name of the host OS. Possible values are: "Android", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11".
+				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"Haiku"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_power_percent_left">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of battery left in the device as a percentage.
+				Returns the amount of battery left in the device as a percentage. Returns [code]-1[/code] if power state is unknown.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_seconds_left">
 			<return type="int">
 			</return>
 			<description>
-				Returns the time in seconds before the device runs out of battery.
+				Returns an estimate of the time left in seconds before the device runs out of battery. Returns [code]-1[/code] if power state is unknown.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_power_state">
 			<return type="int" enum="OS.PowerState">
 			</return>
 			<description>
-				Returns the current state of the device regarding battery and power. See [code]POWERSTATE_*[/code] constants.
+				Returns the current state of the device regarding battery and power. See [enum PowerState] constants.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the game process ID
+				Returns the project's process ID.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of cores available in the host machine.
+				Returns the number of threads available on the host machine.
 			</description>
 		</method>
 		<method name="get_real_window_size" qualifiers="const">
@@ -301,7 +332,7 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns the given scancode as a string (e.g. Return values: "Escape", "Shift+Escape").
+				Returns the given scancode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
@@ -317,14 +348,17 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dots per inch density of the specified screen.
-				On Android Devices, the actual screen densities are grouped into six generalized densities:
-					ldpi    - 120 dpi
-					mdpi    - 160 dpi
-					hdpi    - 240 dpi
-					xhdpi   - 320 dpi
-					xxhdpi  - 480 dpi
-					xxxhdpi - 640 dpi
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				On Android devices, the actual screen densities are grouped into six generalized densities:
+				[codeblock]
+				   ldpi - 120 dpi
+				   mdpi - 160 dpi
+				   hdpi - 240 dpi
+				  xhdpi - 320 dpi
+				 xxhdpi - 480 dpi
+				xxxhdpi - 640 dpi
+				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_screen_position" qualifiers="const">
@@ -333,7 +367,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the position of the specified screen by index. If no screen index is provided, the current screen will be used.
+				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
@@ -342,20 +376,21 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dimensions in pixels of the specified screen.
+				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_splash_tick_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the max amount of static memory used (only works in debug).
+				Returns the maximum amount of static memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_static_memory_usage" qualifiers="const">
@@ -371,7 +406,15 @@
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
 			</argument>
 			<description>
-				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [OS.SystemDir].
+				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_time_msecs" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the epoch time of the operating system in milliseconds.
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -416,14 +459,14 @@
 			</return>
 			<description>
 				Returns a string that is unique to the device.
-				Returns empty string on HTML5 and UWP which are not supported yet.
+				[b]Note:[/b] Returns an empty string on HTML5 and UWP, as this method isn't implemented on those platforms yet.
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the current unix epoch timestamp.
+				Returns the current UNIX epoch timestamp.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
@@ -432,9 +475,9 @@
 			<argument index="0" name="datetime" type="Dictionary">
 			</argument>
 			<description>
-				Get an epoch time value from a dictionary of time values.
-				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
-				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
+				Gets an epoch time value from a dictionary of time values.
+				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -444,7 +487,7 @@
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
 				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Windows, this is [code]%APPDATA%/Godot/app_userdata/[project_name][/code], or [code]%APPDATA%/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
 			</description>
 		</method>
@@ -452,27 +495,78 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of video drivers supported on the current platform.
 			</description>
 		</method>
 		<method name="get_video_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="driver" type="int">
+			<argument index="0" name="driver" type="int" enum="OS.VideoDriver">
 			</argument>
 			<description>
+				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
 			<return type="int">
 			</return>
 			<description>
-				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or it is currently hidden.
+				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="get_window_safe_area" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns unobscured area of the window where interactive controls should be rendered.
+			</description>
+		</method>
+		<method name="global_menu_add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="Variant">
+			</argument>
+			<argument index="3" name="meta" type="Variant">
+			</argument>
+			<description>
+				Add a new item with text "label" to global menu. Use "_dock" menu to add item to the macOS dock icon menu.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_add_separator">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<description>
+				Add a separator between items. Separators also occupy an index.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<description>
+				Clear the global menu, in effect removing all items.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Removes the item at index "idx" from the global menu. Note that the indexes of items after the removed item are going to be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -490,7 +584,8 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. See feature tags documentation.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
@@ -527,7 +622,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the "Okay" button should appear on the left and "Cancel" on the right.
+				Returns [code]true[/code] if the [b]OK[/b] button should appear on the left and [b]Cancel[/b] on the right.
 			</description>
 		</method>
 		<method name="is_scancode_unicode" qualifiers="const">
@@ -536,14 +631,14 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the input code has a unicode character.
+				Returns [code]true[/code] if the input scancode corresponds to a Unicode character.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the engine was executed with -v (verbose stdout).
+				Returns [code]true[/code] if the engine was executed with [code]-v[/code] (verbose stdout).
 			</description>
 		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
@@ -567,7 +662,8 @@
 			</argument>
 			<description>
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
-				Note that this method can also be used to kill processes that were not spawned by the game.
+				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="move_window_to_foreground">
@@ -575,6 +671,7 @@
 			</return>
 			<description>
 				Moves the window to the front.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="native_video_is_playing">
@@ -582,6 +679,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if native video is playing.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_pause">
@@ -589,6 +687,7 @@
 			</return>
 			<description>
 				Pauses native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_play">
@@ -604,7 +703,7 @@
 			</argument>
 			<description>
 				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
-				Note: This method is only implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
+				[b]Note:[/b] This method is implemented on Android and iOS, and the current Android implementation does not support the [code]volume[/code], [code]audio_track[/code] and [code]subtitle_track[/code] options.
 			</description>
 		</method>
 		<method name="native_video_stop">
@@ -612,6 +711,7 @@
 			</return>
 			<description>
 				Stops native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="native_video_unpause">
@@ -619,12 +719,15 @@
 			</return>
 			<description>
 				Resumes native video playback.
+				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
 		<method name="open_midi_inputs">
 			<return type="void">
 			</return>
 			<description>
+				Initialises the singleton for the system MIDI driver.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -633,7 +736,7 @@
 			<argument index="0" name="tofile" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Shows all resources in the game. Optionally the list can be written to a file.
+				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [code]tofile[/code].
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
@@ -666,6 +769,24 @@
 			</return>
 			<description>
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="request_permission">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+			</description>
+		</method>
+		<method name="request_permissions">
+			<return type="bool">
+			</return>
+			<description>
+				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -674,7 +795,9 @@
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
-				Sets the game's icon.
+				Sets the game's icon using an [Image] resource.
+				The same image is used for window caption, taskbar/dock and window selection dialog. Image is scaled as needed.
+				[b]Note:[/b] This method is implemented on HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_ime_active">
@@ -684,6 +807,10 @@
 			</argument>
 			<description>
 				Sets whether IME input mode should be enabled.
+				If active IME handles key events before the application and creates an composition string and suggestion list.
+				Application can retrieve the composition status by using [method get_ime_selection] and [method get_ime_text] functions.
+				Completed composition string is committed when input is finished.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -693,6 +820,18 @@
 			</argument>
 			<description>
 				Sets position of IME suggestion list popup (in window coordinates).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+				Sets the game's icon using a multi-size platform-specific icon file ([code]*.ico[/code] on Windows and [code]*.icns[/code] on macOS).
+				Appropriate size sub-icons are used for window caption, taskbar/dock and window selection dialog.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -720,6 +859,7 @@
 			</argument>
 			<description>
 				Sets whether the window should always be on top.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="set_window_title">
@@ -729,6 +869,8 @@
 			</argument>
 			<description>
 				Sets the window title to the specified string.
+				[b]Note:[/b] This should be used sporadically. Don't set this every frame, as that will negatively affect performance on some window managers.
+				[b]Note:[/b] This method is implemented on HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="shell_open">
@@ -737,9 +879,11 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
-				Requests the OS to open a resource with the most appropriate program. For example.
-					[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
-					[code]OS.shell_open("http://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				Requests the OS to open a resource with the most appropriate program. For example:
+				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
+				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">
@@ -748,57 +892,82 @@
 			<argument index="0" name="existing_text" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Shows the virtual keyboard if the platform has one. The [i]existing_text[/i] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				Shows the virtual keyboard if the platform has one. The [code]existing_text[/code] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard">
+		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;&quot;">
 			The clipboard from the host OS. Might be unavailable on some platforms.
 		</member>
-		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
 			The current screen index (starting from 0).
 		</member>
-		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code">
-			The exit code passed to the OS when the main loop exits.
+		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
+			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
+			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
 		</member>
-		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
-			If [code]true[/code] the engine tries to keep the screen on while the game is running. Useful on mobile.
+		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on" default="true">
+			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
-		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
-			If [code]true[/code] the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
+			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
-		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
+		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
+			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size" default="Vector2( 0, 0 )">
+			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
+		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size" default="Vector2( 0, 0 )">
+			The minimum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation" default="0">
 			The current screen orientation.
 		</member>
-		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
-			If [code]true[/code] vertical synchronization (Vsync) is enabled.
+		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
+			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
-		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
-			If [code]true[/code] removes the window frame.
+		<member name="vsync_via_compositor" type="bool" setter="set_vsync_via_compositor" getter="is_vsync_via_compositor_enabled" default="false">
+			If [code]true[/code] and [code]vsync_enabled[/code] is true, the operating system's window compositor will be used for vsync when the compositor is enabled and the game is in windowed mode.
 		</member>
-		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
-			If [code]true[/code] the window is fullscreen.
+		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
+			If [code]true[/code], removes the window frame.
+			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
 		</member>
-		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
-			If [code]true[/code] the window is maximized.
+		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen" default="false">
+			If [code]true[/code], the window is fullscreen.
 		</member>
-		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
-			If [code]true[/code] the window is minimized.
+		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized" default="false">
+			If [code]true[/code], the window is maximized.
 		</member>
-		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
+		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized" default="false">
+			If [code]true[/code], the window is minimized.
 		</member>
-		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
+		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled" default="false">
+			If [code]true[/code], the window background is transparent and window frame is removed.
+			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
+			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
+			[b]Note:[/b] This property is implemented on Linux, macOS and Windows.
+		</member>
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
 		</member>
-		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable">
+		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable" default="true">
 			If [code]true[/code], the window is resizable by the user.
 		</member>
-		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size">
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 0, 0 )">
 			The size of the window (without counting window manager decorations).
 		</member>
 	</members>
 	<constants>
+		<constant name="VIDEO_DRIVER_GLES2" value="1" enum="VideoDriver">
+			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
+		</constant>
+		<constant name="VIDEO_DRIVER_GLES3" value="0" enum="VideoDriver">
+			The GLES3 rendering backend. It uses OpenGL ES 3.0 on mobile devices, OpenGL 3.3 on desktop platforms and WebGL 2.0 on the web.
+		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.
 		</constant>

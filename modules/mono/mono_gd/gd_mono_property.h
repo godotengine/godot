@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,14 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef GD_MONO_PROPERTY_H
 #define GD_MONO_PROPERTY_H
 
 #include "gd_mono.h"
-#include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
+#include "i_mono_class_member.h"
 
-class GDMonoProperty : public GDMonoClassMember {
+class GDMonoProperty : public IMonoClassMember {
 
 	GDMonoClass *owner;
 	MonoProperty *mono_property;
@@ -46,15 +47,17 @@ class GDMonoProperty : public GDMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_PROPERTY; }
+	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
 
-	virtual StringName get_name() { return name; }
+	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_PROPERTY; }
 
-	virtual bool is_static();
-	virtual Visibility get_visibility();
+	virtual StringName get_name() const GD_FINAL { return name; }
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class);
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
+	virtual bool is_static() GD_FINAL;
+	virtual Visibility get_visibility() GD_FINAL;
+
+	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
 	void fetch_attributes();
 
 	bool has_getter();

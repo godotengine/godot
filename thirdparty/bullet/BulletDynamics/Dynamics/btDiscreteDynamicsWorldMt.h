@@ -13,14 +13,12 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #ifndef BT_DISCRETE_DYNAMICS_WORLD_MT_H
 #define BT_DISCRETE_DYNAMICS_WORLD_MT_H
 
 #include "btDiscreteDynamicsWorld.h"
 #include "btSimulationIslandManagerMt.h"
 #include "BulletDynamics/ConstraintSolver/btConstraintSolver.h"
-
 
 ///
 /// btConstraintSolverPoolMt - masquerades as a constraint solver, but really it is a threadsafe pool of them.
@@ -34,45 +32,42 @@ subject to the following restrictions:
 class btConstraintSolverPoolMt : public btConstraintSolver
 {
 public:
-    // create the solvers for me
-    explicit btConstraintSolverPoolMt( int numSolvers );
+	// create the solvers for me
+	explicit btConstraintSolverPoolMt(int numSolvers);
 
-    // pass in fully constructed solvers (destructor will delete them)
-    btConstraintSolverPoolMt( btConstraintSolver** solvers, int numSolvers );
+	// pass in fully constructed solvers (destructor will delete them)
+	btConstraintSolverPoolMt(btConstraintSolver** solvers, int numSolvers);
 
-    virtual ~btConstraintSolverPoolMt();
+	virtual ~btConstraintSolverPoolMt();
 
-    ///solve a group of constraints
-    virtual btScalar solveGroup( btCollisionObject** bodies,
-        int numBodies,
-        btPersistentManifold** manifolds,
-        int numManifolds,
-        btTypedConstraint** constraints,
-        int numConstraints,
-        const btContactSolverInfo& info,
-        btIDebugDraw* debugDrawer,
-        btDispatcher* dispatcher
-    ) BT_OVERRIDE;
+	///solve a group of constraints
+	virtual btScalar solveGroup(btCollisionObject** bodies,
+								int numBodies,
+								btPersistentManifold** manifolds,
+								int numManifolds,
+								btTypedConstraint** constraints,
+								int numConstraints,
+								const btContactSolverInfo& info,
+								btIDebugDraw* debugDrawer,
+								btDispatcher* dispatcher) BT_OVERRIDE;
 
-    virtual	void reset() BT_OVERRIDE;
-    virtual btConstraintSolverType getSolverType() const BT_OVERRIDE { return m_solverType; }
+	virtual void reset() BT_OVERRIDE;
+	virtual btConstraintSolverType getSolverType() const BT_OVERRIDE { return m_solverType; }
 
 private:
-    const static size_t kCacheLineSize = 128;
-    struct ThreadSolver
-    {
-        btConstraintSolver* solver;
-        btSpinMutex mutex;
-        char _cachelinePadding[ kCacheLineSize - sizeof( btSpinMutex ) - sizeof( void* ) ];  // keep mutexes from sharing a cache line
-    };
-    btAlignedObjectArray<ThreadSolver> m_solvers;
-    btConstraintSolverType m_solverType;
+	const static size_t kCacheLineSize = 128;
+	struct ThreadSolver
+	{
+		btConstraintSolver* solver;
+		btSpinMutex mutex;
+		char _cachelinePadding[kCacheLineSize - sizeof(btSpinMutex) - sizeof(void*)];  // keep mutexes from sharing a cache line
+	};
+	btAlignedObjectArray<ThreadSolver> m_solvers;
+	btConstraintSolverType m_solverType;
 
-    ThreadSolver* getAndLockThreadSolver();
-    void init( btConstraintSolver** solvers, int numSolvers );
+	ThreadSolver* getAndLockThreadSolver();
+	void init(btConstraintSolver** solvers, int numSolvers);
 };
-
-
 
 ///
 /// btDiscreteDynamicsWorldMt -- a version of DiscreteDynamicsWorld with some minor changes to support
@@ -84,53 +79,53 @@ private:
 ///     - integrateTransforms
 ///     - createPredictiveContacts
 ///
-ATTRIBUTE_ALIGNED16(class) btDiscreteDynamicsWorldMt : public btDiscreteDynamicsWorld
+ATTRIBUTE_ALIGNED16(class)
+btDiscreteDynamicsWorldMt : public btDiscreteDynamicsWorld
 {
 protected:
-    btConstraintSolver* m_constraintSolverMt;
+	btConstraintSolver* m_constraintSolverMt;
 
-    virtual void solveConstraints(btContactSolverInfo& solverInfo) BT_OVERRIDE;
+	virtual void solveConstraints(btContactSolverInfo & solverInfo) BT_OVERRIDE;
 
-    virtual void predictUnconstraintMotion( btScalar timeStep ) BT_OVERRIDE;
+	virtual void predictUnconstraintMotion(btScalar timeStep) BT_OVERRIDE;
 
-    struct UpdaterCreatePredictiveContacts : public btIParallelForBody
-    {
-        btScalar timeStep;
-        btRigidBody** rigidBodies;
-        btDiscreteDynamicsWorldMt* world;
+	struct UpdaterCreatePredictiveContacts : public btIParallelForBody
+	{
+		btScalar timeStep;
+		btRigidBody** rigidBodies;
+		btDiscreteDynamicsWorldMt* world;
 
-        void forLoop( int iBegin, int iEnd ) const BT_OVERRIDE
-        {
-            world->createPredictiveContactsInternal( &rigidBodies[ iBegin ], iEnd - iBegin, timeStep );
-        }
-    };
-    virtual void createPredictiveContacts( btScalar timeStep ) BT_OVERRIDE;
+		void forLoop(int iBegin, int iEnd) const BT_OVERRIDE
+		{
+			world->createPredictiveContactsInternal(&rigidBodies[iBegin], iEnd - iBegin, timeStep);
+		}
+	};
+	virtual void createPredictiveContacts(btScalar timeStep) BT_OVERRIDE;
 
-    struct UpdaterIntegrateTransforms : public btIParallelForBody
-    {
-        btScalar timeStep;
-        btRigidBody** rigidBodies;
-        btDiscreteDynamicsWorldMt* world;
+	struct UpdaterIntegrateTransforms : public btIParallelForBody
+	{
+		btScalar timeStep;
+		btRigidBody** rigidBodies;
+		btDiscreteDynamicsWorldMt* world;
 
-        void forLoop( int iBegin, int iEnd ) const BT_OVERRIDE
-        {
-            world->integrateTransformsInternal( &rigidBodies[ iBegin ], iEnd - iBegin, timeStep );
-        }
-    };
-    virtual void integrateTransforms( btScalar timeStep ) BT_OVERRIDE;
+		void forLoop(int iBegin, int iEnd) const BT_OVERRIDE
+		{
+			world->integrateTransformsInternal(&rigidBodies[iBegin], iEnd - iBegin, timeStep);
+		}
+	};
+	virtual void integrateTransforms(btScalar timeStep) BT_OVERRIDE;
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btDiscreteDynamicsWorldMt(btDispatcher* dispatcher,
-        btBroadphaseInterface* pairCache,
-        btConstraintSolverPoolMt* constraintSolver,   // Note this should be a solver-pool for multi-threading
-        btConstraintSolver* constraintSolverMt,    // single multi-threaded solver for large islands (or NULL)
-        btCollisionConfiguration* collisionConfiguration
-    );
+	btDiscreteDynamicsWorldMt(btDispatcher * dispatcher,
+							  btBroadphaseInterface * pairCache,
+							  btConstraintSolverPoolMt * solverPool,        // Note this should be a solver-pool for multi-threading
+							  btConstraintSolver * constraintSolverMt,      // single multi-threaded solver for large islands (or NULL)
+							  btCollisionConfiguration * collisionConfiguration);
 	virtual ~btDiscreteDynamicsWorldMt();
 
-    virtual int	stepSimulation( btScalar timeStep, int maxSubSteps, btScalar fixedTimeStep ) BT_OVERRIDE;
+	virtual int stepSimulation(btScalar timeStep, int maxSubSteps, btScalar fixedTimeStep) BT_OVERRIDE;
 };
 
-#endif //BT_DISCRETE_DYNAMICS_WORLD_H
+#endif  //BT_DISCRETE_DYNAMICS_WORLD_H

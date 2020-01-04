@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,19 +65,16 @@ public:
 		FILE_LIST_DISPLAY_LIST
 	};
 
-private:
-	enum DisplayModeSetting {
-		DISPLAY_MODE_SETTING_TREE_ONLY,
-		DISPLAY_MODE_SETTING_SPLIT,
-	};
-
 	enum DisplayMode {
 		DISPLAY_MODE_TREE_ONLY,
 		DISPLAY_MODE_SPLIT,
 	};
 
+private:
 	enum FileMenu {
 		FILE_OPEN,
+		FILE_INHERIT,
+		FILE_MAIN_SCENE,
 		FILE_INSTANCE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
@@ -91,6 +88,7 @@ private:
 		FILE_INFO,
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
+		FILE_NEW_SCENE,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH,
 		FILE_NEW_RESOURCE,
@@ -123,8 +121,7 @@ private:
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
-	DisplayModeSetting display_mode_setting;
-	DisplayModeSetting old_display_mode_setting;
+	DisplayMode old_display_mode;
 
 	PopupMenu *file_list_popup;
 	PopupMenu *tree_popup;
@@ -140,8 +137,10 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ConfirmationDialog *make_scene_dialog;
+	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
-	ScriptCreateDialog *make_script_dialog_text;
+	ScriptCreateDialog *make_script_dialog;
 	CreateDialog *new_resource_dialog;
 
 	bool always_show_folders;
@@ -173,26 +172,27 @@ private:
 
 	bool updating_tree;
 	int tree_update_id;
-	Tree *tree; //directories
+	Tree *tree;
 	ItemList *files;
 	bool import_dock_needs_update;
 
 	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
-	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
+	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
-	void _update_tree(const Vector<String> p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
+	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
 
 	void _update_file_list(bool p_keep_selection);
-	void _update_file_list_display_mode_button();
-	void _change_file_display();
+	void _toggle_file_display();
+	void _set_file_display(bool p_active);
 	void _fs_changed();
 
 	void _tree_toggle_collapsed();
 
-	void _select_file(const String p_path);
+	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -206,8 +206,9 @@ private:
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
+	void _save_scenes_after_move(const Map<String, String> &p_renames) const;
 	void _update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const;
-	void _update_project_settings_after_move(const Map<String, String> &p_folders_renames) const;
+	void _update_project_settings_after_move(const Map<String, String> &p_renames) const;
 
 	void _file_deleted(String p_file);
 	void _folder_deleted(String p_folder);
@@ -216,6 +217,7 @@ private:
 
 	void _resource_created() const;
 	void _make_dir_confirm();
+	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _move_with_overwrite();
@@ -224,7 +226,7 @@ private:
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
-	void _file_option(int p_option, const Vector<String> p_selected);
+	void _file_option(int p_option, const Vector<String> &p_selected);
 
 	void _fw_history();
 	void _bw_history();
@@ -240,14 +242,15 @@ private:
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos);
+	void _tree_rmb_empty(const Vector2 &p_pos);
 	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
 	void _file_list_rmb_pressed(const Vector2 &p_pos);
+	void _tree_empty_selected();
 
 	struct FileInfo {
 		String name;
 		String path;
 		StringName type;
-		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
 		Vector<String> sources;
 		bool import_broken;
 
@@ -273,6 +276,11 @@ private:
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
 
+	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
+
+	void _feature_profile_changed();
+	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -286,11 +294,15 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	void set_file_list_display_mode(int p_mode);
-
 	int get_split_offset() { return split_box->get_split_offset(); }
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
 	void select_file(const String &p_file);
+
+	void set_display_mode(DisplayMode p_display_mode);
+	DisplayMode get_display_mode() { return display_mode; }
+
+	void set_file_list_display_mode(FileListDisplayMode p_mode);
+	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();

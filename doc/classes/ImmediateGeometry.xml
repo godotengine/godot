@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImmediateGeometry" inherits="GeometryInstance" category="Core" version="3.1">
+<class name="ImmediateGeometry" inherits="GeometryInstance" category="Core" version="3.2">
 	<brief_description>
 		Draws simple geometry from code.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_sphere">
 			<return type="void">
@@ -23,7 +21,7 @@
 			<argument index="3" name="add_uv" type="bool" default="true">
 			</argument>
 			<description>
-				Simple helper to draw a uvsphere, with given latitudes, longitude and radius.
+				Simple helper to draw an UV sphere with given latitude, longitude and radius.
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -32,7 +30,7 @@
 			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<description>
-				Adds a vertex with the currently set color/uv/etc.
+				Adds a vertex in local coordinate space with the currently set color/uv/etc.
 			</description>
 		</method>
 		<method name="begin">
@@ -43,8 +41,8 @@
 			<argument index="1" name="texture" type="Texture" default="null">
 			</argument>
 			<description>
-				Begin drawing (And optionally pass a texture override). When done call end(). For more information on how this works, search for glBegin() glEnd() references.
-			For the type of primitive, use the [Mesh].PRIMITIVE_* enumerations.
+				Begin drawing (and optionally pass a texture override). When done call [method end]. For more information on how this works, search for [code]glBegin()[/code] and [code]glEnd()[/code] references.
+				For the type of primitive, see the [enum Mesh.PrimitiveType] enum.
 			</description>
 		</method>
 		<method name="clear">

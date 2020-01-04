@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,7 +80,7 @@ class SectionedInspectorFilter : public Object {
 			PropertyInfo pi = E->get();
 			int sp = pi.name.find("/");
 
-			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/")) //skip resource stuff
+			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) //skip resource stuff
 				continue;
 
 			if (sp == -1) {
@@ -144,8 +144,9 @@ void SectionedInspector::_section_selected() {
 	if (!sections->get_selected())
 		return;
 
-	filter->set_section(sections->get_selected()->get_metadata(0), sections->get_selected()->get_children() == NULL);
-	inspector->set_property_prefix(String(sections->get_selected()->get_metadata(0)) + "/");
+	selected_category = sections->get_selected()->get_metadata(0);
+	filter->set_section(selected_category, sections->get_selected()->get_children() == NULL);
+	inspector->set_property_prefix(selected_category + "/");
 }
 
 void SectionedInspector::set_current_section(const String &p_section) {
@@ -176,7 +177,7 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 void SectionedInspector::edit(Object *p_object) {
 
 	if (!p_object) {
-		obj = -1;
+		obj = 0;
 		sections->clear();
 
 		filter->set_edited(NULL);
@@ -197,8 +198,13 @@ void SectionedInspector::edit(Object *p_object) {
 		filter->set_edited(p_object);
 		inspector->edit(filter);
 
-		if (sections->get_root()->get_children()) {
-			sections->get_root()->get_children()->select(0);
+		TreeItem *first_item = sections->get_root();
+		if (first_item) {
+			while (first_item->get_children())
+				first_item = first_item->get_children();
+
+			first_item->select(0);
+			selected_category = first_item->get_metadata(0);
 		}
 	} else {
 
@@ -208,7 +214,6 @@ void SectionedInspector::edit(Object *p_object) {
 
 void SectionedInspector::update_category_list() {
 
-	String selected_category = get_current_section();
 	sections->clear();
 
 	Object *o = ObjectDB::get_instance(obj);
@@ -224,6 +229,10 @@ void SectionedInspector::update_category_list() {
 	TreeItem *root = sections->create_item();
 	section_map[""] = root;
 
+	String filter;
+	if (search_box)
+		filter = search_box->get_text();
+
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
 		PropertyInfo pi = E->get();
@@ -233,18 +242,18 @@ void SectionedInspector::update_category_list() {
 		else if (!(pi.usage & PROPERTY_USAGE_EDITOR))
 			continue;
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene")
-			continue;
-
-		if (search_box && search_box->get_text() != String() && pi.name.findn(search_box->get_text()) == -1)
+		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
 		int sp = pi.name.find("/");
 		if (sp == -1)
-			pi.name = "Global/" + pi.name;
+			pi.name = "global/" + pi.name;
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
+
+		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
+			continue;
 
 		int sc = MIN(2, sectionarr.size() - 1);
 
@@ -299,7 +308,7 @@ EditorInspector *SectionedInspector::get_inspector() {
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(-1),
+		obj(0),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
@@ -307,7 +316,7 @@ SectionedInspector::SectionedInspector() :
 	add_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
-	left_vb->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
+	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);
 	add_child(left_vb);
 
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);

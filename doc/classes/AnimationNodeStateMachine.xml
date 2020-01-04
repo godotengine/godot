@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeStateMachine" inherits="AnimationRootNode" category="Core" version="3.1">
+<class name="AnimationNodeStateMachine" inherits="AnimationRootNode" category="Core" version="3.2">
 	<brief_description>
+		State machine for control of animations.
 	</brief_description>
 	<description>
+		Contains multiple nodes representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the AnimationNodeStateMachinePlayback object from the [AnimationTree] node to control it programmatically.
+		[b]Example:[/b]
+		[codeblock]
+		var state_machine = $AnimationTree.get("parameters/playback")
+		state_machine.travel("some_state")
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_node">
 			<return type="void">
@@ -19,6 +24,7 @@
 			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Adds a new node to the graph. The [code]position[/code] is used for display in the editor.
 			</description>
 		</method>
 		<method name="add_transition">
@@ -31,18 +37,21 @@
 			<argument index="2" name="transition" type="AnimationNodeStateMachineTransition">
 			</argument>
 			<description>
+				Adds a transition between the given nodes.
 			</description>
 		</method>
 		<method name="get_end_node" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the graph's end node.
 			</description>
 		</method>
 		<method name="get_graph_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the draw offset of the graph. Used for display in the editor.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
@@ -51,6 +60,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the animation node with the given name.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
@@ -59,6 +69,7 @@
 			<argument index="0" name="node" type="AnimationNode">
 			</argument>
 			<description>
+				Returns the given animation node's name.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
@@ -67,12 +78,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the given node's coordinates. Used for display in the editor.
 			</description>
 		</method>
 		<method name="get_start_node" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the graph's end node.
 			</description>
 		</method>
 		<method name="get_transition" qualifiers="const">
@@ -81,12 +94,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the given transition.
 			</description>
 		</method>
 		<method name="get_transition_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of connections in the graph.
 			</description>
 		</method>
 		<method name="get_transition_from" qualifiers="const">
@@ -95,6 +110,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the given transition's start node.
 			</description>
 		</method>
 		<method name="get_transition_to" qualifiers="const">
@@ -103,6 +119,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the given transition's end node.
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
@@ -111,6 +128,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the graph contains the given node.
 			</description>
 		</method>
 		<method name="has_transition" qualifiers="const">
@@ -121,6 +139,7 @@
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if there is a transition between the given nodes.
 			</description>
 		</method>
 		<method name="remove_node">
@@ -129,6 +148,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Deletes the given node from the graph.
 			</description>
 		</method>
 		<method name="remove_transition">
@@ -139,6 +159,7 @@
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
+				Deletes the given transition.
 			</description>
 		</method>
 		<method name="remove_transition_by_index">
@@ -147,6 +168,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Deletes the given transition.
 			</description>
 		</method>
 		<method name="rename_node">
@@ -157,6 +179,7 @@
 			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
+				Renames the given node.
 			</description>
 		</method>
 		<method name="set_end_node">
@@ -165,14 +188,16 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets the given node as the graph end point.
 			</description>
 		</method>
 		<method name="set_graph_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="Vector2">
+			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+				Sets the draw offset of the graph. Used for display in the editor.
 			</description>
 		</method>
 		<method name="set_node_position">
@@ -183,6 +208,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
+				Sets the node's coordinates. Used for display in the editor.
 			</description>
 		</method>
 		<method name="set_start_node">
@@ -191,6 +217,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets the given node as the graph start point.
 			</description>
 		</method>
 	</methods>

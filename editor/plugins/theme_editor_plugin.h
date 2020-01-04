@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
@@ -40,12 +41,12 @@
 
 #include "editor/editor_node.h"
 
-class ThemeEditor : public Control {
+class ThemeEditor : public VBoxContainer {
 
-	GDCLASS(ThemeEditor, Control);
+	GDCLASS(ThemeEditor, VBoxContainer);
 
-	ScrollContainer *scroll;
-	VBoxContainer *main_vb;
+	Panel *main_panel;
+	MarginContainer *main_container;
 	Ref<Theme> theme;
 
 	EditorFileDialog *file_dialog;

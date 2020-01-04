@@ -10,4 +10,12 @@ make_editor_icons_builder = Builder(action=run_in_subprocess(editor_icons_builde
                                     src_suffix='.svg')
 
 env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
-env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', Glob("*.svg"))])
+
+# Editor's own icons
+icon_sources = Glob("*.svg")
+
+# Module icons
+for module_icons in env.module_icons_paths:
+    icon_sources += Glob('#' + module_icons + "/*.svg")
+
+env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', icon_sources)])

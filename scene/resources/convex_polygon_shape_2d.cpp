@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,10 +99,4 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 
 ConvexPolygonShape2D::ConvexPolygonShape2D() :
 		Shape2D(Physics2DServer::get_singleton()->convex_polygon_shape_create()) {
-
-	int pcount = 3;
-	for (int i = 0; i < pcount; i++)
-		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / pcount), -Math::cos(i * Math_PI * 2 / pcount)) * 10);
-
-	_update_shape();
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "item_list_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_scale.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -109,7 +110,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 		int flags = get_flags();
 
 		if (flags & FLAG_CHECKABLE) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
+			p_list->push_back(PropertyInfo(Variant::INT, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
 		}
 
@@ -353,6 +354,7 @@ void ItemListEditor::_bind_methods() {
 ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
+	item_list = NULL;
 
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));

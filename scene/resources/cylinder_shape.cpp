@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "cylinder_shape.h"
 #include "servers/physics_server.h"
 
-Vector<Vector3> CylinderShape::_gen_debug_mesh_lines() {
+Vector<Vector3> CylinderShape::get_debug_mesh_lines() {
 
 	float radius = get_radius();
 	float height = get_height();
@@ -68,6 +68,7 @@ void CylinderShape::_update_shape() {
 	d["radius"] = radius;
 	d["height"] = height;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	Shape::_update_shape();
 }
 
 void CylinderShape::set_radius(float p_radius) {

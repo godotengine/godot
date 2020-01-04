@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystemDirectory" inherits="Object" category="Core" version="3.1">
+<class name="EditorFileSystemDirectory" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		A directory for the resource filesystem.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="find_dir_index" qualifiers="const">
 			<return type="int">
@@ -99,7 +97,7 @@
 			<return type="EditorFileSystemDirectory">
 			</return>
 			<description>
-				Returns the parent directory for this directory or null if called on a directory at [code]res://[/code] or [code]user://[/code].
+				Returns the parent directory for this directory or [code]null[/code] if called on a directory at [code]res://[/code] or [code]user://[/code].
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">

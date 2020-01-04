@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 #include "core/reference.h"
 #include "core/script_language.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MainLoop : public Object {
 
 	GDCLASS(MainLoop, Object);
@@ -51,21 +47,21 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_WM_MOUSE_ENTER = 2,
-		NOTIFICATION_WM_MOUSE_EXIT = 3,
-		NOTIFICATION_WM_FOCUS_IN = 4,
-		NOTIFICATION_WM_FOCUS_OUT = 5,
-		NOTIFICATION_WM_QUIT_REQUEST = 6,
-		NOTIFICATION_WM_GO_BACK_REQUEST = 7,
-		NOTIFICATION_WM_UNFOCUS_REQUEST = 8,
-		NOTIFICATION_OS_MEMORY_WARNING = 9,
-		// Note: NOTIFICATION_TRANSLATION_CHANGED and NOTIFICATION_WM_ABOUT used to have id=10 and id=11 but these
-		// conflict with NOTIFICATION_ENTER_TREE (id=10) and NOTIFICATION_EXIT_TREE (id=11), so id=90 and id=91
-		// fixes this issue.
-		NOTIFICATION_TRANSLATION_CHANGED = 90,
-		NOTIFICATION_WM_ABOUT = 91,
-		NOTIFICATION_CRASH = 92,
-		NOTIFICATION_OS_IME_UPDATE = 93,
+		//make sure these are replicated in Node
+		NOTIFICATION_WM_MOUSE_ENTER = 1002,
+		NOTIFICATION_WM_MOUSE_EXIT = 1003,
+		NOTIFICATION_WM_FOCUS_IN = 1004,
+		NOTIFICATION_WM_FOCUS_OUT = 1005,
+		NOTIFICATION_WM_QUIT_REQUEST = 1006,
+		NOTIFICATION_WM_GO_BACK_REQUEST = 1007,
+		NOTIFICATION_WM_UNFOCUS_REQUEST = 1008,
+		NOTIFICATION_OS_MEMORY_WARNING = 1009,
+		NOTIFICATION_TRANSLATION_CHANGED = 1010,
+		NOTIFICATION_WM_ABOUT = 1011,
+		NOTIFICATION_CRASH = 1012,
+		NOTIFICATION_OS_IME_UPDATE = 1013,
+		NOTIFICATION_APP_RESUMED = 1014,
+		NOTIFICATION_APP_PAUSED = 1015,
 	};
 
 	virtual void input_event(const Ref<InputEvent> &p_event);
@@ -77,6 +73,7 @@ public:
 	virtual void finish();
 
 	virtual void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
+	virtual void global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void set_init_script(const Ref<Script> &p_init_script);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,24 +31,34 @@
 #ifndef PATH_UTILS_H
 #define PATH_UTILS_H
 
+#include "core/string_builder.h"
 #include "core/ustring.h"
 
-_FORCE_INLINE_ String path_join(const String &e1, const String &e2) {
-	return e1.plus_file(e2);
-}
+namespace path {
 
-_FORCE_INLINE_ String path_join(const String &e1, const String &e2, const String &e3) {
-	return e1.plus_file(e2).plus_file(e3);
-}
+String join(const String &p_a, const String &p_b);
+String join(const String &p_a, const String &p_b, const String &p_c);
+String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d);
 
-_FORCE_INLINE_ String path_join(const String &e1, const String &e2, const String &e3, const String &e4) {
-	return e1.plus_file(e2).plus_file(e3).plus_file(e4);
-}
+String find_executable(const String &p_name);
 
-String path_which(const String &p_name);
+/// Returns a normalized absolute path to the current working directory
+String cwd();
 
-void fix_path(const String &p_path, String &r_out);
+/**
+ * Obtains a normalized absolute path to p_path. Symbolic links are
+ * not resolved. The path p_path might not exist in the file system.
+ */
+String abspath(const String &p_path);
 
-bool rel_path_to_abs(const String &p_existing_path, String &r_abs_path);
+/**
+ * Obtains a normalized path to p_path with symbolic links resolved.
+ * The resulting path might be either a relative or an absolute path.
+ */
+String realpath(const String &p_path);
+
+String relative_to(const String &p_path, const String &p_relative_to);
+
+} // namespace path
 
 #endif // PATH_UTILS_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -289,6 +289,7 @@ public:
 		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
 		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
+		SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH,
 	};
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
@@ -334,7 +335,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D()) = 0;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) = 0;
 
@@ -347,10 +348,10 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) = 0;
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
 
-	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const = 0;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) = 0;
@@ -387,7 +388,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) = 0;
 	virtual BodyMode body_get_mode(RID p_body) const = 0;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D()) = 0;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) = 0;
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant &p_metadata) = 0;
@@ -398,15 +399,15 @@ public:
 	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const = 0;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape, bool p_disabled) = 0;
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled) = 0;
+	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape, bool p_enabled, float p_margin = 0) = 0;
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx) = 0;
 	virtual void body_clear_shapes(RID p_body) = 0;
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_canvas_instance_id(RID p_body) const = 0;
 
 	enum CCDMode {
@@ -504,6 +505,12 @@ public:
 		RID collider;
 		int collider_shape;
 		Variant collider_metadata;
+
+		MotionResult() {
+			collision_local_shape = 0;
+			collider_shape = 0;
+			collider_id = 0;
+		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;
@@ -646,6 +653,12 @@ class Physics2DServerManager {
 		ClassInfo(const ClassInfo &p_ci) :
 				name(p_ci.name),
 				create_callback(p_ci.create_callback) {}
+
+		ClassInfo operator=(const ClassInfo &p_ci) {
+			name = p_ci.name;
+			create_callback = p_ci.create_callback;
+			return *this;
+		}
 	};
 
 	static Vector<ClassInfo> physics_2d_servers;

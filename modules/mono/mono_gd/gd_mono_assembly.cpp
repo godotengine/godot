@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "core/project_settings.h"
 
 #include "../godotsharp_dirs.h"
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 
 bool GDMonoAssembly::no_search = false;
@@ -46,14 +47,27 @@ bool GDMonoAssembly::in_preload = false;
 
 Vector<String> GDMonoAssembly::search_dirs;
 
-void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config) {
+void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 
-	const char *rootdir = mono_assembly_getrootdir();
-	if (rootdir) {
-		String framework_dir = String(rootdir).plus_file("mono").plus_file("4.5");
+	String framework_dir;
+
+	if (!p_custom_bcl_dir.empty()) {
+		framework_dir = p_custom_bcl_dir;
+	} else if (mono_assembly_getrootdir()) {
+		framework_dir = String::utf8(mono_assembly_getrootdir()).plus_file("mono").plus_file("4.5");
+	}
+
+	if (!framework_dir.empty()) {
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
+
+#if !defined(TOOLS_ENABLED)
+	String data_game_assemblies_dir = GodotSharpDirs::get_data_game_assemblies_dir();
+	if (!data_game_assemblies_dir.empty()) {
+		r_search_dirs.push_back(data_game_assemblies_dir);
+	}
+#endif
 
 	if (p_custom_config.length()) {
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(p_custom_config));
@@ -61,11 +75,22 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
 	}
 
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	if (p_custom_config.empty()) {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	} else {
+		String api_config = p_custom_config == "Release" ? "Release" : "Debug";
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+	}
+
+	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+
 #ifdef TOOLS_ENABLED
 	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());
+
+	// For GodotTools to find the api assemblies
+	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug"));
 #endif
 }
 
@@ -129,19 +154,15 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 
 	(void)user_data; // UNUSED
 
-	if (search_dirs.empty()) {
-		fill_search_dirs(search_dirs);
-	}
-
 	{
-		// If we find the assembly here, we load it with `mono_assembly_load_from_full`,
+		// If we find the assembly here, we load it with 'mono_assembly_load_from_full',
 		// which in turn invokes load hooks before returning the MonoAssembly to us.
-		// One of the load hooks is `load_aot_module`. This hook can end up calling preload hooks
-		// again for the same assembly in certain in certain circumstances (the `do_load_image` part).
+		// One of the load hooks is 'load_aot_module'. This hook can end up calling preload hooks
+		// again for the same assembly in certain in certain circumstances (the 'do_load_image' part).
 		// If this is the case and we return NULL due to the no_search condition below,
 		// it will result in an internal crash later on. Therefore we need to return the assembly we didn't
-		// get yet from `mono_assembly_load_from_full`. Luckily we have the image, which already got it.
-		// This must be done here. If done in search hooks, it would cause `mono_assembly_load_from_full`
+		// get yet from 'mono_assembly_load_from_full'. Luckily we have the image, which already got it.
+		// This must be done here. If done in search hooks, it would cause 'mono_assembly_load_from_full'
 		// to think another MonoAssembly for this assembly was already loaded, making it delete its own,
 		// when in fact both pointers were the same... This hooks thing is confusing.
 		if (image_corlib_loading) {
@@ -210,6 +231,33 @@ GDMonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, cons
 	return NULL;
 }
 
+String GDMonoAssembly::find_assembly(const String &p_name) {
+
+	String path;
+
+	bool has_extension = p_name.ends_with(".dll") || p_name.ends_with(".exe");
+
+	for (int i = 0; i < search_dirs.size(); i++) {
+		const String &search_dir = search_dirs[i];
+
+		if (has_extension) {
+			path = search_dir.plus_file(p_name);
+			if (FileAccess::exists(path))
+				return path;
+		} else {
+			path = search_dir.plus_file(p_name + ".dll");
+			if (FileAccess::exists(path))
+				return path;
+
+			path = search_dir.plus_file(p_name + ".exe");
+			if (FileAccess::exists(path))
+				return path;
+		}
+	}
+
+	return String();
+}
+
 GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly) {
 
 	GDMonoAssembly *assembly = memnew(GDMonoAssembly(p_name, p_path));
@@ -246,6 +294,8 @@ void GDMonoAssembly::_wrap_mono_assembly(MonoAssembly *assembly) {
 
 void GDMonoAssembly::initialize() {
 
+	fill_search_dirs(search_dirs);
+
 	mono_install_assembly_search_hook(&assembly_search_hook, NULL);
 	mono_install_assembly_refonly_search_hook(&assembly_refonly_search_hook, NULL);
 	mono_install_assembly_preload_hook(&assembly_preload_hook, NULL);
@@ -264,7 +314,18 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(path);
 	ERR_FAIL_COND_V(data.empty(), ERR_FILE_CANT_READ);
 
-	String image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	String image_filename;
+
+#ifdef ANDROID_ENABLED
+	if (path.begins_with("res://")) {
+		image_filename = path.substr(6, path.length());
+	} else {
+		image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	}
+#else
+	// FIXME: globalize_path does not work on exported games
+	image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+#endif
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 
@@ -277,6 +338,7 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	ERR_FAIL_NULL_V(image, ERR_FILE_CANT_OPEN);
 
 #ifdef DEBUG_ENABLED
+	Vector<uint8_t> pdb_data;
 	String pdb_path(path + ".pdb");
 
 	if (!FileAccess::exists(pdb_path)) {
@@ -286,8 +348,9 @@ Error GDMonoAssembly::load(bool p_refonly) {
 			goto no_pdb;
 	}
 
-	pdb_data.clear();
 	pdb_data = FileAccess::get_file_as_array(pdb_path);
+
+	// mono_debug_close_image doesn't seem to be needed
 	mono_debug_open_image_from_memory(image, &pdb_data[0], pdb_data.size());
 
 no_pdb:
@@ -306,6 +369,9 @@ no_pdb:
 
 	ERR_FAIL_COND_V(status != MONO_IMAGE_OK || assembly == NULL, ERR_FILE_CANT_OPEN);
 
+	// Decrement refcount which was previously incremented by mono_image_open_from_data_with_name
+	mono_image_close(image);
+
 	loaded = true;
 	modified_time = last_modified_time;
 
@@ -321,8 +387,6 @@ Error GDMonoAssembly::wrapper_for_image(MonoImage *p_image) {
 
 	image = p_image;
 
-	mono_image_addref(image);
-
 	loaded = true;
 
 	return OK;
@@ -332,21 +396,12 @@ void GDMonoAssembly::unload() {
 
 	ERR_FAIL_COND(!loaded);
 
-#ifdef DEBUG_ENABLED
-	if (pdb_data.size()) {
-		mono_debug_close_image(image);
-		pdb_data.clear();
-	}
-#endif
-
 	for (Map<MonoClass *, GDMonoClass *>::Element *E = cached_raw.front(); E; E = E->next()) {
 		memdelete(E->value());
 	}
 
 	cached_classes.clear();
 	cached_raw.clear();
-
-	mono_image_close(image);
 
 	assembly = NULL;
 	image = NULL;

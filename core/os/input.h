@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,6 +100,7 @@ public:
 	virtual uint64_t get_joy_vibration_timestamp(int p_device) = 0;
 	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0) = 0;
 	virtual void stop_joy_vibration(int p_device) = 0;
+	virtual void vibrate_handheld(int p_duration_ms = 500) = 0;
 
 	virtual Point2 get_mouse_position() const = 0;
 	virtual Point2 get_last_mouse_speed() const = 0;
@@ -121,10 +122,10 @@ public:
 	virtual bool is_emulating_touch_from_mouse() const = 0;
 	virtual bool is_emulating_mouse_from_touch() const = 0;
 
-	virtual CursorShape get_default_cursor_shape() = 0;
+	virtual CursorShape get_default_cursor_shape() const = 0;
 	virtual void set_default_cursor_shape(CursorShape p_shape) = 0;
+	virtual CursorShape get_current_cursor_shape() const = 0;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) = 0;
-	virtual void set_mouse_in_window(bool p_in_window) = 0;
 
 	virtual String get_joy_button_string(int p_button) = 0;
 	virtual String get_joy_axis_string(int p_axis) = 0;
@@ -132,6 +133,9 @@ public:
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
+	virtual void accumulate_input_event(const Ref<InputEvent> &p_event) = 0;
+	virtual void flush_accumulated_events() = 0;
+	virtual void set_use_accumulated_input(bool p_enable) = 0;
 
 	Input();
 };

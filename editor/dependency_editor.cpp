@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,8 @@
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "scene/gui/margin_container.h"
-
-void DependencyEditor::_notification(int p_what) {
-}
 
 void DependencyEditor::_searched(const String &p_path) {
 
@@ -52,7 +50,6 @@ void DependencyEditor::_searched(const String &p_path) {
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
-	String fname = ti->get_text(0);
 	replacing = ti->get_text(1);
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());
@@ -63,7 +60,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
 		search->add_filter("*" + E->get());
 	}
-	search->popup_centered_ratio();
+	search->popup_centered_ratio(0.65); // So it doesn't completely cover the dialog below it.
 }
 
 void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates) {
@@ -222,12 +219,12 @@ void DependencyEditor::edit(const String &p_path) {
 	set_title(TTR("Dependencies For:") + " " + p_path.get_file());
 
 	_update_list();
-	popup_centered_ratio();
+	popup_centered_ratio(0.7); // So it doesn't completely cover the dialog below it.
 
 	if (EditorNode::get_singleton()->is_scene_open(p_path)) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Scene '%s' is currently being edited.\nChanges will not take effect unless reloaded."), p_path.get_file()));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Scene '%s' is currently being edited.\nChanges will only take effect when reloaded."), p_path.get_file()));
 	} else if (ResourceCache::has(p_path)) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Resource '%s' is in use.\nChanges will take effect when reloaded."), p_path.get_file()));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Resource '%s' is in use.\nChanges will only take effect when reloaded."), p_path.get_file()));
 	}
 }
 
@@ -475,17 +472,18 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
 	removed_deps.sort();
-
 	if (removed_deps.empty()) {
 		owners->hide();
-		text->set_text(TTR("Remove selected files from the project? (no undo)"));
-		popup_centered_minsize(Size2(400, 100));
+		text->set_text(TTR("Remove selected files from the project? (Can't be restored)"));
+		set_size(Size2());
+		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);
 		owners->show();
 		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
-		popup_centered_minsize(Size2(500, 350));
+		popup_centered(Size2(500, 350));
 	}
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void DependencyRemoveDialog::ok_pressed() {
@@ -496,9 +494,31 @@ void DependencyRemoveDialog::ok_pressed() {
 			res->set_path("");
 		}
 
-		// If the file we are deleting is the main scene, clear its definition.
+		// If the file we are deleting for e.g. the main scene, default environment,
+		// or audio bus layout, we must clear its definition in Project Settings.
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/config/icon")) {
+			ProjectSettings::get_singleton()->set("application/config/icon", "");
+		}
 		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/run/main_scene")) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/boot_splash/image")) {
+			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("rendering/environment/default_environment")) {
+			ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) {
+			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("gui/theme/custom")) {
+			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("gui/theme/custom_font")) {
+			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("audio/default_bus_layout")) {
+			ProjectSettings::get_singleton()->set("audio/default_bus_layout", "");
 		}
 
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
@@ -557,6 +577,8 @@ void DependencyRemoveDialog::_bind_methods() {
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
 
+	get_ok()->set_text(TTR("Remove"));
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
@@ -567,7 +589,6 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_hide_root(true);
 	vb->add_child(owners);
 	owners->set_v_size_flags(SIZE_EXPAND_FILL);
-	get_ok()->set_text(TTR("Remove"));
 }
 
 //////////////
@@ -595,7 +616,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 		ti->set_icon(0, icon);
 	}
 
-	popup_centered_minsize(Size2(500, 220));
+	popup_centered();
 }
 
 void DependencyErrorDialog::ok_pressed() {
@@ -624,7 +645,8 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
-	files->set_custom_minimum_size(Size2(1, 200));
+
+	set_custom_minimum_size(Size2(500, 220) * EDSCALE);
 	get_ok()->set_text(TTR("Open Anyway"));
 	get_cancel()->set_text(TTR("Close"));
 
@@ -648,7 +670,7 @@ void OrphanResourcesDialog::ok_pressed() {
 		return;
 
 	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"), paths.size()));
-	delete_confirm->popup_centered_minsize();
+	delete_confirm->popup_centered_clamped(delete_confirm->get_minimum_size());
 }
 
 bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent) {
@@ -703,7 +725,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
 				if (ds) {
-					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"));
+					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"), -1, false, TTR("Show Dependencies"));
 				}
 				ti->set_metadata(0, path);
 				has_children = true;
@@ -772,6 +794,15 @@ void OrphanResourcesDialog::_bind_methods() {
 
 OrphanResourcesDialog::OrphanResourcesDialog() {
 
+	set_title(TTR("Orphan Resource Explorer"));
+	delete_confirm = memnew(ConfirmationDialog);
+	get_ok()->set_text(TTR("Delete"));
+	add_child(delete_confirm);
+	dep_edit = memnew(DependencyEditor);
+	add_child(dep_edit);
+	delete_confirm->connect("confirmed", this, "_delete_confirm");
+	set_hide_on_ok(false);
+
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -785,14 +816,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	set_title(TTR("Orphan Resource Explorer"));
-	delete_confirm = memnew(ConfirmationDialog);
-	delete_confirm->set_text(TTR("Delete selected files?"));
-	get_ok()->set_text(TTR("Delete"));
-	add_child(delete_confirm);
-	dep_edit = memnew(DependencyEditor);
-	add_child(dep_edit);
 	files->connect("button_pressed", this, "_button_pressed");
-	delete_confirm->connect("confirmed", this, "_delete_confirm");
-	set_hide_on_ok(false);
 }

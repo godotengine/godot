@@ -1,25 +1,25 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftbzip2.c                                                              */
-/*                                                                         */
-/*    FreeType support for .bz2 compressed files.                          */
-/*                                                                         */
-/*  This optional component relies on libbz2.  It should mainly be used to */
-/*  parse compressed PCF fonts, as found with many X11 server              */
-/*  distributions.                                                         */
-/*                                                                         */
-/*  Copyright 2010-2018 by                                                 */
-/*  Joel Klinghed.                                                         */
-/*                                                                         */
-/*  based on `src/gzip/ftgzip.c'                                           */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftbzip2.c
+ *
+ *   FreeType support for .bz2 compressed files.
+ *
+ * This optional component relies on libbz2.  It should mainly be used to
+ * parse compressed PCF fonts, as found with many X11 server
+ * distributions.
+ *
+ * Copyright (C) 2010-2019 by
+ * Joel Klinghed.
+ *
+ * based on `src/gzip/ftgzip.c'
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -42,10 +42,6 @@
 
 
 #ifdef FT_CONFIG_OPTION_USE_BZIP2
-
-#ifdef FT_CONFIG_OPTION_PIC
-#error "bzip2 code does not support PIC yet"
-#endif
 
 #define BZ_NO_STDIO /* Do not need FILE */
 #include <bzlib.h>
@@ -475,8 +471,8 @@
     memory = source->memory;
 
     /*
-     *  check the header right now; this prevents allocating unnecessary
-     *  objects when we don't need them
+     * check the header right now; this prevents allocating unnecessary
+     * objects when we don't need them
      */
     error = ft_bzip2_check_header( source );
     if ( error )

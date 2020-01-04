@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,27 @@
 
 #include "gd_mono_log.h"
 
-#include <mono/utils/mono-logger.h>
 #include <stdlib.h> // abort
 
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 
 #include "../godotsharp_dirs.h"
+#include "../utils/string_utils.h"
 
-static int log_level_get_id(const char *p_log_level) {
+static CharString get_default_log_level() {
+#ifdef DEBUG_ENABLED
+	return String("info").utf8();
+#else
+	return String("warning").utf8();
+#endif
+}
+
+GDMonoLog *GDMonoLog::singleton = NULL;
+
+#if !defined(JAVASCRIPT_ENABLED)
+
+static int get_log_level_id(const char *p_log_level) {
 
 	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", NULL };
 
@@ -52,11 +64,11 @@ static int log_level_get_id(const char *p_log_level) {
 	return -1;
 }
 
-void gdmono_MonoLogCallback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *user_data) {
+void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
 
-	FileAccess *f = GDMonoLog::get_singleton()->get_log_file();
+	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
-	if (GDMonoLog::get_singleton()->get_log_level_id() >= log_level_get_id(log_level)) {
+	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
 		String text(message);
 		text += " (in domain ";
 		text += log_domain;
@@ -71,14 +83,15 @@ void gdmono_MonoLogCallback(const char *log_domain, const char *log_level, const
 	}
 
 	if (fatal) {
-		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: " + GDMonoLog::get_singleton()->get_log_file_path() + "\n");
-		// If we were to abort without flushing, the log wouldn't get written.
+		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
+		// Make sure to flush before aborting
 		f->flush();
+		f->close();
+		memdelete(f);
+
 		abort();
 	}
 }
-
-GDMonoLog *GDMonoLog::singleton = NULL;
 
 bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 
@@ -86,30 +99,21 @@ bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 		DirAccessRef diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		ERR_FAIL_COND_V(!diraccess, false);
 		Error logs_mkdir_err = diraccess->make_dir_recursive(p_logs_dir);
-		ERR_EXPLAIN("Failed to create mono logs directory");
-		ERR_FAIL_COND_V(logs_mkdir_err != OK, false);
+		ERR_FAIL_COND_V_MSG(logs_mkdir_err != OK, false, "Failed to create mono logs directory.");
 	}
 
 	return true;
 }
 
-void GDMonoLog::_open_log_file(const String &p_file_path) {
-
-	log_file = FileAccess::open(p_file_path, FileAccess::WRITE);
-
-	ERR_EXPLAIN("Failed to create log file");
-	ERR_FAIL_COND(!log_file);
-}
-
 void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
-	static const uint64_t MAX_SECS = 5 * 86400;
+	static const uint64_t MAX_SECS = 5 * 86400; // 5 days
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND(!da);
 
 	Error err = da->change_dir(p_logs_dir);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot change directory to '" + p_logs_dir + "'.");
 
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 
@@ -120,10 +124,9 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 		if (!current.ends_with(".txt"))
 			continue;
 
-		String name = current.get_basename();
-		uint64_t unixtime = (uint64_t)name.to_int64();
+		uint64_t modified_time = FileAccess::get_modified_time(da->get_current_dir().plus_file(current));
 
-		if (OS::get_singleton()->get_unix_time() - unixtime > MAX_SECS) {
+		if (OS::get_singleton()->get_unix_time() - modified_time > MAX_SECS) {
 			da->remove(current);
 		}
 	}
@@ -133,27 +136,47 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
 void GDMonoLog::initialize() {
 
-#ifdef DEBUG_ENABLED
-	const char *log_level = "debug";
-#else
-	const char *log_level = "warning";
-#endif
+	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
+
+	if (log_level.length() != 0 && get_log_level_id(log_level.get_data()) == -1) {
+		ERR_PRINTS(String() + "Mono: Ignoring invalid log level (GODOT_MONO_LOG_LEVEL): '" + log_level.get_data() + "'.");
+		log_level = CharString();
+	}
+
+	if (log_level.length() == 0) {
+		log_level = get_default_log_level();
+	}
 
 	String logs_dir = GodotSharpDirs::get_mono_logs_dir();
 
 	if (_try_create_logs_dir(logs_dir)) {
 		_delete_old_log_files(logs_dir);
 
-		log_file_path = logs_dir.plus_file(String::num_int64(OS::get_singleton()->get_unix_time()) + ".txt");
-		_open_log_file(log_file_path);
+		OS::Date date_now = OS::get_singleton()->get_date();
+		OS::Time time_now = OS::get_singleton()->get_time();
+
+		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d",
+				date_now.year, date_now.month, date_now.day,
+				time_now.hour, time_now.min, time_now.sec);
+
+		log_file_name += str_format(" (%d)", OS::get_singleton()->get_process_id());
+
+		log_file_name += ".txt";
+
+		log_file_path = logs_dir.plus_file(log_file_name);
+
+		log_file = FileAccess::open(log_file_path, FileAccess::WRITE);
+		if (!log_file) {
+			ERR_PRINTS("Mono: Cannot create log file at: " + log_file_path);
+		}
 	}
 
-	mono_trace_set_level_string(log_level);
-	log_level_id = log_level_get_id(log_level);
+	mono_trace_set_level_string(log_level.get_data());
+	log_level_id = get_log_level_id(log_level.get_data());
 
 	if (log_file) {
-		print_verbose("Mono: Logfile is " + log_file_path);
-		mono_trace_set_log_handler(gdmono_MonoLogCallback, this);
+		OS::get_singleton()->print("Mono: Logfile is: %s\n", log_file_path.utf8().get_data());
+		mono_trace_set_log_handler(mono_log_callback, this);
 	} else {
 		OS::get_singleton()->printerr("Mono: No log file, using default log handler\n");
 	}
@@ -175,3 +198,22 @@ GDMonoLog::~GDMonoLog() {
 		memdelete(log_file);
 	}
 }
+
+#else
+
+void GDMonoLog::initialize() {
+	CharString log_level = get_default_log_level();
+	mono_trace_set_level_string(log_level.get_data());
+}
+
+GDMonoLog::GDMonoLog() {
+
+	singleton = this;
+}
+
+GDMonoLog::~GDMonoLog() {
+
+	singleton = NULL;
+}
+
+#endif // !defined(JAVASCRIPT_ENABLED)

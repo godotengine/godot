@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftgloadr.c                                                             */
-/*                                                                         */
-/*    The FreeType glyph loader (body).                                    */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftgloadr.c
+ *
+ *   The FreeType glyph loader (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -23,7 +23,7 @@
 #include FT_INTERNAL_OBJECTS_H
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_gloader
+#define FT_COMPONENT  gloader
 
 
   /*************************************************************************/
@@ -38,31 +38,31 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The glyph loader is a simple object which is used to load a set of    */
-  /* glyphs easily.  It is critical for the correct loading of composites. */
-  /*                                                                       */
-  /* Ideally, one can see it as a stack of abstract `glyph' objects.       */
-  /*                                                                       */
-  /*   loader.base     Is really the bottom of the stack.  It describes a  */
-  /*                   single glyph image made of the juxtaposition of     */
-  /*                   several glyphs (those `in the stack').              */
-  /*                                                                       */
-  /*   loader.current  Describes the top of the stack, on which a new      */
-  /*                   glyph can be loaded.                                */
-  /*                                                                       */
-  /*   Rewind          Clears the stack.                                   */
-  /*   Prepare         Set up `loader.current' for addition of a new glyph */
-  /*                   image.                                              */
-  /*   Add             Add the `current' glyph image to the `base' one,    */
-  /*                   and prepare for another one.                        */
-  /*                                                                       */
-  /* The glyph loader is now a base object.  Each driver used to           */
-  /* re-implement it in one way or the other, which wasted code and        */
-  /* energy.                                                               */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * The glyph loader is a simple object which is used to load a set of
+   * glyphs easily.  It is critical for the correct loading of composites.
+   *
+   * Ideally, one can see it as a stack of abstract `glyph' objects.
+   *
+   *   loader.base     Is really the bottom of the stack.  It describes a
+   *                   single glyph image made of the juxtaposition of
+   *                   several glyphs (those `in the stack').
+   *
+   *   loader.current  Describes the top of the stack, on which a new
+   *                   glyph can be loaded.
+   *
+   *   Rewind          Clears the stack.
+   *   Prepare         Set up `loader.current' for addition of a new glyph
+   *                   image.
+   *   Add             Add the `current' glyph image to the `base' one,
+   *                   and prepare for another one.
+   *
+   * The glyph loader is now a base object.  Each driver used to
+   * re-implement it in one way or the other, which wasted code and
+   * energy.
+   *
+   */
 
 
   /* create a new glyph loader */
@@ -99,12 +99,12 @@
   }
 
 
-  /* reset the glyph loader, frees all allocated tables */
-  /* and starts from zero                               */
+  /* reset glyph loader, free all allocated tables, */
+  /* and start from zero                            */
   FT_BASE_DEF( void )
   FT_GlyphLoader_Reset( FT_GlyphLoader  loader )
   {
-    FT_Memory memory = loader->memory;
+    FT_Memory  memory = loader->memory;
 
 
     FT_FREE( loader->base.outline.points );
@@ -129,7 +129,7 @@
   {
     if ( loader )
     {
-      FT_Memory memory = loader->memory;
+      FT_Memory  memory = loader->memory;
 
 
       FT_GlyphLoader_Reset( loader );
@@ -358,48 +358,6 @@
 
     /* prepare for another new glyph image */
     FT_GlyphLoader_Prepare( loader );
-  }
-
-
-  FT_BASE_DEF( FT_Error )
-  FT_GlyphLoader_CopyPoints( FT_GlyphLoader  target,
-                             FT_GlyphLoader  source )
-  {
-    FT_Error  error;
-    FT_UInt   num_points   = (FT_UInt)source->base.outline.n_points;
-    FT_UInt   num_contours = (FT_UInt)source->base.outline.n_contours;
-
-
-    error = FT_GlyphLoader_CheckPoints( target, num_points, num_contours );
-    if ( !error )
-    {
-      FT_Outline*  out = &target->base.outline;
-      FT_Outline*  in  = &source->base.outline;
-
-
-      FT_ARRAY_COPY( out->points, in->points,
-                     num_points );
-      FT_ARRAY_COPY( out->tags, in->tags,
-                     num_points );
-      FT_ARRAY_COPY( out->contours, in->contours,
-                     num_contours );
-
-      /* do we need to copy the extra points? */
-      if ( target->use_extra && source->use_extra )
-      {
-        FT_ARRAY_COPY( target->base.extra_points, source->base.extra_points,
-                       num_points );
-        FT_ARRAY_COPY( target->base.extra_points2, source->base.extra_points2,
-                       num_points );
-      }
-
-      out->n_points   = (short)num_points;
-      out->n_contours = (short)num_contours;
-
-      FT_GlyphLoader_Adjust_Points( target );
-    }
-
-    return error;
   }
 
 

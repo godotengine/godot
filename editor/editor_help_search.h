@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,12 +59,12 @@ class EditorHelpSearch : public ConfirmationDialog {
 	OptionButton *filter_combo;
 	Tree *results_tree;
 	bool old_search;
+	String old_term;
 
 	class Runner;
 	Ref<Runner> search;
 
 	void _update_icons();
-	void _load_settings();
 	void _update_results();
 
 	void _search_box_gui_input(const Ref<InputEvent> &p_event);
@@ -125,6 +125,8 @@ class EditorHelpSearch::Runner : public Reference {
 	TreeItem *root_item;
 	Map<String, TreeItem *> class_items;
 	TreeItem *matched_item;
+
+	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 
 	bool _slice();
 	bool _phase_match_classes_init();

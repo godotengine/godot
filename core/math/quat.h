@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,15 +38,12 @@
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Quat {
 public:
 	real_t x, y, z, w;
 
 	_FORCE_INLINE_ real_t length_squared() const;
+	bool is_equal_approx(const Quat &p_quat) const;
 	real_t length() const;
 	void normalize();
 	Quat normalized() const;
@@ -129,6 +126,14 @@ public:
 			y(q.y),
 			z(q.z),
 			w(q.w) {
+	}
+
+	Quat operator=(const Quat &q) {
+		x = q.x;
+		y = q.y;
+		z = q.z;
+		w = q.w;
+		return *this;
 	}
 
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc

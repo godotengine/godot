@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void Path2DEditor::_notification(int p_what) {
@@ -179,12 +180,12 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for segment split.
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && mode == MODE_EDIT && on_edge == true) {
-			Vector2 gpoint = mb->get_position();
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && mode == MODE_EDIT && on_edge) {
+			Vector2 gpoint2 = mb->get_position();
 			Ref<Curve2D> curve = node->get_curve();
 
 			int insertion_point = -1;
-			float mbLength = curve->get_closest_offset(xform.affine_inverse().xform(gpoint));
+			float mbLength = curve->get_closest_offset(xform.affine_inverse().xform(gpoint2));
 			int len = curve->get_point_count();
 			for (int i = 0; i < len - 1; i++) {
 				float compareLength = curve->get_closest_offset(curve->get_point_position(i + 1));
@@ -195,7 +196,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				insertion_point = curve->get_point_count() - 2;
 
 			undo_redo->create_action(TTR("Split Curve"));
-			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
+			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", insertion_point + 1);
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
@@ -204,7 +205,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			action = ACTION_MOVING_POINT;
 			action_point = insertion_point + 1;
 			moving_from = curve->get_point_position(action_point);
-			moving_screen_from = gpoint;
+			moving_screen_from = gpoint2;
 
 			canvas_item_editor->update_viewport();
 
@@ -367,18 +368,18 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
-	if (!node)
-		return;
-
-	if (!node->is_visible_in_tree())
-		return;
-
-	if (!node->get_curve().is_valid())
+	if (!node || !node->is_visible_in_tree() || !node->get_curve().is_valid())
 		return;
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
-	Size2 handle_size = handle->get_size();
+
+	const Ref<Texture> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
+	// Both handle icons must be of the same size
+	const Size2 handle_size = path_sharp_handle->get_size();
+
+	const Ref<Texture> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
+	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
 
@@ -387,19 +388,35 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	for (int i = 0; i < len; i++) {
 		Vector2 point = xform.xform(curve->get_point_position(i));
-		vpc->draw_texture_rect(handle, Rect2(point - handle_size * 0.5, handle_size), false, Color(1, 1, 1, 1));
+		// Determines the point icon to be used
+		bool smooth = false;
 
 		if (i < len - 1) {
 			Vector2 pointout = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
-			vpc->draw_line(point, pointout, Color(0.5, 0.5, 1.0, 0.8), 1.0);
-			vpc->draw_texture_rect(handle, Rect2(pointout - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
+			if (point != pointout) {
+				smooth = true;
+				// Draw the line with a dark and light color to be visible on all backgrounds
+				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_texture_rect(curve_handle, Rect2(pointout - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+			}
 		}
 
 		if (i > 0) {
 			Vector2 pointin = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
-			vpc->draw_line(point, pointin, Color(0.5, 0.5, 1.0, 0.8), 1.0);
-			vpc->draw_texture_rect(handle, Rect2(pointin - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
+			if (point != pointin) {
+				smooth = true;
+				// Draw the line with a dark and light color to be visible on all backgrounds
+				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_texture_rect(curve_handle, Rect2(pointin - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+			}
 		}
+
+		vpc->draw_texture_rect(
+				smooth ? path_smooth_handle : path_sharp_handle,
+				Rect2(point - handle_size * 0.5, handle_size),
+				false);
 	}
 
 	if (on_edge) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,7 +99,7 @@ struct NativeScriptDesc {
 };
 
 class NativeScript : public Script {
-	GDCLASS(NativeScript, Script)
+	GDCLASS(NativeScript, Script);
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
@@ -149,6 +149,7 @@ public:
 
 	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this);
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
 
 	virtual bool has_source_code() const;
@@ -207,6 +208,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void notification(int p_notification);
+	String to_string(bool *r_valid);
 	virtual Ref<Script> get_script() const;
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
@@ -368,7 +370,7 @@ inline NativeScriptDesc *NativeScript::get_script_desc() const {
 }
 
 class NativeReloadNode : public Node {
-	GDCLASS(NativeReloadNode, Node)
+	GDCLASS(NativeReloadNode, Node);
 	bool unloaded;
 
 public:

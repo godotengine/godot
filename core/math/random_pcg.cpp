@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,24 +32,20 @@
 
 #include "core/os/os.h"
 
-RandomPCG::RandomPCG(uint64_t seed, uint64_t inc) :
-		pcg() {
-	pcg.state = seed;
-	pcg.inc = inc;
+RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
+		pcg(),
+		current_inc(p_inc) {
+	seed(p_seed);
 }
 
 void RandomPCG::randomize() {
 	seed(OS::get_singleton()->get_ticks_usec() * pcg.state + PCG_DEFAULT_INC_64);
 }
 
-double RandomPCG::random(double from, double to) {
-	unsigned int r = rand();
-	double ret = (double)r / (double)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+double RandomPCG::random(double p_from, double p_to) {
+	return randd() * (p_to - p_from) + p_from;
 }
 
-float RandomPCG::random(float from, float to) {
-	unsigned int r = rand();
-	float ret = (float)r / (float)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+float RandomPCG::random(float p_from, float p_to) {
+	return randf() * (p_to - p_from) + p_from;
 }

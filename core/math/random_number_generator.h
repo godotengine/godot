@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_seed() { return randbase.get_seed(); }
 
-	_FORCE_INLINE_ void randomize() { return randbase.randomize(); }
+	_FORCE_INLINE_ void randomize() { randbase.randomize(); }
 
 	_FORCE_INLINE_ uint32_t randi() { return randbase.rand(); }
 
@@ -55,9 +55,14 @@ public:
 
 	_FORCE_INLINE_ real_t randf_range(real_t from, real_t to) { return randbase.random(from, to); }
 
+	_FORCE_INLINE_ real_t randfn(real_t mean = 0.0, real_t deviation = 1.0) { return randbase.randfn(mean, deviation); }
+
 	_FORCE_INLINE_ int randi_range(int from, int to) {
 		unsigned int ret = randbase.rand();
-		return ret % (to - from + 1) + from;
+		if (to < from)
+			return ret % (from - to + 1) + to;
+		else
+			return ret % (to - from + 1) + from;
 	}
 
 	RandomNumberGenerator();

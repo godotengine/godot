@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -346,8 +346,10 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 				snap_ignore = false;
 			}
 
-			if (!snap_ignore) {
-				cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			if (!snap_ignore && SpatialEditor::get_singleton()->is_snap_enabled()) {
+				cpoint = cpoint.snapped(Vector2(
+						SpatialEditor::get_singleton()->get_translate_snap(),
+						SpatialEditor::get_singleton()->get_translate_snap()));
 			}
 			edited_point_pos = cpoint;
 
@@ -527,7 +529,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	node = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);

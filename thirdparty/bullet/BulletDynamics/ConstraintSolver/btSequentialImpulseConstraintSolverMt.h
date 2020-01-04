@@ -53,102 +53,98 @@ subject to the following restrictions:
 ///  because floating point addition is not associative due to rounding errors.
 ///  The task scheduler can and should ensure that the result of any parallelSum operation is deterministic.
 ///
-ATTRIBUTE_ALIGNED16(class) btSequentialImpulseConstraintSolverMt : public btSequentialImpulseConstraintSolver
+ATTRIBUTE_ALIGNED16(class)
+btSequentialImpulseConstraintSolverMt : public btSequentialImpulseConstraintSolver
 {
 public:
-	virtual void solveGroupCacheFriendlySplitImpulseIterations(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer) BT_OVERRIDE;
-	virtual btScalar solveSingleIteration(int iteration, btCollisionObject** bodies ,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer) BT_OVERRIDE;
-	virtual btScalar solveGroupCacheFriendlySetup(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifoldPtr, int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal,btIDebugDraw* debugDrawer) BT_OVERRIDE;
-	virtual btScalar solveGroupCacheFriendlyFinish(btCollisionObject** bodies, int numBodies, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
+	virtual void solveGroupCacheFriendlySplitImpulseIterations(btCollisionObject * *bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds, btTypedConstraint** constraints, int numConstraints, const btContactSolverInfo& infoGlobal, btIDebugDraw* debugDrawer) BT_OVERRIDE;
+	virtual btScalar solveSingleIteration(int iteration, btCollisionObject** bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds, btTypedConstraint** constraints, int numConstraints, const btContactSolverInfo& infoGlobal, btIDebugDraw* debugDrawer) BT_OVERRIDE;
+	virtual btScalar solveGroupCacheFriendlySetup(btCollisionObject * *bodies, int numBodies, btPersistentManifold** manifoldPtr, int numManifolds, btTypedConstraint** constraints, int numConstraints, const btContactSolverInfo& infoGlobal, btIDebugDraw* debugDrawer) BT_OVERRIDE;
+	virtual btScalar solveGroupCacheFriendlyFinish(btCollisionObject * *bodies, int numBodies, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
 
-    // temp struct used to collect info from persistent manifolds into a cache-friendly struct using multiple threads
-    struct btContactManifoldCachedInfo
-    {
-        static const int MAX_NUM_CONTACT_POINTS = 4;
+	// temp struct used to collect info from persistent manifolds into a cache-friendly struct using multiple threads
+	struct btContactManifoldCachedInfo
+	{
+		static const int MAX_NUM_CONTACT_POINTS = 4;
 
-        int numTouchingContacts;
-        int solverBodyIds[ 2 ];
-        int contactIndex;
-        int rollingFrictionIndex;
-        bool contactHasRollingFriction[ MAX_NUM_CONTACT_POINTS ];
-        btManifoldPoint* contactPoints[ MAX_NUM_CONTACT_POINTS ];
-    };
-    // temp struct used for setting up joint constraints in parallel
-    struct JointParams
-    {
-        int m_solverConstraint;
-        int m_solverBodyA;
-        int m_solverBodyB;
-    };
-    void internalInitMultipleJoints(btTypedConstraint** constraints, int iBegin, int iEnd);
-    void internalConvertMultipleJoints( const btAlignedObjectArray<JointParams>& jointParamsArray, btTypedConstraint** constraints, int iBegin, int iEnd, const btContactSolverInfo& infoGlobal );
+		int numTouchingContacts;
+		int solverBodyIds[2];
+		int contactIndex;
+		int rollingFrictionIndex;
+		bool contactHasRollingFriction[MAX_NUM_CONTACT_POINTS];
+		btManifoldPoint* contactPoints[MAX_NUM_CONTACT_POINTS];
+	};
+	// temp struct used for setting up joint constraints in parallel
+	struct JointParams
+	{
+		int m_solverConstraint;
+		int m_solverBodyA;
+		int m_solverBodyB;
+	};
+	void internalInitMultipleJoints(btTypedConstraint * *constraints, int iBegin, int iEnd);
+	void internalConvertMultipleJoints(const btAlignedObjectArray<JointParams>& jointParamsArray, btTypedConstraint** constraints, int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
 
-    // parameters to control batching
-    static bool s_allowNestedParallelForLoops;        // whether to allow nested parallel operations
-    static int s_minimumContactManifoldsForBatching;  // don't even try to batch if fewer manifolds than this
-    static btBatchedConstraints::BatchingMethod s_contactBatchingMethod;
-    static btBatchedConstraints::BatchingMethod s_jointBatchingMethod;
-    static int s_minBatchSize;  // desired number of constraints per batch
-    static int s_maxBatchSize;
+	// parameters to control batching
+	static bool s_allowNestedParallelForLoops;        // whether to allow nested parallel operations
+	static int s_minimumContactManifoldsForBatching;  // don't even try to batch if fewer manifolds than this
+	static btBatchedConstraints::BatchingMethod s_contactBatchingMethod;
+	static btBatchedConstraints::BatchingMethod s_jointBatchingMethod;
+	static int s_minBatchSize;  // desired number of constraints per batch
+	static int s_maxBatchSize;
 
 protected:
-    static const int CACHE_LINE_SIZE = 64;
+	static const int CACHE_LINE_SIZE = 64;
 
-    btBatchedConstraints m_batchedContactConstraints;
-    btBatchedConstraints m_batchedJointConstraints;
-    int m_numFrictionDirections;
-    bool m_useBatching;
-    bool m_useObsoleteJointConstraints;
-    btAlignedObjectArray<btContactManifoldCachedInfo> m_manifoldCachedInfoArray;
-    btAlignedObjectArray<int> m_rollingFrictionIndexTable;  // lookup table mapping contact index to rolling friction index
-    btSpinMutex m_bodySolverArrayMutex;
-    char m_antiFalseSharingPadding[CACHE_LINE_SIZE]; // padding to keep mutexes in separate cachelines
-    btSpinMutex m_kinematicBodyUniqueIdToSolverBodyTableMutex;
-    btAlignedObjectArray<char> m_scratchMemory;
+	btBatchedConstraints m_batchedContactConstraints;
+	btBatchedConstraints m_batchedJointConstraints;
+	int m_numFrictionDirections;
+	bool m_useBatching;
+	bool m_useObsoleteJointConstraints;
+	btAlignedObjectArray<btContactManifoldCachedInfo> m_manifoldCachedInfoArray;
+	btAlignedObjectArray<int> m_rollingFrictionIndexTable;  // lookup table mapping contact index to rolling friction index
+	btSpinMutex m_bodySolverArrayMutex;
+	char m_antiFalseSharingPadding[CACHE_LINE_SIZE];  // padding to keep mutexes in separate cachelines
+	btSpinMutex m_kinematicBodyUniqueIdToSolverBodyTableMutex;
+	btAlignedObjectArray<char> m_scratchMemory;
 
-    virtual void randomizeConstraintOrdering( int iteration, int numIterations );
-    virtual btScalar resolveAllJointConstraints( int iteration );
-    virtual btScalar resolveAllContactConstraints();
-    virtual btScalar resolveAllContactFrictionConstraints();
-    virtual btScalar resolveAllContactConstraintsInterleaved();
-    virtual btScalar resolveAllRollingFrictionConstraints();
+	virtual void randomizeConstraintOrdering(int iteration, int numIterations);
+	virtual btScalar resolveAllJointConstraints(int iteration);
+	virtual btScalar resolveAllContactConstraints();
+	virtual btScalar resolveAllContactFrictionConstraints();
+	virtual btScalar resolveAllContactConstraintsInterleaved();
+	virtual btScalar resolveAllRollingFrictionConstraints();
 
-    virtual void setupBatchedContactConstraints();
-    virtual void setupBatchedJointConstraints();
-    virtual void convertJoints(btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
-	virtual void convertContacts(btPersistentManifold** manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
-    virtual void convertBodies(btCollisionObject** bodies, int numBodies, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
+	virtual void setupBatchedContactConstraints();
+	virtual void setupBatchedJointConstraints();
+	virtual void convertJoints(btTypedConstraint * *constraints, int numConstraints, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
+	virtual void convertContacts(btPersistentManifold * *manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
+	virtual void convertBodies(btCollisionObject * *bodies, int numBodies, const btContactSolverInfo& infoGlobal) BT_OVERRIDE;
 
-	int getOrInitSolverBodyThreadsafe(btCollisionObject& body, btScalar timeStep);
-    void allocAllContactConstraints(btPersistentManifold** manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal);
-    void setupAllContactConstraints(const btContactSolverInfo& infoGlobal);
-    void randomizeBatchedConstraintOrdering( btBatchedConstraints* batchedConstraints );
+	int getOrInitSolverBodyThreadsafe(btCollisionObject & body, btScalar timeStep);
+	void allocAllContactConstraints(btPersistentManifold * *manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal);
+	void setupAllContactConstraints(const btContactSolverInfo& infoGlobal);
+	void randomizeBatchedConstraintOrdering(btBatchedConstraints * batchedConstraints);
 
 public:
-
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
 	btSequentialImpulseConstraintSolverMt();
 	virtual ~btSequentialImpulseConstraintSolverMt();
 
-    btScalar resolveMultipleJointConstraints( const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd, int iteration );
-    btScalar resolveMultipleContactConstraints( const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd );
-    btScalar resolveMultipleContactSplitPenetrationImpulseConstraints( const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd );
-    btScalar resolveMultipleContactFrictionConstraints( const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd );
-    btScalar resolveMultipleContactRollingFrictionConstraints( const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd );
-    btScalar resolveMultipleContactConstraintsInterleaved( const btAlignedObjectArray<int>& contactIndices, int batchBegin, int batchEnd );
+	btScalar resolveMultipleJointConstraints(const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd, int iteration);
+	btScalar resolveMultipleContactConstraints(const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd);
+	btScalar resolveMultipleContactSplitPenetrationImpulseConstraints(const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd);
+	btScalar resolveMultipleContactFrictionConstraints(const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd);
+	btScalar resolveMultipleContactRollingFrictionConstraints(const btAlignedObjectArray<int>& consIndices, int batchBegin, int batchEnd);
+	btScalar resolveMultipleContactConstraintsInterleaved(const btAlignedObjectArray<int>& contactIndices, int batchBegin, int batchEnd);
 
-    void internalCollectContactManifoldCachedInfo(btContactManifoldCachedInfo* cachedInfoArray, btPersistentManifold** manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal);
-    void internalAllocContactConstraints(const btContactManifoldCachedInfo* cachedInfoArray, int numManifolds);
-    void internalSetupContactConstraints(int iContactConstraint, const btContactSolverInfo& infoGlobal);
-    void internalConvertBodies(btCollisionObject** bodies, int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
-    void internalWriteBackContacts(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
-    void internalWriteBackJoints(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
-    void internalWriteBackBodies(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
+	void internalCollectContactManifoldCachedInfo(btContactManifoldCachedInfo * cachedInfoArray, btPersistentManifold * *manifoldPtr, int numManifolds, const btContactSolverInfo& infoGlobal);
+	void internalAllocContactConstraints(const btContactManifoldCachedInfo* cachedInfoArray, int numManifolds);
+	void internalSetupContactConstraints(int iContactConstraint, const btContactSolverInfo& infoGlobal);
+	void internalConvertBodies(btCollisionObject * *bodies, int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
+	void internalWriteBackContacts(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
+	void internalWriteBackJoints(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
+	void internalWriteBackBodies(int iBegin, int iEnd, const btContactSolverInfo& infoGlobal);
 };
 
-
-
-
-#endif //BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_MT_H
-
+#endif  //BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_MT_H

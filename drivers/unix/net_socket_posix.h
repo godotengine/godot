@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,13 +58,15 @@ private:
 		ERR_NET_OTHER
 	};
 
-	NetError _get_socket_error();
+	NetError _get_socket_error() const;
 	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
+	_FORCE_INLINE_ Error _change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add);
+	_FORCE_INLINE_ void _set_close_exec_enabled(bool p_enabled);
 
 protected:
 	static NetSocket *_create_func();
 
-	bool _can_use_ip(const IP_Address p_ip, const bool p_for_bind) const;
+	bool _can_use_ip(const IP_Address &p_ip, const bool p_for_bind) const;
 
 public:
 	static void make_default();
@@ -76,7 +78,7 @@ public:
 	virtual void close();
 	virtual Error bind(IP_Address p_addr, uint16_t p_port);
 	virtual Error listen(int p_max_pending);
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port);
+	virtual Error connect_to_host(IP_Address p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);
@@ -87,12 +89,14 @@ public:
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
 
-	virtual void set_broadcasting_enabled(bool p_enabled);
+	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);
 	virtual void set_ipv6_only_enabled(bool p_enabled);
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);
 	virtual void set_reuse_address_enabled(bool p_enabled);
 	virtual void set_reuse_port_enabled(bool p_enabled);
+	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name);
+	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name);
 
 	NetSocketPosix();
 	~NetSocketPosix();

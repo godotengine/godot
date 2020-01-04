@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.1">
+<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.2">
 	<brief_description>
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorPlugin.create_spatial_gizmo].
+		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. See [EditorSpatialGizmoPlugin] for more information.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_collision_segments">
 			<return type="void">
@@ -25,7 +23,7 @@
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
 			<description>
-				Add collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].
+				Adds collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_handles">
@@ -40,7 +38,7 @@
 			<argument index="3" name="secondary" type="bool" default="false">
 			</argument>
 			<description>
-				Add a list of handles (points) which can be used to deform the object being edited.
+				Adds a list of handles (points) which can be used to deform the object being edited.
 				There are virtual functions which will be called upon editing of these handles. Call this function during [method redraw].
 			</description>
 		</method>
@@ -53,8 +51,10 @@
 			</argument>
 			<argument index="2" name="billboard" type="bool" default="false">
 			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
-				Add lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
+				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_mesh">
@@ -64,7 +64,9 @@
 			</argument>
 			<argument index="1" name="billboard" type="bool" default="false">
 			</argument>
-			<argument index="2" name="skeleton" type="RID">
+			<argument index="2" name="skeleton" type="SkinReference" default="null">
+			</argument>
+			<argument index="3" name="material" type="Material" default="null">
 			</argument>
 			<description>
 			</description>
@@ -76,8 +78,10 @@
 			</argument>
 			<argument index="1" name="default_scale" type="float" default="1">
 			</argument>
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
-				Add an unscaled billboard for visualization. Call this function during [method redraw].
+				Adds an unscaled billboard for visualization. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="clear">
@@ -97,7 +101,7 @@
 			</argument>
 			<description>
 				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the cancel parameter is true, an option to restore the edited value to the original is provided.
+				If the [code]cancel[/code] parameter is [code]true[/code], an option to restore the edited value to the original is provided.
 			</description>
 		</method>
 		<method name="get_handle_name" qualifiers="virtual">
@@ -106,7 +110,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Get the name of an edited handle (handles must have been previously added by [method add_handles]).
+				Gets the name of an edited handle (handles must have been previously added by [method add_handles]).
 				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
@@ -116,7 +120,30 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Get actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle]
+				Gets actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle].
+			</description>
+		</method>
+		<method name="get_plugin" qualifiers="const">
+			<return type="EditorSpatialGizmoPlugin">
+			</return>
+			<description>
+				Returns the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
+			</description>
+		</method>
+		<method name="get_spatial_node" qualifiers="const">
+			<return type="Spatial">
+			</return>
+			<description>
+				Returns the Spatial node associated with this gizmo.
+			</description>
+		</method>
+		<method name="is_handle_highlighted" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Gets whether a handle is highlighted or not.
 			</description>
 		</method>
 		<method name="redraw" qualifiers="virtual">

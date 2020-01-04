@@ -6,6 +6,7 @@ from platform_methods import run_in_subprocess
 import main_builders
 
 env.main_sources = []
+
 env.add_source_files(env.main_sources, "*.cpp")
 
 # order matters here.  higher index controller database files write on top of lower index database files
@@ -14,7 +15,9 @@ controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_20
 env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
 env.CommandNoCache("#main/default_controller_mappings.gen.cpp", controller_databases, run_in_subprocess(main_builders.make_default_controller_mappings))
 
-env.main_sources.append("#main/default_controller_mappings.gen.cpp")
+# Don't warn about duplicate entry here, we need it registered manually for first build,
+# even if later builds will pick it up twice due to above *.cpp globbing.
+env.add_source_files(env.main_sources, "#main/default_controller_mappings.gen.cpp", warn_duplicates=False)
 
 env.Depends("#main/splash.gen.h", "#main/splash.png")
 env.CommandNoCache("#main/splash.gen.h", "#main/splash.png", run_in_subprocess(main_builders.make_splash))
@@ -25,7 +28,8 @@ env.CommandNoCache("#main/splash_editor.gen.h", "#main/splash_editor.png", run_i
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env.CommandNoCache("#main/app_icon.gen.h", "#main/app_icon.png", run_in_subprocess(main_builders.make_app_icon))
 
-SConscript('tests/SCsub')
+if env["tools"]:
+    SConscript('tests/SCsub')
 
 lib = env.add_library("main", env.main_sources)
 env.Prepend(LIBS=[lib])

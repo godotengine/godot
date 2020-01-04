@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  editor_folding.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "editor_folding.h"
 
 #include "core/os/file_access.h"
@@ -25,7 +55,6 @@ void EditorFolding::save_resource_folding(const RES &p_resource, const String &p
 	PoolVector<String> unfolds = _get_unfolds(p_resource.ptr());
 	config->set_value("folding", "sections_unfolded", unfolds);
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
@@ -46,7 +75,6 @@ void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) 
 	Ref<ConfigFile> config;
 	config.instance();
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 
@@ -62,7 +90,7 @@ void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) 
 	_set_unfolds(p_resource.ptr(), unfolds);
 }
 
-void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Set<RES> &resources) {
+void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, Set<RES> &resources) {
 	if (p_root != p_node) {
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
@@ -72,6 +100,9 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		}
 	}
 
+	if (p_node->is_displayed_folded()) {
+		nodes_folded.push_back(p_root->get_path_to(p_node));
+	}
 	PoolVector<String> unfolds = _get_unfolds(p_node);
 
 	if (unfolds.size()) {
@@ -82,35 +113,42 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().type == Variant::OBJECT) {
-			RES res = p_node->get(E->get().name);
-			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+			if (E->get().type == Variant::OBJECT) {
+				RES res = p_node->get(E->get().name);
+				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
 
-				PoolVector<String> res_unfolds = _get_unfolds(res.ptr());
-				resource_folds.push_back(res->get_path());
-				resource_folds.push_back(res_unfolds);
-				resources.insert(res);
+					PoolVector<String> res_unfolds = _get_unfolds(res.ptr());
+					resource_folds.push_back(res->get_path());
+					resource_folds.push_back(res_unfolds);
+					resources.insert(res);
+				}
 			}
 		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, resources);
+		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded, resources);
 	}
 }
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
+
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	if (!file_check->file_exists(p_path)) //This can happen when creating scene from FilesystemDock. It has path, but no file.
+		return;
 
 	Ref<ConfigFile> config;
 	config.instance();
 
 	Array unfolds, res_unfolds;
 	Set<RES> resources;
-	_fill_folds(p_scene, p_scene, unfolds, res_unfolds, resources);
+	Array nodes_folded;
+	_fill_folds(p_scene, p_scene, unfolds, res_unfolds, nodes_folded, resources);
 
 	config->set_value("folding", "node_unfolds", unfolds);
 	config->set_value("folding", "resource_unfolds", res_unfolds);
+	config->set_value("folding", "nodes_folded", nodes_folded);
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
@@ -136,14 +174,18 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	if (config->has_section_key("folding", "resource_unfolds")) {
 		res_unfolds = config->get_value("folding", "resource_unfolds");
 	}
+	Array nodes_folded;
+	if (config->has_section_key("folding", "nodes_folded")) {
+		nodes_folded = config->get_value("folding", "nodes_folded");
+	}
 
 	ERR_FAIL_COND(unfolds.size() & 1);
 	ERR_FAIL_COND(res_unfolds.size() & 1);
 
 	for (int i = 0; i < unfolds.size(); i += 2) {
-		NodePath path = unfolds[i];
+		NodePath path2 = unfolds[i];
 		PoolVector<String> un = unfolds[i + 1];
-		Node *node = p_scene->get_node(path);
+		Node *node = p_scene->get_node_or_null(path2);
 		if (!node) {
 			continue;
 		}
@@ -151,17 +193,25 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	}
 
 	for (int i = 0; i < res_unfolds.size(); i += 2) {
-		String path = res_unfolds[i];
+		String path2 = res_unfolds[i];
 		RES res;
-		if (ResourceCache::has(path)) {
-			res = RES(ResourceCache::get(path));
+		if (ResourceCache::has(path2)) {
+			res = RES(ResourceCache::get(path2));
 		}
 		if (res.is_null()) {
 			continue;
 		}
 
-		PoolVector<String> unfolds = res_unfolds[i + 1];
-		_set_unfolds(res.ptr(), unfolds);
+		PoolVector<String> unfolds2 = res_unfolds[i + 1];
+		_set_unfolds(res.ptr(), unfolds2);
+	}
+
+	for (int i = 0; i < nodes_folded.size(); i++) {
+		NodePath fold_path = nodes_folded[i];
+		if (p_scene->has_node(fold_path)) {
+			Node *node = p_scene->get_node(fold_path);
+			node->set_display_folded(true);
+		}
 	}
 }
 

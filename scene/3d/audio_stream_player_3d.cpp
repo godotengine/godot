@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,102 @@
 #include "core/engine.h"
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
+#include "scene/3d/listener.h"
 #include "scene/main/viewport.h"
+
+// Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
+// Speaker-Placement Correction Amplitude Panning (SPCAP)
+class Spcap {
+private:
+	struct Speaker {
+		Vector3 direction;
+		real_t effective_number_of_speakers; // precalculated
+		mutable real_t squared_gain; // temporary
+	};
+
+	PoolVector<Speaker> speakers;
+
+public:
+	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
+		this->speakers.resize(speaker_count);
+		PoolVector<Speaker>::Write w = this->speakers.write();
+		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
+			w[speaker_num].direction = speaker_directions[speaker_num];
+			w[speaker_num].squared_gain = 0.0;
+			w[speaker_num].effective_number_of_speakers = 0.0;
+			for (unsigned int other_speaker_num = 0; other_speaker_num < speaker_count; other_speaker_num++) {
+				w[speaker_num].effective_number_of_speakers += 0.5 * (1.0 + w[speaker_num].direction.dot(w[other_speaker_num].direction));
+			}
+		}
+	}
+
+	unsigned int get_speaker_count() const {
+		return (unsigned int)this->speakers.size();
+	}
+
+	Vector3 get_speaker_direction(unsigned int index) const {
+		return this->speakers.read()[index].direction;
+	}
+
+	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
+		PoolVector<Speaker>::Read r = this->speakers.read();
+		real_t sum_squared_gains = 0.0;
+		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
+			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;
+			r[speaker_num].squared_gain = initial_gain * initial_gain;
+			sum_squared_gains += r[speaker_num].squared_gain;
+		}
+
+		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)this->speakers.size()); speaker_num++) {
+			volumes[speaker_num] = sqrtf(r[speaker_num].squared_gain / sum_squared_gains);
+		}
+	}
+};
+
+//TODO: hardcoded main speaker directions for 2, 3.1, 5.1 and 7.1 setups - these are simplified and could also be made configurable
+static const Vector3 speaker_directions[7] = {
+	Vector3(-1.0, 0.0, -1.0).normalized(), // front-left
+	Vector3(1.0, 0.0, -1.0).normalized(), // front-right
+	Vector3(0.0, 0.0, -1.0).normalized(), // center
+	Vector3(-1.0, 0.0, 1.0).normalized(), // rear-left
+	Vector3(1.0, 0.0, 1.0).normalized(), // rear-right
+	Vector3(-1.0, 0.0, 0.0).normalized(), // side-left
+	Vector3(1.0, 0.0, 0.0).normalized(), // side-right
+};
+
+void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
+	unsigned int speaker_count; // only main speakers (no LFE)
+	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+		default: //fallthrough
+		case AudioServer::SPEAKER_MODE_STEREO: speaker_count = 2; break;
+		case AudioServer::SPEAKER_SURROUND_31: speaker_count = 3; break;
+		case AudioServer::SPEAKER_SURROUND_51: speaker_count = 5; break;
+		case AudioServer::SPEAKER_SURROUND_71: speaker_count = 7; break;
+	}
+
+	Spcap spcap(speaker_count, speaker_directions); //TODO: should only be created/recreated once the speaker mode / speaker positions changes
+	real_t volumes[7];
+	spcap.calculate(source_dir, tightness, speaker_count, volumes);
+
+	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+		case AudioServer::SPEAKER_SURROUND_71:
+			output.vol[3].l = volumes[5]; // side-left
+			output.vol[3].r = volumes[6]; // side-right
+			//fallthrough
+		case AudioServer::SPEAKER_SURROUND_51:
+			output.vol[2].l = volumes[3]; // rear-left
+			output.vol[2].r = volumes[4]; // rear-right
+			//fallthrough
+		case AudioServer::SPEAKER_SURROUND_31:
+			output.vol[1].r = 1.0; // LFE - always full power
+			output.vol[1].l = volumes[2]; // center
+			//fallthrough
+		case AudioServer::SPEAKER_MODE_STEREO:
+			output.vol[0].r = volumes[1]; // front-right
+			output.vol[0].l = volumes[0]; // front-left
+	}
+}
+
 void AudioStreamPlayer3D::_mix_audio() {
 
 	if (!stream_playback.is_valid() || !active ||
@@ -91,7 +186,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 		}
 
 		bool interpolate_filter = !started;
-		;
+
 		if (!found) {
 			//create new if was not used before
 			if (prev_output_count < MAX_OUTPUTS) {
@@ -206,16 +301,17 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	float att = 0;
 	switch (attenuation_model) {
 		case ATTENUATION_INVERSE_DISTANCE: {
-			att = Math::linear2db(1.0 / ((p_distance / unit_size) + 000001));
+			att = Math::linear2db(1.0 / ((p_distance / unit_size) + CMP_EPSILON));
 		} break;
 		case ATTENUATION_INVERSE_SQUARE_DISTANCE: {
 			float d = (p_distance / unit_size);
 			d *= d;
-			att = Math::linear2db(1.0 / (d + 0.00001));
+			att = Math::linear2db(1.0 / (d + CMP_EPSILON));
 		} break;
 		case ATTENUATION_LOGARITHMIC: {
-			att = -20 * Math::log(p_distance / unit_size + 000001);
+			att = -20 * Math::log(p_distance / unit_size + CMP_EPSILON);
 		} break;
+		case ATTENUATION_DISABLED: break;
 		default: {
 			ERR_PRINT("Unknown attenuation type");
 			break;
@@ -323,16 +419,25 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (!vp->is_audio_listener())
 					continue;
 
-				Vector3 local_pos = camera->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
+				bool listener_is_camera = true;
+				Spatial *listener_node = camera;
+
+				Listener *listener = vp->get_listener();
+				if (listener) {
+					listener_node = listener;
+					listener_is_camera = false;
+				}
+
+				Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
 
 				float dist = local_pos.length();
 
 				Vector3 area_sound_pos;
-				Vector3 cam_area_pos;
+				Vector3 listener_area_pos;
 
 				if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
-					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), camera->get_global_transform().origin);
-					cam_area_pos = camera->get_global_transform().affine_inverse().xform(area_sound_pos);
+					area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
+					listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
 				}
 
 				if (max_distance > 0) {
@@ -340,10 +445,10 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					float total_max = max_distance;
 
 					if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
-						total_max = MAX(total_max, cam_area_pos.length());
+						total_max = MAX(total_max, listener_area_pos.length());
 					}
 					if (total_max > max_distance) {
-						continue; //can't hear this sound in this camera
+						continue; //can't hear this sound in this listener
 					}
 				}
 
@@ -360,8 +465,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				float db_att = (1.0 - MIN(1.0, multiplier)) * attenuation_filter_db;
 
 				if (emission_angle_enabled) {
-					Vector3 camtopos = global_pos - camera->get_global_transform().origin;
-					float c = camtopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
+					Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
+					float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
 					float angle = Math::rad2deg(Math::acos(c));
 					if (angle > emission_angle)
 						db_att -= -emission_angle_filter_attenuation_db;
@@ -369,59 +474,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				output.filter_gain = Math::db2linear(db_att);
 
-				Vector3 flat_pos = local_pos;
-				flat_pos.y = 0;
-				flat_pos.normalize();
+				//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
+				//      speakers not facing the source) - this could be made distance dependent.
+				_calc_output_vol(local_pos.normalized(), 4.0, output);
 
 				unsigned int cc = AudioServer::get_singleton()->get_channel_count();
-				if (cc == 1) {
-					// Stereo pair
-					float c = flat_pos.x * 0.5 + 0.5;
-
-					output.vol[0].l = 1.0 - c;
-					output.vol[0].r = c;
-				} else {
-					Vector3 camtopos = global_pos - camera->get_global_transform().origin;
-					float c = camtopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
-					float angle = Math::rad2deg(Math::acos(c));
-					float av = angle * (flat_pos.x < 0 ? -1 : 1) / 180.0;
-
-					if (cc >= 1) {
-						// Stereo pair
-						float fl = Math::abs(1.0 - Math::abs(-0.8 - av));
-						float fr = Math::abs(1.0 - Math::abs(0.8 - av));
-
-						output.vol[0].l = fl;
-						output.vol[0].r = fr;
-					}
-
-					if (cc >= 2) {
-						// Center pair
-						float center = 1.0 - Math::sin(Math::acos(c));
-
-						output.vol[1].l = center;
-						output.vol[1].r = center;
-					}
-
-					if (cc >= 3) {
-						// Side pair
-						float sl = Math::abs(1.0 - Math::abs(-0.4 - av));
-						float sr = Math::abs(1.0 - Math::abs(0.4 - av));
-
-						output.vol[2].l = sl;
-						output.vol[2].r = sr;
-					}
-
-					if (cc >= 4) {
-						// Rear pair
-						float rl = Math::abs(1.0 - Math::abs(-0.2 - av));
-						float rr = Math::abs(1.0 - Math::abs(0.2 - av));
-
-						output.vol[3].l = rl;
-						output.vol[3].r = rr;
-					}
-				}
-
 				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;
 				}
@@ -448,7 +505,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 						if (uniformity > 0.0) {
 
-							float distance = cam_area_pos.length();
+							float distance = listener_area_pos.length();
 							float attenuation = Math::db2linear(_get_attenuation_db(distance));
 
 							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
@@ -458,7 +515,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							if (attenuation < 1.0) {
 								//pan the uniform sound
-								Vector3 rev_pos = cam_area_pos;
+								Vector3 rev_pos = listener_area_pos;
 								rev_pos.y = 0;
 								rev_pos.normalize();
 
@@ -517,9 +574,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 
-					Vector3 camera_velocity = camera->get_doppler_tracked_velocity();
+					Vector3 listener_velocity;
 
-					Vector3 local_velocity = camera->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - camera_velocity);
+					if (listener_is_camera) {
+						listener_velocity = camera->get_doppler_tracked_velocity();
+					}
+
+					Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 
 					if (local_velocity == Vector3()) {
 						output.pitch_scale = 1.0;
@@ -775,6 +836,7 @@ void AudioStreamPlayer3D::set_emission_angle(float p_angle) {
 	ERR_FAIL_COND(p_angle < 0 || p_angle > 90);
 	emission_angle = p_angle;
 	update_gizmo();
+	_change_notify("emission_angle");
 }
 
 float AudioStreamPlayer3D::get_emission_angle() const {
@@ -810,7 +872,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 }
 
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
-	ERR_FAIL_INDEX(p_model, 3);
+	ERR_FAIL_INDEX((int)p_model, 4);
 	attenuation_model = p_model;
 }
 
@@ -839,7 +901,9 @@ void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 		set_notify_transform(true);
 		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
-		velocity_tracker->reset(get_global_transform().origin);
+		if (is_inside_tree()) {
+			velocity_tracker->reset(get_global_transform().origin);
+		}
 	} else {
 		set_notify_transform(false);
 	}
@@ -854,14 +918,18 @@ void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade_in = stream_paused ? false : true;
-		stream_paused_fade_out = stream_paused ? true : false;
+		stream_paused_fade_in = !stream_paused;
+		stream_paused_fade_out = stream_paused;
 	}
 }
 
 bool AudioStreamPlayer3D::get_stream_paused() const {
 
 	return stream_paused;
+}
+
+Ref<AudioStreamPlayback> AudioStreamPlayer3D::get_stream_playback() {
+	return stream_playback;
 }
 
 void AudioStreamPlayer3D::_bind_methods() {
@@ -930,10 +998,12 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer3D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer3D::get_stream_paused);
 
+	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
+
 	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer3D::_bus_layout_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,InverseSquare,Log"), "set_attenuation_model", "get_attenuation_model");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,InverseSquare,Log,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.1"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
@@ -950,7 +1020,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_angle_degrees", PROPERTY_HINT_RANGE, "0.1,90,0.1"), "set_emission_angle", "get_emission_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_angle_filter_attenuation_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_emission_angle_filter_attenuation_db", "get_emission_angle_filter_attenuation_db");
 	ADD_GROUP("Attenuation Filter", "attenuation_filter_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "50,50000,1"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_attenuation_filter_db", "get_attenuation_filter_db");
 	ADD_GROUP("Doppler", "doppler_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
@@ -958,6 +1028,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_SQUARE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_LOGARITHMIC);
+	BIND_ENUM_CONSTANT(ATTENUATION_DISABLED);
 
 	BIND_ENUM_CONSTANT(OUT_OF_RANGE_MIX);
 	BIND_ENUM_CONSTANT(OUT_OF_RANGE_PAUSE);

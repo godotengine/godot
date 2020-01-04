@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,11 +40,8 @@
 #include "joints/pin_joint_sw.h"
 #include "joints/slider_joint_sw.h"
 
-#define FLUSH_QUERY_CHECK                                                                                                                     \
-	if (flushing_queries) {                                                                                                                   \
-		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred()/set_deferred() to change monitoring state instead"); \
-		ERR_FAIL();                                                                                                                           \
-	}
+#define FLUSH_QUERY_CHECK(m_object) \
+	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 
@@ -73,8 +70,7 @@ RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 		} break;
 		case SHAPE_CYLINDER: {
 
-			ERR_EXPLAIN("CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
-			ERR_FAIL_V(RID());
+			ERR_FAIL_V_MSG(RID(), "CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
 
@@ -200,11 +196,7 @@ PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
 
 	SpaceSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, NULL);
-	if (!doing_sync || space->is_locked()) {
-
-		ERR_EXPLAIN("Space state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -283,7 +275,7 @@ PhysicsServer::AreaSpaceOverrideMode PhysicsServerSW::area_get_space_override_mo
 	return area->get_space_override_mode();
 }
 
-void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -291,7 +283,7 @@ void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform);
+	area->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -358,15 +350,14 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 
 void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
 
-	FLUSH_QUERY_CHECK
-
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
+	FLUSH_QUERY_CHECK(area);
 	area->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
-void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_ID) {
+void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
 
 	if (space_owner.owns(p_area)) {
 		SpaceSW *space = space_owner.get(p_area);
@@ -374,7 +365,7 @@ void PhysicsServerSW::area_attach_object_instance_id(RID p_area, ObjectID p_ID) 
 	}
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	area->set_instance_id(p_ID);
+	area->set_instance_id(p_id);
 }
 ObjectID PhysicsServerSW::area_get_object_instance_id(RID p_area) const {
 
@@ -443,10 +434,9 @@ void PhysicsServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 
 void PhysicsServerSW::area_set_monitorable(RID p_area, bool p_monitorable) {
 
-	FLUSH_QUERY_CHECK
-
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
+	FLUSH_QUERY_CHECK(area);
 
 	area->set_monitorable(p_monitorable);
 }
@@ -542,7 +532,7 @@ PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 	return body->get_mode();
 };
 
-void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -550,7 +540,7 @@ void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform);
+	body->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -592,11 +582,11 @@ RID PhysicsServerSW::body_get_shape(RID p_body, int p_shape_idx) const {
 
 void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
 
-	FLUSH_QUERY_CHECK
-
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	FLUSH_QUERY_CHECK(body);
+
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
@@ -675,12 +665,12 @@ uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
-void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
+void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_instance_id(p_ID);
+	body->set_instance_id(p_id);
 };
 
 uint32_t PhysicsServerSW::body_get_object_instance_id(RID p_body) const {
@@ -989,12 +979,7 @@ PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
-
-	if (!doing_sync || body->get_space()->is_locked()) {
-
-		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1412,8 +1397,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 	} else {
 
-		ERR_EXPLAIN("Invalid ID");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Invalid ID.");
 	}
 };
 

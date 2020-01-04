@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1118,6 +1118,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_SHIFT_LEFT, INT) {
 				if (p_b.type != INT)
 					_RETURN_FAIL;
+				if (p_b._data._int < 0 || p_b._data._int >= 64)
+					_RETURN_FAIL;
 				_RETURN(p_a._data._int << p_b._data._int);
 			}
 
@@ -1128,6 +1130,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 		SWITCH_OP(math, OP_SHIFT_RIGHT, p_a.type) {
 			CASE_TYPE(math, OP_SHIFT_RIGHT, INT) {
 				if (p_b.type != INT)
+					_RETURN_FAIL;
+				if (p_b._data._int < 0 || p_b._data._int >= 64)
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int >> p_b._data._int);
 			}
@@ -2183,7 +2187,8 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				}
 
-				return obj->set(p_index, p_value, r_valid);
+				obj->set(p_index, p_value, r_valid);
+				return;
 			}
 		} break;
 		case DICTIONARY: {
@@ -2612,7 +2617,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 						if (r_valid) {
 							*r_valid = false;
 						}
-						return "Attempted get on stray pointer.";
+						return true; // Attempted get on stray pointer.
 					}
 				}
 #endif
@@ -2781,7 +2786,8 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (r_valid)
@@ -2912,7 +2918,8 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			//nothing
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -3251,7 +3258,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	valid = false;
@@ -3408,7 +3416,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	r_valid = false;
@@ -3496,15 +3505,15 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 		case COLOR: {
 			const Color *ca = reinterpret_cast<const Color *>(a._data._mem);
 			const Color *cb = reinterpret_cast<const Color *>(b._data._mem);
-			float r = ca->r + cb->r * c;
-			float g = ca->g + cb->g * c;
-			float b = ca->b + cb->b * c;
-			float a = ca->a + cb->a * c;
-			r = r > 1.0 ? 1.0 : r;
-			g = g > 1.0 ? 1.0 : g;
-			b = b > 1.0 ? 1.0 : b;
-			a = a > 1.0 ? 1.0 : a;
-			r_dst = Color(r, g, b, a);
+			float new_r = ca->r + cb->r * c;
+			float new_g = ca->g + cb->g * c;
+			float new_b = ca->b + cb->b * c;
+			float new_a = ca->a + cb->a * c;
+			new_r = new_r > 1.0 ? 1.0 : new_r;
+			new_g = new_g > 1.0 ? 1.0 : new_g;
+			new_b = new_b > 1.0 ? 1.0 : new_b;
+			new_a = new_a > 1.0 ? 1.0 : new_a;
+			r_dst = Color(new_r, new_g, new_b, new_a);
 		}
 			return;
 		default: {
@@ -3656,11 +3665,55 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case POOL_INT_ARRAY: {
-			r_dst = a;
+			const PoolVector<int> *arr_a = reinterpret_cast<const PoolVector<int> *>(a._data._mem);
+			const PoolVector<int> *arr_b = reinterpret_cast<const PoolVector<int> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<int> v;
+				v.resize(sz);
+				{
+					PoolVector<int>::Write vw = v.write();
+					PoolVector<int>::Read ar = arr_a->read();
+					PoolVector<int>::Read br = arr_b->read();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		case POOL_REAL_ARRAY: {
-			r_dst = a;
+			const PoolVector<real_t> *arr_a = reinterpret_cast<const PoolVector<real_t> *>(a._data._mem);
+			const PoolVector<real_t> *arr_b = reinterpret_cast<const PoolVector<real_t> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<real_t> v;
+				v.resize(sz);
+				{
+					PoolVector<real_t>::Write vw = v.write();
+					PoolVector<real_t>::Read ar = arr_a->read();
+					PoolVector<real_t>::Read br = arr_b->read();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		case POOL_STRING_ARRAY: {
@@ -3717,7 +3770,27 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case POOL_COLOR_ARRAY: {
-			r_dst = a;
+			const PoolVector<Color> *arr_a = reinterpret_cast<const PoolVector<Color> *>(a._data._mem);
+			const PoolVector<Color> *arr_b = reinterpret_cast<const PoolVector<Color> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<Color> v;
+				v.resize(sz);
+				{
+					PoolVector<Color>::Write vw = v.write();
+					PoolVector<Color>::Read ar = arr_a->read();
+					PoolVector<Color>::Read br = arr_b->read();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].linear_interpolate(br[i], c);
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		default: {

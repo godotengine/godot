@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,7 +103,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 
 		int todo = p_frames;
 
-		if (todo == 0 || todo < MIN_MIX) {
+		if (todo < MIN_MIX) {
 			break;
 		}
 
@@ -116,8 +116,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 		if (ret < 0) {
 
 			playing = false;
-			ERR_EXPLAIN("Error reading OGG Vorbis File: " + file);
-			ERR_BREAK(ret < 0);
+			ERR_BREAK_MSG(ret < 0, "Error reading OGG Vorbis file: " + file + ".");
 		} else if (ret == 0) { // end of song, reload?
 
 			ov_clear(&vf);
@@ -143,8 +142,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 				bool ok = ov_time_seek(&vf, loop_restart_time) == 0;
 				if (!ok) {
 					playing = false;
-					//ERR_EXPLAIN("loop restart time rejected");
-					ERR_PRINT("loop restart time rejected")
+					ERR_PRINT("Loop restart time rejected");
 				}
 
 				frames_mixed = stream_srate * loop_restart_time;
@@ -244,10 +242,7 @@ Error AudioStreamPlaybackOGGVorbis::set_file(const String &p_file) {
 	stream_valid = false;
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
-
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + p_file + "'.");
 
 	int errv = ov_open_callbacks(f, &vf, NULL, 0, _ov_callbacks);
 	switch (errv) {
@@ -296,9 +291,7 @@ Error AudioStreamPlaybackOGGVorbis::_load_stream() {
 
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + file + "'.");
 
 	int errv = ov_open_callbacks(f, &vf, NULL, 0, _ov_callbacks);
 	switch (errv) {

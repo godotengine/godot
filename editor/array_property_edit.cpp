@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (newsize == size)
 				return true;
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Resize Array"));
 			ur->add_do_method(this, "_set_size", newsize);
 			ur->add_undo_method(this, "_set_size", size);
@@ -141,7 +141,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (value.get_type() != type && type >= 0 && type < Variant::VARIANT_MAX) {
 				Variant::CallError ce;
 				Variant new_value = Variant::construct(Variant::Type(type), NULL, 0, ce);
-				UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Array Value Type"));
 				ur->add_do_method(this, "_set_value", idx, new_value);
@@ -157,7 +157,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			Variant arr = get_array();
 
 			Variant value = arr.get(idx);
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 
 			ur->create_action(TTR("Change Array Value"));
 			ur->add_do_method(this, "_set_value", idx, p_value);
@@ -267,9 +267,9 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 	default_type = p_deftype;
 
 	if (!p_hint_string.empty()) {
-		int hint_subtype_seperator = p_hint_string.find(":");
-		if (hint_subtype_seperator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_seperator);
+		int hint_subtype_separator = p_hint_string.find(":");
+		if (hint_subtype_separator >= 0) {
+			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
 
 			int slash_pos = subtype_string.find("/");
 			if (slash_pos >= 0) {
@@ -277,7 +277,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 				subtype_string = subtype_string.substr(0, slash_pos);
 			}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator + 1, p_hint_string.size() - hint_subtype_seperator - 1);
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
 			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}
@@ -288,12 +288,17 @@ Node *ArrayPropertyEdit::get_node() {
 	return Object::cast_to<Node>(ObjectDB::get_instance(obj));
 }
 
+bool ArrayPropertyEdit::_dont_undo_redo() {
+	return true;
+}
+
 void ArrayPropertyEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_size"), &ArrayPropertyEdit::_set_size);
 	ClassDB::bind_method(D_METHOD("_set_value"), &ArrayPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &ArrayPropertyEdit::_notif_change);
 	ClassDB::bind_method(D_METHOD("_notif_changev"), &ArrayPropertyEdit::_notif_changev);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &ArrayPropertyEdit::_dont_undo_redo);
 }
 
 ArrayPropertyEdit::ArrayPropertyEdit() {

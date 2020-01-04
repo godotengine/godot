@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 
 AbstractPolygon2DEditor::Vertex::Vertex() :
 		polygon(-1),
@@ -201,6 +202,8 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
+			disable_polygon_editing(false, String());
+
 			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCreate", "EditorIcons"));
 			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveEdit", "EditorIcons"));
 			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
@@ -275,9 +278,30 @@ void AbstractPolygon2DEditor::_wip_close() {
 	selected_point = Vertex();
 }
 
+void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_reason) {
+
+	_polygon_editing_enabled = !p_disable;
+
+	button_create->set_disabled(p_disable);
+	button_edit->set_disabled(p_disable);
+	button_delete->set_disabled(p_disable);
+
+	if (p_disable) {
+
+		button_create->set_tooltip(p_reason);
+		button_edit->set_tooltip(p_reason);
+		button_delete->set_tooltip(p_reason);
+	} else {
+
+		button_create->set_tooltip(TTR("Create points."));
+		button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
+		button_delete->set_tooltip(TTR("Erase points."));
+	}
+}
+
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (!_get_node())
+	if (!_get_node() || !_polygon_editing_enabled)
 		return false;
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -324,16 +348,15 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							return true;
 						} else {
 
-							Vector<Vector2> vertices = _get_polygon(insert.polygon);
-							pre_move_edit = vertices;
-							printf("setting pre_move_edit\n");
+							Vector<Vector2> vertices2 = _get_polygon(insert.polygon);
+							pre_move_edit = vertices2;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
-							vertices.insert(edited_point.vertex, edited_point.pos);
+							vertices2.insert(edited_point.vertex, edited_point.pos);
 							selected_point = edited_point;
 							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
-							_action_set_polygon(insert.polygon, vertices);
+							_action_set_polygon(insert.polygon, vertices2);
 							_commit_action();
 							return true;
 						}
@@ -344,7 +367,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 						if (closest.valid()) {
 
-							printf("setting pre_move_edit\n");
 							pre_move_edit = _get_polygon(closest.polygon);
 							edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 							selected_point = closest;
@@ -458,6 +480,17 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & BUTTON_MASK_LEFT))) {
 
 			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+
+			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
+			if (mode == MODE_EDIT && mm->get_shift()) {
+				Vector2 old_point = pre_move_edit.get(selected_point.vertex);
+				if (ABS(cpoint.x - old_point.x) > ABS(cpoint.y - old_point.y)) {
+					cpoint.y = old_point.y;
+				} else {
+					cpoint.x = old_point.x;
+				}
+			}
+
 			edited_point = PosVertex(edited_point, cpoint);
 
 			if (!wip_active) {
@@ -539,7 +572,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		return;
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
-	const Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+	// All polygon points are sharp, so use the sharp handle icon
+	const Ref<Texture> handle = get_icon("EditorPathSharpHandle", "EditorIcons");
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
@@ -578,7 +612,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
 
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
@@ -602,7 +636,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 					p2 = points[(i + 1) % n_points] + offset;
 
 				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
@@ -615,6 +649,13 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 			const Color modulate = vertex == active_point ? Color(0.5, 1, 2) : Color(1, 1, 1);
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, modulate);
+
+			if (vertex == hover_point) {
+				Ref<Font> font = get_font("font", "Label");
+				String num = String::num(vertex.vertex);
+				Size2 num_size = font->get_string_size(num);
+				p_overlay->draw_string(font, point - num_size * 0.5, num, Color(1.0, 1.0, 1.0, 0.5));
+			}
 		}
 	}
 
@@ -627,9 +668,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
-	if (!canvas_item_editor) {
+	if (!canvas_item_editor)
 		canvas_item_editor = CanvasItemEditor::get_singleton();
-	}
 
 	if (p_polygon) {
 
@@ -648,7 +688,6 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		selected_point = Vertex();
 
 		canvas_item_editor->update_viewport();
-
 	} else {
 
 		_set_node(NULL);
@@ -768,7 +807,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 
 	canvas_item_editor = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	wip_active = false;
 	edited_point = PosVertex();
@@ -783,19 +822,16 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	add_child(button_create);
 	button_create->connect("pressed", this, "_menu_option", varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip(TTR("Create points."));
 
 	button_edit = memnew(ToolButton);
 	add_child(button_edit);
 	button_edit->connect("pressed", this, "_menu_option", varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
-	button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
 
 	button_delete = memnew(ToolButton);
 	add_child(button_delete);
 	button_delete->connect("pressed", this, "_menu_option", varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
-	button_delete->set_tooltip(TTR("Erase points."));
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);

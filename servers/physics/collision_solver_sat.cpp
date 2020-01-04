@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,7 +98,7 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 c = rel_A.cross(rel_B).cross(rel_B);
 
-	if (Math::abs(rel_A.dot(c)) < CMP_EPSILON) {
+	if (Math::is_zero_approx(rel_A.dot(c))) {
 
 		// should handle somehow..
 		//ERR_PRINT("TODO FIX");
@@ -538,8 +538,6 @@ static void _collision_sphere_capsule(const ShapeSW *p_a, const Transform &p_tra
 
 template <bool withMargin>
 static void _collision_sphere_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
@@ -678,7 +676,7 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 
 			Vector3 axis = p_transform_a.basis.get_axis(i).cross(p_transform_b.basis.get_axis(j));
 
-			if (axis.length_squared() < CMP_EPSILON)
+			if (Math::is_zero_approx(axis.length_squared()))
 				continue;
 			axis.normalize();
 
@@ -767,7 +765,7 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 		// cylinder
 		Vector3 box_axis = p_transform_a.basis.get_axis(i);
 		Vector3 axis = box_axis.cross(cyl_axis);
-		if (axis.length_squared() < CMP_EPSILON)
+		if (Math::is_zero_approx(axis.length_squared()))
 			continue;
 
 		if (!separator.test_axis(axis.normalized()))
@@ -821,9 +819,9 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 
 		// test edges of A
 
-		for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
 
-			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(i)).cross(p_transform_a.basis.get_axis(i)).normalized();
+			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(j)).cross(p_transform_a.basis.get_axis(j)).normalized();
 
 			if (!separator.test_axis(axis))
 				return;
@@ -835,8 +833,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 
 template <bool withMargin>
 static void _collision_box_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
@@ -1117,8 +1113,6 @@ static void _collision_capsule_capsule(const ShapeSW *p_a, const Transform &p_tr
 
 template <bool withMargin>
 static void _collision_capsule_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
@@ -1243,20 +1237,14 @@ static void _collision_capsule_face(const ShapeSW *p_a, const Transform &p_trans
 
 template <bool withMargin>
 static void _collision_cylinder_cylinder(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
 static void _collision_cylinder_convex_polygon(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
 static void _collision_cylinder_face(const ShapeSW *p_a, const Transform &p_transform_a, const ShapeSW *p_b, const Transform &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-
-	return;
 }
 
 template <bool withMargin>
@@ -1337,7 +1325,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 					return;
 			}
 		}
-		//edge-vertex( hsell)
+		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count_A; i++) {
 
@@ -1438,7 +1426,7 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 					return;
 			}
 		}
-		//edge-vertex( hsell)
+		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count; i++) {
 

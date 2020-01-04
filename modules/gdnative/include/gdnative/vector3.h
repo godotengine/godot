@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,6 +90,8 @@ godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_self
 
 godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_vector3 *p_pre_a, const godot_vector3 *p_post_b, const godot_real p_t);
 
+godot_vector3 GDAPI godot_vector3_move_toward(const godot_vector3 *p_self, const godot_vector3 *p_to, const godot_real p_delta);
+
 godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_self, const godot_vector3 *p_b);
 
 godot_vector3 GDAPI godot_vector3_cross(const godot_vector3 *p_self, const godot_vector3 *p_b);
@@ -103,6 +105,8 @@ godot_vector3 GDAPI godot_vector3_abs(const godot_vector3 *p_self);
 godot_vector3 GDAPI godot_vector3_floor(const godot_vector3 *p_self);
 
 godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_self);
+
+godot_vector3 GDAPI godot_vector3_direction_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
 
 godot_real GDAPI godot_vector3_distance_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
 

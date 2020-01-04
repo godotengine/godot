@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,9 +119,7 @@ Error AudioStreamPlaybackOpus::_load_stream() {
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + file + "'.");
 
 	int _err = 0;
 
@@ -185,9 +183,7 @@ Error AudioStreamPlaybackOpus::set_file(const String &p_file) {
 	Error err;
 	f = FileAccess::open(file, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + file + "'.");
 
 	int _err;
 
@@ -280,15 +276,14 @@ int AudioStreamPlaybackOpus::mix(int16_t *p_buffer, int p_frames) {
 
 		int todo = p_frames;
 
-		if (todo == 0 || todo < MIN_MIX) {
+		if (todo < MIN_MIX) {
 			break;
 		}
 
 		int ret = op_read(opus_file, (opus_int16 *)p_buffer, todo * stream_channels, &current_section);
 		if (ret < 0) {
 			playing = false;
-			ERR_EXPLAIN("Error reading Opus File: " + file);
-			ERR_BREAK(ret < 0);
+			ERR_BREAK_MSG(ret < 0, "Error reading Opus file: " + file + ".");
 		} else if (ret == 0) { // end of song, reload?
 			op_free(opus_file);
 
@@ -313,7 +308,7 @@ int AudioStreamPlaybackOpus::mix(int16_t *p_buffer, int p_frames) {
 				bool ok = op_pcm_seek(opus_file, (loop_restart_time * osrate) + pre_skip) == 0;
 				if (!ok) {
 					playing = false;
-					ERR_PRINT("loop restart time rejected")
+					ERR_PRINT("Loop restart time rejected");
 				}
 
 				frames_mixed = (loop_restart_time * osrate) + pre_skip;
