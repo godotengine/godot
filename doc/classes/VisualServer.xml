@@ -6,8 +6,16 @@
 	<description>
 		Server for anything visible. The visual server is the API backend for everything visible. The whole scene system mounts on it to display.
 		The visual server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
+		The visual server can be used to bypass the scene system entirely.
+		Resources are created using the [code]*_create[/code] functions.
+		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
+		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the visual server from a running game, the scenario can be accessed from the scene tree from any [Spatial] node with [method Spatial.get_world]. Otherwise, a scenario can be created with [method scenario_create].
+		Similarly in 2D, a canvas is needed to draw all canvas items.
+		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
+		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -556,7 +564,7 @@
 			<argument index="1" name="parent" type="RID">
 			</argument>
 			<description>
-				Sets the parent for the [CanvasItem].
+				Sets the parent for the [CanvasItem]. The parent can be another canvas item, or it can be the root canvas that is attached to the viewport.
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">
@@ -2242,6 +2250,7 @@
 			<argument index="0" name="capture" type="RID">
 			</argument>
 			<description>
+				Returns the size of the lightmap capture area.
 			</description>
 		</method>
 		<method name="lightmap_capture_get_energy" qualifiers="const">
@@ -2250,6 +2259,7 @@
 			<argument index="0" name="capture" type="RID">
 			</argument>
 			<description>
+				Returns the energy multiplier used by the lightmap capture.
 			</description>
 		</method>
 		<method name="lightmap_capture_get_octree" qualifiers="const">
@@ -2258,6 +2268,7 @@
 			<argument index="0" name="capture" type="RID">
 			</argument>
 			<description>
+				Returns the octree used by the lightmap capture.
 			</description>
 		</method>
 		<method name="lightmap_capture_get_octree_cell_subdiv" qualifiers="const">
@@ -2266,6 +2277,7 @@
 			<argument index="0" name="capture" type="RID">
 			</argument>
 			<description>
+				Returns the cell subdivision amount used by this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="lightmap_capture_get_octree_cell_transform" qualifiers="const">
@@ -2274,6 +2286,7 @@
 			<argument index="0" name="capture" type="RID">
 			</argument>
 			<description>
+				Returns the cell transform for this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="lightmap_capture_set_bounds">
@@ -2284,6 +2297,7 @@
 			<argument index="1" name="bounds" type="AABB">
 			</argument>
 			<description>
+				Sets the size of the area covered by the lightmap capture. Equivalent to [member BakedLightmapData.bounds].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_energy">
@@ -2294,6 +2308,7 @@
 			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
+				Sets the energy multiplier for this lightmap capture. Equivalent to [member BakedLightmapData.energy].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree">
@@ -2304,6 +2319,7 @@
 			<argument index="1" name="octree" type="PoolByteArray">
 			</argument>
 			<description>
+				Sets the octree to be used by this lightmap capture. This function is normally used by the [BakedLightmap] node. Equivalent to [member BakedLightmapData.octree].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree_cell_subdiv">
@@ -2314,6 +2330,7 @@
 			<argument index="1" name="subdiv" type="int">
 			</argument>
 			<description>
+				Sets the subdivision level of this lightmap capture's octree. Equivalent to [member BakedLightmapData.cell_subdiv].
 			</description>
 		</method>
 		<method name="lightmap_capture_set_octree_cell_transform">
@@ -2324,6 +2341,7 @@
 			<argument index="1" name="xform" type="Transform">
 			</argument>
 			<description>
+				Sets the octree cell transform for this lightmap capture's octree. Equivalent to [member BakedLightmapData.cell_space_transform].
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -3191,6 +3209,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], reflections will ignore sky contribution. Equivalent to [member ReflectionProbe.interior_enable].
 			</description>
 		</method>
 		<method name="reflection_probe_set_cull_mask">
@@ -3201,6 +3220,7 @@
 			<argument index="1" name="layers" type="int">
 			</argument>
 			<description>
+				Sets the render cull mask for this reflection probe. Only instances with a matching cull mask will be rendered by this probe. Equivalent to [member ReflectionProbe.cull_mask].
 			</description>
 		</method>
 		<method name="reflection_probe_set_enable_box_projection">
@@ -3211,6 +3231,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], uses box projection. This can make reflections look more correct in certain situations. Equivalent to [member ReflectionProbe.box_projection].
 			</description>
 		</method>
 		<method name="reflection_probe_set_enable_shadows">
@@ -3221,6 +3242,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
 		<method name="reflection_probe_set_extents">
@@ -3231,6 +3253,7 @@
 			<argument index="1" name="extents" type="Vector3">
 			</argument>
 			<description>
+				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.extents].
 			</description>
 		</method>
 		<method name="reflection_probe_set_intensity">
@@ -3241,6 +3264,7 @@
 			<argument index="1" name="intensity" type="float">
 			</argument>
 			<description>
+				Sets the intensity of the reflection probe. Intensity modulates the strength of the reflection. Equivalent to [member ReflectionProbe.intensity].
 			</description>
 		</method>
 		<method name="reflection_probe_set_interior_ambient">
@@ -3251,6 +3275,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the ambient light color for this reflection probe when set to interior mode. Equivalent to [member ReflectionProbe.interior_ambient_color].
 			</description>
 		</method>
 		<method name="reflection_probe_set_interior_ambient_energy">
@@ -3261,6 +3286,7 @@
 			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
+				Sets the energy multiplier for this reflection probes ambient light contribution when set to interior mode. Equivalent to [member ReflectionProbe.interior_ambient_energy].
 			</description>
 		</method>
 		<method name="reflection_probe_set_interior_ambient_probe_contribution">
@@ -3271,6 +3297,7 @@
 			<argument index="1" name="contrib" type="float">
 			</argument>
 			<description>
+				Sets the contribution value for how much the reflection affects the ambient light for this reflection probe when set to interior mode. Useful so that ambient light matches the color of the room. Equivalent to [member ReflectionProbe.interior_ambient_contrib].
 			</description>
 		</method>
 		<method name="reflection_probe_set_max_distance">
@@ -3281,6 +3308,7 @@
 			<argument index="1" name="distance" type="float">
 			</argument>
 			<description>
+				Sets the max distance away from the probe an object can be before it is culled. Equivalent to [member ReflectionProbe.max_distance].
 			</description>
 		</method>
 		<method name="reflection_probe_set_origin_offset">
@@ -3291,6 +3319,7 @@
 			<argument index="1" name="offset" type="Vector3">
 			</argument>
 			<description>
+				Sets the origin offset to be used when this reflection probe is in box project mode. Equivalent to [member ReflectionProbe.origin_offset].
 			</description>
 		</method>
 		<method name="reflection_probe_set_update_mode">
@@ -3301,6 +3330,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.ReflectionProbeUpdateMode">
 			</argument>
 			<description>
+				Sets how often the reflection probe updates. Can either be once or every frame. See [enum ReflectionProbeUpdateMode] for options.
 			</description>
 		</method>
 		<method name="request_frame_drawn_callback">
@@ -3476,6 +3506,7 @@
 			<argument index="2" name="is_2d_skeleton" type="bool" default="false">
 			</argument>
 			<description>
+				Allocates the GPU buffers for this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
@@ -3486,6 +3517,7 @@
 			<argument index="1" name="bone" type="int">
 			</argument>
 			<description>
+				Returns the [Transform] set for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform_2d" qualifiers="const">
@@ -3496,6 +3528,7 @@
 			<argument index="1" name="bone" type="int">
 			</argument>
 			<description>
+				Returns the [Transform2D] set for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_set_transform">
@@ -3508,6 +3541,7 @@
 			<argument index="2" name="transform" type="Transform">
 			</argument>
 			<description>
+				Sets the [Transform] for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_set_transform_2d">
@@ -3520,6 +3554,7 @@
 			<argument index="2" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Sets the [Transform2D] for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_create">
@@ -3536,6 +3571,7 @@
 			<argument index="0" name="skeleton" type="RID">
 			</argument>
 			<description>
+				Returns the number of bones allocated for this skeleton.
 			</description>
 		</method>
 		<method name="sky_create">
@@ -4184,6 +4220,7 @@
 			Marks an error that shows that the index array is empty.
 		</constant>
 		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
+			Number of weights/bones per vertex.
 		</constant>
 		<constant name="CANVAS_ITEM_Z_MIN" value="-4096">
 			The minimum Z-layer for canvas items.
@@ -4192,8 +4229,10 @@
 			The maximum Z-layer for canvas items.
 		</constant>
 		<constant name="MAX_GLOW_LEVELS" value="7">
+			Max number of glow levels that can be used with glow post-process effect.
 		</constant>
 		<constant name="MAX_CURSORS" value="8">
+			Unused enum in Godot 3.x.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
 			The minimum renderpriority of all materials.
@@ -4220,12 +4259,16 @@
 			Marks the back side of a cubemap.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
+			Normal texture with 2 dimensions, width and height.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBEMAP" value="1" enum="TextureType">
+			Texture made up of six faces, can be looked up with a [code]vec3[/code] in shader.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D_ARRAY" value="2" enum="TextureType">
+			An array of 2-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
+			A 3-dimensional texture with width, height, and depth.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
 			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
@@ -4340,11 +4383,13 @@
 			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
+			Flag used to mark a compressed bone array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) weight array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
+			Flag used to mark a compressed index array.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
@@ -4380,8 +4425,10 @@
 			Represents the size of the [enum PrimitiveType] enum.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
+			Blend shapes are normalized.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
+			Blend shapes are relative to base weight.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.
@@ -4414,47 +4461,67 @@
 			Scales the shadow color.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
+			Max distance that shadows will be rendered.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="LightParam">
+			Proportion of shadow atlas occupied by the first split.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="LightParam">
+			Proportion of shadow atlas occupied by the second split.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
+			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12" enum="LightParam">
+			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13" enum="LightParam">
+			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
+			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
+			Use a dual paraboloid shadow map for omni lights.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_CUBE" value="1" enum="LightOmniShadowMode">
+			Use a cubemap shadow map for omni lights. Slower but better quality than dual paraboloid.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DETAIL_VERTICAL" value="0" enum="LightOmniShadowDetail">
+			Use more detail vertically when computing shadow map.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DETAIL_HORIZONTAL" value="1" enum="LightOmniShadowDetail">
+			Use more detail horizontally when computing shadow map.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL" value="0" enum="LightDirectionalShadowMode">
+			Use orthogonal shadow projection for directional light.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS" value="1" enum="LightDirectionalShadowMode">
+			Use 2 splits for shadow projection when using directional light.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS" value="2" enum="LightDirectionalShadowMode">
+			Use 4 splits for shadow projection when using directional light.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE" value="0" enum="LightDirectionalShadowDepthRangeMode">
+			Keeps shadows stable as camera moves but has lower effective resolution.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="LightDirectionalShadowDepthRangeMode">
+			Optimize use of shadow maps, increasing the effective resolution. But may result in shadows moving or flickering slightly.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
+			Do not update the viewport.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_ONCE" value="1" enum="ViewportUpdateMode">
+			Update the viewport once then set to disabled.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2" enum="ViewportUpdateMode">
+			Update the viewport whenever it is visible.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3" enum="ViewportUpdateMode">
+			Always update the viewport.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0" enum="ViewportClearMode">
 			The viewport is always cleared before drawing.
@@ -4499,16 +4566,22 @@
 			The Viewport renders 3D but without effects.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
+			Number of objects drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="ViewportRenderInfo">
+			Number of vertices drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="ViewportRenderInfo">
+			Number of material changes during this frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="ViewportRenderInfo">
+			Number of shader changes during this frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="ViewportRenderInfo">
+			Number of surface changes during this frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
+			Number of draw calls during this frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
 			Represents the size of the [enum ViewportRenderInfo] enum.
@@ -4526,12 +4599,16 @@
 			Debug draw draws objects in wireframe.
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
+			Do not use a debug mode.
 		</constant>
 		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1" enum="ScenarioDebugMode">
+			Draw all objects as wireframe models.
 		</constant>
 		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2" enum="ScenarioDebugMode">
+			Draw all objects in a way that displays how much overdraw is occurring. Overdraw occurs when a section of pixels is drawn and shaded and then another object covers it up. To optimize a scene, you should reduce overdraw.
 		</constant>
 		<constant name="SCENARIO_DEBUG_SHADELESS" value="3" enum="ScenarioDebugMode">
+			Draw all objects without shading. Equivalent to setting all objects shaders to [code]unshaded[/code].
 		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.
@@ -4609,16 +4686,22 @@
 			The light adds color depending on mask.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
+			Do not apply a filter to canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_PCF3" value="1" enum="CanvasLightShadowFilter">
+			Use PCF3 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="2" enum="CanvasLightShadowFilter">
+			Use PCF5 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_PCF7" value="3" enum="CanvasLightShadowFilter">
+			Use PCF7 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_PCF9" value="4" enum="CanvasLightShadowFilter">
+			Use PCF9 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5" enum="CanvasLightShadowFilter">
+			Use PCF13 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is disabled.
@@ -4660,8 +4743,10 @@
 			The amount of vertex memory used.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
+			Hardware supports shaders. This enum is currently unused in Godot 3.x.
 		</constant>
 		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
+			Hardware supports multithreading. This enum is currently unused in Godot 3.x.
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_2D" value="0" enum="MultimeshTransformFormat">
 			Use [Transform2D] to store MultiMesh transform.
@@ -4688,65 +4773,94 @@
 			MultiMesh custom data uses a float per component.
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update reflections once and then stop.
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update each frame. This mode is necessary to capture moving objects.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
+			Draw particles in the order that they appear in the particles array.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
+			Sort particles based on their lifetime.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="2" enum="ParticlesDrawOrder">
+			Sort particles based on their distance to the camera.
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
+			Use the clear color as background.
 		</constant>
 		<constant name="ENV_BG_COLOR" value="1" enum="EnvironmentBG">
+			Use a specified color as the background.
 		</constant>
 		<constant name="ENV_BG_SKY" value="2" enum="EnvironmentBG">
+			Use a sky resource for the background.
 		</constant>
 		<constant name="ENV_BG_COLOR_SKY" value="3" enum="EnvironmentBG">
+			Use a custom color for background, but use a sky for shading and reflections.
 		</constant>
 		<constant name="ENV_BG_CANVAS" value="4" enum="EnvironmentBG">
+			Use a specified canvas layer as the background. This can be useful for instantiating a 2D scene in a 3D world.
 		</constant>
 		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
+			Do not clear the background, use whatever was rendered last frame as the background.
 		</constant>
 		<constant name="ENV_BG_MAX" value="7" enum="EnvironmentBG">
 			Represents the size of the [enum EnvironmentBG] enum.
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
+			Use lowest blur quality. Fastest, but may look bad.
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_MEDIUM" value="1" enum="EnvironmentDOFBlurQuality">
+			Use medium blur quality.
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_HIGH" value="2" enum="EnvironmentDOFBlurQuality">
+			Used highest blur quality. Looks the best, but is the slowest.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
+			Add the effect of the glow on top of the scene.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
+			Blends the glow effect with the screen. Does not get as bright as additive.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
+			Produces a subtle color disturbance around objects.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
+			Shows the glow effect by itself without the underlying scene.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
+			Output color as they came in.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
+			Use the Reinhard tonemapper.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
+			Use the filmic tonemapper.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
+			Use the ACES tonemapper. 
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
+			Lowest quality of screen space ambient occlusion. 
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
+			Medium quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
+			Disables the blur set for SSAO. Will make SSAO look noisier.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
+			Perform a 1x1 blur on the SSAO output. 
 		</constant>
 		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
+			Performs a 2x2 blur on the SSAO output.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
+			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
 		</constant>
 	</constants>
 </class>
