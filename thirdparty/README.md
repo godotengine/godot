@@ -46,7 +46,7 @@ Files extracted from upstream source:
 ## enet
 
 - Upstream: http://enet.bespin.org
-- Version: 1.3.13 (f46fee0, 2016)
+- Version: 1.3.14 (0eaf48e, 2019)
 - License: MIT
 
 Files extracted from upstream source:

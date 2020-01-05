@@ -22,7 +22,7 @@ extern "C"
 
 #define ENET_VERSION_MAJOR 1
 #define ENET_VERSION_MINOR 3
-#define ENET_VERSION_PATCH 13
+#define ENET_VERSION_PATCH 14
 #define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
 #define ENET_VERSION_GET_MAJOR(version) (((version)>>16)&0xFF)
 #define ENET_VERSION_GET_MINOR(version) (((version)>>8)&0xFF)
@@ -507,6 +507,17 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
 /** @defgroup Address ENet address functions
     @{
 */
+
+/** Attempts to parse the printable form of the IP address in the parameter hostName
+    and sets the host field in the address parameter if successful.
+    @param address destination to store the parsed IP address
+    @param hostName IP address to parse
+    @retval 0 on success
+    @retval < 0 on failure
+    @returns the address of the given hostName in address on success
+*/
+ENET_API int enet_address_set_host_ip (ENetAddress * address, const char * hostName);
+
 /** Attempts to resolve the host named by the parameter hostName and sets
     the host field in the address parameter if successful.
     @param address destination to store resolved address

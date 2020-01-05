@@ -163,7 +163,10 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
 {
     ENetOutgoingCommand * outgoingCommand;
 
-    while (! enet_list_empty (& peer -> sentUnreliableCommands))
+    if (enet_list_empty (& peer -> sentUnreliableCommands))
+      return;
+
+    do
     {
         outgoingCommand = (ENetOutgoingCommand *) enet_list_front (& peer -> sentUnreliableCommands);
         
@@ -182,7 +185,13 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
         }
 
         enet_free (outgoingCommand);
-    }
+    } while (! enet_list_empty (& peer -> sentUnreliableCommands));
+
+    if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER &&
+        enet_list_empty (& peer -> outgoingReliableCommands) &&
+        enet_list_empty (& peer -> outgoingUnreliableCommands) &&
+        enet_list_empty (& peer -> sentReliableCommands))
+      enet_peer_disconnect (peer, peer -> eventData);
 }
 
 static ENetProtocolCommand
@@ -1405,7 +1414,8 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
     if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER && 
         enet_list_empty (& peer -> outgoingReliableCommands) &&
         enet_list_empty (& peer -> outgoingUnreliableCommands) && 
-        enet_list_empty (& peer -> sentReliableCommands))
+        enet_list_empty (& peer -> sentReliableCommands) &&
+        enet_list_empty (& peer -> sentUnreliableCommands))
       enet_peer_disconnect (peer, peer -> eventData);
 }
 
