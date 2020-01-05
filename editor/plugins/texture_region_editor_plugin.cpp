@@ -136,13 +136,19 @@ void TextureRegionEditor::_region_draw() {
 
 	Ref<Texture> select_handle = get_icon("EditorHandle", "EditorIcons");
 
-	Rect2 scroll_rect;
+	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
-	Vector2 endpoints[4] = {
-		mtx.basis_xform(rect.position),
-		mtx.basis_xform(rect.position + Vector2(rect.size.x, 0)),
-		mtx.basis_xform(rect.position + rect.size),
-		mtx.basis_xform(rect.position + Vector2(0, rect.size.y))
+	const Vector2 raw_endpoints[4] = {
+		rect.position,
+		rect.position + Vector2(rect.size.x, 0),
+		rect.position + rect.size,
+		rect.position + Vector2(0, rect.size.y)
+	};
+	const Vector2 endpoints[4] = {
+		mtx.basis_xform(raw_endpoints[0]),
+		mtx.basis_xform(raw_endpoints[1]),
+		mtx.basis_xform(raw_endpoints[2]),
+		mtx.basis_xform(raw_endpoints[3])
 	};
 	Color color = get_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
@@ -164,31 +170,32 @@ void TextureRegionEditor::_region_draw() {
 		if (snap_mode != SNAP_AUTOSLICE)
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
 
-		scroll_rect.expand_to(endpoints[i]);
+		scroll_rect.expand_to(raw_endpoints[i]);
 	}
 
-	scroll_rect.position -= edit_draw->get_size();
-	scroll_rect.size += edit_draw->get_size() * 2.0;
+	const Size2 scroll_margin = edit_draw->get_size() / draw_zoom;
+	scroll_rect.position -= scroll_margin;
+	scroll_rect.size += scroll_margin * 2;
 
 	updating_scroll = true;
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
-	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= edit_draw->get_size().x) {
+	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
 		hscroll->hide();
 	} else {
 		hscroll->show();
-		hscroll->set_page(edit_draw->get_size().x);
+		hscroll->set_page(scroll_margin.x);
 		hscroll->set_value(draw_ofs.x);
 	}
 
 	vscroll->set_min(scroll_rect.position.y);
 	vscroll->set_max(scroll_rect.position.y + scroll_rect.size.y);
-	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= edit_draw->get_size().y) {
+	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= scroll_margin.y) {
 		vscroll->hide();
 		draw_ofs.y = scroll_rect.position.y;
 	} else {
 		vscroll->show();
-		vscroll->set_page(edit_draw->get_size().y);
+		vscroll->set_page(scroll_margin.y);
 		vscroll->set_value(draw_ofs.y);
 	}
 	updating_scroll = false;
