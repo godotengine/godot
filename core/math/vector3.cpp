@@ -136,14 +136,15 @@ Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
 
 Basis Vector3::outer(const Vector3 &p_b) const {
 
-	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
-	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
-	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
+	Vector3 row0 = p_b * x;
+	Vector3 row1 = p_b * y;
+	Vector3 row2 = p_b * z;
 
 	return Basis(row0, row1, row2);
 }
 
 Basis Vector3::to_diagonal_matrix() const {
+
 	return Basis(x, 0, 0,
 			0, y, 0,
 			0, 0, z);

@@ -124,27 +124,28 @@ struct Vector3 {
 	/* Operators */
 
 	_FORCE_INLINE_ Vector3 &operator+=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator+(const Vector3 &p_v) const;
+	_FORCE_INLINE_ Vector3 operator+(const Vector3 &p_v) const { return Vector3(*this) += p_v; }
 	_FORCE_INLINE_ Vector3 &operator-=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator-(const Vector3 &p_v) const;
+	_FORCE_INLINE_ Vector3 operator-(const Vector3 &p_v) const { return Vector3(*this) -= p_v; }
 	_FORCE_INLINE_ Vector3 &operator*=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator*(const Vector3 &p_v) const;
+	_FORCE_INLINE_ Vector3 operator*(const Vector3 &p_v) const { return Vector3(*this) *= p_v; }
 	_FORCE_INLINE_ Vector3 &operator/=(const Vector3 &p_v);
-	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_v) const;
+	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_v) const { return Vector3(*this) /= p_v; }
 
 	_FORCE_INLINE_ Vector3 &operator*=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator*(real_t p_scalar) const;
+	_FORCE_INLINE_ Vector3 operator*(real_t p_scalar) const { return Vector3(*this) *= p_scalar; }
 	_FORCE_INLINE_ Vector3 &operator/=(real_t p_scalar);
-	_FORCE_INLINE_ Vector3 operator/(real_t p_scalar) const;
+	_FORCE_INLINE_ Vector3 operator/(real_t p_scalar) const { return Vector3(*this) /= p_scalar; }
 
 	_FORCE_INLINE_ Vector3 operator-() const;
+	_FORCE_INLINE_ Vector3 operator+() const;
 
+	_FORCE_INLINE_ bool operator<(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator<=(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator==(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator!=(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator<(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator<=(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator>(const Vector3 &p_v) const;
-	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
 
@@ -153,7 +154,7 @@ struct Vector3 {
 		y = p_y;
 		z = p_z;
 	}
-	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
+	_FORCE_INLINE_ Vector3() { zero(); }
 };
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {
@@ -205,6 +206,7 @@ Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
+
 	real_t theta = angle_to(p_b);
 	return rotated(cross(p_b).normalized(), theta * p_t);
 }
@@ -220,14 +222,17 @@ real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 }
 
 Vector3 Vector3::posmod(const real_t p_mod) const {
+
 	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
 }
 
 Vector3 Vector3::posmodv(const Vector3 &p_modv) const {
+
 	return Vector3(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y), Math::fposmod(z, p_modv.z));
 }
 
 Vector3 Vector3::project(const Vector3 &p_b) const {
+
 	return p_b * (dot(p_b) / p_b.length_squared());
 }
 
@@ -237,6 +242,7 @@ real_t Vector3::angle_to(const Vector3 &p_b) const {
 }
 
 Vector3 Vector3::direction_to(const Vector3 &p_b) const {
+
 	Vector3 ret(p_b.x - x, p_b.y - y, p_b.z - z);
 	ret.normalize();
 	return ret;
@@ -252,21 +258,12 @@ Vector3 &Vector3::operator+=(const Vector3 &p_v) {
 	return *this;
 }
 
-Vector3 Vector3::operator+(const Vector3 &p_v) const {
-
-	return Vector3(x + p_v.x, y + p_v.y, z + p_v.z);
-}
-
 Vector3 &Vector3::operator-=(const Vector3 &p_v) {
 
 	x -= p_v.x;
 	y -= p_v.y;
 	z -= p_v.z;
 	return *this;
-}
-Vector3 Vector3::operator-(const Vector3 &p_v) const {
-
-	return Vector3(x - p_v.x, y - p_v.y, z - p_v.z);
 }
 
 Vector3 &Vector3::operator*=(const Vector3 &p_v) {
@@ -276,10 +273,6 @@ Vector3 &Vector3::operator*=(const Vector3 &p_v) {
 	z *= p_v.z;
 	return *this;
 }
-Vector3 Vector3::operator*(const Vector3 &p_v) const {
-
-	return Vector3(x * p_v.x, y * p_v.y, z * p_v.z);
-}
 
 Vector3 &Vector3::operator/=(const Vector3 &p_v) {
 
@@ -287,11 +280,6 @@ Vector3 &Vector3::operator/=(const Vector3 &p_v) {
 	y /= p_v.y;
 	z /= p_v.z;
 	return *this;
-}
-
-Vector3 Vector3::operator/(const Vector3 &p_v) const {
-
-	return Vector3(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
 Vector3 &Vector3::operator*=(real_t p_scalar) {
@@ -307,11 +295,6 @@ _FORCE_INLINE_ Vector3 operator*(real_t p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-Vector3 Vector3::operator*(real_t p_scalar) const {
-
-	return Vector3(x * p_scalar, y * p_scalar, z * p_scalar);
-}
-
 Vector3 &Vector3::operator/=(real_t p_scalar) {
 
 	x /= p_scalar;
@@ -320,24 +303,14 @@ Vector3 &Vector3::operator/=(real_t p_scalar) {
 	return *this;
 }
 
-Vector3 Vector3::operator/(real_t p_scalar) const {
-
-	return Vector3(x / p_scalar, y / p_scalar, z / p_scalar);
-}
-
 Vector3 Vector3::operator-() const {
 
 	return Vector3(-x, -y, -z);
 }
 
-bool Vector3::operator==(const Vector3 &p_v) const {
+Vector3 Vector3::operator+() const {
 
-	return x == p_v.x && y == p_v.y && z == p_v.z;
-}
-
-bool Vector3::operator!=(const Vector3 &p_v) const {
-
-	return x != p_v.x || y != p_v.y || z != p_v.z;
+	return *this;
 }
 
 bool Vector3::operator<(const Vector3 &p_v) const {
@@ -354,38 +327,27 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 
 bool Vector3::operator>(const Vector3 &p_v) const {
 
-	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
-			return z > p_v.z;
-		else
-			return y > p_v.y;
-	} else {
-		return x > p_v.x;
-	}
+	return p_v < *this;
 }
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 
-	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
-			return z <= p_v.z;
-		else
-			return y < p_v.y;
-	} else {
-		return x < p_v.x;
-	}
+	return !(p_v < *this);
 }
 
 bool Vector3::operator>=(const Vector3 &p_v) const {
 
-	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
-			return z >= p_v.z;
-		else
-			return y > p_v.y;
-	} else {
-		return x > p_v.x;
-	}
+	return !(*this < p_v);
+}
+
+bool Vector3::operator==(const Vector3 &p_v) const {
+
+	return !(*this < p_v) && !(p_v < *this);
+}
+
+bool Vector3::operator!=(const Vector3 &p_v) const {
+
+	return !(*this == p_v);
 }
 
 _FORCE_INLINE_ Vector3 vec3_cross(const Vector3 &p_a, const Vector3 &p_b) {
@@ -400,11 +362,7 @@ _FORCE_INLINE_ real_t vec3_dot(const Vector3 &p_a, const Vector3 &p_b) {
 
 real_t Vector3::length() const {
 
-	real_t x2 = x * x;
-	real_t y2 = y * y;
-	real_t z2 = z * z;
-
-	return Math::sqrt(x2 + y2 + z2);
+	return Math::sqrt(length_squared());
 }
 
 real_t Vector3::length_squared() const {
@@ -420,12 +378,10 @@ void Vector3::normalize() {
 
 	real_t lengthsq = length_squared();
 	if (lengthsq == 0) {
-		x = y = z = 0;
+		zero();
 	} else {
 		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
+		*this /= length;
 	}
 }
 

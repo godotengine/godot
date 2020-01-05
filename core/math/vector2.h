@@ -94,32 +94,29 @@ struct Vector2 {
 
 	bool is_equal_approx(const Vector2 &p_v) const;
 
-	Vector2 operator+(const Vector2 &p_v) const;
-	void operator+=(const Vector2 &p_v);
-	Vector2 operator-(const Vector2 &p_v) const;
-	void operator-=(const Vector2 &p_v);
-	Vector2 operator*(const Vector2 &p_v1) const;
+	Vector2 &operator+=(const Vector2 &p_v);
+	Vector2 operator+(const Vector2 &p_v) const { return Vector2(*this) += p_v; }
+	Vector2 &operator-=(const Vector2 &p_v);
+	Vector2 operator-(const Vector2 &p_v) const { return Vector2(*this) -= p_v; }
+	Vector2 &operator*=(const Vector2 &p_v);
+	Vector2 operator*(const Vector2 &p_v) const { return Vector2(*this) *= p_v; }
+	Vector2 &operator/=(const Vector2 &p_v);
+	Vector2 operator/(const Vector2 &p_v) const { return Vector2(*this) /= p_v; }
 
-	Vector2 operator*(const real_t &rvalue) const;
-	void operator*=(const real_t &rvalue);
-	void operator*=(const Vector2 &rvalue) { *this = *this * rvalue; }
-
-	Vector2 operator/(const Vector2 &p_v1) const;
-
-	Vector2 operator/(const real_t &rvalue) const;
-
-	void operator/=(const real_t &rvalue);
-	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
+	Vector2 &operator*=(const real_t &p_v);
+	Vector2 operator*(const real_t &p_v) const { return Vector2(*this) *= p_v; }
+	Vector2 &operator/=(const real_t &p_v);
+	Vector2 operator/(const real_t &p_v) const { return Vector2(*this) /= p_v; }
 
 	Vector2 operator-() const;
-
-	bool operator==(const Vector2 &p_vec2) const;
-	bool operator!=(const Vector2 &p_vec2) const;
+	Vector2 operator+() const;
 
 	bool operator<(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator>(const Vector2 &p_vec2) const { return p_vec2 < *this; }
+	bool operator<=(const Vector2 &p_vec2) const { return !(p_vec2 < *this); }
+	bool operator>=(const Vector2 &p_vec2) const { return !(*this < p_vec2); }
+	bool operator==(const Vector2 &p_vec2) const { return !(*this < p_vec2) && !(p_vec2 < *this); }
+	bool operator!=(const Vector2 &p_vec2) const { return !(*this == p_vec2); }
 
 	real_t angle() const;
 
@@ -166,54 +163,46 @@ _FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
-
-	return Vector2(x + p_v.x, y + p_v.y);
-}
-_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
+_FORCE_INLINE_ Vector2 &Vector2::operator+=(const Vector2 &p_v) {
 
 	x += p_v.x;
 	y += p_v.y;
+	return *this;
 }
-_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
 
-	return Vector2(x - p_v.x, y - p_v.y);
-}
-_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
+_FORCE_INLINE_ Vector2 &Vector2::operator-=(const Vector2 &p_v) {
 
 	x -= p_v.x;
 	y -= p_v.y;
+	return *this;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
+_FORCE_INLINE_ Vector2 &Vector2::operator*=(const Vector2 &p_v) {
 
-	return Vector2(x * p_v1.x, y * p_v1.y);
+	x *= p_v.x;
+	y *= p_v.y;
+	return *this;
+}
+
+_FORCE_INLINE_ Vector2 &Vector2::operator/=(const Vector2 &p_v) {
+
+	x /= p_v.x;
+	y /= p_v.y;
+	return *this;
+}
+
+_FORCE_INLINE_ Vector2 &Vector2::operator*=(const real_t &p_v) {
+
+	x *= p_v;
+	y *= p_v;
+	return *this;
 };
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
+_FORCE_INLINE_ Vector2 &Vector2::operator/=(const real_t &p_v) {
 
-	return Vector2(x * rvalue, y * rvalue);
-};
-_FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
-
-	x *= rvalue;
-	y *= rvalue;
-};
-
-_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-
-	return Vector2(x / p_v1.x, y / p_v1.y);
-};
-
-_FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
-
-	return Vector2(x / rvalue, y / rvalue);
-};
-
-_FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
-
-	x /= rvalue;
-	y /= rvalue;
+	x /= p_v;
+	y /= p_v;
+	return *this;
 };
 
 _FORCE_INLINE_ Vector2 Vector2::operator-() const {
@@ -221,13 +210,9 @@ _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 	return Vector2(-x, -y);
 }
 
-_FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
+_FORCE_INLINE_ Vector2 Vector2::operator+() const {
 
-	return x == p_vec2.x && y == p_vec2.y;
-}
-_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
-
-	return x != p_vec2.x || y != p_vec2.y;
+	return *this;
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
@@ -241,6 +226,7 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 }
 
 Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
+
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_normalized(), Vector2());
 #endif
@@ -249,7 +235,8 @@ Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 }
 
 Vector2 Vector2::direction_to(const Vector2 &p_b) const {
-	Vector2 ret(p_b.x - x, p_b.y - y);
+
+	Vector2 ret = p_b - *this;
 	ret.normalize();
 	return ret;
 }
@@ -292,27 +279,29 @@ struct Vector2i {
 		return p_idx ? y : x;
 	}
 
-	Vector2i operator+(const Vector2i &p_v) const;
-	void operator+=(const Vector2i &p_v);
-	Vector2i operator-(const Vector2i &p_v) const;
-	void operator-=(const Vector2i &p_v);
-	Vector2i operator*(const Vector2i &p_v1) const;
+	Vector2i &operator+=(const Vector2i &p_v);
+	Vector2i operator+(const Vector2i &p_v) const { return Vector2i(*this) += p_v; }
+	Vector2i &operator-=(const Vector2i &p_v);
+	Vector2i operator-(const Vector2i &p_v) const { return Vector2i(*this) -= p_v; }
+	Vector2i &operator*=(const Vector2i &p_v);
+	Vector2i operator*(const Vector2i &p_v) const { return Vector2i(*this) *= p_v; }
+	Vector2i &operator/=(const Vector2i &p_v);
+	Vector2i operator/(const Vector2i &p_v) const { return Vector2i(*this) /= p_v; }
 
-	Vector2i operator*(const int &rvalue) const;
-	void operator*=(const int &rvalue);
-
-	Vector2i operator/(const Vector2i &p_v1) const;
-
-	Vector2i operator/(const int &rvalue) const;
-
-	void operator/=(const int &rvalue);
+	Vector2i &operator*=(const int &p_v);
+	Vector2i operator*(const int &p_v) const { return Vector2i(*this) *= p_v; }
+	Vector2i &operator/=(const int &p_v);
+	Vector2i operator/(const int &p_v) const { return Vector2i(*this) /= p_v; }
 
 	Vector2i operator-() const;
-	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
+	Vector2i operator+() const;
 
-	bool operator==(const Vector2i &p_vec2) const;
-	bool operator!=(const Vector2i &p_vec2) const;
+	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
+	bool operator>(const Vector2i &p_vec2) const { return p_vec2 < *this; }
+	bool operator<=(const Vector2i &p_vec2) const { return !(p_vec2 < *this); }
+	bool operator>=(const Vector2i &p_vec2) const { return !(*this < p_vec2); }
+	bool operator==(const Vector2i &p_vec2) const { return !(*this < p_vec2) && !(p_vec2 < *this); }
+	bool operator!=(const Vector2i &p_vec2) const { return !(*this == p_vec2); }
 
 	real_t get_aspect() const { return width / (real_t)height; }
 
