@@ -72,7 +72,12 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 	file->store_32(1); // # version
 	file->store_32(VERSION_MAJOR); // # major
 	file->store_32(VERSION_MINOR); // # minor
-	file->store_32(0); // # revision
+#ifdef VERSION_PATCH
+	f->store_32(VERSION_PATCH); // # revision
+#else
+	// Patch version is always 0 for initial minor release versions (e.g. 3.2 is considered to be 3.2.0).
+	f->store_32(0);
+#endif
 
 	for (int i = 0; i < 16; i++) {
 
