@@ -23,7 +23,6 @@ namespace Godot
         public const real_t Sqrt12 = (real_t) 0.7071067811865475244008443621048490M;
         public const real_t Sqrt2 = (real_t) 1.4142135623730950488016887242M;
         
-
         private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
         private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
 
