@@ -33,6 +33,8 @@
 #if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 
 #include "core/os/memory.h"
+#include "scene/main/scene_tree.h"
+#include "scene/scene_string_names.h"
 
 Thread::ID ThreadWindows::get_id() const {
 
@@ -55,6 +57,8 @@ DWORD ThreadWindows::thread_callback(LPVOID userdata) {
 	SetEvent(t->handle);
 
 	ScriptServer::thread_exit();
+
+	SceneTree::get_singleton()->emit_signal(SceneStringNames::get_singleton()->thread_finished, t->id);
 
 	return 0;
 }

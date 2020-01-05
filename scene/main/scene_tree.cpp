@@ -1933,6 +1933,8 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
 
+	ADD_SIGNAL(MethodInfo(SceneStringNames::get_singleton()->thread_finished, PropertyInfo(Variant::INT, "id")));
+
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REALTIME);
