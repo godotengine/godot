@@ -719,6 +719,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	bool aa_on = rounded_corners && anti_aliased;
+	float aa_size_grow = 0.5 * ((float)aa_size + 1.0);
 
 	bool blend_on = blend_border && draw_border;
 
@@ -744,7 +745,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	Rect2 border_style_rect = style_rect;
 	if (aa_on) {
-		float aa_size_grow = 0.5 * ((aa_size + 1) / 2);
 		for (int i = 0; i < 4; i++) {
 			if (border_width[i] > 0) {
 				border_style_rect = border_style_rect.grow_margin((Margin)i, -aa_size_grow);
@@ -789,7 +789,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	if (aa_on) {
-		float aa_size_grow = 0.5 * ((aa_size + 1) / 2);
 		int aa_border_width[4];
 		int aa_fill_width[4];
 		if (draw_border) {
@@ -804,6 +803,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			}
 		} else {
 			for (int i = 0; i < 4; i++) {
+				aa_border_width[i] = 0;
 				aa_fill_width[i] = aa_size_grow;
 			}
 		}
@@ -844,7 +844,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	//COMPUTE UV COORDINATES
-	Rect2 uv_rect = style_rect.grow(aa_on ? aa_size : 0);
+	Rect2 uv_rect = style_rect.grow(aa_on ? aa_size_grow : 0);
 	uvs.resize(verts.size());
 	for (int i = 0; i < verts.size(); i++) {
 		uvs.write[i].x = (verts[i].x - uv_rect.position.x) / uv_rect.size.width;
