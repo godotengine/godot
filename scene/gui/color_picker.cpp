@@ -189,6 +189,18 @@ void ColorPicker::set_pick_color(const Color &p_color) {
 	_set_pick_color(p_color, true); //because setters can't have more arguments
 }
 
+void ColorPicker::set_old_color(const Color &p_color) {
+	old_color = p_color;
+}
+
+void ColorPicker::set_display_old_color(bool p_enabled) {
+	display_old_color = p_enabled;
+}
+
+bool ColorPicker::is_displaying_old_color() const {
+	return display_old_color;
+}
+
 void ColorPicker::set_edit_alpha(bool p_show) {
 	edit_alpha = p_show;
 	_update_controls();
@@ -459,17 +471,39 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_draw() {
-	const Rect2 r = Rect2(Point2(), Size2(sample->get_size().width, sample->get_size().height * 0.95));
+	// Covers the right half of the sample if the old color is being displayed,
+	// or the whole sample if it's not being displayed.
+	Rect2 rect_new;
 
-	if (color.a < 1.0) {
-		sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), r, true);
+	if (display_old_color) {
+		rect_new = Rect2(Point2(sample->get_size().width * 0.5, 0), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
+
+		// Draw both old and new colors for easier comparison (only if spawned from a ColorPickerButton).
+		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
+
+		if (display_old_color && old_color.a < 1.0) {
+			sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), rect_old, true);
+		}
+
+		sample->draw_rect(rect_old, old_color);
+
+		if (old_color.r > 1 || old_color.g > 1 || old_color.b > 1) {
+			// Draw an indicator to denote that the old color is "overbright" and can't be displayed accurately in the preview.
+			sample->draw_texture(get_theme_icon("overbright_indicator", "ColorPicker"), Point2());
+		}
+	} else {
+		rect_new = Rect2(Point2(), Size2(sample->get_size().width, sample->get_size().height * 0.95));
 	}
 
-	sample->draw_rect(r, color);
+	if (color.a < 1.0) {
+		sample->draw_texture_rect(get_theme_icon("preset_bg", "ColorPicker"), rect_new, true);
+	}
+
+	sample->draw_rect(rect_new, color);
 
 	if (color.r > 1 || color.g > 1 || color.b > 1) {
-		// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
-		sample->draw_texture(get_theme_icon("overbright_indicator", "ColorPicker"), Point2());
+		// Draw an indicator to denote that the new color is "overbright" and can't be displayed accurately in the preview.
+		sample->draw_texture(get_theme_icon("overbright_indicator", "ColorPicker"), Point2(uv_edit->get_size().width * 0.5, 0));
 	}
 }
 
@@ -1174,6 +1208,11 @@ ColorPicker::ColorPicker() :
 
 /////////////////
 
+void ColorPickerButton::_about_to_popup() {
+	set_pressed(true);
+	picker->set_old_color(color);
+}
+
 void ColorPickerButton::_color_changed(const Color &p_color) {
 	color = p_color;
 	update();
@@ -1286,10 +1325,11 @@ void ColorPickerButton::_update_picker() {
 		popup->add_child(picker);
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
-		popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
+		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
+		picker->set_display_old_color(true);
 		emit_signal("picker_created");
 	}
 }
@@ -1301,6 +1341,7 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &ColorPickerButton::get_popup);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
+	ClassDB::bind_method(D_METHOD("_about_to_popup"), &ColorPickerButton::_about_to_popup);
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));

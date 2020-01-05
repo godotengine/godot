@@ -86,6 +86,8 @@ private:
 	PickerShapeType picker_type = SHAPE_HSV_WHEEL;
 
 	Color color;
+	Color old_color;
+	bool display_old_color = false;
 	bool raw_mode_enabled = false;
 	bool hsv_mode_enabled = false;
 	bool deferred_mode_enabled = false;
@@ -131,6 +133,10 @@ public:
 	void _set_pick_color(const Color &p_color, bool p_update_sliders);
 	void set_pick_color(const Color &p_color);
 	Color get_pick_color() const;
+	void set_old_color(const Color &p_color);
+
+	void set_display_old_color(bool p_enabled);
+	bool is_displaying_old_color() const;
 
 	void set_picker_shape(PickerShapeType p_picker_type);
 	PickerShapeType get_picker_shape() const;
@@ -171,6 +177,7 @@ class ColorPickerButton : public Button {
 	Color color;
 	bool edit_alpha = true;
 
+	void _about_to_popup();
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
 
