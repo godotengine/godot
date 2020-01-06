@@ -4,7 +4,7 @@
 		Container for splitting and adjusting.
 	</brief_description>
 	<description>
-		Container for splitting two controls vertically or horizontally, with a grabber that allows adjusting the split offset or ratio.
+		Container for splitting two [Control]s vertically or horizontally, with a grabber that allows adjusting the split offset or ratio.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,16 +13,19 @@
 			<return type="void">
 			</return>
 			<description>
+				Clamps the [member split_offset] value to not go outside the currently possible minimal and maximum values.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
+			If [code]true[/code], the area of the first [Control] will be collapsed and the dragger will be disabled.
 		</member>
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
-			Determines the dragger's visibility. See [enum DraggerVisibility] for options.
+			Determines the dragger's visibility. See [enum DraggerVisibility] for details.
 		</member>
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
+			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
 		</member>
 	</members>
 	<signals>
@@ -36,13 +39,13 @@
 	</signals>
 	<constants>
 		<constant name="DRAGGER_VISIBLE" value="0" enum="DraggerVisibility">
-			The split dragger is visible.
+			The split dragger is visible when the cursor hovers it.
 		</constant>
 		<constant name="DRAGGER_HIDDEN" value="1" enum="DraggerVisibility">
-			The split dragger is invisible.
+			The split dragger is never visible.
 		</constant>
 		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2" enum="DraggerVisibility">
-			The split dragger is invisible and collapsed.
+			The split dragger is never visible and its space collapsed.
 		</constant>
 	</constants>
 </class>

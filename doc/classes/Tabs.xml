@@ -33,6 +33,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the offset buttons (the ones that appear when there's not enough space for all tabs) are visible.
 			</description>
 		</method>
 		<method name="get_select_with_rmb" qualifiers="const">
@@ -71,6 +72,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of hidden tabs offsetted to the left.
 			</description>
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
@@ -179,11 +181,13 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
+			if [code]true[/code], the mouse's scroll wheel cab be used to navigate the scroll view.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
-			The alignment of all tabs. See enum [code]TabAlign[/code] constants for details.
+			The alignment of all tabs. See [enum TabAlign] for details.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy" default="0">
+			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
 		</member>
 	</members>
 	<signals>
@@ -191,36 +195,42 @@
 			<argument index="0" name="idx_to" type="int">
 			</argument>
 			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
 			</description>
 		</signal>
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is right-clicked.
 			</description>
 		</signal>
 		<signal name="tab_changed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_clicked">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
 		<signal name="tab_close">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is closed.
 			</description>
 		</signal>
 		<signal name="tab_hover">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is hovered by the mouse.
 			</description>
 		</signal>
 	</signals>
@@ -238,10 +248,13 @@
 			Represents the size of the [enum TabAlign] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
+			Never show the close buttons.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1" enum="CloseButtonDisplayPolicy">
+			Only show the close button on the currently active tab.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
+			Show the close button on all tabs.
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
 			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
