@@ -406,6 +406,8 @@ private:
 
 	void _update_canvas_items(Node *p_node);
 
+	void _own_world_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

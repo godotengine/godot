@@ -30,6 +30,7 @@
 
 #include "viewport.h"
 
+#include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -249,6 +250,27 @@ void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *
 	physics_last_object_transform = object_transform;
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
+}
+
+void Viewport::_own_world_changed() {
+	ERR_FAIL_COND(world.is_null());
+	ERR_FAIL_COND(own_world.is_null());
+
+	if (is_inside_tree()) {
+		_propagate_exit_world(this);
+	}
+
+	own_world = world->duplicate();
+
+	if (is_inside_tree()) {
+		_propagate_enter_world(this);
+	}
+
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->viewport_set_scenario(viewport, find_world()->get_scenario());
+	}
+
+	_update_listener();
 }
 
 void Viewport::_notification(int p_what) {
@@ -1105,7 +1127,20 @@ void Viewport::set_world(const Ref<World> &p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
+	if (own_world.is_valid() && world.is_valid()) {
+		world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+	}
+
 	world = p_world;
+
+	if (own_world.is_valid()) {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -2826,10 +2861,19 @@ void Viewport::set_use_own_world(bool p_world) {
 	if (is_inside_tree())
 		_propagate_exit_world(this);
 
-	if (!p_world)
+	if (!p_world) {
 		own_world = Ref<World>();
-	else
-		own_world = Ref<World>(memnew(World));
+		if (world.is_valid()) {
+			world->disconnect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		}
+	} else {
+		if (world.is_valid()) {
+			own_world = world->duplicate();
+			world->connect(CoreStringNames::get_singleton()->changed, this, "_own_world_changed");
+		} else {
+			own_world = Ref<World>(memnew(World));
+		}
+	}
 
 	if (is_inside_tree())
 		_propagate_enter_world(this);
@@ -3177,6 +3221,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_handling_input_locally"), &Viewport::is_handling_input_locally);
 
 	ClassDB::bind_method(D_METHOD("_subwindow_visibility_changed"), &Viewport::_subwindow_visibility_changed);
+
+	ClassDB::bind_method(D_METHOD("_own_world_changed"), &Viewport::_own_world_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 

@@ -268,12 +268,17 @@ RID World::get_scenario() const {
 }
 
 void World::set_environment(const Ref<Environment> &p_environment) {
+	if (environment == p_environment) {
+		return;
+	}
 
 	environment = p_environment;
 	if (environment.is_valid())
 		VS::get_singleton()->scenario_set_environment(scenario, environment->get_rid());
 	else
 		VS::get_singleton()->scenario_set_environment(scenario, RID());
+
+	emit_changed();
 }
 
 Ref<Environment> World::get_environment() const {
@@ -282,12 +287,17 @@ Ref<Environment> World::get_environment() const {
 }
 
 void World::set_fallback_environment(const Ref<Environment> &p_environment) {
+	if (fallback_environment == p_environment) {
+		return;
+	}
 
 	fallback_environment = p_environment;
 	if (fallback_environment.is_valid())
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, p_environment->get_rid());
 	else
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, RID());
+
+	emit_changed();
 }
 
 Ref<Environment> World::get_fallback_environment() const {
