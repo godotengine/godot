@@ -75,6 +75,8 @@ void *ThreadPosix::thread_callback(void *userdata) {
 
 	ScriptServer::thread_exit();
 
+	_notify_finished(t->id);
+
 	return NULL;
 }
 

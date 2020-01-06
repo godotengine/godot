@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "thread.h"
+#include "scene/main/scene_tree.h"
 
 Thread *(*Thread::create_func)(ThreadCreateCallback, void *, const Settings &) = NULL;
 Thread::ID (*Thread::get_thread_id_func)() = NULL;
@@ -66,6 +67,10 @@ Error Thread::set_name(const String &p_name) {
 
 	return ERR_UNAVAILABLE;
 };
+
+void Thread::_notify_finished(ID p_thread_id) {
+	SceneTree::get_singleton()->emit_signal("thread_finished", p_thread_id);
+}
 
 Thread::Thread() {
 }

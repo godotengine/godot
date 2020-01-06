@@ -63,6 +63,8 @@ protected:
 
 	static ID _main_thread_id;
 
+	static void _notify_finished(ID p_thread_id);
+
 	Thread();
 
 public:

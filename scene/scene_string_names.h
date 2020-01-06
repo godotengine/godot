@@ -207,8 +207,6 @@ public:
 
 	StringName tracks_changed;
 
-	StringName thread_finished;
-
 	enum {
 		MAX_MATERIALS = 32
 	};

@@ -67,6 +67,7 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APP_PAUSED);
 
 	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
+	ADD_SIGNAL(MethodInfo("thread_finished", PropertyInfo(Variant::INT, "id")));
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {

@@ -205,6 +205,4 @@ SceneStringNames::SceneStringNames() {
 	parameters_base_path = "parameters/";
 
 	tracks_changed = "tracks_changed";
-
-	thread_finished = "thread_finished";
 }
