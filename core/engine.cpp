@@ -94,11 +94,7 @@ Dictionary Engine::get_version_info() const {
 	Dictionary dict;
 	dict["major"] = VERSION_MAJOR;
 	dict["minor"] = VERSION_MINOR;
-#ifdef VERSION_PATCH
 	dict["patch"] = VERSION_PATCH;
-#else
-	dict["patch"] = 0;
-#endif
 	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;

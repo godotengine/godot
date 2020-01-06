@@ -32,6 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
+#include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
@@ -970,11 +971,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	int64_t pck_start_pos = f->get_position();
 
-	f->store_32(0x43504447); //GDPC
-	f->store_32(1); //pack version
+	f->store_32(PACK_HEADER_MAGIC);
+	f->store_32(PACK_FORMAT_VERSION);
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
-	f->store_32(0); //hmph
+	f->store_32(VERSION_PATCH);
+
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->store_32(0);
@@ -1049,7 +1051,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 		int64_t pck_size = f->get_position() - pck_start_pos;
 		f->store_64(pck_size);
-		f->store_32(0x43504447); //GDPC
+		f->store_32(PACK_HEADER_MAGIC);
 
 		if (r_embedded_size) {
 			*r_embedded_size = f->get_position() - embed_pos;

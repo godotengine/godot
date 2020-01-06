@@ -39,7 +39,7 @@
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 
-#define PACK_VERSION 2
+#define PACKED_SCENE_VERSION 2
 
 bool SceneState::can_instance() const {
 
@@ -1095,7 +1095,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	if (p_dictionary.has("version"))
 		version = p_dictionary["version"];
 
-	ERR_FAIL_COND_MSG(version > PACK_VERSION, "Save format version too new.");
+	ERR_FAIL_COND_MSG(version > PACKED_SCENE_VERSION, "Save format version too new.");
 
 	const int node_count = p_dictionary["node_count"];
 	const PoolVector<int> snodes = p_dictionary["nodes"];
@@ -1285,9 +1285,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		d["base_scene"] = base_scene_idx;
 	}
 
-	d["version"] = PACK_VERSION;
-
-	//d["path"]=path;
+	d["version"] = PACKED_SCENE_VERSION;
 
 	return d;
 }
