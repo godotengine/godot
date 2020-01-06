@@ -1099,11 +1099,11 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	const int node_count = p_dictionary["node_count"];
 	const PoolVector<int> snodes = p_dictionary["nodes"];
-	ERR_FAIL_COND(snodes.size() != node_count);
+	ERR_FAIL_COND(snodes.size() < node_count);
 
 	const int conn_count = p_dictionary["conn_count"];
 	const PoolVector<int> sconns = p_dictionary["conns"];
-	ERR_FAIL_COND(sconns.size() != conn_count);
+	ERR_FAIL_COND(sconns.size() < conn_count);
 
 	PoolVector<String> snames = p_dictionary["names"];
 	if (snames.size()) {
