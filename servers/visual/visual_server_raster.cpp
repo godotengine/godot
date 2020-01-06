@@ -153,6 +153,16 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 	return VSG::storage->get_render_info(p_info);
 }
 
+String VisualServerRaster::get_video_adapter_name() const {
+
+	return VSG::storage->get_video_adapter_name();
+}
+
+String VisualServerRaster::get_video_adapter_vendor() const {
+
+	return VSG::storage->get_video_adapter_vendor();
+}
+
 /* TESTING */
 
 void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {

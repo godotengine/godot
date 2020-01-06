@@ -5766,6 +5766,16 @@ int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
 	}
 }
 
+String RasterizerStorageGLES2::get_video_adapter_name() const {
+
+	return (const char *)glGetString(GL_RENDERER);
+}
+
+String RasterizerStorageGLES2::get_video_adapter_vendor() const {
+
+	return (const char *)glGetString(GL_VENDOR);
+}
+
 void RasterizerStorageGLES2::initialize() {
 	RasterizerStorageGLES2::system_fbo = 0;
 

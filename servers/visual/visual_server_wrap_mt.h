@@ -602,6 +602,14 @@ public:
 		return visual_server->get_render_info(p_info);
 	}
 
+	virtual String get_video_adapter_name() const {
+		return visual_server->get_video_adapter_name();
+	}
+
+	virtual String get_video_adapter_vendor() const {
+		return visual_server->get_video_adapter_vendor();
+	}
+
 	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 

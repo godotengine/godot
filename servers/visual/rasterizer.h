@@ -588,6 +588,8 @@ public:
 	virtual int get_captured_render_info(VS::RenderInfo p_info) = 0;
 
 	virtual int get_render_info(VS::RenderInfo p_info) = 0;
+	virtual String get_video_adapter_name() const = 0;
+	virtual String get_video_adapter_vendor() const = 0;
 
 	static RasterizerStorage *base_singleton;
 	RasterizerStorage();

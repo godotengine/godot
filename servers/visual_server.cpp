@@ -2032,6 +2032,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
+	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &VisualServer::get_video_adapter_name);
+	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &VisualServer::get_video_adapter_vendor);
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("make_sphere_mesh", "latitudes", "longitudes", "radius"), &VisualServer::make_sphere_mesh);
