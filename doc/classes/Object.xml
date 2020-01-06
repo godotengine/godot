@@ -460,6 +460,7 @@
 			</argument>
 			<description>
 				Assigns a script to the object. Each object can have a single script assigned to it, which are used to extend its functionality.
+				If the object already had a script, the previous script instance will be freed and its variables and state will be lost. The new script's [method _init] method will be called.
 			</description>
 		</method>
 		<method name="to_string">
