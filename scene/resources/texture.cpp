@@ -2271,6 +2271,7 @@ void TextureLayered::create(uint32_t p_width, uint32_t p_height, uint32_t p_dept
 
 void TextureLayered::set_layer_data(const Ref<Image> &p_image, int p_layer) {
 	ERR_FAIL_COND(!texture.is_valid());
+	ERR_FAIL_COND(!p_image.is_valid());
 	VS::get_singleton()->texture_set_data(texture, p_image, p_layer);
 }
 
@@ -2282,6 +2283,7 @@ Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 
 void TextureLayered::set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap) {
 	ERR_FAIL_COND(!texture.is_valid());
+	ERR_FAIL_COND(!p_image.is_valid());
 	VS::get_singleton()->texture_set_data_partial(texture, p_image, 0, 0, p_image->get_width(), p_image->get_height(), p_x_ofs, p_y_ofs, p_mipmap, p_z);
 }
 
