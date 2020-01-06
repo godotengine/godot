@@ -75,14 +75,24 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	ConfirmationDialog *delete_dialog;
 
+	enum SplitMode {
+		MODE_GRID,
+		MODE_PIXEL
+	};
+
 	ConfirmationDialog *split_sheet_dialog;
 	ScrollContainer *splite_sheet_scroll;
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
+	SpinBox *split_sheet_x;
+	SpinBox *split_sheet_y;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
 	int last_frame_selected;
+	OptionButton *split_select_mode;
+	VBoxContainer *split_sheet_grid_vb;
+	VBoxContainer *split_sheet_pixel_vb;
 
 	void _load_pressed();
 	void _load_scene_pressed();
@@ -120,6 +130,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
 	void _sheet_select_clear_all_frames();
+	void _sheet_mode_changed(int mode);
 
 protected:
 	void _notification(int p_what);
