@@ -195,13 +195,13 @@ Error DynamicFontAtSize::_load() {
 	if (FT_HAS_COLOR(face) && face->num_fixed_sizes > 0) {
 		int best_match = 0;
 		int diff = ABS(id.size - ((int64_t)face->available_sizes[0].width));
-		scale_color_font = float(id.size) / face->available_sizes[0].width;
+		scale_color_font = float(id.size * oversampling) / face->available_sizes[0].width;
 		for (int i = 1; i < face->num_fixed_sizes; i++) {
 			int ndiff = ABS(id.size - ((int64_t)face->available_sizes[i].width));
 			if (ndiff < diff) {
 				best_match = i;
 				diff = ndiff;
-				scale_color_font = float(id.size) / face->available_sizes[i].width;
+				scale_color_font = float(id.size * oversampling) / face->available_sizes[i].width;
 			}
 		}
 		FT_Select_Size(face, best_match);
@@ -299,7 +299,7 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 	}
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only, bool p_outline) const {
 
 	if (!valid)
 		return 0;
@@ -313,6 +313,20 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 	ERR_FAIL_COND_V(!ch, 0.0);
 
 	float advance = 0.0;
+
+	// use normal character size if there's no outline charater
+	if (p_outline && !ch->found) {
+		FT_GlyphSlot slot = face->glyph;
+		int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT);
+		if (!error) {
+			error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+			if (!error) {
+				Character character = Character::not_found();
+				character = const_cast<DynamicFontAtSize *>(this)->_bitmap_to_character(slot->bitmap, slot->bitmap_top, slot->bitmap_left, slot->advance.x / 64.0);
+				advance = character.advance;
+			}
+		}
+	}
 
 	if (ch->found) {
 		ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= font->textures.size(), 0);
@@ -875,7 +889,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 
 	// If requested outline draw, but no outline is present, simply return advance without drawing anything
 	bool advance_only = p_outline && outline_cache_id.outline_size == 0;
-	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only) + spacing_char;
+	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only, p_outline) + spacing_char;
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {
