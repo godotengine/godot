@@ -459,6 +459,12 @@
 		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
 			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>
+		<member name="scroll_vertical" type="float" setter="set_v_scroll" getter="get_v_scroll" default="0.0">
+			The current vertical scroll value.
+		</member>
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+			The current horizontal scroll value.
+		</member>
 	</members>
 	<signals>
 		<signal name="breakpoint_toggled">
