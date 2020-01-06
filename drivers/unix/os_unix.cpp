@@ -59,6 +59,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
@@ -554,23 +555,38 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	else
 		err_details = p_code;
 
+	// Disable color codes if stdout is not a TTY.
+	// This prevents Godot from writing ANSI escape codes when redirecting
+	// stdout and stderr to a file.
+	const bool tty = isatty(fileno(stdout));
+	const char *red = tty ? "\E[0;31m" : "";
+	const char *red_bold = tty ? "\E[1;31m" : "";
+	const char *yellow = tty ? "\E[0;33m" : "";
+	const char *yellow_bold = tty ? "\E[1;33m" : "";
+	const char *magenta = tty ? "\E[0;35m" : "";
+	const char *magenta_bold = tty ? "\E[1;35m" : "";
+	const char *cyan = tty ? "\E[0;36m" : "";
+	const char *cyan_bold = tty ? "\E[1;36m" : "";
+	const char *reset = tty ? "\E[0m" : "";
+	const char *bold = tty ? "\E[1m" : "";
+
 	switch (p_type) {
 		case ERR_WARNING:
-			logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sWARNING: %s: %s%s%s\n", yellow_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", yellow, p_file, p_line, reset);
 			break;
 		case ERR_SCRIPT:
-			logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSCRIPT ERROR: %s: %s%s%s\n", magenta_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", magenta, p_file, p_line, reset);
 			break;
 		case ERR_SHADER:
-			logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSHADER ERROR: %s: %s%s%s\n", cyan_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", cyan, p_file, p_line, reset);
 			break;
 		case ERR_ERROR:
 		default:
-			logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sERROR: %s: %s%s%s\n", red_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", red, p_file, p_line, reset);
 			break;
 	}
 }
