@@ -4066,6 +4066,29 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 		undo_redo->add_undo_method(this, "_clear_selection", false);
 		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		p_last_track++;
+
+		// Hack.
+		NodePath np;
+		animation->add_track(p_id.type);
+		animation->track_set_path(animation->get_track_count() - 1, p_id.path);
+		PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
+		animation->remove_track(animation->get_track_count() - 1); //hack
+
+		if (h.usage & PROPERTY_USAGE_KEYING_INCREMENTS) {
+
+			// move timeline by one step
+			float step = animation->get_step();
+			if (step == 0)
+				step = 1;
+
+			float pos = timeline->get_play_position();
+
+			pos = Math::stepify(pos + step, step);
+			if (pos > animation->get_length())
+				pos = animation->get_length();
+			set_anim_pos(pos);
+			emit_signal("timeline_changed", pos, true);
+		}
 	} else {
 
 		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", p_id.track_idx, time);
