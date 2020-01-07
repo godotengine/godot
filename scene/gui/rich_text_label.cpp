@@ -1063,10 +1063,10 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 	int line = 0;
 	Item *item = NULL;
+	bool outside;
+	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line, &outside);
 
-	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line);
-
-	if (item && ((RichTextLabel *)(this))->_find_meta(item, NULL))
+	if (item && !outside && ((RichTextLabel *)(this))->_find_meta(item, NULL))
 		return CURSOR_POINTING_HAND;
 
 	return CURSOR_ARROW;
