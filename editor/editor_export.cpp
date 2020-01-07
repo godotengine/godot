@@ -1485,41 +1485,29 @@ Ref<Texture> EditorExportPlatformPC::get_logo() const {
 bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 	String err;
-	bool valid = true;
+	bool valid = false;
+
+	// Look for export templates (first official, and if defined custom templates).
+
 	bool use64 = p_preset->get("binary_format/64_bits");
+	bool dvalid = exists_export_template(use64 ? debug_file_64 : debug_file_32, &err);
+	bool rvalid = exists_export_template(use64 ? release_file_64 : release_file_32, &err);
 
-	if (use64 && (!exists_export_template(debug_file_64, &err) || !exists_export_template(release_file_64, &err))) {
-		valid = false;
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
+			err += TTR("Custom debug template not found.") + "\n";
+		}
 	}
-
-	if (!use64 && (!exists_export_template(debug_file_32, &err) || !exists_export_template(release_file_32, &err))) {
-		valid = false;
-	}
-
-	String custom_debug_binary = p_preset->get("custom_template/debug");
-	String custom_release_binary = p_preset->get("custom_template/release");
-
-	if (custom_debug_binary == "" && custom_release_binary == "") {
-		if (!err.empty())
-			r_error = err;
-		r_missing_templates = !valid;
-		return valid;
-	}
-
-	bool dvalid = true;
-	bool rvalid = true;
-
-	if (!FileAccess::exists(custom_debug_binary)) {
-		dvalid = false;
-		err += TTR("Custom debug template not found.") + "\n";
-	}
-
-	if (!FileAccess::exists(custom_release_binary)) {
-		rvalid = false;
-		err += TTR("Custom release template not found.") + "\n";
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
+			err += TTR("Custom release template not found.") + "\n";
+		}
 	}
 
 	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
 
 	if (!err.empty())
 		r_error = err;
@@ -1600,7 +1588,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 			if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
 				EditorNode::get_singleton()->show_warning(TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
-				return ERR_UNAVAILABLE;
+				return ERR_INVALID_PARAMETER;
 			}
 
 			FixUpEmbeddedPckFunc fixup_func = get_fixup_embedded_pck_func();

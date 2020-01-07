@@ -288,31 +288,31 @@ Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
 
 bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = false;
 	String err;
+	bool valid = false;
 
-	if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) != "")
-		valid = true;
-	else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) != "")
-		valid = true;
+	// Look for export templates (first official, and if defined custom templates).
+
+	bool dvalid = exists_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG, &err);
+	bool rvalid = exists_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE, &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
-		if (FileAccess::exists(p_preset->get("custom_template/debug"))) {
-			valid = true;
-		} else {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-
 	if (p_preset->get("custom_template/release") != "") {
-		if (FileAccess::exists(p_preset->get("custom_template/release"))) {
-			valid = true;
-		} else {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
+	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	// Validate the rest of the configuration.
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String etc_error = test_etc2();

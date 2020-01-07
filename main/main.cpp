@@ -286,8 +286,10 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <target> <path>         Export the project using the given export target. Export only main pack if path ends with .pck or .zip. <path> is relative to the project directory.\n");
-	OS::get_singleton()->print("  --export-debug <target> <path>   Like --export, but use debug template.\n");
+	OS::get_singleton()->print("  --export <preset> <path>         Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
+	OS::get_singleton()->print("                                   The target directory should exist. Only the data pack is exported if <path> ends with .pck or .zip.\n");
+	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects).\n");
@@ -1513,11 +1515,11 @@ bool Main::start() {
 
 	if (_export_preset != "") {
 		if (game_path == "") {
-			String err = "Command line param ";
+			String err = "Command line parameter ";
 			err += export_debug ? "--export-debug" : "--export";
 			err += " passed but no destination path given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
-			ERR_PRINT(err.utf8().get_data());
+			ERR_PRINT(err);
 			return false;
 		}
 	}
@@ -1698,20 +1700,14 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-
 		EditorNode *editor_node = NULL;
 		if (editor) {
-
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			//root_node->set_editor(editor);
-			//startup editor
-
 			if (_export_preset != "") {
-
-				editor_node->export_preset(_export_preset, game_path, export_debug, "", true);
-				game_path = ""; //no load anything
+				editor_node->export_preset(_export_preset, game_path, export_debug);
+				game_path = ""; // Do not load anything.
 			}
 		}
 #endif

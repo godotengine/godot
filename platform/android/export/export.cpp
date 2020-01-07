@@ -1299,9 +1299,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_package/use_custom_build"), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
@@ -1577,29 +1577,34 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 		String err;
+		bool valid = false;
 
-		if (!bool(p_preset->get("custom_package/use_custom_build"))) {
+		// Look for export templates (first official, and if defined custom templates).
 
-			r_missing_templates = find_export_template("android_debug.apk") == String() || find_export_template("android_release.apk") == String();
+		if (!bool(p_preset->get("custom_template/use_custom_build"))) {
+			bool dvalid = exists_export_template("android_debug.apk", &err);
+			bool rvalid = exists_export_template("android_release.apk", &err);
 
-			if (p_preset->get("custom_package/debug") != "") {
-				if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
-					r_missing_templates = false;
-				} else {
+			if (p_preset->get("custom_template/debug") != "") {
+				dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+				if (!dvalid) {
 					err += TTR("Custom debug template not found.") + "\n";
 				}
 			}
-
-			if (p_preset->get("custom_package/release") != "") {
-				if (FileAccess::exists(p_preset->get("custom_package/release"))) {
-					r_missing_templates = false;
-				} else {
+			if (p_preset->get("custom_template/release") != "") {
+				rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+				if (!rvalid) {
 					err += TTR("Custom release template not found.") + "\n";
 				}
 			}
-		}
 
-		bool valid = !r_missing_templates;
+			valid = dvalid || rvalid;
+		} else {
+			valid = exists_export_template("android_source.zip", &err);
+		}
+		r_missing_templates = !valid;
+
+		// Validate the rest of the configuration.
 
 		String adb = EditorSettings::get_singleton()->get("export/android/adb");
 
@@ -1628,7 +1633,7 @@ public:
 			}
 		}
 
-		if (bool(p_preset->get("custom_package/use_custom_build"))) {
+		if (bool(p_preset->get("custom_template/use_custom_build"))) {
 			String sdk_path = EditorSettings::get_singleton()->get("export/android/custom_build_sdk_path");
 			if (sdk_path == "") {
 				err += TTR("Custom build requires a valid Android SDK path in Editor Settings.") + "\n";
@@ -1949,7 +1954,7 @@ public:
 
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
-		if (bool(p_preset->get("custom_package/use_custom_build"))) { //custom build
+		if (bool(p_preset->get("custom_template/use_custom_build"))) { //custom build
 			//re-generate build.gradle and AndroidManifest.xml
 
 			{ //test that installed build version is alright
@@ -2017,9 +2022,9 @@ public:
 		} else {
 
 			if (p_debug)
-				src_apk = p_preset->get("custom_package/debug");
+				src_apk = p_preset->get("custom_template/debug");
 			else
-				src_apk = p_preset->get("custom_package/release");
+				src_apk = p_preset->get("custom_template/release");
 
 			src_apk = src_apk.strip_edges();
 			if (src_apk == "") {

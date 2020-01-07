@@ -206,8 +206,8 @@ static const LoadingScreenInfo loading_screen_infos[] = {
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
 
@@ -848,9 +848,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
 
 	if (p_debug)
-		src_pkg_name = p_preset->get("custom_package/debug");
+		src_pkg_name = p_preset->get("custom_template/debug");
 	else
-		src_pkg_name = p_preset->get("custom_package/release");
+		src_pkg_name = p_preset->get("custom_template/release");
 
 	if (src_pkg_name == "") {
 		String err;
@@ -1156,25 +1156,30 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 	String err;
-	r_missing_templates = find_export_template("iphone.zip") == String();
+	bool valid = false;
 
-	if (p_preset->get("custom_package/debug") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
-			r_missing_templates = false;
-		} else {
+	// Look for export templates (first official, and if defined custom templates).
+
+	bool dvalid = exists_export_template("iphone.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
+
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-
-	if (p_preset->get("custom_package/release") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
-			r_missing_templates = false;
-		} else {
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
-	bool valid = !r_missing_templates;
+	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
+	// Validate the rest of the configuration.
 
 	String team_id = p_preset->get("application/app_store_team_id");
 	if (team_id.length() == 0) {
