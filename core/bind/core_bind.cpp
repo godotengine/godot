@@ -2693,7 +2693,9 @@ void _Thread::_start_func(void *ud) {
 
 		ERR_FAIL_MSG("Could not call function '" + t->target_method.operator String() + "' to start thread " + t->get_id() + ": " + reason + ".");
 	}
-	t->emit_signal("completed", t->ret);
+	// Ensure signal emission is deferred so that
+	// the thread can be safely joined later with `wait_to_finish`.
+	t->call_deferred("emit_signal", "completed", t->ret);
 }
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
