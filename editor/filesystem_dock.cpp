@@ -90,6 +90,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 
 			String file_type = p_dir->get_file_type(i);
@@ -119,7 +120,6 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->select(0);
 				file_item->set_as_cursor(0);
 			}
-			String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
 			if (main_scene == file_metadata) {
 				file_item->set_custom_color(0, get_color("accent_color", "Editor"));
 			}
@@ -750,6 +750,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	// Fills the ItemList control node from the FileInfos.
+	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
 	String oi = "Object";
 	for (List<FileInfo>::Element *E = filelist.front(); E; E = E->next()) {
 		FileInfo *finfo = &(E->get());
@@ -784,6 +785,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			files->add_item(fname, type_icon, true);
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
+		}
+
+		if (fpath == main_scene) {
+			files->set_item_custom_fg_color(item_index, get_color("accent_color", "Editor"));
 		}
 
 		// Generate the preview.
