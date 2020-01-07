@@ -58,6 +58,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
+		TOOL_CUT,
+		TOOL_COPY,
+		TOOL_PASTE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -125,6 +128,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
+	List<Node *> node_clipboard;
 
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
@@ -183,7 +187,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 	void _script_creation_closed();
 
-	void _delete_confirm();
+	void _delete_confirm(bool p_cut = false);
 
 	void _toggle_editable_children_from_selection();
 	void _toggle_editable_children(Node *p_node);
@@ -229,6 +233,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
+	void _clear_clipboard();
 
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
@@ -267,6 +272,7 @@ public:
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	~SceneTreeDock();
 };
 
 #endif // SCENE_TREE_DOCK_H
