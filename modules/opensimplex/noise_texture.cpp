@@ -53,6 +53,10 @@ NoiseTexture::NoiseTexture() {
 
 NoiseTexture::~NoiseTexture() {
 	VS::get_singleton()->free(texture);
+	if (noise_thread) {
+		Thread::wait_to_finish(noise_thread);
+		memdelete(noise_thread);
+	}
 }
 
 void NoiseTexture::_bind_methods() {
@@ -73,6 +77,7 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture::get_bump_strength);
 
 	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture::_update_texture);
+	ClassDB::bind_method(D_METHOD("_queue_update"), &NoiseTexture::_queue_update);
 	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture::_generate_texture);
 	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture::_thread_done);
 
@@ -130,8 +135,6 @@ void NoiseTexture::_queue_update() {
 
 Ref<Image> NoiseTexture::_generate_texture() {
 
-	update_queued = false;
-
 	if (noise.is_null()) return Ref<Image>();
 
 	Ref<Image> image;
@@ -171,17 +174,18 @@ void NoiseTexture::_update_texture() {
 		Ref<Image> image = _generate_texture();
 		_set_texture_data(image);
 	}
+	update_queued = false;
 }
 
 void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 	if (p_noise == noise)
 		return;
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, this, "_update_texture");
+		noise->disconnect(CoreStringNames::get_singleton()->changed, this, "_queue_update");
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, this, "_update_texture");
+		noise->connect(CoreStringNames::get_singleton()->changed, this, "_queue_update");
 	}
 	_queue_update();
 }
