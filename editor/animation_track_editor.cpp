@@ -4079,6 +4079,22 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 
 	undo_redo->commit_action();
 
+	if (created && String(p_id.path) == "Sprite:frame") {
+
+		// If created track is for a Sprite frame move timeline by one step
+		float step = animation->get_step();
+		if (step == 0)
+			step = 1;
+
+		float pos = timeline->get_play_position();
+
+		pos = Math::stepify(pos + step, step);
+		if (pos > animation->get_length())
+			pos = animation->get_length();
+		set_anim_pos(pos);
+		emit_signal("timeline_changed", pos, true);
+	}
+
 	return p_last_track;
 }
 
