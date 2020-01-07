@@ -251,7 +251,8 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
-				Removes the [code]line[/code]th line of content from the label. Returns [code]true[/code] if the line exists.
+				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
+				The [code]line[/code] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
 			</description>
 		</method>
 		<method name="scroll_to_line">
