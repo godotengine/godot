@@ -316,6 +316,10 @@
 		</theme_item>
 		<theme_item name="reset" type="Texture">
 		</theme_item>
+		<theme_item name="selection_fill" type="Color" default="Color( 1, 1, 1, 0.3 )">
+		</theme_item>
+		<theme_item name="selection_stroke" type="Color" default="Color( 1, 1, 1, 0.8 )">
+		</theme_item>
 		<theme_item name="snap" type="Texture">
 		</theme_item>
 	</theme_items>

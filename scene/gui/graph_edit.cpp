@@ -777,14 +777,8 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting) {
-		top_layer->draw_rect(
-				box_selecting_rect,
-				get_color("box_selection_fill_color", "Editor"));
-
-		top_layer->draw_rect(
-				box_selecting_rect,
-				get_color("box_selection_stroke_color", "Editor"),
-				false);
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_fill"));
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_stroke"), false);
 	}
 }
 
