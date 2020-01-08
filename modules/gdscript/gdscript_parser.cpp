@@ -8047,6 +8047,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 
 				last_var_assign = lv->assign;
 				if (lv->assign) {
+					lv->assign_op->arguments[0]->set_datatype(lv->datatype);
 					DataType assign_type = _reduce_node_type(lv->assign);
 #ifdef DEBUG_ENABLED
 					if (assign_type.has_type && assign_type.kind == DataType::BUILTIN && assign_type.builtin_type == Variant::NIL) {
