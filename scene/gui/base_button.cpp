@@ -165,7 +165,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				_pressed();
 			}
 		} else {
-			if (!p_event->is_pressed()) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}
