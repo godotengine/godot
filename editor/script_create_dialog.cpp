@@ -678,6 +678,11 @@ void ScriptCreateDialog::_update_dialog() {
 		}
 	}
 
+	if (!_can_be_built_in()) {
+		internal->set_pressed(false);
+	}
+	internal->set_disabled(!_can_be_built_in());
+
 	/* Is Script created or loaded from existing file */
 
 	if (is_built_in) {
@@ -685,8 +690,6 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
 		parent_browse_button->set_disabled(!can_inherit_from_file);
-		internal->set_visible(_can_be_built_in());
-		internal_label->set_visible(_can_be_built_in());
 		_msg_path_valid(true, TTR("Built-in script (into scene file)."));
 	} else if (is_new_script_created) {
 		// New Script Created
@@ -694,8 +697,6 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
 		parent_browse_button->set_disabled(!can_inherit_from_file);
-		internal->set_visible(_can_be_built_in());
-		internal_label->set_visible(_can_be_built_in());
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will create a new script file."));
 		}
@@ -705,7 +706,6 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(false);
 		parent_search_button->set_disabled(true);
 		parent_browse_button->set_disabled(true);
-		internal->set_disabled(!_can_be_built_in());
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will load an existing script file."));
 		}
@@ -834,8 +834,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
 	internal->connect("pressed", this, "_built_in_pressed");
-	internal_label = memnew(Label(TTR("Built-in Script:")));
-	gc->add_child(internal_label);
+	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(internal);
 
 	/* Path */
