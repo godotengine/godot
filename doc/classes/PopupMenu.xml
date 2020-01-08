@@ -521,6 +521,7 @@
 			<argument index="1" name="state" type="int">
 			</argument>
 			<description>
+				Sets the state of an multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 		<method name="set_item_shortcut">
@@ -595,6 +596,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Cycle to the next state of an multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 	</methods>
