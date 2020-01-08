@@ -314,7 +314,7 @@ void EditorData::copy_object_params(Object *p_object) {
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR) || E->get().name == "script" || E->get().name == "scripts")
 			continue;
 
 		PropertyData pd;
