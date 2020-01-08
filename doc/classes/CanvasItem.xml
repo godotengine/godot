@@ -285,9 +285,9 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="rotation" type="float">
+			<argument index="1" name="rotation" type="float" default="0.0">
 			</argument>
-			<argument index="2" name="scale" type="Vector2">
+			<argument index="2" name="scale" type="Vector2" default="Vector2( 1, 1 )">
 			</argument>
 			<description>
 				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
