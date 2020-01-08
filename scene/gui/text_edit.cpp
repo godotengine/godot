@@ -7070,6 +7070,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
+	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
 
 	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
 	ClassDB::bind_method(D_METHOD("has_keyword_color", "keyword"), &TextEdit::has_keyword_color);
@@ -7105,6 +7109,8 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
