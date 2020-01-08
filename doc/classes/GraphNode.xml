@@ -170,12 +170,12 @@
 			<argument index="8" name="custom_right" type="Texture" default="null">
 			</argument>
 			<description>
-				Sets properties of the slot with id [code]idx[/code].
+				Sets properties of the slot with ID [code]idx[/code].
 				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
 				[code]type_left[/code]/[code]right[/code] is an arbitrary type of the port. Only ports with the same type values can be connected.
 				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
 				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
-				[b]Note:[/b] this method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
+				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
 			</description>
 		</method>
 	</methods>
@@ -188,20 +188,27 @@
 			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
 		</member>
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
+			Sets the overlay shown above the GraphNode. See [enum Overlay].
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
+			If [code]true[/code], the user can resize the GraphNode.
+			[b]Note:[/b] Dragging the handle will only trigger the [signal resize_request] signal, the GraphNode needs to be resized manually.
 		</member>
 		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
+			If [code]true[/code], the GraphNode is selected.
 		</member>
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
+			If [code]true[/code], the close button will be visible.
+			[b]Note:[/b] Pressing it will only trigger the [signal close_request] signal, the GraphNode needs to be removed manually.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The text displayed in the GraphNode's title bar.
 		</member>
 	</members>
 	<signals>
 		<signal name="close_request">
 			<description>
-				Signal sent on closing the GraphNode.
+				Emitted when the GraphNode is requested to be closed. Happens on clicking the close button (see [member show_close]).
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -210,32 +217,36 @@
 			<argument index="1" name="to" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when the GraphNode is dragged.
+				Emitted when the GraphNode is dragged.
 			</description>
 		</signal>
 		<signal name="offset_changed">
 			<description>
-				Signal sent when the GraphNode is moved.
+				Emitted when the GraphNode is moved.
 			</description>
 		</signal>
 		<signal name="raise_request">
 			<description>
-				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
+				Emitted when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
 		<signal name="resize_request">
 			<argument index="0" name="new_minsize" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="OVERLAY_DISABLED" value="0" enum="Overlay">
+			No overlay is shown.
 		</constant>
 		<constant name="OVERLAY_BREAKPOINT" value="1" enum="Overlay">
+			Show overlay set in the [code]breakpoint[/code] theme property.
 		</constant>
 		<constant name="OVERLAY_POSITION" value="2" enum="Overlay">
+			Show overlay set in the [code]position[/code] theme property.
 		</constant>
 	</constants>
 	<theme_items>
