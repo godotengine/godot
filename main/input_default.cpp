@@ -727,21 +727,23 @@ InputDefault::InputDefault() {
 
 	fallback_mapping = -1;
 
+	// Parse default mappings.
+	{
+		int i = 0;
+		while (DefaultControllerMappings::mappings[i]) {
+			parse_mapping(DefaultControllerMappings::mappings[i++]);
+		}
+	}
+
+	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
-
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
 			if (entries[i] == "")
 				continue;
 			parse_mapping(entries[i]);
 		}
-	}
-
-	int i = 0;
-	while (DefaultControllerMappings::mappings[i]) {
-
-		parse_mapping(DefaultControllerMappings::mappings[i++]);
 	}
 }
 
