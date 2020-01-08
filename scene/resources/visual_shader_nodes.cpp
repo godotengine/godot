@@ -3685,12 +3685,33 @@ String VisualShaderNodeFresnel::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + p_input_vars[0] + ", " + p_input_vars[1] + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + p_input_vars[0] + ", " + p_input_vars[1] + "), 0.0, 1.0), " + p_input_vars[3] + "));";
+
+	String normal;
+	String view;
+	if (p_input_vars[0] == String()) {
+		normal = "NORMAL";
+	} else {
+		normal = p_input_vars[0];
+	}
+	if (p_input_vars[1] == String()) {
+		view = "VIEW";
+	} else {
+		view = p_input_vars[1];
+	}
+
+	return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + "));";
+}
+
+String VisualShaderNodeFresnel::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "default";
+	} else if (p_port == 1) {
+		return "default";
+	}
+	return "";
 }
 
 VisualShaderNodeFresnel::VisualShaderNodeFresnel() {
-	set_input_port_default_value(0, Vector3(0.0, 0.0, 0.0));
-	set_input_port_default_value(1, Vector3(0.0, 0.0, 0.0));
 	set_input_port_default_value(2, false);
 	set_input_port_default_value(3, 1.0);
 }
