@@ -1436,9 +1436,7 @@ void btDiscreteDynamicsWorld::serializeDynamicsWorldInfo(btSerializer* serialize
 
 	worldInfo->m_solverInfo.m_splitImpulse = getSolverInfo().m_splitImpulse;
 
-	// Fill padding with zeros to appease msan.
-	memset(worldInfo->m_solverInfo.m_padding, 0, sizeof(worldInfo->m_solverInfo.m_padding));
-
+	
 #ifdef BT_USE_DOUBLE_PRECISION
 	const char* structType = "btDynamicsWorldDoubleData";
 #else   //BT_USE_DOUBLE_PRECISION

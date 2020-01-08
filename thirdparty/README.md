@@ -11,7 +11,7 @@
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git (5ec8339, 2019)
+- Version: 2.89
 - License: zlib
 
 Files extracted from upstream source:
