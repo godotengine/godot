@@ -32,7 +32,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				Enables or disables the glow level at index [code]idx[/code]. The more glow levels are enabled, the slower the glow effect will be.
+				Enables or disables the glow level at index [code]idx[/code]. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
 		</method>
 	</methods>
@@ -60,7 +60,6 @@
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
-			This value is multiplied by [member ambient_light_energy], so it must be set to a value higher than [code]0[/code] for changes to be visible when adjusting [member ambient_light_sky_contribution].
 		</member>
 		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure" getter="get_tonemap_auto_exposure" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
@@ -181,7 +180,7 @@
 		</member>
 		<member name="glow_bicubic_upscale" type="bool" setter="set_glow_bicubic_upscale" getter="is_glow_bicubic_upscale_enabled" default="false">
 			Smooths out the blockiness created by sampling higher levels, at the cost of performance.
-			[b]Note:[/b] Only available when using the GLES3 renderer.
+			[b]Note:[/b] When using the GLES2 renderer, this is only available if the GPU supports the [code]GL_EXT_gpu_shader4[/code] extension.
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			The glow blending mode.
@@ -262,7 +261,7 @@
 			The screen-space ambient occlusion edge sharpness.
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
-			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This is a costly effect and should be disabled first when having performance issues.
+			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. This is a costly effect and should be disabled first when running into performance issues.
 		</member>
 		<member name="ssao_intensity" type="float" setter="set_ssao_intensity" getter="get_ssao_intensity" default="1.0">
 			The primary screen-space ambient occlusion intensity. See also [member ssao_radius].
