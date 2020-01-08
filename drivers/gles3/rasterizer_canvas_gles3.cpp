@@ -1889,7 +1889,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 		while (instance) {
 
-			RasterizerStorageGLES3::CanvasOccluder *cc = storage->canvas_occluder_owner.get(instance->polygon_buffer);
+			RasterizerStorageGLES3::CanvasOccluder *cc = storage->canvas_occluder_owner.getornull(instance->polygon_buffer);
 			if (!cc || cc->len == 0 || !(p_light_mask & instance->light_mask)) {
 
 				instance = instance->next;
