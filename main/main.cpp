@@ -287,9 +287,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  --export <preset> <path>         Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
-	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
-	OS::get_singleton()->print("                                   The target directory should exist. Only the data pack is exported if <path> ends with .pck or .zip.\n");
+	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>    Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects).\n");
@@ -675,7 +675,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
 			main_args.push_back(I->get());
 #endif
-		} else if (I->get() == "--export" || I->get() == "--export-debug") { // Export project
+		} else if (I->get() == "--export" || I->get() == "--export-debug" || I->get() == "--export-pack") { // Export project
 
 			editor = true;
 			main_args.push_back(I->get());
@@ -1395,15 +1395,17 @@ bool Main::start() {
 	bool hasicon = false;
 	String doc_tool;
 	List<String> removal_docs;
-#ifdef TOOLS_ENABLED
-	bool doc_base = true;
-#endif
 	String game_path;
 	String script;
 	String test;
+	bool check_only = false;
+
+#ifdef TOOLS_ENABLED
+	bool doc_base = true;
 	String _export_preset;
 	bool export_debug = false;
-	bool check_only = false;
+	bool export_pack_only = false;
+#endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
@@ -1442,6 +1444,10 @@ bool Main::start() {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
 				export_debug = true;
+			} else if (args[i] == "--export-pack") {
+				editor = true;
+				_export_preset = args[i + 1];
+				export_pack_only = true;
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -1511,18 +1517,15 @@ bool Main::start() {
 		return false;
 	}
 
-#endif
-
 	if (_export_preset != "") {
 		if (game_path == "") {
-			String err = "Command line parameter ";
-			err += export_debug ? "--export-debug" : "--export";
-			err += " passed but no destination path given.\n";
+			String err = "Command line includes export parameter option, but no destination path was given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
 			ERR_PRINT(err);
 			return false;
 		}
 	}
+#endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
@@ -1706,7 +1709,7 @@ bool Main::start() {
 			sml->get_root()->add_child(editor_node);
 
 			if (_export_preset != "") {
-				editor_node->export_preset(_export_preset, game_path, export_debug);
+				editor_node->export_preset(_export_preset, game_path, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
 		}

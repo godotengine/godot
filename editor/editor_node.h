@@ -558,6 +558,7 @@ private:
 		String preset;
 		String path;
 		bool debug;
+		bool pack_only;
 	} export_defer;
 
 	bool disable_progress_dialog;
@@ -779,7 +780,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	static void register_editor_types();
 	static void unregister_editor_types();
