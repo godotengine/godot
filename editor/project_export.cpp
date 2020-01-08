@@ -1072,6 +1072,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	main_vb->add_child(hbox);
 	hbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	// Presets list.
+
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(preset_vb);
@@ -1099,6 +1101,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", this, "_delete_preset");
 
+	// Preset settings.
+
 	VBoxContainer *settings_vb = memnew(VBoxContainer);
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
@@ -1119,17 +1123,23 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_path->set_save_mode();
 	export_path->connect("property_changed", this, "_export_path_changed");
 
+	// Subsections.
+
 	sections = memnew(TabContainer);
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	// Main preset parameters.
+
 	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", this, "_update_parameters");
+
+	// Resources export parameters.
 
 	VBoxContainer *resources_vb = memnew(VBoxContainer);
 	sections->add_child(resources_vb);
@@ -1165,8 +1175,13 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect("text_changed", this, "_filter_changed");
 
+	// Patch packages.
+
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
-	sections->add_child(patch_vb);
+	// FIXME: Patching support doesn't seem properly implemented yet, so we hide it.
+	// The rest of the code is still kept for now, in the hope that it will be made
+	// functional and reactivated.
+	//sections->add_child(patch_vb);
 	patch_vb->set_name(TTR("Patches"));
 
 	patches = memnew(Tree);
@@ -1197,6 +1212,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_erase->connect("confirmed", this, "_patch_deleted");
 	add_child(patch_erase);
 
+	// Feature tags.
+
 	VBoxContainer *feature_vb = memnew(VBoxContainer);
 	feature_vb->set_name(TTR("Features"));
 	custom_features = memnew(LineEdit);
@@ -1209,6 +1226,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
 	sections->add_child(feature_vb);
+
+	// Script export parameters.
 
 	updating_script_key = false;
 
@@ -1231,7 +1250,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	sections->connect("tab_changed", this, "_tab_changed");
 
-	//disable by default
+	// Disable by default.
 	name->set_editable(false);
 	export_path->hide();
 	runnable->set_disabled(true);
@@ -1241,10 +1260,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->hide();
 	parameters->edit(NULL);
 
+	// Deletion dialog.
+
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
 	delete_confirm->get_ok()->set_text(TTR("Delete"));
 	delete_confirm->connect("confirmed", this, "_delete_preset_confirm");
+
+	// Export buttons, dialogs and errors.
 
 	updating = false;
 
