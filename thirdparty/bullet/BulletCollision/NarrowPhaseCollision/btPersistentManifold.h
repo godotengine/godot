@@ -173,6 +173,7 @@ public:
 			//get rid of duplicated userPersistentData pointer
 			m_pointCache[lastUsedIndex].m_userPersistentData = 0;
 			m_pointCache[lastUsedIndex].m_appliedImpulse = 0.f;
+			m_pointCache[lastUsedIndex].m_prevRHS = 0.f;
 			m_pointCache[lastUsedIndex].m_contactPointFlags = 0;
 			m_pointCache[lastUsedIndex].m_appliedImpulseLateral1 = 0.f;
 			m_pointCache[lastUsedIndex].m_appliedImpulseLateral2 = 0.f;
@@ -195,6 +196,7 @@ public:
 #ifdef MAINTAIN_PERSISTENCY
 		int lifeTime = m_pointCache[insertIndex].getLifeTime();
 		btScalar appliedImpulse = m_pointCache[insertIndex].m_appliedImpulse;
+		btScalar prevRHS = m_pointCache[insertIndex].m_prevRHS;
 		btScalar appliedLateralImpulse1 = m_pointCache[insertIndex].m_appliedImpulseLateral1;
 		btScalar appliedLateralImpulse2 = m_pointCache[insertIndex].m_appliedImpulseLateral2;
 
@@ -223,6 +225,7 @@ public:
 			m_pointCache[insertIndex] = newPoint;
 			m_pointCache[insertIndex].m_userPersistentData = cache;
 			m_pointCache[insertIndex].m_appliedImpulse = appliedImpulse;
+			m_pointCache[insertIndex].m_prevRHS = prevRHS;
 			m_pointCache[insertIndex].m_appliedImpulseLateral1 = appliedLateralImpulse1;
 			m_pointCache[insertIndex].m_appliedImpulseLateral2 = appliedLateralImpulse2;
 		}
@@ -276,7 +279,8 @@ struct btPersistentManifoldDoubleData
 	btVector3DoubleData	m_pointCacheLateralFrictionDir2[4];
 	double m_pointCacheDistance[4];
 	double m_pointCacheAppliedImpulse[4];
-	double m_pointCacheCombinedFriction[4];
+	double m_pointCachePrevRHS[4];
+	 double m_pointCacheCombinedFriction[4];
 	double m_pointCacheCombinedRollingFriction[4];
 	double m_pointCacheCombinedSpinningFriction[4];
 	double m_pointCacheCombinedRestitution[4];
@@ -322,6 +326,7 @@ struct btPersistentManifoldFloatData
 	btVector3FloatData	m_pointCacheLateralFrictionDir2[4];
 	float m_pointCacheDistance[4];
 	float m_pointCacheAppliedImpulse[4];
+	float m_pointCachePrevRHS[4];
 	float m_pointCacheCombinedFriction[4];
 	float m_pointCacheCombinedRollingFriction[4];
 	float m_pointCacheCombinedSpinningFriction[4];
