@@ -1004,7 +1004,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	ScriptEditorBase *current = _get_current_editor();
 	switch (p_option) {
 		case FILE_NEW: {
-			script_create_dialog->config("Node", "new_script", false);
+			script_create_dialog->config("Node", "new_script", false, false);
 			script_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_TEXTFILE: {

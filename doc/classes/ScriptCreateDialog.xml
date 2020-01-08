@@ -24,6 +24,8 @@
 			</argument>
 			<argument index="2" name="built_in_enabled" type="bool" default="true">
 			</argument>
+			<argument index="3" name="load_enabled" type="bool" default="true">
+			</argument>
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
 			</description>
