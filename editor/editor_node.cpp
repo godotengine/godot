@@ -585,10 +585,7 @@ void EditorNode::_fs_changed() {
 				export_error = vformat("Export preset '%s' doesn't have a matching platform.", preset_name);
 			} else {
 				Error err = OK;
-				// FIXME: This way to export only resources .pck or .zip is pretty hacky
-				// and undocumented, and might be problematic for platforms where .zip is
-				// a valid project export format (e.g. macOS).
-				if (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip")) {
+				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_defer.path.ends_with(".zip")) {
 						err = platform->export_zip(preset, export_defer.debug, export_defer.path);
 					} else if (export_defer.path.ends_with(".pck")) {
@@ -3942,11 +3939,12 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
-Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only) {
 
 	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
+	export_defer.pack_only = p_pack_only;
 	disable_progress_dialog = true;
 	return OK;
 }
