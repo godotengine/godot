@@ -118,8 +118,8 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
@@ -459,9 +459,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", "Exporting for OSX", 3, true);
 
 	if (p_debug)
-		src_pkg_name = p_preset->get("custom_package/debug");
+		src_pkg_name = p_preset->get("custom_template/debug");
 	else
-		src_pkg_name = p_preset->get("custom_package/release");
+		src_pkg_name = p_preset->get("custom_template/release");
 
 	if (src_pkg_name == "") {
 		String err;
@@ -796,33 +796,32 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = false;
 	String err;
+	bool valid = false;
 
-	if (exists_export_template("osx.zip", &err)) {
-		valid = true;
-	}
+	// Look for export templates (first official, and if defined custom templates).
 
-	if (p_preset->get("custom_package/debug") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
-			valid = true;
-		} else {
+	bool dvalid = exists_export_template("osx.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
+
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-
-	if (p_preset->get("custom_package/release") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
-			valid = true;
-		} else {
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
+	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
 	if (!err.empty())
 		r_error = err;
-
-	r_missing_templates = !valid;
 	return valid;
 }
 

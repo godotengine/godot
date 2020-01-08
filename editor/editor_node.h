@@ -325,18 +325,13 @@ private:
 	ExportTemplateManager *export_template_manager;
 	EditorFeatureProfileManager *feature_profile_manager;
 	EditorFileDialog *file_templates;
-	EditorFileDialog *file_export;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
 	CheckBox *file_export_lib_merge;
-	LineEdit *file_export_password;
 	String current_path;
 	MenuButton *update_spinner;
 
 	String defer_load_scene;
-	String defer_export;
-	String defer_export_platform;
-	bool defer_export_debug;
 	Node *_last_instanced_scene;
 
 	EditorLog *log;
@@ -563,8 +558,6 @@ private:
 		String preset;
 		String path;
 		bool debug;
-		String password;
-
 	} export_defer;
 
 	bool disable_progress_dialog;
@@ -786,7 +779,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug);
 
 	static void register_editor_types();
 	static void unregister_editor_types();
