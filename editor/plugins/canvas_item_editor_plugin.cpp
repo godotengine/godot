@@ -5255,7 +5255,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
-	grid_step = Point2(10, 10);
+	grid_step = Point2(8, 8); // A power-of-two value works better as a default
 	primary_grid_steps = 8; // A power-of-two value works better as a default
 	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;
