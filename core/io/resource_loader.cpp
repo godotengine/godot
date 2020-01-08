@@ -277,6 +277,11 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 
 	ERR_FAIL_COND_V_MSG(found, RES(), "Failed loading resource: " + p_path + ".");
 
+#ifdef TOOLS_ENABLED
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), RES(), "Resource file not found: " + p_path + ".");
+#endif
+
 	ERR_FAIL_V_MSG(RES(), "No loader found for resource: " + p_path + ".");
 }
 
