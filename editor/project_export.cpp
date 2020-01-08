@@ -1178,11 +1178,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Patch packages.
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
+	sections->add_child(patch_vb);
+	patch_vb->set_name(TTR("Patches"));
+
 	// FIXME: Patching support doesn't seem properly implemented yet, so we hide it.
 	// The rest of the code is still kept for now, in the hope that it will be made
 	// functional and reactivated.
-	//sections->add_child(patch_vb);
-	patch_vb->set_name(TTR("Patches"));
+	patch_vb->hide();
 
 	patches = memnew(Tree);
 	patch_vb->add_child(patches);
