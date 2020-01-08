@@ -2689,6 +2689,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 			op->op = OperatorNode::OP_ASSIGN;
 			op->arguments.push_back(id2);
 			op->arguments.push_back(local_var->assign);
+			local_var->assign_op = op;
 
 			branch->body->statements.push_front(op);
 			branch->body->statements.push_front(local_var);
@@ -2866,7 +2867,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 					assigned = _get_default_value_for_type(lv->datatype, var_line);
 				}
-				lv->assign = assigned;
 				//must be added later, to avoid self-referencing.
 				p_block->variables.insert(n, lv);
 
