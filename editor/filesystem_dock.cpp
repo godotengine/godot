@@ -1761,7 +1761,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = fpath.get_base_dir();
 			}
 			make_script_dialog->config("Node", fpath.plus_file("new_script.gd"), false);
-			make_script_dialog->popup_centered(Size2(300, 300) * EDSCALE);
+			make_script_dialog->popup_centered();
 		} break;
 
 		case FILE_COPY_PATH: {
