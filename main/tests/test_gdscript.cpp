@@ -671,6 +671,30 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 
 				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN: {
+
+					txt += " assign typed builtin (";
+					txt += Variant::get_type_name((Variant::Type)code[ip + 1]);
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE: {
+					Variant className = func.get_constant(code[ip + 1]);
+					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(className.operator Object *());
+
+					txt += " assign typed native (";
+					txt += nc->get_name().operator String();
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
 				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
 
 					txt += " cast ";

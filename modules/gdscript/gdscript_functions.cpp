@@ -2057,12 +2057,13 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
-		case FUNC_MAX: {
+		default: {
 
 			ERR_FAIL_V(MethodInfo());
 		} break;
 	}
 #endif
-
-	return MethodInfo();
+	MethodInfo mi;
+	mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+	return mi;
 }
