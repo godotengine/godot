@@ -1,16 +1,16 @@
-os: Visual Studio 2015
+image: Visual Studio 2019
+
+platform: x64
 
 environment:
   HOME: "%HOMEDRIVE%%HOMEPATH%"
-  PYTHON: C:\Python27
+  PYTHON: C:\Python38
   SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
   SCONS_CACHE_LIMIT: 1024
   matrix:
-    - VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      GD_PLATFORM: windows
+    - GD_PLATFORM: windows
       TOOLS: yes
       TARGET: release_debug
-      ARCH: amd64
 
 init:
   - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
@@ -20,15 +20,12 @@ cache:
 
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - pip install -U wheel  # needed for pip install scons to work, otherwise a flag is missing
-  - pip install scons==3.0.1
-  - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
+  - pip install scons==3.1.2
 
 before_build:
   - echo %GD_PLATFORM%
   - python --version
   - scons --version
-  - cl.exe
   - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
 
 build_script:
