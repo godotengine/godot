@@ -7867,7 +7867,7 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 				def_type.is_constant = false;
 				p_function->argument_types.write[i] = def_type;
 			} else {
-				p_function->return_type = _resolve_type(p_function->return_type, p_function->line);
+				p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
 
 				if (!_is_type_compatible(p_function->argument_types[i], def_type, true)) {
 					String arg_name = p_function->arguments[i];
