@@ -580,6 +580,10 @@ bool AnimatedSprite::is_flipped_v() const {
 	return vflip;
 }
 
+bool AnimatedSprite::is_reversed() const {
+	return backwards;
+}
+
 void AnimatedSprite::_res_changed() {
 
 	set_frame(frame);
@@ -699,6 +703,8 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &AnimatedSprite::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &AnimatedSprite::is_flipped_v);
 
+	ClassDB::bind_method(D_METHOD("is_reversed"), &AnimatedSprite::is_reversed);
+	
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite::get_frame);
 
