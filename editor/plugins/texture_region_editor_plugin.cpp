@@ -233,15 +233,19 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	Vector2 endpoints[8] = {
-		mtx.xform(rect.position) + Vector2(-4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(4, 0),
-		mtx.xform(rect.position + rect.size) + Vector2(4, 4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-4, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-4, 0)
+	const real_t handle_radius = 8 * EDSCALE;
+	const real_t handle_offset = 4 * EDSCALE;
+
+	// Position of selection handles.
+	const Vector2 endpoints[8] = {
+		mtx.xform(rect.position) + Vector2(-handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(handle_offset, 0),
+		mtx.xform(rect.position + rect.size) + Vector2(handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -354,7 +358,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < handle_radius) {
 							drag_index = i;
 						}
 					}
