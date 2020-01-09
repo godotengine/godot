@@ -1589,6 +1589,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				ProjectSettings::get_singleton()->set("application/run/main_scene", p_selected[0]);
 				ProjectSettings::get_singleton()->save();
 				_update_tree(_compute_uncollapsed_paths());
+				_update_file_list(true);
 			}
 		} break;
 
