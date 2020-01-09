@@ -2051,6 +2051,9 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(2);
 			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
 		} break;
+		case STANDALONE_TERNARY: {
+			return "Standalone ternary conditional operator: the return value is being discarded.";
+		}
 		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
 	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
@@ -2092,6 +2095,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
 		"DEPRECATED_KEYWORD",
+		"STANDALONE_TERNARY",
 		NULL
 	};
 
