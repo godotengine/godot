@@ -398,9 +398,9 @@ Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 	CameraMatrix cm;
 
 	if (mode == PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
 	else
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
 
 	Size2 vp_size;
 	cm.get_viewport_size(vp_size.x, vp_size.y);
