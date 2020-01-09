@@ -34,11 +34,11 @@
 				Stops the current animation (does not reset the frame counter).
 			</description>
 		</method>
-		<method name="is_playing_backwards">
+		<method name="is_reversed">
 			<return type="bool">
 			</return>
 			<description>
-				Whether or not the animation is currently playing backwards. This is set when calling [code]play()[/code].	
+				Whether or not the animation is played in reverse. It returns [code]backwards[/code].	
 			</description>
 		</method>
 	</methods>
