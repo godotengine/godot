@@ -58,9 +58,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 			String name = l.split(" ")[0];
-
 			if ((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)) {
-
 				TreeItem *ti = recent->create_item(root);
 				ti->set_text(0, l);
 				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(l, base_type));
@@ -275,17 +273,7 @@ bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_cla
 		return false;
 	}
 
-	StringName class_name = p_class;
-
-	while (class_name != StringName()) {
-
-		if (profile->is_class_disabled(class_name)) {
-			return true;
-		}
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
-
-	return false;
+	return profile->is_class_disabled(p_class);
 }
 
 void CreateDialog::select_type(const String &p_type) {
@@ -616,7 +604,7 @@ void CreateDialog::_update_favorite_list() {
 	for (int i = 0; i < favorite_list.size(); i++) {
 		String l = favorite_list[i];
 		String name = l.split(" ")[0];
-		if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name)))
+		if (!((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)))
 			continue;
 		TreeItem *ti = favorites->create_item(root);
 		ti->set_text(0, l);
