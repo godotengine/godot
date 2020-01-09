@@ -883,10 +883,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							ns_android_string = string_table.size() - 1;
 						}
 
-						int32_t attr_uses_permission_string = string_table.find("uses-feature");
-						if (attr_uses_permission_string == -1) {
+						int32_t attr_uses_feature_string = string_table.find("uses-feature");
+						if (attr_uses_feature_string == -1) {
 							string_table.push_back("uses-feature");
-							attr_uses_permission_string = string_table.size() - 1;
+							attr_uses_feature_string = string_table.size() - 1;
 						}
 
 						int32_t attr_required_string = string_table.find("required");
@@ -928,7 +928,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						}
 
 						{
-							manifest_cur_size += 96 + 20; // node and three attrs + end node
+							manifest_cur_size += 96 + 24; // node and three attrs + end node
 							p_manifest.resize(manifest_cur_size);
 
 							// start tag
@@ -938,7 +938,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
 							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
 							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint32(attr_uses_feature_string, &p_manifest.write[ofs + 20]); // name
 							encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
 							encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
 							encode_uint16(3, &p_manifest.write[ofs + 28]); // num_attrs
@@ -982,7 +982,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
 							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
 							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint32(attr_uses_feature_string, &p_manifest.write[ofs + 20]); // name
 
 							ofs += 24;
 						}
