@@ -290,6 +290,9 @@ bool GDAPI godot_is_instance_valid(const godot_object *p_object);
 void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
 godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
 
+// equivalent of GDScript's instance_from_id
+godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id);
+
 #ifdef __cplusplus
 }
 #endif
