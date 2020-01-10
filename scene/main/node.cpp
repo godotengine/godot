@@ -40,6 +40,7 @@
 #include "viewport.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #endif
 
@@ -2608,7 +2609,13 @@ void Node::print_stray_nodes() {
 }
 
 void Node::queue_delete() {
-
+#ifdef TOOLS_ENABLED
+	const bool is_scene_root_valid = SceneTree::get_singleton()->get_edited_scene_root() &&
+		SceneTree::get_singleton()->get_edited_scene_root() == this &&
+		EditorNode::get_singleton()->is_changing_scene() &&
+		EditorNode::get_singleton()->get_editor_selection()->get_selection().size();
+	ERR_FAIL_COND_MSG(is_scene_root_valid, "Can't queue delete the node");
+#endif
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
