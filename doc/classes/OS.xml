@@ -613,9 +613,9 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the build is a debug build.
-				Returns [code]true[/code] when running in the editor.
-				Returns [code]false[/code] if the build is a release build.
+				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
+				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
+				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
 			</description>
 		</method>
 		<method name="is_ok_left_and_cancel_right" qualifiers="const">
