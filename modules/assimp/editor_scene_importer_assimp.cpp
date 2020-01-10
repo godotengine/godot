@@ -732,6 +732,10 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	animation->set_name(name);
 	animation->set_length(anim->mDuration / ticks_per_second);
 
+	if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+		animation->set_loop(true);
+	}
+
 	// generate bone stack for animation import
 	RegenerateBoneStack(state);
 
