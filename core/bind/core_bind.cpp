@@ -1393,7 +1393,7 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("current_screen", 0);
 	ADD_PROPERTY_DEFAULT("exit_code", 0);
 	ADD_PROPERTY_DEFAULT("vsync_enabled", true);
-	ADD_PROPERTY_DEFAULT("vsync_via_compositor", false);
+	ADD_PROPERTY_DEFAULT("vsync_via_compositor", true);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 	ADD_PROPERTY_DEFAULT("keep_screen_on", true);
