@@ -61,7 +61,7 @@
 	<signals>
 		<signal name="texture_changed">
 			<description>
-				Fired when the node's texture changes.
+				Emitted when the node's texture changes.
 			</description>
 		</signal>
 	</signals>
