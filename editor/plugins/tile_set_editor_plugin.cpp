@@ -1303,12 +1303,14 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
 						Size2 workspace_minsize = workspace->get_custom_minimum_size();
-						if (tile_workspace_size.x > workspace_minsize.x && tile_workspace_size.y > workspace_minsize.y) {
-							undo_redo->add_do_method(workspace, "set_custom_minimum_size", tile_workspace_size);
+						// If the new region is bigger, just directly change the workspace size to avoid checking all other tiles.
+						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
+							Size2 max_workspace_size = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
+							undo_redo->add_do_method(workspace, "set_custom_minimum_size", max_workspace_size);
 							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", tile_workspace_size);
+							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", max_workspace_size);
 							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", tile_workspace_size);
+							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", max_workspace_size);
 							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
 						} else if (workspace_minsize.x > get_current_texture()->get_size().x + WORKSPACE_MARGIN.x * 2 || workspace_minsize.y > get_current_texture()->get_size().y + WORKSPACE_MARGIN.y * 2) {
 							undo_redo->add_do_method(this, "update_workspace_minsize");
@@ -1803,8 +1805,6 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				Ref<ConvexPolygonShape2D> _convex = memnew(ConvexPolygonShape2D);
 				edited_collision_shape = _convex;
 				_set_edited_shape_points(_get_collision_shape_points(concave));
-			} else {
-				// Shouldn't happen
 			}
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == previous_shape) {
@@ -3267,12 +3267,16 @@ void TileSetEditor::update_workspace_minsize() {
 	List<int> *tiles = new List<int>();
 	tileset->get_tile_list(tiles);
 	for (List<int>::Element *E = tiles->front(); E; E = E->next()) {
-		if (tileset->tile_get_texture(E->get())->get_rid() == current_texture_rid) {
-			Rect2i region = tileset->tile_get_region(E->get());
-			if (region.position.x + region.size.x > workspace_min_size.x)
-				workspace_min_size.x = region.position.x + region.size.x;
-			if (region.position.y + region.size.y > workspace_min_size.y)
-				workspace_min_size.y = region.position.y + region.size.y;
+		if (tileset->tile_get_texture(E->get())->get_rid() != current_texture_rid) {
+			continue;
+		}
+
+		Rect2i region = tileset->tile_get_region(E->get());
+		if (region.position.x + region.size.x > workspace_min_size.x) {
+			workspace_min_size.x = region.position.x + region.size.x;
+		}
+		if (region.position.y + region.size.y > workspace_min_size.y) {
+			workspace_min_size.y = region.position.y + region.size.y;
 		}
 	}
 	delete tiles;
