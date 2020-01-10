@@ -383,8 +383,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 		}
 
-		// Attempt with PCK bundled into executable
+#ifdef OSX_ENABLED
+		// Attempt to load PCK from macOS .app bundle resources
+		if (!found) {
+			if (_load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"))) {
+				found = true;
+			}
+		}
+#endif
 
+		// Attempt with PCK bundled into executable
 		if (!found) {
 			if (_load_resource_pack(exec_path)) {
 				found = true;
