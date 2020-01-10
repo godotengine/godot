@@ -536,34 +536,20 @@ void RasterizerSceneForwardRD::RenderBufferDataForward::clear() {
 		color_fb = RID();
 	}
 
-	if (color.is_valid()) {
-		RD::get_singleton()->free(color);
-		color = RID();
-	}
-
 	if (depth.is_valid()) {
 		RD::get_singleton()->free(depth);
 		depth = RID();
 	}
 }
 
-void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) {
+void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_color_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) {
 	clear();
 
 	width = p_width;
 	height = p_height;
 
-	render_target = p_render_target;
+	color = p_color_buffer;
 
-	{
-		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.width = p_width;
-		tf.height = p_height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-
-		color = RD::get_singleton()->texture_create(tf, RD::TextureView());
-	}
 	{
 		RD::TextureFormat tf;
 		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
@@ -576,7 +562,7 @@ void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_render_t
 
 	{
 		Vector<RID> fb;
-		fb.push_back(color);
+		fb.push_back(p_color_buffer);
 		fb.push_back(depth);
 
 		color_fb = RD::get_singleton()->framebuffer_create(fb);
@@ -589,7 +575,7 @@ void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_render_t
 	}
 	{
 		Vector<RID> fb;
-		fb.push_back(color);
+		fb.push_back(p_color_buffer);
 
 		color_only_fb = RD::get_singleton()->framebuffer_create(fb);
 	}
@@ -951,7 +937,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	}
 }
 
-void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y) {
+void RasterizerSceneForwardRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color) {
 
 	//CameraMatrix projection = p_cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
@@ -981,7 +967,7 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_env
 	//time global variables
 	scene_state.ubo.time = time;
 
-	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 
 		scene_state.ubo.use_ambient_light = true;
 		scene_state.ubo.ambient_light_color_energy[0] = 1;
@@ -1004,7 +990,7 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_env
 		//ambient
 		if (ambient_src == VS::ENV_AMBIENT_SOURCE_BG && (env_bg == VS::ENV_BG_CLEAR_COLOR || env_bg == VS::ENV_BG_COLOR)) {
 
-			Color color = (p_render_target.is_valid() && env_bg == VS::ENV_BG_CLEAR_COLOR) ? (p_render_target.is_valid() ? storage->render_target_get_clear_request_color(p_render_target) : Color(0, 0, 0)) : environment_get_bg_color(p_environment);
+			Color color = env_bg == VS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_environment);
 			color = color.to_linear();
 
 			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
@@ -1039,138 +1025,21 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_env
 
 	} else {
 
-		if (p_reflection_probe.is_valid() && !storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
-			scene_state.ubo.use_ambient_light = true;
-			Color clear_color = storage->get_default_clear_color();
-			clear_color = clear_color.to_linear();
-			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
-			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
-			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
-			scene_state.ubo.ambient_light_color_energy[3] = 1.0;
-
-		} else if (p_render_target.is_valid()) {
-			scene_state.ubo.use_ambient_light = true;
-			Color clear_color = storage->render_target_get_clear_request_color(p_render_target);
-			clear_color = clear_color.to_linear();
-			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
-			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
-			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
-			scene_state.ubo.ambient_light_color_energy[3] = 1.0;
-		} else {
+		if (p_reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
 			scene_state.ubo.use_ambient_light = false;
+		} else {
+			scene_state.ubo.use_ambient_light = true;
+			Color clear_color = p_default_bg_color;
+			clear_color = clear_color.to_linear();
+			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
+			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
+			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
+			scene_state.ubo.ambient_light_color_energy[3] = 1.0;
 		}
 
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
 	}
-#if 0
-	//bg and ambient
-	if (p_environment.is_valid()) {
-
-		state.ubo_data.bg_energy = env->bg_energy;
-		state.ubo_data.ambient_energy = env->ambient_energy;
-		Color linear_ambient_color = env->ambient_color.to_linear();
-		state.ubo_data.ambient_light_color[0] = linear_ambient_color.r;
-		state.ubo_data.ambient_light_color[1] = linear_ambient_color.g;
-		state.ubo_data.ambient_light_color[2] = linear_ambient_color.b;
-		state.ubo_data.ambient_light_color[3] = linear_ambient_color.a;
-
-		Color bg_color;
-
-		switch (env->bg_mode) {
-			case VS::ENV_BG_CLEAR_COLOR: {
-				bg_color = storage->frame.clear_request_color.to_linear();
-			} break;
-			case VS::ENV_BG_COLOR: {
-				bg_color = env->bg_color.to_linear();
-			} break;
-			default: {
-				bg_color = Color(0, 0, 0, 1);
-			} break;
-		}
-
-		state.ubo_data.bg_color[0] = bg_color.r;
-		state.ubo_data.bg_color[1] = bg_color.g;
-		state.ubo_data.bg_color[2] = bg_color.b;
-		state.ubo_data.bg_color[3] = bg_color.a;
-
-		//use the inverse of our sky_orientation, we may need to skip this if we're using a reflection probe?
-		sky_orientation = Transform(env->sky_orientation, Vector3(0.0, 0.0, 0.0)).affine_inverse();
-
-		state.env_radiance_data.ambient_contribution = env->ambient_sky_contribution;
-		state.ubo_data.ambient_occlusion_affect_light = env->ssao_light_affect;
-		state.ubo_data.ambient_occlusion_affect_ssao = env->ssao_ao_channel_affect;
-
-		//fog
-
-		Color linear_fog = env->fog_color.to_linear();
-		state.ubo_data.fog_color_enabled[0] = linear_fog.r;
-		state.ubo_data.fog_color_enabled[1] = linear_fog.g;
-		state.ubo_data.fog_color_enabled[2] = linear_fog.b;
-		state.ubo_data.fog_color_enabled[3] = (!p_no_fog && env->fog_enabled) ? 1.0 : 0.0;
-		state.ubo_data.fog_density = linear_fog.a;
-
-		Color linear_sun = env->fog_sun_color.to_linear();
-		state.ubo_data.fog_sun_color_amount[0] = linear_sun.r;
-		state.ubo_data.fog_sun_color_amount[1] = linear_sun.g;
-		state.ubo_data.fog_sun_color_amount[2] = linear_sun.b;
-		state.ubo_data.fog_sun_color_amount[3] = env->fog_sun_amount;
-		state.ubo_data.fog_depth_enabled = env->fog_depth_enabled;
-		state.ubo_data.fog_depth_begin = env->fog_depth_begin;
-		state.ubo_data.fog_depth_end = env->fog_depth_end;
-		state.ubo_data.fog_depth_curve = env->fog_depth_curve;
-		state.ubo_data.fog_transmit_enabled = env->fog_transmit_enabled;
-		state.ubo_data.fog_transmit_curve = env->fog_transmit_curve;
-		state.ubo_data.fog_height_enabled = env->fog_height_enabled;
-		state.ubo_data.fog_height_min = env->fog_height_min;
-		state.ubo_data.fog_height_max = env->fog_height_max;
-		state.ubo_data.fog_height_curve = env->fog_height_curve;
-
-	} else {
-		state.ubo_data.bg_energy = 1.0;
-		state.ubo_data.ambient_energy = 1.0;
-		//use from clear color instead, since there is no ambient
-		Color linear_ambient_color = storage->frame.clear_request_color.to_linear();
-		state.ubo_data.ambient_light_color[0] = linear_ambient_color.r;
-		state.ubo_data.ambient_light_color[1] = linear_ambient_color.g;
-		state.ubo_data.ambient_light_color[2] = linear_ambient_color.b;
-		state.ubo_data.ambient_light_color[3] = linear_ambient_color.a;
-
-		state.ubo_data.bg_color[0] = linear_ambient_color.r;
-		state.ubo_data.bg_color[1] = linear_ambient_color.g;
-		state.ubo_data.bg_color[2] = linear_ambient_color.b;
-		state.ubo_data.bg_color[3] = linear_ambient_color.a;
-
-		state.env_radiance_data.ambient_contribution = 0;
-		state.ubo_data.ambient_occlusion_affect_light = 0;
-
-		state.ubo_data.fog_color_enabled[3] = 0.0;
-	}
-
-	{
-		//directional shadow
-
-		state.ubo_data.shadow_directional_pixel_size[0] = 1.0 / directional_shadow.size;
-		state.ubo_data.shadow_directional_pixel_size[1] = 1.0 / directional_shadow.size;
-
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
-		glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-	}
-
-	glBindBuffer(GL_UNIFORM_BUFFER, state.scene_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(State::SceneDataUBO), &state.ubo_data);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	//fill up environment
-
-	store_transform(sky_orientation * p_cam_transform, state.env_radiance_data.transform);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, state.env_radiance_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_data);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-#endif
 
 	RD::get_singleton()->buffer_update(scene_state.uniform_buffer, 0, sizeof(SceneState::UBO), &scene_state.ubo, true);
 }
@@ -1181,12 +1050,12 @@ void RasterizerSceneForwardRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 
 	m_src = p_instance->material_override.is_valid() ? p_instance->material_override : p_material;
 
-	if (unlikely(debug_draw != VS::VIEWPORT_DEBUG_DRAW_DISABLED)) {
-		if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (unlikely(get_debug_draw_mode() != VS::VIEWPORT_DEBUG_DRAW_DISABLED)) {
+		if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 			m_src = overdraw_material;
-		} else if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
+		} else if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
 			m_src = wireframe_material;
-		} else if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_LIGHTING) {
+		} else if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_LIGHTING) {
 			m_src = default_material;
 		}
 	}
@@ -1756,9 +1625,12 @@ void RasterizerSceneForwardRD::_setup_lights(RID *p_light_cull_result, int p_lig
 	}
 }
 
-void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneForwardRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
 
-	RenderBufferDataForward *render_buffer = (RenderBufferDataForward *)p_buffer_data;
+	RenderBufferDataForward *render_buffer = NULL;
+	if (p_render_buffer.is_valid()) {
+		render_buffer = (RenderBufferDataForward *)render_buffers_get_data(p_render_buffer);
+	}
 
 	//first of all, make a new render pass
 	render_pass++;
@@ -1788,7 +1660,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		p_light_cull_count = 0;
 		p_reflection_probe_cull_count = 0;
 		p_gi_probe_cull_count = 0;
@@ -1814,7 +1686,6 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	p_cam_projection.get_viewport_size(scene_state.ubo.viewport_size[0], scene_state.ubo.viewport_size[1]);
 
-	RID render_target;
 	Size2 screen_pixel_size;
 	RID opaque_framebuffer;
 	RID depth_framebuffer;
@@ -1823,7 +1694,6 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	if (render_buffer) {
 		screen_pixel_size.width = 1.0 / render_buffer->width;
 		screen_pixel_size.height = 1.0 / render_buffer->height;
-		render_target = render_buffer->render_target;
 
 		opaque_framebuffer = render_buffer->color_fb;
 		depth_framebuffer = render_buffer->depth_fb;
@@ -1849,7 +1719,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows);
 	_setup_reflections(p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_cam_transform.affine_inverse(), p_environment);
 	_setup_gi_probes(p_gi_probe_cull_result, p_gi_probe_cull_count, p_cam_transform);
-	_setup_environment(render_target, p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid());
+	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color);
 
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, render_buffer == nullptr);
@@ -1860,14 +1730,14 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	Color clear_color;
 	bool keep_color = false;
 
-	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
 	} else if (is_environment(p_environment)) {
 		VS::EnvironmentBG bg_mode = environment_get_background(p_environment);
 		float bg_energy = environment_get_bg_energy(p_environment);
 		switch (bg_mode) {
 			case VS::ENV_BG_CLEAR_COLOR: {
-				clear_color = render_target.is_valid() ? storage->render_target_get_clear_request_color(render_target) : environment_get_bg_color(p_environment);
+				clear_color = p_default_bg_color;
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
@@ -1894,14 +1764,12 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 			case VS::ENV_BG_CAMERA_FEED: {
 
 			} break;
+			default: {
+			}
 		}
 	} else {
 
-		if (p_reflection_probe.is_valid() && !storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
-			clear_color = storage->get_default_clear_color();
-		} else if (render_target.is_valid()) {
-			clear_color = storage->render_target_get_clear_request_color(render_target);
-		}
+		clear_color = p_default_bg_color;
 	}
 
 	_setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), radiance_cubemap, p_shadow_atlas, p_reflection_atlas);
@@ -1911,7 +1779,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	_fill_instances(render_list.elements, render_list.element_count, false);
 
 	bool can_continue = true; //unless the middle buffers are needed
-	bool debug_giprobes = debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
+	bool debug_giprobes = get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
 	bool using_separate_specular = false;
 
 	bool depth_pre_pass = depth_framebuffer.is_valid();
@@ -1942,7 +1810,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 		for (int i = 0; i < p_gi_probe_cull_count; i++) {
-			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
+			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
 		RD::get_singleton()->draw_list_end();
 	}
@@ -1990,44 +1858,10 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		return;
 	}
 
-	RasterizerEffectsRD *effects = storage->get_effects();
+	RENDER_TIMESTAMP("Tonemap");
 
-	{
-		RENDER_TIMESTAMP("Tonemap");
-		//tonemap
-		RasterizerEffectsRD::TonemapSettings tonemap;
-
-		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
-		tonemap.exposure_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
-		tonemap.glow_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
-
-		if (is_environment(p_environment)) {
-			tonemap.tonemap_mode = environment_get_tonemapper(p_environment);
-			tonemap.white = environment_get_white(p_environment);
-			tonemap.exposure = environment_get_exposure(p_environment);
-		}
-		effects->tonemapper(render_buffer->color, storage->render_target_get_rd_framebuffer(render_buffer->render_target), tonemap);
-	}
-
-	storage->render_target_disable_clear_request(render_buffer->render_target);
-
-	if (render_buffer && debug_draw == VS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
-		if (p_shadow_atlas.is_valid()) {
-			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
-			Size2 rtsize = storage->render_target_get_size(render_buffer->render_target);
-
-			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2(Vector2(), rtsize / 2));
-		}
-	}
-
-	if (render_buffer && debug_draw == VS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
-		if (directional_shadow_get_texture().is_valid()) {
-			RID shadow_atlas_texture = directional_shadow_get_texture();
-			Size2 rtsize = storage->render_target_get_size(render_buffer->render_target);
-
-			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2(Vector2(), rtsize / 2));
-		}
-	}
+	render_buffers_post_process_and_tonemap(p_render_buffer, p_environment);
+	render_buffers_debug_draw(p_render_buffer, p_shadow_atlas);
 
 #if 0
 	_post_process(env, p_cam_projection);
@@ -2099,7 +1933,7 @@ void RasterizerSceneForwardRD::_render_shadow(RID p_framebuffer, InstanceBase **
 	scene_state.ubo.z_far = p_zfar;
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 
-	_setup_environment(RID(), RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true);
+	_setup_environment(RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true, Color());
 
 	render_list.clear();
 
@@ -2135,7 +1969,7 @@ void RasterizerSceneForwardRD::_render_material(const Transform &p_cam_transform
 	scene_state.ubo.z_far = 0;
 	scene_state.ubo.dual_paraboloid_side = 0;
 
-	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false);
+	_setup_environment(RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false, Color());
 
 	render_list.clear();
 
@@ -2391,10 +2225,6 @@ RasterizerSceneForwardRD *RasterizerSceneForwardRD::singleton = NULL;
 
 void RasterizerSceneForwardRD::set_time(double p_time) {
 	time = p_time;
-}
-
-void RasterizerSceneForwardRD::set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {
-	debug_draw = p_debug_draw;
 }
 
 RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storage) :

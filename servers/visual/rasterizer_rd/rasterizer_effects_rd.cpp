@@ -45,7 +45,7 @@ static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_ar
 	p_array[11] = 0;
 }
 
-RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture) {
+RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
 
 	if (texture_to_uniform_set_cache.has(p_texture)) {
 		RID uniform_set = texture_to_uniform_set_cache[p_texture];
@@ -58,7 +58,7 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture) {
 	RD::Uniform u;
 	u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
-	u.ids.push_back(default_sampler);
+	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
 	uniforms.push_back(u);
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
@@ -137,6 +137,55 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuff
 	//VERTICAL
 	draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_GAUSSIAN_BLUR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_rd_texture_half), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	blur.push_constant.flags = base_flags;
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure) {
+
+	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+
+	BlurMode blur_mode = p_first_pass && p_auto_exposure.is_valid() ? BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : BLUR_MODE_GAUSSIAN_GLOW;
+	uint32_t base_flags = 0;
+
+	blur.push_constant.pixel_size[0] = p_pixel_size.x;
+	blur.push_constant.pixel_size[1] = p_pixel_size.y;
+
+	blur.push_constant.glow_strength = p_strength;
+	blur.push_constant.glow_bloom = p_bloom;
+	blur.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
+	blur.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
+	blur.push_constant.glow_exposure = p_exposure;
+	blur.push_constant.glow_white = 0; //actually unused
+	blur.push_constant.glow_luminance_cap = p_luminance_cap;
+	blur.push_constant.glow_auto_exposure_grey = 0; //unused also
+
+	//HORIZONTAL
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer_half, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer_half)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	if (p_auto_exposure.is_valid() && p_first_pass) {
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_auto_exposure), 1);
+	}
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	blur.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+
+	blur_mode = BLUR_MODE_GAUSSIAN_GLOW;
+
+	//VERTICAL
+	draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_rd_texture_half), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
@@ -241,6 +290,7 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 	tonemap.push_constant.glow_level_flags = p_settings.glow_level_flags;
 	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
 	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
+	tonemap.push_constant.glow_mode = p_settings.glow_mode;
 
 	TonemapMode mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
 
@@ -256,7 +306,7 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.glow_texture), 2);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.glow_texture, true), 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
@@ -360,6 +410,12 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	sampler.max_lod = 0;
 
 	default_sampler = RD::get_singleton()->sampler_create(sampler);
+
+	sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
+	sampler.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+	sampler.max_lod = 1e20;
+
+	default_mipmap_sampler = RD::get_singleton()->sampler_create(sampler);
 
 	{ //create index array for copy shaders
 		PoolVector<uint8_t> pv;
