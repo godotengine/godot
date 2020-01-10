@@ -174,7 +174,7 @@
 			<argument index="1" name="granted" type="bool">
 			</argument>
 			<description>
-				Emitted when an user responds to permission request.
+				Emitted when a user responds to a permission request.
 			</description>
 		</signal>
 	</signals>

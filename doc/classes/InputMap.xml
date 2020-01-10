@@ -60,6 +60,7 @@
 			<argument index="1" name="deadzone" type="float">
 			</argument>
 			<description>
+				Sets a deadzone value for the action.
 			</description>
 		</method>
 		<method name="add_action">
