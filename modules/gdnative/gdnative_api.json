@@ -155,6 +155,13 @@
               ["const godot_object *", "p_object"],
               ["void *", "p_class_tag"]
             ]
+          },
+          {
+            "name": "godot_instance_from_id",
+            "return_type": "godot_object *",
+            "arguments": [
+              ["godot_int", "p_instance_id"]
+            ]
           }
         ]
       },
