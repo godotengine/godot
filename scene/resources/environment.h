@@ -77,6 +77,7 @@ public:
 		GLOW_BLEND_MODE_SCREEN,
 		GLOW_BLEND_MODE_SOFTLIGHT,
 		GLOW_BLEND_MODE_REPLACE,
+		GLOW_BLEND_MODE_MIX,
 	};
 
 	enum DOFBlurQuality {
@@ -154,6 +155,7 @@ private:
 	int glow_levels;
 	float glow_intensity;
 	float glow_strength;
+	float glow_mix;
 	float glow_bloom;
 	GlowBlendMode glow_blend_mode;
 	float glow_hdr_bleed_threshold;
@@ -332,6 +334,9 @@ public:
 
 	void set_glow_strength(float p_strength);
 	float get_glow_strength() const;
+
+	void set_glow_mix(float p_mix);
+	float get_glow_mix() const;
 
 	void set_glow_bloom(float p_threshold);
 	float get_glow_bloom() const;

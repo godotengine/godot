@@ -198,17 +198,22 @@ class RasterizerEffectsRD {
 	} copy;
 
 	RID default_sampler;
+	RID default_mipmap_sampler;
 	RID index_buffer;
 	RID index_array;
 
 	Map<RID, RID> texture_to_uniform_set_cache;
 
-	RID _get_uniform_set_from_texture(RID p_texture);
+	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 
 public:
+	//TODO must re-do most of the shaders in compute
+
 	void region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
+	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID());
+
 	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness);
 	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
@@ -221,7 +226,8 @@ public:
 			GLOW_MODE_ADD,
 			GLOW_MODE_SCREEN,
 			GLOW_MODE_SOFTLIGHT,
-			GLOW_MODE_REPLACE
+			GLOW_MODE_REPLACE,
+			GLOW_MODE_MIX
 		};
 
 		GlowMode glow_mode = GLOW_MODE_ADD;

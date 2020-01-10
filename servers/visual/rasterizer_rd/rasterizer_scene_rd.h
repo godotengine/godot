@@ -49,18 +49,22 @@ public:
 protected:
 	struct RenderBufferData {
 
-		virtual void configure(RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
+		virtual void configure(RID p_color_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
 	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 
+	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
+
 private:
+	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+
 	int roughness_layers;
 
 	RasterizerStorageRD *storage;
@@ -461,6 +465,20 @@ private:
 		float max_luminance = 8.0;
 		float auto_exp_speed = 0.2;
 		float auto_exp_scale = 0.5;
+
+		/// Glow
+
+		bool glow_enabled = false;
+		int glow_levels = (1 << 2) | (1 << 4);
+		float glow_intensity = 0.8;
+		float glow_strength = 1.0;
+		float glow_bloom = 0.0;
+		float glow_mix = 0.01;
+		VS::EnvironmentGlowBlendMode glow_blend_mode = VS::GLOW_BLEND_MODE_SOFTLIGHT;
+		float glow_hdr_bleed_threshold = 1.0;
+		float glow_hdr_luminance_cap = 12.0;
+		float glow_hdr_bleed_scale = 2.0;
+		bool glow_bicubic_upscale = false;
 	};
 
 	mutable RID_Owner<Environent> environment_owner;
@@ -473,9 +491,36 @@ private:
 		int width = 0, height = 0;
 		VS::ViewportMSAA msaa = VS::VIEWPORT_MSAA_DISABLED;
 		RID render_target;
+
+		RID texture; //main texture for rendering to, must be filled after done rendering
+
+		//built-in textures used for ping pong image processing and blurring
+		struct Blur {
+			RID texture;
+
+			struct Mipmap {
+				RID texture;
+				RID framebuffer;
+				int width;
+				int height;
+			};
+
+			Vector<Mipmap> mipmaps;
+		};
+
+		Blur blur[2]; //the second one starts from the first mipmap
+
+		struct Luminance {
+
+			Vector<RID> reduce;
+			RID current;
+		} luminance;
 	};
 
 	mutable RID_Owner<RenderBuffers> render_buffers_owner;
+
+	void _free_render_buffer_data(RenderBuffers *rb);
+	void _allocate_blur_textures(RenderBuffers *rb);
 
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
@@ -557,7 +602,7 @@ public:
 
 	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
-	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {}
+	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
@@ -565,15 +610,6 @@ public:
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
-	VS::EnvironmentToneMapper environment_get_tonemapper(RID p_env) const;
-	float environment_get_exposure(RID p_env) const;
-	float environment_get_white(RID p_env) const;
-	bool environment_get_auto_exposure(RID p_env) const;
-	float environment_get_min_luminance(RID p_env) const;
-	float environment_get_max_luminance(RID p_env) const;
-	float environment_get_auto_exposure_scale(RID p_env) const;
-	float environment_get_auto_exposure_speed(RID p_env) const;
-
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
 
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
@@ -802,6 +838,10 @@ public:
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
+	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
+	void render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas);
+	void render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment);
+
 	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
@@ -817,6 +857,9 @@ public:
 	virtual bool free(RID p_rid);
 
 	virtual void update();
+
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
+	_FORCE_INLINE_ VS::ViewportDebugDraw get_debug_draw_mode() const { return debug_draw; }
 
 	RasterizerSceneRD(RasterizerStorageRD *p_storage);
 	~RasterizerSceneRD();

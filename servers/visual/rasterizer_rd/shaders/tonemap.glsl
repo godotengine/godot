@@ -187,31 +187,31 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	vec3 glow = vec3(0.0f);
 
 	if (bool(params.glow_level_flags & (1 << 0))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 1))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 2))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 3))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 4))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 5))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
 	}
 
 	if (bool(params.glow_level_flags & (1 << 6))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
 	}
 
 	return glow;
@@ -221,6 +221,7 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #define GLOW_MODE_SCREEN 1
 #define GLOW_MODE_SOFTLIGHT 2
 #define GLOW_MODE_REPLACE 3
+#define GLOW_MODE_MIX 4
 
 vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
 	if (params.glow_mode == GLOW_MODE_ADD) {
@@ -266,13 +267,20 @@ void main() {
 
 	// Early Tonemap & SRGB Conversion
 
+	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
+
+		vec3 glow = gather_glow(source_glow, uv_interp);
+		color.rgb = mix(color.rgb,glow,params.glow_intensity);
+
+	}
+
 	color = apply_tonemapping(color, params.white);
 
 	color = linear_to_srgb(color); // regular linear -> SRGB conversion
 
 	// Glow
 
-	if (params.use_glow) {
+	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
 
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
 

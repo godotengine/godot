@@ -468,46 +468,21 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMa
 	env->auto_exp_scale = p_auto_exp_scale;
 }
 
-VS::EnvironmentToneMapper RasterizerSceneRD::environment_get_tonemapper(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, VS::ENV_TONE_MAPPER_LINEAR);
-	return env->tone_mapper;
-}
-float RasterizerSceneRD::environment_get_exposure(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->exposure;
-}
-float RasterizerSceneRD::environment_get_white(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->white;
-}
-bool RasterizerSceneRD::environment_get_auto_exposure(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->auto_exposure;
-}
-float RasterizerSceneRD::environment_get_min_luminance(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->min_luminance;
-}
-float RasterizerSceneRD::environment_get_max_luminance(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->max_luminance;
-}
-float RasterizerSceneRD::environment_get_auto_exposure_scale(RID p_env) const {
-	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->auto_exp_scale;
-}
+void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
 
-float RasterizerSceneRD::environment_get_auto_exposure_speed(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->auto_exp_speed;
+	ERR_FAIL_COND(!env);
+	env->glow_enabled = p_enable;
+	env->glow_levels = p_level_flags;
+	env->glow_intensity = p_intensity;
+	env->glow_strength = p_strength;
+	env->glow_mix = p_mix;
+	env->glow_bloom = p_bloom_threshold;
+	env->glow_blend_mode = p_blend_mode;
+	env->glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
+	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
+	env->glow_hdr_luminance_cap = p_hdr_luminance_cap;
+	env->glow_bicubic_upscale = p_bicubic_upscale;
 }
 
 bool RasterizerSceneRD::is_environment(RID p_env) const {
@@ -2181,6 +2156,198 @@ RID RasterizerSceneRD::render_buffers_create() {
 	return render_buffers_owner.make_rid(rb);
 }
 
+void RasterizerSceneRD::_allocate_blur_textures(RenderBuffers *rb) {
+	ERR_FAIL_COND(!rb->blur[0].texture.is_null());
+
+	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rb->width, rb->height, Image::FORMAT_RGBAH);
+
+	RD::TextureFormat tf;
+	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	tf.width = rb->width;
+	tf.height = rb->height;
+	tf.type = RD::TEXTURE_TYPE_2D;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.mipmaps = mipmaps_required;
+
+	rb->blur[0].texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	//the second one is smaller (only used for separatable part of blur)
+	tf.width >>= 1;
+	tf.height >>= 1;
+	tf.mipmaps--;
+	rb->blur[1].texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	int base_width = rb->width;
+	int base_height = rb->height;
+
+	for (uint32_t i = 0; i < mipmaps_required; i++) {
+
+		RenderBuffers::Blur::Mipmap mm;
+		mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->blur[0].texture, 0, i);
+		{
+			Vector<RID> fbs;
+			fbs.push_back(mm.texture);
+			mm.framebuffer = RD::get_singleton()->framebuffer_create(fbs);
+		}
+
+		mm.width = base_width;
+		mm.height = base_height;
+
+		rb->blur[0].mipmaps.push_back(mm);
+
+		if (i > 0) {
+
+			mm.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->blur[1].texture, 0, i - 1);
+			{
+				Vector<RID> fbs;
+				fbs.push_back(mm.texture);
+				mm.framebuffer = RD::get_singleton()->framebuffer_create(fbs);
+			}
+
+			rb->blur[1].mipmaps.push_back(mm);
+		}
+
+		base_width = MAX(1, base_width >> 1);
+		base_height = MAX(1, base_height >> 1);
+	}
+}
+
+void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
+
+	if (rb->texture.is_valid()) {
+		RD::get_singleton()->free(rb->texture);
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (rb->blur[i].texture.is_valid()) {
+			RD::get_singleton()->free(rb->blur[i].texture);
+			rb->blur[i].texture = RID();
+			rb->blur[i].mipmaps.clear();
+		}
+	}
+
+	for (int i = 0; i < rb->luminance.reduce.size(); i++) {
+		RD::get_singleton()->free(rb->luminance.reduce[i]);
+	}
+
+	rb->luminance.reduce.clear();
+
+	if (rb->luminance.current.is_valid()) {
+		RD::get_singleton()->free(rb->luminance.current);
+		rb->luminance.current = RID();
+	}
+}
+
+void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment) {
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	Environent *env = environment_owner.getornull(p_environment);
+	//glow (if enabled)
+
+	int max_glow_level = -1;
+	int glow_mask = 0;
+
+	if (env && env->glow_enabled) {
+
+		/* see that blur textures are allocated */
+
+		if (rb->blur[0].texture.is_null()) {
+			_allocate_blur_textures(rb);
+		}
+
+		for (int i = 0; i < VS::MAX_GLOW_LEVELS; i++) {
+			if (env->glow_levels & (1 << i)) {
+
+				if (i >= rb->blur[1].mipmaps.size()) {
+					max_glow_level = rb->blur[1].mipmaps.size() - 1;
+					glow_mask |= 1 << max_glow_level;
+
+				} else {
+					max_glow_level = i;
+					glow_mask |= (1 << i);
+				}
+			}
+		}
+
+		for (int i = 0; i < (max_glow_level + 1); i++) {
+
+			int vp_w = rb->blur[1].mipmaps[i].width;
+			int vp_h = rb->blur[1].mipmaps[i].height;
+
+			if (i == 0) {
+				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].framebuffer, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].framebuffer, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, RID());
+			} else {
+				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i + 1].framebuffer, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].framebuffer, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength);
+			}
+		}
+	}
+
+	{
+		//tonemap
+		RasterizerEffectsRD::TonemapSettings tonemap;
+
+		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+		tonemap.exposure_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+
+		if (env && env->glow_enabled) {
+			tonemap.use_glow = true;
+			tonemap.glow_mode = RasterizerEffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
+			tonemap.glow_intensity = env->glow_blend_mode == VS::GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
+			tonemap.glow_level_flags = glow_mask;
+			tonemap.glow_texture_size.x = rb->blur[1].mipmaps[0].width;
+			tonemap.glow_texture_size.y = rb->blur[1].mipmaps[0].height;
+			tonemap.glow_use_bicubic_upscale = env->glow_bicubic_upscale;
+			tonemap.glow_texture = rb->blur[1].texture;
+		} else {
+			tonemap.glow_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+		}
+
+		if (env) {
+			tonemap.tonemap_mode = env->tone_mapper;
+			tonemap.white = env->white;
+			tonemap.exposure = env->exposure;
+		}
+
+		storage->get_effects()->tonemapper(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
+	}
+
+	storage->render_target_disable_clear_request(rb->render_target);
+}
+
+void RasterizerSceneRD::render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas) {
+	RasterizerEffectsRD *effects = storage->get_effects();
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS) {
+		if (p_shadow_atlas.is_valid()) {
+			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+
+			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 2));
+		}
+	}
+
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
+		if (directional_shadow_get_texture().is_valid()) {
+			RID shadow_atlas_texture = directional_shadow_get_texture();
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+
+			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 2));
+		}
+	}
+}
+
+RID RasterizerSceneRD::render_buffers_get_back_buffer_texture(RID p_render_buffers) {
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	ERR_FAIL_COND_V(!rb->blur[0].texture.is_valid(), RID()); //should have been created for some reason?
+	return rb->blur[0].texture;
+}
+
 void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) {
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -2188,7 +2355,19 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 	rb->height = p_height;
 	rb->render_target = p_render_target;
 	rb->msaa = p_msaa;
-	rb->data->configure(p_render_target, p_width, p_height, p_msaa);
+	_free_render_buffer_data(rb);
+
+	{
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf.width = rb->width;
+		tf.height = rb->height;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		rb->texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	rb->data->configure(rb->texture, p_width, p_height, p_msaa);
 }
 
 int RasterizerSceneRD::get_roughness_layers() const {
@@ -2199,12 +2378,24 @@ bool RasterizerSceneRD::is_using_radiance_cubemap_array() const {
 	return sky_use_cubemap_array;
 }
 
+RasterizerSceneRD::RenderBufferData *RasterizerSceneRD::render_buffers_get_data(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, NULL);
+	return rb->data;
+}
+
 void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
-	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
-	ERR_FAIL_COND(!rb && p_render_buffers.is_valid());
+	Color clear_color;
+	if (p_render_buffers.is_valid()) {
+		RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+		ERR_FAIL_COND(!rb);
+		clear_color = storage->render_target_get_clear_request_color(rb->render_target);
+	} else {
+		clear_color = storage->get_default_clear_color();
+	}
 
-	_render_scene(rb ? rb->data : (RenderBufferData *)NULL, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_environment, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_environment, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
 }
 
 void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -2392,6 +2583,7 @@ bool RasterizerSceneRD::free(RID p_rid) {
 
 	if (render_buffers_owner.owns(p_rid)) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_rid);
+		_free_render_buffer_data(rb);
 		memdelete(rb->data);
 		render_buffers_owner.free(p_rid);
 	} else if (environment_owner.owns(p_rid)) {
@@ -2461,6 +2653,10 @@ bool RasterizerSceneRD::free(RID p_rid) {
 	}
 
 	return true;
+}
+
+void RasterizerSceneRD::set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {
+	debug_draw = p_debug_draw;
 }
 
 void RasterizerSceneRD::update() {
