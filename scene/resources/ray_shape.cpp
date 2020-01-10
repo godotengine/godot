@@ -41,6 +41,10 @@ Vector<Vector3> RayShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t RayShape::get_enclosing_radius() const {
+	return length;
+}
+
 void RayShape::_update_shape() {
 
 	Dictionary d;

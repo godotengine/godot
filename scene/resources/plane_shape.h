@@ -47,6 +47,10 @@ public:
 	Plane get_plane() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const {
+		// Should be infinite?
+		return 0;
+	}
 
 	PlaneShape();
 };

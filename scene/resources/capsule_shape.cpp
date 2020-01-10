@@ -69,6 +69,10 @@ Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t CapsuleShape::get_enclosing_radius() const {
+	return radius + height * 0.5;
+}
+
 void CapsuleShape::_update_shape() {
 
 	Dictionary d;

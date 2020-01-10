@@ -55,6 +55,7 @@ public:
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
+	virtual real_t get_enclosing_radius() const;
 
 	SegmentShape2D();
 };
@@ -79,6 +80,7 @@ public:
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
+	virtual real_t get_enclosing_radius() const;
 
 	RayShape2D();
 };

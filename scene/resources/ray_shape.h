@@ -50,6 +50,7 @@ public:
 	bool get_slips_on_slope() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const;
 
 	RayShape();
 };

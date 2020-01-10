@@ -55,6 +55,10 @@ Vector<Vector3> SphereShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t SphereShape::get_enclosing_radius() const {
+	return radius;
+}
+
 void SphereShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), radius);

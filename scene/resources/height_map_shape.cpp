@@ -76,6 +76,10 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 	return points;
 }
 
+real_t HeightMapShape::get_enclosing_radius() const {
+	return Vector3(real_t(map_width), max_height - min_height, real_t(map_depth)).length();
+}
+
 void HeightMapShape::_update_shape() {
 
 	Dictionary d;
