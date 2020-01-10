@@ -145,6 +145,11 @@
 				Emitted when the text changes.
 			</description>
 		</signal>
+		<signal name="text_change_rejected">
+			<description>
+				Emitted when trying to append text that would overflow the [member max_length].
+			</description>
+		</signal>
 		<signal name="text_entered">
 			<argument index="0" name="new_text" type="String">
 			</argument>
