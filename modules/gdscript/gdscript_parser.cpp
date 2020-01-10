@@ -7648,6 +7648,11 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 
 void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
+	// Names of internal object properties that we check to avoid overriding them.
+	// "__meta__" could also be in here, but since it doesn't really affect object metadata,
+	// it is okay to override it on script.
+	StringName script_name = CoreStringNames::get_singleton()->_script;
+
 	_mark_line_as_safe(p_class->line);
 
 	// Constants
@@ -7668,8 +7673,9 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		c.expression->set_datatype(expr);
 
 		DataType tmp;
-		if (_get_member_type(p_class->base_type, E->key(), tmp)) {
-			_set_error("The member \"" + String(E->key()) + "\" already exists in a parent class.", c.expression->line);
+		const StringName &constant_name = E->key();
+		if (constant_name == script_name || _get_member_type(p_class->base_type, constant_name, tmp)) {
+			_set_error("The member \"" + String(constant_name) + "\" already exists in a parent class.", c.expression->line);
 			return;
 		}
 	}
@@ -7690,7 +7696,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		ClassNode::Member &v = p_class->variables.write[i];
 
 		DataType tmp;
-		if (_get_member_type(p_class->base_type, v.identifier, tmp)) {
+		if (v.identifier == script_name || _get_member_type(p_class->base_type, v.identifier, tmp)) {
 			_set_error("The member \"" + String(v.identifier) + "\" already exists in a parent class.", v.line);
 			return;
 		}
