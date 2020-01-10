@@ -4542,8 +4542,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
-				return OK;
+
+			BlockNode *block = p_block;
+			while (block) {
+				if (block->block_type == BlockNode::BLOCK_TYPE_CASE || block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+					return OK;
+				}
+				block = block->parent_block;
 			}
 		} else if (tk.type == TK_CF_DISCARD) {
 
@@ -4591,8 +4596,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
-				return OK;
+
+			BlockNode *block = p_block;
+			while (block) {
+				if (block->block_type == BlockNode::BLOCK_TYPE_CASE || block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+					return OK;
+				}
+				block = block->parent_block;
 			}
 
 		} else if (tk.type == TK_CF_CONTINUE) {
