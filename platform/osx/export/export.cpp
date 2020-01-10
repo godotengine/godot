@@ -502,6 +502,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	else
 		pkg_name = "Unnamed";
 
+	String pkg_name_safe = OS::get_singleton()->get_safe_dir_name(pkg_name);
+
 	Error err = OK;
 	String tmp_app_path_name = "";
 	zlib_filefunc_def io2 = io;
@@ -612,6 +614,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (data.size() > 0) {
+
+			if (file.find("/data.mono.osx.64.release_debug/") != -1) {
+				if (!p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name_safe + "/");
+			}
+			if (file.find("/data.mono.osx.64.release/") != -1) {
+				if (p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name_safe + "/");
+			}
+
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
