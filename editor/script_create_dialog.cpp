@@ -99,7 +99,7 @@ bool ScriptCreateDialog::_can_be_built_in() {
 	return (supports_built_in && built_in_enabled);
 }
 
-void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled) {
+void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled) {
 
 	class_name->set_text("");
 	class_name->deselect();
@@ -117,6 +117,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	file_path->deselect();
 
 	built_in_enabled = p_built_in_enabled;
+	load_enabled = p_load_enabled;
 
 	_lang_changed(current_language);
 	_class_name_changed("");
@@ -623,12 +624,12 @@ void ScriptCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
 
 void ScriptCreateDialog::_update_dialog() {
 
+	/* "Add Script Dialog" GUI logic and script checks. */
+
 	bool script_ok = true;
 
-	/* "Add Script Dialog" gui logic and script checks */
+	// Is script path/name valid (order from top to bottom)?
 
-	// Is Script Valid (order from top to bottom)
-	get_ok()->set_disabled(true);
 	if (!is_built_in && !is_path_valid) {
 		_msg_script_valid(false, TTR("Invalid path."));
 		script_ok = false;
@@ -641,12 +642,12 @@ void ScriptCreateDialog::_update_dialog() {
 		_msg_script_valid(false, TTR("Invalid inherited parent name or path."));
 		script_ok = false;
 	}
+
 	if (script_ok) {
 		_msg_script_valid(true, TTR("Script is valid."));
-		get_ok()->set_disabled(false);
 	}
 
-	/* Does script have named classes */
+	// Does script have named classes?
 
 	if (has_named_classes) {
 		if (is_new_script_created) {
@@ -663,7 +664,7 @@ void ScriptCreateDialog::_update_dialog() {
 		class_name->set_text("");
 	}
 
-	/* Is script Built-in */
+	// Is script Built-in?
 
 	if (is_built_in) {
 		file_path->set_editable(false);
@@ -683,7 +684,7 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 	internal->set_disabled(!_can_be_built_in());
 
-	/* Is Script created or loaded from existing file */
+	// Is Script created or loaded from existing file?
 
 	if (is_built_in) {
 		get_ok()->set_text(TTR("Create"));
@@ -692,7 +693,8 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_browse_button->set_disabled(!can_inherit_from_file);
 		_msg_path_valid(true, TTR("Built-in script (into scene file)."));
 	} else if (is_new_script_created) {
-		// New Script Created
+		// New script created.
+
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_search_button->set_disabled(false);
@@ -700,8 +702,9 @@ void ScriptCreateDialog::_update_dialog() {
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will create a new script file."));
 		}
-	} else {
-		// Script Loaded
+	} else if (load_enabled) {
+		// Script loaded.
+
 		get_ok()->set_text(TTR("Load"));
 		parent_name->set_editable(false);
 		parent_search_button->set_disabled(true);
@@ -709,7 +712,17 @@ void ScriptCreateDialog::_update_dialog() {
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will load an existing script file."));
 		}
+	} else {
+		get_ok()->set_text(TTR("Create"));
+		parent_name->set_editable(true);
+		parent_search_button->set_disabled(false);
+		parent_browse_button->set_disabled(!can_inherit_from_file);
+		_msg_path_valid(false, TTR("Script file already exists."));
+
+		script_ok = false;
 	}
+
+	get_ok()->set_disabled(!script_ok);
 }
 
 void ScriptCreateDialog::_bind_methods() {
@@ -727,7 +740,7 @@ void ScriptCreateDialog::_bind_methods() {
 	ClassDB::bind_method("_create", &ScriptCreateDialog::_create);
 	ClassDB::bind_method("_browse_class_in_tree", &ScriptCreateDialog::_browse_class_in_tree);
 
-	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled"), &ScriptCreateDialog::config, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled", "load_enabled"), &ScriptCreateDialog::config, DEFVAL(true), DEFVAL(true));
 
 	ADD_SIGNAL(MethodInfo("script_created", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
@@ -884,8 +897,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	has_named_classes = false;
 	supports_built_in = false;
 	can_inherit_from_file = false;
-	built_in_enabled = true;
 	is_built_in = false;
+	built_in_enabled = true;
+	load_enabled = true;
 
 	is_new_script_created = true;
 }
