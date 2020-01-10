@@ -2111,6 +2111,19 @@ String OS_OSX::get_cache_path() const {
 	}
 }
 
+String OS_OSX::get_bundle_resource_dir() const {
+
+	NSBundle *main = [NSBundle mainBundle];
+	NSString *resourcePath = [main resourcePath];
+
+	char *utfs = strdup([resourcePath UTF8String]);
+	String ret;
+	ret.parse_utf8(utfs);
+	free(utfs);
+
+	return ret;
+}
+
 // Get properly capitalized engine name for system paths
 String OS_OSX::get_godot_dir_name() const {
 
