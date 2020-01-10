@@ -85,6 +85,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
@@ -116,6 +117,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
 		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
@@ -134,6 +136,7 @@
 			The number of fixed iterations per second (for fixed process and physics).
 		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
+			Controls how much physic ticks are synchronized  with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows to smooth out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
 			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.
