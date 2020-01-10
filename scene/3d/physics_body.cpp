@@ -1139,6 +1139,8 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
+// -cos(10 deg)
+#define COS_DOWN_DIRECTION_THRESHOLD -0.98480774002
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
@@ -1200,7 +1202,8 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((body_velocity_normal + p_up_direction).length() < 0.01 && collision.travel.length() < 1) {
+							// We are on slope, if the body velocity is quite toward the down, stop sliding.
+							if (body_velocity_normal.dot(p_up_direction) < COS_DOWN_DIRECTION_THRESHOLD && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel.slide(p_up_direction);
 								set_global_transform(gt);

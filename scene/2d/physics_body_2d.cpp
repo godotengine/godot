@@ -1211,6 +1211,8 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
+// -cos(10 deg)
+#define COS_DOWN_DIRECTION_THRESHOLD -0.98480774002
 
 Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
@@ -1275,7 +1277,8 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((body_velocity_normal + p_up_direction).length() < 0.01 && collision.travel.length() < 1) {
+							// We are on slope, if the body velocity is quite toward the down, stop sliding.
+							if (body_velocity_normal.dot(p_up_direction) < COS_DOWN_DIRECTION_THRESHOLD && collision.travel.length() < 1) {
 								Transform2D gt = get_global_transform();
 								gt.elements[2] -= collision.travel.slide(p_up_direction);
 								set_global_transform(gt);
