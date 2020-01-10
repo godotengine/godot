@@ -262,6 +262,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFAnimation {
+		bool loop = false;
 
 		enum Interpolation {
 			INTERP_LINEAR,
