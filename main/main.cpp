@@ -1402,6 +1402,7 @@ bool Main::start() {
 	bool hasicon = false;
 	String doc_tool;
 	List<String> removal_docs;
+	String positional_arg;
 	String game_path;
 	String script;
 	String test;
@@ -1429,8 +1430,18 @@ bool Main::start() {
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
 #endif
-		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
-			game_path = args[i];
+		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
+			positional_arg = args[i];
+
+			if (args[i].ends_with(".scn") || args[i].ends_with(".tscn") || args[i].ends_with(".escn")) {
+				// Only consider the positional argument to be a scene path if it ends with
+				// a file extension associated with Godot scenes. This makes it possible
+				// for projects to parse command-line arguments for custom CLI arguments
+				// or other file extensions without trouble. This can be used to implement
+				// "drag-and-drop onto executable" logic, which can prove helpful
+				// for non-game applications.
+				game_path = args[i];
+			}
 		}
 		//parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {
@@ -1525,7 +1536,7 @@ bool Main::start() {
 	}
 
 	if (_export_preset != "") {
-		if (game_path == "") {
+		if (positional_arg == "") {
 			String err = "Command line includes export parameter option, but no destination path was given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
 			ERR_PRINT(err);
@@ -1716,7 +1727,7 @@ bool Main::start() {
 			sml->get_root()->add_child(editor_node);
 
 			if (_export_preset != "") {
-				editor_node->export_preset(_export_preset, game_path, export_debug, export_pack_only);
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
 		}
