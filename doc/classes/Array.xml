@@ -331,17 +331,18 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
-				    static func sort(a, b):
+				    static func sort_ascending(a, b):
 				        if a[0] &lt; b[0]:
 				            return true
 				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				my_items.sort_custom(MyCustomSorter, "sort")
+				my_items.sort_custom(MyCustomSorter, "sort_ascending")
+				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]]
 				[/codeblock]
 			</description>
 		</method>
