@@ -269,7 +269,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 
 	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
 		item.insertText = item.label + "(";
-		if (symbol && symbol->detail.find(",") == -1) {
+		if (symbol && symbol->children.empty()) {
 			item.insertText += ")";
 		}
 	} else if (item.kind == lsp::CompletionItemKind::Event) {
