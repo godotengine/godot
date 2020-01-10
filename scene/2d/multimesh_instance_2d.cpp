@@ -94,6 +94,7 @@ Ref<Texture> MultiMeshInstance2D::get_normal_map() const {
 	return normal_map;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 
 	if (multimesh.is_valid()) {
@@ -103,6 +104,7 @@ Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 
 	return Node2D::_edit_get_rect();
 }
+#endif
 
 MultiMeshInstance2D::MultiMeshInstance2D() {
 }

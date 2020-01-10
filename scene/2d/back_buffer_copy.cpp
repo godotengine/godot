@@ -50,6 +50,7 @@ void BackBufferCopy::_update_copy_mode() {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 BackBufferCopy::_edit_get_rect() const {
 
 	return rect;
@@ -58,6 +59,7 @@ Rect2 BackBufferCopy::_edit_get_rect() const {
 bool BackBufferCopy::_edit_use_rect() const {
 	return true;
 }
+#endif
 
 Rect2 BackBufferCopy::get_anchorable_rect() const {
 

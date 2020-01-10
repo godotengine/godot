@@ -46,6 +46,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const;
+#endif
+
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
@@ -54,8 +58,6 @@ public:
 
 	void set_normal_map(const Ref<Texture> &p_texture);
 	Ref<Texture> get_normal_map() const;
-
-	virtual Rect2 _edit_get_rect() const;
 
 	MeshInstance2D();
 };

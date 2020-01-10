@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #endif
 
+#ifdef TOOLS_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
 
 	if (!curve.is_valid() || curve->get_point_count() == 0)
@@ -85,6 +86,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
+#endif
 
 void Path2D::_notification(int p_what) {
 

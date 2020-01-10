@@ -279,6 +279,7 @@ public:
 	};
 
 	/* EDITOR */
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -301,6 +302,7 @@ public:
 	virtual bool _edit_use_pivot() const;
 
 	virtual Size2 _edit_get_minimum_size() const;
+#endif
 
 	void accept_event();
 

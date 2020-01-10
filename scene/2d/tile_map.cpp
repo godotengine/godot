@@ -1282,6 +1282,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	return data;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
 	if (pending_update) {
 		const_cast<TileMap *>(this)->update_dirty_quadrants();
@@ -1290,6 +1291,7 @@ Rect2 TileMap::_edit_get_rect() const {
 	}
 	return rect_cache;
 }
+#endif
 
 void TileMap::set_collision_layer(uint32_t p_layer) {
 

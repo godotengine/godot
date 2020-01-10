@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "servers/visual_server.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Light2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
@@ -68,6 +69,7 @@ Rect2 Light2D::_edit_get_rect() const {
 bool Light2D::_edit_use_rect() const {
 	return !texture.is_null();
 }
+#endif
 
 Rect2 Light2D::get_anchorable_rect() const {
 	if (texture.is_null())

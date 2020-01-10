@@ -94,6 +94,7 @@ Ref<Texture> MeshInstance2D::get_texture() const {
 	return texture;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 MeshInstance2D::_edit_get_rect() const {
 
 	if (mesh.is_valid()) {
@@ -103,6 +104,7 @@ Rect2 MeshInstance2D::_edit_get_rect() const {
 
 	return Node2D::_edit_get_rect();
 }
+#endif
 
 MeshInstance2D::MeshInstance2D() {
 }

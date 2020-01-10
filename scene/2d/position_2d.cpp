@@ -43,6 +43,7 @@ void Position2D::_draw_cross() {
 	draw_line(Point2(0, -extents), Point2(0, +extents), Color(0.53, 0.84, 0.01));
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 Position2D::_edit_get_rect() const {
 
 	float extents = get_gizmo_extents();
@@ -52,6 +53,7 @@ Rect2 Position2D::_edit_get_rect() const {
 bool Position2D::_edit_use_rect() const {
 	return false;
 }
+#endif
 
 void Position2D::_notification(int p_what) {
 

@@ -35,6 +35,7 @@
 #include "scene/main/viewport.h"
 #include "servers/visual_server.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 
 	Dictionary state;
@@ -44,6 +45,7 @@ Dictionary Node2D::_edit_get_state() const {
 
 	return state;
 }
+
 void Node2D::_edit_set_state(const Dictionary &p_state) {
 
 	pos = p_state["position"];
@@ -119,6 +121,7 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	_change_notify("scale");
 	_change_notify("position");
 }
+#endif
 
 void Node2D::_update_xform_values() {
 
