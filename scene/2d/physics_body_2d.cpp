@@ -1212,7 +1212,7 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	Vector2 body_velocity = p_linear_velocity;
 	Vector2 body_velocity_normal = body_velocity.normalized();
@@ -1234,6 +1234,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	on_ceiling = false;
 	on_wall = false;
 	colliders.clear();
+	floor_normal = p_up_direction;
 	floor_velocity = Vector2();
 
 	while (p_max_slides) {
@@ -1262,25 +1263,26 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				if (p_floor_direction == Vector2()) {
+				if (p_up_direction == Vector2()) {
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (Math::acos(collision.normal.dot(p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+					if (Math::acos(collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
+						floor_normal = collision.normal;
 						on_floor_body = collision.collider_rid;
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((body_velocity_normal + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
+							if ((body_velocity_normal + p_up_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform2D gt = get_global_transform();
-								gt.elements[2] -= collision.travel.slide(p_floor_direction);
+								gt.elements[2] -= collision.travel.slide(p_up_direction);
 								set_global_transform(gt);
 								return Vector2();
 							}
 						}
-					} else if (Math::acos(collision.normal.dot(-p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+					} else if (Math::acos(collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
@@ -1301,11 +1303,11 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	return body_velocity;
 }
 
-Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
 
-	Vector2 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
+	Vector2 ret = move_and_slide(p_linear_velocity, p_up_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
 	if (!was_on_floor || p_snap == Vector2()) {
 		return ret;
 	}
@@ -1315,15 +1317,16 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
 		bool apply = true;
-		if (p_floor_direction != Vector2()) {
-			if (Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+		if (p_up_direction != Vector2()) {
+			if (Math::acos(p_up_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
 				on_floor = true;
+				floor_normal = col.normal;
 				on_floor_body = col.collider_rid;
 				floor_velocity = col.collider_vel;
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+					col.travel = p_up_direction * p_up_direction.dot(col.travel);
 				}
 
 			} else {
@@ -1351,6 +1354,11 @@ bool KinematicBody2D::is_on_wall() const {
 bool KinematicBody2D::is_on_ceiling() const {
 
 	return on_ceiling;
+}
+
+Vector2 KinematicBody2D::get_floor_normal() const {
+
+	return floor_normal;
 }
 
 Vector2 KinematicBody2D::get_floor_velocity() const {
@@ -1473,6 +1481,7 @@ void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody2D::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody2D::is_on_ceiling);
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody2D::is_on_wall);
+	ClassDB::bind_method(D_METHOD("get_floor_normal"), &KinematicBody2D::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody2D::get_floor_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody2D::set_safe_margin);
