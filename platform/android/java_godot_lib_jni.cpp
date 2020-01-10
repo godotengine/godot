@@ -835,6 +835,20 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jo
 	os_android->process_hover(p_type, Point2(p_x, p_y));
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_double_tap(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_double_tap(Point2(p_x, p_y));
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_scroll(Point2(p_x, p_y));
+}
+
 /*
  * Android Key codes.
  */
