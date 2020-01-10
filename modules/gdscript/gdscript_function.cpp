@@ -500,6 +500,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					Object *obj_A = *a;
 					Object *obj_B = *b;
 
+#ifdef DEBUG_ENABLED
+					if (!ObjectDB::instance_validate(obj_A)) {
+						err_text = "Left operand of 'is' was already freed.";
+						OPCODE_BREAK;
+					}
+#endif // DEBUG_ENABLED
+
 					GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 
 					if (scr_B) {
