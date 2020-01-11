@@ -945,7 +945,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 	btVector3 motion;
 	G_TO_B(p_motion, motion);
-	if (!motion.fuzzyZero()) {
+	{
 		// Phase two - sweep test, from a secure position without margin
 
 		const int shape_count(p_body->get_shape_count());
@@ -960,7 +960,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		motionVec->end();
 #endif
 
-		for (int shIndex = 0; shIndex < shape_count; ++shIndex) {
+		for (int shIndex = 0; shIndex < shape_count && !motion.fuzzyZero(); ++shIndex) {
 			if (p_body->is_shape_disabled(shIndex)) {
 				continue;
 			}
