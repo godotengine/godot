@@ -1193,7 +1193,7 @@ void LineEdit::delete_char() {
 	set_cursor_position(get_cursor_position() - 1);
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - 1, 0, text.length() - 1);
+		window_pos = CLAMP(window_pos - 1, 0, MAX(text.length() - 1, 0));
 	}
 
 	_text_changed();
@@ -1224,7 +1224,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	}
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, text.length() - 1);
+		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, MAX(text.length() - 1, 0));
 	}
 
 	if (!text_changed_dirty) {
