@@ -1945,6 +1945,10 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return String();
 }
 
+void GDScriptLanguage::add_loaded_global_class(Ref<GDScript> global_class) {
+	loaded_global_classes.push_back(global_class);
+}
+
 #ifdef DEBUG_ENABLED
 String GDScriptWarning::get_message() const {
 
@@ -2166,6 +2170,8 @@ GDScriptLanguage::GDScriptLanguage() {
 
 GDScriptLanguage::~GDScriptLanguage() {
 
+	// Loaded global classes depend on GDScriptLanguage for their destruction
+	loaded_global_classes.clear();
 	if (lock) {
 		memdelete(lock);
 		lock = NULL;
@@ -2206,6 +2212,9 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 	if (r_error)
 		*r_error = OK;
 
+	if (ScriptServer::is_global_class(scriptres->get_script_class_name())) {
+		GDScriptLanguage::get_singleton()->add_loaded_global_class(scriptres);
+	}
 	return scriptres;
 }
 

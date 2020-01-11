@@ -354,6 +354,8 @@ class GDScriptLanguage : public ScriptLanguage {
 	bool profiling;
 	uint64_t script_frame_time;
 
+	Vector<Ref<GDScript> > loaded_global_classes;
+
 public:
 	int calls;
 
@@ -504,6 +506,7 @@ public:
 
 	virtual bool handles_global_class_type(const String &p_type) const;
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
+	void add_loaded_global_class(Ref<GDScript> global_class);
 
 	GDScriptLanguage();
 	~GDScriptLanguage();
