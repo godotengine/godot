@@ -1945,8 +1945,8 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return String();
 }
 
-void GDScriptLanguage::add_loaded_global_class(Ref<GDScript> global_class) {
-	loaded_global_classes.push_back(global_class);
+void GDScriptLanguage::add_loaded_global_class(Ref<GDScript> p_global_class) {
+	loaded_global_classes.push_back(p_global_class);
 }
 
 #ifdef DEBUG_ENABLED
