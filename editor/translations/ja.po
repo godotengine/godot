@@ -28,13 +28,15 @@
 # leela <53352@protonmail.com>, 2019.
 # Tarou Yamada <mizuningyou@yahoo.co.jp>, 2019.
 # kazuma kondo <kazmax7@gmail.com>, 2019.
-# Akihiro Ogoshi <technical@palsystem-game.com>, 2019.
+# Akihiro Ogoshi <technical@palsystem-game.com>, 2019, 2020.
+# Wataru Onuki <bettawat@yahoo.co.jp>, 2020.
+# sporeball <sporeballdev@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-25 12:45+0000\n"
-"Last-Translator: Akihiro Ogoshi <technical@palsystem-game.com>\n"
+"PO-Revision-Date: 2020-01-12 13:25+0000\n"
+"Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -42,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -77,7 +79,7 @@ msgstr "基本型 %s の型 %s のインデックスが無効です"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "インデックス '%s' （%s型）は無効な名前です"
+msgstr "インデックス '%s' (基底型 %s) は無効な名前です"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -446,7 +448,7 @@ msgstr "root が無ければ新規トラックは追加できません"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "無効なベジェトラック (適切な副プロパティ無し)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -556,7 +558,7 @@ msgstr "秒"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr "フレームレート"
+msgstr "フレームレート(FPS)"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -2071,12 +2073,10 @@ msgid "Constant"
 msgstr "コンスタント"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "プロパティ:"
+msgstr "プロパティ"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
 msgstr "テーマプロパティ"
 
@@ -2514,8 +2514,8 @@ msgstr ""
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"パス '%s' からアドオンスクリプトを読込めません。基本型がエディタプラグインで"
-"はありません。"
+"パス '%s' からアドオンスクリプトを読込めません。基底型が EditorPlugin ではあ"
+"りません。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
@@ -3209,7 +3209,7 @@ msgstr "含"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "セルフ"
+msgstr "セルフ(Self)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3462,7 +3462,7 @@ msgstr "署名オブジェクトの生成エラー"
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
-msgstr ""
+msgstr "ミラーリストのJSONを読み込み失敗。この問題の報告をお願いします！"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4991,29 +4991,27 @@ msgstr "このアセットのダウンロードは既に進行中！"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr "最新のアップデート"
+msgstr "更新日時"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "更新日時 (逆)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "名前 (AからZ)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "名前 (ZからA)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "ライセンス"
+msgstr "ライセンス (AからZ)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "ライセンス"
+msgstr "ライセンス (ZからA)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5130,9 +5128,8 @@ msgid "Primary Line Every:"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "steps"
-msgstr "２ステップ"
+msgstr "ステップ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
@@ -5254,36 +5251,32 @@ msgid "Center"
 msgstr "中央"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "左側面図"
+msgstr "左伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Top Wide"
-msgstr "上面図"
+msgstr "上伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "右側面図"
+msgstr "右伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Bottom Wide"
-msgstr "下面図"
+msgstr "下伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "中央垂直伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "中央水平伸長"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "Rect全面"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
@@ -9380,7 +9373,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Presets"
-msgstr "初期設定値"
+msgstr "プリセット"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
@@ -9391,6 +9384,9 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
+"チェックを入れると、１クリック・デプロイでもこのプリセットが使われるようにな"
+"ります。ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能とし"
+"てマークできます。"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -10100,7 +10096,7 @@ msgstr "アクション:"
 
 #: editor/project_settings_editor.cpp
 msgid "Action"
-msgstr "アクション"
+msgstr "アクション(Action)"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
@@ -10947,7 +10943,7 @@ msgstr "ビデオメモリー"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "リソースのパス"
+msgstr "リソースのパス(ResourcePath)"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -11136,7 +11132,7 @@ msgstr "ライブラリ: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr "GDNative"
+msgstr "\\ GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -11585,11 +11581,11 @@ msgstr "Getterプロパティを追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr "setterプロパティを追加"
+msgstr "Setterプロパティを追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Base Type"
-msgstr "基本の型を変更"
+msgstr "基底型を変更"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Move Node(s)"
@@ -11693,9 +11689,8 @@ msgid "Members:"
 msgstr "メンバー:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type:"
-msgstr "基本の型を変更"
+msgstr "基底型を変更:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy

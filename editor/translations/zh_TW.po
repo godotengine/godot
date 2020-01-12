@@ -18,12 +18,13 @@
 # leela <53352@protonmail.com>, 2019.
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
 # SIYU FU <1002492607@qq.com>, 2019.
+# 鄭惟中 <biglionlion06@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
-"Last-Translator: SIYU FU <1002492607@qq.com>\n"
+"PO-Revision-Date: 2020-01-11 03:05+0000\n"
+"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -31,16 +32,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Convert()函數所收到的參數錯誤，請試著以 TYPE_ 作為開頭。"
+msgstr "Convert()函數所收到的參數錯誤，請用 TYPE_* 常數。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "應為一個長度是1(一個字元)的字串"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -78,7 +79,7 @@ msgstr "調用“%s”時："
 
 #: core/ustring.cpp
 msgid "B"
-msgstr "乙"
+msgstr "Byte"
 
 #: core/ustring.cpp
 msgid "KiB"
@@ -86,7 +87,7 @@ msgstr "基布"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr "MiB公司"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -106,7 +107,7 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "释放"
+msgstr "釋放"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -114,7 +115,7 @@ msgstr "平衡"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "镜像"
+msgstr "鏡像"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"

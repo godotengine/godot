@@ -8,14 +8,14 @@
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
 # Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
-# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019.
+# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020.
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-23 17:08+0000\n"
-"Last-Translator: Tuomas Lähteenmäki <lahtis@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -423,7 +423,7 @@ msgstr "Uutta raitaa ei voida lisätä ilman juurta"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Virheellinen raita Bezierille (ei sopivia aliominaisuuksia)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -1995,9 +1995,8 @@ msgid "Case Sensitive"
 msgstr "Merkkikokoriippuvainen"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "Näytä avustimet"
+msgstr "Näytä hierarkia"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2036,9 +2035,8 @@ msgid "Class"
 msgstr "Luokka"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "Metodit"
+msgstr "Metodi"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
@@ -2049,14 +2047,12 @@ msgid "Constant"
 msgstr "Muuttumaton"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "Ominaisuus:"
+msgstr "Ominaisuus"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
-msgstr "Teeman ominaisuudet"
+msgstr "Teeman ominaisuus"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3428,13 +3424,14 @@ msgid "Importing:"
 msgstr "Tuodaan:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error getting the list of mirrors."
-msgstr "Virhe luotaessa allekirjoitusoliota."
+msgstr "Virhe peilipalvelimien listan haussa."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
 msgstr ""
+"Virhe jäsennettäessä peilipalvelimien JSON-listaa. Raportoi tämä ongelma, "
+"kiitos!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4620,9 +4617,8 @@ msgid "Move Node"
 msgstr "Siirrä solmua"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Siirtymä: "
+msgstr "Siirtymä on olemassa!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5199,7 +5195,7 @@ msgstr "Vasemmassa yläkulmassa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Right"
-msgstr "Oikeassa Yläkulmassa"
+msgstr "Oikeassa yläkulmassa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Right"
@@ -5246,19 +5242,16 @@ msgid "Bottom Wide"
 msgstr "Alanäkymä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "VCenter Wide"
-msgstr "VCenter Wide"
+msgstr "Pystykeskitetty laaja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "HCenter Wide"
-msgstr "HCenter Wide"
+msgstr "Vaakakeskitetty laaja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Full Rect"
-msgstr "Täysi toisto"
+msgstr "Täysi ruutu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
@@ -5928,18 +5921,19 @@ msgstr "Ääriviivojen koko:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "UV-kanavan debuggaus"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Poistetaanko kohde %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "Päivitä skenestä"
+msgstr ""
+"Päivitä olemassa olevasta skenestä?:\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -7491,9 +7485,8 @@ msgid "Create Mesh2D"
 msgstr "Luo Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "Luodaan meshien esikatseluita"
+msgstr "Mesh2D esikatselu"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
@@ -7501,25 +7494,23 @@ msgstr "Luo Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Polygon2D esikatselu"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Luo CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "Luo CollisionPolygon2D"
+msgstr "CollisionPolygon2D esikatselu"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
 msgstr "Luo LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "Luo LightOccluder2D"
+msgstr "LightOccluder2D esikatselu"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7598,9 +7589,8 @@ msgid "Add Frame"
 msgstr "Lisää ruutu"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Unable to load images"
-msgstr "Kuvaa ei voitu ladata:"
+msgstr "Kuvaa ei voitu ladata"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8061,7 +8051,7 @@ msgstr "Prioriteetti"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Z Index"
-msgstr "Z Indeksi"
+msgstr "Z-indeksi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -8290,14 +8280,12 @@ msgid "Edit Tile Z Index"
 msgstr "Muokkaa ruudun Z-indeksiä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Tee polygonista konveksi"
+msgstr "Tee konveksi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "Tee polygonista konkaavi"
+msgstr "Tee konkaavi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9404,7 +9392,6 @@ msgid "Make Patch"
 msgstr "Luo päivitys"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
 msgstr "Pakkaa tiedosto"
 
@@ -10477,7 +10464,7 @@ msgstr "Käyttöliittymä"
 
 #: editor/scene_tree_dock.cpp
 msgid "Other Node"
-msgstr "Toinen solmu"
+msgstr "Muu solmu"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -11240,9 +11227,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Poista kohdistimen kierto"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Tyhjennä valittu alue"
+msgstr "Liitä valitut"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"

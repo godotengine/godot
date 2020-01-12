@@ -14,7 +14,7 @@
 # Diego López <diegodario21@gmail.com>, 2017.
 # eon-s <emanuel.segretin@gmail.com>, 2018, 2019.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
@@ -46,7 +46,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-25 12:45+0000\n"
+"PO-Revision-Date: 2020-01-11 03:05+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -55,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -140,7 +140,7 @@ msgstr "Balanceado"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Espejo"
+msgstr "Mirror"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -459,7 +459,7 @@ msgstr "No es posible agregar una nueva pista sin una raíz"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Pista inválida para Bezier (no hay sub-propiedades adecuadas)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -637,7 +637,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
+msgstr "Optimizar Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -1607,7 +1607,7 @@ msgstr ""
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "Plantilla debug personalizada no encontrada."
+msgstr "No se encontró la plantilla de depuración personalizada."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2044,9 +2044,8 @@ msgid "Case Sensitive"
 msgstr "Respetar mayús/minúsculas"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "Mostrar Ayudantes"
+msgstr "Mostrar Jerarquía"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2085,9 +2084,8 @@ msgid "Class"
 msgstr "Clase"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "Métodos"
+msgstr "Método"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
@@ -2098,12 +2096,10 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "Propiedad:"
+msgstr "Propiedad"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
 msgstr "Propiedades del Tema"
 
@@ -3500,13 +3496,14 @@ msgid "Importing:"
 msgstr "Importando:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error getting the list of mirrors."
-msgstr "¡Error al escribir el PCK de proyecto!"
+msgstr "Error al obtener la lista de mirrors."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
 msgstr ""
+"Error al analizar el JSON de la lista de mirrors. ¡Por favor, informa de "
+"este problema!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4697,9 +4694,8 @@ msgid "Move Node"
 msgstr "Mover Nodo"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Transiciones"
+msgstr "¡La transición existe!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5307,31 +5303,31 @@ msgstr "Centro"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Left Wide"
-msgstr "Izquierda Ancha"
+msgstr "Ancho Izquierda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr "Superior Ancha"
+msgstr "Ancho Superior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Right Wide"
-msgstr "Derecha Ancha"
+msgstr "Ancho Derecha"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr "Inferior Ancha"
+msgstr "Ancho Inferior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr "Centro Vert. Ancha"
+msgstr "Ancho Centro Vert."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr "Centro Horiz. Ancha"
+msgstr "Ancho Centro Horiz."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr "Completa"
+msgstr "Completo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
@@ -5740,7 +5736,7 @@ msgstr "Editar Polígono (Eliminar Punto)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr "Establecer Handle"
+msgstr "Establecer Manipulador"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5897,7 +5893,7 @@ msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr "Crear  Static Trimesh Body"
+msgstr "Crear StaticBody Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Convex Body"
@@ -5909,7 +5905,7 @@ msgstr "¡No puedes hacer esto en una escena raíz!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Shape"
-msgstr "Crear Forma Estática de Trimesh"
+msgstr "Crear Shape Estático Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
@@ -5966,15 +5962,15 @@ msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
-msgstr "Crear Trimesh Static Body"
+msgstr "Crear StaticBody Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "Crear Trimesh Collision Hermano"
+msgstr "Crear Collider Triangular Hermano"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Collision Sibling(s)"
-msgstr "Crear Convex Collision Hermano(s)"
+msgstr "Crear Collider Convexo Hermano(s)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6002,18 +5998,19 @@ msgstr "Tamaño del Outline:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "Depuración del Canal UV"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "¿Quieres borrar el elemento %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "Actualizar desde escena"
+msgstr ""
+"¿Actualizar desde la escena existente?\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6302,12 +6299,12 @@ msgstr "Opciones"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Angles"
-msgstr "Manejadores de Ángulos de Espejo"
+msgstr "Manipulador de Ángulos de Espejo"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Lengths"
-msgstr "Manejadores de Tamaño de Espejo"
+msgstr "Manipulador de Tamaño de Espejo"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
@@ -7566,9 +7563,8 @@ msgid "Create Mesh2D"
 msgstr "Crear Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "Creando Vistas Previas de Mesh/es"
+msgstr "Vista Previa de Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
@@ -7576,25 +7572,23 @@ msgstr "Crear Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Vista Previa de Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Crear CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "Crear CollisionPolygon2D"
+msgstr "Vista Previa de CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
 msgstr "Crear LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "Crear LightOccluder2D"
+msgstr "Vista Previa de LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7673,9 +7667,8 @@ msgid "Add Frame"
 msgstr "Añadir Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Unable to load images"
-msgstr "No se pudo cargar la imagen:"
+msgstr "No se pueden cargar las imágenes"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8364,14 +8357,12 @@ msgid "Edit Tile Z Index"
 msgstr "Editar Índice Z de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Crear Póligono Convexo"
+msgstr "Crear Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "Crear Polígono Cóncavo"
+msgstr "Crear Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9557,7 +9548,7 @@ msgstr "Administrar Plantillas de Exportación"
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
-msgstr "Exportar con depuración"
+msgstr "Exportar Con Depuración"
 
 #: editor/project_manager.cpp
 msgid "The path does not exist."
@@ -11321,9 +11312,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Eliminar Rotación del Cursor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Borrar Selección"
+msgstr "Pegar Seleccionados"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11877,7 +11867,7 @@ msgstr "OpenJDK jarsigner no configurado en Configuración del Editor."
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
-"Keystore debug no configurada en Configuración del Editor ni en el preset."
+"Debug keystore no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."

@@ -49,7 +49,7 @@
 # Brice Lobet <tempo.data@gmail.com>, 2018.
 # Florent Wijanto <f_wijanto@hotmail.com>, 2018.
 # Olivier gareau <olivier.gareau@protonmail.com>, 2018.
-# Rémi Verschelde <akien@godotengine.org>, 2018, 2019.
+# Rémi Verschelde <akien@godotengine.org>, 2018, 2019, 2020.
 # Rémi Bintein <reminus5@hotmail.fr>, 2018, 2019.
 # Sylvain Corsini <sylvain.corsini@gmail.com>, 2018.
 # Caye Pierre <pierrecaye@laposte.net>, 2019.
@@ -73,8 +73,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-23 17:08+0000\n"
-"Last-Translator: Camille Mohr-Daurat <pouleyketchoup@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -487,7 +487,7 @@ msgstr "Impossible d'ajouter une nouvelle piste sans racine"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Piste invalide pour Bézier (aucune sous-propriété appropriée)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -2064,14 +2064,12 @@ msgid "Search Help"
 msgstr "Rechercher dans l'aide"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Case Sensitive"
-msgstr "Fermer la scène"
+msgstr "Sensible à la casse"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "Afficher les aides"
+msgstr "Afficher la hiérarchie"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2110,9 +2108,8 @@ msgid "Class"
 msgstr "Classe :"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "Méthodes"
+msgstr "Méthode"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
@@ -2123,14 +2120,12 @@ msgid "Constant"
 msgstr "Constante"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "Propriété :"
+msgstr "Propriété"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
-msgstr "Propriétés du thème"
+msgstr "Propriété du thème"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3535,11 +3530,13 @@ msgstr "Importation :"
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
-msgstr ""
+msgstr "Erreur lors du téléchargement de la liste des miroirs."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
 msgstr ""
+"Erreur lors de la lecture de la liste JSON des miroirs. Merci de signaler ce "
+"problème !"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4734,9 +4731,8 @@ msgid "Move Node"
 msgstr "Déplacer le nœud"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Transition : "
+msgstr "La transition existe !"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -6044,18 +6040,19 @@ msgstr "Taille du contour :"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "Débogage du canal UV"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Supprimer l'objet %d ?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "Mettre à jour depuis la scène"
+msgstr ""
+"Mettre à jour depuis la scène existante ?\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -7616,9 +7613,8 @@ msgid "Create Mesh2D"
 msgstr "Créer un Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "Création des prévisualisations des maillages"
+msgstr "Prévisualisation du Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
@@ -7626,25 +7622,23 @@ msgstr "Créer un Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Prévisualisation du Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Créer un CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "Créer un CollisionPolygon2D"
+msgstr "Prévisualisation du CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
 msgstr "Créer un LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "Créer un LightOccluder2D"
+msgstr "Prévisualisation du LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7725,9 +7719,8 @@ msgid "Add Frame"
 msgstr "Ajouter une image"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Unable to load images"
-msgstr "Impossible de charger la ressource."
+msgstr "Impossible de charger les images"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8417,12 +8410,10 @@ msgid "Edit Tile Z Index"
 msgstr "Modifier l'index Z de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Rendre le polygon Convex"
+msgstr "Rendre le polygone convexe"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
 msgstr "Rendre le polygone concave"
 
@@ -11381,9 +11372,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Effacer rotation curseur"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Supprimer la sélection"
+msgstr "Sélectionner lors d'un collage"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"

@@ -16,12 +16,13 @@
 # David Husička <davidek251@seznam.cz>, 2019.
 # Luboš Nečas <lubosnecas506@seznam.cz>, 2019.
 # David Kubeš <kubesdavid@email.cz>, 2019.
+# Emil Jiří Tywoniak <emil.tywoniak@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-27 15:52+0000\n"
-"Last-Translator: David Kubeš <kubesdavid@email.cz>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Emil Jiří Tywoniak <emil.tywoniak@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -39,7 +40,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Očekáván řetězec o délce 1 (znak)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -53,7 +54,8 @@ msgstr "Neplatný vstup %i (neprošel) ve výrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self nemůže být použito, protože instance je null (neprošla)"
+msgstr ""
+"\"self\" nemůže být použito, protože instance je \"null\" (není předána)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -145,35 +147,35 @@ msgstr "Přesunout body Bézierovy křivky"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Animace: duplikovat klíče"
+msgstr "Animace: Duplikovat klíče"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Animace: smazat klíče"
+msgstr "Animace: Smazat klíče"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Animace: Změnit čas klíčového snímku"
+msgstr "Animace: Změna času klíčového snímku"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Animace: změna přechodu"
+msgstr "Animace: Změna přechodu"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Animace: změna transformace"
+msgstr "Animace: Změna transformace"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Animace: Změnit hodnotu klíčového snímku"
+msgstr "Animace: Změna hodnoty klíčového snímku"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Animace: změna volání"
+msgstr "Animace: Změna volání"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Animace: Změnit čas klíčových snímků"
+msgstr "Animace: Změna času klíčových snímků"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
@@ -431,7 +433,7 @@ msgstr "Není možné přidat novou stopu bez kořenového uzlu"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Neplatná stopa pro Bezier (žádné vhodné podvlastnosti)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -831,7 +833,7 @@ msgstr "Odloženě"
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "Odkládá signál, ukládá do fronty a jen spouští při nečinnosti."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -1174,7 +1176,6 @@ msgid "Third-party Licenses"
 msgstr "Licence třetích stran"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
@@ -1183,8 +1184,8 @@ msgid ""
 msgstr ""
 "Godot Engine závisí na volně dostupných a open source knihovnách od třetích "
 "stran; všechny jsou kompatibilní s podmínkami jeho MIT licence. Následuje "
-"vyčerpávající seznam těchto komponent třetích stran s jejich příslušnými "
-"popisy autorských práv a s licenčními podmínkami."
+"plný výčet těchto komponent třetích stran s jejich příslušnými popisy "
+"autorských práv a s licenčními podmínkami."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1269,7 +1270,7 @@ msgstr "Smazat Bus efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
-msgstr ""
+msgstr "Přetažením uspořádejte."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1384,11 +1385,11 @@ msgstr "Načíst výchozí"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr ""
+msgstr "Načíst výchozí rozvržení sběrnice."
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr ""
+msgstr "Vytvořit nové rozvržení sběrnice."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1399,21 +1400,16 @@ msgid "Valid characters:"
 msgstr "Platné znaky:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "Neplatný název. Nesmí kolidovat s existující názvem třídy enginu."
+msgstr "Nesmí kolidovat s existující názvem třídy enginu."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr ""
-"Neplatný název. Nesmí kolidovat s existujícím jménem zabudovaného typu."
+msgstr "Nesmí kolidovat s existujícím jménem zabudovaného typu."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
-msgstr ""
-"Neplatný název. Nesmí kolidovat s existujícím názvem globální konstanty."
+msgstr "Nesmí kolidovat s existujícím názvem globální konstanty."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
@@ -1563,12 +1559,16 @@ msgstr ""
 "Etc 2' v nastaveních projektu."
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC' pro použití GLES2 jako "
+"zálohy. Povolte 'Import Etc' v nastaveních projektu, nebo vypněte 'Driver "
+"Fallback Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1595,23 +1595,20 @@ msgid "3D Editor"
 msgstr "3D Editor"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "Otevřít editor skriptů"
+msgstr "Editor skriptů"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
 msgstr "Knihovna assetů"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Scene Tree Editing"
-msgstr "Strom scény (uzly):"
+msgstr "Úpravy stromu scény"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "Importovat"
+msgstr "Importovat dok"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1654,14 +1651,12 @@ msgid "Class Options:"
 msgstr "Možnosti třídy:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "Otevřít další editor"
+msgstr "Aktivovat kontextový editor"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Properties:"
-msgstr "Vlastnosti:"
+msgstr "Aktivní vlastnosti:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Features:"
@@ -1694,9 +1689,8 @@ msgid "Current Profile:"
 msgstr "Aktuální profil:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "Aktuální:"
+msgstr "Zvolit jako aktuální"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1860,18 +1854,16 @@ msgid "Go to next folder."
 msgstr "Přejít do další složky."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Jít na nadřazenou složku"
+msgstr "Přejít do nadřazené složky."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh files."
 msgstr "Obnovit soubory."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Nelze vytvořit složku."
+msgstr "Přidat/odebrat složku z oblíbených"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy

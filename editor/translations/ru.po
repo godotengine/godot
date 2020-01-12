@@ -51,7 +51,7 @@
 # Teashrock <kajitsu22@gmail.com>, 2019.
 # Дмитрий Ефимов <daefimov@gmail.com>, 2019.
 # Sergey <www.window1@mail.ru>, 2019.
-# Vladislav <onion.ring@mail.ru>, 2019.
+# Vladislav <onion.ring@mail.ru>, 2019, 2020.
 # knightpp <kotteam99@gmail.com>, 2019.
 # Константин Рин <email.to.rean@gmail.com>, 2019.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
@@ -65,8 +65,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-22 04:19+0000\n"
-"Last-Translator: Vitaly <arkology11@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Vladislav <onion.ring@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -475,8 +475,9 @@ msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Неверный трек для кривой Безье (нет подходящих подсвойств)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -3496,8 +3497,9 @@ msgid "Error getting the list of mirrors."
 msgstr "Ошибка при создании объекта подписи."
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Error parsing JSON of mirror list. Please report this issue!"
-msgstr ""
+msgstr "Ошибка разбора списка зеркал. Пожалуйста, сообщите об этой проблеме!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -5989,8 +5991,9 @@ msgid "Outline Size:"
 msgstr "Размер обводки:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "Отладка УФ канала"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
@@ -6643,20 +6646,23 @@ msgstr "Сохранить как..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Не удаётся получить скрипт для запуска."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Не удалось перезагрузить скрипт, проверьте консоль на наличие ошибок."
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Скрипт не находится в режиме инструмента, запуск невозможен."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Для запуска этого скрипта он должен наследовать EditorScript и быть "
+"установлен в режим инструмента."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -7565,8 +7571,9 @@ msgid "Create Polygon2D"
 msgstr "Создать Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Предварительный просмотр Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
@@ -8076,8 +8083,9 @@ msgid "Merge from Scene"
 msgstr "Слияние из сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "New Single Tile"
-msgstr ""
+msgstr "Новая одиночная плитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy

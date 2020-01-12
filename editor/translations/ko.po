@@ -9,7 +9,7 @@
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
-# 송태섭 <xotjq237@gmail.com>, 2018, 2019.
+# 송태섭 <xotjq237@gmail.com>, 2018, 2019, 2020.
 # JY <yimjisoo@mailfence.com>, 2018.
 # Ch. <ccwpc@hanmail.net>, 2018.
 # moolow <copyhyeon@gmail.com>, 2019.
@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-23 17:08+0000\n"
+"PO-Revision-Date: 2020-01-06 14:21+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -431,7 +431,7 @@ msgstr "루트 없이 새 트랙을 추가할 수 없음"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "베지어에 잘못된 트랙 (적당한 하위 속성이 없음)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -994,7 +994,7 @@ msgstr "리소스"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
-msgstr "경로"
+msgstr "Path(경로)"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -1993,9 +1993,8 @@ msgid "Case Sensitive"
 msgstr "대소문자 구분"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "도우미 보이기"
+msgstr "계층 구조 보이기"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2034,7 +2033,6 @@ msgid "Class"
 msgstr "클래스"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
 msgstr "메서드"
 
@@ -2047,12 +2045,10 @@ msgid "Constant"
 msgstr "비선형"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "속성:"
+msgstr "속성"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
 msgstr "테마 속성"
 
@@ -3415,13 +3411,12 @@ msgid "Importing:"
 msgstr "가져오는 중:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error getting the list of mirrors."
-msgstr "서명 오브젝트 생성중 에러."
+msgstr "미러 목록을 가져오는 중 오류."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
-msgstr ""
+msgstr "미러 목록의 JSON 구문 분석 중 오류. 이 문제를 신고해주세요!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4601,9 +4596,8 @@ msgid "Move Node"
 msgstr "노드 이동하기"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "전환"
+msgstr "전환이 있어요!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5892,18 +5886,19 @@ msgstr "윤곽 크기:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "UV 채널 디버그"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "%d개의 항목을 삭제할까요?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "씬에서 업데이트하기"
+msgstr ""
+"존재하는 씬에서 업데이트할까요?\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6778,7 +6773,7 @@ msgstr "소스"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
-msgstr "대상"
+msgstr "Target(대상)"
 
 #: editor/plugins/script_text_editor.cpp
 msgid ""
@@ -7451,9 +7446,8 @@ msgid "Create Mesh2D"
 msgstr "Mesh2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "메시 미리 보기 만들기"
+msgstr "Mesh2D 미리 보기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
@@ -7461,25 +7455,23 @@ msgstr "Polygon2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Polygon2D 미리 보기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "CollisionPolygon2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "CollisionPolygon2D 만들기"
+msgstr "CollisionPolygon2D 미리 보기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
 msgstr "LightOccluder2D 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "LightOccluder2D 만들기"
+msgstr "LightOccluder2D 미리 보기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7558,9 +7550,8 @@ msgid "Add Frame"
 msgstr "프레임 추가하기"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Unable to load images"
-msgstr "이미지를 로드할 수 없음:"
+msgstr "이미지를 불러올 수 없음"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8247,14 +8238,12 @@ msgid "Edit Tile Z Index"
 msgstr "타일 Z 인덱스 편집하기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "볼록한 폴리곤 만들기"
+msgstr "볼록하게 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "오목한 폴리곤 만들기"
+msgstr "오목하게 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -11148,9 +11137,8 @@ msgid "Cursor Clear Rotation"
 msgstr "커서 회전 지우기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "선택 지우기"
+msgstr "선택 항목 붙여넣기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"

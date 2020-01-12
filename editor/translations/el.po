@@ -6,12 +6,14 @@
 # Georgios Katsanakis <geo.elgeo@gmail.com>, 2019.
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
+# Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-25 12:45+0000\n"
-"Last-Translator: Overloaded <manoschool@yahoo.gr>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Overloaded @ Orama Interactive http://orama-interactive."
+"com/ <manoschool@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -29,7 +31,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Αναμενόταν μια συμβολοσειρά μήκους 1 (ένας χαρακτήρας)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -10044,9 +10046,8 @@ msgid "Settings saved OK."
 msgstr "Οι ρυθμίσεις αποθηκεύτικαν εντάξει."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Moved Input Action Event"
-msgstr "Προσθήκη συμβάντος εισόδου"
+msgstr "Μετακινήθηκε συμβάν εισόδου"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
@@ -10413,9 +10414,8 @@ msgid "Instance Scene(s)"
 msgstr "Δημιουργία στιγμιοτύπυ σκηνών"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Replace with Branch Scene"
-msgstr "Αποθήκευσι κλαδιού ως σκηνή"
+msgstr "Αποθήκευση κλαδιού ως σκηνή"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -10461,23 +10461,20 @@ msgid "Make node as Root"
 msgstr "Κάνε κόμβο ρίζα"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "Διαγραφή Κόμβων"
+msgstr "Διαγραφή %d κόμβων;"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete the root node \"%s\"?"
-msgstr "Διαγραφή κόμβων γραφήματος"
+msgstr "Διαγραφή κόμβου ρίζας \"%s\";"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
 msgstr "Διαγραφή κόμβου \"%s\" και των παιδιών του;"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "Διαγραφή Κόμβων"
+msgstr "Διαγραφή κόμβων \"%s\";"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."

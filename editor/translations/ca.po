@@ -8,12 +8,13 @@
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
 # roger <616steam@gmail.com>, 2019.
 # Roger BR <drai_kin@hotmail.com>, 2019.
+# Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
-"Last-Translator: roger <616steam@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -654,9 +655,8 @@ msgid "Copy"
 msgstr "Copia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Seleccionar Totes/Cap"
+msgstr "(Des)selecciona-ho tot"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -5089,17 +5089,15 @@ msgstr "Tot"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr "Cap resultat per \"%s\"."
+msgstr "No hi ha cap resultat per a «%s»."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "ReImporta..."
+msgstr "Importa…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Plugins..."
-msgstr "Connectors"
+msgstr "Connectors…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
@@ -5115,9 +5113,8 @@ msgid "Site:"
 msgstr "Lloc:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Suport..."
+msgstr "Assistència"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5128,9 +5125,8 @@ msgid "Testing"
 msgstr "Provant"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "Carregar..."
+msgstr "S’està carregant…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -12233,7 +12229,7 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr "Aturar Servidor HTTP"
+msgstr "Atura el servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
