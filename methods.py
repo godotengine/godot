@@ -333,7 +333,7 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     # impacts the linker call, we need to hack our way into the linking commands
     # LINKCOM and SHLINKCOM to set those flags.
 
-    if '-Wl,--start-group' in env['LINKCOM'] and '-Wl,--start-group' in env['SHLINKCOM']:
+    if '-Wl,--start-group' in str(env['LINKCOM']) and '-Wl,--start-group' in str(env['SHLINKCOM']):
         # Already added by a previous call, skip.
         return
 
