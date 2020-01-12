@@ -506,7 +506,7 @@ public:
 
 	virtual bool handles_global_class_type(const String &p_type) const;
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
-	void add_loaded_global_class(Ref<GDScript> global_class);
+	void add_loaded_global_class(Ref<GDScript> p_global_class);
 
 	GDScriptLanguage();
 	~GDScriptLanguage();
