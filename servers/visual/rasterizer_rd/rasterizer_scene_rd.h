@@ -64,6 +64,7 @@ protected:
 
 private:
 	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+	double time_step = 0;
 
 	int roughness_layers;
 
@@ -465,6 +466,7 @@ private:
 		float max_luminance = 8.0;
 		float auto_exp_speed = 0.2;
 		float auto_exp_scale = 0.5;
+		uint64_t auto_exposure_version = 0;
 
 		/// Glow
 
@@ -481,6 +483,8 @@ private:
 		bool glow_bicubic_upscale = false;
 	};
 
+	static uint64_t auto_exposure_counter;
+
 	mutable RID_Owner<Environent> environment_owner;
 
 	/* RENDER BUFFERS */
@@ -491,6 +495,8 @@ private:
 		int width = 0, height = 0;
 		VS::ViewportMSAA msaa = VS::VIEWPORT_MSAA_DISABLED;
 		RID render_target;
+
+		uint64_t auto_exposure_version = 1;
 
 		RID texture; //main texture for rendering to, must be filled after done rendering
 
@@ -521,6 +527,7 @@ private:
 
 	void _free_render_buffer_data(RenderBuffers *rb);
 	void _allocate_blur_textures(RenderBuffers *rb);
+	void _allocate_luminance_textures(RenderBuffers *rb);
 
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
@@ -860,6 +867,8 @@ public:
 
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
 	_FORCE_INLINE_ VS::ViewportDebugDraw get_debug_draw_mode() const { return debug_draw; }
+
+	virtual void set_time(double p_time, double p_step);
 
 	RasterizerSceneRD(RasterizerStorageRD *p_storage);
 	~RasterizerSceneRD();

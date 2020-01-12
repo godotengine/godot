@@ -36,6 +36,7 @@
 #include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/copy.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/tonemap.glsl.gen.h"
 #include "servers/visual_server.h"
@@ -178,6 +179,29 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
 
+	enum LuminanceReduceMode {
+		LUMINANCE_REDUCE_READ,
+		LUMINANCE_REDUCE,
+		LUMINANCE_REDUCE_WRITE,
+		LUMINANCE_REDUCE_MAX
+	};
+
+	struct LuminanceReducePushConstant {
+		int32_t source_size[2];
+		float max_luminance;
+		float min_luminance;
+		float exposure_adjust;
+		float pad[3];
+	};
+
+	struct LuminanceReduce {
+
+		LuminanceReducePushConstant push_constant;
+		LuminanceReduceShaderRD shader;
+		RID shader_version;
+		RID pipelines[LUMINANCE_REDUCE_MAX];
+	} luminance_reduce;
+
 	struct CopyToDPPushConstant {
 		float bias;
 		float z_far;
@@ -204,7 +228,12 @@ class RasterizerEffectsRD {
 
 	Map<RID, RID> texture_to_uniform_set_cache;
 
+	Map<RID, RID> image_to_uniform_set_cache;
+	Map<RID, RID> texture_to_compute_uniform_set_cache;
+
+	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
+	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 
 public:
 	//TODO must re-do most of the shaders in compute
@@ -212,12 +241,13 @@ public:
 	void region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
-	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID());
+	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness);
 	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
+	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
 	struct TonemapSettings {
 

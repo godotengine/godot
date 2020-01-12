@@ -2730,7 +2730,8 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS:
 		case VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO:
 		case VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING:
-		case VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION: {
+		case VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION:
+		case VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE: {
 
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
@@ -2744,6 +2745,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO,
 				VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING,
 				VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION,
+				VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -2757,7 +2759,8 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_GI_PROBE_ALBEDO,
 				Viewport::DEBUG_DRAW_GI_PROBE_LIGHTING,
-				Viewport::DEBUG_DRAW_GI_PROBE_EMISSION
+				Viewport::DEBUG_DRAW_GI_PROBE_EMISSION,
+				Viewport::DEBUG_DRAW_SCENE_LUMINANCE
 			};
 
 			int idx = 0;
@@ -3597,6 +3600,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	display_submenu->add_radio_check_item(TTR("GIProbe Lighting"), VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING);
 	display_submenu->add_radio_check_item(TTR("GIProbe Albedo"), VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO);
 	display_submenu->add_radio_check_item(TTR("GIProbe Emission"), VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION);
+	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE);
 	display_submenu->set_name("display_advanced");
 	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced");
 	view_menu->get_popup()->add_separator();
