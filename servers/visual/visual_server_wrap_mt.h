@@ -101,7 +101,7 @@ public:
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)
 	FUNC1(texture_set_shrink_all_x2_on_set_data, bool)
-	FUNC1(texture_debug_usage, List<TextureInfo> *)
+	FUNC1S(texture_debug_usage, List<TextureInfo> *)
 
 	FUNC1(textures_keep_original, bool)
 
