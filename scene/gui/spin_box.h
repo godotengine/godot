@@ -88,6 +88,8 @@ public:
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
 
+	void apply();
+
 	SpinBox();
 };
 
