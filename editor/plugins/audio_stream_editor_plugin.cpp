@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
@@ -208,7 +209,7 @@ void AudioStreamEditor::_bind_methods() {
 
 AudioStreamEditor::AudioStreamEditor() {
 
-	set_custom_minimum_size(Size2(1, 100));
+	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 	_current = 0;
 	_dragging = false;
 

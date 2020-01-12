@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
 #include "servers/visual/shader_types.h"
@@ -756,7 +757,7 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	shader_editor = memnew(ShaderEditor(p_node));
 
-	shader_editor->set_custom_minimum_size(Size2(0, 300));
+	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
 	button->hide();
 }

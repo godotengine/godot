@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
 void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
@@ -438,7 +439,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 
 	editor = p_node;
 	preloader_editor = memnew(ResourcePreloaderEditor);
-	preloader_editor->set_custom_minimum_size(Size2(0, 250));
+	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();
