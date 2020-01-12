@@ -543,7 +543,7 @@ protected:
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 
 public:
-	virtual void set_time(double p_time);
+	virtual void set_time(double p_time, double p_step);
 
 	virtual bool free(RID p_rid);
 

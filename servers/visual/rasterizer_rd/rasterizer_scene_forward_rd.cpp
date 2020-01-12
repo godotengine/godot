@@ -2225,8 +2225,9 @@ void RasterizerSceneForwardRD::_setup_render_pass_uniform_set(RID p_depth_buffer
 
 RasterizerSceneForwardRD *RasterizerSceneForwardRD::singleton = NULL;
 
-void RasterizerSceneForwardRD::set_time(double p_time) {
+void RasterizerSceneForwardRD::set_time(double p_time, double p_step) {
 	time = p_time;
+	RasterizerSceneRD::set_time(p_time, p_step);
 }
 
 RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storage) :

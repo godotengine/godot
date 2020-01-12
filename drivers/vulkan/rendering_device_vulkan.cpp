@@ -5751,6 +5751,8 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 			dl->validation.pipeline_push_constant_suppplied = false;
 #endif
 		}
+
+		dl->state.pipeline_shader = pipeline->shader;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -5975,8 +5977,8 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 
 		if (p_procedural_vertices > 0) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format == INVALID_ID,
-				"Procedural vertices requested, but pipeline expects a vertex array.");
+			ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format == INVALID_ID,
+					"Procedural vertices requested, but pipeline expects a vertex array.");
 #endif
 			to_draw = p_procedural_vertices;
 		} else {
@@ -6153,6 +6155,8 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 			cl->validation.pipeline_push_constant_suppplied = false;
 #endif
 		}
+
+		cl->state.pipeline_shader = pipeline->shader;
 	}
 
 #ifdef DEBUG_ENABLED

@@ -246,7 +246,7 @@ public:
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
-	virtual void set_time(double p_time) = 0;
+	virtual void set_time(double p_time, double p_step) = 0;
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) = 0;
 
 	virtual RID render_buffers_create() = 0;

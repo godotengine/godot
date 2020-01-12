@@ -45,6 +45,28 @@ static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_ar
 	p_array[11] = 0;
 }
 
+RID RasterizerEffectsRD::_get_uniform_set_from_image(RID p_image) {
+
+	if (image_to_uniform_set_cache.has(p_image)) {
+		RID uniform_set = image_to_uniform_set_cache[p_image];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.type = RD::UNIFORM_TYPE_IMAGE;
+	u.binding = 0;
+	u.ids.push_back(p_image);
+	uniforms.push_back(u);
+	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 1);
+
+	image_to_uniform_set_cache[p_image] = uniform_set;
+
+	return uniform_set;
+}
+
 RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
 
 	if (texture_to_uniform_set_cache.has(p_texture)) {
@@ -65,6 +87,30 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blur.shader.version_get_shader(blur.shader_version, 0), 0);
 
 	texture_to_uniform_set_cache[p_texture] = uniform_set;
+
+	return uniform_set;
+}
+
+RID RasterizerEffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
+
+	if (texture_to_compute_uniform_set_cache.has(p_texture)) {
+		RID uniform_set = texture_to_compute_uniform_set_cache[p_texture];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	u.binding = 0;
+	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+	u.ids.push_back(p_texture);
+	uniforms.push_back(u);
+	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 0);
+
+	texture_to_compute_uniform_set_cache[p_texture] = uniform_set;
 
 	return uniform_set;
 }
@@ -147,7 +193,7 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuff
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure) {
+void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
 
@@ -164,7 +210,7 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuff
 	blur.push_constant.glow_exposure = p_exposure;
 	blur.push_constant.glow_white = 0; //actually unused
 	blur.push_constant.glow_luminance_cap = p_luminance_cap;
-	blur.push_constant.glow_auto_exposure_grey = 0; //unused also
+	blur.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
 
 	//HORIZONTAL
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer_half, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
@@ -315,6 +361,51 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 	RD::get_singleton()->draw_list_end();
 }
 
+void RasterizerEffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
+
+	luminance_reduce.push_constant.source_size[0] = p_source_size.x;
+	luminance_reduce.push_constant.source_size[1] = p_source_size.y;
+	luminance_reduce.push_constant.max_luminance = p_max_luminance;
+	luminance_reduce.push_constant.min_luminance = p_min_luminance;
+	luminance_reduce.push_constant.exposure_adjust = p_adjust;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	for (int i = 0; i < p_reduce.size(); i++) {
+
+		if (i == 0) {
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_READ]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_texture), 0);
+		} else {
+
+			RD::get_singleton()->compute_list_add_barrier(compute_list); //needs barrier, wait until previous is done
+
+			if (i == p_reduce.size() - 1 && !p_set) {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_WRITE]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_prev_luminance), 2);
+			} else {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE]);
+			}
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_reduce[i - 1]), 0);
+		}
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_reduce[i]), 1);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &luminance_reduce.push_constant, sizeof(LuminanceReducePushConstant));
+
+		int32_t x_groups = (luminance_reduce.push_constant.source_size[0] - 1) / 8 + 1;
+		int32_t y_groups = (luminance_reduce.push_constant.source_size[1] - 1) / 8 + 1;
+
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+		luminance_reduce.push_constant.source_size[0] = MAX(luminance_reduce.push_constant.source_size[0] / 8, 1);
+		luminance_reduce.push_constant.source_size[1] = MAX(luminance_reduce.push_constant.source_size[1] / 8, 1);
+	}
+
+	RD::get_singleton()->compute_list_end();
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	{
@@ -387,6 +478,22 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {
 			tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+	}
+
+	{
+		// Initialize luminance_reduce
+		Vector<String> luminance_reduce_modes;
+		luminance_reduce_modes.push_back("\n#define READ_TEXTURE\n");
+		luminance_reduce_modes.push_back("\n");
+		luminance_reduce_modes.push_back("\n#define WRITE_LUMINANCE\n");
+
+		luminance_reduce.shader.initialize(luminance_reduce_modes);
+
+		luminance_reduce.shader_version = luminance_reduce.shader.version_create();
+
+		for (int i = 0; i < LUMINANCE_REDUCE_MAX; i++) {
+			luminance_reduce.pipelines[i] = RD::get_singleton()->compute_pipeline_create(luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, i));
 		}
 	}
 

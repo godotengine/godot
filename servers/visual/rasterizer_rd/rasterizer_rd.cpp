@@ -78,7 +78,7 @@ void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScree
 void RasterizerRD::begin_frame(double frame_step) {
 	time += frame_step;
 	canvas->set_time(time);
-	scene->set_time(time);
+	scene->set_time(time, frame_step);
 }
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {

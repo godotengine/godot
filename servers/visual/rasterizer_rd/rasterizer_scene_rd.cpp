@@ -31,6 +31,9 @@
 #include "rasterizer_scene_rd.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "servers/visual/visual_server_raster.h"
+
+uint64_t RasterizerSceneRD::auto_exposure_counter = 2;
 
 void RasterizerSceneRD::_clear_reflection_data(ReflectionData &rd) {
 
@@ -460,6 +463,9 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMa
 	ERR_FAIL_COND(!env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
+	if (!env->auto_exposure && p_auto_exposure) {
+		env->auto_exposure_version = ++auto_exposure_counter;
+	}
 	env->auto_exposure = p_auto_exposure;
 	env->white = p_white;
 	env->min_luminance = p_min_luminance;
@@ -2211,6 +2217,39 @@ void RasterizerSceneRD::_allocate_blur_textures(RenderBuffers *rb) {
 	}
 }
 
+void RasterizerSceneRD::_allocate_luminance_textures(RenderBuffers *rb) {
+	ERR_FAIL_COND(!rb->luminance.current.is_null());
+
+	int w = rb->width;
+	int h = rb->height;
+
+	while (true) {
+		w = MAX(w / 8, 1);
+		h = MAX(h / 8, 1);
+
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+		tf.width = w;
+		tf.height = h;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+
+		bool final = w == 1 && h == 1;
+
+		if (final) {
+			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
+		}
+
+		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+		rb->luminance.reduce.push_back(texture);
+
+		if (final) {
+			rb->luminance.current = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			break;
+		}
+	}
+}
+
 void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 
 	if (rb->texture.is_valid()) {
@@ -2229,6 +2268,9 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 		RD::get_singleton()->free(rb->luminance.reduce[i]);
 	}
 
+	for (int i = 0; i < rb->luminance.reduce.size(); i++) {
+		RD::get_singleton()->free(rb->luminance.reduce[i]);
+	}
 	rb->luminance.reduce.clear();
 
 	if (rb->luminance.current.is_valid()) {
@@ -2245,10 +2287,29 @@ void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buf
 	Environent *env = environment_owner.getornull(p_environment);
 	//glow (if enabled)
 
+	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+
+	if (can_use_effects && env && env->auto_exposure) {
+
+		if (rb->luminance.current.is_null()) {
+			_allocate_luminance_textures(rb);
+		}
+
+		bool set_immediate = env->auto_exposure_version != rb->auto_exposure_version;
+		rb->auto_exposure_version = env->auto_exposure_version;
+
+		double step = env->auto_exp_speed * time_step;
+		storage->get_effects()->luminance_reduction(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
+
+		//swap final reduce with prev luminance
+		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
+		VisualServerRaster::redraw_request(); //redraw all the time if auto exposure rendering is on
+	}
+
 	int max_glow_level = -1;
 	int glow_mask = 0;
 
-	if (env && env->glow_enabled) {
+	if (can_use_effects && env && env->glow_enabled) {
 
 		/* see that blur textures are allocated */
 
@@ -2276,7 +2337,11 @@ void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buf
 			int vp_h = rb->blur[1].mipmaps[i].height;
 
 			if (i == 0) {
-				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].framebuffer, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].framebuffer, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, RID());
+				RID luminance_texture;
+				if (env->auto_exposure && rb->luminance.current.is_valid()) {
+					luminance_texture = rb->luminance.current;
+				}
+				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].framebuffer, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].framebuffer, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
 			} else {
 				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i + 1].framebuffer, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].framebuffer, Vector2(1.0 / vp_w, 1.0 / vp_h), env->glow_strength);
 			}
@@ -2288,9 +2353,17 @@ void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buf
 		RasterizerEffectsRD::TonemapSettings tonemap;
 
 		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
-		tonemap.exposure_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 
-		if (env && env->glow_enabled) {
+		if (can_use_effects && env && env->auto_exposure && rb->luminance.current.is_valid()) {
+			tonemap.use_auto_exposure = true;
+			tonemap.exposure_texture = rb->luminance.current;
+			tonemap.auto_exposure_grey = env->auto_exp_scale;
+		} else {
+
+			tonemap.exposure_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		}
+
+		if (can_use_effects && env && env->glow_enabled) {
 			tonemap.use_glow = true;
 			tonemap.glow_mode = RasterizerEffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
 			tonemap.glow_intensity = env->glow_blend_mode == VS::GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
@@ -2336,6 +2409,14 @@ void RasterizerSceneRD::render_buffers_debug_draw(RID p_render_buffers, RID p_sh
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
 
 			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 2));
+		}
+	}
+
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
+		if (rb->luminance.current.is_valid()) {
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+
+			effects->copy_to_rect(rb->luminance.current, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize / 8));
 		}
 	}
 }
@@ -2661,6 +2742,10 @@ void RasterizerSceneRD::set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) 
 
 void RasterizerSceneRD::update() {
 	_update_dirty_skys();
+}
+
+void RasterizerSceneRD::set_time(double p_time, double p_step) {
+	time_step = p_step;
 }
 
 RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
