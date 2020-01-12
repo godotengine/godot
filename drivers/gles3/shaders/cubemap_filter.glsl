@@ -309,7 +309,7 @@ void main() {
 			}
 			st /= vec2(M_PI * 2.0, M_PI);
 
-			irradiance += texture(source_panorama, st, source_mip_level).rgb * cos(theta) * sin(theta);
+			irradiance += textureLod(source_panorama, st, source_mip_level).rgb * cos(theta) * sin(theta);
 			num_samples++;
 		}
 	}
