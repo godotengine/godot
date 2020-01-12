@@ -3208,10 +3208,6 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_direct_to_screen"), "set_use_render_direct_to_screen", "is_using_render_direct_to_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
@@ -3266,6 +3262,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_UNSHADED);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_OVERDRAW);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_WIREFRAME);
+
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_ALBEDO);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_LIGHTING);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_PROBE_EMISSION);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SCENE_LUMINANCE);
 
 	BIND_ENUM_CONSTANT(MSAA_DISABLED);
 	BIND_ENUM_CONSTANT(MSAA_2X);
