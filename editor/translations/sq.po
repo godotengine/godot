@@ -1190,8 +1190,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Gabim në hapjen e skedarit paketë, nuk është në formatin zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Autoload '%s' egziston!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Duke Dekompresuar Asetet"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d skedarë më shumë"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1201,6 +1215,11 @@ msgstr "Paketa u instalua me sukses!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Sukses!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Instaluesi Paketave"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1338,6 +1357,11 @@ msgstr ""
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr ""
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Gabim gjatë ruajtjes së TileSet-it!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2168,10 +2192,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Eksportimi i projektit dështoi me kodin e gabimit %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3102,10 +3122,6 @@ msgstr "Importo Shabllonet Nga Skedari ZIP"
 msgid "Template Package"
 msgstr "Menaxheri i Shablloneve të Eksportimit"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Eksporto Projektin"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Libraria e Eksportit"
@@ -3113,10 +3129,6 @@ msgstr "Libraria e Eksportit"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Bashko Me Ekzistuesin"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Fjalëkalimi:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5758,6 +5770,22 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Direktorit & Skedarët:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9445,6 +9473,10 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Eksporto Projektin"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr ""
 
@@ -9533,10 +9565,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10722,6 +10750,11 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Emri i grupit ekziston që më parë."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12282,7 +12315,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12385,6 +12425,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Eksportimi i projektit dështoi me kodin e gabimit %d."
+
+#~ msgid "Password:"
+#~ msgstr "Fjalëkalimi:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Pusho skenën"

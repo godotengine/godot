@@ -1242,8 +1242,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Fehler beim Öffnen der Paketdatei, kein ZIP-Format."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Existiert bereits"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Inhalte werden entpackt"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Die folgenden Dateien ließen sich nicht aus dem Paket extrahieren:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d weitere Datei(en)"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1253,6 +1267,11 @@ msgstr "Paket wurde erfolgreich installiert!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Geschafft!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Inhalt:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1390,6 +1409,11 @@ msgstr "Layout"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Ungültige Datei, kein Audiobus-Layout."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Fehler beim Speichern der Datei!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2182,10 +2206,6 @@ msgstr "Ausgehender RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Neues Fenster"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Projekt-Export ist fehlgeschlagen mit Fehlercode %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3116,10 +3136,6 @@ msgstr "Vorlagen aus ZIP-Datei importieren"
 msgid "Template Package"
 msgstr "Vorlagenpaket"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Projekt exportieren"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Bibliothek exportieren"
@@ -3127,10 +3143,6 @@ msgstr "Bibliothek exportieren"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Mit existierendem vereinen"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Passwort:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5771,6 +5783,23 @@ msgstr "Anzahl generierter Punkte:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Emissionsmaske"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Schrumpfen (Pixel): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Verzeichnisse & Dateien:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9536,6 +9565,10 @@ msgid "Export PCK/Zip"
 msgstr "Exportiere PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Projekt exportieren"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Export-Modus?"
 
@@ -9627,10 +9660,6 @@ msgstr "project.godot des Projektpfads konnte nicht bearbeitet werden."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Konnte project.godot im Projektpfad nicht erzeugen."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Die folgenden Dateien ließen sich nicht aus dem Paket extrahieren:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10876,6 +10905,11 @@ msgstr "Dies wird eine neue Skriptdatei erstellen."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Dies wird eine bestehende Skriptdatei laden."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Teilung existiert bereits."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12572,7 +12606,15 @@ msgstr ""
 "AnimationTree."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Wählt eine Farbe vom Bildschirm aus."
 
 #: scene/gui/color_picker.cpp
@@ -12698,6 +12740,12 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Projekt-Export ist fehlgeschlagen mit Fehlercode %d."
+
+#~ msgid "Password:"
+#~ msgstr "Passwort:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "Bezeichnersegmente dürfen keine Länge gleich Null haben."
@@ -13167,9 +13215,6 @@ msgstr "Konstanten können nicht verändert werden."
 #~ msgid "Create folder"
 #~ msgstr "Ordner erstellen"
 
-#~ msgid "Already existing"
-#~ msgstr "Existiert bereits"
-
 #~ msgid "Custom Node"
 #~ msgstr "Selbst-erstelltes Node"
 
@@ -13220,9 +13265,6 @@ msgstr "Konstanten können nicht verändert werden."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "Teilen kann keine existierende Kante erstellen."
-
-#~ msgid "Split already exists."
-#~ msgstr "Teilung existiert bereits."
 
 #~ msgid "Add Split"
 #~ msgstr "Teilung hinzufügen"

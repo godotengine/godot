@@ -1210,8 +1210,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "التحميل التلقائي '%s' موجود اصلا!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "يفكك الضغط عن الأصول"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d مزيد من الملفات"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1221,6 +1235,11 @@ msgstr "تم تتبيث الحزمة بنجاح!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "تم بشكل ناجح!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "المحتويات:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1358,6 +1377,11 @@ msgstr "المخطط"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "ملف خطأ، ليس ملف نسق بيوس الصوت."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "خطأ في حفظ مجموعة البلاط!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2194,10 +2218,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "تصدير المشروع فشل, رمز الخطأ %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3123,10 +3143,6 @@ msgstr "إستيراد القوالب من ملف مضغوط بصيغة Zip"
 msgid "Template Package"
 msgstr "‌تصدير مدير القوالب"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "تصدير المشروع"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "تصدير المكتبة"
@@ -3134,10 +3150,6 @@ msgstr "تصدير المكتبة"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "دمج مع الموجود"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "كلمة السر:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5901,6 +5913,22 @@ msgstr "عدد النقاط المولدة:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "قناع الانبعاث"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "الوجهات والملفات:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9745,6 +9773,10 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "تصدير المشروع"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "تصدير المشروع"
@@ -9836,10 +9868,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -11051,6 +11079,11 @@ msgstr "إنشاء ملف كود جديد"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "تحميل نسق بيوس موجود مسبقاً."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "التحميل التلقائي '%s' موجود اصلا!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12657,7 +12690,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12761,6 +12801,12 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "تصدير المشروع فشل, رمز الخطأ %d."
+
+#~ msgid "Password:"
+#~ msgstr "كلمة السر:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "إيقاف المشهد مؤقتاً"
@@ -12961,10 +13007,6 @@ msgstr ""
 
 #~ msgid "Col:"
 #~ msgstr "العمود:"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "التحميل التلقائي '%s' موجود اصلا!"
 
 #, fuzzy
 #~ msgid "Add Split"

@@ -1228,8 +1228,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Zaten mevcut"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Varlıklar Çıkartılıyor"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Aşağıdaki dosyaların, çıkından ayıklanma işlemi başarısız oldu:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d daha fazla dosyalar"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1239,6 +1253,11 @@ msgstr "Paket Başarı ile Kuruldu!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Başarılı!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "İçerikler:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1376,6 +1395,11 @@ msgstr "Yerleşim Düzeni"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Geçersiz dosya, bu bir audio bus yerleşim düzeni değil."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Dosya kaydedilirken hata!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2171,10 +2195,6 @@ msgstr "Giden RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Yeni Pencere"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Proje dışa aktarımı %d hata koduyla başarısız."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3084,10 +3104,6 @@ msgstr "Şablonları Zip Dosyasından İçeri Aktar"
 msgid "Template Package"
 msgstr "Dışa Aktarım Şablonu Yöneticisi"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Projeyi Dışa Aktar"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Betikevini Dışa Aktar"
@@ -3095,10 +3111,6 @@ msgstr "Betikevini Dışa Aktar"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Var Olanla Birleştir"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Gizyazı:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5756,6 +5768,23 @@ msgstr "Üretilen Nokta Sayısı:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Emisyon Maskesi"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Sıkıştır (Pikselleri): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Dizinler & Dosyalar:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9498,6 +9527,10 @@ msgid "Export PCK/Zip"
 msgstr "PCK/Zip Dışa Aktar"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Projeyi Dışa Aktar"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Dışa Aktarma Biçimi:"
@@ -9592,10 +9625,6 @@ msgstr "proje yolundaki proje.godot düzenlenemedi."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "proje.godot proje yolunda oluşturulamadı."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Aşağıdaki dosyaların, çıkından ayıklanma işlemi başarısız oldu:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10865,6 +10894,11 @@ msgstr "Yeni betik dosyası oluştur"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Mevcut betik dosyasını yükle"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "İşlem '%s' zaten var!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12569,7 +12603,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12690,6 +12731,12 @@ msgstr "Değişkenler yalnızca tepe işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Proje dışa aktarımı %d hata koduyla başarısız."
+
+#~ msgid "Password:"
+#~ msgstr "Gizyazı:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Sahneyi duraklat"
@@ -12973,9 +13020,6 @@ msgstr "Sabit değerler değiştirilemez."
 #~ msgid "Create folder"
 #~ msgstr "Klasör Oluştur"
 
-#~ msgid "Already existing"
-#~ msgstr "Zaten mevcut"
-
 #, fuzzy
 #~ msgid "Custom Node"
 #~ msgstr "Düğümleri Kes"
@@ -13023,10 +13067,6 @@ msgstr "Sabit değerler değiştirilemez."
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""
 #~ "PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "İşlem '%s' zaten var!"
 
 #, fuzzy
 #~ msgid "Add Split"

@@ -1249,8 +1249,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "ผิดพลาดขณะเปิดไฟล์แพคเกจ, ไม่ใช่รูปแบบ zip"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "มีอยู่ก่อนแล้ว"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "กำลังคลายบีบอัด"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "ผิดพลาดขณะแยกไฟล์ต่อไปนี้จากแพคเกจ:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "และอีก %d ไฟล์"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1261,6 +1275,11 @@ msgstr "ติดตั้งแพคเกจเสร็จสมบูรณ
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "สำเร็จ!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "ประกอบด้วย:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1399,6 +1418,11 @@ msgstr "เลย์เอาต์"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "ไฟล์ไม่ถูกต้อง ไม่ใช่เลย์เอาต์ของ Audio Bus"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "ผิดพลาดขณะบันทึก TileSet!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2245,10 +2269,6 @@ msgstr ""
 #, fuzzy
 msgid "New Window"
 msgstr "หน้าต่าง"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3151,10 +3171,6 @@ msgstr "นำเข้าแม่แบบจากไฟล์ ZIP"
 msgid "Template Package"
 msgstr "จัดการแม่แบบส่งออก"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "ส่งออกโปรเจกต์"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "ส่งออกไลบรารี"
@@ -3162,10 +3178,6 @@ msgstr "ส่งออกไลบรารี"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "รวมกับที่มีอยู่เดิม"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "รหัสผ่าน:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5913,6 +5925,23 @@ msgstr "จำนวนจุดที่สร้างขึ้น:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Mask การปะทุ"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Snap (พิกเซล):"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "ไฟล์และโฟลเดอร์:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9818,6 +9847,10 @@ msgid "Export PCK/Zip"
 msgstr "ส่งออก PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "ส่งออกโปรเจกต์"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "วิธีการส่งออก:"
@@ -9913,10 +9946,6 @@ msgstr "แก้ไขไฟล์ project.godot ไม่ได้"
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "สร้างไฟล์ project.godot ไม่ได้"
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "ผิดพลาดขณะแยกไฟล์ต่อไปนี้จากแพคเกจ:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -11175,6 +11204,11 @@ msgstr "สร้างสคริปต์ใหม่"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "โหลดสคริปต์จากดิสก์"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "มีการกระทำ '%s' อยู่แล้ว!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12818,7 +12852,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12937,6 +12978,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Password:"
+#~ msgstr "รหัสผ่าน:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "หยุดชั่วคราว"
@@ -13213,9 +13257,6 @@ msgstr ""
 #~ msgid "Create folder"
 #~ msgstr "สร้างโฟลเดอร์"
 
-#~ msgid "Already existing"
-#~ msgstr "มีอยู่ก่อนแล้ว"
-
 #, fuzzy
 #~ msgid "Custom Node"
 #~ msgstr "ตัดโหนด"
@@ -13262,10 +13303,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr "PathFollow2D จะทำงานได้ต้องเป็นโหนดลูกของโหนด Path2D"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "มีการกระทำ '%s' อยู่แล้ว!"
 
 #, fuzzy
 #~ msgid "Add Split"

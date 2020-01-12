@@ -1253,8 +1253,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Грешка при отварању датотеку пакета. Датотека није zip формата."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Аутоматско учитавање '%s' већ постоји!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Декомпресија средства"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "још %d датотека/е"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1265,6 +1279,11 @@ msgstr "Пакет је инсталиран успешно!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Успех!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Садржај:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1404,6 +1423,11 @@ msgstr "Распоред"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Датотека не садржи распоред звучног баса."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Грешка при чувању TileSet!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2252,10 +2276,6 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3188,10 +3208,6 @@ msgstr "Увези шаблоне из ZIP датотеке"
 msgid "Template Package"
 msgstr "Менаџер извозних шаблона"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Извези пројекат"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Извези библиотеку"
@@ -3199,10 +3215,6 @@ msgstr "Извези библиотеку"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Споји са постојећим"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Лозинка:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5994,6 +6006,22 @@ msgstr "Број генерисаних тачака:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Маска емисије"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Директоријуми и датотеке:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9912,6 +9940,10 @@ msgid "Export PCK/Zip"
 msgstr "Извоз PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Извези пројекат"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Режим извоза:"
@@ -10004,10 +10036,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -11230,6 +11258,11 @@ msgstr "Направи нов"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Учитај постојећи бас распоред."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Аутоматско учитавање '%s' већ постоји!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12832,7 +12865,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12938,6 +12978,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Password:"
+#~ msgstr "Лозинка:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Паузирај сцену"
@@ -13172,10 +13215,6 @@ msgstr ""
 
 #~ msgid "Col:"
 #~ msgstr "Колона:"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Аутоматско учитавање '%s' већ постоји!"
 
 #, fuzzy
 #~ msgid "Add Split"

@@ -1267,8 +1267,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "জিপ ফরম্যাট খুঁজে পেতে ব্যার্থ, প্যাকেজ ফাইল ওপেন করা যায়নি।"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "স্থায়ীয়তা টগল করুন"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "আনকম্প্রেস্ড অ্যাসেটস"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "প্যাকেজ হতে নীম্নোক্ত ফাইলসমূহ এক্সট্রাক্ট করা অসফল হয়েছে:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d টি অধিক ফাইল(সমূহ)"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1279,6 +1293,11 @@ msgstr "প্যাকেজ ইন্সটল সম্পন্ন হয়ে
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "সম্পন্ন হয়েছে!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "ধ্রুবকসমূহ:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1419,6 +1438,11 @@ msgstr "লেআউট/নকশা সংরক্ষণ করুন"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "ফাইল অডিও বাস লেআউট হিসেবে ব্যাবহারযোগ্য নয়।"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "TileSet সংরক্ষণে সমস্যা হয়েছে!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2290,10 +2314,6 @@ msgstr ""
 #, fuzzy
 msgid "New Window"
 msgstr "উইন্ডো"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3245,10 +3265,6 @@ msgstr "ZIP ফাইল হতে টেমপ্লেট-সমূহ ইম�
 msgid "Template Package"
 msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "প্রকল্প এক্সপোর্ট করুন"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "লাইব্রেরি এক্সপোর্ট করুন"
@@ -3256,10 +3272,6 @@ msgstr "লাইব্রেরি এক্সপোর্ট করুন"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "বিদ্যমানের সাথে একত্রিত করুন"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "পাসওয়ার্ড:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -6135,6 +6147,23 @@ msgstr "উৎপাদিত বিন্দুর সংখ্যা:"
 #, fuzzy
 msgid "Emission Mask"
 msgstr "Emission Mask স্থাপন করুন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "স্ন্যাপ (পিক্সেলসমূহ):"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "পথ এবং ফাইল:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -10111,6 +10140,10 @@ msgid "Export PCK/Zip"
 msgstr "এক্সপোর্ট PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "প্রকল্প এক্সপোর্ট করুন"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "এক্সপোর্ট মোড:"
@@ -10213,10 +10246,6 @@ msgstr "প্রকল্পের পথে engine.cfg তৈরি করা 
 #, fuzzy
 msgid "Couldn't create project.godot in project path."
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "প্যাকেজ হতে নীম্নোক্ত ফাইলসমূহ এক্সট্রাক্ট করা অসফল হয়েছে:"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -11508,6 +11537,11 @@ msgstr "নতুন স্ক্রিপ্ট তৈরি করুন"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "বিদ্যমান স্ক্রিপ্ট লোড করুন"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -13226,7 +13260,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -13340,6 +13381,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Password:"
+#~ msgstr "পাসওয়ার্ড:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "দৃশ্যটিকে বিরতি দিন"
@@ -13632,10 +13676,6 @@ msgstr ""
 #~ msgstr "ফোল্ডার তৈরি করুন"
 
 #, fuzzy
-#~ msgid "Already existing"
-#~ msgstr "স্থায়ীয়তা টগল করুন"
-
-#, fuzzy
 #~ msgid "Custom Node"
 #~ msgstr "নোড-সমূহ কর্তন/কাট করুন"
 
@@ -13685,10 +13725,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান!"
 
 #, fuzzy
 #~ msgid "Add Split"

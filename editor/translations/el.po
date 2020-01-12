@@ -1200,8 +1200,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν είναι σε μορφή ZIP."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Υπάρχει ήδη"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Αποσυμπίεση asset"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Η εξαγωγή των ακόλουθων αρχείων από το πακέτο απέτυχε:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d περισσότερα αρχεία"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1211,6 +1225,11 @@ msgstr "Το πακέτο εγκαταστάθηκε επιτυχώς!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Επιτυχία!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Περιεχόμενα:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1348,6 +1367,11 @@ msgstr "Διάταξη"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Άκυρο αρχείο, δεν είναι διάταξη διαύλων ήχου."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Σφάλμα αποθήκευσης αρχείου!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2144,10 +2168,6 @@ msgstr "Εξερχόμενα RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Νέο Παράθυρο"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3083,10 +3103,6 @@ msgstr "Εισαγωγή προτύπων από αρχείο ZIP"
 msgid "Template Package"
 msgstr "Πακέτο Προτύπων"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Εξαγωγή έργου"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Εξαγωγή βιβλιοθήκης"
@@ -3094,10 +3110,6 @@ msgstr "Εξαγωγή βιβλιοθήκης"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Συγχώνευση με υπάρχων"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Κωδικός:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5741,6 +5753,23 @@ msgstr "Αριθμός δημιουργημένων σημείων:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Μάσκα εκπομπής"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Σμίκρυνση (Εικονοστοιχεία): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Φάκελοι & Αρχεία:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9506,6 +9535,10 @@ msgid "Export PCK/Zip"
 msgstr "Εξαγωγή PCK/ZIP"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Εξαγωγή έργου"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Λειτουργία εξαγωγής;"
 
@@ -9597,10 +9630,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Δεν ήταν δυνατή η δημιουργία του project.godot στη διαδρομή έργου."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Η εξαγωγή των ακόλουθων αρχείων από το πακέτο απέτυχε:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10849,6 +10878,11 @@ msgstr "Θα δημιουργήσει νέο αρχείο δέσμης ενερ�
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Θα φορτώσει υπαρκτό αρχείο δέσμης ενεργειών."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Η ενέργεια '%s' υπάρχει ήδη!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12603,7 +12637,15 @@ msgstr ""
 "Αυτός ο κόμβος έχει καταργηθεί. Χρησιμοποιήστε το AnimationTree αντ 'αυτού."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Διαλέξτε ένα χρώμα από την οθόνη."
 
 #: scene/gui/color_picker.cpp
@@ -12730,6 +12772,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d."
+
+#~ msgid "Password:"
+#~ msgstr "Κωδικός:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
@@ -13202,9 +13250,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 #~ msgid "Create folder"
 #~ msgstr "Δημιουργία φακέλου"
 
-#~ msgid "Already existing"
-#~ msgstr "Υπάρχει ήδη"
-
 #, fuzzy
 #~ msgid "Custom Node"
 #~ msgstr "Αποκοπή κόμβων"
@@ -13251,10 +13296,6 @@ msgstr "Οι σταθερές δεν μπορούν να τροποποιηθο�
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Η ενέργεια '%s' υπάρχει ήδη!"
 
 #, fuzzy
 #~ msgid "Add Split"

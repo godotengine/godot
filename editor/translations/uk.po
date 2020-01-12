@@ -1207,8 +1207,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Помилка під час спроби відкрити файл пакунка — дані не у форматі zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Вже існує"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Розпаковування активів"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Не вдалося видобути такі файли з пакунка:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d більше файлів"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1218,6 +1232,11 @@ msgstr "Пакунок успішно встановлено!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Успіх!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Зміст:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1355,6 +1374,11 @@ msgstr "Макет"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Неприпустимий файл, це не компонування аудіо-шини."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Помилка під час збереження файла!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2147,10 +2171,6 @@ msgstr "Вихідний RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Нове вікно"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Не вдалося експортувати проєкт, код помилки — %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3070,10 +3090,6 @@ msgstr "Імпортувати шаблони з ZIP-файлу"
 msgid "Template Package"
 msgstr "Пакунок шаблонів"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Експортувати проєкт"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Експортувати бібліотеку"
@@ -3081,10 +3097,6 @@ msgstr "Експортувати бібліотеку"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Об'єднати з існуючим"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Пароль:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5722,6 +5734,23 @@ msgstr "Кількість генерованих точок:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Маска випромінювання"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Стискання (пікселі): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Каталоги та файли:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9479,6 +9508,10 @@ msgid "Export PCK/Zip"
 msgstr "Експортувати PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Експортувати проєкт"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Режим експортування?"
 
@@ -9569,10 +9602,6 @@ msgstr "Не вдалося редагувати project.godot у каталоз
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Не вдалося створити project.godot у каталозі проєкту."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Не вдалося видобути такі файли з пакунка:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10812,6 +10841,11 @@ msgstr "Створить файл скрипту."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Завантажити наявний файл скрипту."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Поділ вже існує."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12497,7 +12531,15 @@ msgstr ""
 "Цей вузол вважається застарілим. Скористайтеся замість нього AnimationTree."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Вибрати колір з екрана."
 
 #: scene/gui/color_picker.cpp
@@ -12620,6 +12662,12 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Не вдалося експортувати проєкт, код помилки — %d."
+
+#~ msgid "Password:"
+#~ msgstr "Пароль:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "Сегменти ідентифікатора повинні мати ненульову довжину."
@@ -13092,9 +13140,6 @@ msgstr "Сталі не можна змінювати."
 #~ msgid "Create folder"
 #~ msgstr "Створити теку"
 
-#~ msgid "Already existing"
-#~ msgstr "Вже існує"
-
 #~ msgid "Custom Node"
 #~ msgstr "Нетиповий вузол"
 
@@ -13142,9 +13187,6 @@ msgstr "Сталі не можна змінювати."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "Поділ не може створювати наявного ребра."
-
-#~ msgid "Split already exists."
-#~ msgstr "Поділ вже існує."
 
 #~ msgid "Add Split"
 #~ msgstr "Додати поділ"

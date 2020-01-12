@@ -1230,8 +1230,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Bestaat al"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Bronnen aan het uitpakken"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "De volgende bestanden konden niet worden uitgepakt:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "nog %d bestand(en)"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1241,6 +1255,11 @@ msgstr "Pakket succesvol geïnstalleerd!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Gelukt!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Inhoud:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1378,6 +1397,11 @@ msgstr "Indeling"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Ongeldig bestand, geen audiobus layout."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Error bij het opslaan van bestand!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2169,10 +2193,6 @@ msgstr "Uitgaande RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Nieuw Venster"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Project exporteren faalt door foutcode %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3096,10 +3116,6 @@ msgstr "Sjablonen importeren Vanuit ZIP-Bestand"
 msgid "Template Package"
 msgstr "Export Sjabloon Manager"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Project Exporteren"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Bibliotheek Exporteren"
@@ -3107,10 +3123,6 @@ msgstr "Bibliotheek Exporteren"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Met bestaande samenvoegen"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Wachtwoord:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5746,6 +5758,23 @@ msgstr "Telling Gegenereerde Punten:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Emissiemasker"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Krimpen (Pixels): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Mappen & Bestanden:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9508,6 +9537,10 @@ msgid "Export PCK/Zip"
 msgstr "Exporteer PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Project Exporteren"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Exporteer modus?"
 
@@ -9598,10 +9631,6 @@ msgstr "Kan project.godot niet bewerken in projectpad."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Kan project.godot niet in projectpad maken."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "De volgende bestanden konden niet worden uitgepakt:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10842,6 +10871,11 @@ msgstr "Maak nieuw script bestand."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Laad bestaand script."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Bestaat al"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12517,7 +12551,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Deze knoop is verouderd. Gebruik in plaats daarvan AnimationTree."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Kies een kleur van het scherm."
 
 #: scene/gui/color_picker.cpp
@@ -12639,6 +12681,12 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Project exporteren faalt door foutcode %d."
+
+#~ msgid "Password:"
+#~ msgstr "Wachtwoord:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Pauzeer de scene"
@@ -12901,9 +12949,6 @@ msgstr "Constanten kunnen niet worden aangepast."
 #~ msgid "Create folder"
 #~ msgstr "Map Maken"
 
-#~ msgid "Already existing"
-#~ msgstr "Bestaat al"
-
 #, fuzzy
 #~ msgid "Custom Node"
 #~ msgstr "Knip Nodes"
@@ -12951,10 +12996,6 @@ msgstr "Constanten kunnen niet worden aangepast."
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""
 #~ "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Bestaat al"
 
 #, fuzzy
 #~ msgid "Add Split"

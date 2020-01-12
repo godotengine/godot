@@ -1190,8 +1190,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Virhe avattaessa pakettitiedostoa, ei ZIP-muodossa."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "On jo olemassa"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Puretaan assetteja"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Seuraavien tiedostojen purku paketista epäonnistui:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "Vielä %d tiedostoa"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1201,6 +1215,11 @@ msgstr "Paketti asennettu onnistuneesti!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Onnistui!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Sisällöt:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1338,6 +1357,11 @@ msgstr "Asettelu"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Virheellinen tiedosto. Tämä ei ole ääniväylän asettelu ensinkään."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Virhe tallennettaessa tiedostoa!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2133,10 +2157,6 @@ msgstr "Lähtevä RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Uusi ikkuna"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Projektin vienti epäonnistui virhekoodilla %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3045,10 +3065,6 @@ msgstr "Tuo mallit ZIP-tiedostosta"
 msgid "Template Package"
 msgstr "Mallipaketti"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Vie projekti"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Vie kirjasto"
@@ -3056,10 +3072,6 @@ msgstr "Vie kirjasto"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Yhdistä olemassaolevaan"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Salasana:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5693,6 +5705,23 @@ msgstr "Luotujen pisteiden määrä:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Emissiomaski"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Kutista (pikseleissä): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Hakemistot ja tiedostot:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9440,6 +9469,10 @@ msgid "Export PCK/Zip"
 msgstr "Vie PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Vie projekti"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Vientitila?"
 
@@ -9532,10 +9565,6 @@ msgstr "Ei voitu muokata project.godot tiedostoa projektin polussa."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Tiedoston project.godot luonti projektin polkuun epäonnistui."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Seuraavien tiedostojen purku paketista epäonnistui:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10773,6 +10802,11 @@ msgstr "Luo uuden skriptitiedoston."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Lataa olemassaolevan skriptitiedoston."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Jako on jo olemassa."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12443,7 +12477,15 @@ msgstr ""
 "Tämä solmu on poistettu käytöstä. Käytä sen sijaan AnimationTree solmua."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Valitse väri ruudulta."
 
 #: scene/gui/color_picker.cpp
@@ -12565,6 +12607,12 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Projektin vienti epäonnistui virhekoodilla %d."
+
+#~ msgid "Password:"
+#~ msgstr "Salasana:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "Tunnisteen osiot eivät voi olla nollan pituisia."
@@ -12917,9 +12965,6 @@ msgstr "Vakioita ei voi muokata."
 #~ msgid "Create folder"
 #~ msgstr "Luo kansio"
 
-#~ msgid "Already existing"
-#~ msgstr "On jo olemassa"
-
 #~ msgid "Custom Node"
 #~ msgstr "Mukautettu solmu"
 
@@ -12969,9 +13014,6 @@ msgstr "Vakioita ei voi muokata."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "Jako ei voi muodostaa olemassa olevaa reunaa."
-
-#~ msgid "Split already exists."
-#~ msgstr "Jako on jo olemassa."
 
 #~ msgid "Add Split"
 #~ msgstr "Lisää jako"

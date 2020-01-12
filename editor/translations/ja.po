@@ -1217,8 +1217,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "パッケージファイルを開けませんでした、zip 形式ではありません。"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "既に存在します"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "アセットを展開"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "次のファイルをパッケージから抽出できませんでした:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d 以上のファイル"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1228,6 +1242,11 @@ msgstr "パッケージのインストールに成功しました!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "成功！"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "コンテンツ:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1365,6 +1384,11 @@ msgstr "レイアウト"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "無効なファイルです。オーディオバスのレイアウトではありません。"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "ファイルの保存エラー!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2159,10 +2183,6 @@ msgstr "出力RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "新規ウィンドウ"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "プロジェクトのエクスポートがエラーコード %d で失敗しました。"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3078,10 +3098,6 @@ msgstr "ZIPファイルからテンプレートをインポート"
 msgid "Template Package"
 msgstr "テンプレートパッケージ"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "プロジェクトのエクスポート"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "ライブラリのエクスポート"
@@ -3089,10 +3105,6 @@ msgstr "ライブラリのエクスポート"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "既存の（ライブラリを）マージ"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "パスワード:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5711,6 +5723,23 @@ msgstr "生成したポイントの数:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "放出マスク"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "縮小 (ピクセル): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "ディレクトリとファイル:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9489,6 +9518,10 @@ msgid "Export PCK/Zip"
 msgstr "PCK/Zipのエクスポート"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "プロジェクトのエクスポート"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "エクスポート モード？"
 
@@ -9581,10 +9614,6 @@ msgstr "プロジェクトパスの project.godot を編集できませんでし
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "project.godot をプロジェクトパスに生成できませんでした。"
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "次のファイルをパッケージから抽出できませんでした:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10820,6 +10849,11 @@ msgstr "新規スクリプトファイルを作成。"
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "既存のスクリプトファイルを読み込む。"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "アクション'%s'は既にあります!"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12510,7 +12544,15 @@ msgstr ""
 "このノードは非推奨になりました。代わりにAnimationTreeを使用してください。"
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "スクリーンから色を選択してください。"
 
 #: scene/gui/color_picker.cpp
@@ -12635,6 +12677,12 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "プロジェクトのエクスポートがエラーコード %d で失敗しました。"
+
+#~ msgid "Password:"
+#~ msgstr "パスワード:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "識別子セグメントはゼロ以外の長さでなければなりません。"
@@ -12940,9 +12988,6 @@ msgstr "定数は変更できません。"
 #~ msgid "Create folder"
 #~ msgstr "フォルダを作成"
 
-#~ msgid "Already existing"
-#~ msgstr "既に存在します"
-
 #~ msgid "Custom Node"
 #~ msgstr "カスタムノード"
 
@@ -12989,10 +13034,6 @@ msgstr "定数は変更できません。"
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""
 #~ "PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "アクション'%s'は既にあります!"
 
 #~ msgid "Add Split"
 #~ msgstr "分割を追加"

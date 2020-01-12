@@ -1229,8 +1229,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "打开压缩文件时出错，非zip格式。"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "已经存在"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "正在解压素材"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "以下文件无法从包中提取："
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "其它 %d 个文件"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1240,6 +1254,11 @@ msgstr "软件包安装成功！"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "成功！"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "内容:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1377,6 +1396,11 @@ msgstr "布局"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "无效文件，不是音频总线布局。"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "保存文件时出错！"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2157,10 +2181,6 @@ msgstr "传出RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "新建窗口"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "项目导出失败，错误代码 %d。"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3037,10 +3057,6 @@ msgstr "从ZIP文件中导入模板"
 msgid "Template Package"
 msgstr "模板包"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "导出项目"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "导出库"
@@ -3048,10 +3064,6 @@ msgstr "导出库"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "与现有合并"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "密码:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5642,6 +5654,23 @@ msgstr "生成顶点计数:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "发射遮罩"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "收缩（像素）： "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "目录与文件："
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9327,6 +9356,10 @@ msgid "Export PCK/Zip"
 msgstr "导出 PCK/ZIP"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "导出项目"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "导出模式？"
 
@@ -9416,10 +9449,6 @@ msgstr "无法在项目路径下编辑project.godot文件。"
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "无法在项目路径下创建project.godot文件。"
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "以下文件无法从包中提取："
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10630,6 +10659,11 @@ msgstr "将创建一个新的脚本文件。"
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "将加载现有的脚本文件。"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "拆分已存在。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12218,7 +12252,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "这个节点已被弃用。请使用Animation Tree代替。"
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "从屏幕中选择一种颜色。"
 
 #: scene/gui/color_picker.cpp
@@ -12332,6 +12374,12 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "项目导出失败，错误代码 %d。"
+
+#~ msgid "Password:"
+#~ msgstr "密码:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "标识符字段不能为空."
@@ -12621,9 +12669,6 @@ msgstr "不允许修改常量。"
 #~ msgid "Create folder"
 #~ msgstr "新建目录"
 
-#~ msgid "Already existing"
-#~ msgstr "已经存在"
-
 #~ msgid "Custom Node"
 #~ msgstr "自定义节点"
 
@@ -12672,9 +12717,6 @@ msgstr "不允许修改常量。"
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "不能从已存在的边上拆分。"
-
-#~ msgid "Split already exists."
-#~ msgstr "拆分已存在。"
 
 #~ msgid "Add Split"
 #~ msgstr "添加分裂"

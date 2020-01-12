@@ -1209,8 +1209,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Autoload '%s' telah ada!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Membuka Aset Terkompresi"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Berkas berikut gagal diekstrak dari paket:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d file lagi"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1220,6 +1234,11 @@ msgstr "Paket Sukses Terpasang!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Sukses!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Konten:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1357,6 +1376,11 @@ msgstr "Tata Letak"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Berkas salah, tidak layout suara bus."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Galat saat menyimpan berkas!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2153,10 +2177,6 @@ msgstr "RSET Keluar"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Jendela Baru"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Ekspor proyek gagal dengan kode kesalahan %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3075,10 +3095,6 @@ msgstr "Impor Templat dari Berkas ZIP"
 msgid "Template Package"
 msgstr "Manajer Templat Ekspor"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Ekspor Projek"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Ekspor Pustaka"
@@ -3086,10 +3102,6 @@ msgstr "Ekspor Pustaka"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Gabung dengan yang Ada"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Sandi:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5741,6 +5753,23 @@ msgstr "Jumlah Titik yang Dihasilkan:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Masker Emisi"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Pertumbuhan (Piksel): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Direktori-direktori & File-file:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9516,6 +9545,10 @@ msgid "Export PCK/Zip"
 msgstr "Ekspor PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Ekspor Projek"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Mode ekspor?"
 
@@ -9607,10 +9640,6 @@ msgstr "Tidak dapat menyunting project.godot dalam lokasi proyek."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Tidak dapat membuat project.godot dalam lokasi proyek."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Berkas berikut gagal diekstrak dari paket:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10828,6 +10857,11 @@ msgstr "Akan membuat berkas skrip baru."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "Akan memuat berkas skrip yang ada."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Autoload '%s' telah ada!"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12508,7 +12542,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Node ini telah usang. Gunakan AnimationTree sebagai gantinya."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Ambil warna dari layar."
 
 #: scene/gui/color_picker.cpp
@@ -12635,6 +12677,12 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Ekspor proyek gagal dengan kode kesalahan %d."
+
+#~ msgid "Password:"
+#~ msgstr "Sandi:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Hentikan sementara skena ini"
@@ -12914,10 +12962,6 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 #~ msgstr ""
 #~ "PathFollow2D hanya bekerja ketika diatur sebagai sebuah child dari sebuah "
 #~ "node Path2D."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Autoload '%s' telah ada!"
 
 #, fuzzy
 #~ msgid "Add Split"

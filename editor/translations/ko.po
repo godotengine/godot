@@ -1195,8 +1195,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아니에요."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "이미 존재함"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "애셋 압축 풀기"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "다음 파일을 패키지에서 추출하는데 실패함:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "외 %d개의 파일"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1206,6 +1220,11 @@ msgstr "패키지를 성공적으로 설치했어요!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "성공!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "내용:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1343,6 +1362,11 @@ msgstr "레이아웃"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "잘못된 파일. 오디오 버스 레이아웃이 아니에요."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "파일 저장 중 오류!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2131,10 +2155,6 @@ msgstr "발신 RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "새 창"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "프로젝트 내보내기에 실패했어요. 오류 코드%d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3035,10 +3055,6 @@ msgstr "ZIP 파일에서 템플릿 가져오기"
 msgid "Template Package"
 msgstr "템플릿 패키지"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "프로젝트 내보내기"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "라이브러리 내보내기"
@@ -3046,10 +3062,6 @@ msgstr "라이브러리 내보내기"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "기존의 것과 병합하기"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "암호:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -5658,6 +5670,23 @@ msgstr "생성한 점 개수:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "방출 마스크"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "수축 (픽셀): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "디렉토리 & 파일:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9371,6 +9400,10 @@ msgid "Export PCK/Zip"
 msgstr "PCK/Zip 내보내기"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "프로젝트 내보내기"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "내보내기 모드?"
 
@@ -9462,10 +9495,6 @@ msgstr "프로젝트 경로에서 project.godot 파일을 편집할 수 없어�
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "프로젝트 경로에서 project.godot 파일을 생성할 수 없어요."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "다음 파일을 패키지에서 추출하는데 실패함:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10687,6 +10716,11 @@ msgstr "새 스크립트 파일을 만들어요."
 #: editor/script_create_dialog.cpp
 msgid "Will load an existing script file."
 msgstr "기존 스크립트 파일을 불러와요."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "이미 분할되었습니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12322,7 +12356,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "이 노드는 더 이상 사용할 수 없어요. 대신 AnimationTree를 사용하세요."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "화면에서 색상을 선택하세요."
 
 #: scene/gui/color_picker.cpp
@@ -12440,6 +12482,12 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있어요."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없어요."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "프로젝트 내보내기에 실패했어요. 오류 코드%d."
+
+#~ msgid "Password:"
+#~ msgstr "암호:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "식별자 세그먼트는 길이가 0이 아니어야 해요."
@@ -12899,9 +12947,6 @@ msgstr "상수는 수정할 수 없어요."
 #~ msgid "Create folder"
 #~ msgstr "폴더 만들기"
 
-#~ msgid "Already existing"
-#~ msgstr "이미 존재함"
-
 #~ msgid "Custom Node"
 #~ msgstr "커스텀 노드"
 
@@ -12949,9 +12994,6 @@ msgstr "상수는 수정할 수 없어요."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "분할은 존재하는 모서리를 형성할 수 없습니다."
-
-#~ msgid "Split already exists."
-#~ msgstr "이미 분할되었습니다."
 
 #~ msgid "Add Split"
 #~ msgstr "분할 추가"
