@@ -45,6 +45,15 @@ Input *Input::get_singleton() {
 	return singleton;
 }
 
+void Input::set_state(const Ref<InputState> &p_state) {
+	ERR_FAIL_COND_MSG(p_state.is_null(), "Cannot process inputs without a valid InputState resource.")
+	state = p_state;
+}
+
+Ref<InputState> Input::get_state() const {
+	return state;
+}
+
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 4);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
@@ -56,6 +65,10 @@ Input::MouseMode Input::get_mouse_mode() const {
 }
 
 void Input::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_state", "state"), &Input::set_state);
+	ClassDB::bind_method(D_METHOD("get_state"), &Input::get_state);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "state"), "set_state", "get_state");
 
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "scancode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);

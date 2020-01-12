@@ -60,6 +60,7 @@
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/os/input.h"
+#include "core/os/input_state.h"
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
 #include "core/path_remap.h"
@@ -133,6 +134,7 @@ void register_core_types() {
 	ClassDB::register_class<Resource>();
 	ClassDB::register_class<Image>();
 
+	ClassDB::register_class<InputState>();
 	ClassDB::register_virtual_class<InputEvent>();
 	ClassDB::register_virtual_class<InputEventWithModifiers>();
 	ClassDB::register_class<InputEventKey>();

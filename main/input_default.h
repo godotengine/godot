@@ -32,50 +32,20 @@
 #define INPUT_DEFAULT_H
 
 #include "core/os/input.h"
+#include "core/os/input_state.h"
 
 class InputDefault : public Input {
-
 	GDCLASS(InputDefault, Input);
 	_THREAD_SAFE_CLASS_
 
-	int mouse_button_mask;
-
-	Set<int> keys_pressed;
-	Set<int> joy_buttons_pressed;
-	Map<int, float> _joy_axis;
-	//Map<StringName,int> custom_action_press;
-	Vector3 gravity;
-	Vector3 accelerometer;
-	Vector3 magnetometer;
-	Vector3 gyroscope;
-	Vector2 mouse_pos;
 	MainLoop *main_loop;
-
-	struct Action {
-		uint64_t physics_frame;
-		uint64_t idle_frame;
-		bool pressed;
-		float strength;
-	};
-
-	Map<StringName, Action> action_state;
 
 	bool emulate_touch_from_mouse;
 	bool emulate_mouse_from_touch;
 
 	int mouse_from_touch_index;
 
-	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
-	};
-
-	Map<int, VibrationInfo> joy_vibration;
-
 	struct SpeedTrack {
-
 		uint64_t last_tick;
 		Vector2 speed;
 		Vector2 accum;
@@ -101,11 +71,9 @@ class InputDefault : public Input {
 
 		Joypad() {
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
-
 				last_axis[i] = 0.0f;
 			}
 			for (int i = 0; i < JOY_BUTTON_MAX + 19; i++) {
-
 				last_buttons[i] = false;
 			}
 			connected = false;
@@ -233,8 +201,6 @@ public:
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
-
-	void iteration(float p_step);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
 	virtual bool is_emulating_touch_from_mouse() const;

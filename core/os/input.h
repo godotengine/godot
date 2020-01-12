@@ -34,14 +34,15 @@
 #include "core/object.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
+#include "input_state.h"
 
 class Input : public Object {
-
 	GDCLASS(Input, Object);
 
 	static Input *singleton;
 
 protected:
+	Ref<InputState> state;
 	static void _bind_methods();
 
 public:
@@ -78,6 +79,9 @@ public:
 	MouseMode get_mouse_mode() const;
 
 	static Input *get_singleton();
+
+	void set_state(const Ref<InputState> &p_state);
+	Ref<InputState> get_state() const;
 
 	virtual bool is_key_pressed(int p_scancode) const = 0;
 	virtual bool is_mouse_button_pressed(int p_button) const = 0;

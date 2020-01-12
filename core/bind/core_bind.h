@@ -752,6 +752,10 @@ public:
 
 	int get_frames_drawn();
 
+	// bool is_in_physics_frame() const { return _in_physics; }
+	// uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
+	// float get_idle_frame_step() const { return _frame_step; }
+
 	void set_time_scale(float p_scale);
 	float get_time_scale();
 
