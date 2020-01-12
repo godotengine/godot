@@ -21,6 +21,13 @@
 				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
 			</description>
 		</method>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the normal vector of the floor.
+			</description>
+		</method>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -86,7 +93,7 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector3">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
+			<argument index="1" name="up_direction" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<argument index="2" name="stop_on_slope" type="bool" default="false">
 			</argument>

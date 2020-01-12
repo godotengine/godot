@@ -2045,7 +2045,7 @@
 			<argument index="2" name="lightmap" type="RID">
 			</argument>
 			<description>
-				Sets the lightmap to use with this instance. 
+				Sets the lightmap to use with this instance.
 			</description>
 		</method>
 		<method name="instance_set_visible">
@@ -3371,7 +3371,7 @@
 			<description>
 				Creates a scenario and adds it to the VisualServer. It can be accessed with the RID that is returned. This RID will be used in all [code]scenario_*[/code] VisualServer functions.
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
-				The scenario is the 3D world that all the visual instances exist in. 
+				The scenario is the 3D world that all the visual instances exist in.
 			</description>
 		</method>
 		<method name="scenario_set_debug">
@@ -4857,10 +4857,10 @@
 			Use the filmic tonemapper.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
-			Use the ACES tonemapper. 
+			Use the ACES tonemapper.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion. 
+			Lowest quality of screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
 			Medium quality screen space ambient occlusion.
@@ -4872,7 +4872,7 @@
 			Disables the blur set for SSAO. Will make SSAO look noisier.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
-			Perform a 1x1 blur on the SSAO output. 
+			Perform a 1x1 blur on the SSAO output.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
 			Performs a 2x2 blur on the SSAO output.

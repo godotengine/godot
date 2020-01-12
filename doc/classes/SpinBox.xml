@@ -19,18 +19,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_line_edit">
-			<return type="LineEdit">
-			</return>
-			<description>
-				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
-			</description>
-		</method>
 		<method name="apply">
 			<return type="void">
 			</return>
 			<description>
 				Applies the current value of this [SpinBox].
+			</description>
+		</method>
+		<method name="get_line_edit">
+			<return type="LineEdit">
+			</return>
+			<description>
+				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
 			</description>
 		</method>
 	</methods>

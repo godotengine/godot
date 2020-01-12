@@ -321,6 +321,9 @@
 		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
+		<member name="debug/gdscript/warnings/standalone_ternary" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], all warnings will be reported as if they were errors.
 		</member>

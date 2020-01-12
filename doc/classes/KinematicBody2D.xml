@@ -13,6 +13,13 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/using_kinematic_body_2d.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+                                Returns the normal vector of the floor.
+			</description>
+		</method>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>

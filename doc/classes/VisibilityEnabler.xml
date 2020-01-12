@@ -15,7 +15,7 @@
 			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler.Enabler">
 			</argument>
 			<description>
-				Returns whether the enabler identified by given [enum Enabler] constant is active. 
+				Returns whether the enabler identified by given [enum Enabler] constant is active.
 			</description>
 		</method>
 		<method name="set_enabler">
