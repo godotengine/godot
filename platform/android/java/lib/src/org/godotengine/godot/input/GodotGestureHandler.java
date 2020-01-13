@@ -78,7 +78,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.double_tap(x, y);
+				GodotLib.doubletap(x, y);
 			}
 		});
 		return true;
