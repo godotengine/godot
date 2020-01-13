@@ -6185,6 +6185,16 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 				if (expr_script == p_container.script_type) {
 					return true;
 				}
+				// Since pointers can change because loading and unloading cycles, also check path/name (for inner classes) too
+				Ref<GDScript> expr_gdscript = expr_script;
+				Ref<GDScript> container_gdscript = p_container.script_type;
+				if (expr_gdscript.is_valid() && container_gdscript.is_valid()) {
+					if (expr_gdscript->get_path() == container_gdscript->get_path() &&
+							expr_gdscript->get_script_class_name() == container_gdscript->get_script_class_name()) {
+						return true;
+					}
+				}
+
 				expr_script = expr_script->get_base_script();
 			}
 			return false;

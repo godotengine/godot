@@ -858,6 +858,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							valid = true;
 							break;
 						}
+						GDScript *src_gdscript = Object::cast_to<GDScript>(src_type);
+						GDScript *base_gdscript = Object::cast_to<GDScript>(base_type);
+						if (src_gdscript != NULL && base_gdscript != NULL) {
+							if (src_gdscript->path == base_gdscript->path && src_gdscript->name == base_gdscript->name) {
+								valid = true;
+								break;
+							}
+						}
+
 						src_type = src_type->get_base_script().ptr();
 					}
 
