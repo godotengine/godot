@@ -83,7 +83,9 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 			// May not me referenced yet, so we must use init_ref() instead of reference()
-			ref->init_ref();
+			if (ref->init_ref()) {
+				CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+			}
 		}
 
 		// The object was just created, no script instance binding should have been attached

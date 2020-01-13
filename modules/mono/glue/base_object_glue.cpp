@@ -108,6 +108,7 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolea
 
 	// Unsafe refcount decrement. The managed instance also counts as a reference.
 	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(ref);
 	if (ref->unreference()) {
 		memdelete(ref);
 	} else {
