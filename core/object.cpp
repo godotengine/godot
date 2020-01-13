@@ -1185,13 +1185,11 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 
 		const Connection &c = slot_map.getv(i).conn;
 
-		Object *target;
-#ifdef DEBUG_ENABLED
-		target = ObjectDB::get_instance(slot_map.getk(i)._id);
-		ERR_CONTINUE(!target);
-#else
-		target = c.target;
-#endif
+		Object *target = ObjectDB::get_instance(slot_map.getk(i)._id);
+		if (!target) {
+			// Target might have been deleted during signal callback, this is expected and OK.
+			continue;
+		}
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
