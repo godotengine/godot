@@ -747,6 +747,8 @@ public:
 	int get_target_fps() const;
 
 	float get_frames_per_second() const;
+	uint64_t get_physics_frames() const;
+	uint64_t get_idle_frames() const;
 
 	int get_frames_drawn();
 
