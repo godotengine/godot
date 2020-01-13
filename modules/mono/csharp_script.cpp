@@ -159,6 +159,19 @@ void CSharpLanguage::finish() {
 	// Clear here, after finalizing all domains to make sure there is nothing else referencing the elements.
 	script_bindings.clear();
 
+#ifdef DEBUG_ENABLED
+	for (List<ObjectID>::Element *E = unsafely_referenced_objects.front(); E; E = E->next()) {
+		const ObjectID &id = E->get();
+		Object *obj = ObjectDB::get_instance(id);
+
+		if (obj) {
+			ERR_PRINTS("Leaked unsafe reference to object: " + obj->get_class() + ":" + itos(id));
+		} else {
+			ERR_PRINTS("Leaked unsafe reference to deleted object: " + itos(id));
+		}
+	}
+#endif
+
 	finalizing = false;
 }
 
@@ -614,6 +627,23 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 	return si;
 }
 #endif
+
+void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
+#ifdef DEBUG_ENABLED
+	ObjectID id = p_obj->get_instance_id();
+	ERR_FAIL_COND_MSG(unsafely_referenced_objects.find(id), "Multiple unsafe references for object: " + p_obj->get_class() + ":" + itos(id));
+	unsafely_referenced_objects.push_back(id);
+#endif
+}
+
+void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
+#ifdef DEBUG_ENABLED
+	ObjectID id = p_obj->get_instance_id();
+	List<ObjectID>::Element *elem = unsafely_referenced_objects.find(id);
+	ERR_FAIL_NULL(elem);
+	unsafely_referenced_objects.erase(elem);
+#endif
+}
 
 void CSharpLanguage::frame() {
 
@@ -1286,6 +1316,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 		ref->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
 	}
 
 	return true;
@@ -1736,9 +1767,12 @@ bool CSharpInstance::_reference_owner_unsafe() {
 	// See: _unreference_owner_unsafe()
 
 	// May not me referenced yet, so we must use init_ref() instead of reference()
-	bool success = Object::cast_to<Reference>(owner)->init_ref();
-	unsafe_referenced = success;
-	return success;
+	if (static_cast<Reference *>(owner)->init_ref()) {
+		CSharpLanguage::get_singleton()->post_unsafe_reference(owner);
+		unsafe_referenced = true;
+	}
+
+	return unsafe_referenced;
 }
 
 bool CSharpInstance::_unreference_owner_unsafe() {
@@ -1759,6 +1793,7 @@ bool CSharpInstance::_unreference_owner_unsafe() {
 	// See: _reference_owner_unsafe()
 
 	// Destroying the owner here means self destructing, so we defer the owner destruction to the caller.
+	CSharpLanguage::get_singleton()->pre_unsafe_unreference(owner);
 	return static_cast<Reference *>(owner)->unreference();
 }
 

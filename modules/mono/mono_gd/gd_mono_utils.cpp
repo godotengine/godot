@@ -115,6 +115,7 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
 		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 		ref->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
 	}
 
 	return mono_object;
