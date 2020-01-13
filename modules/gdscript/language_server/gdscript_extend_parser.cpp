@@ -112,9 +112,10 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	FileAccessRef fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	tokenizer.set_code(p_code);
 	while (true) {
-		if (tokenizer.get_token() == GDScriptTokenizer::TK_EOF) {
+		GDScriptTokenizerText::Token token = tokenizer.get_token();
+		if (token == GDScriptTokenizer::TK_EOF || token == GDScriptTokenizer::TK_ERROR) {
 			break;
-		} else if (tokenizer.get_token() == GDScriptTokenizer::TK_CONSTANT) {
+		} else if (token == GDScriptTokenizer::TK_CONSTANT) {
 			const Variant &const_val = tokenizer.get_token_constant();
 			if (const_val.get_type() == Variant::STRING) {
 				String path = const_val;
