@@ -1981,6 +1981,7 @@ void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_m
 	int id = (int)p_id;
 	if (id == ProjectList::GLOBAL_NEW_WINDOW) {
 		List<String> args;
+		args.push_back("-p");
 		String exec = OS::get_singleton()->get_executable_path();
 
 		OS::ProcessID pid = 0;
