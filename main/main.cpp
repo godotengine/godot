@@ -2169,6 +2169,9 @@ void Main::cleanup() {
 
 	ScriptServer::finish_languages();
 
+	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
+	VisualServer::get_singleton()->sync();
+
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
