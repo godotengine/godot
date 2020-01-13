@@ -2682,6 +2682,11 @@ Vector2 Control::get_pivot_offset() const {
 void Control::set_scale(const Vector2 &p_scale) {
 
 	data.scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (data.scale.x == 0)
+		data.scale.x = CMP_EPSILON;
+	if (data.scale.y == 0)
+		data.scale.y = CMP_EPSILON;
 	update();
 	_notify_transform();
 }

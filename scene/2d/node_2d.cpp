@@ -173,6 +173,7 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	_scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (_scale.x == 0)
 		_scale.x = CMP_EPSILON;
 	if (_scale.y == 0)
