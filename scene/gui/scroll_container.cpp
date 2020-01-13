@@ -420,6 +420,9 @@ void ScrollContainer::update_scrollbars() {
 
 		v_scroll->hide();
 		scroll.y = 0;
+
+		// modify the horizontal scrollbar's right anchor to fill the container's width
+		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 	} else {
 
 		v_scroll->show();
@@ -431,12 +434,18 @@ void ScrollContainer::update_scrollbars() {
 		}
 
 		scroll.y = v_scroll->get_value();
+
+		// modify the horizontal scrollbar's right anchor to stop at the left of the vertical scrollbar
+		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -vmin.width);
 	}
 
 	if (hide_scroll_h) {
 
 		h_scroll->hide();
 		scroll.x = 0;
+
+		// modify the vertical scrollbar's bottom anchor to fill the container's height
+		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	} else {
 
 		h_scroll->show();
@@ -448,6 +457,9 @@ void ScrollContainer::update_scrollbars() {
 		}
 
 		scroll.x = h_scroll->get_value();
+
+		// modify the vertical scrollbar's bottom anchor to stop at the top of the horizontal scrollbar
+		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -hmin.height);
 	}
 }
 
