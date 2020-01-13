@@ -13,6 +13,7 @@ if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('copy.glsl');
     env.RD_GLSL('giprobe.glsl');
     env.RD_GLSL('giprobe_debug.glsl');
+    env.RD_GLSL('giprobe_sdf.glsl');
     env.RD_GLSL('luminance_reduce.glsl');
     
 
