@@ -4217,12 +4217,14 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 void CanvasItemEditor::_update_zoom_label() {
 	String zoom_text;
 	// The zoom level displayed is relative to the editor scale
-	// (like in most image editors).
+	// (like in most image editors). Its lower bound is clamped to 1 as some people
+	// lower the editor scale to increase the available real estate,
+	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
 		// Don't show a decimal when the zoom level is higher than 1000 %.
-		zoom_text = rtos(Math::round((zoom / EDSCALE) * 100)) + " %";
+		zoom_text = rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)) + " %";
 	} else {
-		zoom_text = rtos(Math::stepify((zoom / EDSCALE) * 100, 0.1)) + " %";
+		zoom_text = rtos(Math::stepify((zoom / MAX(1, EDSCALE)) * 100, 0.1)) + " %";
 	}
 
 	zoom_reset->set_text(zoom_text);
@@ -4996,7 +4998,7 @@ Dictionary CanvasItemEditor::get_state() const {
 
 	Dictionary state;
 	// Take the editor scale into account.
-	state["zoom"] = zoom / EDSCALE;
+	state["zoom"] = zoom / MAX(1, EDSCALE);
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
@@ -5251,7 +5253,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_rulers = true;
 	show_guides = true;
 	show_edit_locks = true;
-	zoom = 1.0 / EDSCALE;
+	zoom = 1.0 / MAX(1, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
