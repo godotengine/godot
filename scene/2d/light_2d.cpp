@@ -189,6 +189,10 @@ float Light2D::get_energy() const {
 void Light2D::set_texture_scale(float p_scale) {
 
 	_scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (_scale == 0) {
+		_scale = CMP_EPSILON;
+	}
 	VS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
 	item_rect_changed();
 }
