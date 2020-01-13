@@ -64,7 +64,7 @@ float get_depth_at_pos(vec2 uv) {
 float get_blur_size(float depth) {
 
 	if (params.blur_near_active && depth < params.blur_near_begin) {
-		return smoothstep(params.blur_near_end,params.blur_near_begin,depth) * params.blur_size;
+		return (1.0 - smoothstep(params.blur_near_end,params.blur_near_begin,depth) ) * params.blur_size;
 	}
 
 	if (params.blur_far_active && depth > params.blur_far_begin) {
@@ -86,9 +86,11 @@ void main() {
 		return;
 	}
 
+	vec2 pixel_size = 1.0/vec2(params.size);
 	vec2 uv = vec2(pos) / vec2(params.size);
 
 #ifdef MODE_GEN_BLUR_SIZE
+	uv+=pixel_size * 0.5;
 	//precompute size in alpha channel
 	float depth = get_depth_at_pos(uv);
 	float size = get_blur_size(depth);
@@ -100,12 +102,15 @@ void main() {
 
 #ifdef MODE_GEN_BOKEH
 
+	pixel_size*=0.5; //resolution is doubled
+
+	uv+=pixel_size * 0.5; //half pixel to read centers
+
 	float depth = get_depth_at_pos(uv);
 	float size = get_blur_size(depth);
 	vec4 color = texture(color_texture,uv);
 	float accum = 1.0;
 	float radius = params.blur_scale;
-	vec2 pixel_size = 1.0/vec2(params.size);
 
 	for (float ang = 0.0; radius < params.blur_size; ang += GOLDEN_ANGLE) {
 
@@ -119,7 +124,7 @@ void main() {
 		float m = smoothstep(radius-0.5, radius+0.5, sample_color.a);
 		color += mix(color/accum, sample_color, m);
 		accum += 1.0;
-		radius += params.blur_size/radius;
+		radius += params.blur_scale/radius;
 	}
 
 	color /= accum;
@@ -129,11 +134,12 @@ void main() {
 
 #ifdef MODE_COMPOSITE_BOKEH
 
+	uv+=pixel_size * 0.5;
 	vec4 color = imageLoad(color_image,pos);
 	vec4 bokeh = texture(source_bokeh,uv);
-	if (max(color.a,bokeh.a) > 0.5) { //there is some blur in this pixel, so use bokeh
-		color = bokeh;
-	}
+
+	color.rgb = mix(color.rgb,bokeh.rgb,min(1.0,max(color.a,bokeh.a))); //blend between hires and lowres
+
 	color.a=0; //reset alpha
 	imageStore(color_image,pos,color);
 #endif

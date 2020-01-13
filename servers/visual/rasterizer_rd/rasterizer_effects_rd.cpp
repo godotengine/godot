@@ -416,9 +416,6 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 	bokeh.push_constant.blur_near_begin = p_dof_near_begin;
 	bokeh.push_constant.blur_near_end = MAX(0, p_dof_near_begin - p_dof_near_size);
 
-	bokeh.push_constant.size[0] = p_base_texture_size.x;
-	bokeh.push_constant.size[1] = p_base_texture_size.y;
-
 	bokeh.push_constant.z_near = p_cam_znear;
 	bokeh.push_constant.z_far = p_cam_zfar;
 	bokeh.push_constant.orthogonal = p_cam_orthogonal;
@@ -432,10 +429,12 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_texture), 1);
 
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
-
 	int32_t x_groups = (p_base_texture_size.x - 1) / 8 + 1;
 	int32_t y_groups = (p_base_texture_size.y - 1) / 8 + 1;
+	bokeh.push_constant.size[0] = p_base_texture_size.x;
+	bokeh.push_constant.size[1] = p_base_texture_size.y;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -446,10 +445,12 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_texture), 1);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 2);
 
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
-
 	x_groups = ((p_base_texture_size.x >> 1) - 1) / 8 + 1;
 	y_groups = ((p_base_texture_size.y >> 1) - 1) / 8 + 1;
+	bokeh.push_constant.size[0] = p_base_texture_size.x >> 1;
+	bokeh.push_constant.size[1] = p_base_texture_size.y >> 1;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -459,10 +460,12 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_base_texture), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_bokeh_texture), 1);
 
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
-
 	x_groups = (p_base_texture_size.x - 1) / 8 + 1;
 	y_groups = (p_base_texture_size.y - 1) / 8 + 1;
+	bokeh.push_constant.size[0] = p_base_texture_size.x;
+	bokeh.push_constant.size[1] = p_base_texture_size.y;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &bokeh.push_constant, sizeof(BokehPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
