@@ -69,6 +69,7 @@
 			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
+				Called when the user performs an action in the system global menu (e.g. the Mac OS menu bar).
 			</description>
 		</method>
 		<method name="_idle" qualifiers="virtual">
