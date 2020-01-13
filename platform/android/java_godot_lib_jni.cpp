@@ -835,7 +835,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jo
 	os_android->process_hover(p_type, Point2(p_x, p_y));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_double_tap(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
