@@ -51,6 +51,8 @@ protected:
 	static PoolByteArray _read_file(String p_path);
 
 public:
+	static void print_mbedtls_error(int p_ret);
+
 	Ref<X509CertificateMbedTLS> certs;
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;

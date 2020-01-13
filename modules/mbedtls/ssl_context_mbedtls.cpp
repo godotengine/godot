@@ -38,6 +38,11 @@ static void my_debug(void *ctx, int level,
 	fflush(stdout);
 }
 
+void SSLContextMbedTLS::print_mbedtls_error(int p_ret) {
+	printf("mbedtls error: returned -0x%x\n\n", -p_ret);
+	fflush(stdout);
+}
+
 Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
 	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This SSL context is already active");
 
