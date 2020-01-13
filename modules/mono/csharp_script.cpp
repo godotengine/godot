@@ -2243,7 +2243,11 @@ bool CSharpScript::_update_exports() {
 		MonoException *ctor_exc = NULL;
 		ctor->invoke(tmp_object, NULL, &ctor_exc);
 
+		Object *tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
+
 		if (ctor_exc) {
+			// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
+
 			MonoGCHandle::free_handle(tmp_pinned_gchandle);
 			tmp_object = NULL;
 
@@ -2322,6 +2326,15 @@ bool CSharpScript::_update_exports() {
 
 		MonoGCHandle::free_handle(tmp_pinned_gchandle);
 		tmp_object = NULL;
+
+		if (tmp_native && !Object::cast_to<Reference>(tmp_native)) {
+			Node *node = Object::cast_to<Node>(tmp_native);
+			if (node && node->is_inside_tree()) {
+				ERR_PRINTS("Temporary instance was added to the scene tree.");
+			} else {
+				memdelete(tmp_native);
+			}
+		}
 	}
 
 	placeholder_fallback_enabled = false;
