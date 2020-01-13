@@ -1035,7 +1035,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// window compositor ("--enable-vsync-via-compositor" or
 		// "--disable-vsync-via-compositor") was present then it overrides the
 		// project setting.
-		video_mode.vsync_via_compositor = GLOBAL_DEF("display/window/vsync/vsync_via_compositor", true);
+		video_mode.vsync_via_compositor = GLOBAL_DEF("display/window/vsync/vsync_via_compositor", false);
 	}
 
 	OS::get_singleton()->_vsync_via_compositor = video_mode.vsync_via_compositor;
