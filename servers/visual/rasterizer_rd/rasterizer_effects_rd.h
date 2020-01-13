@@ -34,11 +34,13 @@
 #include "core/math/camera_matrix.h"
 #include "render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/bokeh_dof.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/copy.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/tonemap.glsl.gen.h"
+
 #include "servers/visual_server.h"
 
 class RasterizerEffectsRD {
@@ -221,6 +223,40 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipelines[COPY_MODE_MAX];
 	} copy;
 
+	struct BokehPushConstant {
+		uint32_t size[2];
+		float z_far;
+		float z_near;
+
+		uint32_t orthogonal;
+		float blur_size;
+		float blur_scale;
+		uint32_t pad;
+
+		uint32_t blur_near_active;
+		float blur_near_begin;
+		float blur_near_end;
+		uint32_t blur_far_active;
+		float blur_far_begin;
+		float blur_far_end;
+		uint32_t pad2[2];
+	};
+
+	enum BokehMode {
+		BOKEH_GEN_BLUR_SIZE,
+		BOKEH_GEN_BOKEH,
+		BOKEH_COMPOSITE,
+		BOKEH_MAX
+	};
+
+	struct Bokeh {
+
+		BokehPushConstant push_constant;
+		BokehDofShaderRD shader;
+		RID shader_version;
+		RID pipelines[BOKEH_MAX];
+	} bokeh;
+
 	RID default_sampler;
 	RID default_mipmap_sampler;
 	RID index_buffer;
@@ -248,6 +284,7 @@ public:
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
+	void bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_bokeh_texture, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, VS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
 	struct TonemapSettings {
 

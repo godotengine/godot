@@ -43,11 +43,24 @@ void WorldEnvironment::_notification(int p_what) {
 			add_to_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
 		}
 
+		if (camera_effects.is_valid()) {
+			if (get_viewport()->find_world()->get_camera_effects().is_valid()) {
+				WARN_PRINT("World already has a camera effects (Another WorldEnvironment?), overriding.");
+			}
+			get_viewport()->find_world()->set_camera_effects(camera_effects);
+			add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
+		}
+
 	} else if (p_what == Spatial::NOTIFICATION_EXIT_WORLD || p_what == Spatial::NOTIFICATION_EXIT_TREE) {
 
 		if (environment.is_valid() && get_viewport()->find_world()->get_environment() == environment) {
 			get_viewport()->find_world()->set_environment(Ref<Environment>());
 			remove_from_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
+		}
+
+		if (camera_effects.is_valid() && get_viewport()->find_world()->get_camera_effects() == camera_effects) {
+			get_viewport()->find_world()->set_camera_effects(Ref<CameraEffects>());
+			remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
 		}
 	}
 }
@@ -75,6 +88,31 @@ void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 Ref<Environment> WorldEnvironment::get_environment() const {
 
 	return environment;
+}
+
+void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
+
+	if (is_inside_tree() && camera_effects.is_valid() && get_viewport()->find_world()->get_camera_effects() == camera_effects) {
+		get_viewport()->find_world()->set_camera_effects(Ref<CameraEffects>());
+		remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
+		//clean up
+	}
+
+	camera_effects = p_camera_effects;
+	if (is_inside_tree() && camera_effects.is_valid()) {
+		if (get_viewport()->find_world()->get_camera_effects().is_valid()) {
+			WARN_PRINT("World already has an camera_effects (Another WorldEnvironment?), overriding.");
+		}
+		get_viewport()->find_world()->set_camera_effects(camera_effects);
+		add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
+	}
+
+	update_configuration_warning();
+}
+
+Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
+
+	return camera_effects;
 }
 
 String WorldEnvironment::get_configuration_warning() const {
@@ -106,6 +144,10 @@ void WorldEnvironment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &WorldEnvironment::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &WorldEnvironment::get_environment);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+
+	ClassDB::bind_method(D_METHOD("set_camera_effects", "env"), &WorldEnvironment::set_camera_effects);
+	ClassDB::bind_method(D_METHOD("get_camera_effects"), &WorldEnvironment::get_camera_effects);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
 }
 
 WorldEnvironment::WorldEnvironment() {

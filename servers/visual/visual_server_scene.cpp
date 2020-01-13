@@ -96,6 +96,13 @@ void VisualServerScene::camera_set_environment(RID p_camera, RID p_env) {
 	camera->env = p_env;
 }
 
+void VisualServerScene::camera_set_camera_effects(RID p_camera, RID p_fx) {
+
+	Camera *camera = camera_owner.getornull(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->effects = p_fx;
+}
+
 void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enable) {
 
 	Camera *camera = camera_owner.getornull(p_camera);
@@ -293,6 +300,13 @@ void VisualServerScene::scenario_set_environment(RID p_scenario, RID p_environme
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
 	scenario->environment = p_environment;
+}
+
+void VisualServerScene::scenario_set_camera_effects(RID p_scenario, RID p_camera_effects) {
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	ERR_FAIL_COND(!scenario);
+	scenario->camera_effects = p_camera_effects;
 }
 
 void VisualServerScene::scenario_set_fallback_environment(RID p_scenario, RID p_environment) {
@@ -1779,8 +1793,8 @@ void VisualServerScene::render_camera(RID p_render_buffers, RID p_camera, RID p_
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
-	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
@@ -1858,17 +1872,17 @@ void VisualServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface> &
 		mono_transform *= apply_z_shift;
 
 		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	} else if (p_eye == ARVRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	}
 
 	// And render our scene...
-	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -2207,7 +2221,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	}
 }
 
-void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
@@ -2221,10 +2235,16 @@ void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_ca
 	else
 		environment = scenario->fallback_environment;
 
+	RID camera_effects;
+	if (p_force_camera_effects.is_valid()) {
+		camera_effects = p_force_camera_effects;
+	} else {
+		camera_effects = scenario->camera_effects;
+	}
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
 	RENDER_TIMESTAMP("Render Scene ");
-	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, environment, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, environment, camera_effects, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
@@ -2239,7 +2259,7 @@ void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario,
 	else
 		environment = scenario->fallback_environment;
 	RENDER_TIMESTAMP("Render Empty Scene ");
-	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, NULL, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2304,8 +2324,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		}
 
 		RENDER_TIMESTAMP("Render Reflection Probe, Step " + itos(p_step));
-		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
-		_render_scene(RID(), xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		_prepare_scene(xform, cm, false, RID(), RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
+		_render_scene(RID(), xform, cm, false, RID(), RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
 		//do roughness postprocess step until it believes it's done

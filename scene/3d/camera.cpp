@@ -445,6 +445,21 @@ Ref<Environment> Camera::get_environment() const {
 	return environment;
 }
 
+void Camera::set_effects(const Ref<CameraEffects> &p_effects) {
+
+	effects = p_effects;
+	if (effects.is_valid())
+		VS::get_singleton()->camera_set_camera_effects(camera, effects->get_rid());
+	else
+		VS::get_singleton()->camera_set_camera_effects(camera, RID());
+	_update_camera_mode();
+}
+
+Ref<CameraEffects> Camera::get_effects() const {
+
+	return effects;
+}
+
 void Camera::set_keep_aspect_mode(KeepAspect p_aspect) {
 	keep_aspect = p_aspect;
 	VisualServer::get_singleton()->camera_set_use_vertical_aspect(camera, p_aspect == KEEP_WIDTH);
@@ -512,6 +527,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
+	ClassDB::bind_method(D_METHOD("set_effects", "env"), &Camera::set_effects);
+	ClassDB::bind_method(D_METHOD("get_effects"), &Camera::get_effects);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
@@ -527,6 +544,7 @@ void Camera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_effects", "get_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");

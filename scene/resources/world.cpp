@@ -306,6 +306,20 @@ Ref<Environment> World::get_fallback_environment() const {
 	return fallback_environment;
 }
 
+void World::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
+
+	camera_effects = p_camera_effects;
+	if (camera_effects.is_valid())
+		VS::get_singleton()->scenario_set_camera_effects(scenario, camera_effects->get_rid());
+	else
+		VS::get_singleton()->scenario_set_camera_effects(scenario, RID());
+}
+
+Ref<CameraEffects> World::get_camera_effects() const {
+
+	return camera_effects;
+}
+
 PhysicsDirectSpaceState *World::get_direct_space_state() {
 
 	return PhysicsServer::get_singleton()->space_get_direct_state(space);
@@ -326,9 +340,12 @@ void World::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment"), &World::get_environment);
 	ClassDB::bind_method(D_METHOD("set_fallback_environment", "env"), &World::set_fallback_environment);
 	ClassDB::bind_method(D_METHOD("get_fallback_environment"), &World::get_fallback_environment);
+	ClassDB::bind_method(D_METHOD("set_camera_effects", "env"), &World::set_camera_effects);
+	ClassDB::bind_method(D_METHOD("get_camera_effects"), &World::get_camera_effects);
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World::get_direct_space_state);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "space", PROPERTY_HINT_NONE, "", 0), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "scenario", PROPERTY_HINT_NONE, "", 0), "", "get_scenario");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState", 0), "", "get_direct_space_state");
