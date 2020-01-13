@@ -78,6 +78,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_in_bandwidth < 0, ERR_INVALID_PARAMETER, "The incoming bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
 	ERR_FAIL_COND_V_MSG(p_out_bandwidth < 0, ERR_INVALID_PARAMETER, "The outgoing bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
+	ERR_FAIL_COND_V(dtls_enabled && (dtls_key.is_null() || dtls_cert.is_null()), ERR_INVALID_PARAMETER);
 
 	ENetAddress address;
 	memset(&address, 0, sizeof(address));
@@ -105,6 +106,11 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 
 	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create an ENet multiplayer server.");
+#ifdef GODOT_ENET
+	if (dtls_enabled) {
+		enet_host_dtls_server_setup(host, dtls_key.ptr(), dtls_cert.ptr());
+	}
+#endif
 
 	_setup_compressor();
 	active = true;
@@ -156,6 +162,11 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	}
 
 	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create the ENet client host.");
+#ifdef GODOT_ENET
+	if (dtls_enabled) {
+		enet_host_dtls_client_setup(host, dtls_cert.ptr(), dtls_verify, p_address.utf8().get_data());
+	}
+#endif
 
 	_setup_compressor();
 
@@ -856,6 +867,12 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("set_dtls_enabled", "enabled"), &NetworkedMultiplayerENet::set_dtls_enabled);
+	ClassDB::bind_method(D_METHOD("is_dtls_enabled"), &NetworkedMultiplayerENet::is_dtls_enabled);
+	ClassDB::bind_method(D_METHOD("set_dtls_key", "key"), &NetworkedMultiplayerENet::set_dtls_key);
+	ClassDB::bind_method(D_METHOD("set_dtls_certificate", "certificate"), &NetworkedMultiplayerENet::set_dtls_certificate);
+	ClassDB::bind_method(D_METHOD("set_dtls_verify_enabled", "enabled"), &NetworkedMultiplayerENet::set_dtls_verify_enabled);
+	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &NetworkedMultiplayerENet::is_dtls_verify_enabled);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
 
@@ -875,6 +892,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel_count"), "set_channel_count", "get_channel_count");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "always_ordered"), "set_always_ordered", "is_always_ordered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dtls_verify"), "set_dtls_verify_enabled", "is_dtls_verify_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_dtls"), "set_dtls_enabled", "is_dtls_enabled");
 
 	BIND_ENUM_CONSTANT(COMPRESS_NONE);
 	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);
@@ -904,6 +923,9 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	enet_compressor.destroy = enet_compressor_destroy;
 
 	bind_ip = IP_Address("*");
+
+	dtls_enabled = false;
+	dtls_verify = true;
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
@@ -919,4 +941,32 @@ void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
 	ERR_FAIL_COND_MSG(!p_ip.is_valid() && !p_ip.is_wildcard(), vformat("Invalid bind IP address: %s", String(p_ip)));
 
 	bind_ip = p_ip;
+}
+
+void NetworkedMultiplayerENet::set_dtls_enabled(bool p_enabled) {
+	ERR_FAIL_COND(active);
+	dtls_enabled = p_enabled;
+}
+
+bool NetworkedMultiplayerENet::is_dtls_enabled() const {
+	return dtls_enabled;
+}
+
+void NetworkedMultiplayerENet::set_dtls_verify_enabled(bool p_enabled) {
+	ERR_FAIL_COND(active);
+	dtls_verify = p_enabled;
+}
+
+bool NetworkedMultiplayerENet::is_dtls_verify_enabled() const {
+	return dtls_verify;
+}
+
+void NetworkedMultiplayerENet::set_dtls_key(Ref<CryptoKey> p_key) {
+	ERR_FAIL_COND(active);
+	dtls_key = p_key;
+}
+
+void NetworkedMultiplayerENet::set_dtls_certificate(Ref<X509Certificate> p_cert) {
+	ERR_FAIL_COND(active);
+	dtls_cert = p_cert;
 }
