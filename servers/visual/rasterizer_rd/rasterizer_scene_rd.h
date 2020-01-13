@@ -49,12 +49,12 @@ public:
 protected:
 	struct RenderBufferData {
 
-		virtual void configure(RID p_color_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
@@ -487,6 +487,28 @@ private:
 
 	mutable RID_Owner<Environent> environment_owner;
 
+	/* CAMERA EFFECTS */
+
+	struct CameraEffects {
+
+		bool dof_blur_far_enabled = false;
+		float dof_blur_far_distance = 10;
+		float dof_blur_far_transition = 5;
+
+		bool dof_blur_near_enabled = false;
+		float dof_blur_near_distance = 2;
+		float dof_blur_near_transition = 1;
+
+		float dof_blur_amount = 0.1;
+
+		VS::DOFBlurQuality dof_blur_quality = VS::DOF_BLUR_QUALITY_MEDIUM;
+
+		bool override_exposure_enabled = false;
+		float override_exposure = 1;
+	};
+
+	mutable RID_Owner<CameraEffects> camera_effects_owner;
+
 	/* RENDER BUFFERS */
 
 	struct RenderBuffers {
@@ -499,6 +521,7 @@ private:
 		uint64_t auto_exposure_version = 1;
 
 		RID texture; //main texture for rendering to, must be filled after done rendering
+		RID depth_texture; //main depth texture
 
 		//built-in textures used for ping pong image processing and blurring
 		struct Blur {
@@ -528,6 +551,9 @@ private:
 	void _free_render_buffer_data(RenderBuffers *rb);
 	void _allocate_blur_textures(RenderBuffers *rb);
 	void _allocate_luminance_textures(RenderBuffers *rb);
+
+	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas);
+	void _render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection);
 
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
@@ -607,8 +633,6 @@ public:
 
 	bool is_environment(RID p_env) const;
 
-	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
-	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
@@ -622,6 +646,11 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
 	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
+
+	virtual RID camera_effects_create();
+
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, VS::DOFBlurQuality p_quality);
+	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure);
 
 	RID light_instance_create(RID p_light);
 	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
@@ -846,10 +875,8 @@ public:
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
-	void render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas);
-	void render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_camera_effects, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 

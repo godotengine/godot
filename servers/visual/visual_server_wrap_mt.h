@@ -363,6 +363,7 @@ public:
 	FUNC2(camera_set_transform, RID, const Transform &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
+	FUNC2(camera_set_camera_effects, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* VIEWPORT TARGET API */
@@ -440,8 +441,6 @@ public:
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
-	FUNC6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	FUNC6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	FUNC12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
@@ -452,10 +451,16 @@ public:
 	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
+	FUNCRID(camera_effects)
+
+	FUNC9(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float, DOFBlurQuality)
+	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
+
 	FUNCRID(scenario)
 
 	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
 	FUNC2(scenario_set_environment, RID, RID)
+	FUNC2(scenario_set_camera_effects, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
@@ -617,8 +622,12 @@ public:
 
 	FUNC1(set_debug_generate_wireframes, bool)
 
-	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
-	virtual bool has_os_feature(const String &p_feature) const { return visual_server->has_os_feature(p_feature); }
+	virtual bool has_feature(Features p_feature) const {
+		return visual_server->has_feature(p_feature);
+	}
+	virtual bool has_os_feature(const String &p_feature) const {
+		return visual_server->has_os_feature(p_feature);
+	}
 
 	FUNC1(call_set_use_vsync, bool)
 

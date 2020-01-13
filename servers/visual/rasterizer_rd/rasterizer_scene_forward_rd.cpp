@@ -535,30 +535,16 @@ void RasterizerSceneForwardRD::RenderBufferDataForward::clear() {
 		RD::get_singleton()->free(color_fb);
 		color_fb = RID();
 	}
-
-	if (depth.is_valid()) {
-		RD::get_singleton()->free(depth);
-		depth = RID();
-	}
 }
 
-void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_color_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) {
+void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa) {
 	clear();
 
 	width = p_width;
 	height = p_height;
 
 	color = p_color_buffer;
-
-	{
-		RD::TextureFormat tf;
-		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-		tf.width = p_width;
-		tf.height = p_height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-		depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
-	}
+	depth = p_depth_buffer;
 
 	{
 		Vector<RID> fb;
@@ -1625,7 +1611,7 @@ void RasterizerSceneForwardRD::_setup_lights(RID *p_light_cull_result, int p_lig
 	}
 }
 
-void RasterizerSceneForwardRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
+void RasterizerSceneForwardRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
 
 	RenderBufferDataForward *render_buffer = NULL;
 	if (p_render_buffer.is_valid()) {
@@ -1853,15 +1839,6 @@ void RasterizerSceneForwardRD::_render_scene(RID p_render_buffer, const Transfor
 		}
 	}
 #endif
-	if (p_reflection_probe.is_valid()) {
-		//was rendering a probe, so do no more
-		return;
-	}
-
-	RENDER_TIMESTAMP("Tonemap");
-
-	render_buffers_post_process_and_tonemap(p_render_buffer, p_environment);
-	render_buffers_debug_draw(p_render_buffer, p_shadow_atlas);
 
 #if 0
 	_post_process(env, p_cam_projection);

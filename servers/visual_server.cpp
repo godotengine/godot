@@ -1821,8 +1821,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &VisualServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &VisualServer::environment_set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "energy", "sky_contibution"), &VisualServer::environment_set_ambient_light, DEFVAL(1.0), DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_near", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_near);
-	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_far", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_far);
 	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "bicubic_upscale"), &VisualServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &VisualServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &VisualServer::environment_set_adjustment);
@@ -2175,9 +2173,9 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_DISABLED);
 	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_SKY);
 
-	BIND_ENUM_CONSTANT(ENV_DOF_BLUR_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(ENV_DOF_BLUR_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(ENV_DOF_BLUR_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_HIGH);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);

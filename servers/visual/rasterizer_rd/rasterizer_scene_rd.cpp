@@ -1117,6 +1117,36 @@ int RasterizerSceneRD::get_directional_light_shadow_size(RID p_light_intance) {
 
 //////////////////////////////////////////////////
 
+RID RasterizerSceneRD::camera_effects_create() {
+
+	return camera_effects_owner.make_rid(CameraEffects());
+}
+
+void RasterizerSceneRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, VS::DOFBlurQuality p_quality) {
+	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+	ERR_FAIL_COND(!camfx);
+
+	camfx->dof_blur_far_enabled = p_far_enable;
+	camfx->dof_blur_far_distance = p_far_distance;
+	camfx->dof_blur_far_transition = p_far_transition;
+
+	camfx->dof_blur_near_enabled = p_near_enable;
+	camfx->dof_blur_near_distance = p_near_distance;
+	camfx->dof_blur_near_transition = p_near_transition;
+
+	camfx->dof_blur_quality = p_quality;
+	camfx->dof_blur_amount = p_amount;
+}
+
+void RasterizerSceneRD::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
+
+	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
+	ERR_FAIL_COND(!camfx);
+
+	camfx->override_exposure_enabled = p_enable;
+	camfx->override_exposure = p_exposure;
+}
+
 RID RasterizerSceneRD::light_instance_create(RID p_light) {
 
 	RID li = light_instance_owner.make_rid(LightInstance());
@@ -2172,7 +2202,7 @@ void RasterizerSceneRD::_allocate_blur_textures(RenderBuffers *rb) {
 	tf.width = rb->width;
 	tf.height = rb->height;
 	tf.type = RD::TEXTURE_TYPE_2D;
-	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
 	rb->blur[0].texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -2254,6 +2284,12 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 
 	if (rb->texture.is_valid()) {
 		RD::get_singleton()->free(rb->texture);
+		rb->texture = RID();
+	}
+
+	if (rb->depth_texture.is_valid()) {
+		RD::get_singleton()->free(rb->depth_texture);
+		rb->depth_texture = RID();
 	}
 
 	for (int i = 0; i < 2; i++) {
@@ -2279,15 +2315,26 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 	}
 }
 
-void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment) {
+void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection) {
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
 	Environent *env = environment_owner.getornull(p_environment);
 	//glow (if enabled)
+	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
+
+	if (can_use_effects && camfx && (camfx->dof_blur_near_enabled || camfx->dof_blur_far_enabled) && camfx->dof_blur_amount > 0.0) {
+
+		if (rb->blur[0].texture.is_null()) {
+			_allocate_blur_textures(rb);
+		}
+
+		float bokeh_size = camfx->dof_blur_amount * 20.0;
+		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[1].mipmaps[0].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, camfx->dof_blur_quality, p_projection.get_z_near(), p_projection.get_z_far(), p_projection.is_orthogonal());
+	}
 
 	if (can_use_effects && env && env->auto_exposure) {
 
@@ -2388,7 +2435,7 @@ void RasterizerSceneRD::render_buffers_post_process_and_tonemap(RID p_render_buf
 	storage->render_target_disable_clear_request(rb->render_target);
 }
 
-void RasterizerSceneRD::render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas) {
+void RasterizerSceneRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas) {
 	RasterizerEffectsRD *effects = storage->get_effects();
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
@@ -2443,12 +2490,22 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		tf.width = rb->width;
 		tf.height = rb->height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		rb->texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 
-	rb->data->configure(rb->texture, p_width, p_height, p_msaa);
+	{
+		RD::TextureFormat tf;
+		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		tf.width = p_width;
+		tf.height = p_height;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+		rb->depth_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	rb->data->configure(rb->texture, rb->depth_texture, p_width, p_height, p_msaa);
 }
 
 int RasterizerSceneRD::get_roughness_layers() const {
@@ -2465,7 +2522,7 @@ RasterizerSceneRD::RenderBufferData *RasterizerSceneRD::render_buffers_get_data(
 	return rb->data;
 }
 
-void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
@@ -2476,7 +2533,14 @@ void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_ca
 		clear_color = storage->get_default_clear_color();
 	}
 
-	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_environment, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
+	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
+
+	if (p_render_buffers.is_valid()) {
+		RENDER_TIMESTAMP("Tonemap");
+
+		_render_buffers_post_process_and_tonemap(p_render_buffers, p_environment, p_camera_effects, p_cam_projection);
+		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas);
+	}
 }
 
 void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -2670,6 +2734,9 @@ bool RasterizerSceneRD::free(RID p_rid) {
 	} else if (environment_owner.owns(p_rid)) {
 		//not much to delete, just free it
 		environment_owner.free(p_rid);
+	} else if (camera_effects_owner.owns(p_rid)) {
+		//not much to delete, just free it
+		camera_effects_owner.free(p_rid);
 	} else if (reflection_atlas_owner.owns(p_rid)) {
 		reflection_atlas_set_size(p_rid, 0, 0);
 		reflection_atlas_owner.free(p_rid);
