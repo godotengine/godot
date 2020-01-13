@@ -1891,13 +1891,13 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 			if (li->last_pass != render_pass) //not visible
 				continue;
 
-			if (li->light_ptr->type == VS::LIGHT_OMNI) {
+			if (li && li->light_ptr->type == VS::LIGHT_OMNI) {
 				if (omni_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					omni_indices[omni_count++] = li->light_index;
 				}
 			}
 
-			if (li->light_ptr->type == VS::LIGHT_SPOT) {
+			if (li && li->light_ptr->type == VS::LIGHT_SPOT) {
 				if (spot_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					spot_indices[spot_count++] = li->light_index;
 				}
