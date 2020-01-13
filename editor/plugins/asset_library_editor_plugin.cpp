@@ -139,8 +139,6 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
-
-	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1452,7 +1450,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll->add_child(library_vb_border);
 	library_vb_border->add_style_override("panel", border2);
 	library_vb_border->set_h_size_flags(SIZE_EXPAND_FILL);
-	library_vb_border->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	library_vb = memnew(VBoxContainer);
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);

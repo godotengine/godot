@@ -254,7 +254,6 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->connect("raise_request", this, "_graph_node_raised", varray(gn));
 		gn->connect("item_rect_changed", connections_layer, "update");
 		_graph_node_moved(gn);
-		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
 }
 
@@ -1335,7 +1334,6 @@ GraphEdit::GraphEdit() {
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", this, "_top_layer_draw");
-	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->connect("gui_input", this, "_top_layer_input");
 
 	connections_layer = memnew(Control);
