@@ -33,9 +33,7 @@
 
 #include "core/image.h"
 
-#ifdef TOOLS_ENABLED
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source);
-#endif
 void image_decompress_squish(Image *p_image);
 
 #endif // IMAGE_COMPRESS_SQUISH_H
