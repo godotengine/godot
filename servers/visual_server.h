@@ -565,6 +565,7 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
+	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
 	/*
@@ -723,19 +724,6 @@ public:
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 #endif
 
-	//set default SSAO options
-	//set default SSR options
-	//set default SSSSS options
-
-	enum EnvironmentDOFBlurQuality {
-		ENV_DOF_BLUR_QUALITY_LOW,
-		ENV_DOF_BLUR_QUALITY_MEDIUM,
-		ENV_DOF_BLUR_QUALITY_HIGH,
-	};
-
-	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, EnvironmentDOFBlurQuality p_quality) = 0;
-	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, EnvironmentDOFBlurQuality p_quality) = 0;
-
 	enum EnvironmentGlowBlendMode {
 		GLOW_BLEND_MODE_ADDITIVE,
 		GLOW_BLEND_MODE_SCREEN,
@@ -776,6 +764,19 @@ public:
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
 
+	/* CAMERA EFFECTS */
+
+	virtual RID camera_effects_create() = 0;
+
+	enum DOFBlurQuality {
+		DOF_BLUR_QUALITY_LOW,
+		DOF_BLUR_QUALITY_MEDIUM,
+		DOF_BLUR_QUALITY_HIGH,
+	};
+
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, DOFBlurQuality p_quality) = 0;
+	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+
 	/* SCENARIO API */
 
 	virtual RID scenario_create() = 0;
@@ -791,6 +792,7 @@ public:
 	virtual void scenario_set_debug(RID p_scenario, ScenarioDebugMode p_debug_mode) = 0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
+	virtual void scenario_set_camera_effects(RID p_scenario, RID p_camera_effects) = 0;
 
 	/* INSTANCING API */
 
@@ -1119,11 +1121,11 @@ VARIANT_ENUM_CAST(VisualServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentBG);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentReflectionSource);
-VARIANT_ENUM_CAST(VisualServer::EnvironmentDOFBlurQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
+VARIANT_ENUM_CAST(VisualServer::DOFBlurQuality);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);
 VARIANT_ENUM_CAST(VisualServer::CanvasItemTextureFilter);

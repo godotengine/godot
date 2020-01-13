@@ -80,12 +80,6 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
-	enum DOFBlurQuality {
-		DOF_BLUR_QUALITY_LOW,
-		DOF_BLUR_QUALITY_MEDIUM,
-		DOF_BLUR_QUALITY_HIGH,
-	};
-
 	enum SSAOBlur {
 		SSAO_BLUR_DISABLED,
 		SSAO_BLUR_1x1,
@@ -162,18 +156,6 @@ private:
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;
 	bool glow_bicubic_upscale;
-
-	bool dof_blur_far_enabled;
-	float dof_blur_far_distance;
-	float dof_blur_far_transition;
-	float dof_blur_far_amount;
-	DOFBlurQuality dof_blur_far_quality;
-
-	bool dof_blur_near_enabled;
-	float dof_blur_near_distance;
-	float dof_blur_near_transition;
-	float dof_blur_near_amount;
-	DOFBlurQuality dof_blur_near_quality;
 
 	bool fog_enabled;
 	Color fog_color;
@@ -356,36 +338,6 @@ public:
 	void set_glow_bicubic_upscale(bool p_enable);
 	bool is_glow_bicubic_upscale_enabled() const;
 
-	void set_dof_blur_far_enabled(bool p_enable);
-	bool is_dof_blur_far_enabled() const;
-
-	void set_dof_blur_far_distance(float p_distance);
-	float get_dof_blur_far_distance() const;
-
-	void set_dof_blur_far_transition(float p_distance);
-	float get_dof_blur_far_transition() const;
-
-	void set_dof_blur_far_amount(float p_amount);
-	float get_dof_blur_far_amount() const;
-
-	void set_dof_blur_far_quality(DOFBlurQuality p_quality);
-	DOFBlurQuality get_dof_blur_far_quality() const;
-
-	void set_dof_blur_near_enabled(bool p_enable);
-	bool is_dof_blur_near_enabled() const;
-
-	void set_dof_blur_near_distance(float p_distance);
-	float get_dof_blur_near_distance() const;
-
-	void set_dof_blur_near_transition(float p_distance);
-	float get_dof_blur_near_transition() const;
-
-	void set_dof_blur_near_amount(float p_amount);
-	float get_dof_blur_near_amount() const;
-
-	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
-	DOFBlurQuality get_dof_blur_near_quality() const;
-
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
 
@@ -439,8 +391,77 @@ VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-VARIANT_ENUM_CAST(Environment::DOFBlurQuality)
 VARIANT_ENUM_CAST(Environment::SSAOQuality)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
+
+class CameraEffects : public Resource {
+
+	GDCLASS(CameraEffects, Resource);
+
+public:
+	enum DOFBlurQuality {
+		DOF_BLUR_QUALITY_LOW,
+		DOF_BLUR_QUALITY_MEDIUM,
+		DOF_BLUR_QUALITY_HIGH,
+	};
+
+private:
+	RID camera_effects;
+
+	bool dof_blur_far_enabled;
+	float dof_blur_far_distance;
+	float dof_blur_far_transition;
+
+	bool dof_blur_near_enabled;
+	float dof_blur_near_distance;
+	float dof_blur_near_transition;
+
+	float dof_blur_amount;
+	DOFBlurQuality dof_blur_quality;
+
+	bool override_exposure_enabled;
+	float override_exposure;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_dof_blur_far_enabled(bool p_enable);
+	bool is_dof_blur_far_enabled() const;
+
+	void set_dof_blur_far_distance(float p_distance);
+	float get_dof_blur_far_distance() const;
+
+	void set_dof_blur_far_transition(float p_distance);
+	float get_dof_blur_far_transition() const;
+
+	void set_dof_blur_near_enabled(bool p_enable);
+	bool is_dof_blur_near_enabled() const;
+
+	void set_dof_blur_near_distance(float p_distance);
+	float get_dof_blur_near_distance() const;
+
+	void set_dof_blur_near_transition(float p_distance);
+	float get_dof_blur_near_transition() const;
+
+	void set_dof_blur_amount(float p_amount);
+	float get_dof_blur_amount() const;
+
+	void set_dof_blur_quality(DOFBlurQuality p_quality);
+	DOFBlurQuality get_dof_blur_quality() const;
+
+	void set_override_exposure_enabled(bool p_enabled);
+	bool is_override_exposure_enabled() const;
+
+	void set_override_exposure(float p_exposure);
+	float get_override_exposure() const;
+
+	virtual RID get_rid() const;
+
+	CameraEffects();
+	~CameraEffects();
+};
+
+VARIANT_ENUM_CAST(CameraEffects::DOFBlurQuality)
 
 #endif // ENVIRONMENT_H

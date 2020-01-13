@@ -445,6 +445,7 @@ public:
 	BIND2(camera_set_transform, RID, const Transform &)
 	BIND2(camera_set_cull_mask, RID, uint32_t)
 	BIND2(camera_set_environment, RID, RID)
+	BIND2(camera_set_camera_effects, RID, RID)
 	BIND2(camera_set_use_vertical_aspect, RID, bool)
 
 #undef BINDBASE
@@ -526,8 +527,6 @@ public:
 	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
-	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
@@ -538,6 +537,13 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
+	/* CAMERA EFFECTS */
+
+	BIND0R(RID, camera_effects_create)
+
+	BIND9(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float, DOFBlurQuality)
+	BIND3(camera_effects_set_custom_exposure, RID, bool, float)
+
 	/* SCENARIO API */
 
 #undef BINDBASE
@@ -547,6 +553,7 @@ public:
 
 	BIND2(scenario_set_debug, RID, ScenarioDebugMode)
 	BIND2(scenario_set_environment, RID, RID)
+	BIND2(scenario_set_camera_effects, RID, RID)
 	BIND2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
