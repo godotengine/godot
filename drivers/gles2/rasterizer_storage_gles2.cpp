@@ -2862,20 +2862,20 @@ void RasterizerStorageGLES2::multimesh_allocate(RID p_multimesh, int p_instances
 		multimesh->xform_floats = 12;
 	}
 
-	if (multimesh->color_format == VS::MULTIMESH_COLOR_NONE) {
-		multimesh->color_floats = 0;
-	} else if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
+	if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 		multimesh->color_floats = 1;
 	} else if (multimesh->color_format == VS::MULTIMESH_COLOR_FLOAT) {
 		multimesh->color_floats = 4;
+	} else {
+		multimesh->color_floats = 0;
 	}
 
-	if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE) {
-		multimesh->custom_data_floats = 0;
-	} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
+	if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
 		multimesh->custom_data_floats = 1;
 	} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_FLOAT) {
 		multimesh->custom_data_floats = 4;
+	} else {
+		multimesh->custom_data_floats = 0;
 	}
 
 	int format_floats = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
@@ -3051,6 +3051,7 @@ void RasterizerStorageGLES2::multimesh_instance_set_color(RID p_multimesh, int p
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->color_format == VS::MULTIMESH_COLOR_NONE);
+	ERR_FAIL_INDEX(multimesh->color_format, VS::MULTIMESH_COLOR_FLOAT);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -3083,6 +3084,7 @@ void RasterizerStorageGLES2::multimesh_instance_set_custom_data(RID p_multimesh,
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE);
+	ERR_FAIL_INDEX(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -3170,6 +3172,7 @@ Color RasterizerStorageGLES2::multimesh_instance_get_color(RID p_multimesh, int 
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->color_format == VS::MULTIMESH_COLOR_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->color_format, VS::MULTIMESH_COLOR_FLOAT, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -3202,6 +3205,7 @@ Color RasterizerStorageGLES2::multimesh_instance_get_custom_data(RID p_multimesh
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_FLOAT, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
