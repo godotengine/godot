@@ -575,7 +575,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *btn = memnew(Button);
 					btn->set_text(TTR("Add Input Port"));
 					hbnc->add_child(btn);
-					btn->connect("pressed", this, "_add_input_port", varray(E->get()));
+					btn->connect("pressed", this, "_add_input_port", varray(E->get()), CONNECT_DEFERRED);
 				}
 				if (nd_list->is_output_port_editable()) {
 					if (nd_list->is_input_port_editable())
@@ -584,7 +584,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					Button *btn = memnew(Button);
 					btn->set_text(TTR("Add Output Port"));
 					hbnc->add_child(btn);
-					btn->connect("pressed", this, "_add_output_port", varray(E->get()));
+					btn->connect("pressed", this, "_add_output_port", varray(E->get()), CONNECT_DEFERRED);
 				}
 				gnode->add_child(hbnc);
 			} else if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
