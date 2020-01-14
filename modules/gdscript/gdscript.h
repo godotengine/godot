@@ -111,6 +111,7 @@ class GDScript : public Script {
 	String source;
 	String path;
 	String name;
+	String fully_qualified_name;
 	SelfList<GDScript> script_list;
 
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);

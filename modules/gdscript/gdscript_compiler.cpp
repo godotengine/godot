@@ -2131,6 +2131,7 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 		}
 
 		subclass->_owner = p_script;
+		subclass->fully_qualified_name = p_script->fully_qualified_name + "::" + name;
 		p_script->subclasses.insert(name, subclass);
 
 		_make_scripts(subclass.ptr(), p_class->subclasses[i], false);
@@ -2148,6 +2149,9 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_INVALID_DATA);
 
 	source = p_script->get_path();
+
+	// The best fully qualified name for a base level script is its file path
+	p_script->fully_qualified_name = p_script->path;
 
 	// Create scripts for subclasses beforehand so they can be referenced
 	_make_scripts(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
