@@ -30,6 +30,7 @@
 
 #include "export.h"
 
+#include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
@@ -37,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/version.h"
+#include "drivers/png/png_driver_common.h"
 #include "editor/editor_export.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -196,16 +198,40 @@ static const char *android_perms[] = {
 };
 
 struct LauncherIcon {
-	const char *option_id;
 	const char *export_path;
+	int dimensions;
 };
 
-static const LauncherIcon launcher_icons[] = {
-	{ "launcher_icons/xxxhdpi_192x192", "res/drawable-xxxhdpi-v4/icon.png" },
-	{ "launcher_icons/xxhdpi_144x144", "res/drawable-xxhdpi-v4/icon.png" },
-	{ "launcher_icons/xhdpi_96x96", "res/drawable-xhdpi-v4/icon.png" },
-	{ "launcher_icons/hdpi_72x72", "res/drawable-hdpi-v4/icon.png" },
-	{ "launcher_icons/mdpi_48x48", "res/drawable-mdpi-v4/icon.png" }
+static const int icon_densities_count = 6;
+static const char *launcher_icon_option = "launcher_icon/xxxhdpi_192x192";
+static const char *launcher_adaptive_icon_foreground_option = "launcher_adaptive_icon_foreground/xxxhdpi_432x432";
+static const char *launcher_adaptive_icon_background_option = "launcher_adaptive_icon_background/xxxhdpi_432x432";
+
+static const LauncherIcon launcher_icons[icon_densities_count] = {
+	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
+	{ "res/mipmap-xxhdpi-v4/icon.png", 144 },
+	{ "res/mipmap-xhdpi-v4/icon.png", 96 },
+	{ "res/mipmap-hdpi-v4/icon.png", 72 },
+	{ "res/mipmap-mdpi-v4/icon.png", 48 },
+	{ "res/mipmap/icon.png", 192 }
+};
+
+static const LauncherIcon launcher_adaptive_icon_foregrounds[icon_densities_count] = {
+	{ "res/mipmap-xxxhdpi-v4/icon_foreground.png", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_foreground.png", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_foreground.png", 216 },
+	{ "res/mipmap-hdpi-v4/icon_foreground.png", 162 },
+	{ "res/mipmap-mdpi-v4/icon_foreground.png", 108 },
+	{ "res/mipmap/icon_foreground.png", 432 }
+};
+
+static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_count] = {
+	{ "res/mipmap-xxxhdpi-v4/icon_background.png", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_background.png", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_background.png", 216 },
+	{ "res/mipmap-hdpi-v4/icon_background.png", 162 },
+	{ "res/mipmap-mdpi-v4/icon_background.png", 108 },
+	{ "res/mipmap/icon_background.png", 432 }
 };
 
 class EditorExportPlatformAndroid : public EditorExportPlatform {
@@ -1298,6 +1324,27 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		//printf("end\n");
 	}
 
+	void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data) {
+		if (p_processing_file_name == p_icon.export_path) {
+			Ref<Image> working_image = p_source_image;
+
+			if (p_source_image->get_width() != p_icon.dimensions || p_source_image->get_height() != p_icon.dimensions) {
+				working_image = p_source_image->duplicate();
+				working_image->resize(p_icon.dimensions, p_icon.dimensions, Image::Interpolation::INTERPOLATE_LANCZOS);
+			}
+
+			PoolVector<uint8_t> png_buffer;
+			Error err = PNGDriverCommon::image_to_png(working_image, png_buffer);
+			if (err == OK) {
+				p_data.resize(png_buffer.size());
+				memcpy(p_data.ptrw(), png_buffer.read().ptr(), p_data.size());
+			} else {
+				String err_str = String("Failed to convert resized icon (") + p_processing_file_name + ") to png.";
+				WARN_PRINT(err_str.utf8().get_data());
+			}
+		}
+	}
+
 	static Vector<String> get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
 		Vector<String> abis = get_abis();
 		Vector<String> enabled_abis;
@@ -1355,11 +1402,9 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/opengl_debug"), false));
-
-		for (uint64_t i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "*.png"), ""));
-		}
-
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_background_option, PROPERTY_HINT_FILE, "*.png"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug", PROPERTY_HINT_GLOBAL_FILE, "*.keystore"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug_user"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug_password"), ""));
@@ -1957,7 +2002,7 @@ public:
 							}
 
 						} else if (l.strip_edges().begins_with("<application")) {
-							String last_tag = "android:icon=\"@drawable/icon\"";
+							String last_tag = "android:icon=\"@mipmap/icon\"";
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
 								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
@@ -2136,6 +2181,35 @@ public:
 
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
+		String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+
+		// Prepare images to be resized for the icons. If some image ends up being uninitialized, the default image from the export template will be used.
+		Ref<Image> launcher_icon_image;
+		Ref<Image> launcher_adaptive_icon_foreground_image;
+		Ref<Image> launcher_adaptive_icon_background_image;
+
+		launcher_icon_image.instance();
+		launcher_adaptive_icon_foreground_image.instance();
+		launcher_adaptive_icon_background_image.instance();
+
+		// Regular icon: user selection -> project icon -> default.
+		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_icon_image) != OK) {
+			ImageLoader::load_image(project_icon_path, launcher_icon_image);
+		}
+
+		// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_adaptive_icon_foreground_image) != OK) {
+			launcher_adaptive_icon_foreground_image = launcher_icon_image;
+		}
+
+		// Adaptive background: user selection -> default.
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+		if (!path.empty()) {
+			ImageLoader::load_image(path, launcher_adaptive_icon_background_image);
+		}
+
 		while (ret == UNZ_OK) {
 
 			//get filename
@@ -2158,41 +2232,22 @@ public:
 			//write
 
 			if (file == "AndroidManifest.xml") {
-
 				_fix_manifest(p_preset, data, p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG));
 			}
 
 			if (file == "resources.arsc") {
-
 				_fix_resources(p_preset, data);
 			}
 
-			if (file == "res/drawable-nodpi-v4/icon.png") {
-				bool found = false;
-				for (uint64_t i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
-					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
-					if (icon_path != "" && icon_path.ends_with(".png")) {
-						FileAccess *f = FileAccess::open(icon_path, FileAccess::READ);
-						if (f) {
-							data.resize(f->get_len());
-							f->get_buffer(data.ptrw(), data.size());
-							memdelete(f);
-							found = true;
-							break;
-						}
-					}
+			for (int i = 0; i < icon_densities_count; ++i) {
+				if (launcher_icon_image.is_valid() && !launcher_icon_image->empty()) {
+					_process_launcher_icons(file, launcher_icon_image, launcher_icons[i], data);
 				}
-				if (!found) {
-
-					String appicon = ProjectSettings::get_singleton()->get("application/config/icon");
-					if (appicon != "" && appicon.ends_with(".png")) {
-						FileAccess *f = FileAccess::open(appicon, FileAccess::READ);
-						if (f) {
-							data.resize(f->get_len());
-							f->get_buffer(data.ptrw(), data.size());
-							memdelete(f);
-						}
-					}
+				if (launcher_adaptive_icon_foreground_image.is_valid() && !launcher_adaptive_icon_foreground_image->empty()) {
+					_process_launcher_icons(file, launcher_adaptive_icon_foreground_image, launcher_adaptive_icon_foregrounds[i], data);
+				}
+				if (launcher_adaptive_icon_background_image.is_valid() && !launcher_adaptive_icon_background_image->empty()) {
+					_process_launcher_icons(file, launcher_adaptive_icon_background_image, launcher_adaptive_icon_backgrounds[i], data);
 				}
 			}
 
@@ -2288,19 +2343,6 @@ public:
 				ed.apk = unaligned_apk;
 
 				err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
-			}
-		}
-
-		if (!err) {
-			APKExportData ed;
-			ed.ep = &ep;
-			ed.apk = unaligned_apk;
-			for (uint64_t i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
-				String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
-				if (icon_path != "" && icon_path.ends_with(".png") && FileAccess::exists(icon_path)) {
-					Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);
-					store_in_apk(&ed, launcher_icons[i].export_path, data);
-				}
 			}
 		}
 
