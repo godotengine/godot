@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of frames drawn.
+				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_idle_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
@@ -49,6 +49,13 @@
 			</return>
 			<description>
 				Returns the frames per second of the running game.
+			</description>
+		</method>
+		<method name="get_idle_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]idle frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -70,6 +77,13 @@
 			</return>
 			<description>
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
+			</description>
+		</method>
+		<method name="get_physics_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b].
 			</description>
 		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
