@@ -178,6 +178,7 @@ void TextureRegionEditor::_region_draw() {
 	scroll_rect.size += scroll_margin * 2;
 
 	updating_scroll = true;
+
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
 	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
@@ -198,6 +199,14 @@ void TextureRegionEditor::_region_draw() {
 		vscroll->set_page(scroll_margin.y);
 		vscroll->set_value(draw_ofs.y);
 	}
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
