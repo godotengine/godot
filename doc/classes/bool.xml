@@ -4,7 +4,38 @@
 		Boolean built-in type.
 	</brief_description>
 	<description>
-		Boolean built-in type.
+		Boolean is a built-in type. It can represent any data type that is either a true or false value. You can think of it as an switch with on or off (1 or 0) setting . It's often used as part of programming logic in condition statements like [code]if[/code] statements.
+		[b]Note:[/b] In a code below [code]if can_shoot[/code] is equivalent of [code]if can_shoot == true[/code]. It is good practice to follow the natural spoken language structure when possible. Use [code]if can_shoot[/code] rather than [code]if can_shoot == true[/code] and use [code]if not can_shoot[/code] rather than [code]if can_shoot == false[/code].
+		[codeblock]
+		var can_shoot = true
+
+		func shoot():
+		    if can_shoot:
+		        # Perform shooting actions here.
+		[/codeblock]
+		The following code will only create a bullet if both conditions are met: action "shoot" is pressed and if [code]can_shoot[/code] is [code]true[/code].
+		[b]Note:[/b] [code]Input.is_action_pressed("shoot")[/code] is also a boolean that is [code]true[/code] when "shoot" is pressed and [code]false[/code] when "shoot" isn't pressed.
+		[codeblock]
+		var can_shoot = true
+
+		func shoot():
+		    if can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		[/codeblock]
+		The following code will set [code]can_shoot[/code] to [code]false[/code] and start a timer. This will prevent player from shooting until the timer runs out. Next [code]can_shoot[/code] will be set to [code]true[/code] again allowing player to shoot once again.
+		[codeblock]
+		var can_shoot = true
+		onready var cool_down = $CoolDownTimer
+
+		func shoot():
+		    if can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		        can_shoot = false
+		        cool_down.start()
+
+		func _on_CoolDownTimer_timeout():
+		    can_shoot = true
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
