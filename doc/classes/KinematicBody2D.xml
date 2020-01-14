@@ -17,7 +17,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-                                Returns the normal vector of the floor.
+				Returns the normal vector of the floor.
 			</description>
 		</method>
 		<method name="get_floor_velocity" qualifiers="const">

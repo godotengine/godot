@@ -314,7 +314,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 
 	float advance = 0.0;
 
-	// use normal character size if there's no outline charater
+	// use normal character size if there's no outline character
 	if (p_outline && !ch->found) {
 		FT_GlyphSlot slot = face->glyph;
 		int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT);

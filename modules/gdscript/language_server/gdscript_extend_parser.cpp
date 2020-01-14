@@ -539,16 +539,16 @@ Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_positi
 		}
 
 		while (c >= 0) {
-			const CharType &charactor = line[c];
-			if (charactor == ')') {
+			const CharType &character = line[c];
+			if (character == ')') {
 				++bracket_stack;
-			} else if (charactor == '(') {
+			} else if (character == '(') {
 				--bracket_stack;
 				if (bracket_stack < 0) {
 					found = true;
 				}
 			}
-			if (bracket_stack <= 0 && charactor == ',') {
+			if (bracket_stack <= 0 && character == ',') {
 				++index;
 			}
 			--c;

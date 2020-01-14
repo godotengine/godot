@@ -1184,7 +1184,7 @@ void CodeTextEditor::move_lines_down() {
 
 void CodeTextEditor::_delete_line(int p_line) {
 	// this is currently intended to be called within delete_lines()
-	// so `begin_complex_operation` is ommitted here
+	// so `begin_complex_operation` is omitted here
 	text_editor->set_line(p_line, "");
 	if (p_line == 0 && text_editor->get_line_count() > 1) {
 		text_editor->cursor_set_line(1);
