@@ -243,8 +243,8 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		h_scroll->raise();
-		v_scroll->raise();
+		h_scroll->call_deferred("raise");
+		v_scroll->call_deferred("raise");
 	};
 
 	if (p_what == NOTIFICATION_READY) {
