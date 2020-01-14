@@ -149,6 +149,16 @@ void ConnectDialog::_tree_node_selected() {
 }
 
 /*
+ * Called each time a target node is activated within the target node tree.
+ */
+void ConnectDialog::_tree_item_activated() {
+
+	if (!get_ok()->is_disabled()) {
+		get_ok()->emit_signal("pressed");
+	}
+}
+
+/*
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
@@ -211,6 +221,7 @@ void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_advanced_pressed", &ConnectDialog::_advanced_pressed);
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
+	ClassDB::bind_method("_tree_item_activated", &ConnectDialog::_tree_item_activated);
 	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
 	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
 
@@ -360,7 +371,7 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
-	tree->get_scene_tree()->connect("item_activated", this, "_ok");
+	tree->get_scene_tree()->connect("item_activated", this, "_tree_item_activated");
 	tree->connect("node_selected", this, "_tree_node_selected");
 	tree->set_connect_to_script_mode(true);
 
