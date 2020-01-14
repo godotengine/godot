@@ -27,7 +27,8 @@
 				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. If the list empty (default), no sub-protocol will be requested.
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
-				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request (not supported in HTML5 platform).
+				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request.
+				[b]Note:[/b] Specifying [code]custom_headers[/code] is not supported in HTML5 exports due to browsers restrictions.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -59,6 +60,7 @@
 	<members>
 		<member name="trusted_ssl_certificate" type="X509Certificate" setter="set_trusted_ssl_certificate" getter="get_trusted_ssl_certificate">
 			If specified, this [X509Certificate] will be the only one accepted when connecting to an SSL host. Any other certificate provided by the server will be regarded as invalid.
+			[b]Note:[/b] Specifying a custom [code]trusted_ssl_certificate[/code] is not supported in HTML5 exports due to browsers restrictions.
 		</member>
 		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
 			If [code]true[/code], SSL certificate verification is enabled.
