@@ -87,16 +87,22 @@ public:
 
 		String filepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
 		String basereq = "/tmp_js_export";
+		String ctype = "";
 		if (req[1] == basereq + ".html") {
 			filepath += ".html";
+			ctype = "text/html";
 		} else if (req[1] == basereq + ".js") {
 			filepath += ".js";
+			ctype = "application/javascript";
 		} else if (req[1] == basereq + ".pck") {
 			filepath += ".pck";
+			ctype = "application/octet-stream";
 		} else if (req[1] == basereq + ".png") {
 			filepath += ".png";
+			ctype = "image/png";
 		} else if (req[1] == basereq + ".wasm") {
 			filepath += ".wasm";
+			ctype = "application/wasm";
 		} else {
 			String s = "HTTP/1.1 404 Not Found\r\n";
 			s += "Connection: Close\r\n";
@@ -109,10 +115,14 @@ public:
 		ERR_FAIL_COND(!f);
 		String s = "HTTP/1.1 200 OK\r\n";
 		s += "Connection: Close\r\n";
+		s += "Content-Type: " + ctype + "\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
-		ERR_FAIL_COND(err != OK);
+		if (err != OK) {
+			memdelete(f);
+			ERR_FAIL();
+		}
 
 		while (true) {
 			uint8_t bytes[4096];
@@ -121,8 +131,12 @@ public:
 				break;
 			}
 			err = connection->put_data(bytes, read);
-			ERR_FAIL_COND(err != OK);
+			if (err != OK) {
+				memdelete(f);
+				ERR_FAIL();
+			}
 		}
+		memdelete(f);
 	}
 
 	void poll() {
