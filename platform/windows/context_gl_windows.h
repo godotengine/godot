@@ -41,6 +41,7 @@
 #include <windows.h>
 
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
 class ContextGL_Windows {
 
@@ -53,6 +54,7 @@ class ContextGL_Windows {
 	bool vsync_via_compositor;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
 
 	static bool should_vsync_via_compositor();
 
