@@ -316,6 +316,8 @@ void ScrollContainer::_notification(int p_what) {
 			}
 			r.position += ofs;
 			fit_child_in_rect(c, r);
+			// move the child to the top of the list, so the scrollbars are displayed on top
+			move_child(c, 0);
 		}
 		update();
 	};
