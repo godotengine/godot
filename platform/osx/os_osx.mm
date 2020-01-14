@@ -479,7 +479,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (NSRange)markedRange {
-	return (markedText.length > 0) ? NSMakeRange(0, markedText.length - 1) : kEmptyRange;
+	return NSMakeRange(0, markedText.length);
 }
 
 - (NSRange)selectedRange {
@@ -491,6 +491,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		[markedText initWithAttributedString:aString];
 	} else {
 		[markedText initWithString:aString];
+	}
+	if (markedText.length == 0) {
+		[self unmarkText];
+		return;
 	}
 	if (OS_OSX::singleton->im_active) {
 		imeInputEventInProgress = true;
