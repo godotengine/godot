@@ -119,7 +119,10 @@ public:
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
-		ERR_FAIL_COND(err != OK);
+		if (err != OK) {
+			memdelete(f);
+			ERR_FAIL();
+		}
 
 		while (true) {
 			uint8_t bytes[4096];
@@ -128,8 +131,12 @@ public:
 				break;
 			}
 			err = connection->put_data(bytes, read);
-			ERR_FAIL_COND(err != OK);
+			if (err != OK) {
+				memdelete(f);
+				ERR_FAIL();
+			}
 		}
+		memdelete(f);
 	}
 
 	void poll() {
