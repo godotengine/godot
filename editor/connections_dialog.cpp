@@ -127,6 +127,7 @@ void ConnectDialog::ok_pressed() {
 		}
 	}
 	emit_signal("connected");
+	hide();
 }
 
 void ConnectDialog::_cancel_pressed() {
@@ -279,6 +280,8 @@ bool ConnectDialog::is_editing() const {
  * If editing an existing connection, previous data is retained.
  */
 void ConnectDialog::init(Connection c, bool bEdit) {
+
+	set_hide_on_ok(false);
 
 	source = static_cast<Node *>(c.source);
 	signal = c.signal;
