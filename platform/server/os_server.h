@@ -58,7 +58,6 @@ class OS_Server : public OS_Unix {
 	bool grab;
 
 	virtual void delete_main_loop();
-	IP_Unix *ip_unix;
 
 	bool force_quit;
 
