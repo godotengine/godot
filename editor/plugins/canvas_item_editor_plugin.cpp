@@ -3987,29 +3987,21 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	updating_scroll = true;
 
-	// Move the zoom buttons
+	// Move the zoom buttons.
 	Point2 controls_vb_begin = Point2(5, 5);
 	controls_vb_begin += (show_rulers) ? Point2(RULER_WIDTH, RULER_WIDTH) : Point2();
 	controls_vb->set_begin(controls_vb_begin);
 
-	// Move and resize the scrollbars
-	Size2 size = viewport->get_size();
 	Size2 hmin = h_scroll->get_minimum_size();
 	Size2 vmin = v_scroll->get_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
-	v_scroll->set_end(Point2(size.width, size.height));
-
-	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
-	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
-
-	// Get the visible frame
+	// Get the visible frame.
 	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	_queue_update_bone_list();
 
-	// Calculate scrollable area
+	// Calculate scrollable area.
 	Rect2 canvas_item_rect = Rect2(Point2(), screen_rect);
 	if (editor->get_edited_scene()) {
 		Rect2 content_rect = _get_encompassing_rect(editor->get_edited_scene());
@@ -4019,7 +4011,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	canvas_item_rect.size += screen_rect * 2;
 	canvas_item_rect.position -= screen_rect;
 
-	// Constraints the view offset and updates the scrollbars
+	// Constraints the view offset and updates the scrollbars.
+	Size2 size = viewport->get_size();
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
 	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
@@ -4066,7 +4059,13 @@ void CanvasItemEditor::_update_scrollbars() {
 		h_scroll->set_page(screen_rect.x);
 	}
 
-	// Calculate scrollable area
+	// Move and resize the scrollbars, avoiding overlap.
+	v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
+	v_scroll->set_end(Point2(size.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
+	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
+	h_scroll->set_end(Point2(size.width - (v_scroll->is_visible() ? vmin.width : 0), size.height));
+
+	// Calculate scrollable area.
 	v_scroll->set_value(view_offset.y);
 	h_scroll->set_value(view_offset.x);
 

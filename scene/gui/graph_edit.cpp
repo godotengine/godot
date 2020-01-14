@@ -200,6 +200,13 @@ void GraphEdit::_update_scroll() {
 	else
 		v_scroll->show();
 
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, v_scroll->is_visible() ? -vmin.width : 0);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, h_scroll->is_visible() ? -hmin.height : 0);
+
 	set_block_minimum_size_adjust(false);
 
 	if (!awaiting_scroll_offset_update) {
