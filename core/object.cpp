@@ -1185,13 +1185,11 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 
 		const Connection &c = slot_map.getv(i).conn;
 
-		Object *target;
-#ifdef DEBUG_ENABLED
-		target = ObjectDB::get_instance(slot_map.getk(i)._id);
-		ERR_CONTINUE(!target);
-#else
-		target = c.target;
-#endif
+		Object *target = ObjectDB::get_instance(slot_map.getk(i)._id);
+		if (!target) {
+			// Target might have been deleted during signal callback, this is expected and OK.
+			continue;
+		}
 
 		const Variant **args = p_args;
 		int argc = p_argcount;
@@ -1518,10 +1516,6 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 	ERR_FAIL_NULL(p_to_object);
 	Signal *s = signal_map.getptr(p_signal);
 	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
-
-	ERR_FAIL_COND_MSG(s->lock > 0,
-			vformat("Attempt to disconnect %s signal '%s' while in emission callback '%s' (in target %s). Use CONNECT_DEFERRED (to be able to safely disconnect) or CONNECT_ONESHOT (for automatic disconnection) as connection flags.",
-					to_string(), p_signal, p_to_method, p_to_object->to_string()));
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
