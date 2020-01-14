@@ -993,7 +993,7 @@ void ItemList::_notification(int p_what) {
 		}
 
 		//ensure_selected_visible needs to be checked before we draw the list.
-		if (ensure_selected_visible && current >= 0 && current <= items.size()) {
+		if (ensure_selected_visible && current >= 0 && current < items.size()) {
 
 			Rect2 r = items[current].rect_cache;
 			int from = scroll_bar->get_value();
