@@ -76,6 +76,7 @@ private:
 		Map<StringName, String> renames;
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
+		Map<StringName, String> setter_defines;
 	};
 
 	void _dump_function_deps(ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
@@ -88,6 +89,7 @@ private:
 	StringName time_name;
 
 	Set<StringName> used_name_defines;
+	Set<StringName> used_setter_defines;
 	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;

@@ -714,7 +714,19 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			switch (onode->op) {
 
-				case SL::OP_ASSIGN:
+				case SL::OP_ASSIGN: {
+					SL::VariableNode *var_node = (SL::VariableNode *)onode->arguments[0];
+
+					if (p_default_actions.setter_defines.has(var_node->name) && !used_setter_defines.has(var_node->name)) {
+						String define = p_default_actions.setter_defines[var_node->name];
+						if (define.begins_with("@")) {
+							define = p_default_actions.setter_defines[define.substr(1, define.length())];
+						}
+						r_gen_code.defines.push_back(define.utf8());
+						used_setter_defines.insert(var_node->name);
+					}
+					FALLTHROUGH;
+				}
 				case SL::OP_ASSIGN_ADD:
 				case SL::OP_ASSIGN_SUB:
 				case SL::OP_ASSIGN_MUL:
@@ -893,6 +905,7 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 	used_flag_pointers.clear();
+	used_setter_defines.clear();
 
 	_dump_node_code(parser.get_shader(), 1, r_gen_code, *p_actions, actions[p_mode], false);
 
@@ -943,7 +956,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_COLOR"] = "shadow_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_VEC"] = "shadow_vec";
 
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["COLOR"] = "#define COLOR_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].setter_defines["COLOR"] = "#define COLOR_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
