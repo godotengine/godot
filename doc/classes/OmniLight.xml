@@ -33,8 +33,10 @@
 			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality.
 		</constant>
 		<constant name="SHADOW_DETAIL_VERTICAL" value="0" enum="ShadowDetail">
+			Use more detail vertically when computing the shadow.
 		</constant>
 		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1" enum="ShadowDetail">
+			Use more detail horizontally when computing the shadow.
 		</constant>
 	</constants>
 </class>
