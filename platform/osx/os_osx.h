@@ -76,8 +76,6 @@ public:
 	List<String> args;
 	MainLoop *main_loop;
 
-	IP_Unix *ip_unix;
-
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
 #endif
