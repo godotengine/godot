@@ -1028,7 +1028,6 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
 	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	hscroll->set_margin(MARGIN_RIGHT, -vscroll->get_size().x * EDSCALE);
 	hscroll->connect("value_changed", this, "_scroll_changed");
 
 	updating_scroll = false;

@@ -75,7 +75,6 @@ protected:
 	void _scroll_moved(float);
 	static void _bind_methods();
 
-	void _update_scrollbar_position();
 	void _ensure_focused_visible(Control *p_node);
 
 public:

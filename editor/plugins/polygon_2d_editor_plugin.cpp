@@ -1477,7 +1477,6 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_hscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_hscroll);
 	uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	uv_hscroll->set_margin(MARGIN_RIGHT, -uv_vscroll->get_size().x * EDSCALE);
 	uv_hscroll->connect("value_changed", this, "_uv_scroll_changed");
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
