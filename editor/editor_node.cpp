@@ -673,12 +673,14 @@ void EditorNode::_sources_changed(bool p_exist) {
 	if (waiting_for_first_scan) {
 		waiting_for_first_scan = false;
 
-		EditorResourcePreview::get_singleton()->start(); //start previes now that it's safe
+		// Start preview thread now that it's safe.
+		if (!singleton->cmdline_export_mode) {
+			EditorResourcePreview::get_singleton()->start();
+		}
 
 		_load_docks();
 
 		if (defer_load_scene != "") {
-
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -1168,7 +1170,10 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	save.step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
-	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
+	if (!singleton->cmdline_export_mode) {
+		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+	}
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -3852,7 +3857,7 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
 	} else {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
@@ -3861,7 +3866,7 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
 		return false;
 	} else {
@@ -3872,7 +3877,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 
 void EditorNode::progress_end_task(const String &p_task) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": end");
 	} else {
 		singleton->progress_dialog->end_task(p_task);
@@ -3958,7 +3963,7 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.pack_only = p_pack_only;
-	disable_progress_dialog = true;
+	cmdline_export_mode = true;
 	return OK;
 }
 
@@ -5600,7 +5605,7 @@ EditorNode::EditorNode() {
 	_initializing_addons = false;
 	docks_visible = true;
 	restoring_scenes = false;
-	disable_progress_dialog = false;
+	cmdline_export_mode = false;
 	scene_distraction = false;
 	script_distraction = false;
 

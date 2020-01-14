@@ -561,7 +561,7 @@ private:
 		bool pack_only;
 	} export_defer;
 
-	bool disable_progress_dialog;
+	bool cmdline_export_mode;
 
 	static EditorNode *singleton;
 
