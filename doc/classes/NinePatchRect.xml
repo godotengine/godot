@@ -15,6 +15,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the size of the margin identified by the given [enum Margin] constant.
 			</description>
 		</method>
 		<method name="set_patch_margin">
@@ -25,6 +26,7 @@
 			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
+				Sets the size of the margin identified by the given [enum Margin] constant to [code]value[/code] in pixels.
 			</description>
 		</method>
 	</methods>

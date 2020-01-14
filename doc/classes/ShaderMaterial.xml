@@ -25,6 +25,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
 			</description>
 		</method>
 		<method name="property_get_revert">
@@ -33,6 +34,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the default value of the material property with given [code]name[/code].
 			</description>
 		</method>
 		<method name="set_shader_param">
