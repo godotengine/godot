@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1891,13 +1891,13 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 			if (li->last_pass != render_pass) //not visible
 				continue;
 
-			if (li->light_ptr->type == VS::LIGHT_OMNI) {
+			if (li && li->light_ptr->type == VS::LIGHT_OMNI) {
 				if (omni_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					omni_indices[omni_count++] = li->light_index;
 				}
 			}
 
-			if (li->light_ptr->type == VS::LIGHT_SPOT) {
+			if (li && li->light_ptr->type == VS::LIGHT_SPOT) {
 				if (spot_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					spot_indices[spot_count++] = li->light_index;
 				}

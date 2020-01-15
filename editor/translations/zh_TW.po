@@ -1,6 +1,6 @@
 # Chinese (Taiwan) translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Allen H <w84miracle@gmail.com>, 2017.
 # Billy SU <g4691821@gmail.com>, 2018.
@@ -18,12 +18,13 @@
 # leela <53352@protonmail.com>, 2019.
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
 # SIYU FU <1002492607@qq.com>, 2019.
+# 鄭惟中 <biglionlion06@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
-"Last-Translator: SIYU FU <1002492607@qq.com>\n"
+"PO-Revision-Date: 2020-01-11 03:05+0000\n"
+"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -31,12 +32,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Convert()函數所收到的參數錯誤，請試著以 TYPE_ 作為開頭。"
+msgstr "Convert()函數所收到的參數錯誤，請用 TYPE_* 常數。"
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "應為一個長度是1(一個字元)的字串"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -74,7 +79,7 @@ msgstr "調用“%s”時："
 
 #: core/ustring.cpp
 msgid "B"
-msgstr "乙"
+msgstr "Byte"
 
 #: core/ustring.cpp
 msgid "KiB"
@@ -82,7 +87,7 @@ msgstr "基布"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr "MiB公司"
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
@@ -102,7 +107,7 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "释放"
+msgstr "釋放"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -110,7 +115,7 @@ msgstr "平衡"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "镜像"
+msgstr "鏡像"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -444,6 +449,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "無法添加沒有根目錄的新曲目"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1246,8 +1255,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "開啟套件檔案出錯，非 zip 格式。"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Autoload「%s」已經存在!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "正在解壓縮素材"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "提取以下檔案失敗："
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "還有 %d 個檔案"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1258,6 +1281,11 @@ msgstr "套件安裝成功!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "成功!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "內容："
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1403,6 +1431,11 @@ msgstr "佈局"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "檔案格式不正確，不是 Audio Bus 配置檔。"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "儲存資源錯誤!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2106,6 +2139,15 @@ msgid "Search Help"
 msgstr "搜尋幫助"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "區分大小寫"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "顯示輔助線"
+
+#: editor/editor_help_search.cpp
 #, fuzzy
 msgid "Display All"
 msgstr "取代全部"
@@ -2145,6 +2187,30 @@ msgstr "成員類型"
 #, fuzzy
 msgid "Class"
 msgstr "Class:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "方法"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "信號"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "固定"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "屬性："
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "過濾檔案..."
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2230,10 +2296,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "專案輸出失敗，錯誤代碼是 %d。"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3133,10 +3195,6 @@ msgstr "導入模板（透過ZIP檔案）"
 msgid "Template Package"
 msgstr "導出範本管理器"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "輸出專案"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "輸出函式庫"
@@ -3144,10 +3202,6 @@ msgstr "輸出函式庫"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "與現有函式庫合併"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "密碼:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3509,6 +3563,14 @@ msgstr "正在解壓導出範本"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "導入:"
+
+#: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4772,6 +4834,11 @@ msgstr "移動節點"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
+msgid "Transition exists!"
+msgstr "轉場: "
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
 msgid "Add Transition"
 msgstr "添加轉換"
 
@@ -5892,6 +5959,23 @@ msgstr ""
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "擴展（像素）: "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "資料夾 & 檔案:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
 msgstr ""
 
@@ -6128,9 +6212,20 @@ msgstr "創建輪廓網格"
 msgid "Outline Size:"
 msgstr "輪廓尺寸："
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "删除項目%d？"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "從場景更新"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -7038,11 +7133,6 @@ msgid "Source"
 msgstr "資源"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "信號"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7069,6 +7159,11 @@ msgstr "轉到函數"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "只能拖拽檔案系統中的資源。"
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7733,8 +7828,17 @@ msgstr "創建2D網格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "創建網格預覽"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "創建3D多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7743,7 +7847,17 @@ msgstr "創建碰撞多邊形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "創建碰撞多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "創建遮光多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "創建遮光多邊形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7833,6 +7947,11 @@ msgstr "添加幀"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "添加幀"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "載入資源失敗。"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8142,10 +8261,6 @@ msgstr "字體"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "顏色"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "固定"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8563,6 +8678,16 @@ msgstr "編輯磁貼優先級"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "使多邊形凸起"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "使多邊形塌陷"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9684,6 +9809,10 @@ msgid "Export PCK/Zip"
 msgstr "導出 PCK/ZIP"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "輸出專案"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "導出模式:"
@@ -9776,10 +9905,6 @@ msgstr "無法在項目路徑中編輯project.godot。"
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "無法在項目路徑中創建project.godot。"
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "提取以下檔案失敗："
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -11020,6 +11145,11 @@ msgstr "讀取現存的 Bus 配置。"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Script file already exists."
+msgstr "Autoload「%s」已經存在!"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Class Name:"
 msgstr "Class:"
 
@@ -11362,10 +11492,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "step引數為0!"
@@ -11514,6 +11640,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "擦除選中"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11787,10 +11918,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -12655,7 +12782,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12765,6 +12899,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "專案輸出失敗，錯誤代碼是 %d。"
+
+#~ msgid "Password:"
+#~ msgstr "密碼:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "暫停此場景"
@@ -12975,10 +13115,6 @@ msgstr ""
 #~ msgstr "列:"
 
 #, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Autoload「%s」已經存在!"
-
-#, fuzzy
 #~ msgid "Remove Split"
 #~ msgstr "移除"
 
@@ -13130,9 +13266,6 @@ msgstr ""
 
 #~ msgid "Replace By"
 #~ msgstr "用...取代"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "區分大小寫"
 
 #~ msgid "Prompt On Replace"
 #~ msgstr "每次取代都要先詢問我"

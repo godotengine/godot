@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -833,6 +833,20 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jo
 		return;
 
 	os_android->process_hover(p_type, Point2(p_x, p_y));
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_double_tap(Point2(p_x, p_y));
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jobject obj, jint p_x, jint p_y) {
+	if (step == 0)
+		return;
+
+	os_android->process_scroll(Point2(p_x, p_y));
 }
 
 /*

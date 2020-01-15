@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,16 @@ public class GodotLib {
 	 * Forward hover events from the main thread to the GL thread.
 	 */
 	public static native void hover(int type, int x, int y);
+
+	/**
+	 * Forward double_tap events from the main thread to the GL thread.
+	 */
+	public static native void doubletap(int x, int y);
+
+	/**
+	 * Forward scroll events from the main thread to the GL thread.
+	 */
+	public static native void scroll(int x, int y);
 
 	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.

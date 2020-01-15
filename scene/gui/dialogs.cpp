@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/main/viewport.h" // Only used to check for more modals when dimming the editor.
 #endif
 
@@ -443,7 +444,9 @@ bool AcceptDialog::has_autowrap() {
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
 
 	ERR_FAIL_NULL(p_line_edit);
-	p_line_edit->connect("text_entered", this, "_builtin_text_entered");
+	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
+	if (line_edit)
+		line_edit->connect("text_entered", this, "_builtin_text_entered");
 }
 
 void AcceptDialog::_update_child_rects() {

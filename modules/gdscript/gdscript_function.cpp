@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -499,6 +499,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (a->get_type() == Variant::OBJECT && a->operator Object *() != NULL) {
 					Object *obj_A = *a;
 					Object *obj_B = *b;
+
+#ifdef DEBUG_ENABLED
+					if (!ObjectDB::instance_validate(obj_A)) {
+						err_text = "Left operand of 'is' was already freed.";
+						OPCODE_BREAK;
+					}
+#endif // DEBUG_ENABLED
 
 					GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 

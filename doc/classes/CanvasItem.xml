@@ -42,6 +42,7 @@
 			<argument index="7" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Draws an arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve.
 			</description>
 		</method>
 		<method name="draw_char">

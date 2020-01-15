@@ -49,7 +49,7 @@
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
-			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [member wait_time].
+			[b]Note:[/b] You cannot set this value. To change the timer's remaining time, use [method start].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			Wait time in seconds.

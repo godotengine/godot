@@ -204,7 +204,7 @@
 	</methods>
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
-			Returns whether filtering is enabled.
+			If [code]true[/code], filtering is enabled.
 		</member>
 	</members>
 	<signals>

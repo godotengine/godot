@@ -79,11 +79,11 @@ void btGjkPairDetector::getClosestPoints(const ClosestPointInput &input, Result 
 
 static void btComputeSupport(const btConvexShape *convexA, const btTransform &localTransA, const btConvexShape *convexB, const btTransform &localTransB, const btVector3 &dir, bool check2d, btVector3 &supAworld, btVector3 &supBworld, btVector3 &aMinb)
 {
-	btVector3 seperatingAxisInA = (dir)*localTransA.getBasis();
-	btVector3 seperatingAxisInB = (-dir) * localTransB.getBasis();
+	btVector3 separatingAxisInA = (dir)*localTransA.getBasis();
+	btVector3 separatingAxisInB = (-dir) * localTransB.getBasis();
 
-	btVector3 pInANoMargin = convexA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-	btVector3 qInBNoMargin = convexB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+	btVector3 pInANoMargin = convexA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+	btVector3 qInBNoMargin = convexB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 
 	btVector3 pInA = pInANoMargin;
 	btVector3 qInB = qInBNoMargin;
@@ -839,11 +839,11 @@ void btGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInput &inpu
 			for (;;)
 			//while (true)
 			{
-				btVector3 seperatingAxisInA = (-m_cachedSeparatingAxis) * localTransA.getBasis();
-				btVector3 seperatingAxisInB = m_cachedSeparatingAxis * localTransB.getBasis();
+				btVector3 separatingAxisInA = (-m_cachedSeparatingAxis) * localTransA.getBasis();
+				btVector3 separatingAxisInB = m_cachedSeparatingAxis * localTransB.getBasis();
 
-				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 
 				btVector3 pWorld = localTransA(pInA);
 				btVector3 qWorld = localTransB(qInB);
@@ -1116,11 +1116,11 @@ void btGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInput &inpu
 
 			btScalar d2 = 0.f;
 			{
-				btVector3 seperatingAxisInA = (-orgNormalInB) * localTransA.getBasis();
-				btVector3 seperatingAxisInB = orgNormalInB * localTransB.getBasis();
+				btVector3 separatingAxisInA = (-orgNormalInB) * localTransA.getBasis();
+				btVector3 separatingAxisInB = orgNormalInB * localTransB.getBasis();
 
-				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 
 				btVector3 pWorld = localTransA(pInA);
 				btVector3 qWorld = localTransB(qInB);
@@ -1130,11 +1130,11 @@ void btGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInput &inpu
 
 			btScalar d1 = 0;
 			{
-				btVector3 seperatingAxisInA = (normalInB)*localTransA.getBasis();
-				btVector3 seperatingAxisInB = -normalInB * localTransB.getBasis();
+				btVector3 separatingAxisInA = (normalInB)*localTransA.getBasis();
+				btVector3 separatingAxisInB = -normalInB * localTransB.getBasis();
 
-				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 
 				btVector3 pWorld = localTransA(pInA);
 				btVector3 qWorld = localTransB(qInB);
@@ -1143,11 +1143,11 @@ void btGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInput &inpu
 			}
 			btScalar d0 = 0.f;
 			{
-				btVector3 seperatingAxisInA = (-normalInB) * input.m_transformA.getBasis();
-				btVector3 seperatingAxisInB = normalInB * input.m_transformB.getBasis();
+				btVector3 separatingAxisInA = (-normalInB) * input.m_transformA.getBasis();
+				btVector3 separatingAxisInB = normalInB * input.m_transformB.getBasis();
 
-				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+				btVector3 pInA = m_minkowskiA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+				btVector3 qInB = m_minkowskiB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 
 				btVector3 pWorld = localTransA(pInA);
 				btVector3 qWorld = localTransB(qInB);

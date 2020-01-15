@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Geometry" inherits="Object" category="Core" version="3.2">
 	<brief_description>
+		Helper node to calculate generic geometry operations.
 	</brief_description>
 	<description>
+		Geometry provides users with a set of helper functions to create geometric shapes, compute intersections between shapes, and process various other geometric operations.
 	</description>
 	<tutorials>
 	</tutorials>

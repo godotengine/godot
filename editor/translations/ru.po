@@ -1,6 +1,6 @@
 # Russian translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Аркадий Авас <savvot@gmail.com>, 2018.
 # Artem Varaksa <aymfst@gmail.com>, 2018.
@@ -51,7 +51,7 @@
 # Teashrock <kajitsu22@gmail.com>, 2019.
 # Дмитрий Ефимов <daefimov@gmail.com>, 2019.
 # Sergey <www.window1@mail.ru>, 2019.
-# Vladislav <onion.ring@mail.ru>, 2019.
+# Vladislav <onion.ring@mail.ru>, 2019, 2020.
 # knightpp <kotteam99@gmail.com>, 2019.
 # Константин Рин <email.to.rean@gmail.com>, 2019.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
@@ -65,8 +65,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-22 04:19+0000\n"
-"Last-Translator: Vitaly <arkology11@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Vladislav <onion.ring@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -81,6 +81,10 @@ msgstr ""
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Неверный тип аргумента для convert(), используйте TYPE_* константы."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Ожидалась строка длиной 1 (символ)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -469,6 +473,11 @@ msgstr "Проигрыватель анимации не может анимир
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr "Неверный трек для кривой Безье (нет подходящих подсвойств)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -1240,8 +1249,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Ошибка при открытии файла пакета, не в формате zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Уже существует"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Распаковка ассетов"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Следующие файлы не удалось извлечь из пакета:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "Ещё %d файла(ов)"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1251,6 +1274,11 @@ msgstr "Пакет успешно установлен!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Успех!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Содержание:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1388,6 +1416,11 @@ msgstr "Макет"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Недопустимый файл, не раскладка аудио шины."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Ошибка при сохранении файла!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2038,6 +2071,15 @@ msgid "Search Help"
 msgstr "Справка"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Чувствительность регистра"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Показывать помощники"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Отображать всё"
 
@@ -2072,6 +2114,29 @@ msgstr "Тип члена"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Класс"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Методы"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Сигнал"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Константа"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Параметр:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Свойства темы"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2152,10 +2217,6 @@ msgstr "Исходящий RSET"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Новое окно"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Экспорт проекта не удался, код %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3072,10 +3133,6 @@ msgstr "Импортировать шаблоны из ZIP файла"
 msgid "Template Package"
 msgstr "Шаблонный пакет"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Экспортировать проект"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Экспортировать библиотеку"
@@ -3083,10 +3140,6 @@ msgstr "Экспортировать библиотеку"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Объединить с существующей"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Пароль:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3449,6 +3502,16 @@ msgstr "Распаковка шаблонов экспорта"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Импортируется:"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "Ошибка при создании объекта подписи."
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr "Ошибка разбора списка зеркал. Пожалуйста, сообщите об этой проблеме!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4633,6 +4696,11 @@ msgid "Move Node"
 msgstr "Переместить узел"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Переходы"
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
 msgstr "Добавить переход"
 
@@ -5707,6 +5775,23 @@ msgstr "Маска излучения"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Сжатие (пиксели): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Каталоги и файлы:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
 msgstr "Из пикселя"
 
@@ -5934,9 +6019,21 @@ msgstr "Создать полисетку обводки"
 msgid "Outline Size:"
 msgstr "Размер обводки:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "UV Channel Debug"
+msgstr "Отладка УФ канала"
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Удалить элемент %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Обновить из сцены"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6578,20 +6675,23 @@ msgstr "Сохранить как..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "Не удаётся получить скрипт для запуска."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "Не удалось перезагрузить скрипт, проверьте консоль на наличие ошибок."
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "Скрипт не находится в режиме инструмента, запуск невозможен."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"Для запуска этого скрипта он должен наследовать EditorScript и быть "
+"установлен в режим инструмента."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6812,10 +6912,6 @@ msgid "Source"
 msgstr "Источник"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Сигнал"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Цель"
 
@@ -6841,6 +6937,12 @@ msgstr "Перейти к функции"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Можно перетащить только ресурс из файловой системы."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Нельзя бросать узлы, потому что в этой сцене не используется скрипт '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7489,15 +7591,35 @@ msgid "Create Mesh2D"
 msgstr "Создать Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Создание предпросмотра"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Создать Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Polygon2D Preview"
+msgstr "Предварительный просмотр Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Создать CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Создать CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Создан LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Создан LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7580,6 +7702,11 @@ msgstr "Добавить кадров: %d"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Добавить кадр"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Невозможно загрузить изображение:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7872,10 +7999,6 @@ msgid "Color"
 msgstr "Цвет"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Константа"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
 msgstr "Файл темы"
 
@@ -7989,8 +8112,9 @@ msgid "Merge from Scene"
 msgstr "Слияние из сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "New Single Tile"
-msgstr ""
+msgstr "Новая одиночная плитка"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8278,6 +8402,16 @@ msgstr "Редактировать приоритет тайла"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Редактирование Z индекса плитки"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Сделать Полигон Выпуклым"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Сделать Полигон Вогнутым"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9443,6 +9577,10 @@ msgid "Export PCK/Zip"
 msgstr "Экспортировать PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Экспортировать проект"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Режим экспорта?"
 
@@ -9534,10 +9672,6 @@ msgstr "Не удалось изменить project.godot в папке про�
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Не удалось создать project.godot в папке проекта."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Следующие файлы не удалось извлечь из пакета:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10780,6 +10914,11 @@ msgid "Will load an existing script file."
 msgstr "Будет загружен существующий скрипт."
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "Разрез уже существует."
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Имя класса:"
 
@@ -11093,10 +11232,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr "Ожидалась строка длиной 1 (символ)."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
@@ -11233,6 +11368,11 @@ msgstr "Обратное вращение курсора по Z"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Курсор очистить поворот"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Очистить выделенное"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11503,11 +11643,6 @@ msgstr "Зажмите Ctrl, чтобы добавить Variable Setter."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Добавить предзагрузочный узел"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Нельзя бросать узлы, потому что в этой сцене не используется скрипт '%s'."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12468,7 +12603,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Этот узел был удален. Вместо этого используйте AnimationTree."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Выбрать цвет с экрана."
 
 #: scene/gui/color_picker.cpp
@@ -12595,6 +12738,12 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Экспорт проекта не удался, код %d."
+
+#~ msgid "Password:"
+#~ msgstr "Пароль:"
 
 #~ msgid "Identifier segments must be of non-zero length."
 #~ msgstr "Идентифицированные сегменты не должны быть пустыми."
@@ -12892,9 +13041,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Create folder"
 #~ msgstr "Создать папку"
 
-#~ msgid "Already existing"
-#~ msgstr "Уже существует"
-
 #~ msgid "Custom Node"
 #~ msgstr "Пользовательский узел"
 
@@ -12942,9 +13088,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "Нельзя отделить от существующего края."
-
-#~ msgid "Split already exists."
-#~ msgstr "Разрез уже существует."
 
 #~ msgid "Add Split"
 #~ msgstr "Добавить разрез"
@@ -13225,9 +13368,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Out-In"
 #~ msgstr "Из-В"
 
-#~ msgid "Transitions"
-#~ msgstr "Переходы"
-
 #~ msgid "Change Anim Len"
 #~ msgstr "Изменить длину анимации"
 
@@ -13435,9 +13575,6 @@ msgstr "Константы не могут быть изменены."
 
 #~ msgid "Replace By"
 #~ msgstr "Заменить на"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Чувствительность регистра"
 
 #~ msgid "Backwards"
 #~ msgstr "В обратном направлении"
@@ -13894,9 +14031,6 @@ msgstr "Константы не могут быть изменены."
 #~ msgid "Loading Image:"
 #~ msgstr "Загрузка изображения:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "Невозможно загрузить изображение:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Преобразование изображений"
 
@@ -14080,9 +14214,6 @@ msgstr "Константы не могут быть изменены."
 #~ "correct?"
 #~ msgstr ""
 #~ "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "Ошибка при создании объекта подписи."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Ошибка при создании подписи пакета."

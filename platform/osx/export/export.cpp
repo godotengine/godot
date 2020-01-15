@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,8 +118,8 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
@@ -459,9 +459,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", "Exporting for OSX", 3, true);
 
 	if (p_debug)
-		src_pkg_name = p_preset->get("custom_package/debug");
+		src_pkg_name = p_preset->get("custom_template/debug");
 	else
-		src_pkg_name = p_preset->get("custom_package/release");
+		src_pkg_name = p_preset->get("custom_template/release");
 
 	if (src_pkg_name == "") {
 		String err;
@@ -502,6 +502,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	else
 		pkg_name = "Unnamed";
 
+	String pkg_name_safe = OS::get_singleton()->get_safe_dir_name(pkg_name);
+
 	Error err = OK;
 	String tmp_app_path_name = "";
 	zlib_filefunc_def io2 = io;
@@ -509,12 +511,13 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	io2.opaque = &dst_f;
 	zipFile dst_pkg_zip = NULL;
 
+	DirAccess *tmp_app_path = NULL;
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
 		tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
 		print_line("Exporting to " + tmp_app_path_name);
-		DirAccess *tmp_app_path = DirAccess::create_for_path(tmp_app_path_name);
+		tmp_app_path = DirAccess::create_for_path(tmp_app_path_name);
 		if (!tmp_app_path) {
 			err = ERR_CANT_CREATE;
 		}
@@ -611,25 +614,45 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (data.size() > 0) {
+
+			if (file.find("/data.mono.osx.64.release_debug/") != -1) {
+				if (!p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name_safe + "/");
+			}
+			if (file.find("/data.mono.osx.64.release/") != -1) {
+				if (p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name_safe + "/");
+			}
+
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
 			if (export_format == "dmg") {
 				// write it into our application bundle
 				file = tmp_app_path_name.plus_file(file);
-
-				// write the file, need to add chmod
-				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
-				if (f) {
-					f->store_buffer(data.ptr(), data.size());
-					f->close();
-					if (is_execute) {
-						// Chmod with 0755 if the file is executable
-						FileAccess::set_unix_permissions(file, 0755);
+				if (err == OK) {
+					err = tmp_app_path->make_dir_recursive(file.get_base_dir());
+				}
+				if (err == OK) {
+					// write the file, need to add chmod
+					FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
+					if (f) {
+						f->store_buffer(data.ptr(), data.size());
+						f->close();
+						if (is_execute) {
+							// Chmod with 0755 if the file is executable
+							FileAccess::set_unix_permissions(file, 0755);
+						}
+						memdelete(f);
+					} else {
+						err = ERR_CANT_CREATE;
 					}
-					memdelete(f);
-				} else {
-					err = ERR_CANT_CREATE;
 				}
 			} else {
 				// add it to our zip file
@@ -796,33 +819,32 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = false;
 	String err;
+	bool valid = false;
 
-	if (exists_export_template("osx.zip", &err)) {
-		valid = true;
-	}
+	// Look for export templates (first official, and if defined custom templates).
 
-	if (p_preset->get("custom_package/debug") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
-			valid = true;
-		} else {
+	bool dvalid = exists_export_template("osx.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
+
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-
-	if (p_preset->get("custom_package/release") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
-			valid = true;
-		} else {
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
+	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
 	if (!err.empty())
 		r_error = err;
-
-	r_missing_templates = !valid;
 	return valid;
 }
 

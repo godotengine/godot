@@ -78,6 +78,11 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns a hexadecimal representation of this array as a [String].
+				[codeblock]
+				var array = PoolByteArray([11, 46, 255])
+				print(array.hex_encode()) # Prints: 0b2eff
+				[/codeblock]
 			</description>
 		</method>
 		<method name="insert">

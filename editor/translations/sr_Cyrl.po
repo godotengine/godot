@@ -1,6 +1,6 @@
 # Serbian (cyrillic) translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
 # Александар Урошевић <nicecubedude@gmail.com>, 2017.
@@ -22,6 +22,10 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
 msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
@@ -441,6 +445,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -1245,8 +1253,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Грешка при отварању датотеку пакета. Датотека није zip формата."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Аутоматско учитавање '%s' већ постоји!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Декомпресија средства"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "још %d датотека/е"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1257,6 +1279,11 @@ msgstr "Пакет је инсталиран успешно!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Успех!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Садржај:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1396,6 +1423,11 @@ msgstr "Распоред"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Датотека не садржи распоред звучног баса."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Грешка при чувању TileSet!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2085,6 +2117,15 @@ msgid "Search Help"
 msgstr "Потражи помоћ"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Разликовање великих и малих слова"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Покажи помагаче"
+
+#: editor/editor_help_search.cpp
 #, fuzzy
 msgid "Display All"
 msgstr "Прикажи нормалу"
@@ -2128,6 +2169,30 @@ msgstr "Чланови"
 #, fuzzy
 msgid "Class"
 msgstr "Класа:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Методе"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Сигнали"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Константан"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Особине"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Особине"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2211,10 +2276,6 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3147,10 +3208,6 @@ msgstr "Увези шаблоне из ZIP датотеке"
 msgid "Template Package"
 msgstr "Менаџер извозних шаблона"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Извези пројекат"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Извези библиотеку"
@@ -3158,10 +3215,6 @@ msgstr "Извези библиотеку"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Споји са постојећим"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Лозинка:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3530,6 +3583,14 @@ msgstr "Отпакивање извозних шаблона"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Увожење:"
+
+#: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4810,6 +4871,11 @@ msgstr "Режим померања"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
+msgid "Transition exists!"
+msgstr "Померај"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
 msgid "Add Transition"
 msgstr "Померај"
 
@@ -5943,6 +6009,22 @@ msgstr "Маска емисије"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Директоријуми и датотеке:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
 msgstr "Сними од пиксела"
 
@@ -6180,9 +6262,20 @@ msgstr "Направи ивичну мрежу"
 msgid "Outline Size:"
 msgstr "Величина ивице:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Обриши ствар %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Ажурирај из сцене"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -7109,11 +7202,6 @@ msgstr ""
 "Извор: "
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Сигнали"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7140,6 +7228,11 @@ msgstr "Иди на функцију..."
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Само ресурси из датотечног система се могу убацити."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7818,8 +7911,17 @@ msgstr "Направи ивичну мрежу"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Направи приказ мрежа"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Направи полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7828,7 +7930,17 @@ msgstr "Направи навигациони полигон"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Направи навигациони полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Направи осенчен полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Направи осенчен полигон"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7916,6 +8028,11 @@ msgstr "Додај оквир"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Додај оквир"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Грешка при учитавању ресурса."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8233,10 +8350,6 @@ msgstr "Фонт"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Боја"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Константан"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8669,6 +8782,16 @@ msgstr "Уреди филтере"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Помери полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Помери полигон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -9817,6 +9940,10 @@ msgid "Export PCK/Zip"
 msgstr "Извоз PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Извези пројекат"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Режим извоза:"
@@ -9909,10 +10036,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -11138,6 +11261,11 @@ msgstr "Учитај постојећи бас распоред."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Script file already exists."
+msgstr "Аутоматско учитавање '%s' већ постоји!"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Class Name:"
 msgstr "Класа:"
 
@@ -11475,10 +11603,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr ""
 
@@ -11618,6 +11742,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Обриши одабрано"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11886,10 +12015,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -12740,7 +12865,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12846,6 +12978,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Password:"
+#~ msgstr "Лозинка:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Паузирај сцену"
@@ -13082,10 +13217,6 @@ msgstr ""
 #~ msgstr "Колона:"
 
 #, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Аутоматско учитавање '%s' већ постоји!"
-
-#, fuzzy
 #~ msgid "Add Split"
 #~ msgstr "Додај тачку"
 
@@ -13165,10 +13296,6 @@ msgstr ""
 
 #~ msgid "GUI Theme Items:"
 #~ msgstr "Ставке теме графичког интерфејса:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Особине"
 
 #, fuzzy
 #~ msgid "Toggle folder status as Favorite."
@@ -13460,9 +13587,6 @@ msgstr ""
 
 #~ msgid "Replace By"
 #~ msgstr "Заменити са"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Разликовање великих и малих слова"
 
 #~ msgid "Backwards"
 #~ msgstr "Натраг"

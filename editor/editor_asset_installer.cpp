@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "editor_node.h"
+#include "progress_dialog.h"
 
 void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
 
@@ -194,7 +195,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
 				ti->set_custom_color(0, get_color("error_color", "Editor"));
-				ti->set_tooltip(0, res_path + " (Already Exists)");
+				ti->set_tooltip(0, vformat(TTR("%s (Already Exists)"), res_path));
 				ti->set_checked(0, false);
 			} else {
 				ti->set_tooltip(0, res_path);
@@ -287,11 +288,11 @@ void EditorAssetInstaller::ok_pressed() {
 	unzClose(pkg);
 
 	if (failed_files.size()) {
-		String msg = "The following files failed extraction from package:\n\n";
+		String msg = TTR("The following files failed extraction from package:") + "\n\n";
 		for (int i = 0; i < failed_files.size(); i++) {
 
 			if (i > 15) {
-				msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+				msg += "\n" + vformat(TTR("And %s more files."), itos(failed_files.size() - i));
 				break;
 			}
 			msg += failed_files[i];
@@ -316,7 +317,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	add_child(vb);
 
 	tree = memnew(Tree);
-	vb->add_margin_child("Package Contents:", tree, true);
+	vb->add_margin_child(TTR("Package Contents:"), tree, true);
 	tree->connect("item_edited", this, "_item_edited");
 
 	error = memnew(AcceptDialog);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/print_string.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/label.h"
@@ -126,6 +127,7 @@ void ConnectDialog::ok_pressed() {
 		}
 	}
 	emit_signal("connected");
+	hide();
 }
 
 void ConnectDialog::_cancel_pressed() {
@@ -278,6 +280,8 @@ bool ConnectDialog::is_editing() const {
  * If editing an existing connection, previous data is retained.
  */
 void ConnectDialog::init(Connection c, bool bEdit) {
+
+	set_hide_on_ok(false);
 
 	source = static_cast<Node *>(c.source);
 	signal = c.signal;

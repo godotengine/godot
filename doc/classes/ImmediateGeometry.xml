@@ -30,7 +30,7 @@
 			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<description>
-				Adds a vertex with the currently set color/uv/etc.
+				Adds a vertex in local coordinate space with the currently set color/uv/etc.
 			</description>
 		</method>
 		<method name="begin">

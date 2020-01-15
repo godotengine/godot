@@ -1,6 +1,6 @@
 # Catalan translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # BennyBeat <bennybeat@gmail.com>, 2017.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
@@ -8,12 +8,13 @@
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
 # roger <616steam@gmail.com>, 2019.
 # Roger BR <drai_kin@hotmail.com>, 2019.
+# Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
-"Last-Translator: roger <616steam@gmail.com>\n"
+"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -27,6 +28,11 @@ msgstr ""
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "L'argument per a convert() no és vàlid, utilitzeu constants TYPE_*."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#, fuzzy
+msgid "Expected a string of length 1 (a character)."
+msgstr "S'esperava una cadena de longitud 1 (un caràcter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -424,6 +430,10 @@ msgid "Not possible to add a new track without a root"
 msgstr "No es pot afegir una nova pista sense cap arrel"
 
 #: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
 msgstr "Afegir Pista Bezier"
 
@@ -645,9 +655,8 @@ msgid "Copy"
 msgstr "Copia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Seleccionar Totes/Cap"
+msgstr "(Des)selecciona-ho tot"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -1192,8 +1201,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Error en obrir el arxiu comprimit, el fitxer no té el format ZIP."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Ja existeix"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Descomprimint Recursos"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d fitxer(s) més"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1203,6 +1226,11 @@ msgstr "Paquet instal·lat amb èxit!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Èxit!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Continguts:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1341,6 +1369,11 @@ msgstr "Desar Disseny"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Fitxer incorrecte. No és un disseny de bus d'àudio."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Error en desar el fitxer!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2004,6 +2037,15 @@ msgid "Search Help"
 msgstr "Cerca Ajuda"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Majúscules i minúscules"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Mostrar els Ajudants"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Mostra-ho tot"
 
@@ -2038,6 +2080,29 @@ msgstr "Tipus de Membre"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Classe"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Mètodes"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Senyal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Constant"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Propietat:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Propietats del tema"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2123,10 +2188,6 @@ msgstr "RSET Sortint"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Nova finestra"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "L'exportació del projecte ha fallat amb el codi d'error %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3061,10 +3122,6 @@ msgstr "Importa Plantilles des d'un Fitxer ZIP"
 msgid "Template Package"
 msgstr "Gestor de Plantilles d'Exportació"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Exporta Projecte"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Exporta Biblioteca"
@@ -3072,10 +3129,6 @@ msgstr "Exporta Biblioteca"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Combina amb Existents"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Contrasenya:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3437,6 +3490,15 @@ msgstr "Extraient Plantilles d'Exportació"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Importació:"
+
+#: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Error getting the list of mirrors."
+msgstr "No s'ha pogut l'objecte signatura."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4637,6 +4699,11 @@ msgid "Move Node"
 msgstr "Moure Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Transició: "
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
 msgstr "Afegir una Transició"
 
@@ -5034,17 +5101,15 @@ msgstr "Tot"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr "Cap resultat per \"%s\"."
+msgstr "No hi ha cap resultat per a «%s»."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "ReImporta..."
+msgstr "Importa…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Plugins..."
-msgstr "Connectors"
+msgstr "Connectors…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
@@ -5060,9 +5125,8 @@ msgid "Site:"
 msgstr "Lloc:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Suport..."
+msgstr "Assistència"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5073,9 +5137,8 @@ msgid "Testing"
 msgstr "Provant"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "Carregar..."
+msgstr "S’està carregant…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5764,6 +5827,22 @@ msgstr "Màscara d'Emissió"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Directoris i Fitxers:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
 msgstr "Captura des d'un Píxel"
 
@@ -5996,9 +6075,20 @@ msgstr "Crea la Malla de Contorn"
 msgid "Outline Size:"
 msgstr "Mida del Contorn:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Elimina l'element %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Actualitza des de l'Escena"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6888,10 +6978,6 @@ msgid "Source"
 msgstr "Font"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Senyal"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Objectiu"
 
@@ -6917,6 +7003,11 @@ msgstr "Vés a la Funció"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Només s'hi poden deixar caure Recursos del sistema de fitxers."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7585,8 +7676,17 @@ msgid "Create Mesh2D"
 msgstr "Crear Malla2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Creant Previsualitzacions de Malles"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Crear Polígon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7595,7 +7695,17 @@ msgstr "Crea un Polígon de Navegació"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Crea un Polígon de Navegació"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Crea un Polígon Oclusor"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Crea un Polígon Oclusor"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7680,6 +7790,11 @@ msgstr "Afegir %d Fotograma(es)"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Afegeix Fotograma"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "No s'ha pogut carregar el recurs."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7983,10 +8098,6 @@ msgstr "Lletra"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Color"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Constant"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8414,6 +8525,16 @@ msgstr "Editar Prioritat de la Rajola"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Editar índex Z de la rajola"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Mou el Polígon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Fer el polígon còncau"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9606,6 +9727,10 @@ msgid "Export PCK/Zip"
 msgstr "Exporta PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Exporta Projecte"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Mode d'Exportació?"
 
@@ -9697,10 +9822,6 @@ msgstr "No es pot editar el fitxer 'project.godot' en el camí del projecte."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "No es pot crear el fitxer 'project.godot' en el camí del projecte."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10978,6 +11099,11 @@ msgstr "Es carregarà un fitxer de script existent."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Script file already exists."
+msgstr "L'Acció '%s' ja existeix!"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Class Name:"
 msgstr "Nom de Classe"
 
@@ -11310,11 +11436,6 @@ msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
-msgid "Expected a string of length 1 (a character)."
-msgstr "S'esperava una cadena de longitud 1 (un caràcter)."
-
-#: modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Step argument is zero!"
 msgstr "L'argument pas és zero!"
 
@@ -11456,6 +11577,11 @@ msgstr "Gira Enrere Z en el Cursor"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr "Reestableix la Rotació del Cursor"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Elimina la Selecció"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11738,10 +11864,6 @@ msgstr "Retén Ctrl per dipositar una Variable d'Actualització (Setter)."
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Afegeix un Node de Precàrrega"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12140,7 +12262,7 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr "Aturar Servidor HTTP"
+msgstr "Atura el servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -12725,7 +12847,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Trieu un color de la pantalla."
 
 #: scene/gui/color_picker.cpp
@@ -12846,6 +12976,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "L'exportació del projecte ha fallat amb el codi d'error %d."
+
+#~ msgid "Password:"
+#~ msgstr "Contrasenya:"
 
 #~ msgid "A digit cannot be the first character in a Identifier segment."
 #~ msgstr "Un dígit no pot ser el primer caràcter en un segment Identificador."
@@ -13165,9 +13301,6 @@ msgstr "Les constants no es poden modificar."
 #~ msgid "Create folder"
 #~ msgstr "Crea un Directori"
 
-#~ msgid "Already existing"
-#~ msgstr "Ja existeix"
-
 #~ msgid "Custom Node"
 #~ msgstr "Node Personalitzat"
 
@@ -13214,10 +13347,6 @@ msgstr "Les constants no es poden modificar."
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""
 #~ "PathFollow2D només funciona si s'estableix com a fill d'un node Path2D."
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "L'Acció '%s' ja existeix!"
 
 #, fuzzy
 #~ msgid "Add Split"
@@ -13708,9 +13837,6 @@ msgstr "Les constants no es poden modificar."
 #~ msgid "Replace By"
 #~ msgstr "Reemplaça per"
 
-#~ msgid "Case Sensitive"
-#~ msgstr "Majúscules i minúscules"
-
 #~ msgid "Backwards"
 #~ msgstr "Enrere"
 
@@ -14104,9 +14230,6 @@ msgstr "Les constants no es poden modificar."
 #~ msgstr ""
 #~ "No s'ha pogut llegir el certificat. Comproveu que tant el camí com la "
 #~ "contrasenya són correctes"
-
-#~ msgid "Error creating the signature object."
-#~ msgstr "No s'ha pogut l'objecte signatura."
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "No s'ha pogut crear el paquet signatura."

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,9 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 			// May not me referenced yet, so we must use init_ref() instead of reference()
-			ref->init_ref();
+			if (ref->init_ref()) {
+				CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+			}
 		}
 
 		// The object was just created, no script instance binding should have been attached

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -393,9 +393,6 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_TRUE);
-	//_GodotPlatformSetCursorMode(window, window->cursorMode);
-
 	if (OS_OSX::singleton->get_main_loop()) {
 		get_mouse_pos(
 				[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
@@ -404,25 +401,31 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	}
+
+	OS_OSX::singleton->window_focused = true;
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_FALSE);
-	//_GodotPlatformSetCursorMode(window, Godot_CURSOR_NORMAL);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+	OS_OSX::singleton->window_focused = false;
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
 	OS_OSX::singleton->wm_minimized(true);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
+	OS_OSX::singleton->window_focused = false;
 };
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
 	OS_OSX::singleton->wm_minimized(false);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+
+	OS_OSX::singleton->window_focused = true;
 };
 
 @end
@@ -476,7 +479,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (NSRange)markedRange {
-	return (markedText.length > 0) ? NSMakeRange(0, markedText.length - 1) : kEmptyRange;
+	return NSMakeRange(0, markedText.length);
 }
 
 - (NSRange)selectedRange {
@@ -488,6 +491,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		[markedText initWithAttributedString:aString];
 	} else {
 		[markedText initWithString:aString];
+	}
+	if (markedText.length == 0) {
+		[self unmarkText];
+		return;
 	}
 	if (OS_OSX::singleton->im_active) {
 		imeInputEventInProgress = true;
@@ -2108,6 +2115,19 @@ String OS_OSX::get_cache_path() const {
 	}
 }
 
+String OS_OSX::get_bundle_resource_dir() const {
+
+	NSBundle *main = [NSBundle mainBundle];
+	NSString *resourcePath = [main resourcePath];
+
+	char *utfs = strdup([resourcePath UTF8String]);
+	String ret;
+	ret.parse_utf8(utfs);
+	free(utfs);
+
+	return ret;
+}
+
 // Get properly capitalized engine name for system paths
 String OS_OSX::get_godot_dir_name() const {
 
@@ -2607,6 +2627,10 @@ bool OS_OSX::is_window_always_on_top() const {
 	return [window_object level] == NSFloatingWindowLevel;
 }
 
+bool OS_OSX::is_window_focused() const {
+	return window_focused;
+}
+
 void OS_OSX::request_attention() {
 
 	[NSApp requestUserAttention:NSCriticalRequest];
@@ -3059,6 +3083,7 @@ OS_OSX::OS_OSX() {
 	window_size = Vector2(1024, 600);
 	zoomed = false;
 	resizable = false;
+	window_focused = true;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(OSXTerminalLogger));

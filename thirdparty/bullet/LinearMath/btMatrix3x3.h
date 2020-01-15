@@ -125,6 +125,13 @@ public:
 		m_el[2] = other.m_el[2];
 		return *this;
 	}
+    
+    SIMD_FORCE_INLINE btMatrix3x3(const btVector3& v0, const btVector3& v1, const btVector3& v2)
+    {
+        m_el[0] = v0;
+        m_el[1] = v1;
+        m_el[2] = v2;
+    }
 
 #endif
 

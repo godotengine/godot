@@ -1,6 +1,6 @@
 # Indonesian translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
 # Andevid Dynmyn <doyan4forum@gmail.com>, 2016.
@@ -42,6 +42,10 @@ msgstr ""
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 "Tipe argumen salah dalam menggunakan convert(), gunakan konstanta TYPE_*."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -431,6 +435,10 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
 msgstr "Tidak memungkinkan untuk menambah track baru tanpa akar"
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -1201,8 +1209,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "Autoload '%s' telah ada!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Membuka Aset Terkompresi"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Berkas berikut gagal diekstrak dari paket:"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d file lagi"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1212,6 +1234,11 @@ msgstr "Paket Sukses Terpasang!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Sukses!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Konten:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1349,6 +1376,11 @@ msgstr "Tata Letak"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Berkas salah, tidak layout suara bus."
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Galat saat menyimpan berkas!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1999,6 +2031,15 @@ msgid "Search Help"
 msgstr "Mencari Bantuan"
 
 #: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Case Sensitive"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Tampilkan Bantuan-bantuan"
+
+#: editor/editor_help_search.cpp
 msgid "Display All"
 msgstr "Tampilkan Semua"
 
@@ -2033,6 +2074,29 @@ msgstr "Tipe Anggota"
 #: editor/editor_help_search.cpp
 msgid "Class"
 msgstr "Kelas"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Fungsi"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Sinyal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstan"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Properti:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Properti-properti Tema"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2113,10 +2177,6 @@ msgstr "RSET Keluar"
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr "Jendela Baru"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Ekspor proyek gagal dengan kode kesalahan %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -3035,10 +3095,6 @@ msgstr "Impor Templat dari Berkas ZIP"
 msgid "Template Package"
 msgstr "Manajer Templat Ekspor"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Ekspor Projek"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Ekspor Pustaka"
@@ -3046,10 +3102,6 @@ msgstr "Ekspor Pustaka"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Gabung dengan yang Ada"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Sandi:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3413,6 +3465,14 @@ msgstr "Mengekstrak Berkas Templat Ekspor"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Mengimpor:"
+
+#: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4600,6 +4660,11 @@ msgid "Move Node"
 msgstr "Pindahkan Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Transisi: "
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
 msgstr "Tambah Transisi"
 
@@ -5691,6 +5756,23 @@ msgstr "Masker Emisi"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Solid Pixels"
+msgstr "Pertumbuhan (Piksel): "
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Direktori-direktori & File-file:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
 msgstr "Tangkap dari Piksel"
 
@@ -5915,9 +5997,20 @@ msgstr "Buat Garis Mesh"
 msgid "Outline Size:"
 msgstr "Ukuran Garis Tepi:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Hapus item %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr "Perbarui dari Skena"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #, fuzzy
@@ -6794,10 +6887,6 @@ msgid "Source"
 msgstr "Sumber"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Sinyal"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "Target"
 
@@ -6823,6 +6912,11 @@ msgstr "Pergi ke Fungsi"
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Hanya sumber daya dari berkas sistem yang dapat dihapus."
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -7469,15 +7563,34 @@ msgid "Create Mesh2D"
 msgstr "Buat Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Buat Pratinjau Mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Buat Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Buat CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Buat CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
+msgstr "Buat LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Buat LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7556,6 +7669,11 @@ msgstr "Tambah %d Frame"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "Tambah Frame"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Gagal memuat resource."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -7846,10 +7964,6 @@ msgstr "Fonta"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Warna"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstan"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8256,6 +8370,16 @@ msgstr "Sunting Prioritas Tile"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Sunting Index Z Tile"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Convex"
+msgstr "Buat Poligon Cembung"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Buat Poligon Cekung"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9421,6 +9545,10 @@ msgid "Export PCK/Zip"
 msgstr "Ekspor PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Ekspor Projek"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "Mode ekspor?"
 
@@ -9512,10 +9640,6 @@ msgstr "Tidak dapat menyunting project.godot dalam lokasi proyek."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "Tidak dapat membuat project.godot dalam lokasi proyek."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Berkas berikut gagal diekstrak dari paket:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -10736,6 +10860,11 @@ msgstr "Akan memuat berkas skrip yang ada."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Script file already exists."
+msgstr "Autoload '%s' telah ada!"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Class Name:"
 msgstr "Nama Kelas"
 
@@ -11051,10 +11180,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
 msgstr "Argumen step adalah nol!"
 
@@ -11196,6 +11321,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "Hapus Pilihan"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
@@ -11480,10 +11610,6 @@ msgstr ""
 #, fuzzy
 msgid "Add Preload Node"
 msgstr "Tambahkan Node"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12416,7 +12542,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Node ini telah usang. Gunakan AnimationTree sebagai gantinya."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+#, fuzzy
+msgid "Pick a color from the editor window."
 msgstr "Ambil warna dari layar."
 
 #: scene/gui/color_picker.cpp
@@ -12543,6 +12677,12 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Ekspor proyek gagal dengan kode kesalahan %d."
+
+#~ msgid "Password:"
+#~ msgstr "Sandi:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Hentikan sementara skena ini"
@@ -12824,10 +12964,6 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 #~ "node Path2D."
 
 #, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "Autoload '%s' telah ada!"
-
-#, fuzzy
 #~ msgid "Add Split"
 #~ msgstr "Tambahkan Sinyal"
 
@@ -13106,9 +13242,6 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 
 #~ msgid "Replace By"
 #~ msgstr "Ganti dengan"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Case Sensitive"
 
 #~ msgid "Backwards"
 #~ msgstr "Ke belakang"

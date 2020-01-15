@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -803,6 +803,18 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 		case Variant::OBJECT: {
+#ifdef DEBUG_ENABLED
+			// Test for potential wrong values sent by the debugger when it breaks.
+			Object *obj = p_variant;
+			if (!obj || !ObjectDB::instance_validate(obj)) {
+				// Object is invalid, send a NULL instead.
+				if (buf) {
+					encode_uint32(Variant::NIL, buf);
+				}
+				r_len += 4;
+				return OK;
+			}
+#endif // DEBUG_ENABLED
 			if (!p_full_objects) {
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}

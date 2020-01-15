@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2435,22 +2435,10 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	if (surface->blend_shape_data.size()) {
 		ERR_PRINT_ONCE("Blend shapes are not supported in OpenGL ES 2.0");
 	}
-	surface->data = array;
-	surface->index_data = p_index_array;
-#else
-	// Even on non-tools builds, a copy of the surface->data is needed in certain circumstances.
-	// Rigged meshes using the USE_SKELETON_SOFTWARE path need to read bone data
-	// from surface->data.
-
-	// if USE_SKELETON_SOFTWARE is active
-	if (config.use_skeleton_software) {
-		// if this geometry is used specifically for skinning
-		if (p_format & (VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS))
-			surface->data = array;
-	}
-	// An alternative is to always make a copy of surface->data.
 #endif
 
+	surface->data = array;
+	surface->index_data = p_index_array;
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
 
 	for (int i = 0; i < surface->skeleton_bone_used.size(); i++) {
@@ -2874,20 +2862,20 @@ void RasterizerStorageGLES2::multimesh_allocate(RID p_multimesh, int p_instances
 		multimesh->xform_floats = 12;
 	}
 
-	if (multimesh->color_format == VS::MULTIMESH_COLOR_NONE) {
-		multimesh->color_floats = 0;
-	} else if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
+	if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 		multimesh->color_floats = 1;
 	} else if (multimesh->color_format == VS::MULTIMESH_COLOR_FLOAT) {
 		multimesh->color_floats = 4;
+	} else {
+		multimesh->color_floats = 0;
 	}
 
-	if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE) {
-		multimesh->custom_data_floats = 0;
-	} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
+	if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
 		multimesh->custom_data_floats = 1;
 	} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_FLOAT) {
 		multimesh->custom_data_floats = 4;
+	} else {
+		multimesh->custom_data_floats = 0;
 	}
 
 	int format_floats = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
@@ -3063,6 +3051,7 @@ void RasterizerStorageGLES2::multimesh_instance_set_color(RID p_multimesh, int p
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->color_format == VS::MULTIMESH_COLOR_NONE);
+	ERR_FAIL_INDEX(multimesh->color_format, VS::MULTIMESH_COLOR_FLOAT);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -3095,6 +3084,7 @@ void RasterizerStorageGLES2::multimesh_instance_set_custom_data(RID p_multimesh,
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE);
+	ERR_FAIL_INDEX(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -3182,6 +3172,7 @@ Color RasterizerStorageGLES2::multimesh_instance_get_color(RID p_multimesh, int 
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->color_format == VS::MULTIMESH_COLOR_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->color_format, VS::MULTIMESH_COLOR_FLOAT, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -3214,6 +3205,7 @@ Color RasterizerStorageGLES2::multimesh_instance_get_custom_data(RID p_multimesh
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_FLOAT, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -5776,6 +5768,16 @@ int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
 		default:
 			return 0; //no idea either
 	}
+}
+
+String RasterizerStorageGLES2::get_video_adapter_name() const {
+
+	return (const char *)glGetString(GL_RENDERER);
+}
+
+String RasterizerStorageGLES2::get_video_adapter_vendor() const {
+
+	return (const char *)glGetString(GL_VENDOR);
 }
 
 void RasterizerStorageGLES2::initialize() {

@@ -22,6 +22,7 @@
 		    key.save("user://generated.key")
 		    cert.save("user://generated.crt")
 		[/codeblock]
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>

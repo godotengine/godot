@@ -496,7 +496,7 @@ void b3GpuParallelLinearBvh::constructBinaryRadixTree()
 		clFinish(m_queue);
 	}
 
-	//Find the number of nodes seperating each internal node and the root node
+	//Find the number of nodes separating each internal node and the root node
 	//so that the AABBs can be set using the next kernel.
 	//Also determine the maximum number of nodes separating an internal node and the root node.
 	{

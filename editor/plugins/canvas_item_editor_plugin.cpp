@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -47,6 +48,7 @@
 #include "scene/2d/touch_screen_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
+#include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -3985,29 +3987,21 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	updating_scroll = true;
 
-	// Move the zoom buttons
+	// Move the zoom buttons.
 	Point2 controls_vb_begin = Point2(5, 5);
 	controls_vb_begin += (show_rulers) ? Point2(RULER_WIDTH, RULER_WIDTH) : Point2();
 	controls_vb->set_begin(controls_vb_begin);
 
-	// Move and resize the scrollbars
-	Size2 size = viewport->get_size();
 	Size2 hmin = h_scroll->get_minimum_size();
 	Size2 vmin = v_scroll->get_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
-	v_scroll->set_end(Point2(size.width, size.height));
-
-	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
-	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
-
-	// Get the visible frame
+	// Get the visible frame.
 	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	_queue_update_bone_list();
 
-	// Calculate scrollable area
+	// Calculate scrollable area.
 	Rect2 canvas_item_rect = Rect2(Point2(), screen_rect);
 	if (editor->get_edited_scene()) {
 		Rect2 content_rect = _get_encompassing_rect(editor->get_edited_scene());
@@ -4017,7 +4011,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	canvas_item_rect.size += screen_rect * 2;
 	canvas_item_rect.position -= screen_rect;
 
-	// Constraints the view offset and updates the scrollbars
+	// Constraints the view offset and updates the scrollbars.
+	Size2 size = viewport->get_size();
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
 	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
@@ -4064,7 +4059,13 @@ void CanvasItemEditor::_update_scrollbars() {
 		h_scroll->set_page(screen_rect.x);
 	}
 
-	// Calculate scrollable area
+	// Move and resize the scrollbars, avoiding overlap.
+	v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
+	v_scroll->set_end(Point2(size.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
+	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
+	h_scroll->set_end(Point2(size.width - (v_scroll->is_visible() ? vmin.width : 0), size.height));
+
+	// Calculate scrollable area.
 	v_scroll->set_value(view_offset.y);
 	h_scroll->set_value(view_offset.x);
 
@@ -4214,11 +4215,15 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 
 void CanvasItemEditor::_update_zoom_label() {
 	String zoom_text;
+	// The zoom level displayed is relative to the editor scale
+	// (like in most image editors). Its lower bound is clamped to 1 as some people
+	// lower the editor scale to increase the available real estate,
+	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
-		// Don't show a decimal when the zoom level is higher than 1000 %
-		zoom_text = rtos(Math::round(zoom * 100)) + " %";
+		// Don't show a decimal when the zoom level is higher than 1000 %.
+		zoom_text = rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)) + " %";
 	} else {
-		zoom_text = rtos(Math::stepify(zoom * 100, 0.1)) + " %";
+		zoom_text = rtos(Math::stepify((zoom / MAX(1, EDSCALE)) * 100, 0.1)) + " %";
 	}
 
 	zoom_reset->set_text(zoom_text);
@@ -4229,7 +4234,7 @@ void CanvasItemEditor::_button_zoom_minus() {
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
-	_zoom_on_position(1.0, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(1.0 * EDSCALE, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
@@ -4991,7 +4996,8 @@ void CanvasItemEditor::_bind_methods() {
 Dictionary CanvasItemEditor::get_state() const {
 
 	Dictionary state;
-	state["zoom"] = zoom;
+	// Take the editor scale into account.
+	state["zoom"] = zoom / MAX(1, EDSCALE);
 	state["ofs"] = view_offset;
 	state["grid_offset"] = grid_offset;
 	state["grid_step"] = grid_step;
@@ -5028,7 +5034,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	bool update_scrollbars = false;
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
-		zoom = p_state["zoom"];
+		// Compensate the editor scale, so that the editor scale can be changed
+		// and the zoom level will still be the same (relative to the editor scale).
+		zoom = float(p_state["zoom"]) * EDSCALE;
 		_update_zoom_label();
 	}
 
@@ -5244,11 +5252,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_rulers = true;
 	show_guides = true;
 	show_edit_locks = true;
-	zoom = 1;
+	zoom = 1.0 / MAX(1, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
 	grid_offset = Point2();
-	grid_step = Point2(10, 10);
+	grid_step = Point2(8, 8); // A power-of-two value works better as a default
 	primary_grid_steps = 8; // A power-of-two value works better as a default
 	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;

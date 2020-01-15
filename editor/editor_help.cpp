@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
@@ -417,10 +418,10 @@ void EditorHelp::_update_doc() {
 			}
 		}
 
-		if (found)
+		if (found) {
 			class_desc->pop();
-
-		class_desc->add_newline();
+			class_desc->add_newline();
+		}
 	}
 
 	class_desc->add_newline();
@@ -429,9 +430,26 @@ void EditorHelp::_update_doc() {
 	// Brief description
 	if (cd.brief_description != "") {
 
+		class_desc->push_color(text_color);
+		class_desc->push_font(doc_bold_font);
+		class_desc->push_indent(1);
+		_add_text(cd.brief_description);
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	// Class description
+	if (cd.description != "") {
+
+		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_line_count() - 2));
+		description_line = class_desc->get_line_count() - 2;
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Brief Description"));
+		class_desc->add_text(TTR("Description"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -440,11 +458,51 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
-		_add_text(cd.brief_description);
+		_add_text(cd.description);
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	// Online tutorials
+	{
+		class_desc->push_color(title_color);
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text(TTR("Online Tutorials"));
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->push_indent(1);
+
+		class_desc->push_font(doc_code_font);
+
+		class_desc->add_newline();
+		//	class_desc->add_newline();
+
+		if (cd.tutorials.size() != 0) {
+
+			for (int i = 0; i < cd.tutorials.size(); i++) {
+				String link = cd.tutorials[i];
+				String linktxt = link;
+				int seppos = linktxt.find("//");
+				if (seppos != -1) {
+					linktxt = link.right(seppos + 2);
+				}
+
+				class_desc->push_color(symbol_color);
+				class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
+				class_desc->pop();
+				class_desc->add_newline();
+			}
+		} else {
+			class_desc->push_color(comment_color);
+			class_desc->append_bbcode(TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].").replace("$url2", REQUEST_URL).replace("$url", CONTRIBUTE2_URL).replace("$color", link_color_text));
+			class_desc->pop();
+		}
+		class_desc->pop();
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -919,71 +977,6 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 			class_desc->add_newline();
 		}
-	}
-
-	// Class description
-	if (cd.description != "") {
-
-		section_line.push_back(Pair<String, int>(TTR("Class Description"), class_desc->get_line_count() - 2));
-		description_line = class_desc->get_line_count() - 2;
-		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Class Description"));
-		class_desc->pop();
-		class_desc->pop();
-
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->push_color(text_color);
-		class_desc->push_font(doc_font);
-		class_desc->push_indent(1);
-		_add_text(cd.description);
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
-		class_desc->add_newline();
-	}
-
-	// Online tutorials
-	{
-		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Online Tutorials"));
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->push_indent(1);
-
-		class_desc->push_font(doc_code_font);
-
-		class_desc->add_newline();
-		//	class_desc->add_newline();
-
-		if (cd.tutorials.size() != 0) {
-
-			for (int i = 0; i < cd.tutorials.size(); i++) {
-				String link = cd.tutorials[i];
-				String linktxt = link;
-				int seppos = linktxt.find("//");
-				if (seppos != -1) {
-					linktxt = link.right(seppos + 2);
-				}
-
-				class_desc->push_color(symbol_color);
-				class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
-				class_desc->pop();
-				class_desc->add_newline();
-			}
-		} else {
-			class_desc->push_color(comment_color);
-			class_desc->append_bbcode(TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].").replace("$url2", REQUEST_URL).replace("$url", CONTRIBUTE2_URL).replace("$color", link_color_text));
-			class_desc->pop();
-		}
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-		class_desc->add_newline();
 	}
 
 	// Property descriptions

@@ -44,6 +44,7 @@
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
+				Returns the [code]one_way_collision_margin[/code] of the shape owner identified by given [code]owner_id[/code].
 			</description>
 		</method>
 		<method name="get_shape_owners">
@@ -199,6 +200,7 @@
 			<argument index="1" name="margin" type="float">
 			</argument>
 			<description>
+				Sets the [code]one_way_collision_margin[/code] of the shape owner identified by given [code]owner_id[/code] to [code]margin[/code] pixels.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
