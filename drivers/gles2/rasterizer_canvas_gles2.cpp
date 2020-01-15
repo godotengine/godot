@@ -454,12 +454,13 @@ void RasterizerCanvasGLES2::_draw_generic_indices(GLuint p_primitive, const int 
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 		glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
 	} else {
-		uint16_t *index16 = (uint16_t *)alloca(sizeof(uint16_t) * p_index_count);
+		uint16_t *index16 = new uint16_t[p_index_count];
 		for (int i = 0; i < p_index_count; i++) {
 			index16[i] = uint16_t(p_indices[i]);
 		}
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(uint16_t) * p_index_count, index16);
 		glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_SHORT, 0);
+		delete[] index16;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
