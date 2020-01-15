@@ -139,7 +139,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		if (parent_should_expand) {
 			subdirectory_item->set_collapsed(false);
 		} else if (dname != "res://") {
-			subdirectory_item->get_parent()->remove_child(subdirectory_item);
+			memdelete(subdirectory_item);
 		}
 	}
 
