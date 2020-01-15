@@ -305,6 +305,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
 			r_gen_code.texture_hints.resize(max_texture_uniforms);
+			r_gen_code.texture_types.resize(max_texture_uniforms);
 
 			r_gen_code.uniforms.resize(max_uniforms + max_texture_uniforms);
 
@@ -332,6 +333,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
 					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_types.write[E->get().texture_order] = E->get().type;
 				} else {
 					r_gen_code.uniforms.write[E->get().order] = E->key();
 				}
@@ -660,6 +662,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER3D) {
+								code += "texture3D";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2DARRAY) {
+								code += "texture2DArray";
 							}
 
 						} else if (var_node->name == "textureLod") {
@@ -669,6 +675,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2DLod";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCubeLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER3D) {
+								code += "texture3DLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2DARRAY) {
+								code += "texture2DArrayLod";
 							}
 
 						} else if (var_node->name == "mix") {
@@ -869,6 +879,7 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 	r_gen_code.uniforms.clear();
 	r_gen_code.texture_uniforms.clear();
 	r_gen_code.texture_hints.clear();
+	r_gen_code.texture_types.clear();
 	r_gen_code.vertex = String();
 	r_gen_code.vertex_global = String();
 	r_gen_code.fragment = String();

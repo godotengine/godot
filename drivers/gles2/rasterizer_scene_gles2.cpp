@@ -53,6 +53,11 @@
 #endif
 #endif
 
+#if !defined(GLES_OVER_GL)
+#define GL_TEXTURE_2D_ARRAY 0x8C1A
+#define GL_TEXTURE_3D 0x806F
+#endif
+
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -1343,6 +1348,7 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 	const Pair<StringName, RID> *textures = p_material->textures.ptr();
 
 	const ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = p_material->shader->texture_hints.ptr();
+	const ShaderLanguage::DataType *texture_types = p_material->shader->texture_types.ptr();
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_TEXTURE_SIZE, p_skeleton_tex_size);
 
@@ -1356,22 +1362,66 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 
 		if (!t) {
 
-			switch (texture_hints[i]) {
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
-					glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
+			GLenum target = GL_TEXTURE_2D;
+			GLuint tex = 0;
+			switch (texture_types[i]) {
+				case ShaderLanguage::TYPE_ISAMPLER2D:
+				case ShaderLanguage::TYPE_USAMPLER2D:
+				case ShaderLanguage::TYPE_SAMPLER2D: {
+
+					switch (texture_hints[i]) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO:
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
+							tex = storage->resources.black_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+							tex = storage->resources.aniso_tex;
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+							tex = storage->resources.normal_tex;
+						} break;
+						default: {
+							tex = storage->resources.white_tex;
+						} break;
+					}
+
 				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
-					glBindTexture(GL_TEXTURE_2D, storage->resources.aniso_tex);
+
+				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+					// TODO
 				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
-					glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
+
+				case ShaderLanguage::TYPE_ISAMPLER3D:
+				case ShaderLanguage::TYPE_USAMPLER3D:
+				case ShaderLanguage::TYPE_SAMPLER3D: {
+
+					target = GL_TEXTURE_3D;
+					tex = storage->resources.white_tex_3d;
+
+					//switch (texture_hints[i]) {
+					// TODO
+					//}
+
 				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+
+					target = GL_TEXTURE_2D_ARRAY;
+					tex = storage->resources.white_tex_array;
+
+					//switch (texture_hints[i]) {
+					// TODO
+					//}
+
+				} break;
+
 				default: {
-					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
-				} break;
+				}
 			}
 
+			glBindTexture(target, tex);
 			continue;
 		}
 
