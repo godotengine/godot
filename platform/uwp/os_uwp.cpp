@@ -452,9 +452,9 @@ void OS_UWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sende
 	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
-			reading->AccelerationX,
-			reading->AccelerationY,
-			reading->AccelerationZ),
+										 reading->AccelerationX,
+										 reading->AccelerationY,
+										 reading->AccelerationZ),
 			reading->Timestamp->Ticks * 100);
 }
 
@@ -463,9 +463,9 @@ void OS_UWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender,
 	MagnetometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-			reading->MagneticFieldX,
-			reading->MagneticFieldY,
-			reading->MagneticFieldZ),
+										reading->MagneticFieldX,
+										reading->MagneticFieldY,
+										reading->MagneticFieldZ),
 			reading->Timestamp->Ticks * 100);
 }
 
@@ -474,9 +474,9 @@ void OS_UWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, Gyrom
 	GyrometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-			reading->AngularVelocityX,
-			reading->AngularVelocityY,
-			reading->AngularVelocityZ),
+										reading->AngularVelocityX,
+										reading->AngularVelocityY,
+										reading->AngularVelocityZ),
 			reading->Timestamp->Ticks * 100);
 }
 

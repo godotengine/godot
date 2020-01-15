@@ -519,7 +519,7 @@ static int frame_count = 0;
 					// data to us in intervals, might be better. See Apple reference pages
 					// for more details:
 					// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
-					
+
 					uint64_t timestamp = (uint64_t)(motionManager.deviceMotion.timestamp * 1000000000.0);
 
 					// Apple splits our accelerometer date into a gravity and user movement
