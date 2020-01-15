@@ -1234,7 +1234,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	on_ceiling = false;
 	on_wall = false;
 	colliders.clear();
-	floor_normal = p_up_direction;
+	floor_normal = Vector2();
 	floor_velocity = Vector2();
 
 	while (p_max_slides) {
@@ -1473,8 +1473,8 @@ void KinematicBody2D::_notification(int p_what) {
 void KinematicBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide_with_snap, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody2D::test_move, DEFVAL(true));
 
