@@ -353,11 +353,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				varying_code += _typestr(E->get().type);
 				varying_code += " ";
 				varying_code += _mkid(E->key());
-				if (E->get().array_size > 0) {
-					varying_code += "[";
-					varying_code += itos(E->get().array_size);
-					varying_code += "]";
-				}
 				varying_code += ";\n";
 
 				String final_code = varying_code.as_string();
@@ -522,9 +517,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::ArrayDeclarationNode *arr_dec_node = (SL::ArrayDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (arr_dec_node->is_const) {
-				declaration += "const ";
-			}
+			declaration += "const ";
 			declaration += _prestr(arr_dec_node->precision);
 			declaration += _typestr(arr_dec_node->datatype);
 

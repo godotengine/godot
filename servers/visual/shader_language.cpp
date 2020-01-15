@@ -3886,6 +3886,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
+
+					if (VisualServer::get_singleton()->is_low_end() && !is_const) {
+						_set_error("Local non-const arrays are supported only on high-end platform!");
+						return ERR_PARSE_ERROR;
+					}
+
 					bool unknown_size = false;
 
 					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
@@ -5008,6 +5014,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 
 					if (tk.type == TK_BRACKET_OPEN) {
+
+						if (VisualServer::get_singleton()->is_low_end()) {
+							_set_error("Varying arrays are supported only on high-end platform!");
+							return ERR_PARSE_ERROR;
+						}
+
 						tk = _get_token();
 						if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
 							varying.array_size = (int)tk.constant;
