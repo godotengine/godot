@@ -146,7 +146,7 @@ void ConnectDialog::_tree_node_selected() {
 		return;
 
 	dst_path = source->get_path_to(current);
-	get_ok()->set_disabled(false);
+	_update_ok_enabled();
 }
 
 /*
@@ -210,6 +210,27 @@ void ConnectDialog::_remove_bind() {
 	cdbinds->notify_changed();
 }
 
+/*
+ * Enables or disables the connect button. The connect button is enabled if a
+ * node is selected and valid in the selected mode.
+ */
+void ConnectDialog::_update_ok_enabled() {
+
+	Node *target = tree->get_selected();
+
+	if (target == nullptr) {
+		get_ok()->set_disabled(true);
+		return;
+	}
+
+	if (!advanced->is_pressed() && target->get_script().is_null()) {
+		get_ok()->set_disabled(true);
+		return;
+	}
+
+	get_ok()->set_disabled(false);
+}
+
 void ConnectDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -225,6 +246,7 @@ void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_tree_item_activated", &ConnectDialog::_tree_item_activated);
 	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
 	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
+	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
 
 	ADD_SIGNAL(MethodInfo("connected"));
 }
@@ -301,12 +323,11 @@ void ConnectDialog::init(Connection c, bool bEdit) {
 	tree->set_marked(source, true);
 
 	if (c.target) {
-		get_ok()->set_disabled(false);
 		set_dst_node(static_cast<Node *>(c.target));
 		set_dst_method(c.method);
-	} else {
-		get_ok()->set_disabled(true);
 	}
+
+	_update_ok_enabled();
 
 	bool bDeferred = (c.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
 	bool bOneshot = (c.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
@@ -349,6 +370,8 @@ void ConnectDialog::_advanced_pressed() {
 		vbc_right->hide();
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
+
+	_update_ok_enabled();
 
 	set_position((get_viewport_rect().size - get_custom_minimum_size()) / 2);
 }

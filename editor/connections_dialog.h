@@ -80,6 +80,7 @@ class ConnectDialog : public ConfirmationDialog {
 	void _add_bind();
 	void _remove_bind();
 	void _advanced_pressed();
+	void _update_ok_enabled();
 
 protected:
 	void _notification(int p_what);
