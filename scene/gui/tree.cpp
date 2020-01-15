@@ -2339,13 +2339,22 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					cache.click_type = Cache::CLICK_NONE;
 					return -1;
 				}
+
+				// Make sure the click is correct.
+				Point2 click_pos = get_global_mouse_position() - get_global_position();
+				if (!get_item_at_position(click_pos)) {
+					pressed_button = -1;
+					cache.click_type = Cache::CLICK_NONE;
+					return -1;
+				}
+
 				pressed_button = j;
 				cache.click_type = Cache::CLICK_BUTTON;
 				cache.click_index = j;
 				cache.click_id = c.buttons[j].id;
 				cache.click_item = p_item;
 				cache.click_column = col;
-				cache.click_pos = get_global_mouse_position() - get_global_position();
+				cache.click_pos = click_pos;
 				update();
 				//emit_signal(SNAME("button_pressed"));
 				return -1;
