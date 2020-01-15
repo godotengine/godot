@@ -15,6 +15,7 @@
 			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
 			</argument>
 			<description>
+				Returns the [enum GeometryInstance.Flags] that have been set for this object.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
@@ -34,6 +35,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
+				Sets the [enum GeometryInstance.Flags] specified. See [enum GeometryInstance.Flags] for options.
 			</description>
 		</method>
 	</methods>

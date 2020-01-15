@@ -71,6 +71,7 @@
 			<argument index="0" name="bump_scale" type="float" default="1.0">
 			</argument>
 			<description>
+				Converts a bumpmap to a normalmap. A bumpmap provides a height offset per-pixel, while a normalmap provides a normal direction per pixel.
 			</description>
 		</method>
 		<method name="clear_mipmaps">
@@ -165,7 +166,7 @@
 			<return type="int" enum="Image.AlphaMode">
 			</return>
 			<description>
-				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are below a certain threshold or the maximum value. Returns [constant ALPHA_NONE] if no data for alpha values is found.
+				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
 		<method name="expand_x2_hq2x">
@@ -405,6 +406,7 @@
 			<return type="Image">
 			</return>
 			<description>
+				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
@@ -502,8 +504,10 @@
 			The maximal height allowed for [Image] resources.
 		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
+			Texture format with a single 8-bit depth representing luminance.
 		</constant>
 		<constant name="FORMAT_LA8" value="1" enum="Format">
+			OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
 			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
@@ -643,26 +647,37 @@
 			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
+			Image does not have alpha.
 		</constant>
 		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
+			Image stores alpha in a single bit.
 		</constant>
 		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
+			Image uses alpha.
 		</constant>
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
+			Use S3TC compression.
 		</constant>
 		<constant name="COMPRESS_PVRTC2" value="1" enum="CompressMode">
+			Use PVRTC2 compression.
 		</constant>
 		<constant name="COMPRESS_PVRTC4" value="2" enum="CompressMode">
+			Use PVRTC4 compression.
 		</constant>
 		<constant name="COMPRESS_ETC" value="3" enum="CompressMode">
+			Use ETC compression.
 		</constant>
 		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
+			Use ETC2 compression.
 		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
+			Source texture (before compression) is a regular texture. Default for all textures.
 		</constant>
 		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
+			Source texture (before compression) is in sRGB space.
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
+			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
 		</constant>
 	</constants>
 </class>

@@ -103,6 +103,7 @@
 	</methods>
 	<members>
 		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
+			Sets a hint to be used for lightmap resolution in [BakedLightmap]. Overrides [member BakedLightmap.bake_default_texels_per_unit].
 		</member>
 	</members>
 	<constants>
@@ -128,52 +129,76 @@
 			Render array as triangle fans.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
+			Blend shapes are normalized.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
+			Blend shapes are relative to base weight.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+			Mesh array contains vertices. All meshes require a vertex array so this should always be present.
 		</constant>
 		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+			Mesh array contains normals.
 		</constant>
 		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+			Mesh array contains tangents.
 		</constant>
 		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+			Mesh array contains colors.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+			Mesh array contains UVs.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+			Mesh array contains second UV.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
+			Mesh array contains bones.
 		</constant>
 		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
+			Mesh array contains bone weights.
 		</constant>
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
+			Mesh array uses indices.
 		</constant>
 		<constant name="ARRAY_COMPRESS_BASE" value="9" enum="ArrayFormat">
+			Used internally to calculate other [code]ARRAY_COMPRESS_*[/code] enum values. Do not use.
 		</constant>
 		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) vertex array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) normal array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) tangent array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) color array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) UV coordinates array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
+			Flag used to mark a compressed bone array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) weight array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
+			Flag used to mark a compressed index array.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
+			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
+			Flag used to mark that the array uses 16-bit bones instead of 8-bit.
 		</constant>
 		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_VERTEX], [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2] and [constant ARRAY_COMPRESS_WEIGHTS] quickly.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array of vertices.

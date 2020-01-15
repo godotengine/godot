@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Texture3D" inherits="TextureLayered" category="Core" version="3.2">
 	<brief_description>
+		Texture with 3 dimensions.
 	</brief_description>
 	<description>
+		Texture3D is a 3-dimensional texture that has a width, height, and depth.
 	</description>
 	<tutorials>
 	</tutorials>
