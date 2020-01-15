@@ -122,7 +122,7 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		Array ret;
 		ret.resize(baked_meshes.size());
 		for (int i = 0; i < baked_meshes.size(); i++) {
-			ret.push_back(baked_meshes[i].mesh);
+			ret[i] = baked_meshes[i].mesh;
 		}
 		r_ret = ret;
 
