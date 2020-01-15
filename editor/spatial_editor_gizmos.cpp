@@ -2086,16 +2086,43 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
+	Vector<Vector3> draw_lines;
+	Vector<Vector3> collision_lines;
+	const int arrow_points = 6;
+	int arrow_sides = 2;
 
-	lines.push_back(Vector3());
-	lines.push_back(raycast->get_cast_to());
+	Vector3 point_to = raycast->get_cast_to();
 
+	// Lines drawn
+	Vector3 arrow[arrow_points] = {
+		Vector3(0, 0, 0),
+		Vector3(0, -1, 0)
+		// Vector3(-0.2, -0.8, 0),
+		// Vector3(0, 1, 0),
+		// Vector3(0.2, -0.8, 0),
+		// Vector3(0, 1, 0)
+	};
+
+	for (int i = 0; i < arrow_sides; i++) {
+		for (int j = 0; j < 2; j++) {
+			Basis ma(Vector3(0, 1, 0), Math_PI * i / arrow_sides);
+
+			Vector3 v1 = arrow[j] - Vector3(0, -1, 0);
+			Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, -1, 0);
+
+			draw_lines.push_back(ma.xform(v1));
+			draw_lines.push_back(ma.xform(v2));
+		}
+		}
+	// lines for collision
+	collision_lines.push_back(Vector3());
+	collision_lines.push_back(point_to);
+	
 	const Ref<SpatialMaterial> material =
 			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 
-	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
+	p_gizmo->add_lines(draw_lines, material);
+	p_gizmo->add_collision_segments(collision_lines);
 }
 
 /////
