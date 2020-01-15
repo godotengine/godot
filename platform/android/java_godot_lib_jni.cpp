@@ -600,6 +600,10 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
+static uint64_t accelerometer_timestamp;
+static uint64_t gravity_timestamp;
+static uint64_t magnetometer_timestamp;
+static uint64_t gyroscope_timestamp;
 static HashMap<String, JNISingleton *> jni_singletons;
 
 // virtual Error native_video_play(String p_path);
@@ -793,10 +797,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 		++step;
 	}
 
-	os_android->process_accelerometer(accelerometer);
-	os_android->process_gravity(gravity);
-	os_android->process_magnetometer(magnetometer);
-	os_android->process_gyroscope(gyroscope);
+	os_android->process_accelerometer(accelerometer, accelerometer_timestamp);
+	os_android->process_gravity(gravity, gravity_timestamp);
+	os_android->process_magnetometer(magnetometer, magnetometer_timestamp);
+	os_android->process_gyroscope(gyroscope, gyroscope_timestamp);
 
 	if (os_android->main_loop_iterate()) {
 
@@ -1189,20 +1193,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobj
 	os_android->process_event(ievent);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z, jlong timestamp) {
 	accelerometer = Vector3(x, y, z);
+	accelerometer_timestamp = timestamp;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gravity(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gravity(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z, jlong timestamp) {
 	gravity = Vector3(x, y, z);
+	gravity_timestamp = timestamp;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z, jlong timestamp) {
 	magnetometer = Vector3(x, y, z);
+	magnetometer_timestamp = timestamp;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z, jlong timestamp) {
 	gyroscope = Vector3(x, y, z);
+	gyroscope_timestamp = timestamp;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jobject obj) {

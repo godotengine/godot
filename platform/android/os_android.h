@@ -182,10 +182,10 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir) const;
 
-	void process_accelerometer(const Vector3 &p_accelerometer);
-	void process_gravity(const Vector3 &p_gravity);
-	void process_magnetometer(const Vector3 &p_magnetometer);
-	void process_gyroscope(const Vector3 &p_gyroscope);
+	void process_accelerometer(const Vector3 &p_accelerometer, uint64_t timestamp);
+	void process_gravity(const Vector3 &p_gravity, uint64_t timestamp);
+	void process_magnetometer(const Vector3 &p_magnetometer, uint64_t timestamp);
+	void process_gyroscope(const Vector3 &p_gyroscope, uint64_t timestamp);
 	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
 	void process_double_tap(Point2 p_pos);

@@ -43,14 +43,6 @@
 				Adds a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
 			</description>
 		</method>
-		<method name="get_accelerometer" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				If the device has an accelerometer, this will return the acceleration. Otherwise, it returns an empty [Vector3].
-				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
-			</description>
-		</method>
 		<method name="get_action_strength" qualifiers="const">
 			<return type="float">
 			</return>
@@ -74,6 +66,21 @@
 				Returns the currently assigned cursor shape (see [enum CursorShape]).
 			</description>
 		</method>
+		<method name="get_accelerometer" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has an accelerometer, this will return the acceleration. Otherwise, it returns an empty [Vector3].
+				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
+			</description>
+		</method>
+		<method name="get_accelerometer_timestamp" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Timestamp (in nanoseconds) when accelerometer was sampled.
+			</description>
+		</method>
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -81,11 +88,39 @@
 				If the device has an accelerometer, this will return the gravity. Otherwise, it returns an empty [Vector3].
 			</description>
 		</method>
+		<method name="get_gravity_timestamp" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Timestamp (in nanoseconds) when accelerometer was sampled.
+			</description>
+		</method>
 		<method name="get_gyroscope" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
 				If the device has a gyroscope, this will return the rate of rotation in rad/s around a device's X, Y, and Z axes. Otherwise, it returns an empty [Vector3].
+			</description>
+		</method>
+		<method name="get_gyroscope_timestamp" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Timestamp (in nanoseconds) when gyroscope was sampled.
+			</description>
+		</method>
+		<method name="get_magnetometer" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				If the device has a magnetometer, this will return the magnetic field strength in micro-Tesla for all axes.
+			</description>
+		</method>
+		<method name="get_magnetometer_timestamp" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Timestamp (in nanoseconds) when magnetometer was sampled.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -176,13 +211,6 @@
 			</return>
 			<description>
 				Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.
-			</description>
-		</method>
-		<method name="get_magnetometer" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				If the device has a magnetometer, this will return the magnetic field strength in micro-Tesla for all axes.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">

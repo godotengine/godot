@@ -131,10 +131,10 @@ public:
 
 	int set_base_framebuffer(int p_fb);
 
-	void update_gravity(float p_x, float p_y, float p_z);
-	void update_accelerometer(float p_x, float p_y, float p_z);
-	void update_magnetometer(float p_x, float p_y, float p_z);
-	void update_gyroscope(float p_x, float p_y, float p_z);
+	void update_gravity(float p_x, float p_y, float p_z, uint64_t p_timestamp);
+	void update_accelerometer(float p_x, float p_y, float p_z, uint64_t p_timestamp);
+	void update_magnetometer(float p_x, float p_y, float p_z, uint64_t p_timestamp);
+	void update_gyroscope(float p_x, float p_y, float p_z, uint64_t p_timestamp);
 
 	int get_unused_joy_id();
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name);

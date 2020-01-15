@@ -277,14 +277,14 @@ void OSIPhone::touches_cancelled() {
 
 static const float ACCEL_RANGE = 1;
 
-void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
-	input->set_gravity(Vector3(p_x, p_y, p_z));
+void OSIPhone::update_gravity(float p_x, float p_y, float p_z, uint64_t p_timestamp) {
+	input->set_gravity(Vector3(p_x, p_y, p_z), p_timestamp);
 };
 
-void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
+void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z, uint64_t p_timestamp) {
 
 	// Found out the Z should not be negated! Pass as is!
-	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
+	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE), p_timestamp);
 
 	/*
 	if (p_x != last_accel.x) {
@@ -320,12 +320,12 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 	*/
 };
 
-void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
-	input->set_magnetometer(Vector3(p_x, p_y, p_z));
+void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z, uint64_t p_timestamp) {
+	input->set_magnetometer(Vector3(p_x, p_y, p_z), p_timestamp);
 };
 
-void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
-	input->set_gyroscope(Vector3(p_x, p_y, p_z));
+void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z, uint64_t p_timestamp) {
+	input->set_gyroscope(Vector3(p_x, p_y, p_z), p_timestamp);
 };
 
 int OSIPhone::get_unused_joy_id() {

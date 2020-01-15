@@ -113,25 +113,25 @@ public class GodotLib {
 	 * Forward accelerometer sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
-	public static native void accelerometer(float x, float y, float z);
+	public static native void accelerometer(float x, float y, float z, long timestamp);
 
 	/**
 	 * Forward gravity sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
-	public static native void gravity(float x, float y, float z);
+	public static native void gravity(float x, float y, float z, long timestamp);
 
 	/**
 	 * Forward magnetometer sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
-	public static native void magnetometer(float x, float y, float z);
+	public static native void magnetometer(float x, float y, float z, long timestamp);
 
 	/**
 	 * Forward gyroscope sensor events from the main thread to the GL thread.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
-	public static native void gyroscope(float x, float y, float z);
+	public static native void gyroscope(float x, float y, float z, long timestamp);
 
 	/**
 	 * Forward regular key events from the main thread to the GL thread.

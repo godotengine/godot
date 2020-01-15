@@ -254,6 +254,30 @@ Vector3 InputDefault::get_gyroscope() const {
 	return gyroscope;
 }
 
+uint64_t InputDefault::get_gravity_timestamp() const {
+
+	_THREAD_SAFE_METHOD_
+	return gravity_timestamp;
+}
+
+uint64_t InputDefault::get_accelerometer_timestamp() const {
+
+	_THREAD_SAFE_METHOD_
+	return accelerometer_timestamp;
+}
+
+uint64_t InputDefault::get_magnetometer_timestamp() const {
+
+	_THREAD_SAFE_METHOD_
+	return magnetometer_timestamp;
+}
+
+uint64_t InputDefault::get_gyroscope_timestamp() const {
+
+	_THREAD_SAFE_METHOD_
+	return gyroscope_timestamp;
+}
+
 void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	_parse_input_event_impl(p_event, false);
@@ -476,32 +500,36 @@ void InputDefault::vibrate_handheld(int p_duration_ms) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms);
 }
 
-void InputDefault::set_gravity(const Vector3 &p_gravity) {
+void InputDefault::set_gravity(const Vector3 &p_gravity, uint64_t p_timestamp) {
 
 	_THREAD_SAFE_METHOD_
 
 	gravity = p_gravity;
+	gravity_timestamp = p_timestamp;
 }
 
-void InputDefault::set_accelerometer(const Vector3 &p_accel) {
+void InputDefault::set_accelerometer(const Vector3 &p_accel, uint64_t p_timestamp) {
 
 	_THREAD_SAFE_METHOD_
 
 	accelerometer = p_accel;
+	accelerometer_timestamp = p_timestamp;
 }
 
-void InputDefault::set_magnetometer(const Vector3 &p_magnetometer) {
+void InputDefault::set_magnetometer(const Vector3 &p_magnetometer, uint64_t p_timestamp) {
 
 	_THREAD_SAFE_METHOD_
 
 	magnetometer = p_magnetometer;
+	magnetometer_timestamp = p_timestamp;
 }
 
-void InputDefault::set_gyroscope(const Vector3 &p_gyroscope) {
+void InputDefault::set_gyroscope(const Vector3 &p_gyroscope, uint64_t p_timestamp) {
 
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+	gyroscope_timestamp = p_timestamp;
 }
 
 void InputDefault::set_main_loop(MainLoop *p_main_loop) {

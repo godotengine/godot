@@ -519,6 +519,8 @@ static int frame_count = 0;
 					// data to us in intervals, might be better. See Apple reference pages
 					// for more details:
 					// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
+					
+					uint64_t timestamp = (uint64_t)(motionManager.deviceMotion.timestamp * 1000000000.0);
 
 					// Apple splits our accelerometer date into a gravity and user movement
 					// component. We add them back together
@@ -550,47 +552,47 @@ static int frame_count = 0;
 					switch ([[UIApplication sharedApplication] statusBarOrientation]) {
 						case UIDeviceOrientationLandscapeLeft: {
 							OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x,
-									gravity.z);
+									gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_accelerometer(
 									-(acceleration.y + gravity.y), (acceleration.x + gravity.x),
-									acceleration.z + gravity.z);
+									acceleration.z + gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_magnetometer(
-									-magnetic.y, magnetic.x, magnetic.z);
+									-magnetic.y, magnetic.x, magnetic.z, timestamp);
 							OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x,
-									rotation.z);
+									rotation.z, timestamp);
 						}; break;
 						case UIDeviceOrientationLandscapeRight: {
 							OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x,
-									gravity.z);
+									gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_accelerometer(
 									(acceleration.y + gravity.y), -(acceleration.x + gravity.x),
-									acceleration.z + gravity.z);
+									acceleration.z + gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_magnetometer(
-									magnetic.y, -magnetic.x, magnetic.z);
+									magnetic.y, -magnetic.x, magnetic.z, timestamp);
 							OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x,
-									rotation.z);
+									rotation.z, timestamp);
 						}; break;
 						case UIDeviceOrientationPortraitUpsideDown: {
 							OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y,
-									gravity.z);
+									gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_accelerometer(
 									-(acceleration.x + gravity.x), (acceleration.y + gravity.y),
-									acceleration.z + gravity.z);
+									acceleration.z + gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_magnetometer(
-									-magnetic.x, magnetic.y, magnetic.z);
+									-magnetic.x, magnetic.y, magnetic.z, timestamp);
 							OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y,
-									rotation.z);
+									rotation.z, timestamp);
 						}; break;
 						default: { // assume portrait
 							OSIPhone::get_singleton()->update_gravity(gravity.x, gravity.y,
-									gravity.z);
+									gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_accelerometer(
 									acceleration.x + gravity.x, acceleration.y + gravity.y,
-									acceleration.z + gravity.z);
+									acceleration.z + gravity.z, timestamp);
 							OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y,
-									magnetic.z);
+									magnetic.z, timestamp);
 							OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y,
-									rotation.z);
+									rotation.z, timestamp);
 						}; break;
 					};
 				}

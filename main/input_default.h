@@ -48,6 +48,10 @@ class InputDefault : public Input {
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
+	uint64_t gravity_timestamp;
+	uint64_t accelerometer_timestamp;
+	uint64_t magnetometer_timestamp;
+	uint64_t gyroscope_timestamp;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
 
@@ -208,6 +212,10 @@ public:
 	virtual Vector3 get_accelerometer() const;
 	virtual Vector3 get_magnetometer() const;
 	virtual Vector3 get_gyroscope() const;
+	virtual uint64_t get_gravity_timestamp() const;
+	virtual uint64_t get_accelerometer_timestamp() const;
+	virtual uint64_t get_magnetometer_timestamp() const;
+	virtual uint64_t get_gyroscope_timestamp() const;
 
 	virtual Point2 get_mouse_position() const;
 	virtual Point2 get_last_mouse_speed() const;
@@ -218,10 +226,10 @@ public:
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event);
 
-	void set_gravity(const Vector3 &p_gravity);
-	void set_accelerometer(const Vector3 &p_accel);
-	void set_magnetometer(const Vector3 &p_magnetometer);
-	void set_gyroscope(const Vector3 &p_gyroscope);
+	void set_gravity(const Vector3 &p_gravity, uint64_t p_timestamp);
+	void set_accelerometer(const Vector3 &p_accel, uint64_t p_timestamp);
+	void set_magnetometer(const Vector3 &p_magnetometer, uint64_t p_timestamp);
+	void set_gyroscope(const Vector3 &p_gyroscope, uint64_t p_timestamp);
 	void set_joy_axis(int p_device, int p_axis, float p_value);
 
 	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);

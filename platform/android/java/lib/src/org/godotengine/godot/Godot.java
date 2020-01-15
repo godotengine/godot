@@ -804,6 +804,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		final float x = adjustedValues[0];
 		final float y = adjustedValues[1];
 		final float z = adjustedValues[2];
+		final long timestamp = event.timestamp;
 
 		final int typeOfSensor = event.sensor.getType();
 		if (mView != null) {
@@ -811,16 +812,16 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 				@Override
 				public void run() {
 					if (typeOfSensor == Sensor.TYPE_ACCELEROMETER) {
-						GodotLib.accelerometer(-x, y, -z);
+						GodotLib.accelerometer(-x, y, -z, timestamp);
 					}
 					if (typeOfSensor == Sensor.TYPE_GRAVITY) {
-						GodotLib.gravity(-x, y, -z);
+						GodotLib.gravity(-x, y, -z, timestamp);
 					}
 					if (typeOfSensor == Sensor.TYPE_MAGNETIC_FIELD) {
-						GodotLib.magnetometer(-x, y, -z);
+						GodotLib.magnetometer(-x, y, -z, timestamp);
 					}
 					if (typeOfSensor == Sensor.TYPE_GYROSCOPE) {
-						GodotLib.gyroscope(x, -y, z);
+						GodotLib.gyroscope(x, -y, z, timestamp);
 					}
 				}
 			});

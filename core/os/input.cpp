@@ -85,6 +85,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_gravity_timestamp"), &Input::get_gravity_timestamp);
+	ClassDB::bind_method(D_METHOD("get_accelerometer_timestamp"), &Input::get_accelerometer_timestamp);
+	ClassDB::bind_method(D_METHOD("get_magnetometer_timestamp"), &Input::get_magnetometer_timestamp);
+	ClassDB::bind_method(D_METHOD("get_gyroscope_timestamp"), &Input::get_gyroscope_timestamp);
 	//ClassDB::bind_method(D_METHOD("get_mouse_position"),&Input::get_mouse_position); - this is not the function you want
 	ClassDB::bind_method(D_METHOD("get_last_mouse_speed"), &Input::get_last_mouse_speed);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
