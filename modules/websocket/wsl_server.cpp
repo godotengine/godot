@@ -165,7 +165,7 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 	for (int i = 0; i < p_protocols.size(); i++) {
 		pw[i] = p_protocols[i].strip_edges();
 	}
-	_server->listen(p_port);
+	_server->listen(p_port, bind_ip);
 
 	return OK;
 }
