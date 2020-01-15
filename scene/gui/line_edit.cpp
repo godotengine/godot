@@ -1239,6 +1239,11 @@ void LineEdit::set_text(String p_text) {
 
 	clear_internal();
 	append_at_cursor(p_text);
+
+	if (expand_to_text_length) {
+		minimum_size_changed();
+	}
+
 	update();
 	cursor_pos = 0;
 	window_pos = 0;
@@ -1482,6 +1487,7 @@ void LineEdit::set_editable(bool p_editable) {
 	editable = p_editable;
 	_generate_context_menu();
 
+	minimum_size_changed();
 	update();
 }
 
@@ -1617,7 +1623,11 @@ bool LineEdit::get_expand_to_text_length() const {
 }
 
 void LineEdit::set_clear_button_enabled(bool p_enabled) {
+	if (clear_button_enabled == p_enabled) {
+		return;
+	}
 	clear_button_enabled = p_enabled;
+	minimum_size_changed();
 	update();
 }
 
@@ -1653,6 +1663,7 @@ void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 		return;
 	}
 	right_icon = p_icon;
+	minimum_size_changed();
 	update();
 }
 
