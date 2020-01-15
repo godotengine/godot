@@ -2134,6 +2134,17 @@ CSharpInstance::~CSharpInstance() {
 
 		// Transfer ownership to an "instance binding"
 
+		Reference *ref_owner = static_cast<Reference *>(owner);
+
+		// We will unreference the owner before referencing it again, so we need to keep it alive
+		Ref<Reference> scope_keep_owner_alive(ref_owner);
+		(void)scope_keep_owner_alive;
+
+		// Unreference the owner here, before the new "instance binding" references it.
+		// Otherwise, the unsafe reference debug checks will incorrectly detect a bug.
+		bool die = _unreference_owner_unsafe();
+		CRASH_COND(die == true); // `owner_keep_alive` holds a reference, so it can't die
+
 		void *data = owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 		CRASH_COND(data == NULL);
 
@@ -2149,8 +2160,10 @@ CSharpInstance::~CSharpInstance() {
 			}
 		}
 
-		bool die = _unreference_owner_unsafe();
-		CRASH_COND(die == true); // The "instance binding" should be holding a reference
+#ifdef DEBUG_ENABLED
+		// The "instance binding" holds a reference so the refcount should be at least 2 before `scope_keep_owner_alive` goes out of scope
+		CRASH_COND(ref_owner->reference_get_count() <= 1);
+#endif
 	}
 
 	if (script.is_valid() && owner) {
