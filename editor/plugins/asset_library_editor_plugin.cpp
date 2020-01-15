@@ -726,9 +726,9 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		uint8_t jpg_signature[3] = { 255, 216, 255 };
 
 		if (r.ptr()) {
-			if (memcmp(&r[0], &png_signature[0], 8) == 0) {
+			if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
 				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
-			} else if (memcmp(&r[0], &jpg_signature[0], 3) == 0) {
+			} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
 				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
 			}
 		}
