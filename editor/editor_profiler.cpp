@@ -628,9 +628,21 @@ Vector<Vector<String> > EditorProfiler::get_data_as_csv() const {
 		return res;
 	}
 
+	// find metric with maximum number of categories
+	int max_index = 0;
+	int max_categories = -1;
+	for (int i = 0; i < frame_metrics.size(); i++)
+	{
+		if (frame_metrics[i].categories.size() > max_categories)
+		{
+			max_categories = frame_metrics[i].categories.size();
+			max_index = i;
+		}
+	}
+
 	// signatures
 	Vector<String> signatures;
-	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[0].categories;
+	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[max_index].categories;
 
 	for (int j = 0; j < categories.size(); j++) {
 
