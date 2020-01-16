@@ -1122,7 +1122,18 @@ RID RasterizerSceneRD::camera_effects_create() {
 	return camera_effects_owner.make_rid(CameraEffects());
 }
 
-void RasterizerSceneRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, VS::DOFBlurQuality p_quality) {
+void RasterizerSceneRD::camera_effects_set_dof_blur_quality(VS::DOFBlurQuality p_quality, bool p_use_jitter) {
+
+	dof_blur_quality = p_quality;
+	dof_blur_use_jitter = p_use_jitter;
+}
+
+void RasterizerSceneRD::camera_effects_set_dof_blur_bokeh_shape(VS::DOFBokehShape p_shape) {
+
+	dof_blur_bokeh_shape = p_shape;
+}
+
+void RasterizerSceneRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {
 	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
 	ERR_FAIL_COND(!camfx);
 
@@ -1134,7 +1145,6 @@ void RasterizerSceneRD::camera_effects_set_dof_blur(RID p_camera_effects, bool p
 	camfx->dof_blur_near_distance = p_near_distance;
 	camfx->dof_blur_near_transition = p_near_transition;
 
-	camfx->dof_blur_quality = p_quality;
 	camfx->dof_blur_amount = p_amount;
 }
 
@@ -2332,8 +2342,8 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			_allocate_blur_textures(rb);
 		}
 
-		float bokeh_size = camfx->dof_blur_amount * 20.0;
-		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[1].mipmaps[0].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, camfx->dof_blur_quality, p_projection.get_z_near(), p_projection.get_z_far(), p_projection.is_orthogonal());
+		float bokeh_size = camfx->dof_blur_amount * 64.0;
+		storage->get_effects()->bokeh_dof(rb->texture, rb->depth_texture, Size2i(rb->width, rb->height), rb->blur[0].mipmaps[0].texture, rb->blur[1].mipmaps[0].texture, rb->blur[0].mipmaps[1].texture, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_projection.get_z_near(), p_projection.get_z_far(), p_projection.is_orthogonal());
 	}
 
 	if (can_use_effects && env && env->auto_exposure) {
@@ -2908,6 +2918,9 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 			giprobe_debug_shader_version_pipelines[i].setup(giprobe_debug_shader_version_shaders[i], RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 	}
+
+	camera_effects_set_dof_blur_bokeh_shape(VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape"))));
+	camera_effects_set_dof_blur_quality(VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter"));
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {

@@ -541,7 +541,10 @@ public:
 
 	BIND0R(RID, camera_effects_create)
 
-	BIND9(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float, DOFBlurQuality)
+	BIND2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
+	BIND1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
+
+	BIND8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	BIND3(camera_effects_set_custom_exposure, RID, bool, float)
 
 	/* SCENARIO API */

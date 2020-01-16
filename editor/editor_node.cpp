@@ -303,7 +303,7 @@ void EditorNode::_notification(int p_what) {
 
 			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
-			{
+			{ //TODO should only happen on settings changed
 				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
 				if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
 					Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
@@ -314,6 +314,12 @@ void EditorNode::_notification(int p_what) {
 					Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 					scene_root->set_default_canvas_item_texture_repeat(tr);
 				}
+
+				VS::DOFBokehShape dof_shape = VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape")));
+				VS::get_singleton()->camera_effects_set_dof_blur_bokeh_shape(dof_shape);
+				VS::DOFBlurQuality dof_quality = VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality")));
+				bool dof_jitter = GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter");
+				VS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

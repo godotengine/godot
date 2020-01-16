@@ -769,12 +769,23 @@ public:
 	virtual RID camera_effects_create() = 0;
 
 	enum DOFBlurQuality {
+		DOF_BLUR_QUALITY_VERY_LOW,
 		DOF_BLUR_QUALITY_LOW,
 		DOF_BLUR_QUALITY_MEDIUM,
 		DOF_BLUR_QUALITY_HIGH,
 	};
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, DOFBlurQuality p_quality) = 0;
+	virtual void camera_effects_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
+
+	enum DOFBokehShape {
+		DOF_BOKEH_BOX,
+		DOF_BOKEH_HEXAGON,
+		DOF_BOKEH_CIRCLE
+	};
+
+	virtual void camera_effects_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
+
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
 	/* SCENARIO API */

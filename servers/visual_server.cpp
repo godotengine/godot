@@ -2285,7 +2285,7 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fastest),PCF5,PCF13 (Slowest)"));
 
 	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 6);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
@@ -2300,7 +2300,7 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Ultra-Low (1 cone),Medium (4 cones), High (6 cones)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Ultra-Low (1 cone, fastest),Medium (4 cones), High (6 cones, slowest)"));
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
@@ -2314,6 +2314,12 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF("rendering/quality/filters/max_anisotropy", 4);
+
+	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_shape", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fastest),Hexagon,Circle (Slowest)"));
+	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low,Medium,High (Slow)"));
+	GLOBAL_DEF("rendering/quality/filters/depth_of_field_use_jitter", false);
 }
 
 VisualServer::~VisualServer() {
