@@ -4741,10 +4741,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				member.line = tokenizer->get_token_line();
 				member.usages = 0;
 				member.rpc_mode = rpc_mode;
-#ifdef TOOLS_ENABLED
-				Variant::CallError ce;
-				member.default_value = Variant::construct(member._export.type, NULL, 0, ce);
-#endif
 
 				if (current_class->constant_expressions.has(member.identifier)) {
 					_set_error("A constant named \"" + String(member.identifier) + "\" already exists in this class (at line: " +
@@ -4796,6 +4792,32 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 				}
+
+				if (autoexport && member.data_type.has_type) {
+					if (member.data_type.kind == DataType::BUILTIN) {
+						member._export.type = member.data_type.builtin_type;
+					} else if (member.data_type.kind == DataType::NATIVE) {
+						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
+							member._export.type = Variant::OBJECT;
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = member.data_type.native_type;
+							member._export.class_name = member.data_type.native_type;
+						} else {
+							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+							return;
+						}
+
+					} else {
+						_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+						return;
+					}
+				}
+
+#ifdef TOOLS_ENABLED
+				Variant::CallError ce;
+				member.default_value = Variant::construct(member._export.type, NULL, 0, ce);
+#endif
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -4928,27 +4950,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					p_class->initializer->statements.push_back(op);
 
 					member.initial_assignment = op;
-				}
-
-				if (autoexport && member.data_type.has_type) {
-					if (member.data_type.kind == DataType::BUILTIN) {
-						member._export.type = member.data_type.builtin_type;
-					} else if (member.data_type.kind == DataType::NATIVE) {
-						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
-							member._export.type = Variant::OBJECT;
-							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
-							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
-							member._export.hint_string = member.data_type.native_type;
-							member._export.class_name = member.data_type.native_type;
-						} else {
-							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
-							return;
-						}
-
-					} else {
-						_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
-						return;
-					}
 				}
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_SETGET) {
