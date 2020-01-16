@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"PO-Revision-Date: 2020-01-16 22:32+0000\n"
 "Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -82,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1264,9 +1264,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Erreur d'ouverture de paquetage, pas au format ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Existe déjà"
+msgstr "%s (existe déjà)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1277,9 +1276,8 @@ msgid "The following files failed extraction from package:"
 msgstr "L'extraction des fichiers suivants depuis le paquetage a échoué :"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d fichiers supplémentaires"
+msgstr "Et %s fichiers supplémentaires."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1291,9 +1289,8 @@ msgid "Success!"
 msgstr "Ça marche !"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Contenu :"
+msgstr "Contenu du paquetage :"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1433,9 +1430,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Fichier invalide, pas une disposition de bus audio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Erreur lors de l'enregistrement du fichier !"
+msgstr "Erreur lors de l'enregistrement du fichier : %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -5824,20 +5820,18 @@ msgstr "Masque d'émission"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Rétrécir (Pixels) : "
+msgstr "Pixels pleins"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Pixels de bordure"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "Répertoires et fichiers :"
+msgstr "Pixels de bordure orientés"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -10948,9 +10942,8 @@ msgid "Will load an existing script file."
 msgstr "Va charger un fichier de script existant."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "Le fractionnement existe déjà."
+msgstr "Le fichier de script existe déjà."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12663,11 +12656,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Couleur : #%s\n"
+"Clic gauche : Définir la couleur\n"
+"Clic droit : Supprimer le pré-réglage"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Échantillonner une couleur depuis l'écran."
+msgstr "Échantillonner une couleur depuis la fenêtre de l'éditeur."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"

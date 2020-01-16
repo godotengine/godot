@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-01-12 13:26+0000\n"
+"PO-Revision-Date: 2020-01-13 13:36+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1229,9 +1229,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "打开压缩文件时出错，非zip格式。"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "已经存在"
+msgstr "%s（已存在）"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1242,9 +1241,8 @@ msgid "The following files failed extraction from package:"
 msgstr "以下文件无法从包中提取："
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "其它 %d 个文件"
+msgstr "以及其它%s个文件。"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1256,9 +1254,8 @@ msgid "Success!"
 msgstr "成功！"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "内容:"
+msgstr "包内容："
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1398,9 +1395,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "无效文件，不是音频总线布局。"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "保存文件时出错！"
+msgstr "保存文件时出错：%s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -5657,20 +5653,18 @@ msgstr "发射遮罩"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "收缩（像素）： "
+msgstr "实体像素"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "边界像素"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "目录与文件："
+msgstr "有向边界像素"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5689,12 +5683,12 @@ msgstr "CPU粒子"
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
-msgstr "从网格（ Mesh）创建发射器(Emission)"
+msgstr "从Mesh创建发射点"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr "从节点创建发射器(Emission)"
+msgstr "从Node创建发射点"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 0"
@@ -10661,9 +10655,8 @@ msgid "Will load an existing script file."
 msgstr "将加载现有的脚本文件。"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "拆分已存在。"
+msgstr "脚本文件已存在。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12257,11 +12250,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"颜色：#%s\n"
+"鼠标左键：设置颜色\n"
+"鼠标右键：删除预设"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "从屏幕中选择一种颜色。"
+msgstr "从编辑器窗口中选择一种颜色。"
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"

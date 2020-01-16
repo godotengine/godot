@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-03 21:21+0000\n"
+"PO-Revision-Date: 2020-01-13 13:36+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1202,9 +1202,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Erro ao abrir ficheiro comprimido, não está no formato ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Já existe"
+msgstr "%s (Já Existe)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1215,9 +1214,8 @@ msgid "The following files failed extraction from package:"
 msgstr "Falhou a extração  dos seguintes Ficheiros do pacote:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d mais Ficheiros"
+msgstr "E mais %s ficheiros."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1229,9 +1227,8 @@ msgid "Success!"
 msgstr "Sucesso!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Conteúdos:"
+msgstr "Conteúdo do Pacote:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1371,9 +1368,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Ficheiro inválido, não é um Modelo válido de barramento de áudio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Erro ao guardar ficheiro!"
+msgstr "Erro ao guardar ficheiro: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -4475,7 +4471,7 @@ msgstr "Renomear Animação"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr "Misturar seguinte alterado"
+msgstr "Misturar Seguinte Alterado"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
@@ -4636,7 +4632,7 @@ msgstr "Tempos de Mistura:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr "Próximo (auto-fila):"
+msgstr "Próximo (Auto-Fila):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
@@ -5025,7 +5021,7 @@ msgstr "Anterior"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
-msgstr "Proximo"
+msgstr "Próximo"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
@@ -5721,20 +5717,18 @@ msgstr "Máscara de Emissão"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Encolher (Pixeis): "
+msgstr "Pixeis Sólidos"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Pixeis da Margem"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "Diretorias e Ficheiros:"
+msgstr "Pixeis da Margem Dirigidos"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6727,7 +6721,7 @@ msgstr "Histórico Anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
-msgstr "Histórico seguinte"
+msgstr "Histórico Seguinte"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -7602,7 +7596,7 @@ msgstr "Encolher (Pixeis): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
-msgstr "Crescer (Pixeis): "
+msgstr "Aumentar (Pixeis): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -10802,9 +10796,8 @@ msgid "Will load an existing script file."
 msgstr "Vai carregar ficheiro de script existente."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "Separação já existe."
+msgstr "Ficheiro Script já existe."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10884,7 +10877,7 @@ msgstr "Inspecionar instância anterior"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Next Instance"
-msgstr "Inspecionar próxima instância"
+msgstr "Inspecionar Próxima Instância"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
@@ -11158,11 +11151,11 @@ msgstr "Objeto não fornece um comprimento."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
-msgstr "Plano seguinte"
+msgstr "Plano Seguinte"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Previous Plane"
-msgstr "Plano anterior"
+msgstr "Plano Anterior"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
@@ -12480,11 +12473,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Cor: #%s\n"
+"LMB: Definir color\n"
+"RMB: Remover predefinição"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Escolha uma cor do ecrã."
+msgstr "Escolha uma cor através do editor."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"

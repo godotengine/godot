@@ -78,12 +78,13 @@
 # Zeero <igcdzeero@gmail.com>, 2019.
 # Gian Penna <gianfrancopen@gmail.com>, 2020.
 # sribgui <sribgui@gmail.com>, 2020.
+# patrickvob <patrickvob@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-01-03 21:21+0000\n"
-"Last-Translator: sribgui <sribgui@gmail.com>\n"
+"PO-Revision-Date: 2020-01-16 22:23+0000\n"
+"Last-Translator: patrickvob <patrickvob@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -91,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -238,11 +239,11 @@ msgstr "Alterar Tempo de Quadro-Chave da Anim Multi"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
-msgstr "Alterar Transição da Animação Múltipla"
+msgstr "Transição de Animação com Múltiplas Mudanças"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr "Alterar Transformação da Animação Múltipla"
+msgstr "Transformação de Animação com Múltiplas Mudanças"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
@@ -344,7 +345,7 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Alternar Trilha Ativado"
+msgstr "Habilitar/Desabilitar Trilha"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -492,7 +493,7 @@ msgstr "Não é possível adicionar uma nova trilha sem uma raiz"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "trajeto inválido para Bézier (sem subpropriedades adequadas)"
+msgstr "Trilha inválida para Bézier (sem subpropriedades adequadas)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -508,7 +509,7 @@ msgstr "Trilha não é do tipo Espacial,não pode inserir chave"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
-msgstr "Adicionar Chave de Transformação de Trilha"
+msgstr "Adicionar Chave de Trilha de Transformação"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
@@ -521,7 +522,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
-msgstr "Adicionar Chave de Trilha de Chamada de Método"
+msgstr "Adicionar Chave de Trilha de Método"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -732,7 +733,7 @@ msgstr "Adicionar Clipe de Trilha de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Alterar Deslocamento do Início de Clipe da Trilha de Áudio"
+msgstr "Alterar Offset de Início do Clipe da Trilha de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
@@ -1262,9 +1263,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Erro ao abrir arquivo compactado, não está no formato ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Já existe"
+msgstr "%s (Já existe)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1275,9 +1275,8 @@ msgid "The following files failed extraction from package:"
 msgstr "Os arquivos a seguir falharam ao serem extraídos do pacote:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d mais arquivo(s)"
+msgstr "%s mais arquivo(s)."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1289,7 +1288,6 @@ msgid "Success!"
 msgstr "Sucesso!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
 msgstr "Conteúdo:"
 
@@ -1431,9 +1429,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Arquivo inválido, não é um layout de canais de áudio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Erro ao salvar o arquivo!"
+msgstr "Erro ao salvar o arquivo: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1441,7 +1438,7 @@ msgstr "Adicionar Canal"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
-msgstr "Adicionar novo Canal de Áudio a esse layout."
+msgstr "Adicionar novo Canal de Áudio a este layout."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2143,7 +2140,7 @@ msgstr "Propriedade"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Property"
-msgstr "Propriedades do Tema"
+msgstr "Propriedade do Tema"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -3118,11 +3115,11 @@ msgid ""
 "preset."
 msgstr ""
 "Isso irá configurar seu projeto para compilações customizadas do Android "
-"instalando o modelo de origem para \"res://android/build\".\n"
+"instalando o template raíz em \"res://android/build\".\n"
 "Em seguida, você pode aplicar modificações e compilar seu próprio APK "
-"customizado na exportação (Adicionando módulos, alterando o AndroidManifest."
+"customizado na exportação (adicionando módulos, alterando o AndroidManifest."
 "xml, etc.).\n"
-"Note que para fazer uma compilação customizada, em vez de usar APKs pre-"
+"Note que para fazer uma compilação customizada em vez de usar APKs pre-"
 "compilados, a opção \"Usar compilação customizada\" deve estar ativa nas "
 "predefinições de exportação do Android."
 
@@ -5272,8 +5269,8 @@ msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Filhos de contêineres tem suas ancoragens e valores de margem sobrescritos "
-"pelos seus pais."
+"Filhos de contêineres tem suas posições e margens sobrescritos pelos seus "
+"pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
@@ -5342,11 +5339,11 @@ msgstr "Inferior Largo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr "Visão Centralizada Verticalmente"
+msgstr "Centro Vertical Largo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr "Visão Centralizada Horizontalmente"
+msgstr "Centro Horizontal Largo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
@@ -5795,20 +5792,18 @@ msgstr "Máscara de Emissão"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Diminuir (Pixels): "
+msgstr "Pixels Sólidos"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Pixels de Borda"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "Diretórios & Arquivos:"
+msgstr "Pixels de Borda Direcionados"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6999,7 +6994,7 @@ msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
-msgstr "Pontos de interrupção(Breakpoints)"
+msgstr "Breakpoints"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7622,7 +7617,7 @@ msgstr "Visualizar Polígono De Colisão 2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
-msgstr "Criar OclusorDeLuz2D"
+msgstr "Criar LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "LightOccluder2D Preview"
@@ -7799,7 +7794,7 @@ msgstr "Selecionar/Deselecionar Todos os Frames"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Create Frames from Sprite Sheet"
-msgstr "Criar Frames a partir da Planilha de Sprites"
+msgstr "Criar Frames a partir da Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -7928,7 +7923,7 @@ msgstr "Item Rádio Marcado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Named Sep."
-msgstr "Sep. Nomeado"
+msgstr "Sep. Nomeado."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
@@ -8058,7 +8053,7 @@ msgstr "Filtros do tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
-msgstr "Atribua um recurso TileSet a este TileMap para usar seus tiles."
+msgstr "Atribua um recurso de TileSet a este TileMap para usar seus tiles."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -8078,11 +8073,11 @@ msgstr "Pegar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
-msgstr "Rotacionar para a esquerda"
+msgstr "Girar à esquerda"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Right"
-msgstr "Rotacionar para a direita"
+msgstr "Girar à direita"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip Horizontally"
@@ -10889,9 +10884,8 @@ msgid "Will load an existing script file."
 msgstr "Carregará arquivo de script existente."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "A ação \"%s\" já existe!"
+msgstr "O arquivo de script já existe."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12570,11 +12564,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Cor: #%s\n"
+"LMB: Escolher cor\n"
+"RMB: Remover preset"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Escolha uma cor da tela."
+msgstr "Escolha uma cor da janela do editor."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
