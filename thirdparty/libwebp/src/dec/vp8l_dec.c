@@ -754,11 +754,11 @@ static WEBP_INLINE HTreeGroup* GetHtreeGroupForPos(VP8LMetadata* const hdr,
 
 typedef void (*ProcessRowsFunc)(VP8LDecoder* const dec, int row);
 
-static void ApplyInverseTransforms(VP8LDecoder* const dec, int num_rows,
+static void ApplyInverseTransforms(VP8LDecoder* const dec,
+                                   int start_row, int num_rows,
                                    const uint32_t* const rows) {
   int n = dec->next_transform_;
   const int cache_pixs = dec->width_ * num_rows;
-  const int start_row = dec->last_row_;
   const int end_row = start_row + num_rows;
   const uint32_t* rows_in = rows;
   uint32_t* const rows_out = dec->argb_cache_;
@@ -789,8 +789,7 @@ static void ProcessRows(VP8LDecoder* const dec, int row) {
     VP8Io* const io = dec->io_;
     uint8_t* rows_data = (uint8_t*)dec->argb_cache_;
     const int in_stride = io->width * sizeof(uint32_t);  // in unit of RGBA
-
-    ApplyInverseTransforms(dec, num_rows, rows);
+    ApplyInverseTransforms(dec, dec->last_row_, num_rows, rows);
     if (!SetCropWindow(io, dec->last_row_, row, &rows_data, in_stride)) {
       // Nothing to output (this time).
     } else {
@@ -1193,6 +1192,7 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
       VP8LFillBitWindow(br);
       dist_code = GetCopyDistance(dist_symbol, br);
       dist = PlaneCodeToDistance(width, dist_code);
+
       if (VP8LIsEndOfStream(br)) break;
       if (src - data < (ptrdiff_t)dist || src_end - src < (ptrdiff_t)length) {
         goto Error;
@@ -1553,7 +1553,7 @@ static void ExtractAlphaRows(VP8LDecoder* const dec, int last_row) {
     const int cache_pixs = width * num_rows_to_process;
     uint8_t* const dst = output + width * cur_row;
     const uint32_t* const src = dec->argb_cache_;
-    ApplyInverseTransforms(dec, num_rows_to_process, in);
+    ApplyInverseTransforms(dec, cur_row, num_rows_to_process, in);
     WebPExtractGreen(src, dst, cache_pixs);
     AlphaApplyFilter(alph_dec,
                      cur_row, cur_row + num_rows_to_process, dst, width);

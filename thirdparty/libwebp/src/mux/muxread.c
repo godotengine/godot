@@ -100,7 +100,7 @@ static int MuxImageParse(const WebPChunk* const chunk, int copy_data,
                          WebPMuxImage* const wpi) {
   const uint8_t* bytes = chunk->data_.bytes;
   size_t size = chunk->data_.size;
-  const uint8_t* const last = bytes + size;
+  const uint8_t* const last = (bytes == NULL) ? NULL : bytes + size;
   WebPChunk subchunk;
   size_t subchunk_size;
   WebPChunk** unknown_chunk_list = &wpi->unknown_;

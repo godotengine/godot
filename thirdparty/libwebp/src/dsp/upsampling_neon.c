@@ -58,8 +58,8 @@
 } while (0)
 
 // Turn the macro into a function for reducing code-size when non-critical
-static void Upsample16Pixels_NEON(const uint8_t *r1, const uint8_t *r2,
-                                  uint8_t *out) {
+static void Upsample16Pixels_NEON(const uint8_t* r1, const uint8_t* r2,
+                                  uint8_t* out) {
   UPSAMPLE_16PIXELS(r1, r2, out);
 }
 
@@ -190,14 +190,14 @@ static const int16_t kCoeffs1[4] = { 19077, 26149, 6419, 13320 };
 }
 
 #define NEON_UPSAMPLE_FUNC(FUNC_NAME, FMT, XSTEP)                       \
-static void FUNC_NAME(const uint8_t *top_y, const uint8_t *bottom_y,    \
-                      const uint8_t *top_u, const uint8_t *top_v,       \
-                      const uint8_t *cur_u, const uint8_t *cur_v,       \
-                      uint8_t *top_dst, uint8_t *bottom_dst, int len) { \
+static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,    \
+                      const uint8_t* top_u, const uint8_t* top_v,       \
+                      const uint8_t* cur_u, const uint8_t* cur_v,       \
+                      uint8_t* top_dst, uint8_t* bottom_dst, int len) { \
   int block;                                                            \
   /* 16 byte aligned array to cache reconstructed u and v */            \
   uint8_t uv_buf[2 * 32 + 15];                                          \
-  uint8_t *const r_uv = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);     \
+  uint8_t* const r_uv = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);     \
   const int uv_len = (len + 1) >> 1;                                    \
   /* 9 pixels must be read-able for each block */                       \
   const int num_blocks = (uv_len - 1) >> 3;                             \
