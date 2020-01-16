@@ -1416,6 +1416,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			switch (multi_mesh->color_format) {
 
+				case VS::MULTIMESH_COLOR_MAX:
 				case VS::MULTIMESH_COLOR_NONE: {
 					glDisableVertexAttribArray(11);
 					glVertexAttrib4f(11, 1, 1, 1, 1);
@@ -1437,6 +1438,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			switch (multi_mesh->custom_data_format) {
 
+				case VS::MULTIMESH_CUSTOM_DATA_MAX:
 				case VS::MULTIMESH_CUSTOM_DATA_NONE: {
 					glDisableVertexAttribArray(12);
 					glVertexAttrib4f(12, 1, 1, 1, 1);
