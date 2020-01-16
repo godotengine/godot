@@ -2014,38 +2014,8 @@ msgstr "Geërf deur:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kort Beskrywing:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Eienskappe"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metodes"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Eienskappe"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Opnoemings"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstantes"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Beskrywing"
+msgid "Description"
+msgstr "Beskrywing:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2062,9 +2032,43 @@ msgstr ""
 "[color=$color][url=$url]een by te dra[/url][/color]!"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Eienskappe"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Laai Verstek"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metodes"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Eienskappe"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Opnoemings"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstantes"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Eienskap Beskrywing:"
+
+#: editor/editor_help.cpp
+msgid "(value)"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12538,6 +12542,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kort Beskrywing:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Beskrywing"
 
 #, fuzzy
 #~ msgid "Methods:"

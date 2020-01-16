@@ -1990,36 +1990,8 @@ msgstr "مورث بواسطة:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "وصف مختصر:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "خصائص"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "قائمة الطرق"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "خصائص الثمة"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "التعدادات"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "التعداد  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "الثوابت"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "وصف الصف"
+msgid "Description"
+msgstr "الوصف:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2037,9 +2009,43 @@ msgstr ""
 "color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "خصائص"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "الإفتراضي"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "قائمة الطرق"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "خصائص الثمة"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "التعدادات"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "الثوابت"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "وصف الملكية:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "القيمة:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12802,6 +12808,16 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "enum  "
+#~ msgstr "التعداد  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "وصف مختصر:"
+
+#~ msgid "Class Description"
+#~ msgstr "وصف الصف"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "تصدير المشروع فشل, رمز الخطأ %d."

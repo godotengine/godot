@@ -1956,36 +1956,9 @@ msgid "Inherited by:"
 msgstr "Diturunkan oleh:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Deskripsi Singkat"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Properti Objek"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Fungsi"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Properti-properti Tema"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerasi"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstanta"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Deskripsi Kelas"
+#, fuzzy
+msgid "Description"
+msgstr "Deskripsi:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2002,8 +1975,43 @@ msgstr ""
 "$url2]memberikan usulan[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Properti Objek"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Menimpa"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Bawaan"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Fungsi"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Properti-properti Tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerasi"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstanta"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Deskripsi Properti"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Nilai:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12677,6 +12685,15 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Deskripsi Singkat"
+
+#~ msgid "Class Description"
+#~ msgstr "Deskripsi Kelas"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Ekspor proyek gagal dengan kode kesalahan %d."

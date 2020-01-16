@@ -1961,36 +1961,9 @@ msgid "Inherited by:"
 msgstr "派生："
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "简介"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "属性"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "方法"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "主题属性"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "枚举"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "枚举  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "常量"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "类说明"
+#, fuzzy
+msgid "Description"
+msgstr "描述:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2006,8 +1979,43 @@ msgstr ""
 "[color=$color][url=$url2]请求一个[/url][/color]。"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "属性"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "重写"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "默认"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "方法"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "主题属性"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "枚举"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "常量"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "属性说明"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "值"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12369,6 +12377,15 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "enum  "
+#~ msgstr "枚举  "
+
+#~ msgid "Brief Description"
+#~ msgstr "简介"
+
+#~ msgid "Class Description"
+#~ msgstr "类说明"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "项目导出失败，错误代码 %d。"

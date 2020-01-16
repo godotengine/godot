@@ -1962,36 +1962,9 @@ msgid "Inherited by:"
 msgstr "Dziedziczone przez:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Krótki opis"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Właściwości"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metody"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Właściwości motywu"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Wyliczenia"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Stałe"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Opis klasy"
+#, fuzzy
+msgid "Description"
+msgstr "Opis:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2008,8 +1981,43 @@ msgstr ""
 "jakiś[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Właściwości"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Nadpisuje"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Domyślny"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metody"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Właściwości motywu"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Wyliczenia"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Stałe"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Opisy właściwości"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Wartość"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12635,6 +12643,15 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Krótki opis"
+
+#~ msgid "Class Description"
+#~ msgstr "Opis klasy"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Eksport projektu nie powiódł się, kod błędu to %d."

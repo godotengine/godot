@@ -1974,36 +1974,9 @@ msgid "Inherited by:"
 msgstr "Şundan miras alındı:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Kısa Açıklama"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Özellikler"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metotlar"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Tema Özellikleri"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Numaralandırmalar"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum…  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Sabitler"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Sınıf Açıklaması"
+#, fuzzy
+msgid "Description"
+msgstr "Açıklama:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2020,8 +1993,43 @@ msgstr ""
 "[color=$color][url=$url2]öneride bulunabilirsiniz[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Özellikler"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Üzerine Yaz"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Varsayılan"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metotlar"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Tema Özellikleri"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Numaralandırmalar"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Sabitler"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Özellik Açıklamaları"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Değer"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12731,6 +12739,15 @@ msgstr "Değişkenler yalnızca tepe işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "enum  "
+#~ msgstr "enum…  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Kısa Açıklama"
+
+#~ msgid "Class Description"
+#~ msgstr "Sınıf Açıklaması"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Proje dışa aktarımı %d hata koduyla başarısız."

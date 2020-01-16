@@ -1995,36 +1995,9 @@ msgid "Inherited by:"
 msgstr "Унаследован:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Краткое описание"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Свойства"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Методы"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Свойства темы"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Перечисления"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "перечисление  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Константы"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Описание класса"
+#, fuzzy
+msgid "Description"
+msgstr "Описание:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2041,8 +2014,43 @@ msgstr ""
 "$url2]запросить[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Свойства"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Переопределить"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "По умолчанию"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Методы"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Свойства темы"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Перечисления"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Константы"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Описание свойств"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Значение"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12682,6 +12690,15 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "enum  "
+#~ msgstr "перечисление  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Краткое описание"
+
+#~ msgid "Class Description"
+#~ msgstr "Описание класса"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Экспорт проекта не удался, код %d."

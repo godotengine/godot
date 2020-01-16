@@ -1934,36 +1934,9 @@ msgid "Inherited by:"
 msgstr "상속한 클래스:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "간단한 설명"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "속성"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "메서드"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "테마 속성"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "열거"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "이넘  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "상수(Constant)"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "클래스 설명"
+#, fuzzy
+msgid "Description"
+msgstr "설명:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1980,8 +1953,43 @@ msgstr ""
 "[/color] 있어요."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "속성"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "다시 정의하기"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "기본"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "메서드"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "테마 속성"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "열거"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "상수(Constant)"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "속성 설명"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "값"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12477,6 +12485,15 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있어요."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없어요."
+
+#~ msgid "enum  "
+#~ msgstr "이넘  "
+
+#~ msgid "Brief Description"
+#~ msgstr "간단한 설명"
+
+#~ msgid "Class Description"
+#~ msgstr "클래스 설명"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "프로젝트 내보내기에 실패했어요. 오류 코드%d."

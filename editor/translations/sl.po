@@ -2033,38 +2033,8 @@ msgstr "Podedovano od:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kratek Opis:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Lastnosti"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metode"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Lastnosti"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Oštevilčenja"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "oštevil  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstante"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Opis"
+msgid "Description"
+msgstr "Opis:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2081,9 +2051,44 @@ msgstr ""
 "url][/color] ali [color=$color][url=$url2]zahtevate enega[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Lastnosti"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Prevzeto"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metode"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Lastnosti"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Oštevilčenja"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstante"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Opis lastnosti:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Novo ime:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12872,6 +12877,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
+
+#~ msgid "enum  "
+#~ msgstr "oštevil  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kratek Opis:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Opis"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Izvoz projekta ni uspelo s kodno napako %d."

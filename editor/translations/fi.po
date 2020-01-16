@@ -1936,36 +1936,9 @@ msgid "Inherited by:"
 msgstr "Perivät:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Lyhyt kuvaus"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Ominaisuudet"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metodit"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Teeman ominaisuudet"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeraatiot"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Vakiot"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Luokan kuvaus"
+#, fuzzy
+msgid "Description"
+msgstr "Kuvaus:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1982,8 +1955,43 @@ msgstr ""
 "sellaisen[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Ominaisuudet"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Ylikirjoittaa"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Oletus"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metodit"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Teeman ominaisuudet"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeraatiot"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Vakiot"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Ominaisuuksien kuvaukset"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Arvo"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12602,6 +12610,15 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Lyhyt kuvaus"
+
+#~ msgid "Class Description"
+#~ msgstr "Luokan kuvaus"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Projektin vienti epäonnistui virhekoodilla %d."

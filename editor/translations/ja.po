@@ -1964,36 +1964,9 @@ msgid "Inherited by:"
 msgstr "継承先:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "要約"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "プロパティ"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "メソッド"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "テーマプロパティ"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "列挙型"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "列挙型  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "定数"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "クラスの説明"
+#, fuzzy
+msgid "Description"
+msgstr "説明:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2010,8 +1983,43 @@ msgstr ""
 "です。"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "プロパティ"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "上書き"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "デフォルト"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "メソッド"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "テーマプロパティ"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "列挙型"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "定数"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "プロパティの説明"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "値"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12678,6 +12686,15 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "enum  "
+#~ msgstr "列挙型  "
+
+#~ msgid "Brief Description"
+#~ msgstr "要約"
+
+#~ msgid "Class Description"
+#~ msgstr "クラスの説明"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "プロジェクトのエクスポートがエラーコード %d で失敗しました。"

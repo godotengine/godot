@@ -2027,38 +2027,8 @@ msgstr "Moştenit de:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Descriere Scurtă:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Proprietăți"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metode"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Proprietăți"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerări"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constante"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Descriere"
+msgid "Description"
+msgstr "Descriere:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2076,9 +2046,44 @@ msgstr ""
 "$color] [url = $url2] cerere unul[/ URL] [/ color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Proprietăți"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Implicit"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metode"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Proprietăți"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerări"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constante"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Descriere Proprietate:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Valoare:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12864,6 +12869,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Descriere Scurtă:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Descriere"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Exportul de proiect nu a reuşit cu un cod de eroare %d."

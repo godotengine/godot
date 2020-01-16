@@ -2037,38 +2037,8 @@ msgstr "Наслеђено од:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Кратак опис:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Особине"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Методе"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Особине"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Енумерације"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Константе"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Опис"
+msgid "Description"
+msgstr "Опис:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2086,9 +2056,44 @@ msgstr ""
 "$color][url=$url]написати једну[/url][/color]!"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Особине"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Уобичајено"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Методе"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Особине"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Енумерације"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Константе"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Опис особине:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Ново име:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12978,6 +12983,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Кратак опис:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Опис"
 
 #~ msgid "Password:"
 #~ msgstr "Лозинка:"

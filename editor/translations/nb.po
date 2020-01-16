@@ -2050,38 +2050,8 @@ msgstr "Arvet av:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kort beskrivelse:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Egenskaper"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metoder"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Egenskaper"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Nummereringer"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "num  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstanter"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Beskrivelse"
+msgid "Description"
+msgstr "Beskrivelse:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2099,9 +2069,45 @@ msgstr ""
 "$url2]be om en[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Egenskaper"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Overskriv"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Standard"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metoder"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Egenskaper"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Nummereringer"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstanter"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Egenskapsbeskrivelse:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Verdi:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -13030,6 +13036,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#~ msgid "enum  "
+#~ msgstr "num  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kort beskrivelse:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Beskrivelse"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Eksport av prosjektet mislyktes med feilkode %d."

@@ -1976,36 +1976,9 @@ msgid "Inherited by:"
 msgstr "Geërfd door:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Korte Omschrijving"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Eigenschappen"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Methodes"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Thema Eigenschappen"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeraties"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constanten"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Klassebeschrijving"
+#, fuzzy
+msgid "Description"
+msgstr "Omschrijving:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2022,8 +1995,43 @@ msgstr ""
 "$color][url=$url2]een aan te vragen[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Eigenschappen"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Overschrijvers"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Standaard"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Methodes"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Thema Eigenschappen"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeraties"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constanten"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Eigenschap Beschrijvingen"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Waarde"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12681,6 +12689,15 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Korte Omschrijving"
+
+#~ msgid "Class Description"
+#~ msgstr "Klassebeschrijving"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Project exporteren faalt door foutcode %d."

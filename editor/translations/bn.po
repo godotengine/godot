@@ -2066,41 +2066,7 @@ msgstr "গৃহীত হয়েছে:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "সংক্ষিপ্ত বর্ণনা:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Properties"
-msgstr "প্রোপার্টি-সমূহ:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Methods"
-msgstr "মেথডের তালিকা:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "প্রোপার্টি-সমূহ:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Enumerations"
-msgstr "অ্যানিমেশনসমূহ"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Constants"
-msgstr "ধ্রুবকসমূহ:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
+msgid "Description"
 msgstr "বর্ণনা:"
 
 #: editor/editor_help.cpp
@@ -2121,8 +2087,48 @@ msgstr ""
 
 #: editor/editor_help.cpp
 #, fuzzy
+msgid "Properties"
+msgstr "প্রোপার্টি-সমূহ:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "ওভাররাইড..."
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "সাধারণ/ডিফল্ট"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Methods"
+msgstr "মেথডের তালিকা:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "প্রোপার্টি-সমূহ:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Enumerations"
+msgstr "অ্যানিমেশনসমূহ"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Constants"
+msgstr "ধ্রুবকসমূহ:"
+
+#: editor/editor_help.cpp
+#, fuzzy
 msgid "Property Descriptions"
 msgstr "মান/প্রোপার্টির বর্ণনা:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "মান"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -13381,6 +13387,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "সংক্ষিপ্ত বর্ণনা:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "বর্ণনা:"
 
 #~ msgid "Password:"
 #~ msgstr "পাসওয়ার্ড:"

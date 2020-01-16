@@ -2004,36 +2004,9 @@ msgid "Inherited by:"
 msgstr "Herdado por:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Breve Descrição"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Propriedades"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Métodos"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Propriedades do Tema"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerações"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constantes"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Descrição da Classe"
+#, fuzzy
+msgid "Description"
+msgstr "Descrição:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2050,8 +2023,43 @@ msgstr ""
 "$url2]solicitar[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Propriedades"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Sobrescreve"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Padrão"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Métodos"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Propriedades do Tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerações"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constantes"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Descrições da Propriedade"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Valor"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12691,6 +12699,15 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Breve Descrição"
+
+#~ msgid "Class Description"
+#~ msgstr "Descrição da Classe"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Falha na exportação do projeto com código de erro %d."

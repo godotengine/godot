@@ -1982,36 +1982,9 @@ msgid "Inherited by:"
 msgstr "Heredada por:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Descripción Breve"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Propiedades"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Métodos"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Propiedades del Tema"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeraciones"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constantes"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Descripción de la Clase"
+#, fuzzy
+msgid "Description"
+msgstr "Descripción:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2028,8 +2001,43 @@ msgstr ""
 "url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Propiedades"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Sobreescritura"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Predeterminado"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Métodos"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Propiedades del Tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeraciones"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constantes"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Descripción de Propiedades"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Valor"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12715,6 +12723,15 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Descripción Breve"
+
+#~ msgid "Class Description"
+#~ msgstr "Descripción de la Clase"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "La exportación del proyecto falló con el código de error %d."

@@ -1985,36 +1985,9 @@ msgid "Inherited by:"
 msgstr "Vererbt an:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Kurze Beschreibung"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Eigenschaften"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Methoden"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Motiv-Eigenschaften"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Aufzählungen"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "Enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstanten"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Klassenbeschreibung"
+#, fuzzy
+msgid "Description"
+msgstr "Beschreibung:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2031,8 +2004,43 @@ msgstr ""
 "$url2]Meldung von Problemen[/url][/color] sind sehr erwünscht."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Eigenschaften"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Überschreibungen"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Standard"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Methoden"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Motiv-Eigenschaften"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Aufzählungen"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstanten"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Eigenschaften-Beschreibung"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Wert"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12735,6 +12743,15 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "enum  "
+#~ msgstr "Enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Kurze Beschreibung"
+
+#~ msgid "Class Description"
+#~ msgstr "Klassenbeschreibung"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Projekt-Export ist fehlgeschlagen mit Fehlercode %d."

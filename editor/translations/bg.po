@@ -1978,11 +1978,30 @@ msgstr ""
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Кратко Описание:"
+msgid "Description"
+msgstr "Описание:"
+
+#: editor/editor_help.cpp
+msgid "Online Tutorials"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Properties"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "default:"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -1999,33 +2018,18 @@ msgid "Enumerations"
 msgstr "Изброени типове"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "Константи"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "Описание"
-
-#: editor/editor_help.cpp
-msgid "Online Tutorials"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
+msgid "Property Descriptions"
+msgstr "Кратко Описание:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Property Descriptions"
-msgstr "Кратко Описание:"
+msgid "(value)"
+msgstr "Стойност"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12720,6 +12724,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Кратко Описание:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Описание"
 
 #~ msgid "Password:"
 #~ msgstr "Парола:"

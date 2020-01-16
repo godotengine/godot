@@ -2023,38 +2023,8 @@ msgstr "Ärvd av:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kort Beskrivning:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Egenskaper"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metoder"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Egenskaper"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Uppräkningar"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstanter"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Beskrivning"
+msgid "Description"
+msgstr "Beskrivning:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2072,9 +2042,44 @@ msgstr ""
 "genom att [color=$color][url=$url]bidra med en[/url][/color]!"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Egenskaper"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Standard"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metoder"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Egenskaper"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Uppräkningar"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstanter"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Egenskapsbeskrivning:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Värde"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12819,6 +12824,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kort Beskrivning:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Beskrivning"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Projekt exporten misslyckades med följande felmeddelande %d."
