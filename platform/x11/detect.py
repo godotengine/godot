@@ -171,7 +171,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -329,9 +329,15 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
-        
+
     if not env['tools']:
-        env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        import subprocess
+        import re
+        binutils_version = re.search('\s(\d+\.\d+)', str(subprocess.check_output(['ld', '-v']))).group(1)
+        if float(binutils_version) >= 2.30:
+            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        else:
+            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 
