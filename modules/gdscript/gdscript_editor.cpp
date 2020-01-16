@@ -335,7 +335,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 
 ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
-	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	if (_debug_parse_err_line >= 0)
+		return NULL;
+
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
 
 	int l = _debug_call_stack_pos - p_level - 1;
