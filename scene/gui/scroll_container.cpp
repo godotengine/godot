@@ -214,6 +214,25 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		accept_event(); //accept event if scroll changed
 }
 
+void ScrollContainer::_update_scrollbar_position() {
+
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
+	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
+	h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+
+	v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
+	v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+
+	h_scroll->raise();
+	v_scroll->raise();
+}
+
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
 	if (!follow_focus) {
@@ -243,8 +262,7 @@ void ScrollContainer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		h_scroll->call_deferred("raise");
-		v_scroll->call_deferred("raise");
+		call_deferred("_update_scrollbar_position");
 	};
 
 	if (p_what == NOTIFICATION_READY) {
@@ -558,6 +576,7 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &ScrollContainer::is_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_enable_v_scroll", "enable"), &ScrollContainer::set_enable_v_scroll);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &ScrollContainer::is_v_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
 	ClassDB::bind_method(D_METHOD("_ensure_focused_visible"), &ScrollContainer::_ensure_focused_visible);
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
@@ -592,13 +611,11 @@ ScrollContainer::ScrollContainer() {
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll);
 	h_scroll->connect("value_changed", this, "_scroll_moved");
-	h_scroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll);
 	v_scroll->connect("value_changed", this, "_scroll_moved");
-	v_scroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 
 	drag_speed = Vector2();
 	drag_touching = false;
