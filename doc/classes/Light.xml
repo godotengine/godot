@@ -80,7 +80,7 @@
 			Constant for accessing [member light_indirect_energy].
 		</constant>
 		<constant name="PARAM_SPECULAR" value="2" enum="Param">
-			Constant for accessing [member light_specular].	
+			Constant for accessing [member light_specular].
 		</constant>
 		<constant name="PARAM_RANGE" value="3" enum="Param">
 			Constant for accessing [member OmniLight.omni_range] or [member SpotLight.spot_range].

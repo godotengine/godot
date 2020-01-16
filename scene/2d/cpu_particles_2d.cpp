@@ -422,7 +422,7 @@ bool CPUParticles2D::get_particle_flag(Flags p_flag) const {
 }
 
 void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
-
+	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	_change_notify();
 }
@@ -772,6 +772,9 @@ void CPUParticles2D::_particles_process(float p_delta) {
 						p.base_color = emission_colors.get(random_idx);
 					}
 				} break;
+				case EMISSION_SHAPE_MAX: { // Max value for validity check.
+					break;
+				}
 			}
 
 			if (!local_coords) {
@@ -1416,6 +1419,7 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RECTANGLE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
 CPUParticles2D::CPUParticles2D() {
