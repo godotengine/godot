@@ -74,6 +74,11 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define WM_POINTERUPDATE 0x0245
 #endif
 
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
+#endif
+
 typedef struct {
 	int count;
 	int screen;

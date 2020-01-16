@@ -43,6 +43,11 @@
 #define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define wglGetProcAddress (void *)wglGetProcAddress
+#endif
+
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
 void ContextGL_Windows::release_current() {
