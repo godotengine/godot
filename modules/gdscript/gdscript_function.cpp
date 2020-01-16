@@ -67,23 +67,23 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 		case ADDR_TYPE_CLASS_CONSTANT: {
 
 			//todo change to index!
-			GDScript *o = p_script;
+			GDScript *s = p_script;
 #ifdef DEBUG_ENABLED
 			ERR_FAIL_INDEX_V(address, _global_names_count, NULL);
 #endif
 			const StringName *sn = &_global_names_ptr[address];
 
-			while (o) {
-				GDScript *s = o;
-				while (s) {
+			while (s) {
+				GDScript *o = s;
+				while (o) {
 
-					Map<StringName, Variant>::Element *E = s->constants.find(*sn);
+					Map<StringName, Variant>::Element *E = o->constants.find(*sn);
 					if (E) {
 						return &E->get();
 					}
-					s = s->_base;
+					o = o->_owner;
 				}
-				o = o->_owner;
+				s = s->_base;
 			}
 
 			ERR_FAIL_V_MSG(NULL, "GDScriptCompiler bug.");
