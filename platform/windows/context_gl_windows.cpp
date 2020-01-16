@@ -65,11 +65,7 @@ int ContextGL_Windows::get_window_height() {
 	return OS::get_singleton()->get_video_mode().height;
 }
 
-bool ContextGL_Windows::should_vsync_via_compositor() {
-
-	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
-		return false;
-	}
+bool ContextGL_Windows::is_compositor_enabled() {
 
 	// Note: All Windows versions supported by Godot have a compositor.
 	// It can be disabled on earlier Windows versions.
@@ -86,31 +82,15 @@ void ContextGL_Windows::swap_buffers() {
 
 	SwapBuffers(hDC);
 
-	if (use_vsync) {
-		bool vsync_via_compositor_now = should_vsync_via_compositor();
+	if (use_vsync && !OS::get_singleton()->is_window_fullscreen() && wglGetSwapIntervalEXT() == 0 && is_compositor_enabled()) {
 
-		if (vsync_via_compositor_now && wglGetSwapIntervalEXT() == 0) {
-			DwmFlush();
-		}
-
-		if (vsync_via_compositor_now != vsync_via_compositor) {
-			// The previous frame had a different operating mode than this
-			// frame.  Set the 'vsync_via_compositor' member variable and the
-			// OpenGL swap interval to their proper values.
-			set_use_vsync(true);
-		}
+		DwmFlush();
 	}
 }
 
 void ContextGL_Windows::set_use_vsync(bool p_use) {
 
-	vsync_via_compositor = p_use && should_vsync_via_compositor();
-
-	if (wglSwapIntervalEXT) {
-		int swap_interval = (p_use && !vsync_via_compositor) ? 1 : 0;
-		wglSwapIntervalEXT(swap_interval);
-	}
-
+	wglSwapIntervalEXT(p_use ? 1 : 0);
 	use_vsync = p_use;
 }
 
@@ -216,7 +196,6 @@ ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
 	opengl_3_context = p_opengl_3_context;
 	hWnd = hwnd;
 	use_vsync = false;
-	vsync_via_compositor = false;
 }
 
 ContextGL_Windows::~ContextGL_Windows() {

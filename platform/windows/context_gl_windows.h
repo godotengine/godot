@@ -51,12 +51,11 @@ class ContextGL_Windows {
 	HWND hWnd;
 	bool opengl_3_context;
 	bool use_vsync;
-	bool vsync_via_compositor;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
 
-	static bool should_vsync_via_compositor();
+	static bool is_compositor_enabled();
 
 public:
 	void release_current();
