@@ -501,11 +501,13 @@ private:
 
 		float dof_blur_amount = 0.1;
 
-		VS::DOFBlurQuality dof_blur_quality = VS::DOF_BLUR_QUALITY_MEDIUM;
-
 		bool override_exposure_enabled = false;
 		float override_exposure = 1;
 	};
+
+	VS::DOFBlurQuality dof_blur_quality = VS::DOF_BLUR_QUALITY_MEDIUM;
+	VS::DOFBokehShape dof_blur_bokeh_shape = VS::DOF_BOKEH_HEXAGON;
+	bool dof_blur_use_jitter = false;
 
 	mutable RID_Owner<CameraEffects> camera_effects_owner;
 
@@ -649,7 +651,10 @@ public:
 
 	virtual RID camera_effects_create();
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount, VS::DOFBlurQuality p_quality);
+	virtual void camera_effects_set_dof_blur_quality(VS::DOFBlurQuality p_quality, bool p_use_jitter);
+	virtual void camera_effects_set_dof_blur_bokeh_shape(VS::DOFBokehShape p_shape);
+
+	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount);
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure);
 
 	RID light_instance_create(RID p_light);
