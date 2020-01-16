@@ -83,9 +83,11 @@ _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) 
 MonoObject *unmanaged_get_managed(Object *unmanaged);
 
 void set_main_thread(MonoThread *p_thread);
-void attach_current_thread();
+MonoThread *attach_current_thread();
 void detach_current_thread();
+void detach_current_thread(MonoThread *p_mono_thread);
 MonoThread *get_current_thread();
+bool is_thread_attached();
 
 _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
@@ -142,6 +144,14 @@ uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &
 
 void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
+struct ScopeThreadAttach {
+	ScopeThreadAttach();
+	~ScopeThreadAttach();
+
+private:
+	MonoThread *mono_thread;
+};
+
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL)))
@@ -152,5 +162,16 @@ void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
 #define GD_MONO_END_RUNTIME_INVOKE \
 	_runtime_invoke_count_ref -= 1;
+
+#define GD_MONO_SCOPE_THREAD_ATTACH                                   \
+	GDMonoUtils::ScopeThreadAttach __gdmono__scope__thread__attach__; \
+	(void)__gdmono__scope__thread__attach__;
+
+#ifdef DEBUG_ENABLED
+#define GD_MONO_ASSERT_THREAD_ATTACHED \
+	{ CRASH_COND(!GDMonoUtils::is_thread_attached()); }
+#else
+#define GD_MONO_ASSERT_THREAD_ATTACHED
+#endif
 
 #endif // GD_MONOUTILS_H
