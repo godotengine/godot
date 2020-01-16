@@ -89,7 +89,7 @@ void ContextGL_Windows::swap_buffers() {
 	if (use_vsync) {
 		bool vsync_via_compositor_now = should_vsync_via_compositor();
 
-		if (vsync_via_compositor_now) {
+		if (vsync_via_compositor_now && wglGetSwapIntervalEXT() == 0) {
 			DwmFlush();
 		}
 
@@ -205,6 +205,7 @@ Error ContextGL_Windows::initialize() {
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;
