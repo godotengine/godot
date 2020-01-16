@@ -56,6 +56,7 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
+    dankan1890
     David Sichma (DavidSichma)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
