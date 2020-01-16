@@ -109,6 +109,7 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 #define glFramebufferTexture2DMultisample glFramebufferTexture2DMultisampleANGLE
 #endif
 
+#define GL_TEXTURE_3D 0x806F
 #define GL_MAX_SAMPLES 0x8D57
 #endif //!GLES_OVER_GL
 
@@ -565,11 +566,11 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
 		} break;
-		case VS::TEXTURE_TYPE_2D_ARRAY: {
-			texture->images.resize(p_depth_3d);
-		} break;
+		case VS::TEXTURE_TYPE_2D_ARRAY:
 		case VS::TEXTURE_TYPE_3D: {
-			texture->images.resize(p_depth_3d);
+			texture->target = GL_TEXTURE_3D;
+			ERR_PRINT("3D textures and Texture Arrays are not supported in GLES2. Please switch to the GLES3 backend.");
+			return;
 		} break;
 		default: {
 			ERR_PRINT("Unknown texture type!");
@@ -626,6 +627,10 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	Texture *texture = texture_owner.getornull(p_texture);
 
 	ERR_FAIL_COND(!texture);
+	if (texture->target == GL_TEXTURE_3D) {
+		// Target is set to a 3D texture or array texture, exit early to avoid spamming errors
+		return;
+	}
 	ERR_FAIL_COND(!texture->active);
 	ERR_FAIL_COND(texture->render_target);
 	ERR_FAIL_COND(texture->format != p_image->get_format());
