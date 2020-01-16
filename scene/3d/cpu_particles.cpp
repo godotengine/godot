@@ -405,7 +405,7 @@ bool CPUParticles::get_particle_flag(Flags p_flag) const {
 }
 
 void CPUParticles::set_emission_shape(EmissionShape p_shape) {
-
+	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 }
 
@@ -784,6 +784,9 @@ void CPUParticles::_particles_process(float p_delta) {
 						p.base_color = emission_colors.get(random_idx);
 					}
 				} break;
+				case EMISSION_SHAPE_MAX: { // Max value for validity check.
+					break;
+				}
 			}
 
 			if (!local_coords) {
@@ -1488,6 +1491,7 @@ void CPUParticles::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
 CPUParticles::CPUParticles() {

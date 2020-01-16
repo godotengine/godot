@@ -321,5 +321,8 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle velocity and rotation will be set based on [member emission_normal_texture]. Particle color will be modulated by [member emission_color_texture].
 		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
+			Represents the size of the [enum EmissionShape] enum.
+		</constant>
 	</constants>
 </class>
