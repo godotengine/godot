@@ -263,14 +263,14 @@ class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin;
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(int64_t p_val);
 
 protected:
 	static void _bind_methods();
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 
