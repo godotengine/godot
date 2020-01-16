@@ -31,8 +31,8 @@ extern "C" {
 
 // version numbers
 #define ENC_MAJ_VERSION 1
-#define ENC_MIN_VERSION 0
-#define ENC_REV_VERSION 3
+#define ENC_MIN_VERSION 1
+#define ENC_REV_VERSION 0
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level
        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost
@@ -249,7 +249,7 @@ typedef struct {
   int           percent0_;         // saved initial progress percent
 
   DError        left_derr_;        // left error diffusion (u/v)
-  DError       *top_derr_;         // top diffusion error - NULL if disabled
+  DError*       top_derr_;         // top diffusion error - NULL if disabled
 
   uint8_t* y_left_;    // left luma samples (addressable from index -1 to 15).
   uint8_t* u_left_;    // left u samples (addressable from index -1 to 7)
