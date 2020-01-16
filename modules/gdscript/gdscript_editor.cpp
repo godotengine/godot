@@ -564,6 +564,15 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_isarg = tr
 	return Variant::get_type_name(p_info.type);
 }
 
+static String _get_visual_datatype(const GDScriptParser::DataType &p_datatype, bool p_isarg = true) {
+
+	if (!p_datatype.has_type) return "Variant";
+
+	if (p_datatype.kind == GDScriptParser::DataType::BUILTIN && p_datatype.builtin_type == Variant::NIL) return p_isarg ? "Nil" : "void";
+
+	return p_datatype.to_string();
+}
+
 static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value) {
 	GDScriptCompletionIdentifier ci;
 	ci.value = p_value;
@@ -1774,7 +1783,7 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 
 static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_function, int p_arg_idx) {
 
-	String arghint = p_function->return_type.to_string() + " " + p_function->name.operator String() + "(";
+	String arghint = _get_visual_datatype(p_function->return_type, false) + " " + p_function->name.operator String() + "(";
 
 	int def_args = p_function->arguments.size() - p_function->default_values.size();
 	for (int i = 0; i < p_function->arguments.size(); i++) {
@@ -1785,7 +1794,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += p_function->arguments[i].operator String() + ": " + p_function->argument_types[i].to_string();
+		arghint += p_function->arguments[i].operator String() + ": " + _get_visual_datatype(p_function->argument_types[i], true);
 
 		if (i - def_args >= 0) {
 			String def_val = "<unknown>";
