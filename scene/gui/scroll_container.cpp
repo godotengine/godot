@@ -452,8 +452,12 @@ void ScrollContainer::_scroll_moved(float) {
 };
 
 void ScrollContainer::set_enable_h_scroll(bool p_enable) {
+	if (scroll_h == p_enable) {
+		return;
+	}
 
 	scroll_h = p_enable;
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -463,8 +467,12 @@ bool ScrollContainer::is_h_scroll_enabled() const {
 }
 
 void ScrollContainer::set_enable_v_scroll(bool p_enable) {
+	if (scroll_v == p_enable) {
+		return;
+	}
 
 	scroll_v = p_enable;
+	minimum_size_changed();
 	queue_sort();
 }
 
