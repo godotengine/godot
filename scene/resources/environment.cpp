@@ -1291,7 +1291,7 @@ Environment::~Environment() {
 void CameraEffects::set_dof_blur_far_enabled(bool p_enable) {
 
 	dof_blur_far_enabled = p_enable;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 
 bool CameraEffects::is_dof_blur_far_enabled() const {
@@ -1302,7 +1302,7 @@ bool CameraEffects::is_dof_blur_far_enabled() const {
 void CameraEffects::set_dof_blur_far_distance(float p_distance) {
 
 	dof_blur_far_distance = p_distance;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 float CameraEffects::get_dof_blur_far_distance() const {
 
@@ -1312,7 +1312,7 @@ float CameraEffects::get_dof_blur_far_distance() const {
 void CameraEffects::set_dof_blur_far_transition(float p_distance) {
 
 	dof_blur_far_transition = p_distance;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 float CameraEffects::get_dof_blur_far_transition() const {
 
@@ -1322,7 +1322,7 @@ float CameraEffects::get_dof_blur_far_transition() const {
 void CameraEffects::set_dof_blur_near_enabled(bool p_enable) {
 
 	dof_blur_near_enabled = p_enable;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 	_change_notify();
 }
 
@@ -1334,7 +1334,7 @@ bool CameraEffects::is_dof_blur_near_enabled() const {
 void CameraEffects::set_dof_blur_near_distance(float p_distance) {
 
 	dof_blur_near_distance = p_distance;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 
 float CameraEffects::get_dof_blur_near_distance() const {
@@ -1345,7 +1345,7 @@ float CameraEffects::get_dof_blur_near_distance() const {
 void CameraEffects::set_dof_blur_near_transition(float p_distance) {
 
 	dof_blur_near_transition = p_distance;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 
 float CameraEffects::get_dof_blur_near_transition() const {
@@ -1356,22 +1356,11 @@ float CameraEffects::get_dof_blur_near_transition() const {
 void CameraEffects::set_dof_blur_amount(float p_amount) {
 
 	dof_blur_amount = p_amount;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
+	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount);
 }
 float CameraEffects::get_dof_blur_amount() const {
 
 	return dof_blur_amount;
-}
-
-void CameraEffects::set_dof_blur_quality(DOFBlurQuality p_quality) {
-
-	dof_blur_quality = p_quality;
-	VS::get_singleton()->camera_effects_set_dof_blur(camera_effects, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_amount, VS::DOFBlurQuality(dof_blur_quality));
-}
-
-CameraEffects::DOFBlurQuality CameraEffects::get_dof_blur_quality() const {
-
-	return dof_blur_quality;
 }
 
 void CameraEffects::set_override_exposure_enabled(bool p_enabled) {
@@ -1419,9 +1408,6 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "intensity"), &CameraEffects::set_dof_blur_amount);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
 
-	ClassDB::bind_method(D_METHOD("set_dof_blur_quality", "level"), &CameraEffects::set_dof_blur_quality);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_quality"), &CameraEffects::get_dof_blur_quality);
-
 	ClassDB::bind_method(D_METHOD("set_override_exposure_enabled", "enable"), &CameraEffects::set_override_exposure);
 	ClassDB::bind_method(D_METHOD("is_override_exposure_enabled"), &CameraEffects::is_override_exposure_enabled);
 
@@ -1436,14 +1422,9 @@ void CameraEffects::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "dof_blur_near_distance", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "dof_blur_near_transition", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "dof_blur_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_dof_blur_quality", "get_dof_blur_quality");
 	ADD_GROUP("Override Exposure", "override_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_exposure_enable"), "set_override_exposure_enabled", "is_override_exposure_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "override_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_override_exposure", "get_override_exposure");
-
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_LOW);
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_MEDIUM);
-	BIND_ENUM_CONSTANT(DOF_BLUR_QUALITY_HIGH);
 }
 
 CameraEffects::CameraEffects() {
@@ -1458,9 +1439,7 @@ CameraEffects::CameraEffects() {
 	dof_blur_near_distance = 2;
 	dof_blur_near_transition = 1;
 
-	dof_blur_amount = 0.1;
-
-	set_dof_blur_quality(DOF_BLUR_QUALITY_MEDIUM); //update server
+	set_dof_blur_amount(0.1);
 
 	override_exposure_enabled = false;
 	set_override_exposure(1.0);

@@ -398,13 +398,6 @@ class CameraEffects : public Resource {
 
 	GDCLASS(CameraEffects, Resource);
 
-public:
-	enum DOFBlurQuality {
-		DOF_BLUR_QUALITY_LOW,
-		DOF_BLUR_QUALITY_MEDIUM,
-		DOF_BLUR_QUALITY_HIGH,
-	};
-
 private:
 	RID camera_effects;
 
@@ -417,7 +410,6 @@ private:
 	float dof_blur_near_transition;
 
 	float dof_blur_amount;
-	DOFBlurQuality dof_blur_quality;
 
 	bool override_exposure_enabled;
 	float override_exposure;
@@ -447,9 +439,6 @@ public:
 	void set_dof_blur_amount(float p_amount);
 	float get_dof_blur_amount() const;
 
-	void set_dof_blur_quality(DOFBlurQuality p_quality);
-	DOFBlurQuality get_dof_blur_quality() const;
-
 	void set_override_exposure_enabled(bool p_enabled);
 	bool is_override_exposure_enabled() const;
 
@@ -461,7 +450,5 @@ public:
 	CameraEffects();
 	~CameraEffects();
 };
-
-VARIANT_ENUM_CAST(CameraEffects::DOFBlurQuality)
 
 #endif // ENVIRONMENT_H
