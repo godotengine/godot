@@ -522,9 +522,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::ArrayDeclarationNode *arr_dec_node = (SL::ArrayDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (arr_dec_node->is_const) {
-				declaration += "const ";
-			}
 			declaration += _prestr(arr_dec_node->precision);
 			declaration += _typestr(arr_dec_node->datatype);
 
@@ -540,22 +537,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				declaration += "[";
 				declaration += itos(arr_dec_node->declarations[i].size);
 				declaration += "]";
-				int sz = arr_dec_node->declarations[i].initializer.size();
-				if (sz > 0) {
-					declaration += "=";
-					declaration += _typestr(arr_dec_node->datatype);
-					declaration += "[";
-					declaration += itos(sz);
-					declaration += "]";
-					declaration += "(";
-					for (int j = 0; j < sz; j++) {
-						declaration += _dump_node_code(arr_dec_node->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (j != sz - 1) {
-							declaration += ", ";
-						}
-					}
-					declaration += ")";
-				}
 			}
 
 			code += declaration.as_string();
