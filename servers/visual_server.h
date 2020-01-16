@@ -335,12 +335,14 @@ public:
 		MULTIMESH_COLOR_NONE,
 		MULTIMESH_COLOR_8BIT,
 		MULTIMESH_COLOR_FLOAT,
+		MULTIMESH_COLOR_MAX,
 	};
 
 	enum MultimeshCustomDataFormat {
 		MULTIMESH_CUSTOM_DATA_NONE,
 		MULTIMESH_CUSTOM_DATA_8BIT,
 		MULTIMESH_CUSTOM_DATA_FLOAT,
+		MULTIMESH_CUSTOM_DATA_MAX,
 	};
 
 	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, MultimeshColorFormat p_color_format, MultimeshCustomDataFormat p_data_format = MULTIMESH_CUSTOM_DATA_NONE) = 0;
