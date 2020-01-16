@@ -1887,8 +1887,8 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		const RID *lights = e->instance->light_instances.ptr();
 
 		for (int i = 0; i < lc; i++) {
-			LightInstance *li = light_instance_owner.getptr(lights[i]);
-			if (li->last_pass != render_pass) //not visible
+			LightInstance *li = light_instance_owner.getornull(lights[i]);
+			if (!li || li->last_pass != render_pass) //not visible
 				continue;
 
 			if (li && li->light_ptr->type == VS::LIGHT_OMNI) {

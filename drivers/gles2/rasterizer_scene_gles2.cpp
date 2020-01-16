@@ -1169,7 +1169,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 
 				LightInstance *li = light_instance_owner.getornull(e->instance->light_instances[i]);
 
-				if (li->light_index >= render_light_instance_count || render_light_instances[li->light_index] != li) {
+				if (!li || li->light_index >= render_light_instance_count || render_light_instances[li->light_index] != li) {
 					continue; // too many or light_index did not correspond to the light instances to be rendered
 				}
 
