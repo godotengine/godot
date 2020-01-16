@@ -94,7 +94,7 @@ matrix:
 
     - name: Linux export template (release_debug, GCC 5, without 3D support)
       stage: build
-      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="disable_3d=yes"
+      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="CXXFLAGS=-fno-strict-aliasing disable_3d=yes"
       os: linux
       compiler: gcc
       addons:
