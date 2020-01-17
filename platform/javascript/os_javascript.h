@@ -55,7 +55,7 @@ class OS_JavaScript : public OS_Unix {
 	Point2 touches[32];
 
 	Point2i last_click_pos;
-	uint64_t last_click_ms;
+	double last_click_ms;
 	int last_click_button_index;
 
 	MainLoop *main_loop;
