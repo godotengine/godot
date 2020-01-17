@@ -4,7 +4,7 @@
 		Control that provides single-line string editing.
 	</brief_description>
 	<description>
-		LineEdit provides a single-line string editor, used for text fields. It features many built-in shortcuts which will always be available:
+		LineEdit provides a single-line string editor, used for text fields. It features many built-in shortcuts which will always be available: (the Ctrl here maps to Command on macOS)
 		- Ctrl + C: Copy
 		- Ctrl + X: Cut
 		- Ctrl + V or Ctrl + Y: Paste/"yank"
@@ -14,6 +14,15 @@
 		- Ctrl + K: Delete text from the cursor position to the end of the line
 		- Ctrl + A: Select all text
 		- Up/Down arrow: Move the cursor to the beginning/end of the line
+		On macOS, some extra keyboard shortcuts are available:
+		- Ctrl + F: Like the right arrow key, move the cursor one character right
+		- Ctrl + B: Like the left arrow key, move the cursor one character left
+		- Ctrl + P: Like the up arrow key, move the cursor to the previous line
+		- Ctrl + N: Like the down arrow key, move the cursor to the next line
+		- Ctrl + D: Like the Delete key, delete the character on the right side of cursor
+		- Ctrl + H: Like the Backspace key, delete the character on the left side of the cursor
+		- Command + Left arrow: Like the Home key, move the cursor to the beginning of the line
+		- Command + Right arrow: Like the End key, move the cursor to the end of the line
 	</description>
 	<tutorials>
 	</tutorials>
@@ -135,6 +144,7 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [LineEdit].
+			[b]Note:[/b] Changing text using this property won't emit the [signal text_changed] signal.
 		</member>
 	</members>
 	<signals>
@@ -226,7 +236,7 @@
 			Font color when editing is disabled.
 		</theme_item>
 		<theme_item name="minimum_spaces" type="int" default="12">
-			Minimum horizontal space for the text (not counting the clear button and content margins).
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of space characters (i.e. this amount of space characters can be displayed without scrolling).
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default background for the [LineEdit].
