@@ -1029,6 +1029,7 @@ public:
 	void sort_projects();
 	int get_project_count() const;
 	void select_project(int p_index);
+	void select_first_visible_project();
 	void erase_selected_projects();
 	Vector<Item> get_selected_projects() const;
 	const Set<String> &get_selected_project_keys() const;
@@ -1616,6 +1617,23 @@ void ProjectList::select_project(int p_index) {
 	}
 
 	toggle_select(p_index);
+}
+
+void ProjectList::select_first_visible_project() {
+	bool found = false;
+
+	for (int i = 0; i < _projects.size(); i++) {
+		if (_projects[i].control->is_visible()) {
+			select_project(i);
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		// Deselect all projects if there are no visible projects in the list.
+		_selected_project_keys.clear();
+	}
 }
 
 inline void sort(int &a, int &b) {
@@ -2336,6 +2354,12 @@ void ProjectManager::_on_order_option_changed() {
 void ProjectManager::_on_filter_option_changed() {
 	_project_list->set_search_term(project_filter->get_search_term());
 	_project_list->sort_projects();
+
+	// Select the first visible project in the list.
+	// This makes it possible to open a project without ever touching the mouse,
+	// as the search field is automatically focused on startup.
+	_project_list->select_first_visible_project();
+	_update_project_buttons();
 }
 
 void ProjectManager::_bind_methods() {
