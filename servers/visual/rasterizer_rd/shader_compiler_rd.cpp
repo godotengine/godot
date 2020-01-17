@@ -90,6 +90,7 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_ISAMPLER3D: return 16;
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
+		case SL::TYPE_STRUCT: return 0;
 	}
 
 	ERR_FAIL_V(0);
@@ -129,6 +130,7 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_ISAMPLER3D: return 16;
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
+		case SL::TYPE_STRUCT: return 0;
 	}
 
 	ERR_FAIL_V(0);
@@ -315,12 +317,20 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 		r_to_add += "\n";
 
 		String header;
-		header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
+		if (fnode->return_type == SL::TYPE_STRUCT) {
+			header = _mkid(fnode->return_struct_name) + " " + _mkid(fnode->name) + "(";
+		} else {
+			header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
+		}
 		for (int i = 0; i < fnode->arguments.size(); i++) {
 
 			if (i > 0)
 				header += ", ";
-			header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
+			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
+				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
+			} else {
+				header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
+			}
 		}
 
 		header += ")\n";
@@ -357,6 +367,36 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					Pair<int *, int> &p = p_actions.render_mode_values[pnode->render_modes[i]];
 					*p.first = p.second;
 				}
+			}
+
+			// structs
+
+			for (int i = 0; i < pnode->vstructs.size(); i++) {
+
+				SL::StructNode *st = pnode->vstructs[i].shader_struct;
+				String struct_code;
+
+				struct_code += "struct ";
+				struct_code += _mkid(pnode->vstructs[i].name);
+				struct_code += " ";
+				struct_code += "{\n";
+				for (int j = 0; j < st->members.size(); j++) {
+					SL::MemberNode *m = st->members[j];
+					if (m->datatype == SL::TYPE_STRUCT) {
+						struct_code += _mkid(m->struct_name);
+					} else {
+						struct_code += _prestr(m->precision);
+						struct_code += _typestr(m->datatype);
+					}
+					struct_code += " ";
+					struct_code += m->name;
+					struct_code += ";\n";
+				}
+				struct_code += "}";
+				struct_code += ";\n";
+
+				r_gen_code.vertex_global += struct_code;
+				r_gen_code.fragment_global += struct_code;
 			}
 
 			int max_texture_uniforms = 0;
@@ -506,7 +546,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				String gcode;
 				gcode += "const ";
 				gcode += _prestr(E->get().precision);
-				gcode += _typestr(E->get().type);
+				if (E->get().type == SL::TYPE_STRUCT) {
+					gcode += _mkid(E->get().type_str);
+				} else {
+					gcode += _typestr(E->get().type);
+				}
 				gcode += " " + _mkid(E->key());
 				gcode += "=";
 				gcode += _dump_node_code(E->get().initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
@@ -561,6 +605,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
+		case SL::Node::TYPE_STRUCT: {
+
+		} break;
 		case SL::Node::TYPE_FUNCTION: {
 
 		} break;
@@ -590,7 +637,15 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_VARIABLE_DECLARATION: {
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
-			String declaration = _prestr(vdnode->precision) + _typestr(vdnode->datatype);
+			String declaration;
+			if (vdnode->is_const) {
+				declaration += "const ";
+			}
+			if (vdnode->datatype == SL::TYPE_STRUCT) {
+				declaration += _mkid(vdnode->struct_name);
+			} else {
+				declaration += _prestr(vdnode->precision) + _typestr(vdnode->datatype);
+			}
 			for (int i = 0; i < vdnode->declarations.size(); i++) {
 				if (i > 0) {
 					declaration += ",";
@@ -649,8 +704,15 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_ARRAY_DECLARATION: {
 
 			SL::ArrayDeclarationNode *adnode = (SL::ArrayDeclarationNode *)p_node;
-
-			String declaration = _prestr(adnode->precision) + _typestr(adnode->datatype);
+			String declaration;
+			if (adnode->is_const) {
+				declaration += "const ";
+			}
+			if (adnode->datatype == SL::TYPE_STRUCT) {
+				declaration += _mkid(adnode->struct_name);
+			} else {
+				declaration = _prestr(adnode->precision) + _typestr(adnode->datatype);
+			}
 			for (int i = 0; i < adnode->declarations.size(); i++) {
 				if (i > 0) {
 					declaration += ",";
@@ -664,7 +726,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				int sz = adnode->declarations[i].initializer.size();
 				if (sz > 0) {
 					declaration += "=";
-					declaration += _typestr(adnode->datatype);
+					if (adnode->datatype == SL::TYPE_STRUCT) {
+						declaration += _mkid(adnode->struct_name);
+					} else {
+						declaration += _typestr(adnode->datatype);
+					}
 					declaration += "[";
 					declaration += itos(sz);
 					declaration += "]";
@@ -763,6 +829,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op);
 					break;
 				case SL::OP_CALL:
+				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
 
 					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
@@ -770,7 +837,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
 
 					bool is_texture_func = false;
-					if (onode->op == SL::OP_CONSTRUCT) {
+					if (onode->op == SL::OP_STRUCT) {
+						code += _mkid(vnode->name);
+					} else if (onode->op == SL::OP_CONSTRUCT) {
 						code += String(vnode->name);
 					} else {
 
