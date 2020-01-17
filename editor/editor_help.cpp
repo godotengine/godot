@@ -603,8 +603,11 @@ void EditorHelp::_update_doc() {
 	Vector<DocData::MethodDoc> methods;
 
 	for (int i = 0; i < cd.methods.size(); i++) {
-		if (skip_methods.has(cd.methods[i].name))
-			continue;
+		if (skip_methods.has(cd.methods[i].name)) {
+			if (cd.methods[i].arguments.size() == 0 /* getter */ || (cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void" /* setter */)) {
+				continue;
+			}
+		}
 		methods.push_back(cd.methods[i]);
 	}
 
