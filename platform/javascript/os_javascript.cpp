@@ -301,6 +301,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
+
 	switch (p_event->button) {
 		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
 		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
@@ -312,7 +313,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 	if (ev->is_pressed()) {
 
-		uint64_t diff = p_event->timestamp - os->last_click_ms;
+		double diff = emscripten_get_now() - os->last_click_ms;
 
 		if (ev->get_button_index() == os->last_click_button_index) {
 
