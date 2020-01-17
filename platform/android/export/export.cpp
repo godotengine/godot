@@ -203,9 +203,9 @@ struct LauncherIcon {
 };
 
 static const int icon_densities_count = 6;
-static const char *launcher_icon_option = "launcher_icon/xxxhdpi_192x192";
-static const char *launcher_adaptive_icon_foreground_option = "launcher_adaptive_icon_foreground/xxxhdpi_432x432";
-static const char *launcher_adaptive_icon_background_option = "launcher_adaptive_icon_background/xxxhdpi_432x432";
+static const char *launcher_icon_option = "launcher_icons/main_192x192";
+static const char *launcher_adaptive_icon_foreground_option = "launcher_icons/adaptive_foreground_432x432";
+static const char *launcher_adaptive_icon_background_option = "launcher_icons/adaptive_background_432x432";
 
 static const LauncherIcon launcher_icons[icon_densities_count] = {
 	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
