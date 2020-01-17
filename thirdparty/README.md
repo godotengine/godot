@@ -237,7 +237,7 @@ from the Android NDK r18.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.3
+- Version: 1.1.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

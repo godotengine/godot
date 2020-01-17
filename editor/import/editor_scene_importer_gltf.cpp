@@ -1302,6 +1302,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("png") != -1) {
 			//is a png
+			ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, ERR_UNAVAILABLE);
+
 			const Ref<Image> img = Image::_png_mem_loader_func(data_ptr, data_size);
 
 			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);
@@ -1316,6 +1318,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 		if (mimetype.findn("jpeg") != -1) {
 			//is a jpg
+			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, ERR_UNAVAILABLE);
+
 			const Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
 
 			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);

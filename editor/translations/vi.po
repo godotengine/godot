@@ -1947,36 +1947,8 @@ msgstr "Được thừa kế bởi:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Mô tả ngắn gọn:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Thuộc tính"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Hàm"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Mô tả lớp"
+msgid "Description"
+msgstr "Mô tả:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1991,9 +1963,44 @@ msgid ""
 msgstr ""
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Thuộc tính"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Ghi đè"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Mặc định"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Hàm"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr ""
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Mô tả ngắn gọn:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Giá trị:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12474,6 +12481,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Mô tả ngắn gọn:"
+
+#~ msgid "Class Description"
+#~ msgstr "Mô tả lớp"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Xuất dự án thất bại với mã lỗi %d."

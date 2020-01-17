@@ -1967,36 +1967,8 @@ msgstr "E trashëguar nga:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Përshkrim i Shkurtër:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Vetitë"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metodat"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Vetitë e Temës"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracionet"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstantet"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Përshkrimi i Klasës"
+msgid "Description"
+msgstr "Përshkrimi:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2014,8 +1986,43 @@ msgstr ""
 "url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Vetitë"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Mbishkruaj"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "E Parazgjedhur"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metodat"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Vetitë e Temës"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracionet"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstantet"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Përshkrimi i Vetive"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Vlerë e Re:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12425,6 +12432,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Përshkrim i Shkurtër:"
+
+#~ msgid "Class Description"
+#~ msgstr "Përshkrimi i Klasës"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Eksportimi i projektit dështoi me kodin e gabimit %d."

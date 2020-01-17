@@ -355,11 +355,13 @@ public:
 			print_verbose("Open Asset Import: Loading embedded texture " + filename);
 			if (tex->mHeight == 0) {
 				if (tex->CheckFormat("png")) {
+					ERR_FAIL_COND_V(Image::_png_mem_loader_func == NULL, Ref<Image>());
 					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("jpg")) {
+					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == NULL, Ref<Image>());
 					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);

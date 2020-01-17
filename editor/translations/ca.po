@@ -1961,36 +1961,8 @@ msgstr "Heretat per:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Descripció breu:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Propietats"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Mètodes"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Propietats del tema"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracions"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constants"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Descripció de la classe"
+msgid "Description"
+msgstr "Descripció:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2008,8 +1980,43 @@ msgstr ""
 "$url2]sol·licitant-lo[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Propietats"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Sobreescriu"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Predeterminat"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Mètodes"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Propietats del tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracions"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constants"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Descripcions de la Propietat"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Valor"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12976,6 +12983,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Descripció breu:"
+
+#~ msgid "Class Description"
+#~ msgstr "Descripció de la classe"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "L'exportació del projecte ha fallat amb el codi d'error %d."

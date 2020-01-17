@@ -1169,7 +1169,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 
 				LightInstance *li = light_instance_owner.getornull(e->instance->light_instances[i]);
 
-				if (li->light_index >= render_light_instance_count || render_light_instances[li->light_index] != li) {
+				if (!li || li->light_index >= render_light_instance_count || render_light_instances[li->light_index] != li) {
 					continue; // too many or light_index did not correspond to the light instances to be rendered
 				}
 
@@ -3325,6 +3325,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	glDepthMask(GL_TRUE);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	// clear color
 
@@ -3351,12 +3352,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	if (!env || env->bg_mode != VS::ENV_BG_KEEP) {
 		glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 	state.default_ambient = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
 	state.default_bg = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
 		glDisable(GL_SCISSOR_TEST);

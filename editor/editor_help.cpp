@@ -573,7 +573,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(cd.properties[i].overridden ? " [override: " : " [default: ");
+				class_desc->add_text(cd.properties[i].overridden ? " [" + TTR("override:") + " " : " [" + TTR("default:") + " ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.properties[i].default_value));
@@ -715,7 +715,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.theme_properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(" [default: ");
+				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.theme_properties[i].default_value));
@@ -852,7 +852,7 @@ void EditorHelp::_update_doc() {
 				enum_line[E->key()] = class_desc->get_line_count() - 2;
 
 				class_desc->push_color(title_color);
-				class_desc->add_text(TTR("enum  "));
+				class_desc->add_text("enum  ");
 				class_desc->pop();
 				class_desc->push_font(doc_code_font);
 				String e = E->key();
@@ -1017,7 +1017,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(" [default: ");
+				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(value_color);
@@ -1040,7 +1040,7 @@ void EditorHelp::_update_doc() {
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				class_desc->add_text(cd.properties[i].setter + "(value)");
+				class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
 				class_desc->pop(); // color
 				class_desc->push_color(comment_color);
 				class_desc->add_text(" setter");

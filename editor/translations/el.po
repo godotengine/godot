@@ -1947,36 +1947,9 @@ msgid "Inherited by:"
 msgstr "Κληρονομείται από:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Σύντομη Περιγραφή"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Ιδιότητες"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Συναρτήσεις"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Ιδιότητες θέματος"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Απαριθμήσεις"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "απαρίθμηση  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Σταθερές"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Περιγραφή κλάσης"
+#, fuzzy
+msgid "Description"
+msgstr "Περιγραφή:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1993,8 +1966,43 @@ msgstr ""
 "url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Ιδιότητες"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Αντικατάσταση"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Προεπιλογή"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Συναρτήσεις"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Ιδιότητες θέματος"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Απαριθμήσεις"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Σταθερές"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Περιγραφές ιδιοτήτων"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Τιμή"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12772,6 +12780,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "enum  "
+#~ msgstr "απαρίθμηση  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Σύντομη Περιγραφή"
+
+#~ msgid "Class Description"
+#~ msgstr "Περιγραφή κλάσης"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d."

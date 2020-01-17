@@ -2060,7 +2060,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	//sub-functions
 
 	//array
-	{ "length", TYPE_INT, { TYPE_VOID }, TAG_ARRAY, false },
+	{ "length", TYPE_INT, { TYPE_VOID }, TAG_ARRAY, true },
 
 	{ NULL, TYPE_VOID, { TYPE_VOID }, TAG_GLOBAL, false }
 
@@ -3888,6 +3888,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				if (tk.type == TK_BRACKET_OPEN) {
 					bool unknown_size = false;
 
+					if (VisualServer::get_singleton()->is_low_end() && is_const) {
+						_set_error("Local const arrays are supported only on high-end platform!");
+						return ERR_PARSE_ERROR;
+					}
+
 					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
 					node->datatype = type;
 					node->precision = precision;
@@ -3923,6 +3928,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 					tk = _get_token();
 					if (tk.type == TK_OP_ASSIGN) {
+
+						if (VisualServer::get_singleton()->is_low_end()) {
+							_set_error("Array initialization is supported only on high-end platform!");
+							return ERR_PARSE_ERROR;
+						}
+
 						tk = _get_token();
 
 						if (tk.type != TK_CURLY_BRACKET_OPEN) {

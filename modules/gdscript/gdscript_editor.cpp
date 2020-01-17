@@ -335,7 +335,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 
 ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
-	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	if (_debug_parse_err_line >= 0)
+		return NULL;
+
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
 
 	int l = _debug_call_stack_pos - p_level - 1;
@@ -555,7 +557,7 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_isarg = tr
 	}
 	if (p_info.type == Variant::NIL) {
 		if (p_isarg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
-			return "var";
+			return "Variant";
 		} else {
 			return "void";
 		}
@@ -1736,14 +1738,12 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	for (const List<PropertyInfo>::Element *E = p_info.arguments.front(); E; E = E->next()) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += _get_visual_datatype(E->get(), true) + " " + E->get().name;
+		arghint += E->get().name + ": " + _get_visual_datatype(E->get(), true);
 
 		if (i - def_args >= 0) {
 			arghint += String(" = ") + p_info.default_arguments[i - def_args].get_construct_string();
@@ -1759,8 +1759,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	if (p_info.flags & METHOD_FLAG_VARARG) {
 		if (p_info.arguments.size() > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
@@ -1769,9 +1767,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
-	}
-	if (p_info.arguments.size() > 0 || (p_info.flags & METHOD_FLAG_VARARG)) {
-		arghint += " ";
 	}
 
 	arghint += ")";
@@ -1787,14 +1782,12 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 	for (int i = 0; i < p_function->arguments.size(); i++) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += p_function->argument_types[i].to_string() + " " + p_function->arguments[i].operator String();
+		arghint += p_function->arguments[i].operator String() + ": " + p_function->argument_types[i].to_string();
 
 		if (i - def_args >= 0) {
 			String def_val = "<unknown>";
@@ -1818,9 +1811,6 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 	}
 
-	if (p_function->arguments.size() > 0) {
-		arghint += " ";
-	}
 	arghint += ")";
 
 	return arghint;

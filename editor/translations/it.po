@@ -1978,36 +1978,9 @@ msgid "Inherited by:"
 msgstr "Ereditato da:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Breve descrizione"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Proprietà"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metodi"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Proprietà del tema"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerazioni"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Costanti"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Descrizione della classe"
+#, fuzzy
+msgid "Description"
+msgstr "Descrizione:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2024,8 +1997,43 @@ msgstr ""
 "$url2]richiedendone una[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Proprietà"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Sovrascrizioni"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Default"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metodi"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Proprietà del tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerazioni"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Costanti"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Descrizioni delle proprietà"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Valore"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12720,6 +12728,15 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Breve descrizione"
+
+#~ msgid "Class Description"
+#~ msgstr "Descrizione della classe"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Esportazione progetto fallita con codice di errore %d."

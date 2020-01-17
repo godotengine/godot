@@ -198,6 +198,9 @@ void ParticlesMaterial::_update_shader() {
 				code += "uniform sampler2D emission_texture_color : hint_white;\n";
 			}
 		} break;
+		case EMISSION_SHAPE_MAX: { // Max value for validity check.
+			break;
+		}
 	}
 
 	code += "uniform vec4 color_value : hint_color;\n";
@@ -283,7 +286,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
 
-	if (emission_shape >= EMISSION_SHAPE_POINTS) {
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
@@ -368,6 +371,9 @@ void ParticlesMaterial::_update_shader() {
 				}
 			}
 		} break;
+		case EMISSION_SHAPE_MAX: { // Max value for validity check.
+			break;
+		}
 	}
 	code += "		VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	code += "		TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
@@ -515,7 +521,7 @@ void ParticlesMaterial::_update_shader() {
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
-	if (emission_color_texture.is_valid() && emission_shape >= EMISSION_SHAPE_POINTS) {
+	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	COLOR *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
 	if (trail_color_modifier.is_valid()) {
@@ -894,7 +900,7 @@ bool ParticlesMaterial::get_flag(Flags p_flag) const {
 }
 
 void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
-
+	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	_change_notify();
 	_queue_shader_change();
@@ -1242,6 +1248,7 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
 }
 
 ParticlesMaterial::ParticlesMaterial() :

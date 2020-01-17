@@ -2060,12 +2060,33 @@ msgstr ""
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "簡述："
+msgid "Description"
+msgstr "描述："
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "關閉場景"
+
+#: editor/editor_help.cpp
+msgid ""
+"There are currently no tutorials for this class, you can [color=$color][url="
+"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
+"url][/color]."
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr ""
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "預設"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2083,35 +2104,18 @@ msgid "Enumerations"
 msgstr "翻譯:"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr ""
-
-#: editor/editor_help.cpp
 #, fuzzy
 msgid "Constants"
 msgstr "常數"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "描述："
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "關閉場景"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "簡述："
+
+#: editor/editor_help.cpp
+msgid "(value)"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12896,6 +12900,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "簡述："
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "描述："
 
 #~ msgid "Password:"
 #~ msgstr "密碼:"

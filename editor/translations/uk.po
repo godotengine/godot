@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-03 21:21+0000\n"
-"Last-Translator: Tymofij Lytvynenko <till.svit@gmail.com>\n"
+"PO-Revision-Date: 2020-01-13 13:36+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1207,9 +1207,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Помилка під час спроби відкрити файл пакунка — дані не у форматі zip."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Вже існує"
+msgstr "%s (вже існує)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1220,9 +1219,8 @@ msgid "The following files failed extraction from package:"
 msgstr "Не вдалося видобути такі файли з пакунка:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d більше файлів"
+msgstr "І ще %s файлів."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1234,9 +1232,8 @@ msgid "Success!"
 msgstr "Успіх!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Зміст:"
+msgstr "Вміст пакунка:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1376,9 +1373,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Неприпустимий файл, це не компонування аудіо-шини."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Помилка під час збереження файла!"
+msgstr "Помилка під час збереження файла: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1954,36 +1950,9 @@ msgid "Inherited by:"
 msgstr "Успадковано:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Стислий опис"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Властивості"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Методи"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Властивості теми"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Перелічуваний"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "перелічуваний  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Константи"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Опис класу"
+#, fuzzy
+msgid "Description"
+msgstr "Опис:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2000,8 +1969,43 @@ msgstr ""
 "щодо їхнього створення[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Властивості"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Перевизначення"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Типовий"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Методи"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Властивості теми"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Перелічуваний"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Константи"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Описи властивостей"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Значення"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -5737,20 +5741,18 @@ msgstr "Маска випромінювання"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Стискання (пікселі): "
+msgstr "Суцільні пікселі"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Межеві пікселі"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "Каталоги та файли:"
+msgstr "Пікселі на спрямованій межі"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -10843,9 +10845,8 @@ msgid "Will load an existing script file."
 msgstr "Завантажити наявний файл скрипту."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "Поділ вже існує."
+msgstr "Файл скрипту вже існує."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12536,11 +12537,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Колір: #%s\n"
+"Ліва кнопка: встановити колір\n"
+"Права кнопка: вилучити взірець"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Вибрати колір з екрана."
+msgstr "Вибрати колір з вікна редактора."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
@@ -12662,6 +12665,15 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "enum  "
+#~ msgstr "перелічуваний  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Стислий опис"
+
+#~ msgid "Class Description"
+#~ msgstr "Опис класу"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Не вдалося експортувати проєкт, код помилки — %d."

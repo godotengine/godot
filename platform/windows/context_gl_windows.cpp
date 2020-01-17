@@ -43,6 +43,11 @@
 #define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define wglGetProcAddress (void *)wglGetProcAddress
+#endif
+
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
 void ContextGL_Windows::release_current() {
@@ -89,7 +94,7 @@ void ContextGL_Windows::swap_buffers() {
 	if (use_vsync) {
 		bool vsync_via_compositor_now = should_vsync_via_compositor();
 
-		if (vsync_via_compositor_now) {
+		if (vsync_via_compositor_now && wglGetSwapIntervalEXT() == 0) {
 			DwmFlush();
 		}
 
@@ -205,6 +210,7 @@ Error ContextGL_Windows::initialize() {
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;

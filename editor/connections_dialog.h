@@ -76,9 +76,11 @@ class ConnectDialog : public ConfirmationDialog {
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
+	void _tree_item_activated();
 	void _add_bind();
 	void _remove_bind();
 	void _advanced_pressed();
+	void _update_ok_enabled();
 
 protected:
 	void _notification(int p_what);

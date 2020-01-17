@@ -2060,37 +2060,7 @@ msgstr "繼承："
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "簡要說明："
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "性質"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "方法"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "過濾檔案..."
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "枚舉"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "枚舉  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "定數"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
+msgid "Description"
 msgstr "描述:"
 
 #: editor/editor_help.cpp
@@ -2108,9 +2078,45 @@ msgstr ""
 "color]或[color=$color][url=$url2]要求一個[/url][/color]。"
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "性質"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "覆蓋"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "預設"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "方法"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "過濾檔案..."
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "枚舉"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "定數"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Property 說明:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "數值"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12899,6 +12905,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "枚舉  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "簡要說明："
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "描述:"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "專案輸出失敗，錯誤代碼是 %d。"

@@ -2024,38 +2024,8 @@ msgstr "Őt örökli:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Rövid Leírás:"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Tulajdonságok"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metódusok"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties"
-msgstr "Tulajdonságok"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Felsorolások"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstansok"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Class Description"
-msgstr "Leírás"
+msgid "Description"
+msgstr "Leírás:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2073,9 +2043,44 @@ msgstr ""
 "$url2]kérvényezhet egyet[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Tulajdonságok"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Alapértelmezett"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metódusok"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Tulajdonságok"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Felsorolások"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstansok"
+
+#: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
 msgstr "Tulajdonság Leírása:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Érték:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12900,6 +12905,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Rövid Leírás:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Leírás"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Projekt export nem sikerült, hibakód %d."

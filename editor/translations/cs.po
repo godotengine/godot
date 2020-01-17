@@ -1954,36 +1954,9 @@ msgid "Inherited by:"
 msgstr "Děděná z:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description"
-msgstr "Stručný popis"
-
-#: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Vlastnosti"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Metody"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Vlastnosti motivu"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Výčty"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "výčet  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Konstanty"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Popis třídy"
+#, fuzzy
+msgid "Description"
+msgstr "Popis:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2000,8 +1973,43 @@ msgstr ""
 "$url2]zažádat[/url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Vlastnosti"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Přepsat"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Výchozí"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Metody"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Vlastnosti motivu"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Výčty"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Konstanty"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Popis vlastnosti"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Hodnota"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -12725,6 +12733,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "enum  "
+#~ msgstr "výčet  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Stručný popis"
+
+#~ msgid "Class Description"
+#~ msgstr "Popis třídy"
 
 #~ msgid "Project export failed with error code %d."
 #~ msgstr "Export projektu selhal s chybovým kódem %d."
