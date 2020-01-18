@@ -152,7 +152,7 @@ class StyleBoxFlat : public StyleBox {
 	Color border_color;
 
 	int border_width[4];
-	int expand_margin[4];
+	float expand_margin[4];
 	int corner_radius[4];
 
 	bool draw_center;
