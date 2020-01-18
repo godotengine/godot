@@ -2168,6 +2168,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 			if (p_alpha_pass || p_directional_add) {
 				int desired_blend_mode;
+				if (desired_blend_mode == RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_DISABLED && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
+					desired_blend_mode = RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX;
+				}
+
+
 				if (p_directional_add) {
 					desired_blend_mode = RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_ADD;
 				} else {
@@ -2176,8 +2181,19 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 				if (desired_blend_mode != current_blend_mode) {
 
-					switch (desired_blend_mode) {
+					if (current_blend_mode == RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_DISABLED) {
+						// re-enable it
+						glEnable(GL_BLEND);
+					} else if (desired_blend_mode == RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_DISABLED) {
+						// disable it
+						glDisable(GL_BLEND);
+					}
 
+
+					switch (desired_blend_mode) {
+						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_DISABLED: {
+
+						} break;
 						case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX: {
 							glBlendEquation(GL_FUNC_ADD);
 							if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
