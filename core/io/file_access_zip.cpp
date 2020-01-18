@@ -160,7 +160,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, const String &p_destination) {
 
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
@@ -206,7 +206,26 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 		f.package = pkg_num;
 		unzGetFilePos(zfile, &f.file_pos);
 
-		String fname = String("res://") + filename_inzip;
+		String fname;
+		if (p_destination != "") {
+			String destination = "res://" + p_destination;
+			if (!destination.ends_with("/")) {
+				destination += "/";
+			}
+
+			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			if (!dir->dir_exists(destination)) {
+				memdelete(dir);
+
+				return false;
+			}
+			memdelete(dir);
+
+			fname = destination + filename_inzip;
+		} else {
+			fname = String("res://") + filename_inzip;
+		}
+
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
