@@ -51,6 +51,9 @@ class PacketPeer : public Reference {
 
 	bool allow_object_decoding;
 
+	int encode_buffer_max_size;
+	PoolVector<uint8_t> encode_buffer;
+
 public:
 	virtual int get_available_packet_count() const = 0;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0; ///< buffer is GONE after next get_packet
@@ -68,6 +71,9 @@ public:
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
+
+	void set_encode_buffer_max_size(int p_max_size);
+	int get_encode_buffer_max_size() const;
 
 	PacketPeer();
 	~PacketPeer() {}
