@@ -522,24 +522,24 @@ void OS_Android::process_scroll(Point2 p_pos) {
 	scroll_prev_pos = p_pos;
 }
 
-void OS_Android::process_accelerometer(const Vector3 &p_accelerometer, uint64_t timestamp) {
+void OS_Android::process_accelerometer(const Vector3 &p_accelerometer, uint64_t p_timestamp) {
 
-	input->set_accelerometer(p_accelerometer, timestamp);
+	input->set_accelerometer(p_accelerometer, p_timestamp);
 }
 
-void OS_Android::process_gravity(const Vector3 &p_gravity, uint64_t timestamp) {
+void OS_Android::process_gravity(const Vector3 &p_gravity, uint64_t p_timestamp) {
 
-	input->set_gravity(p_gravity, timestamp);
+	input->set_gravity(p_gravity, p_timestamp);
 }
 
-void OS_Android::process_magnetometer(const Vector3 &p_magnetometer, uint64_t timestamp) {
+void OS_Android::process_magnetometer(const Vector3 &p_magnetometer, uint64_t p_timestamp) {
 
-	input->set_magnetometer(p_magnetometer, timestamp);
+	input->set_magnetometer(p_magnetometer, p_timestamp);
 }
 
-void OS_Android::process_gyroscope(const Vector3 &p_gyroscope, uint64_t timestamp) {
+void OS_Android::process_gyroscope(const Vector3 &p_gyroscope, uint64_t p_timestamp) {
 
-	input->set_gyroscope(p_gyroscope, timestamp);
+	input->set_gyroscope(p_gyroscope, p_timestamp);
 }
 
 bool OS_Android::has_touchscreen_ui_hint() const {
