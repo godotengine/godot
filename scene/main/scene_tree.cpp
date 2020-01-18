@@ -423,7 +423,8 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	input_handled = false;
 
-	const Ref<InputEvent> &ev = p_event;
+	// Don't make const ref unless you can find and fix what caused GH-34691.
+	Ref<InputEvent> ev = p_event;
 
 	MainLoop::input_event(ev);
 
