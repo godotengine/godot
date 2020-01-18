@@ -3964,33 +3964,42 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 							tk = _get_token();
 							if (tk.type == TK_BRACKET_OPEN) {
-								Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
-								if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-									_set_error("Expected single integer constant > 0");
-									return ERR_PARSE_ERROR;
-								}
+								TkPos pos2 = _get_tkpos();
+								tk = _get_token();
+								if (tk.type == TK_BRACKET_CLOSE) {
+									array_size2 = var.array_size;
+									tk = _get_token();
+								} else {
+									_set_tkpos(pos2);
 
-								ConstantNode *cnode = (ConstantNode *)n;
-								if (cnode->values.size() == 1) {
-									array_size2 = cnode->values[0].sint;
-									if (array_size2 <= 0) {
+									Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+									if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 										_set_error("Expected single integer constant > 0");
 										return ERR_PARSE_ERROR;
 									}
-								} else {
-									_set_error("Expected single integer constant > 0");
-									return ERR_PARSE_ERROR;
-								}
 
-								tk = _get_token();
-								if (tk.type != TK_BRACKET_CLOSE) {
-									_set_error("Expected ']");
-									return ERR_PARSE_ERROR;
-								} else {
+									ConstantNode *cnode = (ConstantNode *)n;
+									if (cnode->values.size() == 1) {
+										array_size2 = cnode->values[0].sint;
+										if (array_size2 <= 0) {
+											_set_error("Expected single integer constant > 0");
+											return ERR_PARSE_ERROR;
+										}
+									} else {
+										_set_error("Expected single integer constant > 0");
+										return ERR_PARSE_ERROR;
+									}
+
 									tk = _get_token();
+									if (tk.type != TK_BRACKET_CLOSE) {
+										_set_error("Expected ']'");
+										return ERR_PARSE_ERROR;
+									} else {
+										tk = _get_token();
+									}
 								}
 							} else {
-								_set_error("Expected '[");
+								_set_error("Expected '['");
 								return ERR_PARSE_ERROR;
 							}
 
