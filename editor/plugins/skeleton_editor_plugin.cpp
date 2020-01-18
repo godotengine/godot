@@ -114,7 +114,8 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	bone_shape->set_shape(bone_shape_capsule);
 
 	Transform body_transform;
-	body_transform.origin = Vector3(0, 0, -half_height);
+	body_transform.origin = Vector3(0, half_height, 0);
+	body_transform.basis = body_transform.rotated(body_transform.basis[0], Math_PI / 2.0).basis;
 
 	Transform joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);
