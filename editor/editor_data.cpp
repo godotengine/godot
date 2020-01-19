@@ -741,7 +741,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	return s;
 }
 
-String EditorData::get_scene_title(int p_idx) const {
+String EditorData::get_scene_title(int p_idx, bool p_always_strip_extension) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 	if (!edited_scene[p_idx].root) {
 		return TTR("[empty]");
@@ -749,12 +749,28 @@ String EditorData::get_scene_title(int p_idx) const {
 	if (edited_scene[p_idx].root->get_filename() == "") {
 		return TTR("[unsaved]");
 	}
-	bool show_ext = EDITOR_DEF("interface/scene_tabs/show_extension", false);
-	String name = edited_scene[p_idx].root->get_filename().get_file();
-	if (!show_ext) {
-		name = name.get_basename();
+
+	const String filename = edited_scene[p_idx].root->get_filename().get_file();
+	const String basename = filename.get_basename();
+
+	if (p_always_strip_extension) {
+		return basename;
 	}
-	return name;
+
+	// Return the filename including the extension if there's ambiguity (e.g. both `foo.tscn` and `foo.scn` are being edited).
+	for (int i = 0; i < edited_scene.size(); i++) {
+		if (i == p_idx) {
+			// Don't compare the edited scene against itself.
+			continue;
+		}
+
+		if (edited_scene[i].root && basename == edited_scene[i].root->get_filename().get_file().get_basename()) {
+			return filename;
+		}
+	}
+
+	// Else, return just the basename as there's no ambiguity.
+	return basename;
 }
 
 void EditorData::set_scene_path(int p_idx, const String &p_path) {

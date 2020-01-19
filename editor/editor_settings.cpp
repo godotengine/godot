@@ -460,7 +460,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT);
 
 	// Scene tabs
-	_initial_set("interface/scene_tabs/show_extension", false);
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	_initial_set("interface/scene_tabs/resize_if_many_tabs", true);
 	_initial_set("interface/scene_tabs/minimum_width", 50);
