@@ -7592,6 +7592,10 @@ msgid "Cinematic Preview"
 msgstr "影片預覽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "自由視圖 左"
 

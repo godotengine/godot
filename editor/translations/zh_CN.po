@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-01-13 13:36+0000\n"
+"PO-Revision-Date: 2020-01-19 11:03+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10.1\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1961,9 +1961,8 @@ msgid "Inherited by:"
 msgstr "派生："
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "描述:"
+msgstr "描述"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1983,14 +1982,12 @@ msgid "Properties"
 msgstr "属性"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "重写"
+msgstr "覆盖："
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "默认"
+msgstr "默认："
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2013,9 +2010,8 @@ msgid "Property Descriptions"
 msgstr "属性说明"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "值"
+msgstr "（值）"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -7209,6 +7205,10 @@ msgstr "启用多普勒效应"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
 msgstr "效果预览"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

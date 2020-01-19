@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-16 22:23+0000\n"
+"PO-Revision-Date: 2020-01-19 11:03+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10.2-dev\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1934,9 +1934,8 @@ msgid "Inherited by:"
 msgstr "상속한 클래스:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "설명:"
+msgstr "설명"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1957,14 +1956,12 @@ msgid "Properties"
 msgstr "속성"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "다시 정의하기"
+msgstr "다시 정의하기:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "기본"
+msgstr "기본:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1987,9 +1984,8 @@ msgid "Property Descriptions"
 msgstr "속성 설명"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "값"
+msgstr "(값)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -7235,6 +7231,10 @@ msgstr "파동 왜곡 켜기"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
 msgstr "시네마틱 미리 보기"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

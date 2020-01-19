@@ -9,12 +9,14 @@
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
 # Boby Ilea <boby.ilea@gmail.com>, 2019.
 # EVOKZH <avip.ady@gmail.com>, 2019.
+# Marincia Catalin <catalinmarincia@gmail.com>, 2020.
+# Marincia Cătălin <catalinmarincia@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-09 22:04+0000\n"
-"Last-Translator: EVOKZH <avip.ady@gmail.com>\n"
+"PO-Revision-Date: 2020-01-19 13:12+0000\n"
+"Last-Translator: Marincia Cătălin <catalinmarincia@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -23,7 +25,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -32,7 +34,7 @@ msgstr "Argument de tip invalid pentru convert(), folosiți constante TYPE_*"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Se așteaptă un șir de lungime 1 (un caracter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -42,7 +44,7 @@ msgstr "Bytes insuficienti pentru decodare bytes, sau format invalid"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Intrare invalida %i in expresie"
+msgstr "Intrare invalida %i (nu a fost transmisă) in expresie"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -177,19 +179,16 @@ msgid "Anim Multi Change Transform"
 msgstr "Anim Transformare multifuncțională"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
 msgstr "Anim Schimbare valoare cadre cheie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Anim Schimbare apelare"
+msgstr "Anim executa schimbari multiple"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Schimbă Numele Animației:"
+msgstr "Schimbă Lungimea Animației"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -198,38 +197,35 @@ msgstr "Schimbați Bucla Animației"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Lista De Proprietati"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Transformare hartă UV"
+msgstr "Transformare Pistei 3d"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Cheama linia de metode"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Traseu curbă Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Cale Audio Playback"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "Oprește rularea animației. (S)"
+msgstr "Oprește rularea animației"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
 msgstr "Lungime Animație (în frame-uri)."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Lungime Animație (în secunde)."
+msgstr "Lungime Animație (în secunde)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -237,22 +233,21 @@ msgid "Add Track"
 msgstr "Anim Adăugați Pistă"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Zoom Animație."
+msgstr "Zoom Animație"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funcții:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Secvențe Audio:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Secvențe Anim:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -260,32 +255,28 @@ msgid "Change Track Path"
 msgstr "Schimbați Valoarea Array-ului"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Comutează modul fără distrageri."
+msgstr "Comutează această pistă pornit/oprit."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Modul Actualizare (Cum este setată această proprietate)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Nod de Animație"
+msgstr "Mod Intercalare"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
 msgstr "Ștergeți pista selectată."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Timp X-Decolorare (s):"
+msgstr "Timp (s): "
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -305,13 +296,12 @@ msgid "Trigger"
 msgstr "Trăgaci"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Viitor"
+msgstr "Capturează"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Cel mai apropiat"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -320,7 +310,7 @@ msgstr "Linear"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Cubic"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -336,29 +326,24 @@ msgid "Insert Key"
 msgstr "Inserează Notă"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Anim Clonare Chei"
+msgstr "Clonare Chei(s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Anim Ștergeți Cheile"
+msgstr "Ștergeți Cheile"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Schimbă Numele Animației:"
+msgstr "Schimbă Modul de Actualizare al Animației"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Nod de Animație"
+msgstr "Schimbă Modul de Intercalare al Animației"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Schimbați Bucla Anim"
+msgstr "Schimbați Bucla Animației"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -390,7 +375,7 @@ msgstr "Anim Inserați"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "AnimationPlayer nu se poate anima singur, doar alți jucători."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -405,12 +390,10 @@ msgid "Anim Insert Key"
 msgstr "Anim Inserați Cheie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Schimbă Numele Animației:"
+msgstr "Schimbă Pasul Animației"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
 msgstr "Rearanjați Autoload-urile"
 
@@ -436,61 +419,55 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Nu este posibil să fie adăugată o nouă pistă fără a avea o rădăcină"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Pistă invalidă pentru Bezier(nicio sub-proprietate corespunzătoare)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Anim Adăugați Pistă"
+msgstr "Adăugați Pistă Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Calea pistei este invalidă, așa că nu poate fi adăugată o cheie."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Pista nu este de tipul Spatial, nu se poate insera cheie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "Transformare hartă UV"
+msgstr "Adăugare Cheie de Tranformare a Pistei"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
 msgstr "Anim Adăugați Pistă"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Calea pistei este invalidă, așa că nu poate fi adăugată o metodă."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Anim Inserați Pistă și Cheie"
+msgstr "Inserați Pistă și Cheie"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "Metoda nu a fost găsită în obiect: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "Anim Mutați Cheie"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "Clip-board de resurse gol !"
+msgstr "Clip-board de resurse gol"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "Lipiţi Parametrii"
+msgstr "Lipiţi Piste"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -500,6 +477,8 @@ msgstr "Anim Scalați Cheile"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Această opțiune nu funcționează pentru editarea Bezier, din moment ce e o "
+"singură pistă."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -516,7 +495,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Avertisment: Se editează animația încărcată"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -526,28 +505,27 @@ msgstr "Selectați un Animator din Copacul Scenă să editați animații."
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr ""
+"Arată numai pistele ce aparțin nodurilor selectate în managerul de file."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Grupează pistele în funcție de nod sau afișează-le ca o listă simplă."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Aliniere"
+msgstr "Fixare:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Arborele Animației este valid."
+msgstr "Pasul Animației."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Secunde"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS(cadre pe secundă)"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -560,14 +538,12 @@ msgid "Edit"
 msgstr "Modificare"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "ArboreAnimație"
+msgstr "Proprietăți animație."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "Copie Parametrii"
+msgstr "Copiază Piste"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -586,17 +562,14 @@ msgid "Duplicate Transposed"
 msgstr "Duplicați Transpunerea"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Centrează Selecția"
+msgstr "Șterge Selecția"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "Mergeți la Pasul Următor"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "Mergeți la Pasul Anterior"
 
@@ -610,11 +583,11 @@ msgstr "Curățați Animația"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Alege nodul care urmează să fie animat:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Folosește curbe Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -661,9 +634,8 @@ msgid "Scale Ratio:"
 msgstr "Proporție Scalare:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Setează Tranziții la:"
+msgstr "Selectează Pistele de Copiat"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -672,12 +644,11 @@ msgstr "Setează Tranziții la:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Copiază"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "Mod Selectare"
+msgstr "Selectează Tot/Nimic"
 
 #: editor/animation_track_editor_plugins.cpp
 #, fuzzy
@@ -718,12 +689,11 @@ msgstr "Înlocuit %d potriviri."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d potriviri."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "Nici o Potrivire"
+msgstr "%d potriviri."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -748,7 +718,7 @@ msgstr "Numai Selecția"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
@@ -772,45 +742,39 @@ msgstr "Resetați Zoom-area"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Avertismente"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Numerele liniilor și coloanelor."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Metoda din Nod-ul țintă trebuie specificată!"
+msgstr "Metoda din nodul țintă trebuie specificată."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
 "Metoda țintă nu există! Specificați o metodă validă sau atașați un script la "
-"Nod-ul țintă."
+"nodul țintă."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "Conectați la Nod:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Nu se poate conecta la gazda:"
+msgstr "Conectează la Script:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
 msgstr "Semnale:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "Nodul nu conține geometrie."
+msgstr "Scena nu conține niciun script."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -838,14 +802,12 @@ msgid "Extra Call Arguments:"
 msgstr "Extra Argumente de Chemare:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Proprietățile obiectului."
+msgstr "Metodă Primitor:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Opțiuni Snapping"
+msgstr "Avansate"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -862,12 +824,11 @@ msgstr "Tragere unică"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Deconectează semnalul după prima emitere."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "Conectați Semnal:"
+msgstr "Nu se poate conecta semnalul"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -889,9 +850,8 @@ msgid "Connect"
 msgstr "Conectați"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Semnale:"
+msgstr "Semnal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -902,7 +862,6 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Deconectați '%s' de la '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
 msgstr "Deconectați '%s' de la '%s'"
 
@@ -916,19 +875,16 @@ msgid "Disconnect"
 msgstr "Deconectați"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "Conectați Semnal:"
+msgstr "Conectați Semnal la o Metodă"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "Eroare de Conexiune"
+msgstr "Modifică Conexiunea:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Ești sigur că vrei să execuți acel proiect?"
+msgstr "Ești sigur că vrei să ștergi toate conexiunile de la semnalul \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -936,22 +892,19 @@ msgstr "Semnale"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
+msgstr "Ești sigur că vrei să ștergi toate conexiunile de la acest semnal?"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "Deconectați"
+msgstr "Deconectați Toate"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "Modificare"
+msgstr "Modificare..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "Metode"
+msgstr "Mergi la Metodă"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -1003,16 +956,14 @@ msgid "Dependencies For:"
 msgstr "Dependențe Pentru:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
 "Scena '%s' este în proces de editare. \n"
-"Modificările nu vor avea efect dacă nu reîncărcați."
+"Modificările vor avea efect doar după reîncărcare."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
@@ -1065,9 +1016,8 @@ msgid "Owners Of:"
 msgstr "Stăpâni La:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Ștergeți fișierele selectate din proiect? (fără anulare)"
+msgstr "Ștergeți fișierele selectate din proiect? (Acțiune ireversibilă)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1088,7 +1038,6 @@ msgid "Error loading:"
 msgstr "Eroare încărcând:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
 msgstr "Scena nu a putut fi încărcata deoarece are dependențe în lipsa:"
 
@@ -1113,9 +1062,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Ștergeți permanent %d articol(e)? (Fără anulare!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Dependențe"
+msgstr "Arată Dependențe"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1206,12 +1154,10 @@ msgid "License"
 msgstr "Licență"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
 msgstr "Licenţe Thirdparty"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
@@ -1220,8 +1166,8 @@ msgid ""
 msgstr ""
 "Motorul Godot se bazează pe un număr de biblioteci thirdparty gratis și "
 "opensource, toate compatibile cu termenii licenţei MIT ai lui. Mai jos este "
-"o listă exhaustivă a tuturor acestor componente de thirdparty cu declaraţii "
-"de autor respective şi termenii licenței."
+"o listă exhaustivă a tuturor acestor componente de thirdparty cu "
+"declaraţiile de autor respective şi termenii licenței."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1236,14 +1182,12 @@ msgid "Licenses"
 msgstr "Licențe"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "Eroare la deschiderea fişierului pachet, nu este în format zip."
+msgstr "Eroare la deschiderea fişierului pachet, nu este în format ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "AutoLoad '%s' există deja!"
+msgstr "%s (Există deja)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1251,17 +1195,15 @@ msgstr "Decomprimare Asset-uri"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
-msgstr ""
+msgstr "Următoarele file au eșuat extragerea din pachet:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d mai multe fișiere"
+msgstr "și %d alte fișiere."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "Pachet Instalat cu Succes!"
+msgstr "Pachet instalat cu succes!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1269,9 +1211,8 @@ msgid "Success!"
 msgstr "Succes!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Conținut:"
+msgstr "Conținutul pachetului:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1326,7 +1267,6 @@ msgid "Delete Bus Effect"
 msgstr "Ștergeți Pista Efect"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
 msgstr "Pista Audio, Trageți și Plasați pentru a rearanja."
 
@@ -1401,7 +1341,7 @@ msgstr "Deschide Schema Pistei Audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "Nu este niciun '%s' în filă."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1412,9 +1352,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Fişier nevalid, nu este o schemă de pistă audio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Eroare la salvarea TileSet!"
+msgstr "Eroare la salvarea filei: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -7628,6 +7567,10 @@ msgstr "Schimbați Lung Anim"
 #, fuzzy
 msgid "Cinematic Preview"
 msgstr "Se creează Previzualizările Mesh-ului"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-13 13:36+0000\n"
+"PO-Revision-Date: 2020-01-19 11:03+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10.1\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1945,9 +1945,8 @@ msgid "Inherited by:"
 msgstr "Herdado por:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Descrição:"
+msgstr "Descrição"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1968,14 +1967,12 @@ msgid "Properties"
 msgstr "Propriedades"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Sobrepõe"
+msgstr "Sobrepõe:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Padrão"
+msgstr "Padrão:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1998,9 +1995,8 @@ msgid "Property Descriptions"
 msgstr "Descrições da Propriedade"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Valor"
+msgstr "(valor)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -7281,6 +7277,10 @@ msgstr "Ativar Doppler"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
 msgstr "Pré-visualização Cinemática"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

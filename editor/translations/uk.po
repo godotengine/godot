@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-13 13:36+0000\n"
+"PO-Revision-Date: 2020-01-19 11:04+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10.1\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1950,9 +1950,8 @@ msgid "Inherited by:"
 msgstr "Успадковано:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Опис:"
+msgstr "Опис"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1973,14 +1972,12 @@ msgid "Properties"
 msgstr "Властивості"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Перевизначення"
+msgstr "перевизначення:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Типовий"
+msgstr "типовий:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2003,9 +2000,8 @@ msgid "Property Descriptions"
 msgstr "Описи властивостей"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Значення"
+msgstr "(значення)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -7305,6 +7301,10 @@ msgstr "Увімкнути ефект Доплера"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
 msgstr "Кінематичний перегляд"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

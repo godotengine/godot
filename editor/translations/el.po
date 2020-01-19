@@ -7338,6 +7338,10 @@ msgid "Cinematic Preview"
 msgstr "Κινηματογραφική Προεπισκόπηση"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr "Ελεύθερο κοίταγμα αριστερά"
 
