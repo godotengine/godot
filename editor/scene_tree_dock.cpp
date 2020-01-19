@@ -1311,22 +1311,30 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 				Variant p = p_base->get(propertyname);
 				if (p.get_type() == Variant::NODE_PATH) {
 
+					NodePath root_path_old = p_base->get_path();
+					NodePath root_path_new = root_path_old;
+
+					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
+						if (root_path_old == F->get().first) {
+							root_path_new = F->get().second;
+							break;
+						}
+					}
+
 					// Goes through all paths to check if its matching
 					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
 
-						NodePath root_path = p_base->get_path();
-
-						NodePath rel_path_old = root_path.rel_path_to(F->get().first);
-
-						NodePath rel_path_new = F->get().second;
-
-						// if not empty, get new relative path
-						if (F->get().second != NodePath()) {
-							rel_path_new = root_path.rel_path_to(F->get().second);
-						}
+						NodePath rel_path_old = root_path_old.rel_path_to(F->get().first);
 
 						// if old path detected, then it needs to be replaced with the new one
 						if (p == rel_path_old) {
+
+							NodePath rel_path_new = F->get().second;
+
+							// if not empty, get new relative path
+							if (!rel_path_new.is_empty()) {
+								rel_path_new = root_path_new.rel_path_to(F->get().second);
+							}
 
 							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
 							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, rel_path_old);
