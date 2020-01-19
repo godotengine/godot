@@ -37,7 +37,7 @@
 			The colliding body's shape's normal at the point of collision.
 		</member>
 		<member name="position" type="Vector2" setter="" getter="get_position" default="Vector2( 0, 0 )">
-			The point of collision.
+			The point of collision, in global coordinates.
 		</member>
 		<member name="remainder" type="Vector2" setter="" getter="get_remainder" default="Vector2( 0, 0 )">
 			The moving object's remaining movement vector.
