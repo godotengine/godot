@@ -147,7 +147,7 @@ public:
 
 struct FlagScopeGuard {
 
-	FlagScopeGuard(bool &p_flag) :
+	explicit FlagScopeGuard(bool &p_flag) :
 			flag(p_flag) {
 		flag = !flag;
 	}

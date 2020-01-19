@@ -45,7 +45,7 @@ struct _ObjectDebugLock {
 
 	Object *obj;
 
-	_ObjectDebugLock(Object *p_obj) {
+	explicit _ObjectDebugLock(Object *p_obj) {
 		obj = p_obj;
 		obj->_lock_index.ref();
 	}

@@ -50,7 +50,7 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	virtual void redraw();
-	PathSpatialGizmo(Path *p_path = NULL);
+	explicit PathSpatialGizmo(Path *p_path = NULL);
 };
 
 class PathSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
@@ -116,7 +116,7 @@ public:
 	bool is_handle_clicked() { return handle_clicked; }
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
-	PathEditorPlugin(EditorNode *p_node);
+	explicit PathEditorPlugin(EditorNode *p_node);
 	~PathEditorPlugin();
 };
 

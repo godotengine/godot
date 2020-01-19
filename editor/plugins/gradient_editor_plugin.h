@@ -68,7 +68,7 @@ class GradientEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "ColorRamp"; }
 
-	GradientEditorPlugin(EditorNode *p_node);
+	explicit GradientEditorPlugin(EditorNode *p_node);
 };
 
 #endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */

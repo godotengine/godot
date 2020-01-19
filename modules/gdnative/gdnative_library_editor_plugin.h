@@ -108,7 +108,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	GDNativeLibraryEditorPlugin(EditorNode *p_node);
+	explicit GDNativeLibraryEditorPlugin(EditorNode *p_node);
 };
 #endif
 #endif // GDNATIVE_LIBRARY_EDITOR_PLUGIN_H

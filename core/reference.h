@@ -214,7 +214,7 @@ public:
 	}
 
 	template <class T_Other>
-	Ref(const Ref<T_Other> &p_from) {
+	explicit Ref(const Ref<T_Other> &p_from) {
 
 		reference = NULL;
 		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
@@ -228,14 +228,14 @@ public:
 		r.reference = NULL;
 	}
 
-	Ref(T *p_reference) {
+	explicit Ref(T *p_reference) {
 
 		reference = NULL;
 		if (p_reference)
 			ref_pointer(p_reference);
 	}
 
-	Ref(const Variant &p_variant) {
+	explicit Ref(const Variant &p_variant) {
 
 		RefPtr refptr = p_variant;
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
@@ -251,7 +251,7 @@ public:
 		r.reference = NULL;
 	}
 
-	Ref(const RefPtr &p_refptr) {
+	explicit Ref(const RefPtr &p_refptr) {
 
 		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
 		reference = NULL;

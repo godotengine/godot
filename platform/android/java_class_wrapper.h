@@ -222,7 +222,7 @@ public:
 
 	Ref<JavaClass> wrap(const String &p_class);
 
-	JavaClassWrapper(jobject p_activity = NULL);
+	explicit JavaClassWrapper(jobject p_activity = NULL);
 };
 
 #endif // JAVA_CLASS_WRAPPER_H

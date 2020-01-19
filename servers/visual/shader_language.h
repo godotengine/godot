@@ -299,7 +299,7 @@ public:
 		Type type;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
-		Node(Type t) :
+		explicit Node(Type t) :
 				next(NULL),
 				type(t) {}
 		virtual ~Node() {}

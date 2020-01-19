@@ -84,7 +84,7 @@ public:
 	virtual int get_max_packet_size() const;
 
 	WebRTCDataChannelJS();
-	WebRTCDataChannelJS(int js_id);
+	explicit WebRTCDataChannelJS(int js_id);
 	~WebRTCDataChannelJS();
 };
 

@@ -48,7 +48,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	struct Vertex {
 		Vertex();
-		Vertex(int p_vertex);
+		explicit Vertex(int p_vertex);
 		Vertex(int p_polygon, int p_vertex);
 
 		bool operator==(const Vertex &p_vertex) const;

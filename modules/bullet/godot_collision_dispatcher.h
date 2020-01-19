@@ -45,7 +45,7 @@ private:
 	static const int CASTED_TYPE_AREA;
 
 public:
-	GodotCollisionDispatcher(btCollisionConfiguration *collisionConfiguration);
+	explicit GodotCollisionDispatcher(btCollisionConfiguration *collisionConfiguration);
 	virtual bool needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 	virtual bool needsResponse(const btCollisionObject *body0, const btCollisionObject *body1);
 };

@@ -70,7 +70,7 @@ public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true);
 
-	MeshLibraryEditor(EditorNode *p_editor);
+	explicit MeshLibraryEditor(EditorNode *p_editor);
 };
 
 class MeshLibraryEditorPlugin : public EditorPlugin {
@@ -87,7 +87,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	MeshLibraryEditorPlugin(EditorNode *p_node);
+	explicit MeshLibraryEditorPlugin(EditorNode *p_node);
 };
 
 #endif // MESH_LIBRARY_EDITOR_PLUGIN_H

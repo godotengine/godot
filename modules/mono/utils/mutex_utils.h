@@ -40,7 +40,7 @@ class ScopedMutexLock {
 	Mutex *mutex;
 
 public:
-	ScopedMutexLock(Mutex *mutex) {
+	explicit ScopedMutexLock(Mutex *mutex) {
 		this->mutex = mutex;
 #ifndef NO_THREADS
 #ifdef DEBUG_ENABLED

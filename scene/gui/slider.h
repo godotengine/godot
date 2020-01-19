@@ -74,7 +74,7 @@ public:
 	void set_scrollable(bool p_scrollable);
 	bool is_scrollable() const;
 
-	Slider(Orientation p_orientation = VERTICAL);
+	explicit Slider(Orientation p_orientation = VERTICAL);
 };
 
 class HSlider : public Slider {

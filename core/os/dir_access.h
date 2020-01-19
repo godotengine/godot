@@ -142,7 +142,7 @@ struct DirAccessRef {
 
 	operator bool() const { return f != NULL; }
 	DirAccess *f;
-	DirAccessRef(DirAccess *fa) { f = fa; }
+	explicit DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {
 		if (f) memdelete(f);
 	}

@@ -161,7 +161,7 @@ protected:
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	Polygon2DEditor(EditorNode *p_editor);
+	explicit Polygon2DEditor(EditorNode *p_editor);
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
@@ -169,7 +169,7 @@ class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	Polygon2DEditorPlugin(EditorNode *p_node);
+	explicit Polygon2DEditorPlugin(EditorNode *p_node);
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

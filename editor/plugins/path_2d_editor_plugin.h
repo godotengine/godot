@@ -108,7 +108,7 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
-	Path2DEditor(EditorNode *p_editor);
+	explicit Path2DEditor(EditorNode *p_editor);
 };
 
 class Path2DEditorPlugin : public EditorPlugin {
@@ -128,7 +128,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	Path2DEditorPlugin(EditorNode *p_node);
+	explicit Path2DEditorPlugin(EditorNode *p_node);
 	~Path2DEditorPlugin();
 };
 

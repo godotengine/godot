@@ -147,7 +147,7 @@ private:
 	TreeItem *children; //child items
 	Tree *tree; //tree (for reference)
 
-	TreeItem(Tree *p_tree);
+	explicit TreeItem(Tree *p_tree);
 
 	void _changed_notify(int p_cell);
 	void _changed_notify();

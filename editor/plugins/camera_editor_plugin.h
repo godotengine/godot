@@ -68,7 +68,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	CameraEditorPlugin(EditorNode *p_node);
+	explicit CameraEditorPlugin(EditorNode *p_node);
 	~CameraEditorPlugin();
 };
 

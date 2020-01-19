@@ -51,7 +51,7 @@ public:
 
 	static void make_default();
 
-	MutexPosix(bool p_recursive);
+	explicit MutexPosix(bool p_recursive);
 
 	~MutexPosix();
 };

@@ -58,7 +58,7 @@ protected:
 	virtual void _create_resource();
 
 public:
-	NavigationPolygonEditor(EditorNode *p_editor);
+	explicit NavigationPolygonEditor(EditorNode *p_editor);
 };
 
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
@@ -66,7 +66,7 @@ class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	NavigationPolygonEditorPlugin(EditorNode *p_node);
+	explicit NavigationPolygonEditorPlugin(EditorNode *p_node);
 };
 
 #endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

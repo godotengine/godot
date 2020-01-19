@@ -131,7 +131,7 @@ class CurveEditorPlugin : public EditorPlugin {
 	GDCLASS(CurveEditorPlugin, EditorPlugin);
 
 public:
-	CurveEditorPlugin(EditorNode *p_node);
+	explicit CurveEditorPlugin(EditorNode *p_node);
 
 	virtual String get_name() const { return "Curve"; }
 };

@@ -50,7 +50,7 @@ class PhysicsBody : public CollisionObject {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	PhysicsBody(PhysicsServer::BodyMode p_mode);
+	explicit PhysicsBody(PhysicsServer::BodyMode p_mode);
 
 public:
 	virtual Vector3 get_linear_velocity() const;

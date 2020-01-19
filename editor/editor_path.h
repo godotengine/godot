@@ -54,7 +54,7 @@ protected:
 public:
 	void update_path();
 
-	EditorPath(EditorHistory *p_history);
+	explicit EditorPath(EditorHistory *p_history);
 };
 
 #endif // EDITOR_PATH_H

@@ -50,7 +50,7 @@ private:
 	void _set_move_joint();
 
 public:
-	PhysicalBoneEditor(EditorNode *p_editor);
+	explicit PhysicalBoneEditor(EditorNode *p_editor);
 	~PhysicalBoneEditor();
 
 	void set_selected(PhysicalBone *p_pb);
@@ -72,7 +72,7 @@ public:
 	virtual void make_visible(bool p_visible);
 	virtual void edit(Object *p_node);
 
-	PhysicalBonePlugin(EditorNode *p_editor);
+	explicit PhysicalBonePlugin(EditorNode *p_editor);
 };
 
 #endif

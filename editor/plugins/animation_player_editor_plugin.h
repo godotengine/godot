@@ -265,7 +265,7 @@ public:
 
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
 
-	AnimationPlayerEditorPlugin(EditorNode *p_node);
+	explicit AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();
 };
 

@@ -91,7 +91,7 @@ private:
 
 public:
 	void show(const String &p_path);
-	DependencyEditorOwners(EditorNode *p_editor);
+	explicit DependencyEditorOwners(EditorNode *p_editor);
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {

@@ -199,7 +199,7 @@ public:
 
 	void queue_save();
 
-	ProjectSettingsEditor(EditorData *p_data);
+	explicit ProjectSettingsEditor(EditorData *p_data);
 };
 
 #endif // PROJECT_SETTINGS_H

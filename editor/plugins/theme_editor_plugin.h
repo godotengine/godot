@@ -113,7 +113,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	ThemeEditorPlugin(EditorNode *p_node);
+	explicit ThemeEditorPlugin(EditorNode *p_node);
 };
 
 #endif // THEME_EDITOR_PLUGIN_H

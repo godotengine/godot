@@ -45,7 +45,7 @@ protected:
 	virtual void _set_node(Node *p_polygon);
 
 public:
-	CollisionPolygon2DEditor(EditorNode *p_editor);
+	explicit CollisionPolygon2DEditor(EditorNode *p_editor);
 };
 
 class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
@@ -53,7 +53,7 @@ class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	CollisionPolygon2DEditorPlugin(EditorNode *p_node);
+	explicit CollisionPolygon2DEditorPlugin(EditorNode *p_node);
 };
 
 #endif // COLLISION_POLYGON_2D_EDITOR_PLUGIN_H

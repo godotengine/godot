@@ -87,7 +87,7 @@ public:
 	void from_aabb(const AABB &p_aabb);
 
 	BSP_Tree();
-	BSP_Tree(const Variant &p_variant);
+	explicit BSP_Tree(const Variant &p_variant);
 	BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius = 0);
 	BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB &p_aabb, real_t p_error_radius = 0);
 	~BSP_Tree();

@@ -125,7 +125,7 @@ public:
 	void lock();
 	void unlock();
 
-	PluginScriptLanguage(const godot_pluginscript_language_desc *desc);
+	explicit PluginScriptLanguage(const godot_pluginscript_language_desc *desc);
 	virtual ~PluginScriptLanguage();
 };
 

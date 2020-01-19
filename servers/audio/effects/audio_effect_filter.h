@@ -90,7 +90,7 @@ public:
 
 	Ref<AudioEffectInstance> instance();
 
-	AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
+	explicit AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
 };
 
 VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)

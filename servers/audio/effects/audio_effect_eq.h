@@ -71,7 +71,7 @@ public:
 	float get_band_gain_db(int p_band) const;
 	int get_band_count() const;
 
-	AudioEffectEQ(EQ::Preset p_preset = EQ::PRESET_6_BANDS);
+	explicit AudioEffectEQ(EQ::Preset p_preset = EQ::PRESET_6_BANDS);
 };
 
 class AudioEffectEQ6 : public AudioEffectEQ {

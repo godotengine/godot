@@ -174,7 +174,7 @@ struct PropertyInfo {
 		}
 	}
 
-	PropertyInfo(const StringName &p_class_name) :
+	explicit PropertyInfo(const StringName &p_class_name) :
 			type(Variant::OBJECT),
 			class_name(p_class_name),
 			hint(PROPERTY_HINT_NONE),
@@ -213,13 +213,13 @@ struct MethodInfo {
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
 	MethodInfo();
-	MethodInfo(const String &p_name);
+	explicit MethodInfo(const String &p_name);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(Variant::Type ret);
+	explicit MethodInfo(Variant::Type ret);
 	MethodInfo(Variant::Type ret, const String &p_name);
 	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1);
 	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
@@ -425,7 +425,7 @@ public:
 			target = NULL;
 			flags = 0;
 		}
-		Connection(const Variant &p_variant);
+		explicit Connection(const Variant &p_variant);
 	};
 
 private:

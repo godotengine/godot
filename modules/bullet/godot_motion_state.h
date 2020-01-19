@@ -55,7 +55,7 @@ class GodotMotionState : public btMotionState {
 	RigidBodyBullet *owner;
 
 public:
-	GodotMotionState(RigidBodyBullet *p_owner) :
+	explicit GodotMotionState(RigidBodyBullet *p_owner) :
 			bodyKinematicWorldTransf(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)),
 			bodyCurrentWorldTransform(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)),
 			owner(p_owner) {}

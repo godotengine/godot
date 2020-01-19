@@ -139,7 +139,7 @@ public:
 	Sprite *get_sprite();
 
 	void edit(Object *p_obj);
-	TextureRegionEditor(EditorNode *p_editor);
+	explicit TextureRegionEditor(EditorNode *p_editor);
 };
 
 class TextureRegionEditorPlugin : public EditorPlugin {
@@ -164,7 +164,7 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
-	TextureRegionEditorPlugin(EditorNode *p_node);
+	explicit TextureRegionEditorPlugin(EditorNode *p_node);
 };
 
 #endif // TEXTURE_REGION_EDITOR_PLUGIN_H

@@ -80,7 +80,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 
-	SplitContainer(bool p_vertical = false);
+	explicit SplitContainer(bool p_vertical = false);
 };
 
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);

@@ -79,7 +79,7 @@ public:
 	void set_ipv6(const uint8_t *p_buf);
 
 	operator String() const;
-	IP_Address(const String &p_string);
+	explicit IP_Address(const String &p_string);
 	IP_Address(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6 = false);
 	IP_Address() { clear(); }
 };

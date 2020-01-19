@@ -45,7 +45,7 @@ struct VideoDecoderGDNative {
 			interface(NULL),
 			plugin_name("none") {}
 
-	VideoDecoderGDNative(const godot_videodecoder_interface_gdnative *p_interface) :
+	explicit VideoDecoderGDNative(const godot_videodecoder_interface_gdnative *p_interface) :
 			interface(p_interface),
 			plugin_name(p_interface->get_plugin_name()) {
 		_get_supported_extensions();

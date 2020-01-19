@@ -50,7 +50,7 @@ class PhysicsBody2D : public CollisionObject2D {
 
 protected:
 	void _notification(int p_what);
-	PhysicsBody2D(Physics2DServer::BodyMode p_mode);
+	explicit PhysicsBody2D(Physics2DServer::BodyMode p_mode);
 
 	static void _bind_methods();
 

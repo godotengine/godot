@@ -133,7 +133,7 @@ struct AudioFrame {
 		return Vector2(l, r);
 	}
 
-	_ALWAYS_INLINE_ AudioFrame(const Vector2 &p_v2) {
+	_ALWAYS_INLINE_ explicit AudioFrame(const Vector2 &p_v2) {
 		l = p_v2.x;
 		r = p_v2.y;
 	}

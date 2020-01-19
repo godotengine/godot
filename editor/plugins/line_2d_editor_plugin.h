@@ -50,7 +50,7 @@ protected:
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
 
 public:
-	Line2DEditor(EditorNode *p_editor);
+	explicit Line2DEditor(EditorNode *p_editor);
 };
 
 class Line2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
@@ -58,7 +58,7 @@ class Line2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(Line2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	Line2DEditorPlugin(EditorNode *p_node);
+	explicit Line2DEditorPlugin(EditorNode *p_node);
 };
 
 #endif // LINE_2D_EDITOR_PLUGIN_H

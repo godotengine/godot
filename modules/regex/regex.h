@@ -97,7 +97,7 @@ public:
 	Array get_names() const;
 
 	RegEx();
-	RegEx(const String &p_pattern);
+	explicit RegEx(const String &p_pattern);
 	~RegEx();
 };
 

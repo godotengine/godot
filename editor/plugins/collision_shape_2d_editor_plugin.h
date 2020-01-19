@@ -78,7 +78,7 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_node);
 
-	CollisionShape2DEditor(EditorNode *p_editor);
+	explicit CollisionShape2DEditor(EditorNode *p_editor);
 };
 
 class CollisionShape2DEditorPlugin : public EditorPlugin {
@@ -97,7 +97,7 @@ public:
 	virtual bool handles(Object *p_obj) const;
 	virtual void make_visible(bool visible);
 
-	CollisionShape2DEditorPlugin(EditorNode *p_editor);
+	explicit CollisionShape2DEditorPlugin(EditorNode *p_editor);
 	~CollisionShape2DEditorPlugin();
 };
 

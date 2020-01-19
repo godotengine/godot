@@ -78,7 +78,7 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
-	Skeleton2DEditorPlugin(EditorNode *p_node);
+	explicit Skeleton2DEditorPlugin(EditorNode *p_node);
 	~Skeleton2DEditorPlugin();
 };
 

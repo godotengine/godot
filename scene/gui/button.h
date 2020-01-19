@@ -80,7 +80,7 @@ public:
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;
 
-	Button(const String &p_text = String());
+	explicit Button(const String &p_text = String());
 	~Button();
 };
 

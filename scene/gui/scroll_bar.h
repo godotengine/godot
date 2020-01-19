@@ -106,7 +106,7 @@ public:
 	bool is_smooth_scroll_enabled() const;
 
 	virtual Size2 get_minimum_size() const;
-	ScrollBar(Orientation p_orientation = VERTICAL);
+	explicit ScrollBar(Orientation p_orientation = VERTICAL);
 	~ScrollBar();
 };
 

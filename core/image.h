@@ -330,7 +330,7 @@ public:
 	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
-	Image(const char **p_xpm);
+	explicit Image(const char **p_xpm);
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
 
