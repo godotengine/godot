@@ -147,7 +147,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
 			name->connect("text_entered", this, "_node_renamed", varray(agnode));
-			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode));
+			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
 			node->connect("close_request", this, "_delete_request", varray(E->get()), CONNECT_DEFERRED);
