@@ -246,6 +246,16 @@ public:
 		custom_defines.push_back(p_define.utf8());
 	}
 
+	void get_custom_defines(Vector<String> *p_defines) {
+		for (int i = 0; i < custom_defines.size(); i++) {
+			p_defines->push_back(custom_defines[i].get_data());
+		}
+	}
+
+	void clear_custom_defines() {
+		custom_defines.clear();
+	}
+
 	virtual ~ShaderGLES2();
 };
 

@@ -127,6 +127,27 @@ void Shader::get_default_texture_param_list(List<StringName> *r_textures) const 
 	}
 }
 
+void Shader::set_custom_defines(const String &p_defines) {
+
+	VS::get_singleton()->shader_clear_custom_defines(shader);
+	VS::get_singleton()->shader_add_custom_define(shader, p_defines);
+}
+
+String Shader::get_custom_defines() {
+	Vector<String> custom_defines;
+	VS::get_singleton()->shader_get_custom_defines(shader, &custom_defines);
+
+	String concatenated_defines;
+	for (int i = 0; i < custom_defines.size(); i++) {
+		if (i != 0) {
+			concatenated_defines += "\n";
+		}
+		concatenated_defines += custom_defines[i];
+	}
+
+	return concatenated_defines;
+}
+
 bool Shader::is_text_shader() const {
 	return true;
 }
@@ -149,11 +170,15 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture"), &Shader::set_default_texture_param);
 	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
 
+	ClassDB::bind_method(D_METHOD("set_custom_defines", "custom_defines"), &Shader::set_custom_defines);
+	ClassDB::bind_method(D_METHOD("get_custom_defines"), &Shader::get_custom_defines);
+
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
 	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_defines", PROPERTY_HINT_MULTILINE_TEXT), "set_custom_defines", "get_custom_defines");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);

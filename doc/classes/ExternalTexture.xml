@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ExternalTexture" inherits="Texture" category="Core" version="3.2">
+	<brief_description>
+		Adds support for external textures as defined by https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_external_texture_id" qualifiers="const">
+			<return type="int"/>
+			<description>
+				Returns the external texture name.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
+			External texture size.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -2621,3 +2621,64 @@ CameraTexture::CameraTexture() {
 CameraTexture::~CameraTexture() {
 	// nothing to do here yet
 }
+
+void ExternalTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
+	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+}
+
+uint32_t ExternalTexture::get_external_texture_id() {
+	return VisualServer::get_singleton()->texture_get_texid(texture);
+}
+
+void ExternalTexture::set_size(const Size2 &p_size) {
+
+	if (p_size.width > 0 && p_size.height > 0) {
+		size = p_size;
+		VisualServer::get_singleton()->texture_set_size_override(texture, size.width, size.height, 0);
+	}
+}
+
+int ExternalTexture::get_width() const {
+	return size.width;
+}
+
+int ExternalTexture::get_height() const {
+	return size.height;
+}
+
+Size2 ExternalTexture::get_size() const {
+	return size;
+}
+
+RID ExternalTexture::get_rid() const {
+	return texture;
+}
+
+bool ExternalTexture::has_alpha() const {
+	return true;
+}
+
+void ExternalTexture::set_flags(uint32_t p_flags) {
+	// not supported
+}
+
+uint32_t ExternalTexture::get_flags() const {
+	// not supported
+	return 0;
+}
+
+ExternalTexture::ExternalTexture() {
+	size = Size2(1.0, 1.0);
+	texture = VisualServer::get_singleton()->texture_create();
+
+	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	_change_notify();
+	emit_changed();
+}
+
+ExternalTexture::~ExternalTexture() {
+	VisualServer::get_singleton()->free(texture);
+}

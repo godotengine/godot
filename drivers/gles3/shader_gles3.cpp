@@ -210,9 +210,14 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("#version 300 es\n");
 #endif
 
+#ifdef ANDROID_ENABLED
+	strings.push_back("#define ANDROID_ENABLED\n");
+#endif
+
 	for (int i = 0; i < custom_defines.size(); i++) {
 
 		strings.push_back(custom_defines[i].get_data());
+		strings.push_back("\n");
 	}
 
 	for (int j = 0; j < conditional_count; j++) {
