@@ -42,8 +42,13 @@
 		<member name="JSON" type="JSON" setter="" getter="">
 			The [JSON] singleton.
 		</member>
+		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
+			The [JavaClassWrapper] singleton.
+			[b]Note:[/b] Only implemented on Android.
+		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
 			The [JavaScript] singleton.
+			[b]Note:[/b] Only implemented on HTML5.
 		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			The [Marshalls] singleton.
