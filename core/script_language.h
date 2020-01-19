@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 #include "core/map.h"
 #include "core/pair.h"
 #include "core/resource.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ScriptLanguage;
 
@@ -112,6 +108,12 @@ protected:
 
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
+
+	Variant _get_property_default_value(const StringName &p_property);
+	Array _get_script_property_list();
+	Array _get_script_method_list();
+	Array _get_script_signal_list();
+	Dictionary _get_script_constant_map();
 
 public:
 	virtual bool can_instance() const = 0;
@@ -425,31 +427,6 @@ class ScriptDebugger {
 	ScriptLanguage *break_lang;
 
 public:
-	typedef void (*RequestSceneTreeMessageFunc)(void *);
-
-	struct LiveEditFuncs {
-
-		void *udata;
-		void (*node_path_func)(void *, const NodePath &p_path, int p_id);
-		void (*res_path_func)(void *, const String &p_path, int p_id);
-
-		void (*node_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*node_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*node_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*res_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*res_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*res_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*root_func)(void *, const NodePath &p_scene_path, const String &p_scene_from);
-
-		void (*tree_create_node_func)(void *, const NodePath &p_parent, const String &p_type, const String &p_name);
-		void (*tree_instance_node_func)(void *, const NodePath &p_parent, const String &p_path, const String &p_name);
-		void (*tree_remove_node_func)(void *, const NodePath &p_at);
-		void (*tree_remove_and_keep_node_func)(void *, const NodePath &p_at, ObjectID p_keep_id);
-		void (*tree_restore_node_func)(void *, ObjectID p_id, const NodePath &p_at, int p_at_pos);
-		void (*tree_duplicate_node_func)(void *, const NodePath &p_at, const String &p_new_name);
-		void (*tree_reparent_node_func)(void *, const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-	};
-
 	_FORCE_INLINE_ static ScriptDebugger *get_singleton() { return singleton; }
 	void set_lines_left(int p_left);
 	int get_lines_left() const;
@@ -465,7 +442,7 @@ public:
 	void clear_breakpoints();
 	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
+	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 	virtual void idle_poll();
 	virtual void line_poll();
 
@@ -478,8 +455,7 @@ public:
 	virtual bool is_remote() const { return false; }
 	virtual void request_quit() {}
 
-	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
-	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
 
 	virtual bool is_profiling() const = 0;
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;

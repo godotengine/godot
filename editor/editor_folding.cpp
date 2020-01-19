@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,6 @@ void EditorFolding::save_resource_folding(const RES &p_resource, const String &p
 	PoolVector<String> unfolds = _get_unfolds(p_resource.ptr());
 	config->set_value("folding", "sections_unfolded", unfolds);
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
@@ -76,7 +75,6 @@ void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) 
 	Ref<ConfigFile> config;
 	config.instance();
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 
@@ -135,6 +133,10 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 }
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
 
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	if (!file_check->file_exists(p_path)) //This can happen when creating scene from FilesystemDock. It has path, but no file.
+		return;
+
 	Ref<ConfigFile> config;
 	config.instance();
 
@@ -147,7 +149,6 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	config->set_value("folding", "resource_unfolds", res_unfolds);
 	config->set_value("folding", "nodes_folded", nodes_folded);
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);

@@ -64,6 +64,7 @@ def get_opts():
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
+        BoolVariable('use_tsan', 'Use LLVM/GCC compiler thread sanitizer (TSAN))', False),
         BoolVariable('pulseaudio', 'Detect and use PulseAudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
@@ -140,7 +141,7 @@ def configure(env):
             print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
             sys.exit(255)
 
-    if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
+    if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
 
         if env['use_ubsan']:
@@ -155,6 +156,10 @@ def configure(env):
             env.Append(CCFLAGS=['-fsanitize=leak'])
             env.Append(LINKFLAGS=['-fsanitize=leak'])
 
+        if env['use_tsan']:
+            env.Append(CCFLAGS=['-fsanitize=thread'])
+            env.Append(LINKFLAGS=['-fsanitize=thread'])
+
     if env['use_lto']:
         if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
             env.Append(CCFLAGS=['-flto'])
@@ -166,7 +171,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -227,7 +232,7 @@ def configure(env):
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if not env['builtin_squish'] and env['tools']:
+    if not env['builtin_squish']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if not env['builtin_zstd']:
@@ -324,9 +329,15 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
-        
+
     if not env['tools']:
-        env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        import subprocess
+        import re
+        binutils_version = re.search('\s(\d+\.\d+)', str(subprocess.check_output(['ld', '-v']))).group(1)
+        if float(binutils_version) >= 2.30:
+            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        else:
+            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 

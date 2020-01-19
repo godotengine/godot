@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,10 @@
 
 #include "gd_mono_method.h"
 
+#include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
+#include "gd_mono_utils.h"
 
 #include <mono/metadata/attrdefs.h>
 
@@ -97,10 +99,6 @@ IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 		default:
 			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
-}
-
-void *GDMonoMethod::get_thunk() {
-	return mono_method_get_unmanaged_thunk(mono_method);
 }
 
 MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc) {

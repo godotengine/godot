@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,7 +205,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		if (r_error)
 			*r_error = err;
 
-		ERR_FAIL_COND_V(err != OK, RES());
+		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Failed to load resource '" + p_path + "'.");
 	}
 }
 
@@ -275,12 +275,14 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 		return res;
 	}
 
-	if (found) {
-		ERR_EXPLAIN("Failed loading resource: " + p_path);
-	} else {
-		ERR_EXPLAIN("No loader found for resource: " + p_path);
-	}
-	ERR_FAIL_V(RES());
+	ERR_FAIL_COND_V_MSG(found, RES(), "Failed loading resource: " + p_path + ".");
+
+#ifdef TOOLS_ENABLED
+	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), RES(), "Resource file not found: " + p_path + ".");
+#endif
+
+	ERR_FAIL_V_MSG(RES(), "No loader found for resource: " + p_path + ".");
 }
 
 bool ResourceLoader::_add_to_loading_map(const String &p_path) {
@@ -355,10 +357,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 		{
 			bool success = _add_to_loading_map(local_path);
-			if (!success) {
-				ERR_EXPLAIN("Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
-				ERR_FAIL_V(RES());
-			}
+			ERR_FAIL_COND_V_MSG(!success, RES(), "Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
 		}
 
 		//lock first if possible
@@ -395,8 +394,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		if (!p_no_cache) {
 			_remove_from_loading_map(local_path);
 		}
-		ERR_EXPLAIN("Remapping '" + local_path + "'failed.");
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
 	}
 
 	print_verbose("Loading resource: " + path);
@@ -479,10 +477,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	if (!p_no_cache) {
 
 		bool success = _add_to_loading_map(local_path);
-		if (!success) {
-			ERR_EXPLAIN("Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
-			ERR_FAIL_V(RES());
-		}
+		ERR_FAIL_COND_V_MSG(!success, RES(), "Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
 
 		if (ResourceCache::has(local_path)) {
 
@@ -503,8 +498,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		if (!p_no_cache) {
 			_remove_from_loading_map(local_path);
 		}
-		ERR_EXPLAIN("Remapping '" + local_path + "'failed.");
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Remapping '" + local_path + "' failed.");
 	}
 
 	print_verbose("Loading resource: " + path);
@@ -534,12 +528,9 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		_remove_from_loading_map(local_path);
 	}
 
-	if (found) {
-		ERR_EXPLAIN("Failed loading resource: " + path);
-	} else {
-		ERR_EXPLAIN("No loader found for resource: " + path);
-	}
-	ERR_FAIL_V(Ref<ResourceInteractiveLoader>());
+	ERR_FAIL_COND_V_MSG(found, Ref<ResourceInteractiveLoader>(), "Failed loading resource: " + path + ".");
+
+	ERR_FAIL_V_MSG(Ref<ResourceInteractiveLoader>(), "No loader found for resource: " + path + ".");
 }
 
 void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
@@ -748,26 +739,49 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 	String new_path = p_path;
 
-	if (translation_remaps.has(new_path)) {
+	if (translation_remaps.has(p_path)) {
+		// translation_remaps has the following format:
+		//   { "res://path.png": PoolStringArray( "res://path-ru.png:ru", "res://path-de.png:de" ) }
 
-		Vector<String> &v = *translation_remaps.getptr(new_path);
+		// To find the path of the remapped resource, we extract the locale name after
+		// the last ':' to match the project locale.
+		// We also fall back in case of regional locales as done in TranslationServer::translate
+		// (e.g. 'ru_RU' -> 'ru' if the former has no specific mapping).
+
 		String locale = TranslationServer::get_singleton()->get_locale();
+		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
+		String lang = TranslationServer::get_language_code(locale);
+
+		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
+		bool near_match = false;
+
+		for (int i = 0; i < res_remaps.size(); i++) {
+			int split = res_remaps[i].find_last(":");
+			if (split == -1) {
+				continue;
+			}
+
+			String l = res_remaps[i].right(split + 1).strip_edges();
+			if (l == locale) { // Exact match.
+				new_path = res_remaps[i].left(split);
+				break;
+			} else if (near_match) {
+				continue; // Already found near match, keep going for potential exact match.
+			}
+
+			// No exact match (e.g. locale 'ru_RU' but remap is 'ru'), let's look further
+			// for a near match (same language code, i.e. first 2 or 3 letters before
+			// regional code, if included).
+			if (TranslationServer::get_language_code(l) == lang) {
+				// Language code matches, that's a near match. Keep looking for exact match.
+				near_match = true;
+				new_path = res_remaps[i].left(split);
+				continue;
+			}
+		}
+
 		if (r_translation_remapped) {
 			*r_translation_remapped = true;
-		}
-		for (int i = 0; i < v.size(); i++) {
-
-			int split = v[i].find_last(":");
-			if (split == -1)
-				continue;
-			String l = v[i].right(split + 1).strip_edges();
-			if (l == String())
-				continue;
-
-			if (l.begins_with(locale)) {
-				new_path = v[i].left(split);
-				break;
-			}
 		}
 	}
 
@@ -775,8 +789,8 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		new_path = path_remaps[new_path];
 	}
 
-	if (new_path == p_path) { //did not remap
-		//try file remap
+	if (new_path == p_path) { // Did not remap.
+		// Try file remap.
 		Error err;
 		FileAccess *f = FileAccess::open(p_path + ".remap", FileAccess::READ, &err);
 
@@ -801,7 +815,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				if (err == ERR_FILE_EOF) {
 					break;
 				} else if (err != OK) {
-					ERR_PRINTS("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text);
+					ERR_PRINTS("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
 					break;
 				}
 
@@ -932,16 +946,13 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
-	ERR_EXPLAIN("Script does not inherit a CustomResourceLoader: " + script_path);
-	ERR_FAIL_COND_V(!valid_type, false);
+	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceLoader: " + script_path + ".");
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_EXPLAIN("Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt));
-	ERR_FAIL_COND_V(obj == NULL, false);
+	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt) + ".");
 
-	ResourceFormatLoader *crl = NULL;
-	crl = Object::cast_to<ResourceFormatLoader>(obj);
+	ResourceFormatLoader *crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceLoader::add_resource_format_loader(crl);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,14 +60,10 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 		use_ssl = true;
 		port = 443;
 	} else {
-		ERR_EXPLAIN("Malformed URL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL: " + url + ".");
 	}
 
-	if (url.length() < 1) {
-		ERR_EXPLAIN("URL too short");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short: " + url + ".");
 
 	int slash_pos = url.find("/");
 
@@ -91,10 +87,7 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
-	if (requesting) {
-		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
-		ERR_FAIL_V(ERR_BUSY);
-	}
+	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
 	if (timeout > 0) {
 		timer->stop();
@@ -464,6 +457,18 @@ String HTTPRequest::get_download_file() const {
 
 	return download_to_file;
 }
+
+void HTTPRequest::set_download_chunk_size(int p_chunk_size) {
+
+	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
+
+	client->set_read_chunk_size(p_chunk_size);
+}
+
+int HTTPRequest::get_download_chunk_size() const {
+	return client->get_read_chunk_size();
+}
+
 HTTPClient::Status HTTPRequest::get_http_client_status() const {
 	return client->get_status();
 }
@@ -531,9 +536,13 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
 
+	ClassDB::bind_method(D_METHOD("set_download_chunk_size"), &HTTPRequest::set_download_chunk_size);
+	ClassDB::bind_method(D_METHOD("get_download_chunk_size"), &HTTPRequest::get_download_chunk_size);
+
 	ClassDB::bind_method(D_METHOD("_timeout"), &HTTPRequest::_timeout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");

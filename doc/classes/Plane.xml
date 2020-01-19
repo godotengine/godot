@@ -22,7 +22,7 @@
 			<argument index="3" name="d" type="float">
 			</argument>
 			<description>
-				Creates a plane from the four parameters [code]a[/code], [code]b[/code], [code]c[/code] and [code]d[/code].
+				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]d[/code] from the origin.
 			</description>
 		</method>
 		<method name="Plane">
@@ -35,7 +35,7 @@
 			<argument index="2" name="v3" type="Vector3">
 			</argument>
 			<description>
-				Creates a plane from three points.
+				Creates a plane from the three points, given in clockwise order.
 			</description>
 		</method>
 		<method name="Plane">
@@ -116,6 +116,15 @@
 				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="plane" type="Plane">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
+			</description>
+		</method>
 		<method name="is_point_over">
 			<return type="bool">
 			</return>
@@ -144,14 +153,19 @@
 	</methods>
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
+			Distance from the origin to the plane, in the direction of [member normal].
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+			The normal of the plane. "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
+			The [member normal]'s X component.
 		</member>
 		<member name="y" type="float" setter="" getter="" default="0.0">
+			The [member normal]'s Y component.
 		</member>
 		<member name="z" type="float" setter="" getter="" default="0.0">
+			The [member normal]'s Z component.
 		</member>
 	</members>
 	<constants>

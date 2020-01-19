@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ static void handle_crash(int sig) {
 	if (strings) {
 		void *load_addr = (void *)load_address();
 
-		for (int i = 1; i < size; i++) {
+		for (size_t i = 1; i < size; i++) {
 			char fname[1024];
 			Dl_info info;
 
@@ -142,7 +142,7 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			fprintf(stderr, "[%d] %ls\n", i, output.c_str());
+			fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
 		}
 
 		free(strings);

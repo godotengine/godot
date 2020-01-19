@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -239,6 +239,7 @@ private:
 		PropertyInfo info;
 		Variant default_value;
 		bool _export;
+		// add getter & setter options here
 	};
 
 	Map<StringName, Function> functions;
@@ -246,6 +247,8 @@ private:
 	Map<StringName, Vector<Argument> > custom_signals;
 
 	Map<Object *, VisualScriptInstance *> instances;
+
+	bool is_tool_script;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
@@ -265,6 +268,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	// TODO: Remove it in future when breaking changes are acceptable
+	StringName get_default_func() const;
 	void add_function(const StringName &p_name);
 	bool has_function(const StringName &p_name) const;
 	void remove_function(const StringName &p_name);
@@ -273,6 +278,7 @@ public:
 	Vector2 get_function_scroll(const StringName &p_name) const;
 	void get_function_list(List<StringName> *r_functions) const;
 	int get_function_node_id(const StringName &p_name) const;
+	void set_tool_enabled(bool p_enabled);
 
 	void add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
 	void remove_node(const StringName &p_func, int p_id);

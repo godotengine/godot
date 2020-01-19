@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +78,7 @@ private:
 	ENetHost *host;
 
 	bool refuse_connections;
+	bool server_relay;
 
 	ConnectionStatus connection_status;
 
@@ -158,6 +159,8 @@ public:
 	int get_channel_count() const;
 	void set_always_ordered(bool p_ordered);
 	bool is_always_ordered() const;
+	void set_server_relay_enabled(bool p_enabled);
+	bool is_server_relay_enabled() const;
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

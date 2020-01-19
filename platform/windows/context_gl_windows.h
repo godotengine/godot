@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,7 @@
 #include <windows.h>
 
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
 class ContextGL_Windows {
 
@@ -50,8 +51,12 @@ class ContextGL_Windows {
 	HWND hWnd;
 	bool opengl_3_context;
 	bool use_vsync;
+	bool vsync_via_compositor;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+
+	static bool should_vsync_via_compositor();
 
 public:
 	void release_current();

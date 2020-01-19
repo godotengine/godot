@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -472,6 +472,10 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	joy_vibration[p_device] = vibration;
 }
 
+void InputDefault::vibrate_handheld(int p_duration_ms) {
+	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+}
+
 void InputDefault::set_gravity(const Vector3 &p_gravity) {
 
 	_THREAD_SAFE_METHOD_
@@ -723,21 +727,23 @@ InputDefault::InputDefault() {
 
 	fallback_mapping = -1;
 
+	// Parse default mappings.
+	{
+		int i = 0;
+		while (DefaultControllerMappings::mappings[i]) {
+			parse_mapping(DefaultControllerMappings::mappings[i++]);
+		}
+	}
+
+	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (env_mapping != "") {
-
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
 			if (entries[i] == "")
 				continue;
 			parse_mapping(entries[i]);
 		}
-	}
-
-	int i = 0;
-	while (DefaultControllerMappings::mappings[i]) {
-
-		parse_mapping(DefaultControllerMappings::mappings[i++]);
 	}
 }
 

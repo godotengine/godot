@@ -15,6 +15,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" override="true" default="true" />
 		<member name="expression" type="String" setter="set_expression" getter="get_expression" default="&quot;&quot;">
 		</member>
 	</members>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,8 +174,7 @@ void Generic6DOFJointBullet::set_param(Vector3::Axis p_axis, PhysicsServer::G6DO
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_equilibriumPoint = p_value;
 			break;
 		default:
-			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
 			break;
 	}
 }
@@ -216,8 +215,7 @@ real_t Generic6DOFJointBullet::get_param(Vector3::Axis p_axis, PhysicsServer::G6
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT:
 			return sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_equilibriumPoint;
 		default:
-			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
 			return 0;
 	}
 }
@@ -255,8 +253,7 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_enableSpring = p_value;
 			break;
 		default:
-			ERR_EXPLAIN("This flag " + itos(p_flag) + " is deprecated");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("The flag " + itos(p_flag) + " is deprecated.");
 			break;
 	}
 }

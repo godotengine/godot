@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,8 +133,6 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	window->Show();
 	visual_server->init();
 
-	camera_server = memnew(CameraServer);
-
 	AudioDriverManager::initialize(p_audio_driver);
 
 	return OK;
@@ -149,8 +147,6 @@ void OS_Haiku::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
-
-	memdelete(camera_server);
 
 	memdelete(input);
 

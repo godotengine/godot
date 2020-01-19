@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,10 @@ void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_d
 }
 
 bool EditorFeatureProfile::is_class_disabled(const StringName &p_class) const {
-	return disabled_classes.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_classes.has(p_class) || is_class_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, bool p_disabled) {
@@ -76,7 +79,10 @@ void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, b
 }
 
 bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) const {
-	return disabled_editors.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_editors.has(p_class) || is_class_editor_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
@@ -165,7 +171,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	json["disabled_features"] = dis_features;
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	String text = JSON::print(json, "\t");
 	f->store_string(text);
@@ -254,8 +260,8 @@ void EditorFeatureProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_class_editor", "class_name", "disable"), &EditorFeatureProfile::set_disable_class_editor);
 	ClassDB::bind_method(D_METHOD("is_class_editor_disabled", "class_name"), &EditorFeatureProfile::is_class_editor_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_disable_class_property", "class_name", "property"), &EditorFeatureProfile::set_disable_class_property);
-	ClassDB::bind_method(D_METHOD("is_class_property_disabled", "class_name"), &EditorFeatureProfile::is_class_property_disabled);
+	ClassDB::bind_method(D_METHOD("set_disable_class_property", "class_name", "property", "disable"), &EditorFeatureProfile::set_disable_class_property);
+	ClassDB::bind_method(D_METHOD("is_class_property_disabled", "class_name", "property"), &EditorFeatureProfile::is_class_property_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_disable_feature", "feature", "disable"), &EditorFeatureProfile::set_disable_feature);
 	ClassDB::bind_method(D_METHOD("is_feature_disabled", "feature"), &EditorFeatureProfile::is_feature_disabled);
@@ -326,7 +332,8 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 
 	Vector<String> profiles;
 	DirAccessRef d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND(!d);
+	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+
 	d->list_dir_begin();
 	while (true) {
 		String f = d->get_next();
@@ -433,7 +440,8 @@ void EditorFeatureProfileManager::_erase_selected_profile() {
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected == String());
 	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND(!da);
+	ERR_FAIL_COND_MSG(!da, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+
 	da->remove(selected + ".profile");
 	if (selected == current_profile) {
 		_profile_action(PROFILE_CLEAR);
@@ -672,7 +680,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 		//reload edited, if different from current
 		edited.instance();
 		Error err = edited->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile"));
-		ERR_FAIL_COND(err != OK);
+		ERR_FAIL_COND_MSG(err != OK, "Error when loading EditorSettings from file '" + EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile") + "'.");
 	}
 
 	updating_features = true;
@@ -894,7 +902,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile; Godot Feature Profile");
+	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
 	import_profiles->connect("files_selected", this, "_import_profiles");
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -902,7 +910,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile; Godot Feature Profile");
+	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
 	export_profile->connect("file_selected", this, "_export_profile");
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

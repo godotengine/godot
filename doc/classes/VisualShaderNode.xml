@@ -39,5 +39,23 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
+			Floating-point scalar. Translated to [code]float[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR" value="1" enum="PortType">
+			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_BOOLEAN" value="2" enum="PortType">
+			Boolean type. Translated to [code]bool[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_TRANSFORM" value="3" enum="PortType">
+			Transform type. Translated to [code]mat4[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_SAMPLER" value="4" enum="PortType">
+			Sampler type. Translated to reference of sampler uniform in shader code. Can only be used for input ports in non-uniform nodes.
+		</constant>
+		<constant name="PORT_TYPE_MAX" value="5" enum="PortType">
+			Represents the size of the [enum PortType] enum.
+		</constant>
 	</constants>
 </class>

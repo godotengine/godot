@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,8 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor_scale.h"
-#include "editor_settings.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #endif
 #include "scene/main/viewport.h"
 
@@ -247,15 +247,19 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 }
 
 void ColorPicker::_update_presets() {
+	presets_per_row = 10;
 	Size2 size = bt_add_preset->get_size();
-	Size2 preset_size = Size2(size.width * presets.size(), size.height);
+	Size2 preset_size = Size2(MIN(size.width * presets.size(), presets_per_row * size.width), size.height * (Math::ceil((float)presets.size() / presets_per_row)));
 	preset->set_custom_minimum_size(preset_size);
-
-	preset->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), Rect2(Point2(), preset_size), true);
+	preset_container->set_custom_minimum_size(preset_size);
+	preset->draw_rect(Rect2(Point2(), preset_size), Color(1, 1, 1, 0));
 
 	for (int i = 0; i < presets.size(); i++) {
-		preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
+		int x = (i % presets_per_row) * size.width;
+		int y = (Math::floor((float)i / presets_per_row)) * size.height;
+		preset->draw_rect(Rect2(Point2(x, y), size), presets[i]);
 	}
+	_notification(NOTIFICATION_VISIBILITY_CHANGED);
 }
 
 void ColorPicker::_text_type_toggled() {
@@ -288,8 +292,6 @@ void ColorPicker::add_preset(const Color &p_color) {
 		presets.push_back(p_color);
 	}
 	preset->update();
-	if (presets.size() == 10)
-		bt_add_preset->hide();
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -394,11 +396,18 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_draw() {
-	Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
+	const Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
+
 	if (color.a < 1.0) {
 		sample->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), r, true);
 	}
+
 	sample->draw_rect(r, color);
+
+	if (color.r > 1 || color.g > 1 || color.b > 1) {
+		// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
+		sample->draw_texture(get_icon("overbright_indicator", "ColorPicker"), Point2());
+	}
 }
 
 void ColorPicker::_hsv_draw(int p_which, Control *c) {
@@ -533,14 +542,20 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
-
+		int index = 0;
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
-			int index = bev->get_position().x / (preset->get_size().x / presets.size());
+			for (int i = 0; i < presets.size(); i++) {
+				int x = (i % presets_per_row) * bt_add_preset->get_size().x;
+				int y = (Math::floor((float)i / presets_per_row)) * bt_add_preset->get_size().y;
+				if (bev->get_position().x > x && bev->get_position().x < x + preset->get_size().x && bev->get_position().y > y && bev->get_position().y < y + preset->get_size().y) {
+					index = i;
+				}
+			}
 			set_pick_color(presets[index]);
 			_update_color();
 			emit_signal("color_changed", color);
 		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT && presets_enabled) {
-			int index = bev->get_position().x / (preset->get_size().x / presets.size());
+			index = bev->get_position().x / (preset->get_size().x / presets.size());
 			Color clicked_preset = presets[index];
 			erase_preset(clicked_preset);
 			emit_signal("preset_removed", clicked_preset);
@@ -558,9 +573,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		}
 		if (index < 0 || index >= presets.size())
 			return;
-		preset->set_tooltip("Color: #" + presets[index].to_html(presets[index].a < 1) + "\n"
-																						"LMB: Set color\n"
-																						"RMB: Remove preset");
+		preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Set color\nRMB: Remove preset"), presets[index].to_html(presets[index].a < 1)));
 	}
 }
 
@@ -722,20 +735,6 @@ ColorPicker::ColorPicker() :
 	presets_visible = true;
 	screen = NULL;
 
-	HBoxContainer *hb_smpl = memnew(HBoxContainer);
-	add_child(hb_smpl);
-
-	sample = memnew(TextureRect);
-	hb_smpl->add_child(sample);
-	sample->set_h_size_flags(SIZE_EXPAND_FILL);
-	sample->connect("draw", this, "_sample_draw");
-
-	btn_pick = memnew(ToolButton);
-	hb_smpl->add_child(btn_pick);
-	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(TTR("Pick a color from the screen."));
-	btn_pick->connect("pressed", this, "_screen_pick_pressed");
-
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
 	add_child(hb_edit);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -756,6 +755,20 @@ ColorPicker::ColorPicker() :
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", this, "_w_input");
 	w_edit->connect("draw", this, "_hsv_draw", make_binds(1, w_edit));
+
+	HBoxContainer *hb_smpl = memnew(HBoxContainer);
+	add_child(hb_smpl);
+
+	sample = memnew(TextureRect);
+	hb_smpl->add_child(sample);
+	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->connect("draw", this, "_sample_draw");
+
+	btn_pick = memnew(ToolButton);
+	hb_smpl->add_child(btn_pick);
+	btn_pick->set_toggle_mode(true);
+	btn_pick->set_tooltip(TTR("Pick a color from the editor window."));
+	btn_pick->connect("pressed", this, "_screen_pick_pressed");
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);
@@ -841,6 +854,7 @@ ColorPicker::ColorPicker() :
 	add_child(preset_separator);
 
 	preset_container = memnew(HBoxContainer);
+	preset_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(preset_container);
 
 	preset = memnew(TextureRect);
@@ -848,8 +862,11 @@ ColorPicker::ColorPicker() :
 	preset->connect("gui_input", this, "_preset_input");
 	preset->connect("draw", this, "_update_presets");
 
+	preset_container2 = memnew(HBoxContainer);
+	preset_container2->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(preset_container2);
 	bt_add_preset = memnew(Button);
-	preset_container->add_child(bt_add_preset);
+	preset_container2->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 }
@@ -882,10 +899,15 @@ void ColorPickerButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 
-			Ref<StyleBox> normal = get_stylebox("normal");
-			Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
+			const Ref<StyleBox> normal = get_stylebox("normal");
+			const Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
 			draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
 			draw_rect(r, color);
+
+			if (color.r > 1 || color.g > 1 || color.b > 1) {
+				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
+				draw_texture(Control::get_icon("overbright_indicator", "ColorPicker"), normal->get_offset());
+			}
 		} break;
 		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
 
@@ -952,6 +974,7 @@ void ColorPickerButton::_update_picker() {
 		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
+		emit_signal("picker_created");
 	}
 }
 
@@ -968,6 +991,7 @@ void ColorPickerButton::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));
+	ADD_SIGNAL(MethodInfo("picker_created"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }

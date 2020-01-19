@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,7 @@ private:
 	} graph[TYPE_MAX];
 
 	Shader::Mode shader_mode;
+	mutable String previous_code;
 
 	Array _get_node_connections(Type p_type) const;
 
@@ -183,7 +184,8 @@ public:
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
-		PORT_TYPE_COLOR // just a hint for node tree icons, do not use it as actual port type !
+		PORT_TYPE_SAMPLER,
+		PORT_TYPE_MAX,
 	};
 
 	virtual String get_caption() const = 0;
@@ -198,6 +200,8 @@ public:
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;
 	virtual String get_output_port_name(int p_port) const = 0;
+
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	void set_output_port_for_preview(int p_index);
 	int get_output_port_for_preview() const;
@@ -216,6 +220,44 @@ public:
 
 	VisualShaderNode();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNode::PortType)
+
+class VisualShaderNodeCustom : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCustom, VisualShaderNode);
+
+	struct Port {
+		String name;
+		int type;
+	};
+
+	List<Port> input_ports;
+	List<Port> output_ports;
+
+	friend class VisualShaderEditor;
+
+protected:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+protected:
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	static void _bind_methods();
+
+public:
+	VisualShaderNodeCustom();
+	void update_ports();
+};
+
 /////
 
 class VisualShaderNodeInput : public VisualShaderNode {
@@ -257,6 +299,7 @@ public:
 
 	void set_input_name(String p_name);
 	String get_input_name() const;
+	String get_input_real_name() const;
 
 	int get_input_index_count() const;
 	PortType get_input_index_type(int p_index) const;
@@ -311,6 +354,7 @@ public:
 class VisualShaderNodeUniform : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
 
+private:
 	String uniform_name;
 
 protected:
@@ -333,6 +377,7 @@ protected:
 	Vector2 size;
 	String inputs;
 	String outputs;
+	bool editable;
 
 	struct Port {
 		PortType type;
@@ -388,6 +433,9 @@ public:
 	void set_control(Control *p_control, int p_index);
 	Control *get_control(int p_index);
 
+	void set_editable(bool p_enabled);
+	bool is_editable() const;
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeGroupBase();
@@ -396,10 +444,9 @@ public:
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
 	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
 
-private:
+protected:
 	String expression;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -413,6 +460,17 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeExpression();
+};
+
+class VisualShaderNodeGlobalExpression : public VisualShaderNodeExpression {
+	GDCLASS(VisualShaderNodeGlobalExpression, VisualShaderNodeExpression);
+
+public:
+	virtual String get_caption() const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	VisualShaderNodeGlobalExpression();
 };
 
 #endif // VISUAL_SHADER_H

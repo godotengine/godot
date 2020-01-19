@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,7 +112,7 @@ private:
 
 	void erase_hash_table() {
 
-		ERR_FAIL_COND(elements);
+		ERR_FAIL_COND_MSG(elements, "Cannot erase hash table if there are still elements inside.");
 
 		memdelete_arr(hash_table);
 		hash_table = 0;
@@ -151,11 +151,7 @@ private:
 			return;
 
 		Element **new_hash_table = memnew_arr(Element *, ((uint64_t)1 << new_hash_table_power));
-		if (!new_hash_table) {
-
-			ERR_PRINT("Out of Memory");
-			return;
-		}
+		ERR_FAIL_COND_MSG(!new_hash_table, "Out of memory.");
 
 		for (int i = 0; i < (1 << new_hash_table_power); i++) {
 
@@ -208,15 +204,13 @@ private:
 
 		/* if element doesn't exist, create it */
 		Element *e = memnew(Element);
-		if (!e) {
-			ERR_EXPLAIN("Out of memory");
-			ERR_FAIL_V(NULL);
-		}
+		ERR_FAIL_COND_V_MSG(!e, NULL, "Out of memory.");
 		uint32_t hash = Hasher::hash(p_key);
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 		e->next = hash_table[index];
 		e->hash = hash;
 		e->pair.key = p_key;
+		e->pair.data = TData();
 
 		hash_table[index] = e;
 		elements++;
@@ -498,10 +492,7 @@ public:
 		} else { /* get the next key */
 
 			const Element *e = get_element(*p_key);
-			if (!e) {
-				ERR_EXPLAIN("Invalid key supplied")
-				ERR_FAIL_V(NULL);
-			}
+			ERR_FAIL_COND_V_MSG(!e, NULL, "Invalid key supplied.");
 			if (e->next) {
 				/* if there is a "next" in the list, return that */
 				return &e->next->pair.key;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "servers/visual_server.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Light2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
@@ -68,6 +69,7 @@ Rect2 Light2D::_edit_get_rect() const {
 bool Light2D::_edit_use_rect() const {
 	return !texture.is_null();
 }
+#endif
 
 Rect2 Light2D::get_anchorable_rect() const {
 	if (texture.is_null())
@@ -187,6 +189,10 @@ float Light2D::get_energy() const {
 void Light2D::set_texture_scale(float p_scale) {
 
 	_scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (_scale == 0) {
+		_scale = CMP_EPSILON;
+	}
 	VS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
 	item_rect_changed();
 }

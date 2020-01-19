@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	String header = f->get_token();
 
-	ERR_FAIL_COND_V(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
 
 	while (true) {
 		String line = f->get_line();
@@ -45,12 +45,9 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		if (line == "") // empty line indicates end of header
 			break;
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
-			if (line != "FORMAT=32-bit_rle_rgbe") {
-				ERR_EXPLAIN("Only 32-bit_rle_rgbe is supported for HDR files.");
-				return ERR_FILE_UNRECOGNIZED;
-			}
+			ERR_FAIL_COND_V_MSG(line != "FORMAT=32-bit_rle_rgbe", ERR_FILE_UNRECOGNIZED, "Only 32-bit_rle_rgbe is supported for HDR files.");
 		} else if (!line.begins_with("#")) { // not comment
-			WARN_PRINTS("Ignoring unsupported header information in HDR : " + line);
+			WARN_PRINTS("Ignoring unsupported header information in HDR: " + line + ".");
 		}
 	}
 
@@ -102,10 +99,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 				len <<= 8;
 				len |= f->get_8();
 
-				if (len != width) {
-					ERR_EXPLAIN("invalid decoded scanline length, corrupt HDR");
-					ERR_FAIL_V(ERR_FILE_CORRUPT);
-				}
+				ERR_FAIL_COND_V_MSG(len != width, ERR_FILE_CORRUPT, "Invalid decoded scanline length, corrupt HDR.");
 
 				for (int k = 0; k < 4; ++k) {
 					int i = 0;

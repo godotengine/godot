@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,16 +35,14 @@
 #include "pluginscript_script.h"
 
 #ifdef DEBUG_ENABLED
-#define __ASSERT_SCRIPT_REASON "Cannot retrieve pluginscript class for this script, is you code correct ?"
-#define ASSERT_SCRIPT_VALID()                \
-	{                                        \
-		ERR_EXPLAIN(__ASSERT_SCRIPT_REASON); \
-		ERR_FAIL_COND(!can_instance());      \
+#define __ASSERT_SCRIPT_REASON "Cannot retrieve PluginScript class for this script, is your code correct?"
+#define ASSERT_SCRIPT_VALID()                                       \
+	{                                                               \
+		ERR_FAIL_COND_MSG(!can_instance(), __ASSERT_SCRIPT_REASON); \
 	}
-#define ASSERT_SCRIPT_VALID_V(ret)             \
-	{                                          \
-		ERR_EXPLAIN(__ASSERT_SCRIPT_REASON);   \
-		ERR_FAIL_COND_V(!can_instance(), ret); \
+#define ASSERT_SCRIPT_VALID_V(ret)                                         \
+	{                                                                      \
+		ERR_FAIL_COND_V_MSG(!can_instance(), ret, __ASSERT_SCRIPT_REASON); \
 	}
 #else
 #define ASSERT_SCRIPT_VALID()
@@ -52,7 +50,7 @@
 #endif
 
 void PluginScript::_bind_methods() {
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &PluginScript::_new, MethodInfo(Variant::OBJECT, "new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &PluginScript::_new, MethodInfo("new"));
 }
 
 PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Variant::CallError &r_error) {
@@ -197,8 +195,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 			// if (ScriptDebugger::get_singleton()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
 			// }
-			ERR_EXPLAIN(msg);
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, msg);
 		}
 	}
 
@@ -254,7 +251,19 @@ Error PluginScript::reload(bool p_keep_state) {
 			(godot_string *)&_path,
 			(godot_string *)&_source,
 			(godot_error *)&err);
+// Manifest's attributes must be explicitly freed
+#define FREE_SCRIPT_MANIFEST(manifest)                    \
+	{                                                     \
+		godot_string_name_destroy(&manifest.name);        \
+		godot_string_name_destroy(&manifest.base);        \
+		godot_dictionary_destroy(&manifest.member_lines); \
+		godot_array_destroy(&manifest.methods);           \
+		godot_array_destroy(&manifest.signals);           \
+		godot_array_destroy(&manifest.properties);        \
+	}
+
 	if (err) {
+		FREE_SCRIPT_MANIFEST(manifest);
 		// TODO: GDscript uses `ScriptDebugger` here to jump into the parsing error
 		return err;
 	}
@@ -272,8 +281,8 @@ Error PluginScript::reload(bool p_keep_state) {
 				_ref_base_parent = res;
 			} else {
 				String name = *(StringName *)&manifest.name;
-				ERR_EXPLAIN(_path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
-				ERR_FAIL_V(ERR_PARSE_ERROR);
+				FREE_SCRIPT_MANIFEST(manifest);
+				ERR_FAIL_V_MSG(ERR_PARSE_ERROR, _path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
 			}
 		}
 	}
@@ -321,13 +330,6 @@ Error PluginScript::reload(bool p_keep_state) {
 			_methods_rpc_mode[pi.name] = MultiplayerAPI::RPCMode(int(var));
 		}
 	}
-	// Manifest's attributes must be explicitly freed
-	godot_string_name_destroy(&manifest.name);
-	godot_string_name_destroy(&manifest.base);
-	godot_dictionary_destroy(&manifest.member_lines);
-	godot_array_destroy(&manifest.methods);
-	godot_array_destroy(&manifest.signals);
-	godot_array_destroy(&manifest.properties);
 
 #ifdef TOOLS_ENABLED
 /*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
@@ -335,7 +337,10 @@ Error PluginScript::reload(bool p_keep_state) {
         _update_placeholder(E->get());
     }*/
 #endif
+
+	FREE_SCRIPT_MANIFEST(manifest);
 	return OK;
+#undef FREE_SCRIPT_MANIFEST
 }
 
 void PluginScript::get_script_method_list(List<MethodInfo> *r_methods) const {
@@ -405,9 +410,7 @@ Error PluginScript::load_source_code(const String &p_path) {
 	PoolVector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (err) {
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + p_path + "'.");
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
@@ -420,8 +423,7 @@ Error PluginScript::load_source_code(const String &p_path) {
 
 	String s;
 	if (s.parse_utf8((const char *)w.ptr())) {
-		ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		ERR_FAIL_V(ERR_INVALID_DATA);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
 	_source = s;

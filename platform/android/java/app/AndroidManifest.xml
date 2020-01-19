@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.godot.game"
+    android:versionCode="1"
+    android:versionName="1.0"
+    android:installLocation="auto" >
+
+    <!-- Adding custom text to the manifest is fine, but do it outside the custom USER and APPLICATION BEGIN/END comments, -->
+    <!-- as that gets rewritten. -->
+
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+
+    <!-- glEsVersion is modified by the exporter, changing this value here has no effect. -->
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
+
+<!-- Custom user permissions XML added by add-ons. It's recommended to add them from the export preset, though. -->
+<!--CHUNK_USER_PERMISSIONS_BEGIN-->
+<!--CHUNK_USER_PERMISSIONS_END-->
+
+    <!-- Any tag in this line after android:icon will be erased when doing custom builds. -->
+    <!-- If you want to add tags manually, do before it. -->
+    <!-- WARNING: This should stay on a single line until the parsing code is improved. See GH-32414. -->
+    <application android:label="@string/godot_project_name_string" android:allowBackup="false" tools:ignore="GoogleAppIndexingWarning" android:icon="@mipmap/icon" >
+
+        <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->
+        <!-- Do these changes in the export preset. Adding new ones is fine. -->
+
+        <!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
+        <meta-data
+            android:name="xr_mode_metadata_name"
+            android:value="xr_mode_metadata_value" />
+
+        <activity
+            android:name=".GodotApp"
+            android:label="@string/godot_project_name_string"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:resizeableActivity="false"
+            tools:ignore="UnusedAttribute" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+<!-- Custom application XML added by add-ons. -->
+<!--CHUNK_APPLICATION_BEGIN-->
+<!--CHUNK_APPLICATION_END-->
+
+    </application>
+
+</manifest>

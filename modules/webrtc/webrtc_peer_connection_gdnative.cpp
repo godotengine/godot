@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,13 +51,11 @@ Error WebRTCPeerConnectionGDNative::set_default_library(const godot_net_webrtc_l
 WebRTCPeerConnection *WebRTCPeerConnectionGDNative::_create() {
 
 	WebRTCPeerConnectionGDNative *obj = memnew(WebRTCPeerConnectionGDNative);
-	ERR_EXPLAIN("Default GDNative WebRTC implementation not defined.");
-	ERR_FAIL_COND_V(!default_library, obj);
+	ERR_FAIL_COND_V_MSG(!default_library, obj, "Default GDNative WebRTC implementation not defined.");
 
 	// Call GDNative constructor
 	Error err = (Error)default_library->create_peer_connection(obj);
-	ERR_EXPLAIN("GDNative default library constructor returned an error");
-	ERR_FAIL_COND_V(err != OK, obj);
+	ERR_FAIL_COND_V_MSG(err != OK, obj, "GDNative default library constructor returned an error.");
 
 	return obj;
 }

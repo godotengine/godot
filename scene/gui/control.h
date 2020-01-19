@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,9 +38,6 @@
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Viewport;
 class Label;
@@ -230,7 +227,6 @@ private:
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
-	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
 
@@ -283,6 +279,7 @@ public:
 	};
 
 	/* EDITOR */
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -305,6 +302,7 @@ public:
 	virtual bool _edit_use_pivot() const;
 
 	virtual Size2 _edit_get_minimum_size() const;
+#endif
 
 	void accept_event();
 

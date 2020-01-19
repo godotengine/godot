@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,13 +86,9 @@ protected:
 	void _unregister_shapes();
 
 	_FORCE_INLINE_ void _set_transform(const Transform &p_transform, bool p_update_shapes = true) {
-
 #ifdef DEBUG_ENABLED
 
-		if (p_transform.origin.length_squared() > MAX_OBJECT_DISTANCE_X2) {
-			ERR_EXPLAIN("Object went too far away (more than " + itos(MAX_OBJECT_DISTANCE) + "mts from origin).");
-			ERR_FAIL();
-		}
+		ERR_FAIL_COND_MSG(p_transform.origin.length_squared() > MAX_OBJECT_DISTANCE_X2, "Object went too far away (more than '" + itos(MAX_OBJECT_DISTANCE) + "' units from origin).");
 #endif
 
 		transform = p_transform;

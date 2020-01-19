@@ -641,7 +641,7 @@ static void HistogramAnalyzeEntropyBin(VP8LHistogramSet* const image_histo,
 // Merges some histograms with same bin_id together if it's advantageous.
 // Sets the remaining histograms to NULL.
 static void HistogramCombineEntropyBin(VP8LHistogramSet* const image_histo,
-                                       int *num_used,
+                                       int* num_used,
                                        const uint16_t* const clusters,
                                        uint16_t* const cluster_mappings,
                                        VP8LHistogram* cur_combo,
@@ -929,9 +929,8 @@ static int HistogramCombineStochastic(VP8LHistogramSet* const image_histo,
   }
 
   mappings = (int*) WebPSafeMalloc(*num_used, sizeof(*mappings));
-  if (mappings == NULL || !HistoQueueInit(&histo_queue, kHistoQueueSize)) {
-    goto End;
-  }
+  if (mappings == NULL) return 0;
+  if (!HistoQueueInit(&histo_queue, kHistoQueueSize)) goto End;
   // Fill the initial mapping.
   for (j = 0, iter = 0; iter < image_histo->size; ++iter) {
     if (histograms[iter] == NULL) continue;

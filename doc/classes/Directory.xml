@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Directory type. It is used to manage directories and their content (not restricted to the project folder).
+		When creating a new [Directory], its default opened directory will be [code]res://[/code]. This may change in the future, so it is advised to always use [method open] to initialize your [Directory] where you want to operate, with explicit error checking.
 		Here is an example on how to iterate through the files of a directory:
 		[codeblock]
 		func dir_contents(path):
@@ -33,7 +34,7 @@
 			</argument>
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="copy">
@@ -45,7 +46,7 @@
 			</argument>
 			<description>
 				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
@@ -127,8 +128,8 @@
 			</argument>
 			<description>
 				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				If you pass [code]skip_navigational[/code], then [code].[/code] and [code]..[/code] would be filtered out.
-				If you pass [code]skip_hidden[/code], then hidden files would be filtered out.
+				If [code]skip_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are filtered out.
+				If [code]skip_hidden[/code] is [code]true[/code], hidden files are filtered out.
 			</description>
 		</method>
 		<method name="list_dir_end">
@@ -145,7 +146,7 @@
 			</argument>
 			<description>
 				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
@@ -155,7 +156,7 @@
 			</argument>
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]0K[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="open">
@@ -165,7 +166,7 @@
 			</argument>
 			<description>
 				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="remove">
@@ -175,7 +176,7 @@
 			</argument>
 			<description>
 				Deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="rename">
@@ -187,7 +188,7 @@
 			</argument>
 			<description>
 				Renames (move) the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 	</methods>

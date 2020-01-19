@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -268,12 +268,17 @@ RID World::get_scenario() const {
 }
 
 void World::set_environment(const Ref<Environment> &p_environment) {
+	if (environment == p_environment) {
+		return;
+	}
 
 	environment = p_environment;
 	if (environment.is_valid())
 		VS::get_singleton()->scenario_set_environment(scenario, environment->get_rid());
 	else
 		VS::get_singleton()->scenario_set_environment(scenario, RID());
+
+	emit_changed();
 }
 
 Ref<Environment> World::get_environment() const {
@@ -282,12 +287,17 @@ Ref<Environment> World::get_environment() const {
 }
 
 void World::set_fallback_environment(const Ref<Environment> &p_environment) {
+	if (fallback_environment == p_environment) {
+		return;
+	}
 
 	fallback_environment = p_environment;
 	if (fallback_environment.is_valid())
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, p_environment->get_rid());
 	else
 		VS::get_singleton()->scenario_set_fallback_environment(scenario, RID());
+
+	emit_changed();
 }
 
 Ref<Environment> World::get_fallback_environment() const {
@@ -332,7 +342,9 @@ World::World() {
 	PhysicsServer::get_singleton()->area_set_param(space, PhysicsServer::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 	PhysicsServer::get_singleton()->area_set_param(space, PhysicsServer::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF("physics/3d/default_gravity_vector", Vector3(0, -1, 0)));
 	PhysicsServer::get_singleton()->area_set_param(space, PhysicsServer::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF("physics/3d/default_linear_damp", 0.1));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_linear_damp", PropertyInfo(Variant::REAL, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 	PhysicsServer::get_singleton()->area_set_param(space, PhysicsServer::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/3d/default_angular_damp", 0.1));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::REAL, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
 #ifdef _3D_DISABLED
 	indexer = NULL;

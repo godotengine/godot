@@ -20,6 +20,7 @@
 			<description>
 				This will simulate pressing the specified action.
 				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
+				[b]Note:[/b] This method will not cause any [method Node._input] calls. It is intended to be used with [method is_action_pressed] and [method is_action_just_pressed]. If you want to simulate [code]_input[/code], use [method parse_input_event] instead.
 			</description>
 		</method>
 		<method name="action_release">
@@ -70,6 +71,7 @@
 			<return type="int" enum="Input.CursorShape">
 			</return>
 			<description>
+				Returns the currently assigned cursor shape (see [enum CursorShape]).
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
@@ -222,7 +224,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons asigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
+				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons assigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -283,7 +285,14 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code.
+				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
+				Example:
+				[codeblock]
+				var a = InputEventAction.new()
+				a.action = "ui_cancel"
+				a.pressed = true
+				Input.parse_input_event(a)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -305,9 +314,11 @@
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See enum [code]CURSOR_*[/code] for the list of shapes.
+				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
 				[code]image[/code]'s size must be lower than 256×256.
 				[code]hotspot[/code] must be within [code]image[/code]'s size.
+				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
+				[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or [b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] compression mode can't be used for custom cursors.
 			</description>
 		</method>
 		<method name="set_default_cursor_shape">
@@ -362,6 +373,16 @@
 			</argument>
 			<description>
 				Stops the vibration of the joypad.
+			</description>
+		</method>
+		<method name="vibrate_handheld">
+			<return type="void">
+			</return>
+			<argument index="0" name="duration_ms" type="int" default="500">
+			</argument>
+			<description>
+				Vibrate Android and iOS devices.
+				[b]Note:[/b] It needs VIBRATE permission for Android at export settings. iOS does not support duration.
 			</description>
 		</method>
 		<method name="warp_mouse_position">

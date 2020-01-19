@@ -72,6 +72,9 @@ env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_X3D_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_GLTF_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_GLTF2_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_SINGLETHREADED'])
+env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_M3D_IMPORTER'])
+env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_MMD_IMPORTER'])
+
 
 if(env['platform'] == 'windows'):
     env_assimp.Append(CPPDEFINES=['PLATFORM_WINDOWS'])

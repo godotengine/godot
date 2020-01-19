@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,16 @@
 #ifndef STREAM_PEER_SSL_H
 #define STREAM_PEER_SSL_H
 
+#include "core/crypto/crypto.h"
 #include "core/io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
 	GDCLASS(StreamPeerSSL, StreamPeer);
 
-public:
-	typedef void (*LoadCertsFromMemory)(const PoolByteArray &p_certs);
-
 protected:
 	static StreamPeerSSL *(*_create)();
 	static void _bind_methods();
 
-	static LoadCertsFromMemory load_certs_func;
 	static bool available;
 
 	bool blocking_handshake;
@@ -61,18 +58,14 @@ public:
 	bool is_blocking_handshake_enabled() const;
 
 	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String()) = 0;
+	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
 	virtual Status get_status() const = 0;
 
 	virtual void disconnect_from_stream() = 0;
 
 	static StreamPeerSSL *create();
 
-	static PoolByteArray get_cert_file_as_array(String p_path);
-	static PoolByteArray get_project_cert_array();
-	static void load_certs_from_file(String p_path);
-	static void load_certs_from_memory(const PoolByteArray &p_memory);
 	static bool is_available();
 
 	StreamPeerSSL();

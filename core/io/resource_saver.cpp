@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,7 +158,7 @@ void ResourceSaver::get_recognized_extensions(const RES &p_resource, List<String
 
 void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
 
-	ERR_FAIL_COND(p_format_saver.is_null());
+	ERR_FAIL_COND_MSG(p_format_saver.is_null(), "It's not a reference to a valid ResourceFormatSaver object.");
 	ERR_FAIL_COND(saver_count >= MAX_SAVERS);
 
 	if (p_at_front) {
@@ -174,7 +174,7 @@ void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_
 
 void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
 
-	ERR_FAIL_COND(p_format_saver.is_null());
+	ERR_FAIL_COND_MSG(p_format_saver.is_null(), "It's not a reference to a valid ResourceFormatSaver object.");
 
 	// Find saver
 	int i = 0;
@@ -214,16 +214,13 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
-	ERR_EXPLAIN("Script does not inherit a CustomResourceSaver: " + script_path);
-	ERR_FAIL_COND_V(!valid_type, false);
+	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceSaver: " + script_path + ".");
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_EXPLAIN("Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt));
-	ERR_FAIL_COND_V(obj == NULL, false);
+	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
-	ResourceFormatSaver *crl = NULL;
-	crl = Object::cast_to<ResourceFormatSaver>(obj);
+	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceSaver::add_resource_format_saver(crl);
 

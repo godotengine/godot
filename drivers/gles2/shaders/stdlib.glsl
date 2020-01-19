@@ -299,6 +299,81 @@ highp float determinant(highp mat4 m) {
 
 #endif
 
+#if defined(INVERSE_USED)
+
+highp mat2 inverse(highp mat2 m) {
+	highp float d = 1.0 / (m[0].x * m[1].y - m[1].x * m[0].y);
+	return mat2(
+			vec2(m[1].y * d, -m[0].y * d),
+			vec2(-m[1].x * d, m[0].x * d));
+}
+
+highp mat3 inverse(highp mat3 m) {
+	highp float d = 1.0 / (m[0].x * (m[1].y * m[2].z - m[2].y * m[1].z) - m[1].x * (m[0].y * m[2].z - m[2].y * m[0].z) + m[2].x * (m[0].y * m[1].z - m[1].y * m[0].z));
+	return mat3(
+			vec3((m[1].y * m[2].z - m[2].y * m[1].z), -(m[1].x * m[2].z - m[2].x * m[1].z), (m[1].x * m[2].y - m[2].x * m[1].y)) * d,
+			vec3(-(m[0].y * m[2].z - m[2].y * m[0].z), (m[0].x * m[2].z - m[2].x * m[0].z), -(m[0].x * m[2].y - m[2].x * m[0].y)) * d,
+			vec3((m[0].y * m[1].z - m[1].y * m[0].z), -(m[0].x * m[1].z - m[1].x * m[0].z), (m[0].x * m[1].y - m[1].x * m[0].y)) * d);
+}
+
+highp mat4 inverse(highp mat4 m) {
+	highp float c00 = m[2].z * m[3].w - m[3].z * m[2].w;
+	highp float c02 = m[1].z * m[3].w - m[3].z * m[1].w;
+	highp float c03 = m[1].z * m[2].w - m[2].z * m[1].w;
+
+	highp float c04 = m[2].y * m[3].w - m[3].y * m[2].w;
+	highp float c06 = m[1].y * m[3].w - m[3].y * m[1].w;
+	highp float c07 = m[1].y * m[2].w - m[2].y * m[1].w;
+
+	highp float c08 = m[2].y * m[3].z - m[3].y * m[2].z;
+	highp float c10 = m[1].y * m[3].z - m[3].y * m[1].z;
+	highp float c11 = m[1].y * m[2].z - m[2].y * m[1].z;
+
+	highp float c12 = m[2].x * m[3].w - m[3].x * m[2].w;
+	highp float c14 = m[1].x * m[3].w - m[3].x * m[1].w;
+	highp float c15 = m[1].x * m[2].w - m[2].x * m[1].w;
+
+	highp float c16 = m[2].x * m[3].z - m[3].x * m[2].z;
+	highp float c18 = m[1].x * m[3].z - m[3].x * m[1].z;
+	highp float c19 = m[1].x * m[2].z - m[2].x * m[1].z;
+
+	highp float c20 = m[2].x * m[3].y - m[3].x * m[2].y;
+	highp float c22 = m[1].x * m[3].y - m[3].x * m[1].y;
+	highp float c23 = m[1].x * m[2].y - m[2].x * m[1].y;
+
+	vec4 f0 = vec4(c00, c00, c02, c03);
+	vec4 f1 = vec4(c04, c04, c06, c07);
+	vec4 f2 = vec4(c08, c08, c10, c11);
+	vec4 f3 = vec4(c12, c12, c14, c15);
+	vec4 f4 = vec4(c16, c16, c18, c19);
+	vec4 f5 = vec4(c20, c20, c22, c23);
+
+	vec4 v0 = vec4(m[1].x, m[0].x, m[0].x, m[0].x);
+	vec4 v1 = vec4(m[1].y, m[0].y, m[0].y, m[0].y);
+	vec4 v2 = vec4(m[1].z, m[0].z, m[0].z, m[0].z);
+	vec4 v3 = vec4(m[1].w, m[0].w, m[0].w, m[0].w);
+
+	vec4 inv0 = vec4(v1 * f0 - v2 * f1 + v3 * f2);
+	vec4 inv1 = vec4(v0 * f0 - v2 * f3 + v3 * f4);
+	vec4 inv2 = vec4(v0 * f1 - v1 * f3 + v3 * f5);
+	vec4 inv3 = vec4(v0 * f2 - v1 * f4 + v2 * f5);
+
+	vec4 sa = vec4(+1, -1, +1, -1);
+	vec4 sb = vec4(-1, +1, -1, +1);
+
+	mat4 inv = mat4(inv0 * sa, inv1 * sb, inv2 * sa, inv3 * sb);
+
+	vec4 r0 = vec4(inv[0].x, inv[1].x, inv[2].x, inv[3].x);
+	vec4 d0 = vec4(m[0] * r0);
+
+	highp float d1 = (d0.x + d0.y) + (d0.z + d0.w);
+	highp float d = 1.0 / d1;
+
+	return inv * d;
+}
+
+#endif
+
 #ifndef USE_GLES_OVER_GL
 
 #if defined(TRANSPOSE_USED)

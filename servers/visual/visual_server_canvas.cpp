@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,10 +75,10 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 }
 
 void _mark_ysort_dirty(VisualServerCanvas::Item *ysort_owner, RID_Owner<VisualServerCanvas::Item> &canvas_item_owner) {
-	while (ysort_owner && ysort_owner->sort_y) {
+	do {
 		ysort_owner->ysort_children_count = -1;
 		ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
-	}
+	} while (ysort_owner && ysort_owner->sort_y);
 }
 
 void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
@@ -362,7 +362,9 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
 
-			_mark_ysort_dirty(item_owner, canvas_item_owner);
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
+			}
 		}
 
 		canvas_item->parent = RID();
@@ -382,12 +384,13 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
 
-			_mark_ysort_dirty(item_owner, canvas_item_owner);
+			if (item_owner->sort_y) {
+				_mark_ysort_dirty(item_owner, canvas_item_owner);
+			}
 
 		} else {
 
-			ERR_EXPLAIN("Invalid parent");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid parent.");
 		}
 	}
 
@@ -400,9 +403,7 @@ void VisualServerCanvas::canvas_item_set_visible(RID p_item, bool p_visible) {
 
 	canvas_item->visible = p_visible;
 
-	if (canvas_item->parent.is_valid() && canvas_item_owner.owns(canvas_item->parent)) {
-		_mark_ysort_dirty(canvas_item_owner.get(canvas_item->parent), canvas_item_owner);
-	}
+	_mark_ysort_dirty(canvas_item, canvas_item_owner);
 }
 void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
 
@@ -681,11 +682,22 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_H;
 		rect->rect.size.x = -rect->rect.size.x;
 	}
+	if (p_src_rect.size.x < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_H;
+		rect->source.size.x = -rect->source.size.x;
+	}
 	if (p_rect.size.y < 0) {
 
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_src_rect.size.y < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_V;
+		rect->source.size.y = -rect->source.size.y;
+	}
+
 	if (p_transpose) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TRANSPOSE;
 		SWAP(rect->rect.size.x, rect->rect.size.y);
@@ -754,12 +766,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry::triangulate_polygon(p_points);
-
-	if (indices.empty()) {
-
-		ERR_EXPLAIN("Bad Polygon!");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
@@ -771,12 +778,13 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	polygon->indices = indices;
 	polygon->count = indices.size();
 	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = false;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map, bool p_antialiased, bool p_antialiasing_use_indices) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -815,7 +823,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->weights = p_weights;
 	polygon->indices = indices;
 	polygon->count = count;
-	polygon->antialiased = false;
+	polygon->antialiased = p_antialiased;
+	polygon->antialiasing_use_indices = p_antialiasing_use_indices;
 	canvas_item->rect_dirty = true;
 
 	canvas_item->commands.push_back(polygon);
@@ -1377,7 +1386,9 @@ bool VisualServerCanvas::free(RID p_rid) {
 				Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
 
-				_mark_ysort_dirty(item_owner, canvas_item_owner);
+				if (item_owner->sort_y) {
+					_mark_ysort_dirty(item_owner, canvas_item_owner);
+				}
 			}
 		}
 

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ReflectionProbe" inherits="VisualInstance" category="Core" version="3.2">
 	<brief_description>
+		Captures its surroundings to create reflections.
 	</brief_description>
 	<description>
+		Capture its surroundings as a dual parabolid image, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
@@ -11,14 +13,17 @@
 	</methods>
 	<members>
 		<member name="box_projection" type="bool" setter="set_enable_box_projection" getter="is_box_projection_enabled" default="false">
+			If [code]true[/code], enables box projection. This makes reflections look more correct in rectangle-shaped rooms by offsetting the reflection center depending on the camera's location.
 		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 		</member>
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
+			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
 		</member>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
 		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
+			Defines the reflection intensity.
 		</member>
 		<member name="interior_ambient_color" type="Color" setter="set_interior_ambient" getter="get_interior_ambient" default="Color( 0, 0, 0, 1 )">
 		</member>

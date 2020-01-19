@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,10 @@ Line2D::Line2D() {
 	_texture_mode = LINE_TEXTURE_NONE;
 	_sharp_limit = 2.f;
 	_round_precision = 8;
+	_antialiased = false;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
 
 	if (_points.size() == 0)
@@ -78,6 +80,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
+#endif
 
 void Line2D::set_points(const PoolVector<Vector2> &p_points) {
 	_points = p_points;
@@ -260,6 +263,15 @@ int Line2D::get_round_precision() const {
 	return _round_precision;
 }
 
+void Line2D::set_antialiased(bool p_antialiased) {
+	_antialiased = p_antialiased;
+	update();
+}
+
+bool Line2D::get_antialiased() const {
+	return _antialiased;
+}
+
 void Line2D::_draw() {
 	if (_points.size() <= 1 || _width == 0.f)
 		return;
@@ -305,8 +317,8 @@ void Line2D::_draw() {
 			lb.vertices,
 			lb.colors,
 			lb.uvs, Vector<int>(), Vector<float>(),
-
-			texture_rid);
+			texture_rid, -1, RID(),
+			_antialiased, true);
 
 	// DEBUG
 	// Draw wireframe
@@ -386,6 +398,9 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_round_precision", "precision"), &Line2D::set_round_precision);
 	ClassDB::bind_method(D_METHOD("get_round_precision"), &Line2D::get_round_precision);
 
+	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &Line2D::set_antialiased);
+	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
+
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
@@ -401,6 +416,7 @@ void Line2D::_bind_methods() {
 	ADD_GROUP("Border", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), "set_round_precision", "get_round_precision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
 	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);
 	BIND_ENUM_CONSTANT(LINE_JOINT_BEVEL);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef WEBSOCKET_CLIENT_H
 #define WEBSOCKET_CLIENT_H
 
+#include "core/crypto/crypto.h"
 #include "core/error_list.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
@@ -43,17 +44,20 @@ class WebSocketClient : public WebSocketMultiplayerPeer {
 protected:
 	Ref<WebSocketPeer> _peer;
 	bool verify_ssl;
+	Ref<X509Certificate> ssl_cert;
 
 	static void _bind_methods();
 
 public:
-	Error connect_to_url(String p_url, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false);
+	Error connect_to_url(String p_url, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false, const Vector<String> p_custom_headers = Vector<String>());
 
 	void set_verify_ssl_enabled(bool p_verify_ssl);
 	bool is_verify_ssl_enabled() const;
+	Ref<X509Certificate> get_trusted_ssl_certificate() const;
+	void set_trusted_ssl_certificate(Ref<X509Certificate> p_cert);
 
 	virtual void poll() = 0;
-	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>()) = 0;
+	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) = 0;
 	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
 	virtual IP_Address get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;

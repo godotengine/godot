@@ -88,6 +88,7 @@
 			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified linear or rotational axis is locked.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -106,6 +107,7 @@
 			<argument index="1" name="lock" type="bool">
 			</argument>
 			<description>
+				Locks the specified linear or rotational axis.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -183,6 +185,8 @@
 			The body mode. See [enum Mode] for possible values.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,8 +160,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 	Ref<Image> img;
 	img.instance();
 	Error err = ImageLoader::load_image(source_emission_file, img);
-	ERR_EXPLAIN(TTR("Error loading image:") + " " + source_emission_file);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Error loading image '" + source_emission_file + "'.");
 
 	if (img->is_compressed()) {
 		img->decompress();
@@ -269,8 +268,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		valid_normals.resize(vpc);
 	}
 
-	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image..."));
-	ERR_FAIL_COND(valid_positions.size() == 0);
+	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
 
 	PoolVector<uint8_t> texdata;
 
@@ -426,9 +424,9 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	emission_mask->add_child(emvb);
 	emission_mask_mode = memnew(OptionButton);
 	emvb->add_margin_child(TTR("Emission Mask"), emission_mask_mode);
-	emission_mask_mode->add_item("Solid Pixels", EMISSION_MODE_SOLID);
-	emission_mask_mode->add_item("Border Pixels", EMISSION_MODE_BORDER);
-	emission_mask_mode->add_item("Directed Border Pixels", EMISSION_MODE_BORDER_DIRECTED);
+	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
+	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
+	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
 	emission_colors = memnew(CheckBox);
 	emission_colors->set_text(TTR("Capture from Pixel"));
 	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);

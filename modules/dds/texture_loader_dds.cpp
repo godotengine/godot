@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,8 +108,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	if (r_error)
 		*r_error = ERR_FILE_CORRUPT;
 
-	ERR_EXPLAIN("Unable to open DDS texture file: " + p_path);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
 
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
@@ -128,8 +127,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	if (magic != DDS_MAGIC || hsize != 124 || !(flags & DDSD_PIXELFORMAT) || !(flags & DDSD_CAPS)) {
 
-		ERR_EXPLAIN("Invalid or Unsupported DDS texture file: " + p_path);
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
 	}
 
 	/* uint32_t format_size = */ f->get_32();
@@ -218,9 +216,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	} else {
 
 		printf("unrecognized fourcc %x format_flags: %x - rgbbits %i - red_mask %x green mask %x blue mask %x alpha mask %x\n", format_fourcc, format_flags, format_rgb_bits, format_red_mask, format_green_mask, format_blue_mask, format_alpha_mask);
-		ERR_EXPLAIN("Unrecognized or Unsupported color layout in DDS: " + p_path);
-
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
 	}
 
 	if (!(flags & DDSD_MIPMAPCOUNT))

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "dependency_editor.h"
+#include "editor_file_system.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
@@ -252,11 +253,18 @@ void EditorFileDialog::_post_popup() {
 	else
 		item_list->grab_focus();
 
+	if (mode == MODE_OPEN_DIR) {
+		file_box->set_visible(false);
+	} else {
+		file_box->set_visible(true);
+	}
+
 	if (is_visible_in_tree() && get_current_file() != "")
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
 	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder", "FileDialog");
+		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -274,6 +282,7 @@ void EditorFileDialog::_post_popup() {
 
 			recent->add_item(name, folder);
 			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
 		}
 
 		local_history.clear();
@@ -700,6 +709,9 @@ void EditorFileDialog::update_file_list() {
 
 	item_list->clear();
 
+	// Scroll back to the top after opening a directory
+	item_list->get_v_scroll()->set_value(0);
+
 	if (display_mode == DISPLAY_THUMBNAILS) {
 
 		item_list->set_max_columns(0);
@@ -734,6 +746,7 @@ void EditorFileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -774,6 +787,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -893,25 +907,25 @@ void EditorFileDialog::update_filters() {
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0);
+			String flt = filters[i].get_slice(";", 0).strip_edges();
 			if (i > 0)
-				all_filters += ",";
+				all_filters += ", ";
 			all_filters += flt;
 		}
 
 		if (max_filters < filters.size())
 			all_filters += ", ...";
 
-		filter->add_item(TTR("All Recognized") + " ( " + all_filters + " )");
+		filter->add_item(TTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length())
-			filter->add_item(desc + " ( " + flt + " )");
+			filter->add_item(desc + " (" + flt + ")");
 		else
-			filter->add_item("( " + flt + " )");
+			filter->add_item("(" + flt + ")");
 	}
 
 	filter->add_item(TTR("All Files (*)"));
@@ -944,6 +958,8 @@ String EditorFileDialog::get_current_path() const {
 }
 void EditorFileDialog::set_current_dir(const String &p_dir) {
 
+	if (p_dir.is_rel_path())
+		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
 	dir_access->change_dir(p_dir);
 	update_dir();
 	invalidate();
@@ -1081,7 +1097,7 @@ void EditorFileDialog::_make_dir_confirm() {
 		update_filters();
 		update_dir();
 		_push_history();
-
+		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
 	}
@@ -1200,6 +1216,7 @@ void EditorFileDialog::_update_favorites() {
 
 	String current = get_current_dir();
 	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1230,6 +1247,7 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
+		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);
@@ -1651,19 +1669,19 @@ EditorFileDialog::EditorFileDialog() {
 	prev_cc->add_child(preview);
 	preview_vb->hide();
 
-	HBoxContainer *filename_hbc = memnew(HBoxContainer);
-	filename_hbc->add_child(memnew(Label(TTR("File:"))));
+	file_box = memnew(HBoxContainer);
+	file_box->add_child(memnew(Label(TTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename_hbc->add_child(file);
+	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflow it.
-	filename_hbc->add_child(filter);
-	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	item_vb->add_child(filename_hbc);
+	file_box->add_child(filter);
+	file_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	item_vb->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;

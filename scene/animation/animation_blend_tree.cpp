@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -350,8 +350,8 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 
-	BIND_ENUM_CONSTANT(MIX_MODE_BLEND)
-	BIND_ENUM_CONSTANT(MIX_MODE_ADD)
+	BIND_ENUM_CONSTANT(MIX_MODE_BLEND);
+	BIND_ENUM_CONSTANT(MIX_MODE_ADD);
 }
 
 AnimationNodeOneShot::AnimationNodeOneShot() {

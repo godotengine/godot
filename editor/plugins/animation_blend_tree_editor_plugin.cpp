@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,11 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/main/viewport.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
@@ -145,7 +147,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, 0, get_color("font_color", "Label"));
 			name->connect("text_entered", this, "_node_renamed", varray(agnode));
-			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode));
+			name->connect("focus_exited", this, "_node_renamed_focus_out", varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
 			node->set_show_close_button(true);
 			node->connect("close_request", this, "_delete_request", varray(E->get()), CONNECT_DEFERRED);
@@ -249,6 +251,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_color_override("title_color", c);
 			c.a = 0.7;
 			node->add_color_override("close_color", c);
+			node->add_color_override("resizer_color", c);
 		}
 	}
 
@@ -533,6 +536,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	updating = true;
 
 	Set<String> paths;
+	HashMap<String, Set<String> > types;
 	{
 		List<StringName> animations;
 		player->get_animation_list(&animations);
@@ -541,7 +545,27 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 			Ref<Animation> anim = player->get_animation(E->get());
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				paths.insert(anim->track_get_path(i));
+				String track_path = anim->track_get_path(i);
+				paths.insert(track_path);
+
+				String track_type_name;
+				Animation::TrackType track_type = anim->track_get_type(i);
+				switch (track_type) {
+					case Animation::TrackType::TYPE_ANIMATION: {
+						track_type_name = TTR("Anim Clips");
+					} break;
+					case Animation::TrackType::TYPE_AUDIO: {
+						track_type_name = TTR("Audio Clips");
+					} break;
+					case Animation::TrackType::TYPE_METHOD: {
+						track_type_name = TTR("Functions");
+					} break;
+					default: {
+					} break;
+				}
+				if (!track_type_name.empty()) {
+					types[track_path].insert(track_type_name);
+				}
 			}
 		}
 	}
@@ -645,10 +669,22 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		} else {
 			if (ti) {
-				//just a node, likely call or animation track
+				//just a node, not a property track
+				String types_text = "[";
+				if (types.has(path)) {
+					Set<String>::Element *F = types[path].front();
+					types_text += F->get();
+					while (F->next()) {
+						F = F->next();
+						types_text += " / " + F->get();
+					}
+				}
+				types_text += "]";
+				ti = filters->create_item(ti);
+				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+				ti->set_text(0, types_text);
 				ti->set_editable(0, true);
 				ti->set_selectable(0, true);
-				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_checked(0, anode->is_path_filtered(path));
 				ti->set_metadata(0, path);
 			}

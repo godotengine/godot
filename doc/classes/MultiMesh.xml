@@ -11,6 +11,7 @@
 	</description>
 	<tutorials>
 		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>http://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
@@ -87,7 +88,7 @@
 			<argument index="1" name="custom_data" type="Color">
 			</argument>
 			<description>
-				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 numbers.
+				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers. The format of the number can change depending on the [enum CustomDataFormat] used.
 			</description>
 		</method>
 		<method name="set_instance_transform">
@@ -153,7 +154,7 @@
 			Use when you are not using per-instance custom data.
 		</constant>
 		<constant name="CUSTOM_DATA_8BIT" value="1" enum="CustomDataFormat">
-			Compress custom_data into 8 bits when passing to shader. This uses less memory and can be faster, but loses precision.
+			Compress custom_data into 8 bits when passing to shader. This uses less memory and can be faster, but loses precision and range. Floats packed into 8 bits can only represent values between 0 and 1, numbers outside that range will be clamped.
 		</constant>
 		<constant name="CUSTOM_DATA_FLOAT" value="2" enum="CustomDataFormat">
 			The [Color] passed into [method set_instance_custom_data] will use 4 floats. Use this for highest precision.

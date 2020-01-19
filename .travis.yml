@@ -2,11 +2,14 @@ language: cpp
 
 # OS config, depends on actual 'os' in build matrix
 dist: xenial
-sudo: false
+
+stages:
+  - check
+  - build
 
 env:
   global:
-    - SCONS_CACHE=$HOME/.scons_cache
+    - SCONS_CACHE=$HOME/.scons_cache/$TRAVIS_BRANCH
     - SCONS_CACHE_LIMIT=1024
     - OPTIONS="debug_symbols=no verbose=yes progress=no builtin_libpng=yes"
     - secure: "uch9QszCgsl1qVbuzY41P7S2hWL2IiNFV4SbAYRCdi0oJ9MIu+pVyrQdpf3+jG4rH6j4Rffl+sN17Zz4dIDDioFL1JwqyCqyCyswR8uACC0Rr8gr4Mi3+HIRbv+2s2P4cIQq41JM8FJe84k9jLEMGCGh69w+ibCWoWs74CokYVA="
@@ -17,7 +20,8 @@ cache:
 
 matrix:
   include:
-    - name: Static checks (clang-format)
+    - name: Static checks (clang-format) + Documentation checks
+      stage: check
       env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc
@@ -29,6 +33,7 @@ matrix:
             - clang-format-8
 
     - name: Linux editor (debug, GCC 9, with Mono)
+      stage: build
       env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-9
@@ -42,16 +47,8 @@ matrix:
             - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
-        coverity_scan:
-          project:
-            name: "godotengine/godot"
-            description: "Godot Engine Coverity scans"
-          notification_email: coverity@godotengine.org
-          build_command_prepend: ""
-          build_command: "scons p=x11 -j2 $OPTIONS"
-          branch_pattern: coverity_scan
-
     - name: Linux export template (release, Clang)
+      stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
@@ -61,22 +58,30 @@ matrix:
             - *linux_deps
 
     - name: Android export template (release_debug, Clang)
+      stage: build
       env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
+      addons:
+        apt:
+          packages:
+            - openjdk-8-jdk
 
     - name: macOS editor (debug, Clang)
-      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
+      stage: build
+      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       compiler: clang
 
     - name: iOS export template (debug, Clang)
+      stage: build
       env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
 
-    - name: Linux headless editor (release_debug, GCC 9)
-      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes"
+    - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
+      stage: build
+      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes" TEST_PROJECT=yes
       os: linux
       compiler: gcc-9
       addons:
@@ -88,7 +93,8 @@ matrix:
             - *linux_deps
 
     - name: Linux export template (release_debug, GCC 5, without 3D support)
-      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="disable_3d=yes"
+      stage: build
+      env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="CXXFLAGS=-fno-strict-aliasing disable_3d=yes"
       os: linux
       compiler: gcc
       addons:
@@ -105,13 +111,13 @@ before_install:
 install:
   - pip install --user scons;
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64;
+      export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH};
+      java -version;
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
-      misc/travis/android-tools-osx.sh;
     fi
 
 before_script:
@@ -122,7 +128,13 @@ before_script:
 
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
-      sh ./misc/travis/clang-format.sh;
+      sh ./misc/travis/clang-format.sh &&
+      doc/tools/makerst.py --dry-run doc/classes modules;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS;
+      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
+      if [ "$TEST_PROJECT" = "yes" ]; then
+        git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
+        sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.x11.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
+        godot-tests/tests/project_export/test_project.sh "bin/godot_server.x11.opt.tools.64";
+      fi
     fi

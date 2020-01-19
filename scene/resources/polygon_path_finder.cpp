@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -466,11 +466,11 @@ Dictionary PolygonPathFinder::_get_data() const {
 	PoolVector<Vector2> p;
 	PoolVector<int> ind;
 	Array connections;
-	p.resize(points.size() - 2);
-	connections.resize(points.size() - 2);
+	p.resize(MAX(0, points.size() - 2));
+	connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
 	PoolVector<float> penalties;
-	penalties.resize(points.size() - 2);
+	penalties.resize(MAX(0, points.size() - 2));
 	{
 		PoolVector<Vector2>::Write wp = p.write();
 		PoolVector<float>::Write pw = penalties.write();

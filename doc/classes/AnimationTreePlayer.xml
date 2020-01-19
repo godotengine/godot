@@ -285,7 +285,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Gets the node type, will return from [code]NODE_*[/code] enum.
+				Gets the node type, will return from [enum NodeType] enum.
 			</description>
 		</method>
 		<method name="node_rename">

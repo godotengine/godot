@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 
 CurveEditor::CurveEditor() {
 	_selected_point = -1;
@@ -167,10 +168,20 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					_has_undo_data = true;
 				}
 
+				const float curve_amplitude = curve.get_max_value() - curve.get_min_value();
+				// Snap to "round" coordinates when holding Ctrl.
+				// Be more precise when holding Shift as well.
+				float snap_threshold;
+				if (mm.get_control()) {
+					snap_threshold = mm.get_shift() ? 0.025 : 0.1;
+				} else {
+					snap_threshold = 0.0;
+				}
+
 				if (_selected_tangent == TANGENT_NONE) {
 					// Drag point
 
-					Vector2 point_pos = get_world_pos(mpos);
+					Vector2 point_pos = get_world_pos(mpos).snapped(Vector2(snap_threshold, snap_threshold * curve_amplitude));
 
 					int i = curve.set_point_offset(_selected_point, point_pos.x);
 					// The index may change if the point is dragged across another one
@@ -188,8 +199,8 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					// Drag tangent
 
-					Vector2 point_pos = curve.get_point_position(_selected_point);
-					Vector2 control_pos = get_world_pos(mpos);
+					const Vector2 point_pos = curve.get_point_position(_selected_point);
+					const Vector2 control_pos = get_world_pos(mpos).snapped(Vector2(snap_threshold, snap_threshold * curve_amplitude));
 
 					Vector2 dir = (control_pos - point_pos).normalized();
 
@@ -446,6 +457,9 @@ void CurveEditor::remove_point(int index) {
 	if (index == _selected_point)
 		set_selected_point(-1);
 
+	if (index == _hover_point)
+		set_hover_point_index(-1);
+
 	ur.commit_action();
 }
 
@@ -497,8 +511,8 @@ void CurveEditor::set_hover_point_index(int index) {
 }
 
 void CurveEditor::update_view_transform() {
-	Vector2 control_size = get_size();
-	const real_t margin = 24;
+	Ref<Font> font = get_font("font", "Label");
+	const real_t margin = font->get_height() + 2 * EDSCALE;
 
 	float min_y = 0;
 	float max_y = 1;
@@ -508,15 +522,19 @@ void CurveEditor::update_view_transform() {
 		max_y = _curve_ref->get_max_value();
 	}
 
-	Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
-	Vector2 wm = Vector2(margin, margin) / control_size;
-	wm.y *= (max_y - min_y);
-	world_rect.position -= wm;
-	world_rect.size += 2.0 * wm;
+	const Rect2 world_rect = Rect2(Curve::MIN_X, min_y, Curve::MAX_X, max_y - min_y);
+	const Size2 view_margin(margin, margin);
+	const Size2 view_size = get_size() - view_margin * 2;
+	const Vector2 scale = view_size / world_rect.size;
 
-	_world_to_view = Transform2D();
-	_world_to_view.translate(-world_rect.position - Vector2(0, world_rect.size.y));
-	_world_to_view.scale(Vector2(control_size.x, -control_size.y) / world_rect.size);
+	Transform2D world_trans;
+	world_trans.translate(-world_rect.position - Vector2(0, world_rect.size.y));
+	world_trans.scale(Vector2(scale.x, -scale.y));
+
+	Transform2D view_trans;
+	view_trans.translate(view_margin);
+
+	_world_to_view = view_trans * world_trans;
 }
 
 Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
@@ -722,7 +740,10 @@ void CurveEditor::_draw() {
 
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
+	} else if (curve.get_point_count() == 0) {
+		text_color.a *= 0.4;
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), text_color);
 	}
 }
 
@@ -769,7 +790,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
-	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());
+	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;
 
 	// FIXME: Should be ported to use p_size as done in b2633a97

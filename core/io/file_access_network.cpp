@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -195,7 +195,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 
 	DEBUG_PRINT("IP: " + String(ip) + " port " + itos(p_port));
 	Error err = client->connect_to_host(ip, p_port);
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot connect to host with IP: " + String(ip) + " and port: " + itos(p_port));
 	while (client->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		//DEBUG_PRINT("trying to connect....");
 		OS::get_singleton()->delay_usec(1000);
@@ -339,7 +339,7 @@ bool FileAccessNetwork::is_open() const {
 
 void FileAccessNetwork::seek(size_t p_position) {
 
-	ERR_FAIL_COND(!opened);
+	ERR_FAIL_COND_MSG(!opened, "File must be opened before use.");
 	eof_flag = p_position > total_size;
 
 	if (p_position >= total_size) {
@@ -355,18 +355,18 @@ void FileAccessNetwork::seek_end(int64_t p_position) {
 }
 size_t FileAccessNetwork::get_position() const {
 
-	ERR_FAIL_COND_V(!opened, 0);
+	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
 size_t FileAccessNetwork::get_len() const {
 
-	ERR_FAIL_COND_V(!opened, 0);
+	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;
 }
 
 bool FileAccessNetwork::eof_reached() const {
 
-	ERR_FAIL_COND_V(!opened, false);
+	ERR_FAIL_COND_V_MSG(!opened, false, "File must be opened before use.");
 	return eof_flag;
 }
 

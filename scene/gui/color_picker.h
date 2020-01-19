@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ private:
 	TextureRect *sample;
 	TextureRect *preset;
 	HBoxContainer *preset_container;
+	HBoxContainer *preset_container2;
 	HSeparator *preset_separator;
 	Button *bt_add_preset;
 	List<Color> presets;
@@ -68,6 +69,7 @@ private:
 	bool edit_alpha;
 	Size2i ms;
 	bool text_is_constructor;
+	int presets_per_row;
 
 	Color color;
 	bool raw_mode_enabled;

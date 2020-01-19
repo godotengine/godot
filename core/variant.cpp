@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -910,7 +910,15 @@ bool Variant::is_one() const {
 
 void Variant::reference(const Variant &p_variant) {
 
-	clear();
+	switch (type) {
+		case NIL:
+		case BOOL:
+		case INT:
+		case REAL:
+			break;
+		default:
+			clear();
+	}
 
 	type = p_variant.type;
 
@@ -1740,10 +1748,7 @@ Variant::operator RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton()) {
-			if (!ObjectDB::instance_validate(_get_obj().obj)) {
-				ERR_EXPLAIN("Invalid pointer (object was deleted)");
-				ERR_FAIL_V(RID());
-			};
+			ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(_get_obj().obj), RID(), "Invalid pointer (object was deleted).");
 		};
 #endif
 		Variant::CallError ce;
@@ -3294,7 +3299,7 @@ String vformat(const String &p_text, const Variant &p1, const Variant &p2, const
 	bool error = false;
 	String fmt = p_text.sprintf(args, &error);
 
-	ERR_FAIL_COND_V(error, String());
+	ERR_FAIL_COND_V_MSG(error, String(), fmt);
 
 	return fmt;
 }

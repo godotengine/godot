@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -214,6 +214,11 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	}
 }
 
+bool Color::is_equal_approx(const Color &p_color) const {
+
+	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
+}
+
 void Color::invert() {
 
 	r = 1.0 - r;
@@ -335,36 +340,23 @@ Color Color::html(const String &p_color) {
 	} else if (color.length() == 6) {
 		alpha = false;
 	} else {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
+		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_color + ".");
 	}
 
 	int a = 255;
 	if (alpha) {
 		a = _parse_col(color, 0);
-		if (a < 0) {
-			ERR_EXPLAIN("Invalid Color Code: " + p_color);
-			ERR_FAIL_V(Color());
-		}
+		ERR_FAIL_COND_V_MSG(a < 0, Color(), "Invalid color code: " + p_color + ".");
 	}
 
 	int from = alpha ? 2 : 0;
 
 	int r = _parse_col(color, from + 0);
-	if (r < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_color + ".");
 	int g = _parse_col(color, from + 2);
-	if (g < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_color + ".");
 	int b = _parse_col(color, from + 4);
-	if (b < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_color + ".");
 
 	return Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }
@@ -425,12 +417,8 @@ Color Color::named(const String &p_name) {
 	name = name.to_lower();
 
 	const Map<String, Color>::Element *color = _named_colors.find(name);
-	if (color) {
-		return color->value();
-	} else {
-		ERR_EXPLAIN("Invalid Color Name: " + p_name);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_NULL_V_MSG(color, Color(), "Invalid color name: " + p_name + ".");
+	return color->value();
 }
 
 String _to_hex(float p_val) {
@@ -523,8 +511,7 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 // FIXME: Remove once Godot 3.1 has been released
 float Color::gray() const {
 
-	ERR_EXPLAIN("Color.gray() is deprecated and will be removed in a future version. Use Color.get_v() for a better grayscale approximation.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("Color.gray() is deprecated and will be removed in a future version. Use Color.get_v() for a better grayscale approximation.");
 	return (r + g + b) / 3.0;
 }
 

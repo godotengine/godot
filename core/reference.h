@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,6 @@
 #include "core/ref_ptr.h"
 #include "core/safe_refcount.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Reference : public Object {
 
 	GDCLASS(Reference, Object);
@@ -50,7 +47,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() < 1; }
+	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();

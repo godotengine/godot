@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,7 @@
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/plane.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/pool_vector.h"
 
 class Transform {
 public:
@@ -73,6 +70,7 @@ public:
 
 	void orthonormalize();
 	Transform orthonormalized() const;
+	bool is_equal_approx(const Transform &p_transform) const;
 
 	bool operator==(const Transform &p_transform) const;
 	bool operator!=(const Transform &p_transform) const;
@@ -85,6 +83,9 @@ public:
 
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
 	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const;
+
+	_FORCE_INLINE_ PoolVector<Vector3> xform(const PoolVector<Vector3> &p_array) const;
+	_FORCE_INLINE_ PoolVector<Vector3> xform_inv(const PoolVector<Vector3> &p_array) const;
 
 	void operator*=(const Transform &p_transform);
 	Transform operator*(const Transform &p_transform) const;
@@ -108,6 +109,7 @@ public:
 
 	operator String() const;
 
+	Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz);
 	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
 	Transform() {}
 };
@@ -157,22 +159,29 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 }
 
 _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
-	/* define vertices */
-	Vector3 x = basis.get_axis(0) * p_aabb.size.x;
-	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
-	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
-	Vector3 pos = xform(p_aabb.position);
-	//could be even further optimized
-	AABB new_aabb;
-	new_aabb.position = pos;
-	new_aabb.expand_to(pos + x);
-	new_aabb.expand_to(pos + y);
-	new_aabb.expand_to(pos + z);
-	new_aabb.expand_to(pos + x + y);
-	new_aabb.expand_to(pos + x + z);
-	new_aabb.expand_to(pos + y + z);
-	new_aabb.expand_to(pos + x + y + z);
-	return new_aabb;
+
+	/* http://dev.theomader.com/transform-bounding-boxes/ */
+	Vector3 min = p_aabb.position;
+	Vector3 max = p_aabb.position + p_aabb.size;
+	Vector3 tmin, tmax;
+	for (int i = 0; i < 3; i++) {
+		tmin[i] = tmax[i] = origin[i];
+		for (int j = 0; j < 3; j++) {
+			real_t e = basis[i][j] * min[j];
+			real_t f = basis[i][j] * max[j];
+			if (e < f) {
+				tmin[i] += e;
+				tmax[i] += f;
+			} else {
+				tmin[i] += f;
+				tmax[i] += e;
+			}
+		}
+	}
+	AABB r_aabb;
+	r_aabb.position = tmin;
+	r_aabb.size = tmax - tmin;
+	return r_aabb;
 }
 
 _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
@@ -199,6 +208,34 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 	}
 
 	return ret;
+}
+
+PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
+
+	PoolVector<Vector3> array;
+	array.resize(p_array.size());
+
+	PoolVector<Vector3>::Read r = p_array.read();
+	PoolVector<Vector3>::Write w = array.write();
+
+	for (int i = 0; i < p_array.size(); ++i) {
+		w[i] = xform(r[i]);
+	}
+	return array;
+}
+
+PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) const {
+
+	PoolVector<Vector3> array;
+	array.resize(p_array.size());
+
+	PoolVector<Vector3>::Read r = p_array.read();
+	PoolVector<Vector3>::Write w = array.write();
+
+	for (int i = 0; i < p_array.size(); ++i) {
+		w[i] = xform_inv(r[i]);
+	}
+	return array;
 }
 
 #endif // TRANSFORM_H

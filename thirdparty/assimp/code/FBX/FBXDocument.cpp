@@ -90,14 +90,6 @@ const Object* LazyObject::Get(bool dieOnError)
         return object.get();
     }
 
-    // if this is the root object, we return a dummy since there
-    // is no root object int he fbx file - it is just referenced
-    // with id 0.
-    if(id == 0L) {
-        object.reset(new Object(id, element, "Model::RootNode"));
-        return object.get();
-    }
-
     const Token& key = element.KeyToken();
     const TokenList& tokens = element.Tokens();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,9 +54,13 @@ private:
 	jmethodID _get_clipboard = 0;
 	jmethodID _set_clipboard = 0;
 	jmethodID _request_permission = 0;
+	jmethodID _request_permissions = 0;
+	jmethodID _get_granted_permissions = 0;
 	jmethodID _init_input_devices = 0;
 	jmethodID _get_surface = 0;
 	jmethodID _is_activity_resumed = 0;
+	jmethodID _vibrate = 0;
+	jmethodID _get_input_fallback_mapping = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -79,9 +83,13 @@ public:
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
 	bool request_permission(const String &p_name);
+	bool request_permissions();
+	Vector<String> get_granted_permissions() const;
 	void init_input_devices();
 	jobject get_surface();
 	bool is_activity_resumed();
+	void vibrate(int p_duration_ms);
+	String get_input_fallback_mapping();
 };
 
 #endif /* !JAVA_GODOT_WRAPPER_H */

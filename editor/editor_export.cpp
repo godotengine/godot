@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,13 @@
 
 #include "editor_export.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
+#include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
-#include "core/math/crypto_core.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
@@ -147,6 +149,12 @@ String EditorExportPreset::get_include_filter() const {
 void EditorExportPreset::set_export_path(const String &p_path) {
 
 	export_path = p_path;
+	/* NOTE(SonerSound): if there is a need to implement a PropertyHint that specifically indicates a relative path,
+	 * this should be removed. */
+	if (export_path.is_abs_path()) {
+		String res_path = OS::get_singleton()->get_resource_dir();
+		export_path = res_path.path_to_file(export_path);
+	}
 	EditorExport::singleton->save_presets();
 }
 
@@ -367,6 +375,12 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	}
 
 	return OK;
+}
+
+Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
+	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+	return theme->get_icon("Play", "EditorIcons");
 }
 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
@@ -884,6 +898,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
+	DirAccess::remove_file_or_error(engine_cfb);
 
 	p_func(p_udata, "res://" + config_file, data, idx, total);
 
@@ -905,7 +920,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(!ftmp, ERR_CANT_CREATE, "Cannot create file '" + tmppath + "'.");
 
 	PackData pd;
 	pd.ep = &ep;
@@ -916,8 +931,10 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	memdelete(ftmp); //close tmp file
 
-	if (err)
+	if (err != OK) {
+		DirAccess::remove_file_or_error(tmppath);
 		return err;
+	}
 
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
@@ -926,11 +943,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	if (!p_embed) {
 		// Regular output to separate PCK file
 		f = FileAccess::open(p_path, FileAccess::WRITE);
-		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		if (!f) {
+			DirAccess::remove_file_or_error(tmppath);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 	} else {
 		// Append to executable
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-		ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN);
+		if (!f) {
+			DirAccess::remove_file_or_error(tmppath);
+			ERR_FAIL_V(ERR_FILE_CANT_OPEN);
+		}
 
 		f->seek_end();
 		embed_pos = f->get_position();
@@ -948,11 +971,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	int64_t pck_start_pos = f->get_position();
 
-	f->store_32(0x43504447); //GDPC
-	f->store_32(1); //pack version
+	f->store_32(PACK_HEADER_MAGIC);
+	f->store_32(PACK_FORMAT_VERSION);
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
-	f->store_32(0); //hmph
+	f->store_32(VERSION_PATCH);
+
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->store_32(0);
@@ -995,13 +1019,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 		f->store_8(0);
 	}
 
-	//save the rest of the data
+	// Save the rest of the data.
 
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (!ftmp) {
 		memdelete(f);
-		ERR_EXPLAIN("Can't open file to read from path: " + String(tmppath));
-		ERR_FAIL_V(ERR_CANT_CREATE);
+		DirAccess::remove_file_or_error(tmppath);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open file to read from path '" + String(tmppath) + "'.");
 	}
 
 	const int bufsize = 16384;
@@ -1027,7 +1051,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 		int64_t pck_size = f->get_position() - pck_start_pos;
 		f->store_64(pck_size);
-		f->store_32(0x43504447); //GDPC
+		f->store_32(PACK_HEADER_MAGIC);
 
 		if (r_embedded_size) {
 			*r_embedded_size = f->get_position() - embed_pos;
@@ -1035,6 +1059,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	}
 
 	memdelete(f);
+	DirAccess::remove_file_or_error(tmppath);
 
 	return OK;
 }
@@ -1042,8 +1067,6 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
-
-	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
 
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -1388,7 +1411,7 @@ bool EditorExport::poll_export_platforms() {
 
 	bool changed = false;
 	for (int i = 0; i < export_platforms.size(); i++) {
-		if (export_platforms.write[i]->poll_devices()) {
+		if (export_platforms.write[i]->poll_export()) {
 			changed = true;
 		}
 	}
@@ -1462,41 +1485,29 @@ Ref<Texture> EditorExportPlatformPC::get_logo() const {
 bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
 	String err;
-	bool valid = true;
+	bool valid = false;
+
+	// Look for export templates (first official, and if defined custom templates).
+
 	bool use64 = p_preset->get("binary_format/64_bits");
+	bool dvalid = exists_export_template(use64 ? debug_file_64 : debug_file_32, &err);
+	bool rvalid = exists_export_template(use64 ? release_file_64 : release_file_32, &err);
 
-	if (use64 && (!exists_export_template(debug_file_64, &err) || !exists_export_template(release_file_64, &err))) {
-		valid = false;
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
+			err += TTR("Custom debug template not found.") + "\n";
+		}
 	}
-
-	if (!use64 && (!exists_export_template(debug_file_32, &err) || !exists_export_template(release_file_32, &err))) {
-		valid = false;
-	}
-
-	String custom_debug_binary = p_preset->get("custom_template/debug");
-	String custom_release_binary = p_preset->get("custom_template/release");
-
-	if (custom_debug_binary == "" && custom_release_binary == "") {
-		if (!err.empty())
-			r_error = err;
-		r_missing_templates = !valid;
-		return valid;
-	}
-
-	bool dvalid = true;
-	bool rvalid = true;
-
-	if (!FileAccess::exists(custom_debug_binary)) {
-		dvalid = false;
-		err += TTR("Custom debug template not found.") + "\n";
-	}
-
-	if (!FileAccess::exists(custom_release_binary)) {
-		rvalid = false;
-		err += TTR("Custom release template not found.") + "\n";
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
+			err += TTR("Custom release template not found.") + "\n";
+		}
 	}
 
 	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
 
 	if (!err.empty())
 		r_error = err;
@@ -1577,7 +1588,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 			if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
 				EditorNode::get_singleton()->show_warning(TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
-				return ERR_UNAVAILABLE;
+				return ERR_INVALID_PARAMETER;
 			}
 
 			FixUpEmbeddedPckFunc fixup_func = get_fixup_embedded_pck_func();
@@ -1591,12 +1602,19 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 			da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
 				err = da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+				if (err == OK) {
+					err = sign_shared_object(p_preset, p_debug, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
+				}
 			}
 			memdelete(da);
 		}
 	}
 
 	return err;
+}
+
+Error EditorExportPlatformPC::sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+	return OK;
 }
 
 void EditorExportPlatformPC::set_extension(const String &p_extension, const String &p_feature_key) {
@@ -1694,11 +1712,18 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
 	if (!convert)
 		return;
-	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("file.res");
+	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		DirAccess::remove_file_or_error(tmp_path);
+		ERR_FAIL();
+	}
 	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
-	ERR_FAIL_COND(data.size() == 0);
+	if (data.size() == 0) {
+		DirAccess::remove_file_or_error(tmp_path);
+		ERR_FAIL();
+	}
+	DirAccess::remove_file_or_error(tmp_path);
 	add_file(p_path + ".converted.res", data, true);
 }
 

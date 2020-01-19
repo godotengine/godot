@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +37,6 @@
 #include "core/math/vector3.h"
 #include "core/print_string.h"
 #include "core/variant.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 typedef uint32_t OctreeElementID;
 
@@ -568,10 +564,7 @@ void Octree<T, use_pairs, AL>::_ensure_valid_root(const AABB &p_aabb) {
 
 		while (!base.encloses(p_aabb)) {
 
-			if (base.size.x > OCTREE_SIZE_LIMIT) {
-				ERR_EXPLAIN("Octree upper size limit reeached, does the AABB supplied contain NAN?");
-				ERR_FAIL();
-			}
+			ERR_FAIL_COND_MSG(base.size.x > OCTREE_SIZE_LIMIT, "Octree upper size limit reached, does the AABB supplied contain NAN?");
 
 			Octant *gp = memnew_allocator(Octant, AL);
 			octant_count++;

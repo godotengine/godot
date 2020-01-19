@@ -9,8 +9,8 @@ env.main_sources = []
 
 env.add_source_files(env.main_sources, "*.cpp")
 
-# order matters here.  higher index controller database files write on top of lower index database files
-controller_databases = ["#main/gamecontrollerdb.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb_204.txt", "#main/godotcontrollerdb.txt"]
+# Order matters here. Higher index controller database files write on top of lower index database files.
+controller_databases = ["#main/gamecontrollerdb_204.txt", "#main/gamecontrollerdb_205.txt", "#main/gamecontrollerdb.txt", "#main/godotcontrollerdb.txt"]
 
 env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
 env.CommandNoCache("#main/default_controller_mappings.gen.cpp", controller_databases, run_in_subprocess(main_builders.make_default_controller_mappings))
@@ -28,7 +28,8 @@ env.CommandNoCache("#main/splash_editor.gen.h", "#main/splash_editor.png", run_i
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env.CommandNoCache("#main/app_icon.gen.h", "#main/app_icon.png", run_in_subprocess(main_builders.make_app_icon))
 
-SConscript('tests/SCsub')
+if env["tools"]:
+    SConscript('tests/SCsub')
 
 lib = env.add_library("main", env.main_sources)
 env.Prepend(LIBS=[lib])

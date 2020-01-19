@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,14 +46,31 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		dir_up->set_icon(get_icon("parent_folder"));
-		refresh->set_icon(get_icon("reload"));
-		show_hidden->set_icon(get_icon("toggle_hidden"));
-	}
+		if (p_what == NOTIFICATION_ENTER_TREE) {
+			dir_up->set_icon(get_icon("parent_folder"));
+			refresh->set_icon(get_icon("reload"));
+			show_hidden->set_icon(get_icon("toggle_hidden"));
+		}
 
-	if (p_what == NOTIFICATION_POPUP_HIDE) {
+		Color font_color = get_color("font_color", "ToolButton");
+		Color font_color_hover = get_color("font_color_hover", "ToolButton");
+		Color font_color_pressed = get_color("font_color_pressed", "ToolButton");
+
+		dir_up->add_color_override("icon_color_normal", font_color);
+		dir_up->add_color_override("icon_color_hover", font_color_hover);
+		dir_up->add_color_override("icon_color_pressed", font_color_pressed);
+
+		refresh->add_color_override("icon_color_normal", font_color);
+		refresh->add_color_override("icon_color_hover", font_color_hover);
+		refresh->add_color_override("icon_color_pressed", font_color_pressed);
+
+		show_hidden->add_color_override("icon_color_normal", font_color);
+		show_hidden->add_color_override("icon_color_hover", font_color_hover);
+		show_hidden->add_color_override("icon_color_pressed", font_color_pressed);
+
+	} else if (p_what == NOTIFICATION_POPUP_HIDE) {
 
 		set_process_unhandled_input(false);
 	}
@@ -161,8 +178,12 @@ void FileDialog::_post_popup() {
 	set_process_unhandled_input(true);
 
 	// For open dir mode, deselect all items on file dialog open.
-	if (mode == MODE_OPEN_DIR)
+	if (mode == MODE_OPEN_DIR) {
 		deselect_items();
+		file_box->set_visible(false);
+	} else {
+		file_box->set_visible(true);
+	}
 }
 
 void FileDialog::_action_pressed() {
@@ -396,10 +417,15 @@ void FileDialog::update_file_name() {
 void FileDialog::update_file_list() {
 
 	tree->clear();
+
+	// Scroll back to the top after opening a directory
+	tree->get_vscroll_bar()->set_value(0);
+
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture> folder = get_icon("folder");
+	const Color folder_color = get_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 
@@ -429,6 +455,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, folder);
+		ti->set_icon_modulate(0, folder_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
@@ -531,25 +558,25 @@ void FileDialog::update_filters() {
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0);
+			String flt = filters[i].get_slice(";", 0).strip_edges();
 			if (i > 0)
-				all_filters += ",";
+				all_filters += ", ";
 			all_filters += flt;
 		}
 
 		if (max_filters < filters.size())
 			all_filters += ", ...";
 
-		filter->add_item(RTR("All Recognized") + " ( " + all_filters + " )");
+		filter->add_item(RTR("All Recognized") + " (" + all_filters + ")");
 	}
 	for (int i = 0; i < filters.size(); i++) {
 
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length())
-			filter->add_item(String(tr(desc)) + " ( " + flt + " )");
+			filter->add_item(String(tr(desc)) + " (" + flt + ")");
 		else
-			filter->add_item("( " + flt + " )");
+			filter->add_item("(" + flt + ")");
 	}
 
 	filter->add_item(RTR("All Files (*)"));
@@ -634,6 +661,8 @@ bool FileDialog::is_mode_overriding_title() const {
 }
 
 void FileDialog::set_mode(Mode p_mode) {
+
+	ERR_FAIL_INDEX((int)p_mode, 5);
 
 	mode = p_mode;
 	switch (mode) {
@@ -873,6 +902,10 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", this, "_go_up");
 
+	drives = memnew(OptionButton);
+	hbc->add_child(drives);
+	drives->connect("item_selected", this, "_select_drive");
+
 	hbc->add_child(memnew(Label(RTR("Path:"))));
 	dir = memnew(LineEdit);
 	hbc->add_child(dir);
@@ -890,10 +923,6 @@ FileDialog::FileDialog() {
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	hbc->add_child(show_hidden);
 
-	drives = memnew(OptionButton);
-	hbc->add_child(drives);
-	drives->connect("item_selected", this, "_select_drive");
-
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", this, "_make_dir");
@@ -904,18 +933,18 @@ FileDialog::FileDialog() {
 	tree->set_hide_root(true);
 	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
 
-	hbc = memnew(HBoxContainer);
-	hbc->add_child(memnew(Label(RTR("File:"))));
+	file_box = memnew(HBoxContainer);
+	file_box->add_child(memnew(Label(RTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc->add_child(file);
+	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it
-	hbc->add_child(filter);
-	vbc->add_child(hbc);
+	file_box->add_child(filter);
+	vbc->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;

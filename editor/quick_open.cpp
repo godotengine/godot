@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -256,16 +256,16 @@ void EditorQuickOpen::_confirmed() {
 void EditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			connect("confirmed", this, "_confirmed");
 
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
+			FALLTHROUGH;
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			disconnect("confirmed", this, "_confirmed");
 		} break;
 	}
@@ -289,7 +289,6 @@ EditorQuickOpen::EditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", this, "_text_changed");
@@ -302,6 +301,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
 	search_options->set_hide_root(true);
+	search_options->set_hide_folding(true);
 	search_options->add_constant_override("draw_guides", 1);
 	ei = "EditorIcons";
 	ot = "Object";

@@ -19,6 +19,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="apply">
+			<return type="void">
+			</return>
+			<description>
+				Applies the current value of this [SpinBox].
+			</description>
+		</method>
 		<method name="get_line_edit">
 			<return type="LineEdit">
 			</return>

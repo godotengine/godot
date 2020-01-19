@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,7 @@
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
+#include "servers/audio/audio_stream.h"
 
 void post_process_preview(Ref<Image> p_image) {
 
@@ -103,9 +104,11 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 		img = ltex->to_image();
 	} else {
 		Ref<Texture> tex = p_from;
-		img = tex->get_data();
-		if (img.is_valid()) {
-			img = img->duplicate();
+		if (tex.is_valid()) {
+			img = tex->get_data();
+			if (img.is_valid()) {
+				img = img->duplicate();
+			}
 		}
 	}
 
@@ -624,6 +627,7 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 	uint8_t *imgw = imgdata.ptr();
 
 	Ref<AudioStreamPlayback> playback = stream->instance_playback();
+	ERR_FAIL_COND_V(playback.is_null(), Ref<Texture>());
 
 	float len_s = stream->get_length();
 	if (len_s == 0) {
@@ -824,19 +828,23 @@ void EditorFontPreviewPlugin::_bind_methods() {
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 
-	return ClassDB::is_parent_class(p_type, "DynamicFontData");
+	return ClassDB::is_parent_class(p_type, "DynamicFontData") || ClassDB::is_parent_class(p_type, "DynamicFont");
 }
 
 Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 
-	Ref<DynamicFontData> SampledFont;
-	SampledFont.instance();
-	SampledFont->set_font_path(p_path);
-
+	RES res = ResourceLoader::load(p_path);
 	Ref<DynamicFont> sampled_font;
-	sampled_font.instance();
+	if (res->is_class("DynamicFont")) {
+		sampled_font = res->duplicate();
+		if (sampled_font->get_outline_color() == Color(1, 1, 1, 1)) {
+			sampled_font->set_outline_color(Color(0, 0, 0, 1));
+		}
+	} else if (res->is_class("DynamicFontData")) {
+		sampled_font.instance();
+		sampled_font->set_font_data(res);
+	}
 	sampled_font->set_size(50);
-	sampled_font->set_font_data(SampledFont);
 
 	String sampled_text = "Abg";
 	Vector2 size = sampled_font->get_string_size(sampled_text);

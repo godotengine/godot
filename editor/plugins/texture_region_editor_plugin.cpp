@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
 
 /**
@@ -135,13 +136,19 @@ void TextureRegionEditor::_region_draw() {
 
 	Ref<Texture> select_handle = get_icon("EditorHandle", "EditorIcons");
 
-	Rect2 scroll_rect;
+	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
-	Vector2 endpoints[4] = {
-		mtx.basis_xform(rect.position),
-		mtx.basis_xform(rect.position + Vector2(rect.size.x, 0)),
-		mtx.basis_xform(rect.position + rect.size),
-		mtx.basis_xform(rect.position + Vector2(0, rect.size.y))
+	const Vector2 raw_endpoints[4] = {
+		rect.position,
+		rect.position + Vector2(rect.size.x, 0),
+		rect.position + rect.size,
+		rect.position + Vector2(0, rect.size.y)
+	};
+	const Vector2 endpoints[4] = {
+		mtx.basis_xform(raw_endpoints[0]),
+		mtx.basis_xform(raw_endpoints[1]),
+		mtx.basis_xform(raw_endpoints[2]),
+		mtx.basis_xform(raw_endpoints[3])
 	};
 	Color color = get_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
@@ -150,7 +157,7 @@ void TextureRegionEditor::_region_draw() {
 		int next = (i + 1) % 4;
 
 		Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-		ofs *= 1.4144 * (select_handle->get_size().width / 2);
+		ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
 
 		edit_draw->draw_line(endpoints[i] - draw_ofs * draw_zoom, endpoints[next] - draw_ofs * draw_zoom, color, 2);
 
@@ -163,33 +170,43 @@ void TextureRegionEditor::_region_draw() {
 		if (snap_mode != SNAP_AUTOSLICE)
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
 
-		scroll_rect.expand_to(endpoints[i]);
+		scroll_rect.expand_to(raw_endpoints[i]);
 	}
 
-	scroll_rect.position -= edit_draw->get_size();
-	scroll_rect.size += edit_draw->get_size() * 2.0;
+	const Size2 scroll_margin = edit_draw->get_size() / draw_zoom;
+	scroll_rect.position -= scroll_margin;
+	scroll_rect.size += scroll_margin * 2;
 
 	updating_scroll = true;
+
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
-	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= edit_draw->get_size().x) {
+	if (ABS(scroll_rect.position.x - (scroll_rect.position.x + scroll_rect.size.x)) <= scroll_margin.x) {
 		hscroll->hide();
 	} else {
 		hscroll->show();
-		hscroll->set_page(edit_draw->get_size().x);
+		hscroll->set_page(scroll_margin.x);
 		hscroll->set_value(draw_ofs.x);
 	}
 
 	vscroll->set_min(scroll_rect.position.y);
 	vscroll->set_max(scroll_rect.position.y + scroll_rect.size.y);
-	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= edit_draw->get_size().y) {
+	if (ABS(scroll_rect.position.y - (scroll_rect.position.y + scroll_rect.size.y)) <= scroll_margin.y) {
 		vscroll->hide();
 		draw_ofs.y = scroll_rect.position.y;
 	} else {
 		vscroll->show();
-		vscroll->set_page(edit_draw->get_size().y);
+		vscroll->set_page(scroll_margin.y);
 		vscroll->set_value(draw_ofs.y);
 	}
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
@@ -225,15 +242,19 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	Vector2 endpoints[8] = {
-		mtx.xform(rect.position) + Vector2(-4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(4, -4),
-		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(4, 0),
-		mtx.xform(rect.position + rect.size) + Vector2(4, 4),
-		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-4, 4),
-		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-4, 0)
+	const real_t handle_radius = 8 * EDSCALE;
+	const real_t handle_offset = 4 * EDSCALE;
+
+	// Position of selection handles.
+	const Vector2 endpoints[8] = {
+		mtx.xform(rect.position) + Vector2(-handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, 0)) + Vector2(0, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, 0)) + Vector2(handle_offset, -handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x, rect.size.y / 2)) + Vector2(handle_offset, 0),
+		mtx.xform(rect.position + rect.size) + Vector2(handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(rect.size.x / 2, rect.size.y)) + Vector2(0, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y)) + Vector2(-handle_offset, handle_offset),
+		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -346,7 +367,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < 8) {
+						if (tuv.distance_to(Vector2(mb->get_position().x, mb->get_position().y)) < handle_radius) {
 							drag_index = i;
 						}
 					}
@@ -430,9 +451,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
-			Vector2 draged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
-			hscroll->set_value(hscroll->get_value() - draged.x);
-			vscroll->set_value(vscroll->get_value() - draged.y);
+			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
+			hscroll->set_value(hscroll->get_value() - dragged.x);
+			vscroll->set_value(vscroll->get_value() - dragged.y);
 
 		} else if (drag) {
 
@@ -625,9 +646,12 @@ void TextureRegionEditor::_update_rect() {
 		rect = node_sprite->get_region_rect();
 	else if (node_sprite_3d)
 		rect = node_sprite_3d->get_region_rect();
-	else if (node_ninepatch)
+	else if (node_ninepatch) {
 		rect = node_ninepatch->get_region_rect();
-	else if (obj_styleBox.is_valid())
+		if (rect == Rect2()) {
+			rect = Rect2(Vector2(), node_ninepatch->get_texture()->get_size());
+		}
+	} else if (obj_styleBox.is_valid())
 		rect = obj_styleBox->get_region_rect();
 	else if (atlas_tex.is_valid())
 		rect = atlas_tex->get_region();
@@ -863,8 +887,8 @@ void TextureRegionEditor::_edit_region() {
 
 Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	if (snap_mode == SNAP_GRID) {
-		p_target.x = Math::snap_scalar_seperation(snap_offset.x, snap_step.x, p_target.x, snap_separation.x);
-		p_target.y = Math::snap_scalar_seperation(snap_offset.y, snap_step.y, p_target.y, snap_separation.y);
+		p_target.x = Math::snap_scalar_separation(snap_offset.x, snap_step.x, p_target.x, snap_separation.x);
+		p_target.y = Math::snap_scalar_separation(snap_offset.y, snap_step.y, p_target.y, snap_separation.y);
 	}
 
 	return p_target;
@@ -1004,7 +1028,6 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
 	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
-	hscroll->set_margin(MARGIN_RIGHT, -vscroll->get_size().x * EDSCALE);
 	hscroll->connect("value_changed", this, "_scroll_changed");
 
 	updating_scroll = false;

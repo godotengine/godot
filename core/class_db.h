@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 #include "core/method_bind.h"
 #include "core/object.h"
 #include "core/print_string.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 /**	To bind more then 6 parameters include this:
  *  #include "core/method_bind_ext.gen.inc"
@@ -118,6 +114,7 @@ public:
 
 		APIType api;
 		ClassInfo *inherits_ptr;
+		void *class_ptr;
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName> > enum_map;
@@ -181,6 +178,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
@@ -192,6 +190,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		//nothing
 	}
 
@@ -210,6 +209,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
@@ -288,12 +288,30 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 6);
 	}
 
+	template <class N, class M>
+	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7) {
+
+		MethodBind *bind = create_method_bind(p_method);
+		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
+
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 7);
+	}
+
+	template <class N, class M>
+	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
+
+		MethodBind *bind = create_method_bind(p_method);
+		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
+
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 8);
+	}
+
 	template <class M>
-	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>()) {
+	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
 
 		GLOBAL_LOCK_FUNCTION;
 
-		MethodBind *bind = create_vararg_method_bind(p_method, p_info);
+		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
 		ERR_FAIL_COND_V(!bind, NULL);
 
 		bind->set_name(p_name);
@@ -310,8 +328,7 @@ public:
 		if (type->method_map.has(p_name)) {
 			memdelete(bind);
 			// overloading not supported
-			ERR_EXPLAIN("Method already bound: " + instance_type + "::" + p_name);
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "Method already bound: " + instance_type + "::" + p_name + ".");
 		}
 		type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED

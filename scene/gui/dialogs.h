@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,6 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class WindowDialog : public Popup {
 
@@ -56,10 +53,15 @@ class WindowDialog : public Popup {
 
 	TextureButton *close_button;
 	String title;
+	String xl_title;
 	int drag_type;
 	Point2 drag_offset;
 	Point2 drag_offset_far;
 	bool resizable;
+
+#ifdef TOOLS_ENABLED
+	bool was_editor_dimmed;
+#endif
 
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _closed();
@@ -108,7 +110,6 @@ class AcceptDialog : public WindowDialog {
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
-	//Button *cancel; no more cancel (there is X on that titlebar)
 	bool hide_on_ok;
 
 	void _custom_action(const String &p_action);

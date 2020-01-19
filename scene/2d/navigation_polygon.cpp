@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 
 #include "thirdparty/misc/triangulator.h"
 
+#ifdef TOOLS_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
@@ -75,6 +76,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 	}
 	return false;
 }
+#endif
 
 void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 
@@ -271,7 +273,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 		struct Polygon p;
 
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 
 			Map<Vector2, int>::Element *E = points.find(tp[i]);
 			if (!E) {
@@ -357,7 +359,7 @@ bool NavigationPolygonInstance::is_enabled() const {
 }
 
 /////////////////////////////
-
+#ifdef TOOLS_ENABLED
 Rect2 NavigationPolygonInstance::_edit_get_rect() const {
 
 	return navpoly.is_valid() ? navpoly->_edit_get_rect() : Rect2();
@@ -367,6 +369,7 @@ bool NavigationPolygonInstance::_edit_is_selected_on_click(const Point2 &p_point
 
 	return navpoly.is_valid() ? navpoly->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
+#endif
 
 void NavigationPolygonInstance::_notification(int p_what) {
 

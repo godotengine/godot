@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,7 @@ Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_poi
 void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
+	ERR_FAIL_COND(blend_points[p_point].node.is_null());
 	blend_points[p_point].node->disconnect("tree_changed", this, "_tree_changed");
 
 	for (int i = 0; i < triangles.size(); i++) {
@@ -527,7 +528,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			}
 		}
 
-		if (new_closest != closest) {
+		if (new_closest != closest && new_closest != -1) {
 
 			float from = 0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {

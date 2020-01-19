@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,19 @@
 
 #include "context_gl_windows.h"
 
+#include <dwmapi.h>
+
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
 #define WGL_CONTEXT_FLAGS_ARB 0x2094
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x00000002
 #define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
+
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define wglGetProcAddress (void *)wglGetProcAddress
+#endif
 
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
@@ -63,16 +70,52 @@ int ContextGL_Windows::get_window_height() {
 	return OS::get_singleton()->get_video_mode().height;
 }
 
+bool ContextGL_Windows::should_vsync_via_compositor() {
+
+	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
+		return false;
+	}
+
+	// Note: All Windows versions supported by Godot have a compositor.
+	// It can be disabled on earlier Windows versions.
+	BOOL dwm_enabled;
+
+	if (SUCCEEDED(DwmIsCompositionEnabled(&dwm_enabled))) {
+		return dwm_enabled;
+	}
+
+	return false;
+}
+
 void ContextGL_Windows::swap_buffers() {
 
 	SwapBuffers(hDC);
+
+	if (use_vsync) {
+		bool vsync_via_compositor_now = should_vsync_via_compositor();
+
+		if (vsync_via_compositor_now && wglGetSwapIntervalEXT() == 0) {
+			DwmFlush();
+		}
+
+		if (vsync_via_compositor_now != vsync_via_compositor) {
+			// The previous frame had a different operating mode than this
+			// frame.  Set the 'vsync_via_compositor' member variable and the
+			// OpenGL swap interval to their proper values.
+			set_use_vsync(true);
+		}
+	}
 }
 
 void ContextGL_Windows::set_use_vsync(bool p_use) {
 
+	vsync_via_compositor = p_use && should_vsync_via_compositor();
+
 	if (wglSwapIntervalEXT) {
-		wglSwapIntervalEXT(p_use ? 1 : 0);
+		int swap_interval = (p_use && !vsync_via_compositor) ? 1 : 0;
+		wglSwapIntervalEXT(swap_interval);
 	}
+
 	use_vsync = p_use;
 }
 
@@ -167,6 +210,7 @@ Error ContextGL_Windows::initialize() {
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;
@@ -177,6 +221,7 @@ ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
 	opengl_3_context = p_opengl_3_context;
 	hWnd = hwnd;
 	use_vsync = false;
+	vsync_via_compositor = false;
 }
 
 ContextGL_Windows::~ContextGL_Windows() {

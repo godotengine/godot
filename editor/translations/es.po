@@ -1,6 +1,6 @@
 # Spanish translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Addiel Lucena Perez <addiell2017@gmail.com>, 2017.
 # Aleix Sanchis <aleixsanchis@hotmail.com>, 2017, 2018.
@@ -14,11 +14,11 @@
 # Diego López <diegodario21@gmail.com>, 2017.
 # eon-s <emanuel.segretin@gmail.com>, 2018, 2019.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017, 2019.
 # Lonsfor <lotharw@protonmail.com>, 2017-2018.
 # Mario Nachbaur <manachbaur@gmail.com>, 2018.
 # Oscar Carballal <oscar.carballal@protonmail.com>, 2017-2018.
@@ -40,11 +40,13 @@
 # juan david julio <illus.kun@gmail.com>, 2019.
 # Patrick Zoch Alves <patrickzochalves@gmail.com>, 2019.
 # roger <616steam@gmail.com>, 2019.
+# Dario <darlex259@gmail.com>, 2019.
+# Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-21 11:06+0000\n"
+"PO-Revision-Date: 2020-01-16 22:23+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -53,19 +55,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.10.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "El argumento para convert() no es correcto, utiliza constantes TYPE_*."
+msgstr "Argumento de tipo inválido para convert(), utiliza constantes TYPE_*."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Se esperaba un string de longitud 1 (un carácter)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"No hay suficientes bytes para decodificar bytes, o el formato no es válido."
+"No hay suficientes bytes para decodificar bytes, o el formato es invalido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -73,7 +79,8 @@ msgstr "Entrada inválida %i (no pasó) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "No se puede usar self porque la instancia es nula (no pasó)"
+msgstr ""
+"No se puede utilizar «self» porque la instancia es nula (no transmitida)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -85,7 +92,7 @@ msgstr "Indice inválido de tipo %s para tipo base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Indice de nombre invalido '%s' para el tipo base %s"
+msgstr "El índice de nombre «%s» no es válido para el tipo de base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -95,8 +102,35 @@ msgstr "Argumentos inválidos para construir '%s'"
 msgid "On call to '%s':"
 msgstr "En llamada a '%s':"
 
+#: core/ustring.cpp
+msgid "B"
+msgstr "B"
+
+#: core/ustring.cpp
+msgid "KiB"
+msgstr "KiB"
+
+#: core/ustring.cpp
+msgid "MiB"
+msgstr "MiB"
+
+#: core/ustring.cpp
+msgid "GiB"
+msgstr "GiB"
+
+#: core/ustring.cpp
+msgid "TiB"
+msgstr "TiB"
+
+#: core/ustring.cpp
+msgid "PiB"
+msgstr "PiB"
+
+#: core/ustring.cpp
+msgid "EiB"
+msgstr "EiB"
+
 #: editor/animation_bezier_editor.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
 msgstr "Libre"
 
@@ -106,7 +140,7 @@ msgstr "Balanceado"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "Espejo"
+msgstr "Mirror"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -165,29 +199,24 @@ msgid "Anim Change Call"
 msgstr "Cambiar Llamada de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambiar Tiempo del Fotograma Clave de Animación"
+msgstr "Cambiar Tiempo de Múltiples Keyframes de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Cambiar Transición de Animación"
+msgstr "Cambiar Múltiples Transiciones de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Cambiar Transformación de la Animación"
+msgstr "Cambiar Múltiples Transforms de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambiar Valor de la Clave de Animación"
+msgstr "Cambiar Valor de Múltiples Keyframes de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Cambiar Llamada de Animación"
+msgstr "Cambiar Múltiples Llamadas de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -365,6 +394,7 @@ msgstr "¿Crear %d nuevas pistas e insertar claves?"
 #: editor/plugins/particles_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Create"
 msgstr "Crear"
 
@@ -428,6 +458,10 @@ msgid "Not possible to add a new track without a root"
 msgstr "No es posible agregar una nueva pista sin una raíz"
 
 #: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr "Pista inválida para Bezier (no hay sub-propiedades adecuadas)"
+
+#: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
 msgstr "Añadir Pista Bezier"
 
@@ -464,7 +498,7 @@ msgstr "Método no encontrado en el objeto: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Mover Claves de Anim"
+msgstr "Mover Claves de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -511,14 +545,9 @@ msgstr ""
 msgid "Warning: Editing imported animation"
 msgstr "Advertencia: Edición de animación importada"
 
-#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "Seleccionar Todo"
-
 #: editor/animation_track_editor.cpp
-msgid "Select None"
-msgstr "Deseleccionar todo"
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "Selecciona un nodo AnimationPlayer para crear y editar animaciones."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -548,8 +577,9 @@ msgstr "FPS"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
 msgstr "Editar"
 
@@ -607,7 +637,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
+msgstr "Optimizar Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -647,11 +677,11 @@ msgstr "Limpiar"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Ratio:"
-msgstr "Ratio de Escala:"
+msgstr "Relación de Escala:"
 
 #: editor/animation_track_editor.cpp
-msgid "Select tracks to copy:"
-msgstr "Elegir pistas a copiar:"
+msgid "Select Tracks to Copy"
+msgstr "Selecciona las Pistas a Copiar"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -661,6 +691,10 @@ msgstr "Elegir pistas a copiar:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
+
+#: editor/animation_track_editor.cpp
+msgid "Select All/None"
+msgstr "Seleccionar Todo/Ninguno"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -695,20 +729,20 @@ msgid "Line Number:"
 msgstr "Número de Línea:"
 
 #: editor/code_editor.cpp
-msgid "Found %d match(es)."
-msgstr "Se encontraron %d coincidencias."
-
-#: editor/code_editor.cpp editor/editor_help.cpp
-msgid "No Matches"
-msgstr "Sin Coincidencias"
-
-#: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
 msgstr "%d ocurrencia(s) reemplazada(s)."
 
+#: editor/code_editor.cpp editor/editor_help.cpp
+msgid "%d match."
+msgstr "%d coincidencia."
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+msgid "%d matches."
+msgstr "%d coincidencias."
+
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr "Coincidir mayús/minúsculas"
+msgstr "Coincidir Mayús./Minús."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
@@ -730,6 +764,10 @@ msgstr "Sólo selección"
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
 msgstr "Estándar"
+
+#: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Toggle Scripts Panel"
+msgstr "Act./Desact. Panel de Scripts"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -809,6 +847,10 @@ msgid "Extra Call Arguments:"
 msgstr "Argumentos extras de llamada:"
 
 #: editor/connections_dialog.cpp
+msgid "Receiver Method:"
+msgstr "Método Receptor:"
+
+#: editor/connections_dialog.cpp
 msgid "Advanced"
 msgstr "Avanzado"
 
@@ -842,7 +884,8 @@ msgstr "No se puede conectar la señal"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -933,8 +976,7 @@ msgstr "Favoritos:"
 msgid "Recent:"
 msgstr "Recientes:"
 
-#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
@@ -946,7 +988,8 @@ msgstr "Buscar:"
 msgid "Matches:"
 msgstr "Coincidencias:"
 
-#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -987,7 +1030,7 @@ msgid "Resource"
 msgstr "Recursos"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
 msgstr "Ruta"
 
@@ -1036,7 +1079,7 @@ msgstr ""
 "funcionar.\n"
 "¿Eliminarlos de todos modos? (irreversible)"
 
-#: editor/dependency_editor.cpp editor/export_template_manager.cpp
+#: editor/dependency_editor.cpp
 msgid "Cannot remove:"
 msgstr "No se puede eliminar:"
 
@@ -1072,7 +1115,7 @@ msgstr "¿Eliminar permanentemente %d ítem(s)? (¡No se puede deshacer!)"
 msgid "Show Dependencies"
 msgstr "Mostrar Dependencias"
 
-#: editor/dependency_editor.cpp editor/editor_node.cpp
+#: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
 msgstr "Explorador de Recursos Huérfanos"
 
@@ -1161,18 +1204,18 @@ msgid "License"
 msgstr "Licencia"
 
 #: editor/editor_about.cpp
-msgid "Thirdparty License"
+msgid "Third-party Licenses"
 msgstr "Licencia de Terceros"
 
 #: editor/editor_about.cpp
 msgid ""
-"Godot Engine relies on a number of thirdparty free and open source "
+"Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
-"is an exhaustive list of all such thirdparty components with their "
+"is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Godot Engine se basa en una serie de bibliotecas libres y de código abierto "
-"de terceros, todas ellas compatibles con los términos de su licencia MIT. La "
+"Godot Engine se basa en una serie de librerías libres y de código abierto de "
+"terceros, todas ellas compatibles con los términos de su licencia MIT. La "
 "siguiente es una lista exhaustiva de todos estos componentes de terceros con "
 "sus respectivas declaraciones de derechos de autor y términos de licencia."
 
@@ -1189,12 +1232,24 @@ msgid "Licenses"
 msgstr "Licencias"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Error opening package file, not in zip format."
-msgstr "Error al abrir el archivo empaquetado, no tiene formato zip."
+msgid "Error opening package file, not in ZIP format."
+msgstr "Error al abrir el archivo comprimido, no está en formato ZIP."
+
+#: editor/editor_asset_installer.cpp
+msgid "%s (Already Exists)"
+msgstr "%s (Ya existe)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Descomprimiendo Assets"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr "Los siguientes archivos no se pudieron extraer del paquete:"
+
+#: editor/editor_asset_installer.cpp
+msgid "And %s more files."
+msgstr "Y %d archivos más."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1204,6 +1259,10 @@ msgstr "¡Paquete instalado con éxito!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "¡Éxito!"
+
+#: editor/editor_asset_installer.cpp
+msgid "Package Contents:"
+msgstr "Contenido del Paquete:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1258,8 +1317,8 @@ msgid "Delete Bus Effect"
 msgstr "Eliminar Efecto de Bus"
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr "Bus de audio, arrastra y suelta para reordenar."
+msgid "Drag & drop to rearrange."
+msgstr "Arrastrar y soltar para reordenar."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1341,6 +1400,10 @@ msgstr "Layout"
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "Archivo inválido. No es un layout de bus de audio."
+
+#: editor/editor_audio_buses.cpp
+msgid "Error saving file: %s"
+msgstr "Error guardando el archivo: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1449,7 +1512,9 @@ msgid "Add AutoLoad"
 msgstr "Añadir AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
+#: editor/editor_plugin_settings.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Ruta:"
 
@@ -1458,7 +1523,8 @@ msgid "Node Name:"
 msgstr "Nombre del Nodo:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/project_manager.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nombre"
 
@@ -1503,7 +1569,7 @@ msgstr "Crear Carpeta"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-#: scene/gui/file_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Nombre:"
 
@@ -1561,7 +1627,7 @@ msgstr ""
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "Plantilla debug personalizada no encontrada."
+msgstr "No se encontró la plantilla de depuración personalizada."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1682,16 +1748,16 @@ msgstr "Hacer Actual"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr "Nuevo"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_manager.cpp
 msgid "Import"
 msgstr "Importar"
 
-#: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/project_export.cpp
+#: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Exportar"
 
@@ -1710,6 +1776,10 @@ msgstr "Nuevo nombre de perfil:"
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
 msgstr "Borrar Perfil"
+
+#: editor/editor_feature_profile.cpp
+msgid "Godot Feature Profile"
+msgstr "Perfil de Características de Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
@@ -1753,6 +1823,7 @@ msgid "New Folder..."
 msgstr "Nueva Carpeta..."
 
 #: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Recargar"
 
@@ -1828,32 +1899,28 @@ msgid "Move Favorite Down"
 msgstr "Bajar Favorito"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta anterior."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta siguiente."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Ir a la carpeta padre."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Buscar archivos"
+msgstr "Refrescar archivos."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Eliminar carpeta actual de favoritos."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "Ver/Ocultar archivos ocultos."
+msgstr "Mostrar/Ocultar archivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1906,6 +1973,7 @@ msgid "Class:"
 msgstr "Clase:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Inherits:"
 msgstr "Hereda:"
 
@@ -1914,68 +1982,13 @@ msgid "Inherited by:"
 msgstr "Heredada por:"
 
 #: editor/editor_help.cpp
-msgid "Brief Description:"
-msgstr "Descripción Breve:"
+#, fuzzy
+msgid "Description"
+msgstr "Descripción:"
 
 #: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Propiedades"
-
-#: editor/editor_help.cpp
-msgid "Properties:"
-msgstr "Propiedades:"
-
-#: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Métodos"
-
-#: editor/editor_help.cpp
-msgid "Methods:"
-msgstr "Métodos:"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties"
-msgstr "Propiedades del Tema"
-
-#: editor/editor_help.cpp
-msgid "Theme Properties:"
-msgstr "Propiedades del Tema:"
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Signals:"
-msgstr "Señales:"
-
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeraciones"
-
-#: editor/editor_help.cpp
-msgid "Enumerations:"
-msgstr "Enumeraciones:"
-
-#: editor/editor_help.cpp
-msgid "enum  "
-msgstr "enum  "
-
-#: editor/editor_help.cpp
-msgid "Constants"
-msgstr "Constantes"
-
-#: editor/editor_help.cpp
-msgid "Constants:"
-msgstr "Constantes:"
-
-#: editor/editor_help.cpp
-msgid "Class Description"
-msgstr "Descripción de la Clase"
-
-#: editor/editor_help.cpp
-msgid "Class Description:"
-msgstr "Descripción de la Clase:"
-
-#: editor/editor_help.cpp
-msgid "Online Tutorials:"
-msgstr "Tutoriales en línea:"
+msgid "Online Tutorials"
+msgstr "Tutoriales en línea"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1988,12 +2001,43 @@ msgstr ""
 "url][/color]."
 
 #: editor/editor_help.cpp
+msgid "Properties"
+msgstr "Propiedades"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "override:"
+msgstr "Sobreescritura"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Predeterminado"
+
+#: editor/editor_help.cpp
+msgid "Methods"
+msgstr "Métodos"
+
+#: editor/editor_help.cpp
+msgid "Theme Properties"
+msgstr "Propiedades del Tema"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeraciones"
+
+#: editor/editor_help.cpp
+msgid "Constants"
+msgstr "Constantes"
+
+#: editor/editor_help.cpp
 msgid "Property Descriptions"
 msgstr "Descripción de Propiedades"
 
 #: editor/editor_help.cpp
-msgid "Property Descriptions:"
-msgstr "Descripción de Propiedades:"
+#, fuzzy
+msgid "(value)"
+msgstr "Valor"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2006,10 +2050,6 @@ msgstr ""
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
 msgstr "Descripción de Métodos"
-
-#: editor/editor_help.cpp
-msgid "Method Descriptions:"
-msgstr "Descripción de Métodos:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2026,6 +2066,14 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "Buscar en la Ayuda"
+
+#: editor/editor_help_search.cpp
+msgid "Case Sensitive"
+msgstr "Respetar mayús/minúsculas"
+
+#: editor/editor_help_search.cpp
+msgid "Show Hierarchy"
+msgstr "Mostrar Jerarquía"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2063,6 +2111,26 @@ msgstr "Tipo de Miembro"
 msgid "Class"
 msgstr "Clase"
 
+#: editor/editor_help_search.cpp
+msgid "Method"
+msgstr "Método"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "Señal"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Constante"
+
+#: editor/editor_help_search.cpp
+msgid "Property"
+msgstr "Propiedad"
+
+#: editor/editor_help_search.cpp
+msgid "Theme Property"
+msgstr "Propiedades del Tema"
+
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
 msgstr "Propiedad:"
@@ -2083,8 +2151,8 @@ msgstr "Salida:"
 msgid "Copy Selection"
 msgstr "Copiar Selección"
 
-#: editor/editor_log.cpp editor/editor_profiler.cpp
-#: editor/editor_properties.cpp
+#: editor/editor_log.cpp editor/editor_network_profiler.cpp
+#: editor/editor_profiler.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
@@ -2097,9 +2165,51 @@ msgstr "Limpiar"
 msgid "Clear Output"
 msgstr "Limpiar Salida"
 
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "La exportación del proyecto falló con el código de error %d."
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: editor/editor_profiler.cpp
+msgid "Stop"
+msgstr "Detener"
+
+#: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
+#: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
+msgid "Start"
+msgstr "Iniciar"
+
+#: editor/editor_network_profiler.cpp
+msgid "%s/s"
+msgstr "%s/s"
+
+#: editor/editor_network_profiler.cpp
+msgid "Down"
+msgstr "Abajo"
+
+#: editor/editor_network_profiler.cpp
+msgid "Up"
+msgstr "Arriba"
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+msgid "Node"
+msgstr "Nodos"
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RPC"
+msgstr "RPC Entrante"
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RSET"
+msgstr "RSET Entrante"
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RPC"
+msgstr "RPC Saliente"
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RSET"
+msgstr "RSET Saliente"
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+msgid "New Window"
+msgstr "Nueva Ventana"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -2422,6 +2532,14 @@ msgid "Pick a Main Scene"
 msgstr "Selecciona una Escena Principal"
 
 #: editor/editor_node.cpp
+msgid "Close Scene"
+msgstr "Cerrar Escena"
+
+#: editor/editor_node.cpp
+msgid "Reopen Closed Scene"
+msgstr "Reabrir Escena Cerrada"
+
+#: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
 "No se pudo activar el plugin addon: Ha fallado el análisis de la "
@@ -2541,6 +2659,10 @@ msgstr "Reproducir Esta Escena"
 msgid "Close Tab"
 msgstr "Cerrar Pestaña"
 
+#: editor/editor_node.cpp
+msgid "Undo Close Tab"
+msgstr "Deshacer Cerrar Pestaña"
+
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
 msgstr "Cerrar Otras Pestañas"
@@ -2625,6 +2747,10 @@ msgstr "Nueva Escena Heredada..."
 msgid "Open Scene..."
 msgstr "Abrir Escena..."
 
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Open Recent"
+msgstr "Abrir Reciente"
+
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Guardar Escena"
@@ -2634,20 +2760,12 @@ msgid "Save All Scenes"
 msgstr "Guardar Todas las Escenas"
 
 #: editor/editor_node.cpp
-msgid "Close Scene"
-msgstr "Cerrar Escena"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Open Recent"
-msgstr "Abrir Reciente"
-
-#: editor/editor_node.cpp
 msgid "Convert To..."
 msgstr "Convertir a..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "Librería de mallas..."
+msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -2671,25 +2789,46 @@ msgstr "Revertir Escena"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Herramientas variadas de proyecto o escena."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Proyecto"
 
 #: editor/editor_node.cpp
-msgid "Project Settings"
-msgstr "Ajustes del proyecto"
+msgid "Project Settings..."
+msgstr "Ajustes del Proyecto..."
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Control de Versiones"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Set Up Version Control"
+msgstr "Configurar Control de Versiones"
+
+#: editor/editor_node.cpp
+msgid "Shut Down Version Control"
+msgstr "Desactivar Control de Versiones"
+
+#: editor/editor_node.cpp
+msgid "Export..."
+msgstr "Exportar…"
+
+#: editor/editor_node.cpp
+msgid "Install Android Build Template..."
+msgstr "Instalar plantilla de compilación de Android..."
+
+#: editor/editor_node.cpp
+msgid "Open Project Data Folder"
+msgstr "Abrir Carpeta de Datos del Proyecto"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Herramientas"
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "Abrir Carpeta de Datos del Proyecto"
-
-#: editor/editor_node.cpp
-msgid "Install Android Build Template"
-msgstr "Instalar plantilla de compilación de Android"
+msgid "Orphan Resource Explorer..."
+msgstr "Explorador de Recursos Huérfanos..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2787,13 +2926,13 @@ msgstr ""
 "Cuando se use remotamente en un dispositivo, esto es mas eficiente con un "
 "sistema de archivos de red."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
 msgstr "Editor"
 
-#: editor/editor_node.cpp editor/settings_config_dialog.cpp
-msgid "Editor Settings"
-msgstr "Configuración del Editor"
+#: editor/editor_node.cpp
+msgid "Editor Settings..."
+msgstr "Configuración del Editor..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -2830,14 +2969,14 @@ msgid "Open Editor Settings Folder"
 msgstr "Abrir Carpeta de Configuración del Editor"
 
 #: editor/editor_node.cpp
-msgid "Manage Editor Features"
-msgstr "Administrar Características del Editor"
-
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Manage Export Templates"
-msgstr "Administrar Plantillas de Exportación"
+msgid "Manage Editor Features..."
+msgstr "Administrar Características del Editor..."
 
 #: editor/editor_node.cpp
+msgid "Manage Export Templates..."
+msgstr "Administrar Plantillas de Exportación..."
+
+#: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
 msgstr "Ayuda"
 
@@ -2845,12 +2984,13 @@ msgstr "Ayuda"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Buscar"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Documentación Online"
 
@@ -2879,8 +3019,8 @@ msgid "Play"
 msgstr "Reproducir"
 
 #: editor/editor_node.cpp
-msgid "Pause the scene"
-msgstr "Pausar la escena"
+msgid "Pause the scene execution for debugging."
+msgstr "Pausar la ejecución de la escena para depurarla."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -2889,10 +3029,6 @@ msgstr "Pausar Escena"
 #: editor/editor_node.cpp
 msgid "Stop the scene."
 msgstr "Detener la escena."
-
-#: editor/editor_node.cpp editor/editor_profiler.cpp
-msgid "Stop"
-msgstr "Detener"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
@@ -2944,14 +3080,10 @@ msgid "Inspector"
 msgstr "Inspector"
 
 #: editor/editor_node.cpp
-msgid "Node"
-msgstr "Nodos"
-
-#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
 msgstr "Expandir Panel Inferior"
 
-#: editor/editor_node.cpp scene/resources/visual_shader.cpp
+#: editor/editor_node.cpp
 msgid "Output"
 msgstr "Salida"
 
@@ -2971,30 +3103,40 @@ msgstr "Administrar Plantillas"
 
 #: editor/editor_node.cpp
 msgid ""
-"This will install the Android project for custom builds.\n"
-"Note that, in order to use it, it needs to be enabled per export preset."
+"This will set up your project for custom Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make custom builds instead of using pre-built APKs, "
+"the \"Use Custom Build\" option should be enabled in the Android export "
+"preset."
 msgstr ""
-"Esto instalará el proyecto Android para compilaciones personalizadas.\n"
-"Para utilizarlo, es necesario habilitarlo mediante un preset de exportación."
+"Una vez hecho ésto puedes aplicar modificaciones y generar tu propio APK "
+"personalizado al exportar (agregar módulos, cambiar el AndroidManifest.xml, "
+"etc.).\n"
+"Ten en cuenta que para generar builds personalizados en vez de usar los APKs "
+"pregenerados, la opción \"Usar Build Personalizado\" debería estar activada "
+"en el preset de exportación de Android."
 
 #: editor/editor_node.cpp
 msgid ""
-"Android build template is already installed and it won't be overwritten.\n"
-"Remove the \"build\" directory manually before attempting this operation "
-"again."
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
 msgstr ""
 "La plantilla de compilación de Android ya está instalada y no se "
 "sobrescribirá.\n"
-"Elimina el directorio \"build\" manualmente antes de intentar esta operación "
-"nuevamente."
+"Elimina el directorio \"res://android/build\" manualmente antes de intentar "
+"esta operación nuevamente."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
 msgstr "Importar plantillas desde un archivo ZIP"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Exportar Proyecto"
+#: editor/editor_node.cpp
+msgid "Template Package"
+msgstr "Paquete de Plantillas"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
@@ -3003,10 +3145,6 @@ msgstr "Exportar Librería"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Combinar Con Existentes"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Contraseña:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3048,6 +3186,14 @@ msgstr "Abrir Editor siguiente"
 msgid "Open the previous Editor"
 msgstr "Abrir Editor anterior"
 
+#: editor/editor_node.h
+msgid "Warning!"
+msgstr "¡Advertencia!"
+
+#: editor/editor_path.cpp
+msgid "No sub-resources found."
+msgstr "No se encontró ningún sub-recurso."
+
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
 msgstr "Creando Vistas Previas de Mesh/es"
@@ -3055,6 +3201,10 @@ msgstr "Creando Vistas Previas de Mesh/es"
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
 msgstr "Miniatura..."
+
+#: editor/editor_plugin_settings.cpp
+msgid "Main Script:"
+msgstr "Script Principal:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3084,11 +3234,6 @@ msgstr "Estado:"
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
 msgstr "Editar:"
-
-#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
-#: editor/rename_dialog.cpp
-msgid "Start"
-msgstr "Iniciar"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -3131,9 +3276,8 @@ msgid "Calls"
 msgstr "Llamadas"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Editar Tema"
+msgstr "Editar Texto:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -3196,6 +3340,10 @@ msgstr "Selecciona un Viewport"
 msgid "New Script"
 msgstr "Nuevo Script"
 
+#: editor/editor_properties.cpp editor/scene_tree_dock.cpp
+msgid "Extend Script"
+msgstr "Extender Script"
+
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
 msgstr "Nuevo %s"
@@ -3221,13 +3369,6 @@ msgstr "Pegar"
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
 msgstr "Convertir a %s"
-
-#: editor/editor_properties.cpp
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Open Editor"
-msgstr "Abrir Editor"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -3308,7 +3449,7 @@ msgid "Import From Node:"
 msgstr "Importar Desde Nodo:"
 
 #: editor/export_template_manager.cpp
-msgid "Re-Download"
+msgid "Redownload"
 msgstr "Volver a Descargar"
 
 #: editor/export_template_manager.cpp
@@ -3323,6 +3464,12 @@ msgstr "(Instalado)"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
 msgstr "Descargar"
+
+#: editor/export_template_manager.cpp
+msgid "Official export templates aren't available for development builds."
+msgstr ""
+"Las plantillas de exportación oficiales no están disponibles para las "
+"versiones de desarrollo."
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3365,6 +3512,16 @@ msgid "Importing:"
 msgstr "Importando:"
 
 #: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr "Error al obtener la lista de mirrors."
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
+"Error al analizar el JSON de la lista de mirrors. ¡Por favor, informa de "
+"este problema!"
+
+#: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
@@ -3388,12 +3545,10 @@ msgid "No response."
 msgstr "No responde."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request Failed."
 msgstr "Petición Fallida."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
 msgstr "Redireccionar Loop."
 
@@ -3407,16 +3562,20 @@ msgid "Download Complete."
 msgstr "Descarga Completada."
 
 #: editor/export_template_manager.cpp
-msgid ""
-"Templates installation failed. The problematic templates archives can be "
-"found at '%s'."
-msgstr ""
-"Fallo la instalación de plantillas. Las plantillas problemáticas pueden ser "
-"encontradas en '%s'."
+msgid "Cannot remove temporary file:"
+msgstr "No se puede eliminar el archivo temporal:"
 
 #: editor/export_template_manager.cpp
-msgid "Error requesting url: "
-msgstr "Error al solicitar url: "
+msgid ""
+"Templates installation failed.\n"
+"The problematic templates archives can be found at '%s'."
+msgstr ""
+"Falló la instalación de plantillas.\n"
+"Las plantillas problemáticas se pueden encontrar en '%s'."
+
+#: editor/export_template_manager.cpp
+msgid "Error requesting URL:"
+msgstr "Error al solicitar la URL:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -3489,6 +3648,10 @@ msgid "Select Template File"
 msgstr "Selecciona un Archivo de Plantilla"
 
 #: editor/export_template_manager.cpp
+msgid "Godot Export Templates"
+msgstr "Plantillas de Exportación de Godot"
+
+#: editor/export_template_manager.cpp
 msgid "Export Template Manager"
 msgstr "Gestor de Plantillas de Exportación"
 
@@ -3501,21 +3664,9 @@ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr ""
 "Seleccionar un mirror de la lista: (Shift + Clic: Abrir en el Navegador)"
 
-#: editor/file_type_cache.cpp
-msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
-msgstr ""
-"No se puede abrir file_type_cache.cch para escribir, no se guardará el cache "
-"de tipos de archivo!"
-
 #: editor/filesystem_dock.cpp
 msgid "Favorites"
 msgstr "Favoritos"
-
-#: editor/filesystem_dock.cpp
-msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
-"¡No se puede navegar a '%s' ya que no se ha encontrado en el sistema de "
-"archivos!"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3552,12 +3703,12 @@ msgid "Provided name contains invalid characters."
 msgstr "El nombre contiene caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
-msgid "Name contains invalid characters."
-msgstr "El nombre contiene caracteres inválidos."
-
-#: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
 msgstr "Ya existe un archivo o carpeta con este nombre."
+
+#: editor/filesystem_dock.cpp
+msgid "Name contains invalid characters."
+msgstr "El nombre contiene caracteres inválidos."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3578,6 +3729,10 @@ msgstr "Duplicando carpeta:"
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
 msgstr "Nueva Escena Heredada"
+
+#: editor/filesystem_dock.cpp
+msgid "Set As Main Scene"
+msgstr "Establecer Como Escena Principal"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -3614,6 +3769,10 @@ msgstr "Duplicar..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Mover a..."
+
+#: editor/filesystem_dock.cpp
+msgid "New Scene..."
+msgstr "Nueva Escena..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
@@ -3680,6 +3839,10 @@ msgstr "Ya hay un archivo o carpeta con el mismo nombre en esta ubicación."
 msgid "Overwrite"
 msgstr "Sobreescribir"
 
+#: editor/filesystem_dock.cpp
+msgid "Create Scene"
+msgstr "Crear Escena"
+
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr "Crear Script"
@@ -3742,6 +3905,14 @@ msgid "Search complete"
 msgstr "Búsqueda completa"
 
 #: editor/groups_editor.cpp
+msgid "Add to Group"
+msgstr "Añadir al Grupo"
+
+#: editor/groups_editor.cpp
+msgid "Remove from Group"
+msgstr "Eliminar del Grupo"
+
+#: editor/groups_editor.cpp
 msgid "Group name already exists."
 msgstr "El nombre del grupo ya existe."
 
@@ -3749,13 +3920,21 @@ msgstr "El nombre del grupo ya existe."
 msgid "Invalid group name."
 msgstr "Nombre de grupo inválido."
 
+#: editor/groups_editor.cpp
+msgid "Rename Group"
+msgstr "Renombrar Grupo"
+
+#: editor/groups_editor.cpp
+msgid "Delete Group"
+msgstr "Eliminar Grupo"
+
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Grupos"
 
 #: editor/groups_editor.cpp
-msgid "Nodes not in Group"
-msgstr "Nodos fuera del Grupo"
+msgid "Nodes Not in Group"
+msgstr "Nodos Fuera del Grupo"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
@@ -3767,12 +3946,12 @@ msgid "Nodes in Group"
 msgstr "Nodos dentro del Grupo"
 
 #: editor/groups_editor.cpp
-msgid "Add to Group"
-msgstr "Añadir al Grupo"
+msgid "Empty groups will be automatically removed."
+msgstr "Los grupos vacíos se eliminarán automáticamente."
 
 #: editor/groups_editor.cpp
-msgid "Remove from Group"
-msgstr "Eliminar del Grupo"
+msgid "Group Editor"
+msgstr "Editor de Grupos"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -3872,9 +4051,9 @@ msgstr " Archivos"
 msgid "Import As:"
 msgstr "Importar como:"
 
-#: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
-msgstr "Preset..."
+#: editor/import_dock.cpp
+msgid "Preset"
+msgstr "Preset"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3981,8 +4160,8 @@ msgid "MultiNode Set"
 msgstr "Establecer multinodo"
 
 #: editor/node_dock.cpp
-msgid "Select a Node to edit Signals and Groups."
-msgstr "Selecciona un nodo para editar señales y grupos."
+msgid "Select a single node to edit its signals and groups."
+msgstr "Selecciona un único nodo para editar sus señales y grupos."
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
@@ -4000,7 +4179,7 @@ msgstr "Nombre del Plugin:"
 msgid "Subfolder:"
 msgstr "Subcarpeta:"
 
-#: editor/plugin_config_dialog.cpp
+#: editor/plugin_config_dialog.cpp editor/script_create_dialog.cpp
 msgid "Language:"
 msgstr "Lenguaje:"
 
@@ -4138,6 +4317,12 @@ msgstr "Activar snap y mostrar grid."
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
 msgstr "Punto"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Open Editor"
+msgstr "Abrir Editor"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4281,6 +4466,18 @@ msgstr ""
 "no se pudieron obtener los nombres de las pistas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Anim Clips"
+msgstr "Clips de Animación"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Audio Clips"
+msgstr "Clips de Audio"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Functions"
+msgstr "Funciones"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
 msgstr "Nodo Renombrado"
@@ -4316,6 +4513,7 @@ msgid "Change Animation Name:"
 msgstr "Cambiar nombre de animación:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
 msgstr "¿Eliminar Animación?"
 
@@ -4492,7 +4690,6 @@ msgstr "Nombre de Animación:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "¡Error!"
 
@@ -4511,6 +4708,10 @@ msgstr "Tiempos de Blending entre Animaciones"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
 msgstr "Mover Nodo"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Transition exists!"
+msgstr "¡La transición existe!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -4597,6 +4798,10 @@ msgstr "Asignar la animación de fin. Esto es útil para sub-transiciones."
 msgid "Transition: "
 msgstr "Transición: "
 
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Play Mode:"
+msgstr "Modo de Reproducción:"
+
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
@@ -4665,6 +4870,8 @@ msgid "Current:"
 msgstr "Actual:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
 msgstr "Añadir Entrada"
 
@@ -4745,10 +4952,6 @@ msgid "View Files"
 msgstr "Ver Archivos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr "No se ha podido resolver el nombre de dominio:"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
 msgstr "Error de conexión, por favor inténtelo otra vez."
 
@@ -4761,12 +4964,40 @@ msgid "No response from host:"
 msgstr "No hay respuesta desde el host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr "No se ha podido resolver el nombre de dominio:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
 msgstr "Petición fallida, código:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed."
+msgstr "Petición fallida."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Cannot save response to:"
+msgstr "No se pudo guardar la respuesta a:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Write error."
+msgstr "Error de escritura."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
 msgstr "Petición fallida, demasiadas redirecciones"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Redirect loop."
+msgstr "Redireccionar loop."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed, timeout"
+msgstr "Petición fallida, expiración del tiempo de espera"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Timeout."
+msgstr "Tiempo de espera."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4825,6 +5056,30 @@ msgid "Download for this asset is already in progress!"
 msgstr "¡Éste asset ya está descargándose!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Recently Updated"
+msgstr "Actualizados Recientemente"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Least Recently Updated"
+msgstr "Actualizados con Antigüedad"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (A-Z)"
+msgstr "Nombre (A-Z)"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Name (Z-A)"
+msgstr "Nombre (Z-A)"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "License (A-Z)"
+msgstr "Licencia (A-Z)"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "License (Z-A)"
+msgstr "Licencia (Z-A)"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
 msgstr "Primero"
 
@@ -4845,17 +5100,20 @@ msgid "All"
 msgstr "Todos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
-msgid "Plugins"
-msgstr "Plugins"
+msgid "No results for \"%s\"."
+msgstr "No hay resultados para \"%s\"."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Import..."
+msgstr "Importar..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Plugins..."
+msgstr "Plugins..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "Ordenar:"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse sorting."
-msgstr "Orden inverso."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4867,8 +5125,8 @@ msgid "Site:"
 msgstr "Sitio:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support..."
-msgstr "Soporte..."
+msgid "Support"
+msgstr "Soporte"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -4877,6 +5135,10 @@ msgstr "Oficial"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
 msgstr "Prueba"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Loading..."
+msgstr "Cargar..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -4928,12 +5190,24 @@ msgid "Grid Step:"
 msgstr "Grid Step:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Primary Line Every:"
+msgstr "Línea Principal Cada:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "steps"
+msgstr "pasos"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
 msgstr "Offset de Rotación:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Step de Rotación:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Step:"
+msgstr "Pasos de Escalado:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Vertical Guide"
@@ -5008,6 +5282,74 @@ msgstr ""
 "anclajes en lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Left"
+msgstr "Superior Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Right"
+msgstr "Superior Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Right"
+msgstr "Inferior Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Left"
+msgstr "Inferior Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Left"
+msgstr "Centro Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Top"
+msgstr "Centro Superior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Right"
+msgstr "Centro Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center Bottom"
+msgstr "Centro Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Center"
+msgstr "Centro"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Left Wide"
+msgstr "Ancho Izquierda"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Top Wide"
+msgstr "Ancho Superior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Right Wide"
+msgstr "Ancho Derecha"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Bottom Wide"
+msgstr "Ancho Inferior"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "VCenter Wide"
+msgstr "Ancho Centro Vert."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "HCenter Wide"
+msgstr "Ancho Centro Horiz."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Full Rect"
+msgstr "Completo"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Keep Ratio"
+msgstr "Mantener Proporciones"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Sólo anclado"
 
@@ -5018,6 +5360,24 @@ msgstr "Cambiar Anclas y Márgenes"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
 msgstr "Cambiar Anclas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"Overrides game camera with editor viewport camera."
+msgstr ""
+"Reemplazar Cámara del Juego\n"
+"Reemplaza la cámara del juego con la cámara del viewport del editor."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Game Camera Override\n"
+"No game instance running."
+msgstr ""
+"Reemplazar Cámara del Juego\n"
+"No hay ninguna instancia de juego ejecutándose."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5042,6 +5402,10 @@ msgstr "Desagrupar Seleccionados"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "Pegar Pose"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Clear Guides"
+msgstr "Limpiar Guías"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
@@ -5074,6 +5438,7 @@ msgid "Zoom Reset"
 msgstr "Resetear el Zoom"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
 msgstr "Modo de Selección"
 
@@ -5096,14 +5461,17 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "Alt + Clic Derecho: Selección en listado de solapamientos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
 msgstr "Modo Movimiento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
 msgstr "Modo Rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Modo Escalado"
 
@@ -5126,29 +5494,36 @@ msgid "Pan Mode"
 msgstr "Modo desplazamiento lateral"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggle snapping."
-msgstr "Act./Desact. alineado."
+msgid "Ruler Mode"
+msgstr "Modo Regla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Use Snap"
-msgstr "Usar Snap"
+msgid "Toggle smart snapping."
+msgstr "Alternar acople inteligente."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Smart Snap"
+msgstr "Usar Snap Inteligente"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Toggle grid snapping."
+msgstr "Act./Desact. grid snapping."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Grid Snap"
+msgstr "Usar Grid Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr "Opciones de Alineado"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to Grid"
-msgstr "Ajustar en Grid"
+msgstr "Opciones de Snapping"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
 msgstr "Usar Snap de Rotación"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap..."
-msgstr "Configurar Snap..."
+msgid "Use Scale Snap"
+msgstr "Usar Snap de Escalado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -5160,7 +5535,12 @@ msgstr "Usar Pixel Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr "Ajuste Inteligente"
+msgstr "Snapping Inteligente"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap..."
+msgstr "Configurar Snap..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
@@ -5220,7 +5600,7 @@ msgstr "Crear Hueso(s) Personalizados a partir de Nodo(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Custom Bones"
-msgstr "Restablecer Huesos Personalizados"
+msgstr "Borrar Huesos Personalizados"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5228,33 +5608,32 @@ msgid "View"
 msgstr "Ver"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
-msgstr "Ver Grid"
+msgid "Always Show Grid"
+msgstr "Mostrar Siempre el Grid"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr "Ver Ayudas"
+msgstr "Mostrar Ayudantes"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr "Ver Reglas"
+msgstr "Mostrar Reglas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "Ver Guías"
+msgstr "Mostrar Guías"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
-msgstr "Ver Origen"
+msgstr "Mostrar Origen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Ver Viewport"
+msgstr "Mostrar Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr "Ver Grupo y Bloquear Iconos"
+msgstr "Mostrar Grupo y Bloquear Iconos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5266,7 +5645,7 @@ msgstr "Encuadrar Selección"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr "Previsualización de la Escala del Lienzo"
+msgstr "Previsualizar Escala de Canvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5286,16 +5665,16 @@ msgstr "Insertar claves (basadas en máscara)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Auto insert keys when objects are translated, rotated on scaled (based on "
+"Auto insert keys when objects are translated, rotated or scaled (based on "
 "mask).\n"
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
-"Inserción automática de claves cuando los objetos son desplazados, rotados "
-"en escala (basado en máscara).\n"
+"Inserción automática de claves cuando los objetos son desplazados, rotados o "
+"escalados (basado en máscara).\n"
 "Las claves sólo se añaden a las pistas existentes, no se crearán nuevas "
 "pistas.\n"
-"Las claves deben insertarse manualmente por primera vez."
+"Las llaves deben insertarse manualmente por primera vez."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
@@ -5373,17 +5752,7 @@ msgstr "Editar Polígono (Eliminar Punto)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr "Establecer Handle"
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Error al cargar la imagen:"
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "No hay píxeles con transparencia > 128 en la imagen..."
+msgstr "Establecer Manipulador"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5417,6 +5786,21 @@ msgstr "Conteo de Puntos Generados:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr "Máscara de Emisión"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr "Pixeles Sólidos"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr "Píxeles del Borde"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Directed Border Pixels"
+msgstr "Píxeles del Borde Directos"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5506,6 +5890,10 @@ msgstr "Act./Desact. Curva de Tangente Lineal"
 msgid "Hold Shift to edit tangents individually"
 msgstr "Mantén Shift para editar las tangentes individualmente"
 
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Right click to add point"
+msgstr "Clic derecho para añadir punto"
+
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Bake GI Probe"
@@ -5536,7 +5924,7 @@ msgstr "¡El Mesh está vacío!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
-msgstr "Crear  Static Trimesh Body"
+msgstr "Crear StaticBody Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Convex Body"
@@ -5548,7 +5936,7 @@ msgstr "¡No puedes hacer esto en una escena raíz!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Shape"
-msgstr "Crear Forma Estática de Trimesh"
+msgstr "Crear Shape Estático Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
@@ -5605,15 +5993,15 @@ msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
-msgstr "Crear Trimesh Static Body"
+msgstr "Crear StaticBody Triangular"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "Crear Trimesh Collision Hermano"
+msgstr "Crear Collider Triangular Hermano"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Collision Sibling(s)"
-msgstr "Crear Convex Collision Hermano(s)"
+msgstr "Crear Collider Convexo Hermano(s)"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -5639,9 +6027,25 @@ msgstr "Crear Outline Mesh"
 msgid "Outline Size:"
 msgstr "Tamaño del Outline:"
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr "Depuración del Canal UV"
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "¿Quieres borrar el elemento %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr ""
+"¿Actualizar desde la escena existente?\n"
+"%s"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Mesh Library"
+msgstr "Librería de Meshes"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5696,14 +6100,6 @@ msgstr "El origen de la superficie no es correcto (sin geometría)."
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
 msgstr "El origen de la superficie no es correcto (sin caras)."
-
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Parent has no solid faces to populate."
-msgstr "La superficie padre no tiene caras solidas para poblar."
-
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Couldn't map area."
-msgstr "No se pudo mapear el área."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
@@ -5790,20 +6186,24 @@ msgid "Generation Time (sec):"
 msgstr "Tiempo de Generación (seg):"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Faces contain no area!"
-msgstr "¡Las caras no contienen área!"
+msgid "The geometry's faces don't contain any area."
+msgstr "Las caras de la geometría no contienen ningún área."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "No faces!"
-msgstr "¡Sin caras!"
+msgid "The geometry doesn't contain any faces."
+msgstr "La geometría no contiene ninguna cara."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
-msgstr "El nodo no tiene geometría."
+msgid "\"%s\" doesn't inherit from Spatial."
+msgstr "\"%s\" no hereda de Spatial."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
-msgstr "El nodo no posee geometría (caras)."
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\" no tiene geometría."
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\" no tiene geometría de caras."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -5930,12 +6330,12 @@ msgstr "Opciones"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Angles"
-msgstr "Manejadores de Ángulos de Espejo"
+msgstr "Manipulador de Ángulos de Espejo"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Lengths"
-msgstr "Manejadores de Tamaño de Espejo"
+msgstr "Manipulador de Tamaño de Espejo"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
@@ -6004,7 +6404,7 @@ msgid ""
 "viewport."
 msgstr ""
 "El polígono 2D tiene vértices internos, por lo que ya no se puede editar en "
-"el viewport."
+"la ventanilla."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -6137,7 +6537,6 @@ msgid "Grid Settings"
 msgstr "Configuración del Grid"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "Snap"
 
@@ -6148,6 +6547,10 @@ msgstr "Activar Snap"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
 msgstr "Grid"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Ver Grid"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
@@ -6205,7 +6608,8 @@ msgstr "Instancia:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
 msgstr "Tipo:"
 
@@ -6243,12 +6647,8 @@ msgid "Error writing TextFile:"
 msgstr "Error al escribir el TextFile:"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error: could not load file."
-msgstr "Error: no se pudo cargar el archivo."
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Error could not load file."
-msgstr "Error no se pudo cargar el archivo."
+msgid "Could not load file at:"
+msgstr "No se pudo cargar el archivo en:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
@@ -6271,8 +6671,8 @@ msgid "Error Importing"
 msgstr "Error al Importar"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile..."
-msgstr "Nuevo TextFile..."
+msgid "New Text File..."
+msgstr "Nuevo Archivo de Texto..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open File"
@@ -6281,6 +6681,25 @@ msgstr "Abrir Archivo"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save File As..."
 msgstr "Guardar Archivo Como..."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Can't obtain the script for running."
+msgstr "No se puede obtener el script para ejecutarlo."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script failed reloading, check console for errors."
+msgstr "El script falló al recargar, comprueba si hay errores en la consola."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Script is not in tool mode, will not be able to run."
+msgstr "El Script no está en modo tool, no podrá ejecutarse."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid ""
+"To run this script, it must inherit EditorScript and be set to tool mode."
+msgstr ""
+"Para ejecutar este script, debe heredar de EditorScript y estar configurado "
+"en modo tool."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6306,6 +6725,11 @@ msgstr "%s Referencia de Clase"
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
 msgstr "Buscar Siguiente"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr "Buscar Anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
@@ -6352,6 +6776,10 @@ msgid "Open..."
 msgstr "Abrir..."
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Reopen Closed Script"
+msgstr "Reabrir Script Cerrado"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
 msgstr "Guardar Todo"
 
@@ -6389,28 +6817,24 @@ msgid "Save Theme"
 msgstr "Guardar Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Close Docs"
-msgstr "Cerrar Documentación"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
 msgstr "Cerrar Todo"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Close Docs"
+msgstr "Cerrar Documentación"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
 msgstr "Ejecutar"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Toggle Scripts Panel"
-msgstr "Act./Desact. Panel de Scripts"
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+msgid "Step Into"
+msgstr "Step Into"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
 msgstr "Step Over"
-
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Into"
-msgstr "Step Into"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
@@ -6483,17 +6907,17 @@ msgstr "Depurador"
 msgid "Search Results"
 msgstr "Resultados de la Búsqueda"
 
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Clear Recent Scripts"
+msgstr "Limpiar Scripts Recientes"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Connections to method:"
 msgstr "Conexiones al método:"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 msgid "Source"
 msgstr "Fuente"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Signal"
-msgstr "Señal"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
@@ -6523,6 +6947,12 @@ msgid "Only resources from filesystem can be dropped."
 msgstr "Sólo se pueden arrastrar/soltar recursos del sistema de archivos."
 
 #: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"No se pueden soltar nodos porque el script '%s' no es usado en esta escena."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
 msgstr "Buscar Símbolo"
 
@@ -6532,7 +6962,7 @@ msgstr "Seleccionar Color"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
-msgstr "Convertir Mayúsculas y Minúsculas"
+msgstr "Convertir Mayús./Minús."
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
@@ -6551,6 +6981,7 @@ msgid "Syntax Highlighter"
 msgstr "Resaltador de Sintaxis"
 
 #: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
 msgstr "Ir A"
 
@@ -6561,12 +6992,17 @@ msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
-msgstr "Puntos de interrupción"
+msgstr "Breakpoints"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Cortar"
+
+#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Seleccionar Todo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -6583,22 +7019,6 @@ msgstr "Indentar a la Derecha"
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
 msgstr "Act./Desact. Comentario"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Toggle Bookmark"
-msgstr "Act./Desact. Marcador"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Go to Next Bookmark"
-msgstr "Ir al Siguiente Marcador"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Go to Previous Bookmark"
-msgstr "Ir al Marcador Anterior"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Remove All Bookmarks"
-msgstr "Eliminar Todos los Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -6621,6 +7041,10 @@ msgid "Complete Symbol"
 msgstr "Completar Símbolo"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Evaluate Selection"
+msgstr "Evaluar Selección"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "Eliminar Espacios Sobrantes al Final"
 
@@ -6637,29 +7061,28 @@ msgid "Auto Indent"
 msgstr "Autoindentar"
 
 #: editor/plugins/script_text_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Toggle Breakpoint"
-msgstr "Act./Desact. Breakpoint"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Remove All Breakpoints"
-msgstr "Eliminar Todos los Breakpoints"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Go to Next Breakpoint"
-msgstr "Ir al Siguente Breakpoint"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Go to Previous Breakpoint"
-msgstr "Ir al Breakpoint Anterior"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr "Buscar Anterior"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
 msgstr "Buscar en Archivos..."
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
+msgstr "Ayuda Contextual"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Toggle Bookmark"
+msgstr "Act./Desact. Marcador"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Next Bookmark"
+msgstr "Ir al Siguiente Marcador"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Previous Bookmark"
+msgstr "Ir al Marcador Anterior"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Remove All Bookmarks"
+msgstr "Eliminar Todos los Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function..."
@@ -6670,8 +7093,21 @@ msgid "Go to Line..."
 msgstr "Ir a Línea..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Contextual Help"
-msgstr "Ayuda Contextual"
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Toggle Breakpoint"
+msgstr "Act./Desact. Breakpoint"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Remove All Breakpoints"
+msgstr "Eliminar Todos los Breakpoints"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Next Breakpoint"
+msgstr "Ir al Siguiente Breakpoint"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Previous Breakpoint"
+msgstr "Ir al Breakpoint Anterior"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
@@ -6850,14 +7286,12 @@ msgid "Rear"
 msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Alinear con Vista"
+msgstr "Alinear Transform con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Alinear Selección Con Vista"
+msgstr "Alinear Rotación con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6912,7 +7346,7 @@ msgid "Audio Listener"
 msgstr "Oyente de Audio"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Doppler Enable"
+msgid "Enable Doppler"
 msgstr "Activar Doppler"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6948,6 +7382,10 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Freelook Slow Modifier"
+msgstr "Modificador de Velocidad de Vista Libre"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -6968,8 +7406,8 @@ msgid "Snap Nodes To Floor"
 msgstr "Ajustar Nodos al Suelo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr "Modo de Selección (Q)"
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "No se pudo encontrar un suelo sólido para ajustar la selección."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -6982,28 +7420,12 @@ msgstr ""
 "Alt + Clic Derecho: Selección en la lista de superposición"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr "Modo Movimiento (W)"
+msgid "Use Local Space"
+msgstr "Usar Espacio Local"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
-msgstr "Modo Rotación (E)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scale Mode (R)"
-msgstr "Modo Escalado (R)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "Coordenadas Locales"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Space Mode (%s)"
-msgstr "Modo de Espacio Local (%s)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap Mode (%s)"
-msgstr "Modo de Snap (%s)"
+msgid "Use Snap"
+msgstr "Usar Snap"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7044,22 +7466,6 @@ msgstr "Foco en Origen"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Foco en Selección"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Select"
-msgstr "Seleccionar Herramienta"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Move"
-msgstr "Herramienta Mover"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Rotate"
-msgstr "Herramienta Rotar"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Scale"
-msgstr "Herramienta Escalar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
@@ -7116,8 +7522,8 @@ msgstr "Ver Grid"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Settings"
-msgstr "Configuración"
+msgid "Settings..."
+msgstr "Configuración..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7137,7 +7543,7 @@ msgstr "Snap de Escala (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
-msgstr "Ajustes de Viewport"
+msgstr "Configuración de ventanilla"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
@@ -7188,16 +7594,32 @@ msgid "Create Mesh2D"
 msgstr "Crear Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Mesh2D Preview"
+msgstr "Vista Previa de Mesh2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
 msgstr "Crear Polygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr "Vista Previa de Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
 msgstr "Crear CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "CollisionPolygon2D Preview"
+msgstr "Vista Previa de CollisionPolygon2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
 msgstr "Crear LightOccluder2D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "LightOccluder2D Preview"
+msgstr "Vista Previa de LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7229,7 +7651,7 @@ msgstr "Geometría inválida, no es posible crear un polígono de colisión."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Crear hermano de CollisionPolygon2D"
+msgstr "Crear CollisionPolygon2D hermano"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7246,6 +7668,10 @@ msgstr "Sprite"
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
 msgstr "Simplificación: "
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Shrink (Pixels): "
+msgstr "Encoger (Píxeles): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
@@ -7272,6 +7698,10 @@ msgid "Add Frame"
 msgstr "Añadir Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Unable to load images"
+msgstr "No se pueden cargar las imágenes"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ERROR: ¡No se pudo cargar el recurso de frames!"
 
@@ -7294,6 +7724,10 @@ msgstr "Cambiar FPS de Animación"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
 msgstr "(vacío)"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Move Frame"
+msgstr "Mover Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations:"
@@ -7409,10 +7843,6 @@ msgid "TextureRegion"
 msgstr "Región de Textura"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Can't save theme to file:"
-msgstr "No se pudo guardar el tema a un archivo:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
 msgstr "Añadir Todos los Elementos"
 
@@ -7497,12 +7927,12 @@ msgid "Submenu"
 msgstr "Submenú"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 1"
-msgstr "Ítem 1"
+msgid "Subitem 1"
+msgstr "Subítem 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 2"
-msgstr "Ítem 2"
+msgid "Subitem 2"
+msgstr "Subítem 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7545,6 +7975,7 @@ msgid "Data Type:"
 msgstr "Tipo de datos:"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
 msgstr "Icono"
 
@@ -7561,8 +7992,8 @@ msgid "Color"
 msgstr "Color"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Constante"
+msgid "Theme File"
+msgstr "Archivo de Tema"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -7614,16 +8045,24 @@ msgid "Enable Priority"
 msgstr "Activar Prioridad"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Filter tiles"
+msgstr "Filtrar tiles"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Give a TileSet resource to this TileMap to use its tiles."
+msgstr "Asignar un recurso TileSet a este TileMap para usas sus tiles."
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "Dibujar tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
-"Shift+RMB: Line Draw\n"
-"Shift+Ctrl+RMB: Rectangle Paint"
+"Shift+LMB: Line Draw\n"
+"Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
-"Shift + Clic derecho: Trazar línea\n"
-"Shift + Ctrl + Clic derecho: Pintar Rectángulo"
+"Shift + Clic izq: Dibujar línea\n"
+"Shift + Ctrl + Clic izq: Pintar Rectángulo"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -7666,6 +8105,18 @@ msgid "Merge from Scene"
 msgstr "Unir desde escena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Single Tile"
+msgstr "Nuevo Tile Individual"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Autotile"
+msgstr "Nuevo Autotile"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "New Atlas"
+msgstr "Nuevo Atlas"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Next Coordinate"
 msgstr "Siguiente Coordenada"
 
@@ -7680,6 +8131,34 @@ msgstr "Anterior Coordenada"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "Seleccionar la anterior forma, subtile, o Tile."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Region"
+msgstr "Región"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Collision"
+msgstr "Colisión"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Occlusion"
+msgstr "Oclusión"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Navigation"
+msgstr "Navegación"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Bitmask"
+msgstr "Bitmask"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Priority"
+msgstr "Prioridad"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Z Index"
+msgstr "Índice Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
@@ -7746,6 +8225,13 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Mostrar Nombres de Tiles (mantener Tecla Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Add or select a texture on the left panel to edit the tiles bound to it."
+msgstr ""
+"Agrega o selecciona una textura en el panel izquierdo para editar los tiles "
+"asignados a él."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr ""
 "¿Eliminar la textura seleccionada? Esto eliminará todas las tiles que lo "
@@ -7802,9 +8288,9 @@ msgid ""
 "Shift+LMB: Set wildcard bit.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Clic Izquierdo: Activar bit.\n"
-"Clic Derecho: Desactivar bit.\n"
-"Shift + Clic Izquierdo: Establecer valor de bit comodín.\n"
+"Clic izq: Activar bit.\n"
+"Clic der: Desactivar bit.\n"
+"Shift + Clic izq: Establecer valor de bit comodín.\n"
 "Haz clic en otro Tile para editarlo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7902,6 +8388,14 @@ msgid "Edit Tile Z Index"
 msgstr "Editar Índice Z de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Convex"
+msgstr "Crear Convexo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Concave"
+msgstr "Crear Cóncavo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
 msgstr "Crear Polígono de Colisión"
 
@@ -7917,13 +8411,107 @@ msgstr "Esta propiedad no se puede cambiar."
 msgid "TileSet"
 msgstr "TileSet"
 
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add input +"
-msgstr "Añadir entrada +"
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No VCS addons are available."
+msgstr "No hay addons de VCS disponibles."
+
+#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+msgid "Error"
+msgstr "Error"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided"
+msgstr "No se indicó ningún mensaje de confirmación"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No files added to stage"
+msgstr "No se agregaron archivos al stage"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit"
+msgstr "Confirmar"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "VCS Addon is not initialized"
+msgstr "El Addon de VCS no está inicializado"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control System"
+msgstr "Sistema de Control de Versiones"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Initialize"
+msgstr "Inicializar"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Staging area"
+msgstr "Área de Staging"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect new changes"
+msgstr "Detectar nuevos cambios"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Changes"
+msgstr "Cambios"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Modified"
+msgstr "Modificado/s"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Renamed"
+msgstr "Renombrado/s"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Deleted"
+msgstr "Eliminado/s"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Typechange"
+msgstr "Cambio de Tipo"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Stage Selected"
+msgstr "Hacer Staging de Selección"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Stage All"
+msgstr "Hacer Staging de Todo"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Add a commit message"
+msgstr "Añadir un mensaje de confirmación"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit Changes"
+msgstr "Confirmar Cambios"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Status"
+msgstr "Estado"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "View file diffs before committing them to the latest version"
+msgstr ""
+"Ver las diferencias de los archivos antes de confirmar la última versión"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No file diff is active"
+msgstr "No hay diferencias de archivo disponibles"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect changes in file diff"
+msgstr "Detectar diferencias entre los archivos"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add output +"
-msgstr "Añadir salida +"
+msgid "(GLES3 only)"
+msgstr "(Sólo GLES3)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Output"
+msgstr "Añadir Salida"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar"
@@ -7936,6 +8524,10 @@ msgstr "Vector"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
 msgstr "Booleano"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sampler"
+msgstr "Sampler"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
@@ -7994,16 +8586,17 @@ msgid "Duplicate Nodes"
 msgstr "Duplicar Nodos"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste Nodes"
+msgstr "Pegar Nodos"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Delete Nodes"
 msgstr "Eliminar Nodos"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Cambiar Tipo de Entrada del Visual Shader"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only)"
-msgstr "(Sólo GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -8016,6 +8609,10 @@ msgstr "Fragmento"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "Luz"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Show resulted shader code."
+msgstr "Mostrar el código del shader resultante."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Create Shader Node"
@@ -8062,8 +8659,8 @@ msgid "Dodge operator."
 msgstr "Operador Dodge."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "HardLight operator"
-msgstr "Operador HardLight"
+msgid "HardLight operator."
+msgstr "Operador HardLight."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -8147,6 +8744,13 @@ msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
 "Devuelve un vector asociado si el valor booleano proporcionado es verdadero "
+"o falso."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated scalar if the provided boolean value is true or false."
+msgstr ""
+"Devuelve un escalar asociado si el valor booleano proporcionado es verdadero "
 "o falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8388,7 +8992,7 @@ msgstr "Devuelve la raíz cuadrada del parámetro."
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if x is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8402,7 +9006,7 @@ msgstr ""
 msgid ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
@@ -8576,6 +9180,10 @@ msgid "Linear interpolation between two vectors."
 msgstr "Interpolación lineal entre dos vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two vectors using scalar."
+msgstr "Interpolación lineal entre dos vectores usando escalar."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
 msgstr "Calcula el producto normalizado del vector."
 
@@ -8603,7 +9211,7 @@ msgstr "Devuelve el vector que apunta en la dirección de refracción."
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8617,7 +9225,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8631,7 +9239,7 @@ msgstr ""
 msgid ""
 "Step function( vector(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 "Step function( vector(edge), vector(x) ).\n"
 "\n"
@@ -8641,7 +9249,7 @@ msgstr ""
 msgid ""
 "Step function( scalar(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 "Step function( scalar(edge), vector(x) ).\n"
 "\n"
@@ -8694,6 +9302,18 @@ msgstr ""
 "Los retornos decrecen en función del producto punto de la superficie normal "
 "y de la dirección de visión de la cámara (pasando las entradas asociadas a "
 "esta)."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Custom Godot Shader Language expression, which is placed on top of the "
+"resulted shader. You can place various function definitions inside and call "
+"it later in the Expressions. You can also declare varyings, uniforms and "
+"constants."
+msgstr ""
+"Expresión personalizada del lenguaje de shaders de Godot, que se coloca "
+"encima del shader resultante. Puedes colocar varias definiciones de "
+"funciones dentro y llamarlas más tarde en las Expresiones. También puedes "
+"declarar variaciones, uniformes y constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -8766,6 +9386,14 @@ msgid "Runnable"
 msgstr "Ejecutable"
 
 #: editor/project_export.cpp
+msgid "Add initial export..."
+msgstr "Agregar puerto de entrada..."
+
+#: editor/project_export.cpp
+msgid "Add previous patches..."
+msgstr "Agregar parches anteriores..."
+
+#: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
 msgstr "¿Eliminar patch '%s' de la lista?"
 
@@ -8817,6 +9445,15 @@ msgid "Add..."
 msgstr "Añadir..."
 
 #: editor/project_export.cpp
+msgid ""
+"If checked, the preset will be available for use in one-click deploy.\n"
+"Only one preset per platform may be marked as runnable."
+msgstr ""
+"Si se selecciona, la plantilla estará disponible para su uso en un "
+"despliegue con “un click”.\n"
+"Sólo se puede marcar como ejecutable una plantilla por plataforma."
+
+#: editor/project_export.cpp
 msgid "Export Path"
 msgstr "Ruta de Exportación"
 
@@ -8846,17 +9483,19 @@ msgstr "Recursos a exportar:"
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para exportar archivos que no son recursos (separados por comas, ej: "
-"*.json, *.txt)"
+"Filtros para exportar archivos/carpetas que no son recursos\n"
+"(separado por comas, por ejemplo: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid ""
-"Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"Filtros para excluir de la exportación (separados por comas, ej: *.json, *."
-"txt)"
+"Filtros para excluir archivos/carpetas del proyecto\n"
+"(separados por comas, por ejemplo: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -8865,6 +9504,10 @@ msgstr "Parches"
 #: editor/project_export.cpp
 msgid "Make Patch"
 msgstr "Crear Patch"
+
+#: editor/project_export.cpp
+msgid "Pack File"
+msgstr "Paquete de Archivos"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -8911,6 +9554,10 @@ msgid "Export PCK/Zip"
 msgstr "Exportar PCK/Zip"
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Exportar Proyecto"
+
+#: editor/project_export.cpp
 msgid "Export mode?"
 msgstr "¿Modo de Exportación?"
 
@@ -8918,13 +9565,25 @@ msgstr "¿Modo de Exportación?"
 msgid "Export All"
 msgstr "Exportar Todo"
 
+#: editor/project_export.cpp editor/project_manager.cpp
+msgid "ZIP File"
+msgstr "Archivo ZIP"
+
+#: editor/project_export.cpp
+msgid "Godot Game Pack"
+msgstr "Godot Game Pack"
+
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Faltan plantillas de exportación para esta plataforma:"
 
 #: editor/project_export.cpp
+msgid "Manage Export Templates"
+msgstr "Administrar Plantillas de Exportación"
+
+#: editor/project_export.cpp
 msgid "Export With Debug"
-msgstr "Exportar con depuración"
+msgstr "Exportar Con Depuración"
 
 #: editor/project_manager.cpp
 msgid "The path does not exist."
@@ -8990,10 +9649,6 @@ msgstr "No se pudo editar project.godot en la ruta del proyecto."
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
 msgstr "No se pudo crear project.godot en la ruta del proyecto."
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
-msgstr "Los siguientes archivos no se pudieron extraer del paquete:"
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -9080,6 +9735,14 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "Proyecto Sin Nombre"
+
+#: editor/project_manager.cpp
+msgid "Missing Project"
+msgstr "Proyecto Faltante"
+
+#: editor/project_manager.cpp
+msgid "Error: Project is missing on the filesystem."
+msgstr "Error: Proyecto faltante en el sistema de archivos."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -9179,11 +9842,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Remove all missing projects from the list? (Folders contents will not be "
-"modified)"
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
 msgstr ""
-"¿Eliminar todos los proyectos faltantes de la lista? (El contenido de las "
-"carpetas no se modificará)"
+"¿Eliminar todos los proyectos faltantes de la lista?\n"
+"El contenido de las carpetas del proyecto no se modificará."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9208,8 +9871,12 @@ msgid "Project Manager"
 msgstr "Administrador de Proyectos"
 
 #: editor/project_manager.cpp
-msgid "Project List"
-msgstr "Listado de Proyectos"
+msgid "Projects"
+msgstr "Proyectos"
+
+#: editor/project_manager.cpp
+msgid "Last Modified"
+msgstr "Ultima Modificación"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9230,10 +9897,6 @@ msgstr "Eliminar Faltantes"
 #: editor/project_manager.cpp
 msgid "Templates"
 msgstr "Plantillas"
-
-#: editor/project_manager.cpp
-msgid "Exit"
-msgstr "Salir"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -9298,18 +9961,6 @@ msgstr "Todos los Dispositivos"
 #: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Dispositivo"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Shift+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Control+"
-msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -9444,6 +10095,10 @@ msgid "Settings saved OK."
 msgstr "Los ajustes se han guardado correctamente."
 
 #: editor/project_settings_editor.cpp
+msgid "Moved Input Action Event"
+msgstr "Evento de Acción de Entrada Movido"
+
+#: editor/project_settings_editor.cpp
 msgid "Override for Feature"
 msgstr "Sobrescribir la Característica"
 
@@ -9575,6 +10230,14 @@ msgstr "Idiomas:"
 msgid "AutoLoad"
 msgstr "AutoLoad"
 
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr "Plugins"
+
+#: editor/property_editor.cpp
+msgid "Preset..."
+msgstr "Preset..."
+
 #: editor/property_editor.cpp
 msgid "Zero"
 msgstr "Cero"
@@ -9626,15 +10289,6 @@ msgstr "Seleccionar Método Virtual"
 #: editor/property_selector.cpp
 msgid "Select Method"
 msgstr "Seleccionar Método"
-
-#: editor/pvrtc_compress.cpp
-msgid "Could not execute PVRTC tool:"
-msgstr "No se pudo ejecutar la herramienta PVRTC:"
-
-#: editor/pvrtc_compress.cpp
-msgid "Can't load back converted image using PVRTC tool:"
-msgstr ""
-"No se pudo volver a cargar la imagen convertida usando la herramienta PVRTC:"
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Batch Rename"
@@ -9738,7 +10392,7 @@ msgstr "under_scored a CamelCase"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
-msgstr "Mayus./Minus."
+msgstr "Mayús./Minús."
 
 #: editor/rename_dialog.cpp
 msgid "To Lowercase"
@@ -9751,10 +10405,6 @@ msgstr "A mayúsculas"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Resetear"
-
-#: editor/rename_dialog.cpp
-msgid "Error"
-msgstr "Error"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -9813,6 +10463,10 @@ msgid "Instance Scene(s)"
 msgstr "Instanciar Escena(s)"
 
 #: editor/scene_tree_dock.cpp
+msgid "Replace with Branch Scene"
+msgstr "Reemplazar con Escena de Rama"
+
+#: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
@@ -9855,8 +10509,20 @@ msgid "Make node as Root"
 msgstr "Convertir nodo como Raíz"
 
 #: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)?"
-msgstr "¿Eliminar Nodo(s)?"
+msgid "Delete %d nodes?"
+msgstr "¿Eliminar %d nodos?"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete the root node \"%s\"?"
+msgstr "¿Eliminar el nodo raiz \"%s\"?"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\" and its children?"
+msgstr "¿Eliminar el nodo \"%s\" y sus hijos?"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\"?"
+msgstr "¿Eliminar nodo \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -9879,12 +10545,13 @@ msgstr ""
 "vuelvan a sus valores por defecto."
 
 #: editor/scene_tree_dock.cpp
-msgid "Editable Children"
-msgstr "Hijos Editables"
-
-#: editor/scene_tree_dock.cpp
-msgid "Load As Placeholder"
-msgstr "Cargar como Placeholder"
+msgid ""
+"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
+"cause all properties of the node to be reverted to their default."
+msgstr ""
+"Activar \"Cargar Como Placeholder\" desactivará \"Hijos Editables\" y "
+"causará que todas las propiedades del nodo se reviertan a sus valores por "
+"defecto."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -9931,6 +10598,10 @@ msgid "Remove Node(s)"
 msgstr "Eliminar Nodo(s)"
 
 #: editor/scene_tree_dock.cpp
+msgid "Change type of node(s)"
+msgstr "Cambiar tipo de nodo(s)"
+
+#: editor/scene_tree_dock.cpp
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -9955,6 +10626,14 @@ msgid "Clear Inheritance"
 msgstr "Limpiar Heredado"
 
 #: editor/scene_tree_dock.cpp
+msgid "Editable Children"
+msgstr "Hijos Editables"
+
+#: editor/scene_tree_dock.cpp
+msgid "Load As Placeholder"
+msgstr "Cargar Como Placeholder"
+
+#: editor/scene_tree_dock.cpp
 msgid "Open Documentation"
 msgstr "Abrir Documentación"
 
@@ -9964,20 +10643,15 @@ msgstr "Añadir Nodo Hijo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
-msgstr "Expandir/Colapsar Todo"
+msgstr "Expandir/Contraer Todo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Cambiar Tipo"
 
 #: editor/scene_tree_dock.cpp
-msgid "Extend Script"
-msgstr "Extender Script"
-
-#: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Reemparentar nodo"
+msgstr "Reemparentar a Nuevo Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -9997,7 +10671,7 @@ msgstr "Copiar Ruta del Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
-msgstr "Eliminar (Sin confirmar)"
+msgstr "Eliminar (Sin Confirmar)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node."
@@ -10053,27 +10727,27 @@ msgstr "Alerta de configuración de nodos:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connection(s) and group(s).\n"
+"Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
-"El nodo tiene conexión/es y grupo/s.\n"
+"El nodo tiene %s conexión(es) y %(s) grupo(s).\n"
 "Clic para mostrar el panel de señales."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connections.\n"
+"Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
-"El nodo tiene conexiones.\n"
-"Haz clic para mostrar el panel de señales."
+"El nodo tiene %s conexión(es).\n"
+"Clic para mostrar el panel de señales."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node is in group(s).\n"
+"Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"El nodo está en el/los grupo(s).\n"
-"Haz clic para mostrar el panel de grupos."
+"El nodo está en %s grupo(s).\n"
+"Clic para mostrar el panel de grupos."
 
 #: editor/scene_tree_editor.cpp
 msgid "Open Script:"
@@ -10169,6 +10843,10 @@ msgid "Error loading script from %s"
 msgstr "Error al cargar script desde %s"
 
 #: editor/script_create_dialog.cpp
+msgid "Overrides"
+msgstr "Sobreescritura"
+
+#: editor/script_create_dialog.cpp
 msgid "N/A"
 msgstr "N/D"
 
@@ -10213,24 +10891,20 @@ msgid "Will load an existing script file."
 msgstr "Se cargará un archivo de script existente."
 
 #: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "Lenguaje"
+msgid "Script file already exists."
+msgstr "El archivo de script ya existe."
 
 #: editor/script_create_dialog.cpp
-msgid "Inherits"
-msgstr "Hereda"
+msgid "Class Name:"
+msgstr "Nombre de Clase:"
 
 #: editor/script_create_dialog.cpp
-msgid "Class Name"
-msgstr "Nombre de clase"
+msgid "Template:"
+msgstr "Plantilla:"
 
 #: editor/script_create_dialog.cpp
-msgid "Template"
-msgstr "Plantilla"
-
-#: editor/script_create_dialog.cpp
-msgid "Built-in Script"
-msgstr "Script Integrado"
+msgid "Built-in Script:"
+msgstr "Script Integrado:"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -10245,24 +10919,52 @@ msgid "Bytes:"
 msgstr "Bytes:"
 
 #: editor/script_editor_debugger.cpp
-msgid "Stack Trace"
-msgstr "Stack Trace"
+msgid "Warning:"
+msgstr "Advertencia:"
 
 #: editor/script_editor_debugger.cpp
-msgid "Pick one or more items from the list to display the graph."
-msgstr "Elige uno o más elementos de la lista para mostrar el gráfico."
+msgid "Error:"
+msgstr "Error:"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Error"
+msgstr "Error de C++"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Error:"
+msgstr "Error de C++:"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source"
+msgstr "Fuente C++"
+
+#: editor/script_editor_debugger.cpp
+msgid "Source:"
+msgstr "Fuente:"
+
+#: editor/script_editor_debugger.cpp
+msgid "C++ Source:"
+msgstr "Fuente C++:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Stack Trace"
+msgstr "Stack Trace"
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "Errores"
 
 #: editor/script_editor_debugger.cpp
-msgid "Child Process Connected"
-msgstr "Proceso Hijo Conectado"
+msgid "Child process connected."
+msgstr "Proceso hijo conectado."
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
 msgstr "Copiar Error"
+
+#: editor/script_editor_debugger.cpp
+msgid "Skip Breakpoints"
+msgstr "Saltar Breakpoints"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10281,6 +10983,10 @@ msgid "Profiler"
 msgstr "Profiler"
 
 #: editor/script_editor_debugger.cpp
+msgid "Network Profiler"
+msgstr "Profiler de Red"
+
+#: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -10291,6 +10997,10 @@ msgstr "Valor"
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
 msgstr "Monitores"
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
+msgstr "Elige uno o más elementos de la lista para mostrar el gráfico."
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -10355,6 +11065,10 @@ msgstr "Restaurar Atajo"
 #: editor/settings_config_dialog.cpp
 msgid "Change Shortcut"
 msgstr "Cambiar Atajo"
+
+#: editor/settings_config_dialog.cpp
+msgid "Editor Settings"
+msgstr "Configuración del Editor"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -10483,10 +11197,6 @@ msgstr "GDNative Singleton desactivado"
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
 msgstr "Biblioteca"
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Status"
-msgstr "Estado"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
@@ -10637,6 +11347,10 @@ msgid "Cursor Clear Rotation"
 msgstr "Eliminar Rotación del Cursor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Paste Selects"
+msgstr "Pegar Seleccionados"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
 msgstr "Deseleccionar"
 
@@ -10651,6 +11365,14 @@ msgstr "Configuración de GridMap"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
 msgstr "Seleccionar Distancia:"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Filter meshes"
+msgstr "Filtrar meshes"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr "Asignar un recurso MeshLibrary a este GridMap para usar sus meshes."
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -10779,8 +11501,36 @@ msgid "Set Variable Type"
 msgstr "Establecer Tipo de la Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Add Input Port"
+msgstr "Añadir Puerto de Entrada"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Output Port"
+msgstr "Añadir Puerto de Salida"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Override an existing built-in function."
+msgstr "Sobrescribir una función incorporada existente."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Create a new function."
+msgstr "Crear una nueva función."
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
 msgstr "Variables:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Create a new variable."
+msgstr "Crear una nueva variable."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Signals:"
+msgstr "Señales:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Create a new signal."
+msgstr "Crear una nueva señal."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -10792,11 +11542,11 @@ msgstr "Otra función/variable/señal ya utiliza este nombre:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
-msgstr "Renombrar Función"
+msgstr "Cambiar nombre de función"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Variable"
-msgstr "Renombrar Variable"
+msgstr "Cambiar nombre de variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
@@ -10807,12 +11557,24 @@ msgid "Add Function"
 msgstr "Añadir Función"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Delete input port"
+msgstr "Eliminar puerto de entrada"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
 msgstr "Añadir Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
 msgstr "Añadir Señal"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Input Port"
+msgstr "Eliminar Puerto de Entrada"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Remove Output Port"
+msgstr "Eliminar Puerto de Salida"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -10860,7 +11622,16 @@ msgstr "Añadir Nodo Preload"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Añadir Nodo(s) Desde Árbol"
+msgstr "Añadir nodo(s) desde árbol"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid ""
+"Can't drop properties because script '%s' is not used in this scene.\n"
+"Drop holding 'Shift' to just copy the signature."
+msgstr ""
+"No se pueden soltar propiedades porque el script '%s' no se usa en esta "
+"escena.\n"
+"Mantén pulsado 'Shift' para copiar la firma."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -10885,6 +11656,10 @@ msgstr "Eliminar Nodo de VisualScript"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
 msgstr "Conectar Nodos"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Disconnect Nodes"
+msgstr "Desconectar Nodos"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Node Data"
@@ -10919,6 +11694,27 @@ msgid "Paste VisualScript Nodes"
 msgstr "Pegar nodos de VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function with a function node."
+msgstr "No se puede crear una función con un nodo función."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't create function of nodes from nodes of multiple functions."
+msgstr ""
+"No se puede crear una función de nodos desde nodos de múltiples funciones."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Select at least one node with sequence port."
+msgstr "Selecciona al menos un nodo con puerto de secuencia."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Try to only have one sequence input in selection."
+msgstr "Intenta tener sólo una secuencia de entrada en la selección."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Create Function"
+msgstr "Crear Función"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "Eliminar Función"
 
@@ -10936,19 +11732,31 @@ msgstr "Eliminar Señal"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
-msgstr "Editando señal:"
+msgstr "Editando Señal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Base Type:"
-msgstr "Tipo Base:"
+msgid "Make Tool:"
+msgstr "Convertir en Herramienta:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Miembros:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Available Nodes:"
-msgstr "Nodos disponibles:"
+msgid "Change Base Type:"
+msgstr "Cambiar Tipo Base:"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Nodes..."
+msgstr "Agregar Nodos..."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Function..."
+msgstr "Agregar Función..."
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "function_name"
+msgstr "nombre_funcion"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit its graph."
@@ -10971,12 +11779,16 @@ msgid "Cut Nodes"
 msgstr "Cortar Nodos"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Paste Nodes"
-msgstr "Pegar Nodos"
+msgid "Make Function"
+msgstr "Crear Función"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Refresh Graph"
+msgstr "Actualizar Gráfico"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
-msgstr "Editar Miembros"
+msgstr "Editar Miembro"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -11076,6 +11888,10 @@ msgid "The package must have at least one '.' separator."
 msgstr "El paquete debe tener al menos un '.' como separador."
 
 #: platform/android/export/export.cpp
+msgid "Select device from the list"
+msgstr "Seleccionar dispositivo de la lista"
+
+#: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
 msgstr "Ejecutable ADB no configurado en Configuración del Editor."
 
@@ -11086,7 +11902,7 @@ msgstr "OpenJDK jarsigner no configurado en Configuración del Editor."
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
-"Keystore debug no configurada en Configuración del Editor ni en el preset."
+"Debug keystore no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11102,10 +11918,11 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
-"Android project is not installed for compiling. Install from Editor menu."
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
-"El proyecto Android no está instalado para la compilación. Instálalo desde "
-"el menú Editor."
+"La plantilla de exportación de Android no esta instalada en el proyecto. "
+"Instalala desde el menú de Proyecto."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -11159,28 +11976,8 @@ msgid "Identifier is missing."
 msgstr "Identificador no encontrado."
 
 #: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr "Los segmentos de un identificador deben ser de largo no nulo."
-
-#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "El carácter '%s' no esta permitido como identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
-"Un dígito no puede ser el primer carácter en un segmento Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid ""
-"The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
-"El carácter '%s' no puede ser el primer carácter en un segmento "
-"Identificador."
-
-#: platform/iphone/export/export.cpp
-msgid "The Identifier must have at least one '.' separator."
-msgstr "El Identificador debe tener al menos un '.' como separador."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -11194,6 +11991,10 @@ msgstr "Identificador inválido:"
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
 msgstr "El icono requerido no está especificado en el preset."
+
+#: platform/javascript/export/export.cpp
+msgid "Stop HTTP Server"
+msgstr "Detener Servidor HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -11228,8 +12029,16 @@ msgid "Using default boot splash image."
 msgstr "Usando la imagen de carga por defecto."
 
 #: platform/uwp/export/export.cpp
+msgid "Invalid package short name."
+msgstr "Nombre corto del paquete inválido."
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
 msgstr "Nombre único de paquete inválido."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid package publisher display name."
+msgstr "Nombre para mostrar del editor inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -11342,8 +12151,8 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"Se debe de proveer de forma a CollisionShape2D para que funcione. ¡Creale un "
-"recurso \"shape\"!"
+"Para que CollisionShape2D funcione, se debe proporcionar un shape. Por "
+"favor, ¡crea un recurso shape para ello!"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -11575,7 +12384,7 @@ msgid ""
 "shape resource for it."
 msgstr ""
 "Se debe proporcionar un shape para que CollisionShape funcione. Por favor, "
-"crea un recurso de shape para ello."
+"crea un recurso shape para ello."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -11781,8 +12590,18 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Este nodo ha quedado obsoleto. Usa AnimationTree en su lugar."
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
-msgstr "Selecciona un color de la pantalla."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+"Color: #%s\n"
+"Clic izq: Configurar color\n"
+"Clic der: Borrar configuración predeterminada"
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
+msgstr "Selecciona un color de la ventana del editor."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
@@ -11871,30 +12690,11 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"Este viewport no está configurado como render target. Si quieres que muestre "
-"su contenido directamente en la pantalla, hazlo hijo de un Control para que "
-"pueda obtener un tamaño. De lo contrario, conviértelo en un RenderTarget y "
-"asigna su textura interna a algún nodo para mostrarlo."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "Error al arrancar FreeType."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "Formato de tipografía desconocido."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "Error al cargar la tipografía."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "Tamaño de tipografía incorrecto."
-
-#: scene/resources/visual_shader.cpp
-msgid "Input"
-msgstr "Entrada"
+"Esta ventanilla no está configurada como destino de representación. Si "
+"quiere que su contenido se muestre directamente en la pantalla, hágalo un "
+"elemento secundario de un control para que pueda recibir dimensiones. O "
+"bien, conviértalo en un RenderTarget y asigne su textura interna a algún "
+"nodo para que se muestre."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
@@ -11923,6 +12723,212 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "enum  "
+#~ msgstr "enum  "
+
+#~ msgid "Brief Description"
+#~ msgstr "Descripción Breve"
+
+#~ msgid "Class Description"
+#~ msgstr "Descripción de la Clase"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "La exportación del proyecto falló con el código de error %d."
+
+#~ msgid "Password:"
+#~ msgstr "Contraseña:"
+
+#~ msgid "Identifier segments must be of non-zero length."
+#~ msgstr "Los segmentos de un identificador deben ser de largo no nulo."
+
+#~ msgid "A digit cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "Un dígito no puede ser el primer carácter en un segmento Identificador."
+
+#~ msgid ""
+#~ "The character '%s' cannot be the first character in a Identifier segment."
+#~ msgstr ""
+#~ "El carácter '%s' no puede ser el primer carácter en un segmento "
+#~ "Identificador."
+
+#~ msgid "The Identifier must have at least one '.' separator."
+#~ msgstr "El Identificador debe tener al menos un '.' como separador."
+
+#~ msgid "Pause the scene"
+#~ msgstr "Pausar la escena"
+
+#~ msgid "Shift+"
+#~ msgstr "Shift+"
+
+#~ msgid "Alt+"
+#~ msgstr "Alt+"
+
+#~ msgid "Control+"
+#~ msgstr "Control+"
+
+#~ msgid "Snap to Grid"
+#~ msgstr "Ajustar en Grid"
+
+#~ msgid "Add input +"
+#~ msgstr "Añadir entrada +"
+
+#~ msgid "Language"
+#~ msgstr "Lenguaje"
+
+#~ msgid "Inherits"
+#~ msgstr "Hereda"
+
+#~ msgid "Base Type:"
+#~ msgstr "Tipo Base:"
+
+#~ msgid "Available Nodes:"
+#~ msgstr "Nodos disponibles:"
+
+#~ msgid "Input"
+#~ msgstr "Entrada"
+
+#~ msgid "Properties:"
+#~ msgstr "Propiedades:"
+
+#~ msgid "Methods:"
+#~ msgstr "Métodos:"
+
+#~ msgid "Theme Properties:"
+#~ msgstr "Propiedades del Tema:"
+
+#~ msgid "Enumerations:"
+#~ msgstr "Enumeraciones:"
+
+#~ msgid "Constants:"
+#~ msgstr "Constantes:"
+
+#~ msgid "Class Description:"
+#~ msgstr "Descripción de la Clase:"
+
+#~ msgid "Property Descriptions:"
+#~ msgstr "Descripción de Propiedades:"
+
+#~ msgid "Method Descriptions:"
+#~ msgstr "Descripción de Métodos:"
+
+#~ msgid ""
+#~ "This will install the Android project for custom builds.\n"
+#~ "Note that, in order to use it, it needs to be enabled per export preset."
+#~ msgstr ""
+#~ "Esto instalará el proyecto Android para compilaciones personalizadas.\n"
+#~ "Para utilizarlo, es necesario habilitarlo mediante un preset de "
+#~ "exportación."
+
+#~ msgid "Reverse sorting."
+#~ msgstr "Orden inverso."
+
+#~ msgid "Delete Node(s)?"
+#~ msgstr "¿Eliminar Nodo(s)?"
+
+#~ msgid "No Matches"
+#~ msgstr "Sin Coincidencias"
+
+#~ msgid ""
+#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
+#~ msgstr ""
+#~ "No se puede abrir file_type_cache.cch para escribir, no se guardará el "
+#~ "cache de tipos de archivo!"
+
+#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
+#~ msgstr ""
+#~ "¡No se puede navegar a '%s' ya que no se ha encontrado en el sistema de "
+#~ "archivos!"
+
+#~ msgid "Error loading image:"
+#~ msgstr "Error al cargar la imagen:"
+
+#~ msgid "No pixels with transparency > 128 in image..."
+#~ msgstr "No hay píxeles con transparencia > 128 en la imagen..."
+
+#~ msgid "Parent has no solid faces to populate."
+#~ msgstr "La superficie padre no tiene caras solidas para poblar."
+
+#~ msgid "Couldn't map area."
+#~ msgstr "No se pudo mapear el área."
+
+#~ msgid "Faces contain no area!"
+#~ msgstr "¡Las caras no contienen área!"
+
+#~ msgid "No faces!"
+#~ msgstr "¡Sin caras!"
+
+#~ msgid "Error: could not load file."
+#~ msgstr "Error: no se pudo cargar el archivo."
+
+#~ msgid "Error could not load file."
+#~ msgstr "Error no se pudo cargar el archivo."
+
+#~ msgid "Doppler Enable"
+#~ msgstr "Activar Doppler"
+
+#~ msgid "Select Mode (Q)"
+#~ msgstr "Modo de Selección (Q)"
+
+#~ msgid "Move Mode (W)"
+#~ msgstr "Modo Movimiento (W)"
+
+#~ msgid "Rotate Mode (E)"
+#~ msgstr "Modo Rotación (E)"
+
+#~ msgid "Scale Mode (R)"
+#~ msgstr "Modo Escalado (R)"
+
+#~ msgid "Local Coords"
+#~ msgstr "Coordenadas Locales"
+
+#~ msgid "Snap Mode (%s)"
+#~ msgstr "Modo de Snap (%s)"
+
+#~ msgid "Tool Select"
+#~ msgstr "Seleccionar Herramienta"
+
+#~ msgid "Tool Move"
+#~ msgstr "Herramienta Mover"
+
+#~ msgid "Tool Rotate"
+#~ msgstr "Herramienta Rotar"
+
+#~ msgid "Tool Scale"
+#~ msgstr "Herramienta Escalar"
+
+#~ msgid ""
+#~ "Remove all missing projects from the list? (Folders contents will not be "
+#~ "modified)"
+#~ msgstr ""
+#~ "¿Eliminar todos los proyectos faltantes de la lista? (El contenido de las "
+#~ "carpetas no se modificará)"
+
+#~ msgid "Project List"
+#~ msgstr "Listado de Proyectos"
+
+#~ msgid "Exit"
+#~ msgstr "Salir"
+
+#~ msgid "Could not execute PVRTC tool:"
+#~ msgstr "No se pudo ejecutar la herramienta PVRTC:"
+
+#~ msgid "Can't load back converted image using PVRTC tool:"
+#~ msgstr ""
+#~ "No se pudo volver a cargar la imagen convertida usando la herramienta "
+#~ "PVRTC:"
+
+#~ msgid "Error initializing FreeType."
+#~ msgstr "Error al arrancar FreeType."
+
+#~ msgid "Unknown font format."
+#~ msgstr "Formato de tipografía desconocido."
+
+#~ msgid "Error loading font."
+#~ msgstr "Error al cargar la tipografía."
+
+#~ msgid "Invalid font size."
+#~ msgstr "Tamaño de tipografía incorrecto."
 
 #~ msgid "Previous Folder"
 #~ msgstr "Carpeta Anterior"
@@ -12192,9 +13198,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Go to parent folder"
 #~ msgstr "Ir a la carpeta principal"
 
-#~ msgid "Select device from the list"
-#~ msgstr "Seleccionar dispositivo de la lista"
-
 #~ msgid "Open Scene(s)"
 #~ msgstr "Abrir escena(s)"
 
@@ -12221,9 +13224,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Create folder"
 #~ msgstr "Crear carpeta"
-
-#~ msgid "Already existing"
-#~ msgstr "Ya existe"
 
 #~ msgid "Custom Node"
 #~ msgstr "Nodo personalizado"
@@ -12256,9 +13256,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgstr ""
 #~ "Instanciar la(s) escena(s) seleccionadas como hijas del nodo seleccionado."
 
-#~ msgid "Warnings:"
-#~ msgstr "Advertencias:"
-
 #~ msgid "Font Size:"
 #~ msgstr "Tamaño de la tipografía:"
 
@@ -12278,9 +13275,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Split can't form an existing edge."
 #~ msgstr "La división no puede formar un borde existente."
-
-#~ msgid "Split already exists."
-#~ msgstr "La división ya existe."
 
 #~ msgid "Add Split"
 #~ msgstr "Agregar división"
@@ -12302,9 +13296,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Select a split to erase it."
 #~ msgstr "Selecciona una división para borrarla."
-
-#~ msgid "No name provided"
-#~ msgstr "No se proporcionó un nombre"
 
 #~ msgid "Add Node.."
 #~ msgstr "Añadir Nodo..."
@@ -12438,15 +13429,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Rotate 270 degrees"
 #~ msgstr "Rotar 270 grados"
 
-#~ msgid "Warning"
-#~ msgstr "Advertencia"
-
-#~ msgid "Error:"
-#~ msgstr "Error:"
-
-#~ msgid "Function:"
-#~ msgstr "Función:"
-
 #~ msgid "Variable"
 #~ msgstr "Variable"
 
@@ -12513,9 +13495,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Connect Graph Nodes"
 #~ msgstr "Conectar nodos gráficos"
 
-#~ msgid "Disconnect Graph Nodes"
-#~ msgstr "Desconectar nodos gráficos"
-
 #~ msgid "Remove Shader Graph Node"
 #~ msgstr "Eliminar el nodo gráfico del shader"
 
@@ -12524,9 +13503,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Duplicate Graph Node(s)"
 #~ msgstr "Duplicar nodo(s) gráfico"
-
-#~ msgid "Delete Shader Graph Node(s)"
-#~ msgstr "Eliminar nodo(s) gráfico(s) del shader"
 
 #~ msgid "Error: Cyclic Connection Link"
 #~ msgstr "Error: Link de conexión cíclico"
@@ -12578,9 +13554,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Out-In"
 #~ msgstr "Salida-Entrada"
-
-#~ msgid "Transitions"
-#~ msgstr "Transiciones"
 
 #~ msgid "Change Anim Len"
 #~ msgstr "Cambiar duración de animación"
@@ -12714,9 +13687,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Erase selection"
 #~ msgstr "Eliminar selección"
 
-#~ msgid "Could not find tile:"
-#~ msgstr "No se pudo cargar el tile:"
-
 #~ msgid "Item name or ID:"
 #~ msgstr "Nombre o ID de Item:"
 
@@ -12797,9 +13767,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Replace By"
 #~ msgstr "Reemplazar por"
-
-#~ msgid "Case Sensitive"
-#~ msgstr "Respetar mayús/minúsculas"
 
 #~ msgid "Backwards"
 #~ msgstr "Hacia atrás"
@@ -12957,9 +13924,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Re-Import Changed Resources"
 #~ msgstr "Reimportar recursos cambiados"
 
-#~ msgid "Loading Export Templates"
-#~ msgstr "Cargando plantillas de exportación"
-
 #, fuzzy
 #~ msgid ""
 #~ "\n"
@@ -12989,14 +13953,8 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Pick New Name and Location For:"
 #~ msgstr "Elige un nombre nuevo y ubicación para:"
 
-#~ msgid "No files selected!"
-#~ msgstr "¡No has seleccionado ningún archivo!"
-
 #~ msgid "Info"
 #~ msgstr "Info"
-
-#~ msgid "Re-Import..."
-#~ msgstr "Reimportar..."
 
 #~ msgid "No bit masks to import!"
 #~ msgstr "¡Sin máscaras de bits para importar!"
@@ -13277,9 +14235,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Loading Image:"
 #~ msgstr "Cargando imagen:"
 
-#~ msgid "Couldn't load image:"
-#~ msgstr "No se pudo cargar la imagen:"
-
 #~ msgid "Converting Images"
 #~ msgstr "Convirtiendo imágenes"
 
@@ -13394,17 +14349,8 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Stereo"
 #~ msgstr "Estéreo"
 
-#~ msgid "Window"
-#~ msgstr "Ventana"
-
 #~ msgid "Scaling to %s%%."
 #~ msgstr "Escalando al %s%%."
-
-#~ msgid "Up"
-#~ msgstr "Arriba"
-
-#~ msgid "Down"
-#~ msgstr "Abajo"
 
 #~ msgid "Bucket"
 #~ msgstr "Cubo"
@@ -13482,10 +14428,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgstr ""
 #~ "No se ha podido leer el archivo de certificación. ¿Seguro que la ruta y "
 #~ "contraseña son correctas?"
-
-#, fuzzy
-#~ msgid "Error creating the signature object."
-#~ msgstr "¡Error al escribir el PCK de proyecto!"
 
 #, fuzzy
 #~ msgid "Error creating the package signature."
@@ -13591,10 +14533,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Create Android keystore"
 #~ msgstr "Crear recurso nuevo"
 
-#, fuzzy
-#~ msgid "Full name"
-#~ msgstr "Nombre válido"
-
 #~ msgid "Organizational unit"
 #~ msgstr "Unidad organizativa"
 
@@ -13652,9 +14590,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Add Image Group"
 #~ msgstr "Añadir grupo de imágenes"
 
-#~ msgid "Delete Image Group"
-#~ msgstr "Eliminar grupo de imágenes"
-
 #~ msgid "Project Export Settings"
 #~ msgstr "Ajustes de exportación del proyecto"
 
@@ -13706,9 +14641,6 @@ msgstr "Las constantes no pueden modificarse."
 #~ msgid "Lossy Quality:"
 #~ msgstr "Calidad con pérdidas:"
 
-#~ msgid "Atlas:"
-#~ msgstr "Atlas:"
-
 #~ msgid "Shrink By:"
 #~ msgstr "Reducir por:"
 
@@ -13717,9 +14649,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Group"
 #~ msgstr "Grupo"
-
-#~ msgid "Samples"
-#~ msgstr "Sonidos"
 
 #~ msgid "Sample Conversion Mode: (.wav files):"
 #~ msgstr "Modo de conversión de muestreo: (archivos .wav):"
@@ -13738,9 +14667,6 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Export Project PCK"
 #~ msgstr "Exportar PCK del proyecto"
-
-#~ msgid "Export..."
-#~ msgstr "Exportar…"
 
 #~ msgid "Project Export"
 #~ msgstr "Exportar proyecto"
@@ -13839,6 +14765,3 @@ msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Deploy File Server Clients"
 #~ msgstr "Hacer Deploy de Clientes del Servidor de Archivos"
-
-#~ msgid "Group Editor"
-#~ msgstr "Editor de Grupos"

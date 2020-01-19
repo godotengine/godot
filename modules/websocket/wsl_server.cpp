@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  lws_server.cpp                                                       */
+/*  wsl_server.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/project_settings.h"
 
 WSLServer::PendingPeer::PendingPeer() {
+	use_ssl = false;
 	time = 0;
 	has_request = false;
 	response_sent = 0;
@@ -42,32 +43,21 @@ WSLServer::PendingPeer::PendingPeer() {
 	memset(req_buf, 0, sizeof(req_buf));
 }
 
-bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
+bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
-	if (len < 4) {
-		ERR_EXPLAIN("Not enough response headers.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
 	Vector<String> req = psa[0].split(" ", false);
-	if (req.size() < 2) {
-		ERR_EXPLAIN("Invalid protocol or status code.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code.");
+
 	// Wrong protocol
-	if (req[0] != "GET" || req[2] != "HTTP/1.1") {
-		ERR_EXPLAIN("Invalid method or HTTP version.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
-		if (header.size() != 2) {
-			ERR_EXPLAIN("Invalid header -> " + psa[i]);
-			ERR_FAIL_V(false);
-		}
+		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i]);
 		String name = header[0].to_lower();
 		String value = header[1].strip_edges();
 		if (headers.has(name))
@@ -75,27 +65,27 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 		else
 			headers[name] = value;
 	}
-#define _WLS_CHECK(NAME, VALUE)                                                                      \
-	ERR_EXPLAIN("Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'"); \
-	ERR_FAIL_COND_V(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false);
-#define _WLS_CHECK_EX(NAME)                                \
-	ERR_EXPLAIN("Missing header '" + String(NAME) + "'."); \
-	ERR_FAIL_COND_V(!headers.has(NAME), false);
-	_WLS_CHECK("upgrade", "websocket");
-	_WLS_CHECK("sec-websocket-version", "13");
-	_WLS_CHECK_EX("sec-websocket-key");
-	_WLS_CHECK_EX("connection");
-#undef _WLS_CHECK_EX
-#undef _WLS_CHECK
+#define _WSL_CHECK(NAME, VALUE)                                                         \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
+			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
+#define _WSL_CHECK_EX(NAME) \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME), false, "Missing header '" + String(NAME) + "'.");
+	_WSL_CHECK("upgrade", "websocket");
+	_WSL_CHECK("sec-websocket-version", "13");
+	_WSL_CHECK_EX("sec-websocket-key");
+	_WSL_CHECK_EX("connection");
+#undef _WSL_CHECK_EX
+#undef _WSL_CHECK
 	key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
 		for (int i = 0; i < protos.size(); i++) {
+			String proto = protos[i].strip_edges();
 			// Check if we have the given protocol
 			for (int j = 0; j < p_protocols.size(); j++) {
-				if (protos[i] != p_protocols[j])
+				if (proto != p_protocols[j])
 					continue;
-				protocol = protos[i];
+				protocol = proto;
 				break;
 			}
 			// Found a protocol
@@ -109,17 +99,23 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
+	if (use_ssl) {
+		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+		if (ssl.is_null())
+			return FAILED;
+		ssl->poll();
+		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
+			return ERR_BUSY;
+		else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED)
+			return FAILED;
+	}
 	if (!has_request) {
 		int read = 0;
 		while (true) {
-			if (req_pos >= WSL_MAX_HEADER_SIZE) {
-				// Header is too big
-				ERR_EXPLAIN("Response headers too big");
-				ERR_FAIL_V(ERR_OUT_OF_MEMORY);
-			}
+			ERR_FAIL_COND_V_MSG(req_pos >= WSL_MAX_HEADER_SIZE, ERR_OUT_OF_MEMORY, "Response headers too big.");
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) // Got an error
 				return FAILED;
@@ -159,12 +155,17 @@ Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
 	return OK;
 }
 
-Error WSLServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
+Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
 	ERR_FAIL_COND_V(is_listening(), ERR_ALREADY_IN_USE);
 
 	_is_multiplayer = gd_mp_api;
-	_protocols = p_protocols;
-	_server->listen(p_port);
+	// Strip edges from protocols.
+	_protocols.resize(p_protocols.size());
+	String *pw = _protocols.ptrw();
+	for (int i = 0; i < p_protocols.size(); i++) {
+		pw[i] = p_protocols[i].strip_edges();
+	}
+	_server->listen(p_port, bind_ip);
 
 	return OK;
 }
@@ -201,6 +202,7 @@ void WSLServer::poll() {
 		WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 		data->obj = this;
 		data->conn = ppeer->connection;
+		data->tcp = ppeer->tcp;
 		data->is_server = true;
 		data->id = id;
 
@@ -220,12 +222,21 @@ void WSLServer::poll() {
 		return;
 
 	while (_server->is_connection_available()) {
-		Ref<StreamPeer> conn = _server->take_connection();
+		Ref<StreamPeerTCP> conn = _server->take_connection();
 		if (is_refusing_new_connections())
 			continue; // Conn will go out-of-scope and be closed.
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
-		peer->connection = conn;
+		if (private_key.is_valid() && ssl_cert.is_valid()) {
+			Ref<StreamPeerSSL> ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+			ssl->set_blocking_handshake_enabled(false);
+			ssl->accept_stream(conn, private_key, ssl_cert, ca_chain);
+			peer->connection = ssl;
+			peer->use_ssl = true;
+		} else {
+			peer->connection = conn;
+		}
+		peer->tcp = conn;
 		peer->time = OS::get_singleton()->get_ticks_msec();
 		_pending.push_back(peer);
 	}
@@ -247,6 +258,7 @@ void WSLServer::stop() {
 	}
 	_pending.clear();
 	_peer_map.clear();
+	_protocols.clear();
 }
 
 bool WSLServer::has_peer(int p_id) const {
@@ -277,8 +289,7 @@ void WSLServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 }
 
 Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
-	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
-	ERR_FAIL_COND_V(_server->is_listening(), FAILED);
+	ERR_FAIL_COND_V_MSG(_server->is_listening(), FAILED, "Buffers sizes can only be set before listening or connecting.");
 
 	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
 	_in_pkt_size = nearest_shift(p_in_packets - 1);

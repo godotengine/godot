@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 #include "core/global_constants.h"
 #include "core/project_settings.h"
 #include "editor_node.h"
+#include "editor_scale.h"
+#include "project_settings_editor.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
@@ -315,8 +317,7 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	RES res = ResourceLoader::load(p_path);
-	ERR_EXPLAIN("Can't autoload: " + p_path);
-	ERR_FAIL_COND_V(res.is_null(), NULL);
+	ERR_FAIL_COND_V_MSG(res.is_null(), NULL, "Can't autoload: " + p_path + ".");
 	Node *n = NULL;
 	if (res->is_class("PackedScene")) {
 		Ref<PackedScene> ps = res;
@@ -325,20 +326,17 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		Ref<Script> s = res;
 		StringName ibt = s->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_EXPLAIN("Script does not inherit a Node: " + p_path);
-		ERR_FAIL_COND_V(!valid_type, NULL);
+		ERR_FAIL_COND_V_MSG(!valid_type, NULL, "Script does not inherit a Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instance(ibt);
 
-		ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
-		ERR_FAIL_COND_V(obj == NULL, NULL);
+		ERR_FAIL_COND_V_MSG(obj == NULL, NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
 		n->set_script(s.get_ref_ptr());
 	}
 
-	ERR_EXPLAIN("Path in autoload not a node or script: " + p_path);
-	ERR_FAIL_COND_V(!n, NULL);
+	ERR_FAIL_COND_V_MSG(!n, NULL, "Path in autoload not a node or script: " + p_path + ".");
 
 	return n;
 }
@@ -443,11 +441,11 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 		if (info.in_editor) {
 			ERR_CONTINUE(!info.node);
-			get_tree()->get_root()->remove_child(info.node);
+			get_tree()->get_root()->call_deferred("remove_child", info.node);
 		}
 
 		if (info.node) {
-			memdelete(info.node);
+			info.node->queue_delete();
 			info.node = NULL;
 		}
 	}

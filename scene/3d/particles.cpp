@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,13 +57,13 @@ void Particles::set_emitting(bool p_emitting) {
 
 void Particles::set_amount(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
 	VS::get_singleton()->particles_set_amount(particles, amount);
 }
 void Particles::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_COND(p_lifetime <= 0);
+	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
@@ -329,6 +329,13 @@ void Particles::_notification(int p_what) {
 		if (one_shot && !is_emitting()) {
 			_change_notify();
 			set_process_internal(false);
+		}
+	}
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		// make sure particles are updated before rendering occurs if they were active before
+		if (is_visible_in_tree() && !VS::get_singleton()->particles_is_inactive(particles)) {
+			VS::get_singleton()->particles_request_process(particles);
 		}
 	}
 }

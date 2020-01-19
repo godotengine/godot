@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,14 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
-// For onion skinning
+// For onion skinning.
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/main/viewport.h"
@@ -84,6 +86,9 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				track_editor->set_anim_pos(player->get_current_animation_position());
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
+			} else if (!player->is_valid()) {
+				// Reset timeline when the player has been stopped externally
+				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
@@ -121,7 +126,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop->set_icon(get_icon("Stop", "EditorIcons"));
 
 			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+			onion_skinning->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
 
 			pin->set_icon(get_icon("Pin", "EditorIcons"));
 
@@ -293,10 +298,6 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			}
 		}
 		frame->set_max(anim->get_length());
-		if (anim->get_step())
-			frame->set_step(anim->get_step());
-		else
-			frame->set_step(0.00001);
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
@@ -307,6 +308,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
+	_animation_key_editor_seek(timeline_position, false);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -478,6 +480,21 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 	animation->select(idx);
 
 	_animation_selected(idx);
+}
+
+double AnimationPlayerEditor::_get_editor_step() const {
+
+	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
+	if (track_editor->is_snap_enabled()) {
+		const String current = player->get_assigned_animation();
+		const Ref<Animation> anim = player->get_animation(current);
+		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
+
+		// Use more precise snapping when holding Shift
+		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+	}
+
+	return 0.0;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -680,8 +697,10 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 
 			if (p_state.has("animation")) {
 				String anim = p_state["animation"];
-				_select_anim_by_name(anim);
-				_animation_edit();
+				if (!anim.empty() && player->has_animation(anim)) {
+					_select_anim_by_name(anim);
+					_animation_edit();
+				}
 			}
 		}
 	}
@@ -724,8 +743,8 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 			ERR_FAIL_COND(!player);
 
 			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
-			ERR_FAIL_COND(res.is_null());
-			ERR_FAIL_COND(!res->is_class("Animation"));
+			ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + p_file + "'.");
+			ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + p_file + "' is not Animation.");
 			if (p_file.find_last("/") != -1) {
 
 				p_file = p_file.substr(p_file.find_last("/") + 1, p_file.length());
@@ -978,9 +997,9 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 	String new_name = current;
 	while (player->has_animation(new_name)) {
-
 		new_name = new_name + " (copy)";
 	}
+	new_anim->set_name(new_name);
 
 	undo_redo->create_action(TTR("Duplicate Animation"));
 	undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
@@ -1008,7 +1027,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	};
 
 	updating = true;
-	String current = player->get_assigned_animation(); //animation->get_item_text( animation->get_selected() );
+	String current = player->get_assigned_animation();
 	if (current == "" || !player->has_animation(current)) {
 		updating = false;
 		current = "";
@@ -1018,14 +1037,9 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = anim->get_length() * (p_value / frame->get_max());
-	float step = anim->get_step();
-	if (step) {
-		pos = Math::stepify(pos, step);
-		if (pos < 0)
-			pos = 0;
-		if (pos >= anim->get_length())
-			pos = anim->get_length();
+	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
+	if (track_editor->is_snap_enabled()) {
+		pos = Math::stepify(pos, _get_editor_step());
 	}
 
 	if (player->is_valid() && !p_set) {
@@ -1063,44 +1077,28 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 	frame->set_max(p_len);
 }
 
-void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_len) {
-
-	if (p_len)
-		frame->set_step(p_len);
-	else
-		frame->set_step(0.00001);
-}
-
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
+
+	timeline_position = p_pos;
 
 	if (!is_visible_in_tree())
 		return;
+
 	if (!player)
 		return;
 
 	if (player->is_playing())
 		return;
 
+	if (!player->has_animation(player->get_assigned_animation()))
+		return;
+
 	updating = true;
-	frame->set_value(p_pos);
+	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
 
 	EditorNode::get_singleton()->get_inspector()->refresh();
-}
-
-void AnimationPlayerEditor::_hide_anim_editors() {
-
-	player = NULL;
-	hide();
-	set_process(false);
-
-	track_editor->set_animation(Ref<Animation>());
-	track_editor->set_root(NULL);
-	track_editor->show_select_node_warning(true);
-}
-
-void AnimationPlayerEditor::_animation_about_to_show_menu() {
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -1490,7 +1488,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	player->seek(cpos, false);
 	player->restore_animated_values(values_backup);
 
-	// Restor state of main editors.
+	// Restore state of main editors.
 	if (SpatialEditor::get_singleton()->is_visible()) {
 		// 3D
 		SpatialEditor::get_singleton()->set_state(spatial_edit_state);
@@ -1520,7 +1518,7 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 
 		_free_onion_layers();
 
-		// Clean up the overlay
+		// Clean up the overlay.
 		onion.can_overlay = false;
 		plugin->update_overlays();
 	}
@@ -1558,8 +1556,6 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_seek"), &AnimationPlayerEditor::_animation_key_editor_seek);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_len_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
-	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_step_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_step_changed);
-	ClassDB::bind_method(D_METHOD("_hide_anim_editors"), &AnimationPlayerEditor::_hide_anim_editors);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 	ClassDB::bind_method(D_METHOD("_blend_editor_next_changed"), &AnimationPlayerEditor::_blend_editor_next_changed);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &AnimationPlayerEditor::_unhandled_key_input);
@@ -1621,6 +1617,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	hb->add_child(frame);
 	frame->set_custom_minimum_size(Size2(60, 0));
 	frame->set_stretch_ratio(2);
+	frame->set_step(0.0001);
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
@@ -1767,6 +1764,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	renaming = false;
 	last_active = false;
+	timeline_position = 0;
 
 	set_process_unhandled_key_input(true);
 
@@ -1774,11 +1772,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_editor->connect("timeline_changed", this, "_animation_key_editor_seek");
 	track_editor->connect("animation_len_changed", this, "_animation_key_editor_anim_len_changed");
-	track_editor->connect("animation_step_changed", this, "_animation_key_editor_anim_step_changed");
 
 	_update_player();
 
-	// Onion skinning
+	// Onion skinning.
 
 	track_editor->connect("visibility_changed", this, "_editor_visibility_changed");
 

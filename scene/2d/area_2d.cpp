@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -321,10 +321,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 
 void Area2D::_clear_monitoring() {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
 		Map<ObjectID, BodyState> bmcopy = body_map;
@@ -401,10 +398,7 @@ void Area2D::set_monitoring(bool p_enable) {
 
 	if (p_enable == monitoring)
 		return;
-	if (locked) {
-		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitoring\",true/false)");
-	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND_MSG(locked, "Function blocked during in/out signal. Use set_deferred(\"monitoring\", true/false).");
 
 	monitoring = p_enable;
 
@@ -427,10 +421,7 @@ bool Area2D::is_monitoring() const {
 
 void Area2D::set_monitorable(bool p_enable) {
 
-	if (locked || (is_inside_tree() && Physics2DServer::get_singleton()->is_flushing_queries())) {
-		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(locked || (is_inside_tree() && Physics2DServer::get_singleton()->is_flushing_queries()), "Function blocked during in/out signal. Use set_deferred(\"monitorable\", true/false).");
 
 	if (p_enable == monitorable)
 		return;
@@ -447,7 +438,7 @@ bool Area2D::is_monitorable() const {
 
 Array Area2D::get_overlapping_bodies() const {
 
-	ERR_FAIL_COND_V(!monitoring, Array());
+	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	Array ret;
 	ret.resize(body_map.size());
 	int idx = 0;
@@ -465,7 +456,7 @@ Array Area2D::get_overlapping_bodies() const {
 
 Array Area2D::get_overlapping_areas() const {
 
-	ERR_FAIL_COND_V(!monitoring, Array());
+	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	Array ret;
 	ret.resize(area_map.size());
 	int idx = 0;

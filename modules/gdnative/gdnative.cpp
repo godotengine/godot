@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -268,8 +268,7 @@ void GDNative::_bind_methods() {
 }
 
 void GDNative::set_library(Ref<GDNativeLibrary> p_library) {
-	ERR_EXPLAIN("Tried to change library of GDNative when it is already set");
-	ERR_FAIL_COND(library.is_valid());
+	ERR_FAIL_COND_MSG(library.is_valid(), "Tried to change library of GDNative when it is already set.");
 	library = p_library;
 }
 
@@ -340,7 +339,7 @@ bool GDNative::initialize() {
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
-		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
+		ERR_PRINTS("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
 

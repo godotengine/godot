@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,11 +90,11 @@ bool GDScriptCompiler::_create_unary_operator(CodeGen &codegen, const GDScriptPa
 	return true;
 }
 
-bool GDScriptCompiler::_create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer) {
+bool GDScriptCompiler::_create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer, int p_index_addr) {
 
 	ERR_FAIL_COND_V(on->arguments.size() != 2, false);
 
-	int src_address_a = _parse_expression(codegen, on->arguments[0], p_stack_level, false, p_initializer);
+	int src_address_a = _parse_expression(codegen, on->arguments[0], p_stack_level, false, p_initializer, p_index_addr);
 	if (src_address_a < 0)
 		return false;
 	if (src_address_a & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS)
@@ -171,7 +171,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 	return result;
 }
 
-int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level) {
+int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level, int p_index_addr) {
 
 	Variant::Operator var_op = Variant::OP_MAX;
 
@@ -205,7 +205,7 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 		return _parse_expression(codegen, p_expression->arguments[1], p_stack_level, false, initializer);
 	}
 
-	if (!_create_binary_operator(codegen, p_expression, var_op, p_stack_level, initializer))
+	if (!_create_binary_operator(codegen, p_expression, var_op, p_stack_level, initializer, p_index_addr))
 		return -1;
 
 	int dst_addr = (p_stack_level) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
@@ -214,7 +214,7 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 	return dst_addr;
 }
 
-int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer) {
+int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer, int p_index_addr) {
 
 	switch (p_expression->type) {
 		//should parse variable declaration and adjust stack accordingly...
@@ -704,7 +704,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						return from;
 
 					int index;
-					if (named) {
+					if (p_index_addr != 0) {
+						index = p_index_addr;
+					} else if (named) {
 						if (on->arguments[0]->type == GDScriptParser::Node::TYPE_SELF && codegen.script && codegen.function_node && !codegen.function_node->_static) {
 
 							GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(on->arguments[1]);
@@ -1091,7 +1093,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							codegen.alloc_stack(slevel);
 						}
 
-						int set_value = _parse_assign_right_expression(codegen, on, slevel + 1);
+						int set_value = _parse_assign_right_expression(codegen, on, slevel + 1, named ? 0 : set_index);
 						if (set_value < 0) //error
 							return set_value;
 
@@ -1144,7 +1146,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						GDScriptDataType assign_type = _gdtype_from_datatype(on->arguments[0]->get_datatype());
 
-						if (assign_type.has_type && !on->arguments[1]->get_datatype().has_type) {
+						if (assign_type.has_type && !on->datatype.has_type) {
 							// Typed assignment
 							switch (assign_type.kind) {
 								case GDScriptDataType::BUILTIN: {
@@ -1241,8 +1243,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				default: {
 
-					ERR_EXPLAIN("Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression.");
-					ERR_FAIL_V(0); //unreachable code
+					ERR_FAIL_V_MSG(0, "Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression."); //unreachable code
 
 				} break;
 			}
@@ -1255,8 +1256,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 		//TYPE_TYPE,
 		default: {
 
-			ERR_EXPLAIN("Bug in bytecode compiler, unexpected node in parse tree while parsing expression.");
-			ERR_FAIL_V(-1); //unreachable code
+			ERR_FAIL_V_MSG(-1, "Bug in bytecode compiler, unexpected node in parse tree while parsing expression."); //unreachable code
 		} break;
 	}
 }
@@ -1522,8 +1522,16 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				if (ret2 < 0)
 					return ERR_PARSE_ERROR;
 
+				int message_ret = 0;
+				if (as->message) {
+					message_ret = _parse_expression(codegen, as->message, p_stack_level + 1, false);
+					if (message_ret < 0)
+						return ERR_PARSE_ERROR;
+				}
+
 				codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret2);
+				codegen.opcodes.push_back(message_ret);
 #endif
 			} break;
 			case GDScriptParser::Node::TYPE_BREAKPOINT: {
@@ -2066,7 +2074,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					}
 					instance->owner->set_script_instance(instance);
 
-					/* STEP 2, INITIALIZE AND CONSRTUCT */
+					/* STEP 2, INITIALIZE AND CONSTRUCT */
 
 					Variant::CallError ce;
 					p_script->initializer->call(instance, NULL, 0, ce);
@@ -2115,14 +2123,21 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 		StringName name = p_class->subclasses[i]->name;
 
 		Ref<GDScript> subclass;
+		String fully_qualified_name = p_script->fully_qualified_name + "::" + name;
 
 		if (old_subclasses.has(name)) {
 			subclass = old_subclasses[name];
 		} else {
-			subclass.instance();
+			Ref<GDScript> orphan_subclass = GDScriptLanguage::get_singleton()->get_orphan_subclass(fully_qualified_name);
+			if (orphan_subclass.is_valid()) {
+				subclass = orphan_subclass;
+			} else {
+				subclass.instance();
+			}
 		}
 
 		subclass->_owner = p_script;
+		subclass->fully_qualified_name = fully_qualified_name;
 		p_script->subclasses.insert(name, subclass);
 
 		_make_scripts(subclass.ptr(), p_class->subclasses[i], false);
@@ -2140,6 +2155,9 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_INVALID_DATA);
 
 	source = p_script->get_path();
+
+	// The best fully qualified name for a base level script is its file path
+	p_script->fully_qualified_name = p_script->path;
 
 	// Create scripts for subclasses beforehand so they can be referenced
 	_make_scripts(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);

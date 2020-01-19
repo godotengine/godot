@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,10 @@
 
 #include "core/message_queue.h"
 #include "core/print_string.h"
+#include "editor/editor_node.h"
+#include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor_node.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -270,30 +271,63 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
 		}
 
-		bool has_connections = p_node->has_persistent_signal_connections();
-		bool has_groups = p_node->has_persistent_groups();
+		int num_connections = p_node->get_persistent_signal_connection_count();
+		int num_groups = p_node->get_persistent_group_count();
 
-		if (has_connections && has_groups) {
-			item->add_button(0, get_icon("SignalsAndGroups", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connection(s) and group(s).\nClick to show signals dock."));
-		} else if (has_connections) {
-			item->add_button(0, get_icon("Signals", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connections.\nClick to show signals dock."));
-		} else if (has_groups) {
-			item->add_button(0, get_icon("Groups", "EditorIcons"), BUTTON_GROUPS, false, TTR("Node is in group(s).\nClick to show groups dock."));
+		if (num_connections >= 1 && num_groups >= 1) {
+			item->add_button(
+					0,
+					get_icon("SignalsAndGroups", "EditorIcons"),
+					BUTTON_SIGNALS,
+					false,
+					vformat(TTR("Node has %s connection(s) and %s group(s).\nClick to show signals dock."), num_connections, num_groups));
+		} else if (num_connections >= 1) {
+			item->add_button(
+					0,
+					get_icon("Signals", "EditorIcons"),
+					BUTTON_SIGNALS,
+					false,
+					vformat(TTR("Node has %s connection(s).\nClick to show signals dock."), num_connections));
+		} else if (num_groups >= 1) {
+			item->add_button(
+					0,
+					get_icon("Groups", "EditorIcons"),
+					BUTTON_GROUPS,
+					false,
+					vformat(TTR("Node is in %s group(s).\nClick to show groups dock."), num_groups));
 		}
 	}
 
 	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-		item->set_tooltip(0, TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class());
-	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
 
+		String tooltip = TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		if (p_node->get_editor_description() != String()) {
+			tooltip += "\n\n" + p_node->get_editor_description();
+		}
+
+		item->set_tooltip(0, tooltip);
+	} else if (p_node != get_scene_node() && p_node->get_filename() != "" && can_open_instance) {
 		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-		item->set_tooltip(0, TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class());
+
+		String tooltip = TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class();
+		if (p_node->get_editor_description() != String()) {
+			tooltip += "\n\n" + p_node->get_editor_description();
+		}
+
+		item->set_tooltip(0, tooltip);
 	} else {
 		StringName type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-		if (type == StringName())
+		if (type == StringName()) {
 			type = p_node->get_class();
-		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type);
+		}
+
+		String tooltip = TTR("Type:") + " " + type;
+		if (p_node->get_editor_description() != String()) {
+			tooltip += "\n\n" + p_node->get_editor_description();
+		}
+
+		item->set_tooltip(0, tooltip);
 	}
 
 	if (can_open_instance && undo_redo) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
@@ -926,6 +960,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
 			tf->set_texture(icons[i]);
+			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
 			Label *label = memnew(Label(selected[i]->get_name()));
 			hb->add_child(label);
@@ -995,6 +1030,17 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return true;
 	}
 
+	if (String(d["type"]) == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
+		if (se) {
+			String sp = se->get_edited_resource()->get_path();
+			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+				return true;
+			}
+		}
+	}
+
 	return String(d["type"]) == "nodes";
 }
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -1030,6 +1076,16 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 			emit_signal("script_dropped", files[0], np);
 		} else {
 			emit_signal("files_dropped", files, np, section);
+		}
+	}
+
+	if (String(d["type"]) == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
+		if (se) {
+			String sp = se->get_edited_resource()->get_path();
+			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+				emit_signal("script_dropped", sp, np);
+			}
 		}
 	}
 }

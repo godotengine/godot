@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +29,14 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "core/error_macros.h"
+
 #include "thirdparty/xatlas/xatlas.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+
 extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y);
 
 bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) {
@@ -56,14 +59,13 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	xatlas::PackOptions pack_options;
 
 	pack_options.maxChartSize = 4096;
-	pack_options.bruteForce = true;
+	pack_options.blockAlign = true;
 	pack_options.texelsPerUnit = 1.0 / p_texel_size;
 
 	xatlas::Atlas *atlas = xatlas::Create();
 	printf("Adding mesh..\n");
 	xatlas::AddMeshError::Enum err = xatlas::AddMesh(atlas, input_mesh, 1);
-	ERR_EXPLAINC(xatlas::StringForEnum(err));
-	ERR_FAIL_COND_V(err != xatlas::AddMeshError::Enum::Success, false);
+	ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Enum::Success, false, xatlas::StringForEnum(err));
 
 	printf("Generate..\n");
 	xatlas::Generate(atlas, chart_options, NULL, pack_options);
@@ -75,7 +77,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	float h = *r_size_hint_y;
 
 	if (w == 0 || h == 0) {
-		return false; //could not bake
+		return false; //could not bake because there is no area
 	}
 
 	const xatlas::Mesh &output = atlas->meshes[0];
@@ -103,7 +105,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	*r_index_count = output.indexCount;
 
-	//xatlas::Destroy(atlas);
+	xatlas::Destroy(atlas);
 	printf("Done\n");
 	return true;
 }

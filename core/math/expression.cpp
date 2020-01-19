@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"typeof",
 	"type_exists",
 	"char",
+	"ord",
 	"str",
 	"print",
 	"printerr",
@@ -164,6 +165,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case OBJ_WEAKREF:
 		case TYPE_OF:
 		case TEXT_CHAR:
+		case TEXT_ORD:
 		case TEXT_STR:
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
@@ -674,6 +676,32 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			CharType result[2] = { *p_inputs[0], 0 };
 
 			*r_return = String(result);
+
+		} break;
+		case TEXT_ORD: {
+
+			if (p_inputs[0]->get_type() != Variant::STRING) {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+
+				return;
+			}
+
+			String str = *p_inputs[0];
+
+			if (str.length() != 1) {
+
+				r_error_str = RTR("Expected a string of length 1 (a character).");
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+
+				return;
+			}
+
+			*r_return = str.get(0);
 
 		} break;
 		case TEXT_STR: {
@@ -2161,10 +2189,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 }
 
 Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
-	if (error_set) {
-		ERR_EXPLAIN("There was previously a parse error: " + error_str);
-		ERR_FAIL_V(Variant());
-	}
+
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
 
 	execution_error = false;
 	Variant output;
@@ -2173,10 +2199,7 @@ Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
-		if (p_show_error) {
-			ERR_EXPLAIN(error_str);
-			ERR_FAIL_V(Variant());
-		}
+		ERR_FAIL_COND_V_MSG(p_show_error, Variant(), error_str);
 	}
 
 	return output;

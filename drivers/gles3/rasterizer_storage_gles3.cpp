@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,13 +135,13 @@ void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, 
 
 GLuint RasterizerStorageGLES3::system_fbo = 0;
 
-Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &srgb) const {
+Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &r_srgb, bool p_force_decompress) const {
 
 	r_compressed = false;
 	r_gl_format = 0;
 	r_real_format = p_format;
 	Ref<Image> image = p_image;
-	srgb = false;
+	r_srgb = false;
 
 	bool need_decompress = false;
 
@@ -188,7 +188,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_internal_format = (config.srgb_decode_supported || (p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8 : GL_RGB8;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			srgb = true;
+			r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA8: {
@@ -196,7 +196,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_format = GL_RGBA;
 			r_gl_internal_format = (config.srgb_decode_supported || (p_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 			r_gl_type = GL_UNSIGNED_BYTE;
-			srgb = true;
+			r_srgb = true;
 
 		} break;
 		case Image::FORMAT_RGBA4444: {
@@ -278,7 +278,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -294,7 +294,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -310,7 +310,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -355,7 +355,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -395,7 +395,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -410,7 +410,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -426,7 +426,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -442,7 +442,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -527,7 +527,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -542,7 +542,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -557,7 +557,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-				srgb = true;
+				r_srgb = true;
 
 			} else {
 
@@ -570,7 +570,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 		}
 	}
 
-	if (need_decompress) {
+	if (need_decompress || p_force_decompress) {
 
 		if (!image.is_null()) {
 			image = image->duplicate();
@@ -584,7 +584,7 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 		r_gl_type = GL_UNSIGNED_BYTE;
 		r_compressed = false;
 		r_real_format = Image::FORMAT_RGBA8;
-		srgb = true;
+		r_srgb = true;
 
 		return image;
 	}
@@ -677,8 +677,22 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 		} break;
 	}
 
+	texture->is_npot_repeat_mipmap = false;
+#ifdef JAVASCRIPT_ENABLED
+	// WebGL 2.0 on browsers does not seem to properly support compressed non power-of-two (NPOT)
+	// textures with repeat/mipmaps, even though NPOT textures should be supported as per the spec.
+	// Force decompressing them to work it around on WebGL 2.0 at a performance cost (GH-33058).
+	int po2_width = next_power_of_2(p_width);
+	int po2_height = next_power_of_2(p_height);
+	bool is_po2 = p_width == po2_width && p_height == po2_height;
+
+	if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
+		texture->is_npot_repeat_mipmap = true;
+	}
+#endif // JAVASCRIPT_ENABLED
+
 	Image::Format real_format;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	texture->alloc_width = texture->width;
 	texture->alloc_height = texture->height;
@@ -753,13 +767,9 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	if (config.keep_original_textures && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 		texture->images.write[p_layer] = p_image;
 	}
-#ifndef GLES_OVER_GL
-	if (p_image->is_compressed() && p_image->has_mipmaps() && !p_image->is_size_po2()) {
-		ERR_PRINTS("Texuture '" + texture->path + "' is compressed, has mipmaps but is not of powerf-of-2 size. This does not work on OpenGL ES 3.0.");
-	}
-#endif
+
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	if (config.shrink_textures_x2 && (p_image->has_mipmaps() || !p_image->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 
@@ -795,6 +805,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->data_size = img->get_data().size();
 	PoolVector<uint8_t>::Read read = img->get_data().read();
+	ERR_FAIL_COND(!read.ptr());
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -992,7 +1003,7 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	}
 
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb);
+	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	GLenum blit_target = GL_TEXTURE_2D;
 
@@ -1091,7 +1102,8 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 				gl_internal_format,
 				gl_type,
 				compressed,
-				srgb);
+				srgb,
+				texture->is_npot_repeat_mipmap);
 
 		PoolVector<uint8_t> data;
 
@@ -1197,7 +1209,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	GLenum gl_type;
 	bool compressed;
 	bool srgb;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb, false);
 
 	PoolVector<uint8_t> data;
 
@@ -1267,7 +1279,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	GLenum gl_type;
 	bool compressed;
 	bool srgb;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb);
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
 	PoolVector<uint8_t> data;
 
@@ -1745,6 +1757,7 @@ RID RasterizerStorageGLES3::sky_create() {
 
 	Sky *sky = memnew(Sky);
 	sky->radiance = 0;
+	sky->irradiance = 0;
 	return sky_owner.make_rid(sky);
 }
 
@@ -1756,7 +1769,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	if (sky->panorama.is_valid()) {
 		sky->panorama = RID();
 		glDeleteTextures(1, &sky->radiance);
+		glDeleteTextures(1, &sky->irradiance);
 		sky->radiance = 0;
+		sky->irradiance = 0;
 	}
 
 	sky->panorama = p_panorama;
@@ -1779,10 +1794,22 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); //need this for proper sampling
+	glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
+#ifdef GLES_OVER_GL
+	glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, int(Math::floor(Math::log(float(texture->width)) / Math::log(2.0f))));
+	glGenerateMipmap(texture->target);
+#else
+	glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, 0);
+#endif
+	// Need Mipmaps regardless of whether they are set in import by user
+	glTexParameterf(texture->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+#ifdef GLES_OVER_GL
+	glTexParameterf(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+#else
+	glTexParameterf(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#endif
+	glTexParameterf(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	if (config.srgb_decode_supported && texture->srgb && !texture->using_srgb) {
 
@@ -1795,6 +1822,105 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		}
 #endif
 	}
+
+	{
+		//Irradiance map
+		glActiveTexture(GL_TEXTURE1);
+		glGenTextures(1, &sky->irradiance);
+		glBindTexture(GL_TEXTURE_2D, sky->irradiance);
+
+		GLuint tmp_fb;
+
+		glGenFramebuffers(1, &tmp_fb);
+		glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
+
+		int size = 32;
+
+		bool use_float = config.framebuffer_half_float_supported;
+
+		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
+		GLenum format = GL_RGBA;
+		GLenum type = use_float ? GL_HALF_FLOAT : GL_UNSIGNED_INT_2_10_10_10_REV;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameterf(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->irradiance, 0);
+
+		GLuint tmp_fb2;
+		GLuint tmp_tex;
+		{
+			//generate another one for rendering, as can't read and write from a single texarray it seems
+			glGenFramebuffers(1, &tmp_fb2);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glGenTextures(1, &tmp_tex);
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, p_radiance_size, 2.0 * p_radiance_size, 0, format, type, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+#ifdef DEBUG_ENABLED
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+#endif
+		}
+
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, true);
+		shaders.cubemap_filter.bind();
+
+		// Very large Panoramas require way too much effort to compute irradiance so use a mipmap
+		// level that corresponds to a panorama of 1024x512
+		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::floor(Math::log(float(texture->width)) / Math::log(2.0f)) - 10.0f, 0.0f));
+
+		// Compute Irradiance for a large texture, specified by radiance size and then pull out a low mipmap corresponding to 32x32
+		int vp_size = p_radiance_size;
+		for (int i = 0; i < 2; i++) {
+			glViewport(0, i * vp_size, vp_size, vp_size);
+			glBindVertexArray(resources.quadie_array);
+
+			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i > 0);
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glBindVertexArray(0);
+		}
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tmp_tex);
+		glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
+
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
+		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::COMPUTE_IRRADIANCE, false);
+
+		shaders.copy.set_conditional(CopyShaderGLES3::USE_LOD, true);
+		shaders.copy.bind();
+		shaders.copy.set_uniform(CopyShaderGLES3::MIP_LEVEL, MAX(Math::floor(Math::log(float(p_radiance_size)) / Math::log(2.0f)) - 5.0f, 0.0f)); // Mip level that corresponds to a 32x32 texture
+
+		glViewport(0, 0, size, size * 2.0);
+		glBindVertexArray(resources.quadie_array);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glBindVertexArray(0);
+
+		shaders.copy.set_conditional(CopyShaderGLES3::USE_LOD, false);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(texture->target, texture->tex_id);
+		glDeleteFramebuffers(1, &tmp_fb);
+		glDeleteFramebuffers(1, &tmp_fb2);
+		glDeleteTextures(1, &tmp_tex);
+	}
+
+	// Now compute radiance
 
 	glActiveTexture(GL_TEXTURE1);
 	glGenTextures(1, &sky->radiance);
@@ -1821,8 +1947,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internal_format, size, size * 2, array_level, 0, format, type, NULL);
 
-		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		GLuint tmp_fb2;
 		GLuint tmp_tex;
@@ -1834,8 +1960,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			glBindTexture(GL_TEXTURE_2D, tmp_tex);
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
-			glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #ifdef DEBUG_ENABLED
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
@@ -1846,21 +1972,24 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
 
+#ifdef GLES_OVER_GL
+			if (j < 3) {
+#else
 			if (j == 0) {
+#endif
 
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
-				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, false);
 				shaders.cubemap_filter.bind();
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(texture->target, texture->tex_id);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(texture->width / 4));
 			} else {
 
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
 				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, true);
-				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, false);
 				shaders.cubemap_filter.bind();
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, sky->radiance);
@@ -1890,7 +2019,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, false);
 		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID_ARRAY, false);
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DIRECT_WRITE, false);
 
 		//restore ranges
 		glActiveTexture(GL_TEXTURE0);
@@ -1935,23 +2063,67 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		GLuint tmp_fb2;
+		GLuint tmp_tex;
+		{
+			// Need a temporary framebuffer for rendering so we can read from previous iterations
+			glGenFramebuffers(1, &tmp_fb2);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glGenTextures(1, &tmp_tex);
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#ifdef DEBUG_ENABLED
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+#endif
+		}
 
 		lod = 0;
 		mm_level = mipmaps;
 
 		size = p_radiance_size;
 
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
-		shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
-		shaders.cubemap_filter.bind();
-
 		while (mm_level) {
-
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->radiance, lod);
+
 #ifdef DEBUG_ENABLED
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
 #endif
+			glBindTexture(GL_TEXTURE_2D, tmp_tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size * 2, 0, format, type, NULL);
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
+#ifdef GLES_OVER_GL
+			if (lod < 3) {
+#else
+			if (lod == 0) {
+#endif
+
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID, false);
+				shaders.cubemap_filter.bind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(texture->target, texture->tex_id);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(texture->width / 4));
+			} else {
+
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_PANORAMA, false);
+				shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::USE_SOURCE_DUAL_PARABOLOID, true);
+				shaders.cubemap_filter.bind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, sky->radiance);
+				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, float(lod - 1)); //read from previous to ensure better blur
+			}
 
 			for (int i = 0; i < 2; i++) {
 				glViewport(0, i * size, size, size);
@@ -1963,6 +2135,14 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				glBindVertexArray(0);
 			}
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, tmp_fb);
+			glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sky->radiance, 0, lod);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, tmp_fb2);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBlitFramebuffer(0, 0, size, size * 2, 0, 0, size, size * 2, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 			if (size > 1)
 				size >>= 1;
@@ -1983,6 +2163,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 		glDeleteFramebuffers(1, &tmp_fb);
+		glDeleteFramebuffers(1, &tmp_fb2);
+		glDeleteTextures(1, &tmp_tex);
 	}
 }
 
@@ -2168,8 +2350,9 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	}
 
 	Error err = shaders.compiler.compile(p_shader->mode, p_shader->code, actions, p_shader->path, gen_code);
-
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		return;
+	}
 
 	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
 
@@ -2247,7 +2430,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.type = Variant::INT;
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 
 			} break;
@@ -2522,8 +2705,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_BVEC3: {
@@ -2955,7 +3138,9 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_VEC3: {
+			zeromem(data, 12);
+		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
@@ -3084,7 +3269,7 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 		}
 
 		glBindBuffer(GL_UNIFORM_BUFFER, material->ubo_id);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, material->ubo_size, local_ubo);
+		glBufferData(GL_UNIFORM_BUFFER, material->ubo_size, local_ubo, GL_STATIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -3191,8 +3376,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	//must have index and bones, both.
 	{
 		uint32_t bones_weight = VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS;
-		ERR_EXPLAIN("Array must have both bones and weights in format or none.");
-		ERR_FAIL_COND((p_format & bones_weight) && (p_format & bones_weight) != bones_weight);
+		ERR_FAIL_COND_MSG((p_format & bones_weight) && (p_format & bones_weight) != bones_weight, "Array must have both bones and weights in format or none.");
 	}
 
 	//bool has_morph = p_blend_shapes.size();
@@ -4307,6 +4491,7 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 	if (multimesh->buffer) {
 		glDeleteBuffers(1, &multimesh->buffer);
 		multimesh->data.resize(0);
+		multimesh->buffer = 0;
 	}
 
 	multimesh->size = p_instances;
@@ -4322,20 +4507,20 @@ void RasterizerStorageGLES3::multimesh_allocate(RID p_multimesh, int p_instances
 			multimesh->xform_floats = 12;
 		}
 
-		if (multimesh->color_format == VS::MULTIMESH_COLOR_NONE) {
-			multimesh->color_floats = 0;
-		} else if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
+		if (multimesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 			multimesh->color_floats = 1;
 		} else if (multimesh->color_format == VS::MULTIMESH_COLOR_FLOAT) {
 			multimesh->color_floats = 4;
+		} else {
+			multimesh->color_floats = 0;
 		}
 
-		if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE) {
-			multimesh->custom_data_floats = 0;
-		} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
+		if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
 			multimesh->custom_data_floats = 1;
 		} else if (multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_FLOAT) {
 			multimesh->custom_data_floats = 4;
+		} else {
+			multimesh->custom_data_floats = 0;
 		}
 
 		int format_floats = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
@@ -4531,6 +4716,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_color(RID p_multimesh, int p
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->color_format == VS::MULTIMESH_COLOR_NONE);
+	ERR_FAIL_INDEX(multimesh->color_format, VS::MULTIMESH_COLOR_MAX);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -4564,6 +4750,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_custom_data(RID p_multimesh,
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->size);
 	ERR_FAIL_COND(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE);
+	ERR_FAIL_INDEX(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_MAX);
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -4652,6 +4839,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int 
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->color_format == VS::MULTIMESH_COLOR_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->color_format, VS::MULTIMESH_COLOR_MAX, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats];
@@ -4685,6 +4873,7 @@ Color RasterizerStorageGLES3::multimesh_instance_get_custom_data(RID p_multimesh
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
 	ERR_FAIL_COND_V(multimesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_NONE, Color());
+	ERR_FAIL_INDEX_V(multimesh->custom_data_format, VS::MULTIMESH_CUSTOM_DATA_MAX, Color());
 
 	int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 	float *dataptr = &multimesh->data.write[stride * p_index + multimesh->xform_floats + multimesh->color_floats];
@@ -4716,6 +4905,7 @@ void RasterizerStorageGLES3::multimesh_set_as_bulk_array(RID p_multimesh, const 
 
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_COND(!multimesh->data.ptr());
 
 	int dsize = multimesh->data.size();
 
@@ -4852,15 +5042,16 @@ RID RasterizerStorageGLES3::immediate_create() {
 	return immediate_owner.make_rid(im);
 }
 
-void RasterizerStorageGLES3::immediate_begin(RID p_immediate, VS::PrimitiveType p_rimitive, RID p_texture) {
+void RasterizerStorageGLES3::immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture) {
 
+	ERR_FAIL_INDEX(p_primitive, (int)VS::PRIMITIVE_MAX);
 	Immediate *im = immediate_owner.get(p_immediate);
 	ERR_FAIL_COND(!im);
 	ERR_FAIL_COND(im->building);
 
 	Immediate::Chunk ic;
 	ic.texture = p_texture;
-	ic.primitive = p_rimitive;
+	ic.primitive = p_primitive;
 	im->chunks.push_back(ic);
 	im->mask = 0;
 	im->building = true;
@@ -5159,20 +5350,6 @@ void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;
-}
-
-void RasterizerStorageGLES3::skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {
-
-	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
-
-	ERR_FAIL_COND(skeleton->use_2d);
-
-	skeleton->world_transform = p_world_transform;
-	skeleton->use_world_transform = p_enable;
-
-	if (!skeleton->update_list.in_list()) {
-		skeleton_update_list.add(&skeleton->update_list);
-	}
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {
@@ -6959,7 +7136,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 		rt->buffers.active = true;
 
-		static const int msaa_value[] = { 0, 2, 4, 8, 16 };
+		static const int msaa_value[] = { 0, 2, 4, 8, 16, 4, 16 }; // MSAA_EXT_nX is a GLES2 temporary hack ignored in GLES3 for now...
 		int msaa = msaa_value[rt->msaa];
 
 		int max_samples = 0;
@@ -7957,6 +8134,16 @@ int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 		default:
 			return 0; //no idea either
 	}
+}
+
+String RasterizerStorageGLES3::get_video_adapter_name() const {
+
+	return (const char *)glGetString(GL_RENDERER);
+}
+
+String RasterizerStorageGLES3::get_video_adapter_vendor() const {
+
+	return (const char *)glGetString(GL_VENDOR);
 }
 
 void RasterizerStorageGLES3::initialize() {

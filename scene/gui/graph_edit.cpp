@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,6 +200,13 @@ void GraphEdit::_update_scroll() {
 	else
 		v_scroll->show();
 
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, v_scroll->is_visible() ? -vmin.width : 0);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, h_scroll->is_visible() ? -hmin.height : 0);
+
 	set_block_minimum_size_adjust(false);
 
 	if (!awaiting_scroll_offset_update) {
@@ -276,25 +283,25 @@ void GraphEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		port_grab_distance_horizontal = get_constant("port_grab_distance_horizontal");
 		port_grab_distance_vertical = get_constant("port_grab_distance_vertical");
+
+		zoom_minus->set_icon(get_icon("minus"));
+		zoom_reset->set_icon(get_icon("reset"));
+		zoom_plus->set_icon(get_icon("more"));
+		snap_button->set_icon(get_icon("snap"));
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
 		Size2 vmin = v_scroll->get_combined_minimum_size();
-
-		v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-		v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 
 		h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
 		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 		h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 
-		zoom_minus->set_icon(get_icon("minus"));
-		zoom_reset->set_icon(get_icon("reset"));
-		zoom_plus->set_icon(get_icon("more"));
-		snap_button->set_icon(get_icon("snap"));
+		v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
+		v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+		v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+		v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 
@@ -776,10 +783,10 @@ void GraphEdit::_top_layer_draw() {
 		_draw_cos_line(top_layer, pos, topos, col, col);
 	}
 
-	if (box_selecting)
-		top_layer->draw_rect(
-				box_selecting_rect,
-				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
+	if (box_selecting) {
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_fill"));
+		top_layer->draw_rect(box_selecting_rect, get_color("selection_stroke"), false);
+	}
 }
 
 void GraphEdit::set_selected(Node *p_child) {
@@ -813,8 +820,11 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			if (gn && gn->is_selected()) {
 
 				Vector2 pos = (gn->get_drag_from() * zoom + drag_accum) / zoom;
-				if (is_using_snap()) {
-					int snap = get_snap();
+
+				// Snapping can be toggled temporarily by holding down Ctrl.
+				// This is done here as to not toggle the grid when holding down Ctrl.
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
 
@@ -1349,6 +1359,7 @@ GraphEdit::GraphEdit() {
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	top_layer->add_child(v_scroll);
+
 	updating = false;
 	connecting = false;
 	right_disconnects = false;

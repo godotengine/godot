@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,6 +182,11 @@ Transform Transform::orthonormalized() const {
 	return _copy;
 }
 
+bool Transform::is_equal_approx(const Transform &p_transform) const {
+
+	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
+}
+
 bool Transform::operator==(const Transform &p_transform) const {
 
 	return (basis == p_transform.basis && origin == p_transform.origin);
@@ -212,4 +217,9 @@ Transform::operator String() const {
 Transform::Transform(const Basis &p_basis, const Vector3 &p_origin) :
 		basis(p_basis),
 		origin(p_origin) {
+}
+
+Transform::Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {
+	basis = Basis(xx, xy, xz, yx, yy, yz, zx, zy, zz);
+	origin = Vector3(ox, oy, oz);
 }

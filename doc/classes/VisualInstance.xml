@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualInstance" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
+		Parent of all visual 3D nodes.
 	</brief_description>
 	<description>
+		The VisualInstance is used to connect a resource to a visual representation. All visual 3D nodes inherit from the VisualInstance. In general, you should not access the VisualInstance properties directly as they are accessed and managed by the nodes that inherit from VisualInstance. VisualInstance is the node representation of the [VisualServer] instance.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,12 +20,14 @@
 			<return type="RID">
 			</return>
 			<description>
+				Returns the RID of the resource associated with this VisualInstance. For example, if the Node is a [MeshInstance], this will return the RID of the associated [Mesh].
 			</description>
 		</method>
 		<method name="get_instance" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the RID of this instance. This RID is the same as the RID returned by [method VisualServer.instance_create]. This RID is needed if you want to call [VisualServer] functions directly on this VisualInstance.
 			</description>
 		</method>
 		<method name="get_layer_mask_bit" qualifiers="const">
@@ -32,6 +36,7 @@
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] when the specified layer is enabled in [member layers] and [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_transformed_aabb" qualifiers="const">
@@ -48,8 +53,7 @@
 			<argument index="0" name="base" type="RID">
 			</argument>
 			<description>
-				Sets the base of the VisualInstance, which changes how the engine handles the VisualInstance under the hood.
-				It is recommended to only use [method set_base] if you know what you're doing.
+				Sets the resource that is instantiated by this VisualInstance, which changes how the engine handles the VisualInstance under the hood. Equivalent to [method VisualServer.instance_set_base].
 			</description>
 		</method>
 		<method name="set_layer_mask_bit">
@@ -60,6 +64,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables a particular layer in [member layers].
 			</description>
 		</method>
 	</methods>

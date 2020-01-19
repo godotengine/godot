@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 
@@ -73,6 +75,26 @@ static const char *_axis_names[JOY_AXIS_MAX * 2] = {
 	"", " (L2)",
 	"", " (R2)"
 };
+
+void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && is_window_modal_on_top() && k->is_pressed()) {
+
+		if (k->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+			if (search_button->is_pressed()) {
+				search_box->grab_focus();
+				search_box->select_all();
+			} else {
+				// This toggles the search bar display while giving the button its "pressed" appearance
+				search_button->set_pressed(true);
+			}
+
+			accept_event();
+		}
+	}
+}
 
 void ProjectSettingsEditor::_notification(int p_what) {
 
@@ -116,6 +138,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
+			set_process_unhandled_input(false);
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
@@ -421,17 +444,10 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
 
 		last_wait_for_key = p_event;
-		String str = keycode_get_string(k->get_scancode()).capitalize();
-		if (k->get_metakey())
-			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-		if (k->get_shift())
-			str = TTR("Shift+") + str;
-		if (k->get_alt())
-			str = TTR("Alt+") + str;
-		if (k->get_control())
-			str = TTR("Control+") + str;
+		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
+		press_a_key->get_ok()->set_disabled(false);
 		press_a_key->accept_event();
 	}
 }
@@ -445,6 +461,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 		case INPUT_KEY: {
 
 			press_a_key_label->set_text(TTR("Press a Key..."));
+			press_a_key->get_ok()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 			press_a_key->grab_focus();
@@ -719,15 +736,7 @@ void ProjectSettingsEditor::_update_actions() {
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 
-				String str = keycode_get_string(k->get_scancode()).capitalize();
-				if (k->get_metakey())
-					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-				if (k->get_shift())
-					str = TTR("Shift+") + str;
-				if (k->get_alt())
-					str = TTR("Alt+") + str;
-				if (k->get_control())
-					str = TTR("Control+") + str;
+				const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
@@ -800,6 +809,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	set_process_unhandled_input(true);
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -823,13 +833,10 @@ void ProjectSettingsEditor::_item_adds(String) {
 
 void ProjectSettingsEditor::_item_add() {
 
-	Variant value;
-	switch (type->get_selected()) {
-		case 0: value = false; break;
-		case 1: value = 0; break;
-		case 2: value = 0.0; break;
-		case 3: value = ""; break;
-	}
+	// Initialize the property with the default value for the given type.
+	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
+	Variant::CallError ce;
+	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1007,8 +1014,12 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	presets.insert("pvrtc");
 	presets.insert("debug");
 	presets.insert("release");
+	presets.insert("editor");
+	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
+	// Not available as an export platform yet, so it needs to be added manually
+	presets.insert("Server");
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
 		List<String> p;
@@ -1041,6 +1052,86 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
 		popup_copy_to_feature->get_popup()->add_item(E->get(), id++);
 	}
+}
+
+Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	TreeItem *selected = input_editor->get_selected();
+	if (!selected || selected->get_parent() != input_editor->get_root())
+		return Variant();
+
+	String name = selected->get_text(0);
+	VBoxContainer *vb = memnew(VBoxContainer);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *label = memnew(Label(name));
+	hb->set_modulate(Color(1, 1, 1, 1.0f));
+	hb->add_child(label);
+	vb->add_child(hb);
+	set_drag_preview(vb);
+
+	Dictionary drag_data;
+	drag_data["type"] = "nodes";
+
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return drag_data;
+}
+
+bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	Dictionary d = p_data;
+	if (!d.has("type") || d["type"] != "nodes")
+		return false;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!selected || !item || item == selected || item->get_parent() == selected)
+		return false;
+
+	return true;
+}
+
+void ProjectSettingsEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!item)
+		return;
+	TreeItem *target = item->get_parent() == input_editor->get_root() ? item : item->get_parent();
+
+	String selected_name = "input/" + selected->get_text(0);
+	int old_order = ProjectSettings::get_singleton()->get_order(selected_name);
+	String target_name = "input/" + target->get_text(0);
+	int target_order = ProjectSettings::get_singleton()->get_order(target_name);
+
+	int order = old_order;
+	bool is_below = target_order > old_order;
+	TreeItem *iterator = is_below ? selected->get_next() : selected->get_prev();
+
+	undo_redo->create_action(TTR("Moved Input Action Event"));
+	while (iterator != target) {
+
+		String iterator_name = "input/" + iterator->get_text(0);
+		int iterator_order = ProjectSettings::get_singleton()->get_order(iterator_name);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", iterator_name, order);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", iterator_name, iterator_order);
+		order = iterator_order;
+		iterator = is_below ? iterator->get_next() : iterator->get_prev();
+	}
+
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", target_name, order);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", selected_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", target_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_name, old_order);
+
+	undo_redo->add_do_method(this, "_update_actions");
+	undo_redo->add_undo_method(this, "_update_actions");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
 }
 
 void ProjectSettingsEditor::_copy_to_platform(int p_which) {
@@ -1227,7 +1318,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
-	if (translation_locales_idxs_remap.size() > 0) {
+	if (translation_locales_idxs_remap.size() > which) {
 		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
 	} else {
 		r.set(idx, path + ":" + langs[which]);
@@ -1310,7 +1401,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 void ProjectSettingsEditor::_translation_filter_option_changed() {
 
 	int sel_id = translation_locale_filter_mode->get_selected_id();
-	TreeItem *t = translation_filter->get_selected();
+	TreeItem *t = translation_filter->get_edited();
 	String locale = t->get_tooltip(0);
 	bool checked = t->is_checked(0);
 
@@ -1443,28 +1534,33 @@ void ProjectSettingsEditor::_update_translations() {
 	Array l_filter = l_filter_all[1];
 
 	int s = names.size();
-	if (!translation_locales_list_created) {
+	bool is_short_list_when_show_all_selected = filter_mode == SHOW_ALL_LOCALES && translation_filter_treeitems.size() < s;
+	bool is_full_list_when_show_only_selected = filter_mode == SHOW_ONLY_SELECTED_LOCALES && translation_filter_treeitems.size() == s;
+	bool should_recreate_locales_list = is_short_list_when_show_all_selected || is_full_list_when_show_only_selected;
+
+	if (!translation_locales_list_created || should_recreate_locales_list) {
 
 		translation_locales_list_created = true;
 		translation_filter->clear();
 		root = translation_filter->create_item(NULL);
 		translation_filter->set_hide_root(true);
-		translation_filter_treeitems.resize(s);
-
+		translation_filter_treeitems.clear();
 		for (int i = 0; i < s; i++) {
 			String n = names[i];
 			String l = langs[i];
+			bool is_checked = l_filter.has(l);
+			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked) continue;
+
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			t->set_text(0, n);
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
-			t->set_checked(0, l_filter.has(l));
-			translation_filter_treeitems.write[i] = t;
+			t->set_checked(0, is_checked);
+			translation_filter_treeitems.push_back(t);
 		}
 	} else {
-		for (int i = 0; i < s; i++) {
-
+		for (int i = 0; i < translation_filter_treeitems.size(); i++) {
 			TreeItem *t = translation_filter_treeitems[i];
 			t->set_checked(0, l_filter.has(t->get_tooltip(0)));
 		}
@@ -1615,6 +1711,7 @@ void ProjectSettingsEditor::_editor_restart_close() {
 
 void ProjectSettingsEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
 	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
 	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);
@@ -1662,6 +1759,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
+
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ProjectSettingsEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ProjectSettingsEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ProjectSettingsEditor::drop_data_fw);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -1674,6 +1775,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
+	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
 	VBoxContainer *props_base = memnew(VBoxContainer);
@@ -1724,10 +1826,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	type = memnew(OptionButton);
 	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(type);
-	type->add_item("bool");
-	type->add_item("int");
-	type->add_item("float");
-	type->add_item("string");
+
+	// Start at 1 to avoid adding "Nil" as an option
+	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+		type->add_item(Variant::get_type_name(Variant::Type(i)));
+	}
 
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
@@ -1843,6 +1946,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
 	input_editor->connect("button_pressed", this, "_action_button_pressed");
+	input_editor->set_drag_forwarding(this);
+
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
 	popup_add->connect("id_pressed", this, "_add_item");
@@ -1857,6 +1962,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+	press_a_key->get_ok()->set_disabled(true);
 	press_a_key_label = l;
 	press_a_key->add_child(l);
 	press_a_key->connect("gui_input", this, "_wait_for_key");

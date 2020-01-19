@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,14 @@ bool RefPtr::operator==(const RefPtr &p_other) const {
 	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
 
 	return *ref == *ref_other;
+}
+
+bool RefPtr::operator!=(const RefPtr &p_other) const {
+
+	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
+	Ref<Reference> *ref_other = reinterpret_cast<Ref<Reference> *>(const_cast<char *>(&p_other.data[0]));
+
+	return *ref != *ref_other;
 }
 
 RefPtr::RefPtr(const RefPtr &p_other) {

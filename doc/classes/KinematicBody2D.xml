@@ -13,11 +13,18 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/using_kinematic_body_2d.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the velocity of the floor. Only updates when calling [method move_and_slide].
+				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -84,7 +91,7 @@
 			</return>
 			<argument index="0" name="linear_velocity" type="Vector2">
 			</argument>
-			<argument index="1" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="up_direction" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<argument index="2" name="stop_on_slope" type="bool" default="false">
 			</argument>
@@ -97,7 +104,7 @@
 			<description>
 				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
 				[code]linear_velocity[/code] is the velocity vector in pixels per second. Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
-				[code]floor_normal[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
+				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body is standing still.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
@@ -112,7 +119,7 @@
 			</argument>
 			<argument index="1" name="snap" type="Vector2">
 			</argument>
-			<argument index="2" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="up_direction" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<argument index="3" name="stop_on_slope" type="bool" default="false">
 			</argument>

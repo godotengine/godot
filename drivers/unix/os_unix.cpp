@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +59,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
@@ -72,8 +73,7 @@ static double _clock_scale = 0;
 static void _setup_clock() {
 	mach_timebase_info_data_t info;
 	kern_return_t ret = mach_timebase_info(&info);
-	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
-	ERR_FAIL_COND(ret != 0);
+	ERR_FAIL_COND_MSG(ret != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
@@ -85,8 +85,7 @@ static void _setup_clock() {
 #endif
 static void _setup_clock() {
 	struct timespec tv_now = { 0, 0 };
-	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
-	ERR_FAIL_COND(clock_gettime(GODOT_CLOCK, &tv_now) != 0);
+	ERR_FAIL_COND_MSG(clock_gettime(GODOT_CLOCK, &tv_now) != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 }
 #endif
@@ -128,7 +127,9 @@ void OS_Unix::initialize_core() {
 	RWLockDummy::make_default();
 #else
 	ThreadPosix::make_default();
+#if !defined(OSX_ENABLED) && !defined(IPHONE_ENABLED)
 	SemaphorePosix::make_default();
+#endif
 	MutexPosix::make_default();
 	RWLockPosix::make_default();
 #endif
@@ -189,7 +190,7 @@ uint64_t OS_Unix::get_system_time_secs() const {
 uint64_t OS_Unix::get_system_time_msecs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	return uint64_t(tv_now.tv_sec * 1000 + tv_now.tv_usec / 1000);
+	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
 OS::Date OS_Unix::get_date(bool utc) const {
@@ -300,7 +301,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
 
 		char buf[65535];
 
@@ -316,7 +317,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		int rv = pclose(f);
 		if (r_exitcode)
-			*r_exitcode = rv;
+			*r_exitcode = WEXITSTATUS(rv);
 
 		return OK;
 	}
@@ -420,10 +421,7 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 	return OK;
 }
 
@@ -442,12 +440,9 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 
 	error = dlerror();
 	if (error != NULL) {
-		if (!p_optional) {
-			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
-			ERR_FAIL_V(ERR_CANT_RESOLVE);
-		} else {
-			return ERR_CANT_RESOLVE;
-		}
+		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ". Error: " + error + ".");
+
+		return ERR_CANT_RESOLVE;
 	}
 	return OK;
 }
@@ -560,23 +555,38 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	else
 		err_details = p_code;
 
+	// Disable color codes if stdout is not a TTY.
+	// This prevents Godot from writing ANSI escape codes when redirecting
+	// stdout and stderr to a file.
+	const bool tty = isatty(fileno(stdout));
+	const char *red = tty ? "\E[0;31m" : "";
+	const char *red_bold = tty ? "\E[1;31m" : "";
+	const char *yellow = tty ? "\E[0;33m" : "";
+	const char *yellow_bold = tty ? "\E[1;33m" : "";
+	const char *magenta = tty ? "\E[0;35m" : "";
+	const char *magenta_bold = tty ? "\E[1;35m" : "";
+	const char *cyan = tty ? "\E[0;36m" : "";
+	const char *cyan_bold = tty ? "\E[1;36m" : "";
+	const char *reset = tty ? "\E[0m" : "";
+	const char *bold = tty ? "\E[1m" : "";
+
 	switch (p_type) {
 		case ERR_WARNING:
-			logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sWARNING: %s: %s%s%s\n", yellow_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", yellow, p_file, p_line, reset);
 			break;
 		case ERR_SCRIPT:
-			logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSCRIPT ERROR: %s: %s%s%s\n", magenta_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", magenta, p_file, p_line, reset);
 			break;
 		case ERR_SHADER:
-			logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSHADER ERROR: %s: %s%s%s\n", cyan_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", cyan, p_file, p_line, reset);
 			break;
 		case ERR_ERROR:
 		default:
-			logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sERROR: %s: %s%s%s\n", red_bold, p_function, reset, bold, err_details);
+			logf_error("%s   At: %s:%i.%s\n", red, p_file, p_line, reset);
 			break;
 	}
 }

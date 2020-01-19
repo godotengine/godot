@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,9 +123,12 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 
 		godot_vector2 vec = interface->get_texture_size(data_struct);
 		texture_size = *(Vector2 *)&vec;
+		// Only do memset if num_channels > 0 otherwise it will crash.
+		if (num_channels > 0) {
+			pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
+			memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+		}
 
-		pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
-		memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
 		pcm_write_idx = -1;
 		samples_decoded = 0;
 
@@ -146,10 +149,11 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->update(data_struct, p_delta);
 
-	if (mix_callback) {
+	// Don't mix if there's no audio (num_channels == 0).
+	if (mix_callback && num_channels > 0) {
 		if (pcm_write_idx >= 0) {
 			// Previous remains
-			int mixed = mix_callback(mix_udata, pcm, samples_decoded);
+			int mixed = mix_callback(mix_udata, pcm + pcm_write_idx * num_channels, samples_decoded);
 			if (mixed == samples_decoded) {
 				pcm_write_idx = -1;
 			} else {
@@ -168,8 +172,12 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 		}
 	}
 
-	while (interface->get_playback_position(data_struct) < time && playing) {
+	if (seek_backward) {
+		update_texture();
+		seek_backward = false;
+	}
 
+	while (interface->get_playback_position(data_struct) < time && playing) {
 		update_texture();
 	}
 }
@@ -197,6 +205,7 @@ VideoStreamPlaybackGDNative::VideoStreamPlaybackGDNative() :
 		mix_callback(NULL),
 		num_channels(-1),
 		time(0),
+		seek_backward(false),
 		mix_rate(0),
 		delay_compensation(0),
 		pcm(NULL),
@@ -261,13 +270,20 @@ void VideoStreamPlaybackGDNative::stop() {
 void VideoStreamPlaybackGDNative::seek(float p_time) {
 	ERR_FAIL_COND(interface == NULL);
 	interface->seek(data_struct, p_time);
+	if (p_time < time)
+		seek_backward = true;
+	time = p_time;
+	// reset audio buffers
+	memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+	pcm_write_idx = -1;
+	samples_decoded = 0;
 }
 
 void VideoStreamPlaybackGDNative::set_paused(bool p_paused) {
 	paused = p_paused;
 }
 
-Ref<Texture> VideoStreamPlaybackGDNative::get_texture() {
+Ref<Texture> VideoStreamPlaybackGDNative::get_texture() const {
 	return texture;
 }
 

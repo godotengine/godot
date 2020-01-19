@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,7 @@ public:
 	CMMNotificationClient() :
 			_cRef(1),
 			_pEnumerator(NULL) {}
-	~CMMNotificationClient() {
+	virtual ~CMMNotificationClient() {
 		if ((_pEnumerator) != NULL) {
 			(_pEnumerator)->Release();
 			(_pEnumerator) = NULL;
@@ -296,8 +296,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_capture ? REFTIMES_PER_SEC : 0, 0, pwfex, NULL);
-	ERR_EXPLAIN("WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16));
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
 
 	if (p_capture) {
 		hr = p_device->audio_client->GetService(IID_IAudioCaptureClient, (void **)&p_device->capture_client);
@@ -343,8 +342,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
-	input_position = 0;
-	input_size = 0;
+	capture_position = 0;
+	capture_size = 0;
 
 	print_verbose("WASAPI: detected " + itos(channels) + " channels");
 	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
@@ -363,7 +362,7 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	HRESULT hr = audio_input.audio_client->GetBufferSize(&max_frames);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
-	input_buffer_init(max_frames);
+	capture_buffer_init(max_frames);
 
 	return OK;
 }
@@ -716,8 +715,8 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 							}
 						}
 
-						ad->input_buffer_write(l);
-						ad->input_buffer_write(r);
+						ad->capture_buffer_write(l);
+						ad->capture_buffer_write(r);
 					}
 
 					read_frames += num_frames_available;

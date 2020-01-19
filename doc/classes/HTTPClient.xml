@@ -44,6 +44,7 @@
 			</return>
 			<description>
 				Returns the response's body length.
+				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
@@ -69,7 +70,7 @@
 				[codeblock]
 				{
 				    "content-length": 12,
-					"Content-Type": "application/json; charset=UTF-8",
+				    "Content-Type": "application/json; charset=UTF-8",
 				}
 				[/codeblock]
 			</description>
@@ -78,7 +79,7 @@
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns a [code]STATUS_*[/code] enum constant. Need to call [method poll] in order to get status updates.
+				Returns a [enum Status] constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
@@ -111,13 +112,13 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblock]
 				var fields = {"username": "user", "password": "pass"}
-				String query_string = http_client.query_string_from_dict(fields)
+				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "username=user&amp;password=pass"
 				[/codeblock]
 				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblock]
 				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
-				String query_string = http_client.query_string_from_dict(fields)
+				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>
@@ -142,7 +143,7 @@
 			</argument>
 			<description>
 				Sends a request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblock]
 				var fields = {"username" : "user", "password" : "pass"}
@@ -165,17 +166,8 @@
 			</argument>
 			<description>
 				Sends a raw request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].
-				Headers are HTTP request headers. For available HTTP methods, see [code]METHOD_*[/code].
+				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
-			</description>
-		</method>
-		<method name="set_read_chunk_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="bytes" type="int">
-			</argument>
-			<description>
-				Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
 			</description>
 		</method>
 	</methods>
@@ -185,6 +177,9 @@
 		</member>
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
 			The connection to use for this client.
+		</member>
+		<member name="read_chunk_size" type="int" setter="set_read_chunk_size" getter="get_read_chunk_size" default="4096">
+			The size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
 		</member>
 	</members>
 	<constants>

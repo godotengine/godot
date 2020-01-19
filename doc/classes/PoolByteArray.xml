@@ -53,6 +53,13 @@
 				Returns a new [PoolByteArray] with the data decompressed. Set [code]buffer_size[/code] to the size of the uncompressed data. Set the compression mode using one of [enum File.CompressionMode]'s constants.
 			</description>
 		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
@@ -65,6 +72,17 @@
 			</return>
 			<description>
 				Returns a copy of the array's contents as [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
+			</description>
+		</method>
+		<method name="hex_encode">
+			<return type="String">
+			</return>
+			<description>
+				Returns a hexadecimal representation of this array as a [String].
+				[codeblock]
+				var array = PoolByteArray([11, 46, 255])
+				print(array.hex_encode()) # Prints: 0b2eff
+				[/codeblock]
 			</description>
 		</method>
 		<method name="insert">
@@ -111,13 +129,6 @@
 			</argument>
 			<description>
 				Changes the byte at the given index.
-			</description>
-		</method>
-		<method name="sha256_string">
-			<return type="String">
-			</return>
-			<description>
-				Returns SHA-256 string of the PoolByteArray.
 			</description>
 		</method>
 		<method name="size">

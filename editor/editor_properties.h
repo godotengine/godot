@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -263,14 +263,14 @@ class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin;
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(int64_t p_val);
 
 protected:
 	static void _bind_methods();
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 
@@ -311,6 +311,7 @@ class EditorPropertyEasing : public EditorProperty {
 	EditorSpinSlider *spin;
 	bool setting;
 
+	bool dragging;
 	bool full;
 	bool flip;
 
@@ -493,6 +494,7 @@ class EditorPropertyColor : public EditorProperty {
 	ColorPickerButton *picker;
 	void _color_changed(const Color &p_color);
 	void _popup_closed();
+	void _picker_created();
 
 protected:
 	static void _bind_methods();
@@ -548,7 +550,8 @@ class EditorPropertyResource : public EditorProperty {
 		OBJ_MENU_COPY = 5,
 		OBJ_MENU_PASTE = 6,
 		OBJ_MENU_NEW_SCRIPT = 7,
-		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 8,
+		OBJ_MENU_EXTEND_SCRIPT = 8,
+		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 9,
 		TYPE_BASE_ID = 100,
 		CONVERT_BASE_ID = 1000
 

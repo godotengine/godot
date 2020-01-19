@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,10 +133,12 @@ int VisualScriptFunctionCall::get_input_value_port_count() const {
 
 		MethodBind *mb = ClassDB::get_method(_get_base_type(), function);
 		if (mb) {
-			return mb->get_argument_count() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - use_default_args;
+			int defaulted_args = mb->get_argument_count() < use_default_args ? mb->get_argument_count() : use_default_args;
+			return mb->get_argument_count() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - defaulted_args;
 		}
 
-		return method_cache.arguments.size() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - use_default_args;
+		int defaulted_args = method_cache.arguments.size() < use_default_args ? method_cache.arguments.size() : use_default_args;
+		return method_cache.arguments.size() + (call_mode == CALL_MODE_INSTANCE ? 1 : 0) + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) - defaulted_args;
 	}
 }
 int VisualScriptFunctionCall::get_output_value_port_count() const {
@@ -1037,7 +1039,7 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 	}
 
 	List<PropertyInfo> props;
-	ClassDB::get_property_list(_get_base_type(), &props, true);
+	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
 			PropertyInfo pinfo = PropertyInfo(E->get().type, "value", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
@@ -1056,13 +1058,6 @@ PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) cons
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 		return PropertyInfo(basic_type, "out");
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		List<PropertyInfo> props;
-		ClassDB::get_property_list(_get_base_type(), &props, true);
-		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-			if (E->get().name == property) {
-				return PropertyInfo(E->get().type, "pass", PROPERTY_HINT_TYPE_STRING, E->get().hint_string);
-			}
-		}
 		return PropertyInfo(Variant::OBJECT, "pass", PROPERTY_HINT_TYPE_STRING, get_base_type());
 	} else {
 		return PropertyInfo();
@@ -1813,7 +1808,7 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 
 PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) const {
 	List<PropertyInfo> props;
-	ClassDB::get_property_list(_get_base_type(), &props, true);
+	ClassDB::get_property_list(_get_base_type(), &props, false);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		if (E->get().name == property) {
 			return PropertyInfo(E->get().type, "value." + String(index));

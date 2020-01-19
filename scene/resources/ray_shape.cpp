@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
+Vector<Vector3> RayShape::get_debug_mesh_lines() {
 
 	Vector<Vector3> points;
 	points.push_back(Vector3());
@@ -90,6 +90,12 @@ void RayShape::_bind_methods() {
 RayShape::RayShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
 
-	set_length(1.0);
-	set_slips_on_slope(false);
+	length = 1.0;
+	slips_on_slope = false;
+
+	/* Code copied from setters to prevent the use of uninitialized variables */
+	_update_shape();
+	notify_change_to_owners();
+	_change_notify("length");
+	_change_notify("slips_on_slope");
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "node_dock.h"
 
 #include "editor_node.h"
+#include "editor_scale.h"
 
 void NodeDock::show_groups() {
 
@@ -56,10 +57,7 @@ void NodeDock::_bind_methods() {
 
 void NodeDock::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
-		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
 	}
@@ -131,7 +129,8 @@ NodeDock::NodeDock() {
 	groups->hide();
 
 	select_a_node = memnew(Label);
-	select_a_node->set_text(TTR("Select a Node to edit Signals and Groups."));
+	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
+	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_valign(Label::VALIGN_CENTER);
 	select_a_node->set_align(Label::ALIGN_CENTER);

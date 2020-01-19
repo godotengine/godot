@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -300,6 +300,11 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
 		real_t tolerance = CMP_EPSILON * abs(a);
 		if (tolerance < CMP_EPSILON) {
 			tolerance = CMP_EPSILON;
@@ -308,6 +313,11 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
 		return abs(a - b) < tolerance;
 	}
 
@@ -462,7 +472,7 @@ public:
 		return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
 	}
 
-	static _ALWAYS_INLINE_ float snap_scalar_seperation(float p_offset, float p_step, float p_target, float p_separation) {
+	static _ALWAYS_INLINE_ float snap_scalar_separation(float p_offset, float p_step, float p_target, float p_separation) {
 		if (p_step != 0) {
 			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;

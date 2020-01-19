@@ -51,8 +51,10 @@
 			[b]Note:[/b] Cannot be enabled if raw mode is on.
 		</member>
 		<member name="presets_enabled" type="bool" setter="set_presets_enabled" getter="are_presets_enabled" default="true">
+			If [code]true[/code], the "add preset" button is enabled.
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
+			If [code]true[/code], saved color presets are visible.
 		</member>
 		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode" default="false">
 			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
@@ -96,6 +98,8 @@
 		<theme_item name="label_width" type="int" default="10">
 		</theme_item>
 		<theme_item name="margin" type="int" default="4">
+		</theme_item>
+		<theme_item name="overbright_indicator" type="Texture">
 		</theme_item>
 		<theme_item name="preset_bg" type="Texture">
 		</theme_item>

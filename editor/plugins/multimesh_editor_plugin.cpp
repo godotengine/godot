@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,9 +147,8 @@ void MultiMeshEditor::_populate() {
 	w.release();
 
 	PoolVector<Face3> faces = geometry;
-	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));
 	int facecount = faces.size();
-	ERR_FAIL_COND(!facecount);
+	ERR_FAIL_COND_MSG(!facecount, "Parent has no solid faces to populate.");
 
 	PoolVector<Face3>::Read r = faces.read();
 
@@ -164,10 +163,8 @@ void MultiMeshEditor::_populate() {
 		area_accum += area;
 	}
 
-	ERR_EXPLAIN(TTR("Couldn't map area."));
-	ERR_FAIL_COND(triangle_area_map.size() == 0);
-	ERR_EXPLAIN(TTR("Couldn't map area."));
-	ERR_FAIL_COND(area_accum == 0);
+	ERR_FAIL_COND_MSG(triangle_area_map.size() == 0, "Couldn't map area.");
+	ERR_FAIL_COND_MSG(area_accum == 0, "Couldn't map area.");
 
 	Ref<MultiMesh> multimesh = memnew(MultiMesh);
 	multimesh->set_mesh(mesh);

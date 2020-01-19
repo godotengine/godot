@@ -1,9 +1,7 @@
 import os
 import os.path
-import sys
 import re
 import glob
-import string
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
@@ -69,8 +67,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if hasattr(version, 'patch'):
-        f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
+    f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
@@ -307,7 +304,7 @@ def split_lib(self, libname, src_list = None, env_lib = None):
         else:
             fname = env.File(f)[0].path
         fname = fname.replace("\\", "/")
-        base = string.join(fname.split("/")[:2], "/")
+        base = "/".join(fname.split("/")[:2])
         if base != cur_base and len(list) > max_src:
             if num > 0:
                 lib = env_lib.add_library(libname + str(num), list)
@@ -320,18 +317,30 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     lib = env_lib.add_library(libname + str(num), list)
     lib_list.append(lib)
 
-    if len(lib_list) > 0:
-        if os.name == 'posix' and sys.platform == 'msys':
-            env.Replace(ARFLAGS=['rcsT'])
-            lib = env_lib.add_library(libname + "_collated", lib_list)
-            lib_list = [lib]
-
     lib_base = []
     env_lib.add_source_files(lib_base, "*.cpp")
     lib = env_lib.add_library(libname, lib_base)
     lib_list.insert(0, lib)
 
     env.Prepend(LIBS=lib_list)
+
+    # When we split modules into arbitrary chunks, we end up with linking issues
+    # due to symbol dependencies split over several libs, which may not be linked
+    # in the required order. We use --start-group and --end-group to tell the
+    # linker that those archives should be searched repeatedly to resolve all
+    # undefined references.
+    # As SCons doesn't give us much control over how inserting libs in LIBS
+    # impacts the linker call, we need to hack our way into the linking commands
+    # LINKCOM and SHLINKCOM to set those flags.
+
+    if '-Wl,--start-group' in env['LINKCOM'] and '-Wl,--start-group' in env['SHLINKCOM']:
+        # Already added by a previous call, skip.
+        return
+
+    env['LINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
+            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
+    env['SHLINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
+            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
 
 
 def save_active_platforms(apnames, ap):

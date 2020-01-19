@@ -9,6 +9,7 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
 		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name" default="&quot;&quot;">
 		</member>
 	</members>

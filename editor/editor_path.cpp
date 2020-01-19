@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,12 @@ void EditorPath::_about_to_show() {
 	objects.clear();
 	get_popup()->clear();
 	get_popup()->set_size(Size2(get_size().width, 1));
+
 	_add_children_to_popup(obj);
+	if (get_popup()->get_item_count() == 0) {
+		get_popup()->add_item(TTR("No sub-resources found."));
+		get_popup()->set_item_disabled(0, true);
+	}
 }
 
 void EditorPath::update_path() {
@@ -125,6 +130,15 @@ void EditorPath::_id_pressed(int p_idx) {
 		return;
 
 	EditorNode::get_singleton()->push_item(obj);
+}
+
+void EditorPath::_notification(int p_what) {
+
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			update_path();
+		} break;
+	}
 }
 
 void EditorPath::_bind_methods() {

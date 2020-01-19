@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,10 +77,6 @@ struct MemoryPool {
 	static void cleanup();
 };
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 template <class T>
 class PoolVector {
 
@@ -102,8 +98,7 @@ class PoolVector {
 		MemoryPool::alloc_mutex->lock();
 		if (MemoryPool::allocs_used == MemoryPool::alloc_count) {
 			MemoryPool::alloc_mutex->unlock();
-			ERR_EXPLAINC("All memory pool allocations are in use, can't COW.");
-			ERR_FAIL();
+			ERR_FAIL_MSG("All memory pool allocations are in use, can't COW.");
 		}
 
 		MemoryPool::Alloc *old_alloc = alloc;
@@ -390,6 +385,7 @@ public:
 	}
 
 	inline int size() const;
+	inline bool empty() const;
 	T get(int p_index) const;
 	void set(int p_index, const T &p_val);
 	void push_back(const T &p_val);
@@ -480,6 +476,12 @@ int PoolVector<T>::size() const {
 }
 
 template <class T>
+bool PoolVector<T>::empty() const {
+
+	return alloc ? alloc->size == 0 : true;
+}
+
+template <class T>
 T PoolVector<T>::get(int p_index) const {
 
 	return operator[](p_index);
@@ -513,7 +515,7 @@ T PoolVector<T>::operator[](int p_index) const {
 template <class T>
 Error PoolVector<T>::resize(int p_size) {
 
-	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_size < 0, ERR_INVALID_PARAMETER, "Size of PoolVector cannot be negative.");
 
 	if (alloc == NULL) {
 
@@ -524,8 +526,7 @@ Error PoolVector<T>::resize(int p_size) {
 		MemoryPool::alloc_mutex->lock();
 		if (MemoryPool::allocs_used == MemoryPool::alloc_count) {
 			MemoryPool::alloc_mutex->unlock();
-			ERR_EXPLAINC("All memory pool allocations are in use.");
-			ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "All memory pool allocations are in use.");
 		}
 
 		//take one from the free list
@@ -542,7 +543,7 @@ Error PoolVector<T>::resize(int p_size) {
 
 	} else {
 
-		ERR_FAIL_COND_V(alloc->lock > 0, ERR_LOCKED); //can't resize if locked!
+		ERR_FAIL_COND_V_MSG(alloc->lock > 0, ERR_LOCKED, "Can't resize PoolVector if locked."); //can't resize if locked!
 	}
 
 	size_t new_size = sizeof(T) * p_size;

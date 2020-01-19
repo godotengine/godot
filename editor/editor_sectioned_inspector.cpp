@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -177,7 +177,7 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 void SectionedInspector::edit(Object *p_object) {
 
 	if (!p_object) {
-		obj = -1;
+		obj = 0;
 		sections->clear();
 
 		filter->set_edited(NULL);
@@ -308,7 +308,7 @@ EditorInspector *SectionedInspector::get_inspector() {
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(-1),
+		obj(0),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
@@ -316,7 +316,7 @@ SectionedInspector::SectionedInspector() :
 	add_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
-	left_vb->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
+	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);
 	add_child(left_vb);
 
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);

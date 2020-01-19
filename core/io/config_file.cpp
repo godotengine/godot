@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,10 +86,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
-		if (p_default.get_type() == Variant::NIL) {
-			ERR_EXPLAIN("Couldn't find the given section/key and no default was given");
-			ERR_FAIL_V(p_default);
-		}
+		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, p_default, "Couldn't find the given section/key and no default was given.");
 		return p_default;
 	}
 	return values[p_section][p_key];
@@ -114,7 +111,7 @@ void ConfigFile::get_sections(List<String> *r_sections) const {
 }
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 
-	ERR_FAIL_COND(!values.has(p_section));
+	ERR_FAIL_COND_MSG(!values.has(p_section), "Cannont get keys from nonexistent section '" + p_section + "'.");
 
 	for (OrderedHashMap<String, Variant>::ConstElement E = values[p_section].front(); E; E = E.next()) {
 		r_keys->push_back(E.key());
@@ -124,6 +121,13 @@ void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys)
 void ConfigFile::erase_section(const String &p_section) {
 
 	values.erase(p_section);
+}
+
+void ConfigFile::erase_section_key(const String &p_section, const String &p_key) {
+
+	ERR_FAIL_COND_MSG(!values.has(p_section), "Cannot erase key from nonexistent section '" + p_section + "'.");
+
+	values[p_section].erase(p_key);
 }
 
 Error ConfigFile::save(const String &p_path) {
@@ -204,7 +208,7 @@ Error ConfigFile::load(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (!f)
-		return ERR_CANT_OPEN;
+		return err;
 
 	return _internal_load(p_path, f);
 }
@@ -271,7 +275,7 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
 			memdelete(f);
 			return err;
 		}
@@ -296,6 +300,7 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
 
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
+	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);

@@ -31,7 +31,7 @@
 			Number of particles emitted in one emission cycle.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder" default="0">
-			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values.
+			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
 			If [code]true[/code], particles are being emitted.

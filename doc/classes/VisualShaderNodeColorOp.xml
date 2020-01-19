@@ -9,6 +9,7 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, Vector3( 0, 0, 0 ), 1, Vector3( 0, 0, 0 ) ]" />
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeColorOp.Operator" default="0">
 		</member>
 	</members>

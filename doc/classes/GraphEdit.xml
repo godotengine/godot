@@ -87,6 +87,8 @@
 			<return type="HBoxContainer">
 			</return>
 			<description>
+				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph.
+				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of it's children use their [member CanvasItem.visible] property instead.
 			</description>
 		</method>
 		<method name="is_node_connected">
@@ -158,6 +160,7 @@
 			<argument index="4" name="amount" type="float">
 			</argument>
 			<description>
+				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [code]activity[/code] theme property.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -171,6 +174,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>
@@ -190,12 +195,12 @@
 	<signals>
 		<signal name="_begin_node_move">
 			<description>
-				Signal sent at the beginning of a GraphNode movement.
+				Emitted at the beginning of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="_end_node_move">
 			<description>
-				Signal sent at the end of a GraphNode movement.
+				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
@@ -206,7 +211,7 @@
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when user dragging connection from input port into empty space of the graph.
+				Emitted when user dragging connection from input port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="connection_request">
@@ -219,7 +224,7 @@
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
+				Emitted to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
@@ -230,17 +235,17 @@
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when user dragging connection from output port into empty space of the graph.
+				Emitted when user dragging connection from output port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Signal sent when the user presses [code]Ctrl + C[/code].
+				Emitted when the user presses [code]Ctrl + C[/code].
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<description>
-				Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
+				Emitted when a GraphNode is attempted to be removed from the GraphEdit.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -270,7 +275,7 @@
 		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Signal sent when the user presses [code]Ctrl + V[/code].
+				Emitted when the user presses [code]Ctrl + V[/code].
 			</description>
 		</signal>
 		<signal name="popup_request">
@@ -284,6 +289,7 @@
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the scroll offset is changed by the user. It will not be emitted when changed in code.
 			</description>
 		</signal>
 	</signals>
@@ -311,6 +317,10 @@
 		<theme_item name="port_grab_distance_vertical" type="int" default="6">
 		</theme_item>
 		<theme_item name="reset" type="Texture">
+		</theme_item>
+		<theme_item name="selection_fill" type="Color" default="Color( 1, 1, 1, 0.3 )">
+		</theme_item>
+		<theme_item name="selection_stroke" type="Color" default="Color( 1, 1, 1, 0.8 )">
 		</theme_item>
 		<theme_item name="snap" type="Texture">
 		</theme_item>

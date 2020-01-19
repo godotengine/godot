@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -243,6 +243,7 @@ void GIProbe::set_extents(const Vector3 &p_extents) {
 
 	extents = p_extents;
 	update_gizmo();
+	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {
@@ -385,11 +386,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 
 	for (int i = 0; i < p_at_node->get_child_count(); i++) {
-
 		Node *child = p_at_node->get_child(i);
-		if (!child->get_owner())
-			continue; //maybe a helper
-
 		_find_meshes(child, plot_meshes);
 	}
 }

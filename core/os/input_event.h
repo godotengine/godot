@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,6 @@
 #include "core/resource.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 /**
  * Input Event classes. These are used in the main loop.
@@ -188,7 +184,7 @@ public:
 	int get_device() const;
 
 	bool is_action(const StringName &p_action) const;
-	bool is_action_pressed(const StringName &p_action) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false) const;
 	bool is_action_released(const StringName &p_action) const;
 	float get_action_strength(const StringName &p_action) const;
 
@@ -355,6 +351,9 @@ public:
 class InputEventMouseMotion : public InputEventMouse {
 
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
+
+	Vector2 tilt;
+	float pressure;
 	Vector2 relative;
 	Vector2 speed;
 
@@ -362,6 +361,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_tilt(const Vector2 &p_tilt);
+	Vector2 get_tilt() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 

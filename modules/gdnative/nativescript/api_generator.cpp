@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,6 +108,7 @@ struct ClassAPI {
 	ClassDB::APIType api_type;
 
 	bool is_singleton;
+	String singleton_name;
 	bool is_instanciable;
 	// @Unclear
 	bool is_reference;
@@ -183,6 +184,7 @@ List<ClassAPI> generate_c_api_classes() {
 		global_constants_api.class_name = L"GlobalConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
+		global_constants_api.singleton_name = L"GlobalConstants";
 		global_constants_api.is_instanciable = false;
 		const int constants_count = GlobalConstants::get_global_constant_count();
 		for (int i = 0; i < constants_count; ++i) {
@@ -208,6 +210,9 @@ List<ClassAPI> generate_c_api_classes() {
 				name.remove(0);
 			}
 			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
+			if (class_api.is_singleton) {
+				class_api.singleton_name = name;
+			}
 		}
 		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 
@@ -421,6 +426,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back("\t\t\"base_class\": \"" + api.super_class_name + "\",\n");
 		source.push_back(String("\t\t\"api_type\": \"") + (api.api_type == ClassDB::API_CORE ? "core" : (api.api_type == ClassDB::API_EDITOR ? "tools" : "none")) + "\",\n");
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
+		source.push_back("\t\t\"singleton_name\": \"" + api.singleton_name + "\",\n");
 		source.push_back(String("\t\t\"instanciable\": ") + (api.is_instanciable ? "true" : "false") + ",\n");
 		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
 		// @Unclear

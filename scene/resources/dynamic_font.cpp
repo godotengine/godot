@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,8 +118,7 @@ Error DynamicFontAtSize::_load() {
 
 	int error = FT_Init_FreeType(&library);
 
-	ERR_EXPLAIN(TTR("Error initializing FreeType."));
-	ERR_FAIL_COND_V(error != 0, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(error != 0, ERR_CANT_CREATE, "Error initializing FreeType.");
 
 	// FT_OPEN_STREAM is extremely slow only on Android.
 	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == NULL && font->font_path != String()) {
@@ -131,7 +130,7 @@ Error DynamicFontAtSize::_load() {
 		} else {
 
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-			ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+			ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 
 			size_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
@@ -146,7 +145,7 @@ Error DynamicFontAtSize::_load() {
 	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = NULL;
@@ -177,42 +176,32 @@ Error DynamicFontAtSize::_load() {
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
 	} else {
-		ERR_EXPLAIN("DynamicFont uninitialized");
-		ERR_FAIL_V(ERR_UNCONFIGURED);
+		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
 	//error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
 
 	if (error == FT_Err_Unknown_File_Format) {
-		ERR_EXPLAIN(TTR("Unknown font format."));
+
 		FT_Done_FreeType(library);
+		ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "Unknown font format.");
 
 	} else if (error) {
 
-		ERR_EXPLAIN(TTR("Error loading font."));
 		FT_Done_FreeType(library);
+		ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "Error loading font.");
 	}
 
-	ERR_FAIL_COND_V(error, ERR_FILE_CANT_OPEN);
-
-	/*error = FT_Set_Char_Size(face,0,64*size,512,512);
-
-	if ( error ) {
-		FT_Done_FreeType( library );
-		ERR_EXPLAIN(TTR("Invalid font size."));
-		ERR_FAIL_COND_V( error, ERR_INVALID_PARAMETER );
-	}*/
-
-	if (FT_HAS_COLOR(face)) {
+	if (FT_HAS_COLOR(face) && face->num_fixed_sizes > 0) {
 		int best_match = 0;
 		int diff = ABS(id.size - ((int64_t)face->available_sizes[0].width));
-		scale_color_font = float(id.size) / face->available_sizes[0].width;
+		scale_color_font = float(id.size * oversampling) / face->available_sizes[0].width;
 		for (int i = 1; i < face->num_fixed_sizes; i++) {
 			int ndiff = ABS(id.size - ((int64_t)face->available_sizes[i].width));
 			if (ndiff < diff) {
 				best_match = i;
 				diff = ndiff;
-				scale_color_font = float(id.size) / face->available_sizes[i].width;
+				scale_color_font = float(id.size * oversampling) / face->available_sizes[i].width;
 			}
 		}
 		FT_Select_Size(face, best_match);
@@ -310,7 +299,7 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 	}
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only, bool p_outline) const {
 
 	if (!valid)
 		return 0;
@@ -324,6 +313,20 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 	ERR_FAIL_COND_V(!ch, 0.0);
 
 	float advance = 0.0;
+
+	// use normal character size if there's no outline character
+	if (p_outline && !ch->found) {
+		FT_GlyphSlot slot = face->glyph;
+		int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT);
+		if (!error) {
+			error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+			if (!error) {
+				Character character = Character::not_found();
+				character = const_cast<DynamicFontAtSize *>(this)->_bitmap_to_character(slot->bitmap, slot->bitmap_top, slot->bitmap_left, slot->advance.x / 64.0);
+				advance = character.advance;
+			}
+		}
+	}
 
 	if (ch->found) {
 		ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= font->textures.size(), 0);
@@ -494,7 +497,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 						int byte = i * bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
 						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = bitmap.buffer[byte] & bit ? 255 : 0;
+						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
 						wr[ofs + 0] = 255; //grayscale as 1
@@ -509,8 +512,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 					} break;
 					// TODO: FT_PIXEL_MODE_LCD
 					default:
-						ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(bitmap.pixel_mode));
-						ERR_FAIL_V(Character::not_found());
+						ERR_FAIL_V_MSG(Character::not_found(), "Font uses unsupported pixel format: " + itos(bitmap.pixel_mode) + ".");
 						break;
 				}
 			}
@@ -669,6 +671,7 @@ void DynamicFont::_reload_cache() {
 	if (!data.is_valid()) {
 		data_at_size.unref();
 		outline_data_at_size.unref();
+		fallbacks.resize(0);
 		fallback_data_at_size.resize(0);
 		fallback_outline_data_at_size.resize(0);
 		return;
@@ -886,7 +889,7 @@ float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_
 
 	// If requested outline draw, but no outline is present, simply return advance without drawing anything
 	bool advance_only = p_outline && outline_cache_id.outline_size == 0;
-	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only) + spacing_char;
+	return font_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, color, fallbacks, advance_only, p_outline) + spacing_char;
 }
 
 void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {

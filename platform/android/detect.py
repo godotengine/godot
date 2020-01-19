@@ -32,14 +32,12 @@ def get_opts():
 
 
 def get_flags():
-
     return [
         ('tools', False),
     ]
 
 
 def create(env):
-
     tools = env['TOOLS']
     if "mingw" in tools:
         tools.remove('mingw')
@@ -50,7 +48,6 @@ def create(env):
 
 
 def configure(env):
-
     # Workaround for MinGW. See:
     # http://www.scons.org/wiki/LongCmdLinesOnWin32
     if (os.name == "nt"):
@@ -90,7 +87,7 @@ def configure(env):
 
         env['SPAWN'] = mySpawn
 
-    ## Architecture
+    # Architecture
 
     if env['android_arch'] not in ['armv7', 'arm64v8', 'x86', 'x86_64']:
         env['android_arch'] = 'armv7'
@@ -137,14 +134,14 @@ def configure(env):
         arch_subpath = "arm64-v8a"
         env.extra_suffix = ".armv8" + env.extra_suffix
 
-    ## Build type
+    # Build type
 
     if (env["target"].startswith("release")):
-        if (env["optimize"] == "speed"): #optimize for speed (default)
+        if (env["optimize"] == "speed"):  # optimize for speed (default)
             env.Append(LINKFLAGS=['-O2'])
             env.Append(CCFLAGS=['-O2', '-fomit-frame-pointer'])
             env.Append(CPPDEFINES=['NDEBUG'])
-        else: #optimize for size
+        else:  # optimize for size
             env.Append(CCFLAGS=['-Os'])
             env.Append(CPPDEFINES=['NDEBUG'])
             env.Append(LINKFLAGS=['-Os'])
@@ -159,7 +156,7 @@ def configure(env):
         env.Append(CPPDEFINES=['_DEBUG', 'DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED'])
         env.Append(CPPFLAGS=['-UNDEBUG'])
 
-    ## Compiler configuration
+    # Compiler configuration
 
     env['SHLIBSUFFIX'] = '.so'
 
@@ -204,7 +201,7 @@ def configure(env):
 
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
-    ## Compile flags
+    # Compile flags
 
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
     env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
@@ -259,7 +256,7 @@ def configure(env):
     env.Append(CCFLAGS=target_opts)
     env.Append(CCFLAGS=common_opts)
 
-    ## Link flags
+    # Link flags
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
@@ -268,7 +265,7 @@ def configure(env):
         env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libandroid_support.a"])
     env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
     env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/"])
-    env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libc++_shared.so"])
+    env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libc++_shared.so"])
 
     if env["android_arch"] == "armv7":
         env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
@@ -286,6 +283,7 @@ def configure(env):
     env.Prepend(CPPPATH=['#platform/android'])
     env.Append(CPPDEFINES=['ANDROID_ENABLED', 'UNIX_ENABLED', 'NO_FCNTL'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'GLESv2', 'android', 'log', 'z', 'dl'])
+
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
 def get_ndk_version(path):

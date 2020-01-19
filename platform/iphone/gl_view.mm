@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -337,11 +337,9 @@ static void clear_touches() {
 // the same size as our display area.
 
 - (void)layoutSubviews {
-	//printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
-	[self drawView];
 	[self drawView];
 }
 
@@ -458,22 +456,22 @@ static void clear_touches() {
 
 // Updates the OpenGL view when the timer fires
 - (void)drawView {
-	if (useCADisplayLink) {
-		// Pause the CADisplayLink to avoid recursion
-		[displayLink setPaused:YES];
-
-		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource)
-			;
-
-		// We are good to go, resume the CADisplayLink
-		[displayLink setPaused:NO];
-	}
 
 	if (!active) {
 		printf("draw view not active!\n");
 		return;
 	};
+	if (useCADisplayLink) {
+		// Pause the CADisplayLink to avoid recursion
+		[displayLink setPaused:YES];
+
+		// Process all input events
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
+			;
+
+		// We are good to go, resume the CADisplayLink
+		[displayLink setPaused:NO];
+	}
 
 	// Make sure that you are drawing to the current context
 	[EAGLContext setCurrentContext:context];
@@ -731,41 +729,5 @@ static void clear_touches() {
 - (void)playerItemDidReachEnd:(NSNotification *)notification {
 	_stop_video();
 }
-
-/*
-- (void)moviePlayBackDidFinish:(NSNotification*)notification {
-
-
-		NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
-		switch ([reason intValue]) {
-				case MPMovieFinishReasonPlaybackEnded:
-						//NSLog(@"Playback Ended");
-						break;
-				case MPMovieFinishReasonPlaybackError:
-						//NSLog(@"Playback Error");
-						video_found_error = true;
-						break;
-				case MPMovieFinishReasonUserExited:
-						//NSLog(@"User Exited");
-						video_found_error = true;
-						break;
-				default:
-					//NSLog(@"Unsupported reason!");
-					break;
-		}
-
-		MPMoviePlayerController *player = [notification object];
-
-		[[NSNotificationCenter defaultCenter]
-			removeObserver:self
-			name:MPMoviePlayerPlaybackDidFinishNotification
-			object:player];
-
-		[_instance.moviePlayerController stop];
-		[_instance.moviePlayerController.view removeFromSuperview];
-
-	video_playing = false;
-}
-*/
 
 @end

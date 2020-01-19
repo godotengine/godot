@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,10 +87,8 @@ bool FileAccessBuffered::eof_reached() const {
 }
 
 uint8_t FileAccessBuffered::get_8() const {
-	if (!file.open) {
-		ERR_EXPLAIN("Can't get data, when file is not opened.");
-		ERR_FAIL_V(0);
-	}
+
+	ERR_FAIL_COND_V_MSG(!file.open, 0, "Can't get data, when file is not opened.");
 
 	uint8_t byte = 0;
 	if (cache_data_left() >= 1) {
@@ -104,10 +102,8 @@ uint8_t FileAccessBuffered::get_8() const {
 }
 
 int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
-	if (!file.open) {
-		ERR_EXPLAIN("Can't get buffer, when file is not opened.");
-		ERR_FAIL_V(-1);
-	}
+
+	ERR_FAIL_COND_V_MSG(!file.open, -1, "Can't get buffer, when file is not opened.");
 
 	if (p_length > cache_size) {
 

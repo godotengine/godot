@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -264,14 +264,14 @@ void EditorPropertyArray::update_property() {
 		edit->set_text(String("(Nil) ") + arrtype);
 		edit->set_pressed(false);
 		if (vbox) {
+			set_bottom_editor(NULL);
 			memdelete(vbox);
+			vbox = NULL;
 		}
 		return;
 	}
 
 	edit->set_text(arrtype + " (size " + itos(array.call("size")) + ")");
-
-#ifdef TOOLS_ENABLED
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -312,7 +312,8 @@ void EditorPropertyArray::update_property() {
 		} else {
 			//bye bye children of the box
 			while (vbox->get_child_count() > 2) {
-				memdelete(vbox->get_child(2));
+				vbox->get_child(2)->queue_delete(); // button still needed after pressed is called
+				vbox->remove_child(vbox->get_child(2));
 			}
 		}
 
@@ -396,7 +397,6 @@ void EditorPropertyArray::update_property() {
 			vbox = NULL;
 		}
 	}
-#endif
 }
 
 void EditorPropertyArray::_remove_pressed(int p_index) {
@@ -475,16 +475,16 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 	array_type = p_array_type;
 
 	if (array_type == Variant::ARRAY && !p_hint_string.empty()) {
-		int hint_subtype_seperator = p_hint_string.find(":");
-		if (hint_subtype_seperator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_seperator);
+		int hint_subtype_separator = p_hint_string.find(":");
+		if (hint_subtype_separator >= 0) {
+			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
 			int slash_pos = subtype_string.find("/");
 			if (slash_pos >= 0) {
 				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
 				subtype_string = subtype_string.substr(0, slash_pos);
 			}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator + 1, p_hint_string.size() - hint_subtype_seperator - 1);
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
 			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}
@@ -633,7 +633,9 @@ void EditorPropertyDictionary::update_property() {
 		edit->set_text("Dictionary (Nil)"); //This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (vbox) {
+			set_bottom_editor(NULL);
 			memdelete(vbox);
+			vbox = NULL;
 		}
 		return;
 	}
@@ -641,8 +643,6 @@ void EditorPropertyDictionary::update_property() {
 	Dictionary dict = updated_val;
 
 	edit->set_text("Dictionary (size " + itos(dict.size()) + ")");
-
-#ifdef TOOLS_ENABLED
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -958,7 +958,6 @@ void EditorPropertyDictionary::update_property() {
 			vbox = NULL;
 		}
 	}
-#endif
 }
 
 void EditorPropertyDictionary::_object_id_selected(const String &p_property, ObjectID p_id) {

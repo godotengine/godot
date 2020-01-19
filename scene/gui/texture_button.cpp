@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,24 +205,26 @@ void TextureButton::_notification(int p_what) {
 						case STRETCH_KEEP_ASPECT_COVERED: {
 							size = get_size();
 							Size2 tex_size = texdraw->get_size();
-							Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
-							float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
-							Size2 scaledTexSize = tex_size * scale;
-							Point2 ofs2 = ((scaledTexSize - size) / scale).abs() / 2.0f;
+							Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
+							float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
+							Size2 scaled_tex_size = tex_size * scale;
+							Point2 ofs2 = ((scaled_tex_size - size) / scale).abs() / 2.0f;
 							_texture_region = Rect2(ofs2, size / scale);
 						} break;
 					}
 				}
+
 				_position_rect = Rect2(ofs, size);
-				if (_tile)
+				if (_tile) {
 					draw_texture_rect(texdraw, _position_rect, _tile);
-				else
+				} else {
 					draw_texture_rect_region(texdraw, _position_rect, _texture_region);
+				}
 			} else {
 				_position_rect = Rect2();
 			}
-			if (has_focus() && focused.is_valid()) {
 
+			if (has_focus() && focused.is_valid()) {
 				draw_texture_rect(focused, _position_rect, false);
 			};
 		} break;

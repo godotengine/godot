@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform) {
 
-	Vector<Vector3> toadd = _gen_debug_mesh_lines();
+	Vector<Vector3> toadd = get_debug_mesh_lines();
 
 	if (toadd.size()) {
 
@@ -64,7 +64,7 @@ Ref<ArrayMesh> Shape::get_debug_mesh() {
 	if (debug_mesh_cache.is_valid())
 		return debug_mesh_cache;
 
-	Vector<Vector3> lines = _gen_debug_mesh_lines();
+	Vector<Vector3> lines = get_debug_mesh_lines();
 
 	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
 

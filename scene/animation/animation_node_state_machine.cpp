@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -235,6 +235,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 
 			if (cost < least_cost) {
 				least_cost_transition = E;
+				least_cost = cost;
 			}
 		}
 
@@ -311,28 +312,36 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	bool play_start = false;
 
 	if (start_request != StringName()) {
-
 		if (start_request_travel) {
 			if (!playing) {
-				String node_name = start_request;
-				start_request = StringName();
-				ERR_EXPLAIN("Can't travel to '" + node_name + "' if state machine is not playing.");
-				ERR_FAIL_V(0);
-			}
-
-			if (!_travel(p_state_machine, start_request)) {
-				//can't travel, then teleport
-				path.clear();
-				current = start_request;
+				if (!stop_request && p_state_machine->start_node) {
+					// can restart, just postpone traveling
+					path.clear();
+					current = p_state_machine->start_node;
+					playing = true;
+					play_start = true;
+				} else {
+					// stopped, invalid state
+					String node_name = start_request;
+					start_request = StringName(); //clear start request
+					ERR_FAIL_V_MSG(0, "Can't travel to '" + node_name + "' if state machine is not playing.");
+				}
+			} else {
+				if (!_travel(p_state_machine, start_request)) {
+					// can't travel, then teleport
+					path.clear();
+					current = start_request;
+				}
+				start_request = StringName(); //clear start request
 			}
 		} else {
+			// teleport to start
 			path.clear();
 			current = start_request;
 			playing = true;
 			play_start = true;
+			start_request = StringName(); //clear start request
 		}
-
-		start_request = StringName(); //clear start request
 	}
 
 	bool do_start = (p_seek && p_time == 0) || play_start || current == StringName();

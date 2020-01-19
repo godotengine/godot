@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<TriangleMesh>());
 
 		int vc = surface_get_array_len(i);
 		PoolVector<Vector3> vertices = a[ARRAY_VERTEX];
@@ -234,6 +235,7 @@ Ref<Shape> Mesh::create_convex_shape() const {
 	for (int i = 0; i < get_surface_count(); i++) {
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
 		PoolVector<Vector3> v = a[ARRAY_VERTEX];
 		vertices.append_array(v);
 	}
@@ -273,6 +275,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			continue;
 
 		Array a = surface_get_arrays(i);
+		ERR_FAIL_COND_V(a.empty(), Ref<ArrayMesh>());
 
 		if (i == 0) {
 			arrays = a;
@@ -378,6 +381,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 		PoolVector<Vector3>::Write r = vertices.write();
 
 		if (indices.size()) {
+			ERR_FAIL_COND_V(indices.size() % 3 != 0, Ref<ArrayMesh>());
 			vc = indices.size();
 			ir = indices.write();
 			has_indices = true;
@@ -483,6 +487,7 @@ void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
+	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
@@ -883,10 +888,7 @@ int ArrayMesh::get_surface_count() const {
 
 void ArrayMesh::add_blend_shape(const StringName &p_name) {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't add a shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't add a shape key count if surfaces are already created.");
 
 	StringName name = p_name;
 
@@ -914,10 +916,7 @@ StringName ArrayMesh::get_blend_shape_name(int p_index) const {
 }
 void ArrayMesh::clear_blend_shapes() {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't set shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
 
 	blend_shapes.clear();
 }
@@ -1109,8 +1108,7 @@ struct ArrayMeshLightmapSurface {
 Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
-	ERR_EXPLAIN("Can't unwrap mesh with blend shapes");
-	ERR_FAIL_COND_V(blend_shapes.size() != 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
 	Vector<float> vertices;
 	Vector<float> normals;
@@ -1124,15 +1122,9 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		ArrayMeshLightmapSurface s;
 		s.primitive = surface_get_primitive_type(i);
 
-		if (s.primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			ERR_EXPLAIN("Only triangles are supported for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(s.primitive != Mesh::PRIMITIVE_TRIANGLES, ERR_UNAVAILABLE, "Only triangles are supported for lightmap unwrap.");
 		s.format = surface_get_format(i);
-		if (!(s.format & ARRAY_FORMAT_NORMAL)) {
-			ERR_EXPLAIN("Normals are required for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(!(s.format & ARRAY_FORMAT_NORMAL), ERR_UNAVAILABLE, "Normals are required for lightmap unwrap.");
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);

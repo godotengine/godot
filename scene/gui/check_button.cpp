@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,7 @@ void CheckButton::_notification(int p_what) {
 		Size2 tex_size = get_icon_size();
 
 		ofs.x = get_size().width - (tex_size.width + sb->get_margin(MARGIN_RIGHT));
-		ofs.y = (get_size().height - tex_size.height) / 2;
+		ofs.y = (get_size().height - tex_size.height) / 2 + get_constant("check_vadjust");
 
 		if (is_pressed())
 			on->draw(ci, ofs);

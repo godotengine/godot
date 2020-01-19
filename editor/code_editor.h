@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,6 +64,7 @@ class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
+	Label *matches_label;
 	ToolButton *find_prev;
 	ToolButton *find_next;
 	CheckBox *case_sensitive;
@@ -90,8 +91,9 @@ class FindReplaceBar : public HBoxContainer {
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
+	void _update_matches_label();
 
-	void _show_search();
+	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
 	void _hide_bar();
 
 	void _editor_text_changed();
@@ -123,7 +125,7 @@ public:
 
 	void set_text_edit(TextEdit *p_text_edit);
 
-	void popup_search();
+	void popup_search(bool p_show_only = false);
 	void popup_replace();
 
 	bool search_current();
@@ -143,6 +145,7 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
 
+	ToolButton *toggle_scripts_button;
 	ToolButton *warning_button;
 	Label *warning_count_label;
 
@@ -182,6 +185,9 @@ class CodeTextEditor : public VBoxContainer {
 	void _warning_button_pressed();
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
+
+	void _delete_line(int p_line);
+	void _toggle_scripts_pressed();
 
 protected:
 	virtual void _load_theme_settings() {}
@@ -248,6 +254,9 @@ public:
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	void validate_script();
+
+	void show_toggle_scripts_button();
+	void update_toggle_scripts_button();
 
 	CodeTextEditor();
 };

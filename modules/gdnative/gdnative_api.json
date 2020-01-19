@@ -80,6 +80,88 @@
               ["const godot_vector2 *", "p_self"],
               ["const godot_vector2 *", "p_to"]
             ]
+          },
+          {
+            "name": "godot_array_slice",
+            "return_type": "godot_array",
+            "arguments": [
+              ["const godot_array *", "p_self"],
+              ["const godot_int", "p_begin"],
+              ["const godot_int", "p_end"],
+              ["const godot_int", "p_step"],
+              ["const godot_bool", "p_deep"]
+            ]
+          },
+          {
+            "name": "godot_pool_byte_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_byte_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_int_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_int_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_real_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_real_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_string_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_string_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_vector2_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_vector2_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_vector3_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_vector3_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_pool_color_array_empty",
+            "return_type": "godot_bool",
+            "arguments": [
+              ["const godot_pool_color_array *", "p_self"]
+            ]
+          },
+          {
+            "name": "godot_get_class_tag",
+            "return_type": "void *",
+            "arguments": [
+              ["const godot_string_name *", "p_class"]
+            ]
+          },
+          {
+            "name": "godot_object_cast_to",
+            "return_type": "godot_object *",
+            "arguments": [
+              ["const godot_object *", "p_object"],
+              ["void *", "p_class_tag"]
+            ]
+          },
+          {
+            "name": "godot_instance_from_id",
+            "return_type": "godot_object *",
+            "arguments": [
+              ["godot_int", "p_instance_id"]
+            ]
           }
         ]
       },

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 #include "core/rid.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class CPUParticles2D : public Node2D {
 private:
@@ -79,6 +75,7 @@ public:
 		EMISSION_SHAPE_RECTANGLE,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_MAX
 	};
 
 private:
@@ -178,6 +175,7 @@ private:
 
 	Vector2 gravity;
 
+	void _update_internal();
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 

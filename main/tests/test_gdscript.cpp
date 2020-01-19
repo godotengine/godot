@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -300,14 +300,11 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 		} break;
 		default: {
 
-			String error = "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type);
-			ERR_EXPLAIN(error);
-			ERR_FAIL_V("");
+			ERR_FAIL_V_MSG("", "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type));
 		}
 	}
 
 	return txt;
-	//return "("+txt+")";
 }
 
 static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_indent) {
@@ -674,6 +671,30 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 
 				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN: {
+
+					txt += " assign typed builtin (";
+					txt += Variant::get_type_name((Variant::Type)code[ip + 1]);
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
+				case GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE: {
+					Variant className = func.get_constant(code[ip + 1]);
+					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(className.operator Object *());
+
+					txt += " assign typed native (";
+					txt += nc->get_name().operator String();
+					txt += ") ";
+					txt += DADDR(2);
+					txt += " = ";
+					txt += DADDR(3);
+					incr += 4;
+
+				} break;
 				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
 
 					txt += " cast ";
@@ -910,8 +931,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 			if (incr == 0) {
 
-				ERR_EXPLAIN("unhandled opcode: " + itos(code[ip]));
-				ERR_BREAK(true);
+				ERR_BREAK_MSG(true, "Unhandled opcode: " + itos(code[ip]));
 			}
 
 			ip += incr;
@@ -936,11 +956,7 @@ MainLoop *test(TestType p_type) {
 	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_EXPLAIN("Could not open file: " + test);
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!fa, NULL, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();

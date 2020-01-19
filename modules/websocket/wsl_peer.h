@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/ring_buffer.h"
 #include "packet_buffer.h"
 #include "websocket_peer.h"
@@ -52,9 +53,11 @@ public:
 		bool destroy;
 		bool valid;
 		bool is_server;
+		bool closing;
 		void *obj;
 		void *peer;
 		Ref<StreamPeer> conn;
+		Ref<StreamPeerTCP> tcp;
 		int id;
 		wslay_event_context_ptr ctx;
 
@@ -66,6 +69,7 @@ public:
 			id = 1;
 			ctx = NULL;
 			obj = NULL;
+			closing = false;
 			peer = NULL;
 		}
 	};
@@ -77,7 +81,6 @@ private:
 	static bool _wsl_poll(struct PeerData *p_data);
 	static void _wsl_destroy(struct PeerData **p_data);
 
-	Ref<StreamPeer> _connection;
 	struct PeerData *_data;
 	uint8_t _is_string;
 	// Our packet info is just a boolean (is_string), using uint8_t for it.

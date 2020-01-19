@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,11 +56,13 @@ public:
 		LINE_TEXTURE_STRETCH
 	};
 
-	Line2D();
-
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif
+
+	Line2D();
 
 	void set_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_points() const;
@@ -108,6 +110,9 @@ public:
 	void set_round_precision(int precision);
 	int get_round_precision() const;
 
+	void set_antialiased(bool p_antialiased);
+	bool get_antialiased() const;
+
 protected:
 	void _notification(int p_what);
 	void _draw();
@@ -131,6 +136,7 @@ private:
 	LineTextureMode _texture_mode;
 	float _sharp_limit;
 	int _round_precision;
+	bool _antialiased;
 };
 
 #endif // LINE2D_H

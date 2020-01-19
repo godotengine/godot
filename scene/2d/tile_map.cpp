@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,7 +216,7 @@ Size2 TileMap::get_cell_size() const {
 
 void TileMap::set_quadrant_size(int p_size) {
 
-	ERR_FAIL_COND(p_size < 1);
+	ERR_FAIL_COND_MSG(p_size < 1, "Quadrant size cannot be smaller than 1.");
 
 	_clear_quadrants();
 	quadrant_size = p_size;
@@ -955,6 +955,7 @@ void TileMap::update_bitmask_region(const Vector2 &p_start, const Vector2 &p_end
 
 void TileMap::update_cell_bitmask(int p_x, int p_y) {
 
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot update cell bitmask if Tileset is not open.");
 	PosKey p(p_x, p_y);
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
 	if (E != NULL) {
@@ -1050,6 +1051,7 @@ void TileMap::update_dirty_bitmask() {
 
 void TileMap::fix_invalid_tiles() {
 
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
 		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
@@ -1203,6 +1205,8 @@ void TileMap::clear() {
 
 void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 
+	ERR_FAIL_COND(format > FORMAT_2);
+
 	int c = p_data.size();
 	PoolVector<int>::Read r = p_data.read();
 
@@ -1229,8 +1233,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		}
 #endif
 
-		int16_t x = decode_uint16(&local[0]);
-		int16_t y = decode_uint16(&local[2]);
+		uint16_t x = decode_uint16(&local[0]);
+		uint16_t y = decode_uint16(&local[2]);
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v & (1 << 29);
 		bool flip_v = v & (1 << 30);
@@ -1245,8 +1249,6 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 
 		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
 	}
-
-	format = FORMAT_2;
 }
 
 PoolVector<int> TileMap::_get_tile_data() const {
@@ -1255,7 +1257,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	data.resize(tile_map.size() * 3);
 	PoolVector<int>::Write w = data.write();
 
-	format = FORMAT_2;
+	// Save in highest format
 
 	int idx = 0;
 	for (const Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
@@ -1280,6 +1282,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	return data;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
 	if (pending_update) {
 		const_cast<TileMap *>(this)->update_dirty_quadrants();
@@ -1288,6 +1291,7 @@ Rect2 TileMap::_edit_get_rect() const {
 	}
 	return rect_cache;
 }
+#endif
 
 void TileMap::set_collision_layer(uint32_t p_layer) {
 
@@ -1549,7 +1553,8 @@ Vector2 TileMap::_map_to_world(int p_x, int p_y, bool p_ignore_ofs) const {
 					ret += get_cell_transform()[1] * (half_offset == HALF_OFFSET_Y ? 0.5 : -0.5);
 				}
 			} break;
-			default: {
+			case HALF_OFFSET_DISABLED: {
+				// Nothing to do.
 			}
 		}
 	}
@@ -1560,7 +1565,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name == "format") {
 		if (p_value.get_type() == Variant::INT) {
-			format = (DataFormat)(p_value.operator int64_t());
+			format = (DataFormat)(p_value.operator int64_t()); // Set format used for loading
 			return true;
 		}
 	} else if (p_name == "tile_data") {
@@ -1576,7 +1581,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "format") {
-		r_ret = format;
+		r_ret = FORMAT_2; // When saving, always save highest format
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
@@ -1612,26 +1617,27 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 	switch (half_offset) {
 
 		case HALF_OFFSET_X: {
-			if (ret.y > 0 ? int(ret.y) & 1 : (int(ret.y) - 1) & 1) {
+			if (int(floor(ret.y)) & 1) {
 				ret.x -= 0.5;
 			}
 		} break;
 		case HALF_OFFSET_NEGATIVE_X: {
-			if (ret.y > 0 ? int(ret.y) & 1 : (int(ret.y) - 1) & 1) {
+			if (int(floor(ret.y)) & 1) {
 				ret.x += 0.5;
 			}
 		} break;
 		case HALF_OFFSET_Y: {
-			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
+			if (int(floor(ret.x)) & 1) {
 				ret.y -= 0.5;
 			}
 		} break;
 		case HALF_OFFSET_NEGATIVE_Y: {
-			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
+			if (int(floor(ret.x)) & 1) {
 				ret.y += 0.5;
 			}
 		} break;
-		default: {
+		case HALF_OFFSET_DISABLED: {
+			// Nothing to do.
 		}
 	}
 
@@ -1909,6 +1915,8 @@ void TileMap::_bind_methods() {
 	ADD_GROUP("Occluder", "occluder_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
 
+	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
+
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 	BIND_CONSTANT(INVALID_CELL);
@@ -1942,6 +1950,7 @@ TileMap::TileMap() {
 	quadrant_order_dirty = false;
 	quadrant_size = 16;
 	cell_size = Size2(64, 64);
+	custom_transform = Transform2D(64, 0, 0, 64, 0, 0);
 	collision_layer = 1;
 	collision_mask = 1;
 	friction = 1;
@@ -1957,7 +1966,7 @@ TileMap::TileMap() {
 	centered_textures = false;
 	occluder_light_mask = 1;
 	clip_uv = false;
-	format = FORMAT_1; //Always initialize with the lowest format
+	format = FORMAT_1; // Assume lowest possible format if none is present
 
 	fp_adjust = 0.00001;
 	tile_origin = TILE_ORIGIN_TOP_LEFT;

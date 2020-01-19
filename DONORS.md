@@ -12,23 +12,24 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Platinum sponsors
 
-    Enjin Coin <https://enjincoin.io>
+    Heroic Labs <https://heroiclabs.com>
+    Interblock <http://interblockgaming.com>
 
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
+    Moonwards <https://www.moonwards.com>
 
 ## Mini sponsors
 
     AD Ford
     Alan Beauchamp
-    Anandarup Mallik
+    Anand Mallik
+    Andres Hernandez
     Andrew Dunai
     Brandon Lamb
-    Christian Chipont
-    Christian Uldall Pedersen
-    Christoph Woinke
-    Denis Malyavin
+    Christopher Montesano
+    Darkhan Baimyrza
     Edward Flick
     Gamechuck
     GameDev.net
@@ -37,73 +38,74 @@ generous deed immortalized in the next stable release of Godot Engine.
     Hein-Pieter van Braam
     Jacob McKenney
     Javary Co.
+    Jeffery Chiu
     Justin Arnold
+    Justo Delgado Baudí
     Kyle Szklenski
     Leonard Meagher
+    Mariano Suligoy
     Matthieu Huvé
     Maxim Karsten
     Mike King
     Nathan Warden
     Neal Gompa (Conan Kudo)
-    Patrick Aarstad
     Slobodan Milnovic
     Stephan Lanfermann
     Steve
+    Tristan Pemble
     VilliHaukka
-    Xananax
-    Zashi
 
 ## Gold donors
 
     Andrei
-    cheese65536
+    Dave
     David Gehrig
+    David Snopek
     Ed Morley
     Florian Krick
+    Florian Rämisch
     Jakub Grzesik
-    K9Kraken
     Manuele Finocchiaro
     Officine Pixel S.n.c.
     Retro Village
     Ronan Zeegers
     Sofox
+    Taylor Ritenour
     Zaven Muradyan
 
-    Alexander Trey Saunders
-    Allen Schade
     Asher Glick
     Austen McRae
+    Bernhard Werner
+    beVR
     Brian van der Stel
     Carlo Cabanilla
     Daniel James
     David Giardi
-    David Snopek
-    Edward E
+    Default Name
     Florian Breisch
-    Gero
-    GiulianoB
+    Gamejunkey
     Javier Roman
     Jay Horton
-    Jonathan Turner
-    Jon Smith
+    Joel Höglund
     Jon Woodward
-    Justo Delgado Baudí
+    Jose Fernando Alexandre
     Karl Werf
-    Kommentgames
-    Krzysztof Dluzniewski
+    Klavdij Voncina
+    Lex Steers
     Luke
     Maciej Pendolski
-    Moonwards
+    Matthew Hillier
+    Mohamed Ikbel Boulabiar
     Mored1984
-    Paul LaMotte
     Péter Magyar
     Rob Messick
     Ryan Badour
     Scott Wadden
     Sergey
     Shawn Yu
-    Svenne Krap
+    thechris
     Tom Langwaldt
+    tukon
     William Wold
 
     Alex Khayrullin
@@ -112,26 +114,23 @@ generous deed immortalized in the next stable release of Godot Engine.
     Christian Padilla
     Conrad Curry
     Craig Smith
-    Dean Harmon
-    Ian Richard Kunert
+    Darrian Little
     Ivan Trombley
+    Jakub Dering
     Joan Fons
     Joshua Flores
     Krzysztof Jankowski
     Lord Bloodhound
-    Lucas Ferreira Franca
-    Michele Zilli
-    Nathan Lundquist
     Pascal Grüter
     Petr Malac
     Rami
     Reneator
+    Rob
     Robert Willes
-    Robin Arys
     Ronnie Ashlock
-    ScottMakesGames
-    Tad C Johnson
     Thomas Bjarnelöf
+    Unseen Domains
+    Valryia
     Vincent Henderson
     Wojciech Chojnacki
     Xavier PATRICELLI
@@ -139,23 +138,24 @@ generous deed immortalized in the next stable release of Godot Engine.
     Adam Neumann
     Alexander J Maynard
     Alexey Dyadchenko
+    Andreas Funke
+    André Frélicot
     Andrew Bowen
-    Asdf
-    Ben Botwin
+    aoshiwik
     Carlos de Sousa Marques
+    Chase Taranto
     Chris Petrich
     Christian Leth Jeppesen
     Christoph Schröder
     Cody Parker
+    Craig Ostrin
     D
-    Daniel
     Daniel Eichler
     David White
-    Eric
     Eric Monson
     Eugenio Hugo Salgüero Jáñez
+    Fain
     flesk
-    Francisco Javier Moreno Carracedo
     gavlig
     GGGames.org
     Guilherme Felipe de C. G. da Silva
@@ -163,177 +163,196 @@ generous deed immortalized in the next stable release of Godot Engine.
     Hysteria
     Idzard Kwadijk
     Jared White
-    Jesse Nave
+    Jeff Nyte
+    Jeremy Sims
+    Jerry Ling
+    Joe Flood
     Jose Malheiro
     Joshua Lesperance
-    Juan T Chen
+    Juan Velandia
     Juraj Móza
     Kasper Jeppesen
-    Klaus The.
-    Klavdij Voncina
-    Maarten Elings
+    kinfox
+    Marcelo Dornbusch Lopes
     Markus Fehr
     Markus Wiesner
     Martin Eigel
     Marvin
     Matt Eunson
-    Matthew Hillier
     Max Bulai
-    Max R.R. Collada
-    M H
+    MuffinManKen
     Nick Nikitin
     Oliver Dick
-    Paolo Munoz
+    Patrick Ting
     Paul Hocker
     Paul Von Zimmerman
     Pete Goodwin
     pl
     Ranoller
+    Robert Larnach
+    Robin Arys
+    Rocknight Studios
+    Romildo Franco
+    Ryan
     Samuel Judd
     Scott Pilet
     spilldata
     Stoned Xander
+    TheLevelOfDetail .
     Thomas Krampl
+    Thomas Kurz
     Tobias Bocanegra
     Urho
-    Xavier Fumado Beltran
+    Zie Weaver
+    蕭惟允
 
 ## Silver donors
 
     1D_Inc
-    Abby Jones
     Abraham Haskins
+    Adam
     Adam Brunnmeier
     Adam  Carr
+    Adam Long
     Adam Nakonieczny
+    Adam N Webber
     Adam Smeltzer
+    Adam Szymański
     Adisibio
     Adrian Demetrescu
     Agustinus Arya
     Aidan O'Flannagain
+    Aki Mimoto
     Albin Jonasson Svärdsby
     Alder Stefano
     Alessandro Senese
-    Alexander Koppe
+    alex clavelle
     Alex Davies-Moore
+    Allen Schade
     Andreas Evers
     Andreas Krampitz
-    Andreas Lundmark
-    Andreas Schüle
-    Andrés Rodríguez
+    André Simões
+    Andrew Thomas
     Andrzej Skalski
-    Anthony Bongiovanni
+    Angelos Arnaoutis
     Anthony Staunton
-    Antony K. Jones
+    AP Condomines
     Arda Erol
+    Arseniy M
     Arthur S. Muszynski
+    Asger
     Aubrey Falconer
     Avencherus
     B A
     Balázs Batári
-    Bastian Böhm
-    Beliar
     Benedikt
+    Ben G
     Ben Phelan
     Ben Vercammen
     Bernd Jänichen
     Black Block
     Blair Allen
     Bobby CC Wong
-    Boyquotes
-    Branwyn Tylwyth
     Bryan Stevenson
-    Caleb Dumitry
+    Carl van der Geest
     Carwyn Edwards
+    Casey M.
     Chris Brown
     Chris Chapin
-    Chris Gonzales
     Christian Baune
     Christian Winter
     Christoffer Sundbom
     Christopher Schmitt
+    Christoph Woinke
     Clay Heaton
-    Cobaltum
     Collin Shooltz
-    Dag Sundin Söderström
     Daniel Johnson
+    Daniel Kimblad
     DanielMaximiano
+    Daniel Pontillo
     Daniel Reed
-    Daniel Tebbutt
-    David Bullock
-    David Cravens
     David May
-    Dimitri Stanojevic
+    David Rapisarda
+    David Woodard
+    Dennis Idzikowsky
     Dominic Cooney
     Dominik Wetzel
-    DrevanTonder
+    Donn Eddy
+    Donovan Hutcheon
+    Dragontrapper
+    Dr Ewan Murray
     Duobix
+    Duodecimal
+    Dylan Todd
+    Eduardo Teixeira
     Edward Herbert
     Egon Elbre
-    Ellen Marie Dash
     Elmeri '- Duy Kevin Nguyen
-    Emanuel Kotzayan
     Eric Ellingson
-    Eric Martini
     Eric Williams
+    Erkki Seppälä
     Evan Rose
+    Fancy Ants Studios
+    Fekinox
     Felix Kollmann
     fengjiongmax
     Flaredown
+    Forty Doubleu
     FuDiggity
     G3Dev sàrl
+    Gadzhi Kharkharov
+    gamedev by Celio
     Gary Hulst
-    Gerrit Großkopf
-    gmmath
-    Grant Clarke
+    George Marques
+    GiulianoB
     Greg Olson
+    GREGORY C FEIN
     Greg P
+    Greyson Richey
     Guldoman
     Hal A
     Heribert Hirth
-    Hiroshi Naruo
     Hunter Jones
     Hylpher
-    ialex32x
-    Igor Buzatovic
     Iiari
     IndustrialRobot
     Isaac Morton
+    Jaiden Gerig
     Jaime Ruiz-Borau Vizárraga
     Jako Danar
     James A F Manley
+    Jannik Gröger
+    Jarrod Davis
     Jax
-    Jed
     Jeff Hungerford
-    Jeff Nyte
+    Jennifer Graves
     Jeremy Kahn
     Jesse Dubay
     Joe Alden
     Joel Fivat
     Joel Setterberg
-    Johannes Eichler
     Johannes Wuensch
     Jomei Jackson
     Jonas Rudlang
     Jonas Yamazaki
     Jonathan G
-    Jonathan Nieto
     Jonathon
     Jon Bonazza
     Jon Sully
     Jose Aleman
+    Jose C. Rubio
     Joseph Catrambone
-    Josh 'Cheeseness' Bush
     Juanfran
-    Juan Negrier
-    Juan Velandia
     Judd
-    Jueast
     Julian Murgia
-    Kamuna
-    Kasier Bald0
+    JungleRobba
+    Justin Spedding
+    Kaiser Bald0
+    Kauzig
     KC Chan
     Keedong Park
+    Keith Bradner
+    Kevin McPhillips
     kickmaniac
     Kiyohiro Kawamura (kyorohiro)
     Kjetil Haugland
@@ -343,117 +362,125 @@ generous deed immortalized in the next stable release of Godot Engine.
     KsyTek Games
     Kuan Cheang
     kycho
+    Leonardo Dimano
     Levi Lindsey
     Linus Lind Lundgren
     Lionel Gaillard
-    Luis Moraes
     LunaticInAHat
     Lurkars
-    Macil
     Major Haul
     Malcolm
     Malik Ahmed
     Malik Nejer
-    Marc Urlus
     Marcus Richter
-    Markus Lohaus
     Markus Michael Egger
     Martin Holas
+    Martin Liška
     Matthew Little
+    Matti Pohjanvirta
+    Maxime Blade
     Maxwell
     medecau
+    Melissa Mears
+    M H
     mhilbrunner
     Michael Dürwald
     Michael Gringauz
     Michael Haney
     Michael Labbe
     Mikael Olsson
-    Mikayla Hutchinson
-    Mike Cunningham
+    Mikayla
+    Mike Birkhead
     Mitchell J. Wagner
-    mlevin cantu
     MoM
-    MuffinManKen
+    Nathan Fish
     Natrim
     nee
     Neil Blakey-Milner
+    Neil Wang
     Nerdforge
     Nicholas
+    Nick Macholl
     Niclas Eriksen
     Nicolás Montaña
     Nicolas SAN AGUSTIN
     Nima Farid
-    Nithin Jino
     NZ
+    Oleg Reva
+    Olivier
     Omar Delarosa
-    omzee
     Oscar Norlander
-    Pafka
     Pan Ip
-    Patrick Forringer
     Patrick Nafarrete
     Paul Gieske
     Paul Mason
     Paweł Kowal
+    Pedro Assuncao
+    Penguin
+    Petrus Prinsloo
+    Philip Cohoe
     Pierre-Igor Berthet
-    Pietro Vertechi
     Pitsanu Tongprasin
     Point08
     Poryg
-    Rafael Delboni
+    Rad Cat
     Rafa Laguna
-    Rafal Wyszomirski
     rainerLinux
     Raphael Leroux
     Remi Rampin
     Rémi Verschelde
-    Rezgi
     Ricardo Alcantara
+    Richard Diss
+    Richard Ivánek
+    Richard Patching
     Robert Farr (Larington)
     Robert Hernandez
     Rodrigo Loli
     Roger Smith
     Roland Rząsa
     Roman Tinkov
-    Ryan
-    Ryan Brooks
+    Ronan
     Ryan Groom
     Ryan Hentz
-    Saad Khoudmi
+    Sam.C
+    Sam Edson
     Samuele Zolfanelli
-    Sanka.X
     Sasori Olkof
     Scott D. Yelich
     Sebastian Michailidis
     sgnsajgon
+    Shane
     Shane Sicienski
     Shane Spoor
-    Simon Ledam
     Simon Wenner
     SK
-    Sootstone
+    smbe19
     Stonepyre
-    Taylor Fahlman
+    Svenne Krap
+    tezuvholovdr
     thomas
-    Thomas Bell
+    Thomas Bechtold
     Thomas Kelly
-    Thomas Kurz
     tiansheng li
     Tim Drumheller
-    Tim Gudex
     Timothy B. MacDonald
     Tobbun
-    Tom Larrow
+    Tom Fulp
+    Tom Glenn
     Torsten Crass
     Travis O'Brien
     Trent Skinner
+    Troy Bonneau
     Tryggve Sollid
     Turgut Temucin
+    Tyler Compton
     Tyler Stafos
     UltyX
     Vaiktorg
+    Vaughan Ling
     Victor
     Vigilant Watch
+    Vincent Cloutier
     waka nya
     Wayne Haak
     werner mendizabal
@@ -463,6 +490,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Wout Standaert
     Wyatt Goodin
     Yegor
+    Yuri Sizov
 
 ## Bronze donors
 

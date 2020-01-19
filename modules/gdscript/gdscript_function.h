@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,14 +76,17 @@ struct GDScriptDataType {
 				if (p_variant.get_type() != Variant::OBJECT) {
 					return false;
 				}
+
 				Object *obj = p_variant.operator Object *();
-				if (obj) {
-					if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-						// Try with underscore prefix
-						StringName underscore_native_type = "_" + native_type;
-						if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
-							return false;
-						}
+				if (!obj || !ObjectDB::instance_validate(obj)) {
+					return false;
+				}
+
+				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+					// Try with underscore prefix
+					StringName underscore_native_type = "_" + native_type;
+					if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
+						return false;
 					}
 				}
 				return true;
@@ -96,7 +99,12 @@ struct GDScriptDataType {
 				if (p_variant.get_type() != Variant::OBJECT) {
 					return false;
 				}
+
 				Object *obj = p_variant.operator Object *();
+				if (!obj || !ObjectDB::instance_validate(obj)) {
+					return false;
+				}
+
 				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
 				bool valid = false;
 				while (base.is_valid()) {

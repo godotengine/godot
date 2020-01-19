@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  lws_peer.cpp                                                         */
+/*  wsl_peer.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "wsl_client.h"
 #include "wsl_server.h"
 
-#include "core/math/crypto_core.h"
+#include "core/crypto/crypto_core.h"
 #include "core/math/random_number_generator.h"
 #include "core/os/os.h"
 
@@ -142,7 +142,7 @@ int wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, 
 
 void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg, void *user_data) {
 	struct WSLPeer::PeerData *peer_data = (struct WSLPeer::PeerData *)user_data;
-	if (!peer_data->valid) {
+	if (!peer_data->valid || peer_data->closing) {
 		return;
 	}
 	WSLPeer *peer = (WSLPeer *)peer_data->peer;
@@ -208,13 +208,12 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	_data = p_data;
 	_data->peer = this;
 	_data->valid = true;
-	_connection = Ref<StreamPeer>(_data->conn);
 
 	if (_data->is_server)
 		wslay_event_context_server_init(&(_data->ctx), &wsl_callbacks, _data);
 	else
 		wslay_event_context_client_init(&(_data->ctx), &wsl_callbacks, _data);
-	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1 << p_in_buf_size));
+	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1ULL << p_in_buf_size));
 }
 
 void WSLPeer::set_write_mode(WriteMode p_mode) {
@@ -294,6 +293,7 @@ void WSLPeer::close(int p_code, String p_reason) {
 		CharString cs = p_reason.utf8();
 		wslay_event_queue_close(_data->ctx, p_code, (uint8_t *)cs.ptr(), cs.size());
 		wslay_event_send(_data->ctx);
+		_data->closing = true;
 	}
 
 	_in_buffer.clear();
@@ -302,18 +302,16 @@ void WSLPeer::close(int p_code, String p_reason) {
 
 IP_Address WSLPeer::get_connected_host() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), IP_Address());
+	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IP_Address());
 
-	IP_Address ip;
-	return ip;
+	return _data->tcp->get_connected_host();
 }
 
 uint16_t WSLPeer::get_connected_port() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), 0);
+	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
-	uint16_t port = 0;
-	return port;
+	return _data->tcp->get_connected_port();
 }
 
 void WSLPeer::invalidate() {

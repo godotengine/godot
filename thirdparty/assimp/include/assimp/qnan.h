@@ -50,19 +50,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *     but last time I checked compiler coverage was so bad that I decided
  *     to reinvent the wheel.
  */
-
+#pragma once
 #ifndef AI_QNAN_H_INCLUDED
 #define AI_QNAN_H_INCLUDED
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/defs.h>
+
 #include <limits>
 #include <stdint.h>
 
 // ---------------------------------------------------------------------------
 /** Data structure to represent the bit pattern of a 32 Bit
  *         IEEE 754 floating-point number. */
-union _IEEESingle
-{
+union _IEEESingle {
     float Float;
     struct
     {
@@ -75,8 +79,7 @@ union _IEEESingle
 // ---------------------------------------------------------------------------
 /** Data structure to represent the bit pattern of a 64 Bit
  *         IEEE 754 floating-point number. */
-union _IEEEDouble
-{
+union _IEEEDouble {
     double Double;
     struct
     {
@@ -89,8 +92,7 @@ union _IEEEDouble
 // ---------------------------------------------------------------------------
 /** Check whether a given float is qNaN.
  *  @param in Input value */
-AI_FORCE_INLINE bool is_qnan(float in)
-{
+AI_FORCE_INLINE bool is_qnan(float in) {
     // the straightforward solution does not work:
     //   return (in != in);
     // compiler generates code like this
@@ -107,8 +109,7 @@ AI_FORCE_INLINE bool is_qnan(float in)
 // ---------------------------------------------------------------------------
 /** Check whether a given double is qNaN.
  *  @param in Input value */
-AI_FORCE_INLINE bool is_qnan(double in)
-{
+AI_FORCE_INLINE bool is_qnan(double in) {
     // the straightforward solution does not work:
     //   return (in != in);
     // compiler generates code like this
@@ -127,8 +128,7 @@ AI_FORCE_INLINE bool is_qnan(double in)
  *
  *  Denorms return false, they're treated like normal values.
  *  @param in Input value */
-AI_FORCE_INLINE bool is_special_float(float in)
-{
+AI_FORCE_INLINE bool is_special_float(float in) {
     _IEEESingle temp;
     memcpy(&temp, &in, sizeof(float));
     return (temp.IEEE.Exp == (1u << 8)-1);
@@ -139,8 +139,7 @@ AI_FORCE_INLINE bool is_special_float(float in)
  *
  *  Denorms return false, they're treated like normal values.
  *  @param in Input value */
-AI_FORCE_INLINE bool is_special_float(double in)
-{
+AI_FORCE_INLINE bool is_special_float(double in) {
    _IEEESingle temp;
     memcpy(&temp, &in, sizeof(float));
     return (temp.IEEE.Exp == (1u << 11)-1);
@@ -150,15 +149,13 @@ AI_FORCE_INLINE bool is_special_float(double in)
 /** Check whether a float is NOT qNaN.
  *  @param in Input value */
 template<class TReal>
-AI_FORCE_INLINE bool is_not_qnan(TReal in)
-{
+AI_FORCE_INLINE bool is_not_qnan(TReal in) {
     return !is_qnan(in);
 }
 
 // ---------------------------------------------------------------------------
 /** @brief Get a fresh qnan.  */
-AI_FORCE_INLINE ai_real get_qnan()
-{
+AI_FORCE_INLINE ai_real get_qnan() {
     return std::numeric_limits<ai_real>::quiet_NaN();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,11 +83,8 @@ void FileTypeCache::save() {
 	GLOBAL_LOCK_FUNCTION
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 	FileAccess *f = FileAccess::open(project + "/file_type_cache.cch", FileAccess::WRITE);
-	if (!f) {
 
-		ERR_EXPLAIN(TTR("Can't open file_type_cache.cch for writing, not saving file type cache!"));
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!f, "Can't open file_type_cache.cch for writing, not saving file type cache!");
 
 	const String *K = NULL;
 
@@ -102,6 +99,6 @@ void FileTypeCache::save() {
 
 FileTypeCache::FileTypeCache() {
 
-	ERR_FAIL_COND(singleton);
+	ERR_FAIL_COND_MSG(singleton, "FileTypeCache singleton already exist.");
 	singleton = this;
 }

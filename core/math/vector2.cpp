@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,11 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 	return x * p_other.y - y * p_other.x;
 }
 
+Vector2 Vector2::sign() const {
+
+	return Vector2(SGN(x), SGN(y));
+}
+
 Vector2 Vector2::floor() const {
 
 	return Vector2(Math::floor(x), Math::floor(y));
@@ -119,6 +124,14 @@ Vector2 Vector2::rotated(real_t p_by) const {
 	v.set_rotation(angle() + p_by);
 	v *= length();
 	return v;
+}
+
+Vector2 Vector2::posmod(const real_t p_mod) const {
+	return Vector2(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod));
+}
+
+Vector2 Vector2::posmodv(const Vector2 &p_modv) const {
+	return Vector2(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y));
 }
 
 Vector2 Vector2::project(const Vector2 &p_b) const {
@@ -188,6 +201,10 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector2());
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
+}
+
+bool Vector2::is_equal_approx(const Vector2 &p_v) const {
+	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
 }
 
 /* Vector2i */

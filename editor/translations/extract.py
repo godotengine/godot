@@ -23,13 +23,10 @@ if (not os.path.exists("editor")):
 
 matches = []
 for root, dirnames, filenames in os.walk('.'):
+    dirnames[:] = [d for d in dirnames if d not in ["thirdparty"]]
     for filename in fnmatch.filter(filenames, '*.cpp'):
-        if (filename.find("collada") != -1):
-            continue
         matches.append(os.path.join(root, filename))
     for filename in fnmatch.filter(filenames, '*.h'):
-        if (filename.find("collada") != -1):
-            continue
         matches.append(os.path.join(root, filename))
 matches.sort()
 
@@ -38,8 +35,8 @@ unique_str = []
 unique_loc = {}
 main_po = """
 # LANGUAGE translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.

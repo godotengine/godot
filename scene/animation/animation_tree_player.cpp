@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -403,8 +403,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			ERR_EXPLAIN("AnimationTreePlayer has been deprecated. Use AnimationTree instead.");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("AnimationTreePlayer has been deprecated. Use AnimationTree instead.");
 
 			if (!processing) {
 				//make sure that a previous process state was not saved
@@ -821,11 +820,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
-		if (t.skeleton) {
-			t.skip = t.skeleton->is_bone_ignore_animation(t.bone_idx);
-		} else {
-			t.skip = false;
-		}
+		t.skip = false;
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -993,10 +988,9 @@ int AnimationTreePlayer::node_get_input_count(const StringName &p_node) const {
 	ERR_FAIL_COND_V(!node_map.has(p_node), -1);
 	return node_map[p_node]->inputs.size();
 }
-#define GET_NODE(m_type, m_cast)                     \
-	ERR_FAIL_COND(!node_map.has(p_node));            \
-	ERR_EXPLAIN("Invalid parameter for node type."); \
-	ERR_FAIL_COND(node_map[p_node]->type != m_type); \
+#define GET_NODE(m_type, m_cast)                                                             \
+	ERR_FAIL_COND(!node_map.has(p_node));                                                    \
+	ERR_FAIL_COND_MSG(node_map[p_node]->type != m_type, "Invalid parameter for node type."); \
 	m_cast *n = static_cast<m_cast *>(node_map[p_node]);
 
 void AnimationTreePlayer::animation_node_set_animation(const StringName &p_node, const Ref<Animation> &p_animation) {
@@ -1209,10 +1203,9 @@ Point2 AnimationTreePlayer::node_get_position(const StringName &p_node) const {
 	return node_map[p_node]->pos;
 }
 
-#define GET_NODE_V(m_type, m_cast, m_ret)                     \
-	ERR_FAIL_COND_V(!node_map.has(p_node), m_ret);            \
-	ERR_EXPLAIN("Invalid parameter for node type.");          \
-	ERR_FAIL_COND_V(node_map[p_node]->type != m_type, m_ret); \
+#define GET_NODE_V(m_type, m_cast, m_ret)                                                             \
+	ERR_FAIL_COND_V(!node_map.has(p_node), m_ret);                                                    \
+	ERR_FAIL_COND_V_MSG(node_map[p_node]->type != m_type, m_ret, "Invalid parameter for node type."); \
 	m_cast *n = static_cast<m_cast *>(node_map[p_node]);
 
 Ref<Animation> AnimationTreePlayer::animation_node_get_animation(const StringName &p_node) const {
@@ -1367,8 +1360,7 @@ void AnimationTreePlayer::get_node_list(List<StringName> *p_node_list) const {
 void AnimationTreePlayer::remove_node(const StringName &p_node) {
 
 	ERR_FAIL_COND(!node_map.has(p_node));
-	ERR_EXPLAIN("Node 0 (output) can't be removed.");
-	ERR_FAIL_COND(p_node == out_name);
+	ERR_FAIL_COND_MSG(p_node == out_name, "Node 0 (output) can't be removed.");
 
 	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {
 

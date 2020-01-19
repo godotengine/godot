@@ -202,7 +202,7 @@ static uint32_t NearLossless(uint32_t value, uint32_t predict,
   }
   if ((value >> 24) == 0 || (value >> 24) == 0xff) {
     // Preserve transparency of fully transparent or fully opaque pixels.
-    a = NearLosslessDiff(value >> 24, predict >> 24);
+    a = NearLosslessDiff((value >> 24) & 0xff, (predict >> 24) & 0xff);
   } else {
     a = NearLosslessComponent(value >> 24, predict >> 24, 0xff, quantization);
   }
@@ -215,12 +215,12 @@ static uint32_t NearLossless(uint32_t value, uint32_t predict,
     // The amount by which green has been adjusted during quantization. It is
     // subtracted from red and blue for compensation, to avoid accumulating two
     // quantization errors in them.
-    green_diff = NearLosslessDiff(new_green, value >> 8);
+    green_diff = NearLosslessDiff(new_green, (value >> 8) & 0xff);
   }
-  r = NearLosslessComponent(NearLosslessDiff(value >> 16, green_diff),
+  r = NearLosslessComponent(NearLosslessDiff((value >> 16) & 0xff, green_diff),
                             (predict >> 16) & 0xff, 0xff - new_green,
                             quantization);
-  b = NearLosslessComponent(NearLosslessDiff(value, green_diff),
+  b = NearLosslessComponent(NearLosslessDiff(value & 0xff, green_diff),
                             predict & 0xff, 0xff - new_green, quantization);
   return ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
 }
@@ -587,7 +587,7 @@ static void GetBestGreenToRed(
       }
     }
   }
-  best_tx->green_to_red_ = green_to_red_best;
+  best_tx->green_to_red_ = (green_to_red_best & 0xff);
 }
 
 static float GetPredictionCostCrossColorBlue(
@@ -666,8 +666,8 @@ static void GetBestGreenRedToBlue(
       break;  // out of iter-loop.
     }
   }
-  best_tx->green_to_blue_ = green_to_blue_best;
-  best_tx->red_to_blue_ = red_to_blue_best;
+  best_tx->green_to_blue_ = green_to_blue_best & 0xff;
+  best_tx->red_to_blue_ = red_to_blue_best & 0xff;
 }
 #undef kGreenRedToBlueMaxIters
 #undef kGreenRedToBlueNumAxis

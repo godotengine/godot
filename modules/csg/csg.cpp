@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ void CSGBrush::_regen_face_aabbs() {
 		faces.write[i].aabb.position = faces[i].vertices[0];
 		faces.write[i].aabb.expand_to(faces[i].vertices[1]);
 		faces.write[i].aabb.expand_to(faces[i].vertices[2]);
-		faces.write[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision erros
+		faces.write[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision errors
 	}
 }
 
@@ -242,7 +242,7 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 	//check if edge and poly share a vertex, of so, assign it to segment_idx
 	for (int i = 0; i < points.size(); i++) {
 		for (int j = 0; j < 2; j++) {
-			if (Math::is_zero_approx(segment[j].distance_to(points[i].point))) {
+			if (segment[j].is_equal_approx(points[i].point)) {
 				segment_idx[j] = i;
 				inserted_points.push_back(i);
 				break;
@@ -310,7 +310,7 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 			Vector2 edgeseg[2] = { points[edges[i].points[0]].point, points[edges[i].points[1]].point };
 			Vector2 closest = Geometry::get_closest_point_to_segment_2d(segment[j], edgeseg);
 
-			if (Math::is_zero_approx(closest.distance_to(segment[j]))) {
+			if (closest.is_equal_approx(segment[j])) {
 				//point rest of this edge
 				res = closest;
 				found = true;
@@ -439,7 +439,7 @@ void CSGBrushOperation::BuildPoly::clip(const CSGBrush *p_brush, int p_face, Mes
 
 	//transform A points to 2D
 
-	if (Math::is_zero_approx(segment[0].distance_to(segment[1])))
+	if (segment[0].is_equal_approx(segment[1]))
 		return; //too small
 
 	_clip_segment(p_brush, p_face, segment, mesh_merge, p_for_B);
@@ -461,10 +461,10 @@ void CSGBrushOperation::_collision_callback(const CSGBrush *A, int p_face_a, Map
 
 	{
 		//check if either is a degenerate
-		if (Math::is_zero_approx(va[0].distance_to(va[1])) || Math::is_zero_approx(va[0].distance_to(va[2])) || Math::is_zero_approx(va[1].distance_to(va[2])))
+		if (va[0].is_equal_approx(va[1]) || va[0].is_equal_approx(va[2]) || va[1].is_equal_approx(va[2]))
 			return;
 
-		if (Math::is_zero_approx(vb[0].distance_to(vb[1])) || Math::is_zero_approx(vb[0].distance_to(vb[2])) || Math::is_zero_approx(vb[1].distance_to(vb[2])))
+		if (vb[0].is_equal_approx(vb[1]) || vb[0].is_equal_approx(vb[2]) || vb[1].is_equal_approx(vb[2]))
 			return;
 	}
 

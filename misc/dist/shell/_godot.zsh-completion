@@ -1,0 +1,77 @@
+#compdef godot
+
+# zsh completion for the Godot editor
+# To use it, install this file as `_godot` in a directory specified in your
+# `fpath` environment variable then restart your shell.
+#
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+_arguments \
+  "1::path to scene or 'project.godot' file:_files" \
+  '(-h --help)'{-h,--help}'[display the full help message]' \
+  '--version[display the version string]' \
+  '(-v --verbose)'{-v,--verbose}'[use verbose stdout mode]' \
+  '--quiet[quiet mode, silences stdout messages (errors are still displayed)]' \
+  '(-e --editor)'{-e,--editor}'[start the editor instead of running the scene]' \
+  '(-p --project-manager)'{-p,--project-manager}'[start the project manager, even if a project is auto-detected]' \
+  '(-q --quit)'{-q,--quit}'[quit after the first iteration]' \
+  '(-l --language)'{-l,--language}'[use a specific locale (<locale> being a two-letter code)]:two-letter locale code' \
+  "--path[path to a project (<directory> must contain a 'project.godot' file)]:path to directory with 'project.godot' file:_dirs" \
+  '(-u --upwards)'{-u,--upwards}'[scan folders upwards for project.godot file]' \
+  '--main-pack[path to a pack (.pck) file to load]:path to .pck file:_files' \
+  '--render-thread[set the render thread mode]:render thread mode:(unsafe safe separate)' \
+  '--remote-fs[use a remote filesystem]:remote filesystem address' \
+  '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
+  '--audio-driver[set the audio driver]:audio driver name' \
+  "--video-driver[set the video driver]:video driver name:((GLES3\:'OpenGL ES 3.0 renderer' GLES2\:'OpenGL ES 2.0 renderer'))" \
+  '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
+  '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
+  '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \
+  '(-t --always-on-top)'{-t,--always-on-top}'[request an always-on-top window]' \
+  '--resolution[request window resolution]:resolution in WxH format' \
+  '--position[request window position]:position in X,Y format' \
+  '--low-dpi[force low-DPI mode (macOS and Windows only)]' \
+  '--no-window[disable window creation (Windows only), useful together with --script]' \
+  "--enable-vsync-via-compositor[when Vsync is enabled, Vsync via the OS' window compositor (Windows only)]" \
+  "--disable-vsync-via-compositor[disable Vsync via the OS' window compositor (Windows only)]" \
+  '(-d --debug)'{-d,--debug}'[debug (local stdout debugger)]' \
+  '(-b --breakpoints)'{-b,--breakpoints}'[specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)]:breakpoint list' \
+  '--profiling[enable profiling in the script debugger]' \
+  '--remote-debug[enable remote debugging]:remote debugger address' \
+  '--debug-collisions[show collision shapes when running the scene]' \
+  '--debug-navigation[show navigation polygons when running the scene]' \
+  '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
+  '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
+  '--disable-render-loop[disable render loop so rendering only occurs when called explicitly from script]' \
+  '--disable-crash-handler[disable crash handler when supported by the platform code]' \
+  '--fixed-fps[force a fixed number of frames per second (this setting disables real-time synchronization)]:frames per second' \
+  '--print-fps[print the frames per second to the stdout]' \
+  '(-s, --script)'{-s,--script}'[run a script]:path to script:_files' \
+  '--check-only[only parse for errors and quit (use with --script)]' \
+  '--export[export the project using the given preset and matching release template]:export preset name' \
+  '--export-debug[same as --export, but using the debug template]:export preset name' \
+  '--export-pack[same as --export, but only export the game pack for the given preset]:export preset name' \
+  '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory:_dirs' \
+  '--no-docbase[disallow dumping the base types (used with --doctool)]' \
+  '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
+  '--gdnative-generate-json-api[generate JSON dump of the Godot API for GDNative bindings]' \
+  '--test[run a unit test]:unit test name'

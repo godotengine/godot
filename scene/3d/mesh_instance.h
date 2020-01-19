@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,20 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
+#include "scene/3d/skeleton.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/skin.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class MeshInstance : public GeometryInstance {
 
 	GDCLASS(MeshInstance, GeometryInstance);
 
 protected:
 	Ref<Mesh> mesh;
+	Ref<Skin> skin;
+	Ref<Skin> skin_internal;
+	Ref<SkinReference> skin_ref;
 	NodePath skeleton_path;
 
 	struct BlendShapeTrack {
@@ -72,6 +74,9 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_skin(const Ref<Skin> &p_skin);
+	Ref<Skin> get_skin() const;
 
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,17 +49,22 @@ class FindBar : public HBoxContainer {
 	LineEdit *search_text;
 	ToolButton *find_prev;
 	ToolButton *find_next;
-	Label *error_label;
+	Label *matches_label;
 	TextureButton *hide_button;
 	String prev_search;
 
 	RichTextLabel *rich_text_label;
+
+	int results_count;
 
 	void _show_search();
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
 	void _search_text_entered(const String &p_text);
+
+	void _update_results_count();
+	void _update_matches_label();
 
 	void _update_size();
 
@@ -72,8 +77,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_error(const String &p_label);
-
 	void set_rich_text_label(RichTextLabel *p_rich_text_label);
 
 	void popup_search();
@@ -148,13 +151,14 @@ class EditorHelp : public VBoxContainer {
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);
+	void _class_desc_resized();
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
 	void _update_doc();
 
 	void _request_help(const String &p_string);
-	void _search(const String &p_str);
+	void _search(bool p_search_previous = false);
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
@@ -175,7 +179,7 @@ public:
 	void scroll_to_section(int p_section_index);
 
 	void popup_search();
-	void search_again();
+	void search_again(bool p_search_previous = false);
 
 	String get_class();
 

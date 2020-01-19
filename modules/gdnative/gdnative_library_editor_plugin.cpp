@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #ifdef TOOLS_ENABLED
 #include "gdnative_library_editor_plugin.h"
 #include "gdnative.h"
+
+#include "editor/editor_scale.h"
 
 void GDNativeLibraryEditor::edit(Ref<GDNativeLibrary> p_library) {
 	library = p_library;
@@ -224,7 +226,6 @@ void GDNativeLibraryEditor::_erase_entry(const String &platform, const String &e
 		if (List<String>::Element *E = platforms[platform].entries.find(entry)) {
 
 			String target = platform + "." + entry;
-			Ref<ConfigFile> config = library->get_config_file();
 
 			platforms[platform].entries.erase(E);
 			_set_target_value("entry", target, "");

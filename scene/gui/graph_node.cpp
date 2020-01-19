@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -210,6 +210,7 @@ void GraphNode::_notification(int p_what) {
 			int close_offset = get_constant("close_offset");
 			int close_h_offset = get_constant("close_h_offset");
 			Color close_color = get_color("close_color");
+			Color resizer_color = get_color("resizer_color");
 			Ref<Font> title_font = get_font("title_font");
 			int title_offset = get_constant("title_offset");
 			int title_h_offset = get_constant("title_h_offset");
@@ -274,7 +275,7 @@ void GraphNode::_notification(int p_what) {
 			}
 
 			if (resizable) {
-				draw_texture(resizer, get_size() - resizer->get_size());
+				draw_texture(resizer, get_size() - resizer->get_size(), resizer_color);
 			}
 		} break;
 
@@ -592,8 +593,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 
-		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
-		ERR_FAIL_COND(get_parent_control() == NULL);
+		ERR_FAIL_COND_MSG(get_parent_control() == NULL, "GraphNode must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 

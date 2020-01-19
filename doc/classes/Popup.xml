@@ -4,7 +4,7 @@
 		Base container control for popups and dialogs.
 	</brief_description>
 	<description>
-		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior. All popup methods ensure correct placement within the viewport.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -56,11 +56,19 @@
 				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
 			</description>
 		</method>
+		<method name="set_as_minsize">
+			<return type="void">
+			</return>
+			<description>
+				Shrink popup to keep to the minimum size of content.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
 	</members>
 	<signals>
 		<signal name="about_to_show">

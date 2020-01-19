@@ -1,0 +1,82 @@
+apply plugin: 'com.android.library'
+
+dependencies {
+    implementation "com.android.support:support-core-utils:28.0.0"
+}
+
+def pathToRootDir = "../../../../"
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    useLibrary 'org.apache.http.legacy'
+
+    defaultConfig {
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+    }
+
+    lintOptions {
+        abortOnError false
+        disable 'MissingTranslation', 'UnusedResources'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            aidl.srcDirs = ['aidl']
+            assets.srcDirs = ['assets']
+        }
+        debug.jniLibs.srcDirs = ['libs/debug']
+        release.jniLibs.srcDirs = ['libs/release']
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "godot-lib.${variant.name}.aar"
+        }
+
+        def buildType = variant.buildType.name.capitalize()
+
+        def taskPrefix = ""
+        if (project.path != ":") {
+            taskPrefix = project.path + ":"
+        }
+
+        // Disable the externalNativeBuild* task as it would cause build failures since the cmake build
+        // files is only setup for editing support.
+        gradle.startParameter.excludedTaskNames += taskPrefix + "externalNativeBuild" + buildType
+
+        def releaseTarget = supportedTargets[buildType.toLowerCase()]
+        if (releaseTarget == null || releaseTarget == "") {
+            throw new GradleException("Invalid build type: " + buildType)
+        }
+
+        if (!supportedAbis.contains(defaultAbi)) {
+            throw new GradleException("Invalid default abi: " + defaultAbi)
+        }
+
+        // Creating gradle task to generate the native libraries for the default abi.
+        def taskName = getSconsTaskName(buildType)
+        tasks.create(name: taskName, type: Exec) {
+            executable "scons" + sconsExt
+            args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
+        }
+
+        // Schedule the tasks so the generated libs are present before the aar file is packaged.
+        tasks["merge${buildType}JniLibFolders"].dependsOn taskName
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -176,7 +176,6 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 
 		Skeleton *sk = memnew(Skeleton);
 		int bone = 0;
-		sk->set_use_bones_in_world_transform(true); // This improves compatibility in Collada
 		for (int i = 0; i < p_node->children.size(); i++) {
 
 			_populate_skeleton(sk, p_node->children[i], bone, -1);
@@ -692,16 +691,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 				pre_weights[w_i] = weights;
 
-				/*
-				for(Set<int>::Element *E=vertex_map[w_i].front();E;E=E->next()) {
-
-					int dst = E->get();
-					ERR_EXPLAIN("invalid vertex index in array");
-					ERR_FAIL_INDEX_V(dst,vertex_array.size(),ERR_INVALID_DATA);
-					vertex_array[dst].weights=weights;
-
-				}*/
-
 				index_ofs += wstride * amount;
 			}
 
@@ -711,7 +700,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
-		//Map<int,Set<int> > vertex_map; //map vertices (for setting skinning/morph)
 
 		/**************************/
 		/* CREATE PRIMITIVE ARRAY */
@@ -834,9 +822,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					vertex_set.insert(vertex);
 				}
 
-				/*	if (!vertex_map.has(vertex_index))
-					vertex_map[vertex_index]=Set<int>();
-				vertex_map[vertex_index].insert(index); //should be outside..*/
 				//build triangles if needed
 				if (j == 0)
 					prev2[0] = index;
@@ -1030,8 +1015,6 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 			Path *path = Object::cast_to<Path>(node);
 
-			String curve = ng->source;
-
 			if (curve_cache.has(ng->source)) {
 
 				path->set_curve(curve_cache[ng->source]);
@@ -1204,10 +1187,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					}
 				}
 
-				if (ngsource != "") {
-					ERR_EXPLAIN("Controller Instance Source '" + ngsource + "' is neither skin or morph!");
-					ERR_FAIL_V(ERR_INVALID_DATA);
-				}
+				ERR_FAIL_COND_V_MSG(ngsource != "", ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
 
 			} else {
 				meshid = ng2->source;
@@ -1225,7 +1205,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name(meshdata.name);
 					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
-					ERR_FAIL_COND_V(err, err);
+					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
 
 					mesh_cache[meshid] = mesh;
 				} else {
@@ -1277,7 +1257,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_tangents, bool p_use_compression) {
 
 	Error err = collada.load(p_path, p_flags);
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot load file '" + p_path + "'.");
 
 	force_make_tangents = p_force_make_tangents;
 	ERR_FAIL_COND_V(!collada.state.visual_scene_map.has(collada.state.root_visual_scene), ERR_INVALID_DATA);
@@ -1608,7 +1588,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param);
+					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param + ".");
 					continue;
 				}
 
@@ -1630,8 +1610,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				} else if (data.size() == xf.data.size()) {
 					xf.data = data;
 				} else {
-					ERR_EXPLAIN("Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()));
-					ERR_CONTINUE(data.size() != xf.data.size());
+					ERR_CONTINUE_MSG(data.size() != xf.data.size(), "Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()) + ".");
 				}
 			}
 
@@ -1796,7 +1775,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 
 	Error err = state.load(p_path, flags, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & EditorSceneImporter::IMPORT_USE_COMPRESSION);
 
-	ERR_FAIL_COND_V(err != OK, NULL);
+	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Cannot load scene from file '" + p_path + "'.");
 
 	if (state.missing_textures.size()) {
 
@@ -1849,7 +1828,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	state.use_mesh_builtin_materials = false;
 
 	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
 
 	state.create_animations(p_flags & EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS, p_flags & EditorSceneImporter::IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
 	if (state.scene)

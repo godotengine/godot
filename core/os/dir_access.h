@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,6 @@
 
 #include "core/typedefs.h"
 #include "core/ustring.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 //@ TODO, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
 class DirAccess {
@@ -96,6 +92,18 @@ public:
 	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
+
+	// Meant for editor code when we want to quickly remove a file without custom
+	// handling (e.g. removing a cache file).
+	static void remove_file_or_error(String p_path) {
+		DirAccess *da = create(ACCESS_FILESYSTEM);
+		if (da->file_exists(p_path)) {
+			if (da->remove(p_path) != OK) {
+				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+			}
+		}
+		memdelete(da);
+	}
 
 	virtual String get_filesystem_type() const = 0;
 	static String get_full_path(const String &p_path, AccessType p_access);

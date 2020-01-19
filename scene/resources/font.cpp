@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,7 +96,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("get_wordwrap_string_size", "string", "p_width"), &Font::get_wordwrap_string_size);
+	ClassDB::bind_method(D_METHOD("get_wordwrap_string_size", "string", "width"), &Font::get_wordwrap_string_size);
 	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
 	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "outline"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
@@ -133,6 +133,7 @@ PoolVector<int> BitmapFont::_get_chars() const {
 	while ((key = char_map.next(key))) {
 
 		const Character *c = char_map.getptr(*key);
+		ERR_FAIL_COND_V(!c, PoolVector<int>());
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
 		chars.push_back(c->rect.position.x);
@@ -201,10 +202,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 	FileAccess *f = FileAccess::open(p_file, FileAccess::READ);
 
-	if (!f) {
-		ERR_EXPLAIN("Can't open font: " + p_file);
-		ERR_FAIL_V(ERR_FILE_NOT_FOUND);
-	}
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_NOT_FOUND, "Can't open font: " + p_file + ".");
 
 	clear();
 
@@ -360,7 +358,7 @@ float BitmapFont::get_descent() const {
 
 void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
 
-	ERR_FAIL_COND(p_texture.is_null());
+	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
 	textures.push_back(p_texture);
 }
 
@@ -531,10 +529,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
 	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
-		if (fallback_child == this) {
-			ERR_EXPLAIN("Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
-			ERR_FAIL_COND(fallback_child == this);
-		}
+		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
 	}
 
 	fallback = p_fallback;

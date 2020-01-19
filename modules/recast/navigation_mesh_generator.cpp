@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,10 @@
 #include "modules/csg/csg_shape.h"
 #endif
 
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif
+
 EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::singleton = NULL;
 
 void EditorNavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
@@ -58,7 +62,7 @@ void EditorNavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<fl
 }
 
 void EditorNavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
-	int current_vertex_count = 0;
+	int current_vertex_count;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		current_vertex_count = p_verticies.size() / 3;
@@ -127,7 +131,7 @@ void EditorNavigationMeshGenerator::_add_faces(const PoolVector3Array &p_faces, 
 	}
 }
 
-void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask) {
+void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 
 	if (Object::cast_to<MeshInstance>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 
@@ -240,14 +244,29 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 		}
 	}
 
-	if (Object::cast_to<Spatial>(p_node)) {
+#ifdef MODULE_GRIDMAP_ENABLED
+	if (Object::cast_to<GridMap>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+		GridMap *gridmap_instance = Object::cast_to<GridMap>(p_node);
+		Array meshes = gridmap_instance->get_meshes();
+		Transform xform = gridmap_instance->get_transform();
+		for (int i = 0; i < meshes.size(); i += 2) {
+			Ref<Mesh> mesh = meshes[i + 1];
+			if (mesh.is_valid()) {
+				_add_mesh(mesh, p_accumulated_transform * xform * meshes[i], p_verticies, p_indices);
+			}
+		}
+	}
+#endif
 
+	if (Object::cast_to<Spatial>(p_node)) {
 		Spatial *spatial = Object::cast_to<Spatial>(p_node);
 		p_accumulated_transform = p_accumulated_transform * spatial->get_transform();
 	}
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask);
+	if (p_recurse_children) {
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+		}
 	}
 }
 
@@ -422,7 +441,21 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	Vector<float> vertices;
 	Vector<int> indices;
 
-	_parse_geometry(Object::cast_to<Spatial>(p_node)->get_transform().affine_inverse(), p_node, vertices, indices, p_nav_mesh->get_parsed_geometry_type(), p_nav_mesh->get_collision_mask());
+	List<Node *> parse_nodes;
+
+	if (p_nav_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
+		parse_nodes.push_back(p_node);
+	} else {
+		p_node->get_tree()->get_nodes_in_group(p_nav_mesh->get_source_group_name(), &parse_nodes);
+	}
+
+	Transform navmesh_xform = Object::cast_to<Spatial>(p_node)->get_transform().affine_inverse();
+	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
+		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
+		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
+		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
+		_parse_geometry(navmesh_xform, E->get(), vertices, indices, geometry_type, collision_mask, recurse_children);
+	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
 

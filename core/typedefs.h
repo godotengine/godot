@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,7 +108,6 @@ T *_nullptr() {
 #include "core/int_types.h"
 
 #include "core/error_list.h"
-#include "core/error_macros.h"
 
 /** Generic ABS function, for math uses please use Math::abs */
 
@@ -174,6 +173,9 @@ inline void __swap_tmpl(T &x, T &y) {
 /** Function to find the next power of 2 to an integer */
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+
+	if (x == 0)
+		return 0;
 
 	--x;
 	x |= x >> 1;

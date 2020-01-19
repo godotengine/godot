@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,9 +118,12 @@ private:
 		uint32_t code_version;
 		bool ok;
 		Version() {
+			id = 0;
+			vert_id = 0;
+			frag_id = 0;
+			uniform_location = NULL;
 			code_version = 0;
 			ok = false;
-			uniform_location = NULL;
 		}
 	};
 

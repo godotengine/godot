@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -180,8 +180,8 @@ void RayCast2D::_notification(int p_what) {
 			Vector<Vector2> pts;
 			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
-			pts.push_back(xf.xform(Vector2(0, 0.707 * tsize)));
-			pts.push_back(xf.xform(Vector2(0, -0.707 * tsize)));
+			pts.push_back(xf.xform(Vector2(0, Math_SQRT12 * tsize)));
+			pts.push_back(xf.xform(Vector2(0, -Math_SQRT12 * tsize)));
 			Vector<Color> cols;
 			for (int i = 0; i < 3; i++)
 				cols.push_back(draw_col);

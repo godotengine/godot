@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -279,10 +279,7 @@ Vector3 Camera::project_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -304,10 +301,7 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -345,10 +339,7 @@ bool Camera::is_position_behind(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> Camera::get_near_plane_points() const {
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -372,10 +363,7 @@ Vector<Vector3> Camera::get_near_plane_points() const {
 
 Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -400,23 +388,19 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
 Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
-	if (p_z_depth == 0) {
+	if (p_z_depth == 0 && mode != PROJECTION_ORTHOGONAL) {
 		return get_global_transform().origin;
 	}
-
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	CameraMatrix cm;
 
 	if (mode == PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
 	else
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
 
 	Size2 vp_size;
 	cm.get_viewport_size(vp_size.x, vp_size.y);
@@ -501,7 +485,7 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera::project_ray_origin);
 	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera::unproject_position);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position);
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
 	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
@@ -563,9 +547,9 @@ void Camera::_bind_methods() {
 	BIND_ENUM_CONSTANT(KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
 
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP)
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 }
 
 float Camera::get_fov() const {
@@ -598,12 +582,14 @@ Camera::Projection Camera::get_projection() const {
 }
 
 void Camera::set_fov(float p_fov) {
+	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
 	_update_camera_mode();
 	_change_notify("fov");
 }
 
 void Camera::set_size(float p_size) {
+	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 	_change_notify("size");

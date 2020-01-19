@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 
 #include "core/print_string.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "modules/regex/regex.h"
@@ -106,16 +107,10 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	// -- Feature Tabs
 
-	const int feature_min_height = 160;
+	const int feature_min_height = 160 * EDSCALE;
 
-	Ref<Theme> collapse_theme = create_editor_theme();
-	collapse_theme->set_icon("checked", "CheckBox", collapse_theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
-	collapse_theme->set_icon("unchecked", "CheckBox", collapse_theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
-
-	CheckBox *chk_collapse_features = memnew(CheckBox);
+	CheckButton *chk_collapse_features = memnew(CheckButton);
 	chk_collapse_features->set_text(TTR("Advanced Options"));
-	chk_collapse_features->set_theme(collapse_theme);
-	chk_collapse_features->set_focus_mode(FOCUS_NONE);
 	vbc->add_child(chk_collapse_features);
 
 	tabc_features = memnew(TabContainer);

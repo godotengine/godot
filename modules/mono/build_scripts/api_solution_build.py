@@ -10,10 +10,7 @@ def build_api_solution(source, target, env):
 
     module_dir = env['module_dir']
 
-    solution_path = os.path.join(module_dir, 'glue/Managed/Generated/GodotSharp.sln')
-
-    if not os.path.isfile(solution_path):
-        raise RuntimeError("Godot API solution not found. Did you forget to run '--generate-mono-glue'?")
+    solution_path = os.path.join(module_dir, 'glue/GodotSharp/GodotSharp.sln')
 
     build_config = env['solution_build_config']
 
@@ -55,12 +52,22 @@ def build(env_mono):
         'GodotSharpEditor.dll', 'GodotSharpEditor.pdb', 'GodotSharpEditor.xml'
     ]
 
+    depend_cmd = []
+
     for build_config in ['Debug', 'Release']:
         output_dir = Dir('#bin').abspath
         editor_api_dir = os.path.join(output_dir, 'GodotSharp', 'Api', build_config)
 
         targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
 
-        cmd = env_mono.CommandNoCache(targets, [], build_api_solution,
+        cmd = env_mono.CommandNoCache(targets, depend_cmd, build_api_solution,
                                       module_dir=os.getcwd(), solution_build_config=build_config)
         env_mono.AlwaysBuild(cmd)
+
+        # Make the Release build of the API solution depend on the Debug build.
+        # We do this in order to prevent SCons from building them in parallel,
+        # which can freak out MSBuild. In many cases, one of the builds would
+        # hang indefinitely requiring a key to be pressed for it to continue.
+        depend_cmd = cmd
+
+    return depend_cmd

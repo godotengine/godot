@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 #include "core/os/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
+#include "editor/project_settings_editor.h"
 #include "modules/gdscript/gdscript.h"
 #include "scene/gui/grid_container.h"
 
@@ -130,7 +132,8 @@ void PluginConfigDialog::_notification(int p_what) {
 void PluginConfigDialog::config(const String &p_config_path) {
 	if (p_config_path.length()) {
 		Ref<ConfigFile> cf = memnew(ConfigFile);
-		cf->load(p_config_path);
+		Error err = cf->load(p_config_path);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot load config file from path '" + p_config_path + "'.");
 
 		name_edit->set_text(cf->get_value("plugin", "name", ""));
 		subfolder_edit->set_text(p_config_path.get_base_dir().get_basename().get_file());

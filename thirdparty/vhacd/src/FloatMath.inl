@@ -7,6 +7,10 @@
 // a quaternion is a 'float *' to 4 floats representing a quaternion x,y,z,w
 //
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#endif
+
 namespace FLOAT_MATH
 {
 

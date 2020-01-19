@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeGlobalExpression" inherits="VisualShaderNodeExpression" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" override="true" default="false" />
+	</members>
+	<constants>
+	</constants>
+</class>

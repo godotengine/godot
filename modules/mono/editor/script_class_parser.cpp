@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -162,8 +162,8 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						error = true;
 						return TK_ERROR;
 					} else if (code[idx] == begin_str) {
-						if (verbatim && code[idx + 1] == '"') { // `""` is verbatim string's `\"`
-							idx += 2; // skip next `"` as well
+						if (verbatim && code[idx + 1] == '"') { // '""' is verbatim string's '\"'
+							idx += 2; // skip next '"' as well
 							continue;
 						}
 
@@ -501,12 +501,15 @@ Error ScriptClassParser::parse(const String &p_code) {
 	int type_curly_stack = 0;
 
 	while (!error && tk != TK_EOF) {
-		if (tk == TK_IDENTIFIER && String(value) == "class") {
+		String identifier = value;
+		if (tk == TK_IDENTIFIER && (identifier == "class" || identifier == "struct")) {
+			bool is_class = identifier == "class";
+
 			tk = get_token();
 
 			if (tk == TK_IDENTIFIER) {
 				String name = value;
-				int at_level = type_curly_stack;
+				int at_level = curly_stack;
 
 				ClassDecl class_decl;
 
@@ -568,48 +571,22 @@ Error ScriptClassParser::parse(const String &p_code) {
 
 				NameDecl name_decl;
 				name_decl.name = name;
-				name_decl.type = NameDecl::CLASS_DECL;
+				name_decl.type = is_class ? NameDecl::CLASS_DECL : NameDecl::STRUCT_DECL;
 				name_stack[at_level] = name_decl;
 
-				if (!generic) { // no generics, thanks
-					classes.push_back(class_decl);
-				} else if (OS::get_singleton()->is_stdout_verbose()) {
-					String full_name = class_decl.namespace_;
-					if (full_name.length())
-						full_name += ".";
-					full_name += class_decl.name;
-					OS::get_singleton()->print("Ignoring generic class declaration: %s\n", class_decl.name.utf8().get_data());
-				}
-			}
-		} else if (tk == TK_IDENTIFIER && String(value) == "struct") {
-			String name;
-			int at_level = type_curly_stack;
-			while (true) {
-				tk = get_token();
-				if (tk == TK_IDENTIFIER && name.empty()) {
-					name = String(value);
-				} else if (tk == TK_CURLY_BRACKET_OPEN) {
-					if (name.empty()) {
-						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword `struct`, found " + get_token_name(TK_CURLY_BRACKET_OPEN);
-						error = true;
-						return ERR_PARSE_ERROR;
+				if (is_class) {
+					if (!generic) { // no generics, thanks
+						classes.push_back(class_decl);
+					} else if (OS::get_singleton()->is_stdout_verbose()) {
+						String full_name = class_decl.namespace_;
+						if (full_name.length())
+							full_name += ".";
+						full_name += class_decl.name;
+						OS::get_singleton()->print("Ignoring generic class declaration: %s\n", full_name.utf8().get_data());
 					}
-
-					curly_stack++;
-					type_curly_stack++;
-					break;
-				} else if (tk == TK_EOF) {
-					error_str = "Expected " + get_token_name(TK_CURLY_BRACKET_OPEN) + " after struct decl, found " + get_token_name(TK_EOF);
-					error = true;
-					return ERR_PARSE_ERROR;
 				}
 			}
-
-			NameDecl name_decl;
-			name_decl.name = name;
-			name_decl.type = NameDecl::STRUCT_DECL;
-			name_stack[at_level] = name_decl;
-		} else if (tk == TK_IDENTIFIER && String(value) == "namespace") {
+		} else if (tk == TK_IDENTIFIER && identifier == "namespace") {
 			if (type_curly_stack > 0) {
 				error_str = "Found namespace nested inside type.";
 				error = true;
@@ -657,12 +634,12 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);
-	if (ferr != OK) {
-		if (ferr == ERR_INVALID_DATA) {
-			ERR_EXPLAIN("File '" + p_filepath + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		}
-		ERR_FAIL_V(ferr);
-	}
+
+	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
+			ferr == ERR_INVALID_DATA ?
+					"File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode." :
+					"Failed to read file: '" + p_filepath + "'.");
 
 	return parse(source);
 }

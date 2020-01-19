@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "file_access_encrypted.h"
 
-#include "core/math/crypto_core.h"
+#include "core/crypto/crypto_core.h"
 #include "core/os/copymem.h"
 #include "core/print_string.h"
 #include "core/variant.h"
@@ -41,7 +41,7 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
-	ERR_FAIL_COND_V(file != NULL, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V_MSG(file != NULL, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
@@ -94,8 +94,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		unsigned char hash[16];
 		ERR_FAIL_COND_V(CryptoCore::md5(data.ptr(), data.size(), hash) != OK, ERR_BUG);
 
-		ERR_EXPLAIN("The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
-		ERR_FAIL_COND_V(String::md5(hash) != String::md5(md5d), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V_MSG(String::md5(hash) != String::md5(md5d), ERR_FILE_CORRUPT, "The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
 
 		file = p_base;
 	}
@@ -177,6 +176,22 @@ bool FileAccessEncrypted::is_open() const {
 	return file != NULL;
 }
 
+String FileAccessEncrypted::get_path() const {
+
+	if (file)
+		return file->get_path();
+	else
+		return "";
+}
+
+String FileAccessEncrypted::get_path_absolute() const {
+
+	if (file)
+		return file->get_path_absolute();
+	else
+		return "";
+}
+
 void FileAccessEncrypted::seek(size_t p_position) {
 
 	if (p_position > (size_t)data.size())
@@ -206,7 +221,7 @@ bool FileAccessEncrypted::eof_reached() const {
 
 uint8_t FileAccessEncrypted::get_8() const {
 
-	ERR_FAIL_COND_V(writing, 0);
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 	if (pos >= data.size()) {
 		eofed = true;
 		return 0;
@@ -218,7 +233,7 @@ uint8_t FileAccessEncrypted::get_8() const {
 }
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	ERR_FAIL_COND_V(writing, 0);
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 
 	int to_copy = MIN(p_length, data.size() - pos);
 	for (int i = 0; i < to_copy; i++) {
@@ -240,7 +255,7 @@ Error FileAccessEncrypted::get_error() const {
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	if (pos < data.size()) {
 
@@ -260,14 +275,14 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 void FileAccessEncrypted::flush() {
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	// encrypted files keep data in memory till close()
 }
 
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
 
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	if (pos < data.size()) {
 		data.write[pos] = p_dest;
@@ -298,7 +313,7 @@ uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
 }
 
 Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet");
+	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet.");
 	return ERR_UNAVAILABLE;
 }
 

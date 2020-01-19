@@ -146,9 +146,9 @@
 		<method name="set_input_port_name">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -156,9 +156,9 @@
 		<method name="set_input_port_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
 			</description>
@@ -174,9 +174,9 @@
 		<method name="set_output_port_name">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -184,9 +184,9 @@
 		<method name="set_output_port_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
 			</description>
@@ -208,6 +208,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

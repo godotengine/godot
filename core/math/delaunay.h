@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,11 +80,11 @@ public:
 	}
 
 	static bool edge_compare(const Vector<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
-		if (Math::is_zero_approx(p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[0]])) && Math::is_zero_approx(p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[1]]))) {
+		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[0]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[1]])) {
 			return true;
 		}
 
-		if (Math::is_zero_approx(p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[1]])) && Math::is_zero_approx(p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[0]]))) {
+		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[1]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[0]])) {
 			return true;
 		}
 

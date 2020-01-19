@@ -26,6 +26,7 @@
 		    config.save("user://settings.cfg")
 		[/codeblock]
 		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
+		ConfigFiles can also contain manually written comment lines starting with a semicolon ([code];[/code]). Those lines will be ignored when parsing the file. Note that comments will be lost when saving the ConfigFile. This can still be useful for dedicated server configuration files, which are typically never overwritten without explicit user action.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,6 +38,16 @@
 			</argument>
 			<description>
 				Deletes the specified section along with all the key-value pairs inside.
+			</description>
+		</method>
+		<method name="erase_section_key">
+			<return type="void">
+			</return>
+			<argument index="0" name="section" type="String">
+			</argument>
+			<argument index="1" name="key" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
@@ -94,7 +105,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="load_encrypted">
@@ -123,7 +135,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="save_encrypted">

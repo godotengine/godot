@@ -4,10 +4,6 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
-#ifndef VERSION_PATCH
-#define VERSION_PATCH 0
-#endif
-
 GODOT_ICON ICON platform/windows/godot.ico
 
 1 VERSIONINFO

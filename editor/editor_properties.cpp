@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,10 @@
 #include "editor_properties.h"
 
 #include "editor/editor_resource_preview.h"
+#include "editor/filesystem_dock.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
+#include "editor_scale.h"
 #include "scene/main/viewport.h"
 
 ///////////////////// NULL /////////////////////////
@@ -116,7 +118,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 		add_child(big_text_dialog);
 	}
 
-	big_text_dialog->popup_centered_ratio();
+	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
 	big_text->set_text(text->get_text());
 	big_text->grab_focus();
 }
@@ -209,13 +211,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 
-	String final_path = p_path;
-	if (final_path.is_abs_path()) {
-		String res_path = OS::get_singleton()->get_resource_dir() + "/";
-		final_path = res_path.path_to_file(final_path);
-	}
-
-	emit_changed(get_edited_property(), final_path);
+	emit_changed(get_edited_property(), p_path);
 	update_property();
 }
 void EditorPropertyPath::_path_pressed() {
@@ -228,13 +224,6 @@ void EditorPropertyPath::_path_pressed() {
 	}
 
 	String full_path = get_edited_object()->get(get_edited_property());
-	if (full_path.is_rel_path()) {
-
-		if (!DirAccess::exists(full_path.get_base_dir())) {
-			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
-			da->make_dir_recursive(full_path.get_base_dir());
-		}
-	}
 
 	dialog->clear_filters();
 
@@ -816,10 +805,10 @@ EditorPropertyLayers::EditorPropertyLayers() {
 
 ///////////////////// INT /////////////////////////
 
-void EditorPropertyInteger::_value_changed(double val) {
+void EditorPropertyInteger::_value_changed(int64_t val) {
 	if (setting)
 		return;
-	emit_changed(get_edited_property(), (int64_t)val);
+	emit_changed(get_edited_property(), val);
 }
 
 void EditorPropertyInteger::update_property() {
@@ -827,14 +816,19 @@ void EditorPropertyInteger::update_property() {
 	setting = true;
 	spin->set_value(val);
 	setting = false;
+#ifdef DEBUG_ENABLED
+	// If spin (currently EditorSplinSlider : Range) is changed so that it can use int64_t, then the below warning wouldn't be a problem.
+	if (val != (int64_t)(double)(val)) {
+		WARN_PRINT("Cannot reliably represent '" + itos(val) + "' in the inspector, value is too large.");
+	}
+#endif
 }
 
 void EditorPropertyInteger::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyInteger::_value_changed);
 }
 
-void EditorPropertyInteger::setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser) {
+void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
@@ -935,16 +929,29 @@ EditorPropertyFloat::EditorPropertyFloat() {
 
 void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
-	Ref<InputEventMouseButton> mb = p_ev;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-		preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
-		preset->popup();
-	}
-	if (mb.is_valid() && mb->is_doubleclick() && mb->get_button_index() == BUTTON_LEFT) {
-		_setup_spin();
+	const Ref<InputEventMouseButton> mb = p_ev;
+	if (mb.is_valid()) {
+		if (mb->is_doubleclick() && mb->get_button_index() == BUTTON_LEFT) {
+			_setup_spin();
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+			preset->set_global_position(easing_draw->get_global_transform().xform(mb->get_position()));
+			preset->popup();
+
+			// Ensure the easing doesn't appear as being dragged
+			dragging = false;
+			easing_draw->update();
+		}
+
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			dragging = mb->is_pressed();
+			// Update to display the correct dragging color
+			easing_draw->update();
+		}
 	}
 
-	Ref<InputEventMouseMotion> mm = p_ev;
+	const Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
 
@@ -979,16 +986,20 @@ void EditorPropertyEasing::_draw_easing() {
 	RID ci = easing_draw->get_canvas_item();
 
 	Size2 s = easing_draw->get_size();
-	Rect2 r(Point2(), s);
-	r = r.grow(3);
 
-	int points = 48;
+	const int points = 48;
 
 	float prev = 1.0;
-	float exp = get_edited_object()->get(get_edited_property());
+	const float exp = get_edited_object()->get(get_edited_property());
 
-	Ref<Font> f = get_font("font", "Label");
-	Color color = get_color("font_color", "Label");
+	const Ref<Font> f = get_font("font", "Label");
+	const Color font_color = get_color("font_color", "Label");
+	Color line_color;
+	if (dragging) {
+		line_color = get_color("accent_color", "Editor");
+	} else {
+		line_color = get_color("font_color", "Label") * Color(1, 1, 1, 0.9);
+	}
 
 	Vector<Point2> lines;
 	for (int i = 1; i <= points; i++) {
@@ -996,7 +1007,7 @@ void EditorPropertyEasing::_draw_easing() {
 		float ifl = i / float(points);
 		float iflp = (i - 1) / float(points);
 
-		float h = 1.0 - Math::ease(ifl, exp);
+		const float h = 1.0 - Math::ease(ifl, exp);
 
 		if (flip) {
 			ifl = 1.0 - ifl;
@@ -1008,8 +1019,8 @@ void EditorPropertyEasing::_draw_easing() {
 		prev = h;
 	}
 
-	easing_draw->draw_multiline(lines, color, 1.0, true);
-	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), color);
+	easing_draw->draw_multiline(lines, line_color, 1.0, true);
+	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -1046,6 +1057,9 @@ void EditorPropertyEasing::_spin_value_changed(double p_value) {
 
 void EditorPropertyEasing::_spin_focus_exited() {
 	spin->hide();
+	// Ensure the easing doesn't appear as being dragged
+	dragging = false;
+	easing_draw->update();
 }
 
 void EditorPropertyEasing::setup(bool p_full, bool p_flip) {
@@ -1108,6 +1122,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->hide();
 	add_child(spin);
 
+	dragging = false;
 	flip = false;
 	full = false;
 }
@@ -1855,15 +1870,42 @@ void EditorPropertyColor::_popup_closed() {
 	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 }
 
+void EditorPropertyColor::_picker_created() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	if (default_color_mode == 1)
+		picker->get_picker()->set_hsv_mode(true);
+	else if (default_color_mode == 2)
+		picker->get_picker()->set_raw_mode(true);
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
 	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
+	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
 }
 
 void EditorPropertyColor::update_property() {
 
 	picker->set_pick_color(get_edited_object()->get(get_edited_property()));
+	const Color color = picker->get_pick_color();
+
+	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
+	if (picker->is_editing_alpha()) {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s\nA: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2),
+				rtos(color.a).pad_decimals(2)));
+	} else {
+		picker->set_tooltip(vformat(
+				"R: %s\nG: %s\nB: %s",
+				rtos(color.r).pad_decimals(2),
+				rtos(color.g).pad_decimals(2),
+				rtos(color.b).pad_decimals(2)));
+	}
 }
 
 void EditorPropertyColor::setup(bool p_show_alpha) {
@@ -1877,6 +1919,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
 	picker->connect("popup_closed", this, "_popup_closed");
+	picker->connect("picker_created", this, "_picker_created");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -2040,7 +2083,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	RES res = ResourceLoader::load(p_path);
 
-	ERR_FAIL_COND(res.is_null());
+	ERR_FAIL_COND_MSG(res.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);
@@ -2184,7 +2227,14 @@ void EditorPropertyResource::_menu_option(int p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 
 			if (Object::cast_to<Node>(get_edited_object())) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()));
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()), false);
+			}
+
+		} break;
+		case OBJ_MENU_EXTEND_SCRIPT: {
+
+			if (Object::cast_to<Node>(get_edited_object())) {
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(get_edited_object()), true);
 			}
 
 		} break;
@@ -2317,7 +2367,8 @@ void EditorPropertyResource::_update_menu_items() {
 	menu->clear();
 
 	if (get_edited_property() == "script" && base_type == "Script" && Object::cast_to<Node>(get_edited_object())) {
-		menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+		menu->add_icon_item(get_icon("ScriptCreate", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+		menu->add_icon_item(get_icon("ScriptExtend", "EditorIcons"), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
 		menu->add_separator();
 	} else if (base_type != "") {
 		int idx = 0;
@@ -2378,19 +2429,11 @@ void EditorPropertyResource::_update_menu_items() {
 
 				inheritors_array.push_back(t);
 
+				if (!icon.is_valid())
+					icon = get_icon(has_icon(t, "EditorIcons") ? t : "Object", "EditorIcons");
+
 				int id = TYPE_BASE_ID + idx;
-
-				if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
-					icon = get_icon(t, "EditorIcons");
-				}
-
-				if (icon.is_valid()) {
-
-					menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
-				} else {
-
-					menu->add_item(vformat(TTR("New %s"), t), id);
-				}
+				menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 
 				idx++;
 			}
@@ -2553,7 +2596,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() != assign->is_toggle_mode()) {
 			assign->set_toggle_mode(res.is_valid());
 		}
-#ifdef TOOLS_ENABLED
+
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 
 			if (!sub_inspector) {
@@ -2594,14 +2637,6 @@ void EditorPropertyResource::update_property() {
 						get_tree()->call_deferred("call_group", "_editor_resource_properties", "_fold_other_editors", this);
 					}
 					opened_editor = true;
-					/*
-					Button *open_in_editor = memnew(Button);
-					open_in_editor->set_text(TTR("Open Editor"));
-					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
-					sub_inspector_vbox->add_child(open_in_editor);
-					open_in_editor->connect("pressed", this, "_open_editor_pressed");
-					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
-					*/
 				}
 			}
 
@@ -2622,7 +2657,6 @@ void EditorPropertyResource::update_property() {
 				}
 			}
 		}
-#endif
 	}
 
 	preview->set_texture(Ref<Texture>());
@@ -2631,7 +2665,7 @@ void EditorPropertyResource::update_property() {
 		assign->set_text(TTR("[empty]"));
 	} else {
 
-		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Node"));
+		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
 		if (res->get_name() != String()) {
 			assign->set_text(res->get_name());

@@ -10,10 +10,15 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" override="true" enum="Button.TextAlign" default="0" />
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
+	</members>
 	<constants>
 	</constants>
 	<theme_items>
 		<theme_item name="check_vadjust" type="int" default="0">
+			The vertical offset used when rendering the icons.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
 		</theme_item>

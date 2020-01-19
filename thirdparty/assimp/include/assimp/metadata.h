@@ -48,6 +48,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_METADATA_H_INC
 #define AI_METADATA_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER <= 1500)
 #  include "Compiler/pstdint.h"
 #else

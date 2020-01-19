@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,11 @@
 
 #include "export.h"
 #include "core/bind/core_bind.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
-#include "core/math/crypto_core.h"
 #include "core/object.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/version.h"
@@ -133,8 +134,6 @@ class AppxPackager {
 
 	String progress_task;
 	FileAccess *package;
-	String tmp_blockmap_file_path;
-	String tmp_content_types_file_path;
 
 	Set<String> mime_types;
 
@@ -146,8 +145,8 @@ class AppxPackager {
 
 	String hash_block(const uint8_t *p_block_data, size_t p_block_len);
 
-	void make_block_map();
-	void make_content_types();
+	void make_block_map(const String &p_path);
+	void make_content_types(const String &p_path);
 
 	_FORCE_INLINE_ unsigned int buf_put_int16(uint16_t p_val, uint8_t *p_buf) {
 		for (int i = 0; i < 2; i++) {
@@ -208,9 +207,9 @@ String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len)
 	return String(base64);
 }
 
-void AppxPackager::make_block_map() {
+void AppxPackager::make_block_map(const String &p_path) {
 
-	FileAccess *tmp_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::WRITE);
+	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
 	tmp_file->store_string("<BlockMap xmlns=\"http://schemas.microsoft.com/appx/2010/blockmap\" HashMethod=\"http://www.w3.org/2001/04/xmlenc#sha256\">");
@@ -253,9 +252,9 @@ String AppxPackager::content_type(String p_extension) {
 		return "application/octet-stream";
 }
 
-void AppxPackager::make_content_types() {
+void AppxPackager::make_content_types(const String &p_path) {
 
-	FileAccess *tmp_file = FileAccess::open(tmp_content_types_file_path, FileAccess::WRITE);
+	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 	tmp_file->store_string("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">");
@@ -458,8 +457,6 @@ void AppxPackager::init(FileAccess *p_fa) {
 	package = p_fa;
 	central_dir_offset = 0;
 	end_of_central_dir_offset = 0;
-	tmp_blockmap_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
-	tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 }
 
 Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
@@ -503,7 +500,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 		size_t block_size = (p_len - step) > BLOCK_SIZE ? (size_t)BLOCK_SIZE : (p_len - step);
 
-		for (uint32_t i = 0; i < block_size; i++) {
+		for (uint64_t i = 0; i < block_size; i++) {
 			strm_in.write[i] = p_buffer[step + i];
 		}
 
@@ -520,21 +517,21 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 			int total_out_before = strm.total_out;
 
 			int err = deflate(&strm, Z_FULL_FLUSH);
-			ERR_FAIL_COND_V(err >= 0, ERR_BUG); // Negative means bug
+			ERR_FAIL_COND_V(err < 0, ERR_BUG); // Negative means bug
 
 			bh.compressed_size = strm.total_out - total_out_before;
 
 			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + bh.compressed_size);
-			for (uint32_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++)
 				file_buffer.write[start + i] = strm_out[i];
 		} else {
 			bh.compressed_size = block_size;
 			//package->store_buffer(strm_in.ptr(), block_size);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + block_size);
-			for (uint32_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++)
 				file_buffer.write[start + i] = strm_in[i];
 		}
 
@@ -557,7 +554,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 		//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 		int start = file_buffer.size();
 		file_buffer.resize(file_buffer.size() + (strm.total_out - total_out_before));
-		for (uint32_t i = 0; i < (strm.total_out - total_out_before); i++)
+		for (uint64_t i = 0; i < (strm.total_out - total_out_before); i++)
 			file_buffer.write[start + i] = strm_out[i];
 
 		deflateEnd(&strm);
@@ -591,7 +588,9 @@ void AppxPackager::finish() {
 	// Create and add block map file
 	EditorNode::progress_task_step("export", "Creating block map...", 4);
 
-	make_block_map();
+	const String &tmp_blockmap_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
+	make_block_map(tmp_blockmap_file_path);
+
 	FileAccess *blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
 	Vector<uint8_t> blockmap_buffer;
 	blockmap_buffer.resize(blockmap_file->get_len());
@@ -604,8 +603,11 @@ void AppxPackager::finish() {
 	memdelete(blockmap_file);
 
 	// Add content types
+
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
-	make_content_types();
+
+	const String &tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
+	make_content_types(tmp_content_types_file_path);
 
 	FileAccess *types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
 	Vector<uint8_t> types_buffer;
@@ -617,6 +619,10 @@ void AppxPackager::finish() {
 
 	types_file->close();
 	memdelete(types_file);
+
+	// Cleanup generated files.
+	DirAccess::remove_file_or_error(tmp_blockmap_file_path);
+	DirAccess::remove_file_or_error(tmp_content_types_file_path);
 
 	// Pre-process central directory before signing
 	for (int i = 0; i < file_metadata.size(); i++) {
@@ -901,8 +907,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't save temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		FileAccess *f = FileAccess::open(tmp_path, FileAccess::READ, &err);
@@ -910,10 +915,10 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		if (err != OK) {
 
 			String err_string = "Couldn't open temp logo file.";
-
+			// Cleanup generated file.
+			DirAccess::remove_file_or_error(tmp_path);
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		data.resize(f->get_len());
@@ -921,31 +926,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		f->close();
 		memdelete(f);
-
-		// Delete temp file
-		DirAccess *dir = DirAccess::open(tmp_path.get_base_dir(), &err);
-
-		if (err != OK) {
-
-			String err_string = "Couldn't open temp path to remove temp logo file.";
-
-			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
-		}
-
-		err = dir->remove(tmp_path);
-
-		memdelete(dir);
-
-		if (err != OK) {
-
-			String err_string = "Couldn't remove temp logo file.";
-
-			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
-		}
+		DirAccess::remove_file_or_error(tmp_path);
 
 		return data;
 	}
@@ -1109,15 +1090,14 @@ public:
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+
 		String err;
-		bool valid = true;
+		bool valid = false;
+
+		// Look for export templates (first official, and if defined custom templates).
+
 		Platform arch = (Platform)(int)(p_preset->get("architecture/target"));
-
-		String custom_debug_binary = p_preset->get("custom_template/debug");
-		String custom_release_binary = p_preset->get("custom_template/release");
-
 		String platform_infix;
-
 		switch (arch) {
 			case EditorExportPlatformUWP::ARM: {
 				platform_infix = "arm";
@@ -1130,42 +1110,40 @@ public:
 			} break;
 		}
 
-		if (!exists_export_template("uwp_" + platform_infix + "_debug.zip", &err) || !exists_export_template("uwp_" + platform_infix + "_release.zip", &err)) {
-			valid = false;
-			r_missing_templates = true;
-		}
+		bool dvalid = exists_export_template("uwp_" + platform_infix + "_debug.zip", &err);
+		bool rvalid = exists_export_template("uwp_" + platform_infix + "_release.zip", &err);
 
-		if (!valid && custom_debug_binary == "" && custom_release_binary == "") {
-			if (!err.empty()) {
-				r_error = err;
+		if (p_preset->get("custom_template/debug") != "") {
+			dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+			if (!dvalid) {
+				err += TTR("Custom debug template not found.") + "\n";
 			}
-			return valid;
+		}
+		if (p_preset->get("custom_template/release") != "") {
+			rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+			if (!rvalid) {
+				err += TTR("Custom release template not found.") + "\n";
+			}
 		}
 
-		bool dvalid = true;
-		bool rvalid = true;
+		valid = dvalid || rvalid;
+		r_missing_templates = !valid;
 
-		if (!FileAccess::exists(custom_debug_binary)) {
-			dvalid = false;
-			err += TTR("Custom debug template not found.") + "\n";
-		}
+		// Validate the rest of the configuration.
 
-		if (!FileAccess::exists(custom_release_binary)) {
-			rvalid = false;
-			err += TTR("Custom release template not found.") + "\n";
-		}
-
-		if (dvalid || rvalid)
-			valid = true;
-
-		if (!valid) {
-			r_error = err;
-			return valid;
+		if (!_valid_resource_name(p_preset->get("package/short_name"))) {
+			valid = false;
+			err += TTR("Invalid package short name.") + "\n";
 		}
 
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
 			err += TTR("Invalid package unique name.") + "\n";
+		}
+
+		if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
+			valid = false;
+			err += TTR("Invalid package publisher display name.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {
@@ -1268,7 +1246,7 @@ public:
 		Error err = OK;
 
 		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 		AppxPackager packager;
 		packager.init(fa_pack);

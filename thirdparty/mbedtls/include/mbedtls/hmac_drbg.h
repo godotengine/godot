@@ -82,7 +82,7 @@ extern "C" {
  */
 typedef struct mbedtls_hmac_drbg_context
 {
-    /* Working state: the key K is not stored explicitely,
+    /* Working state: the key K is not stored explicitly,
      * but is implied by the HMAC context */
     mbedtls_md_context_t md_ctx;                    /*!< HMAC context (inc. K)  */
     unsigned char V[MBEDTLS_MD_MAX_SIZE];  /*!< V in the spec          */

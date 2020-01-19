@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,6 +102,8 @@ Vector3 RayCast::get_collision_normal() const {
 void RayCast::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
+	update_gizmo();
+
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_physics_process_internal(p_enabled);
 	if (!p_enabled)

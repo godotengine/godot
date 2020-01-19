@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,6 @@
 #define POPUP_MENU_H
 
 #include "scene/gui/popup.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class PopupMenu : public Popup {
 
@@ -124,21 +120,23 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_radio_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
 	void add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
-	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, uint32_t p_accel = 0);
+
 	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_radio_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
 
-	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id = -1, uint32_t p_accel = 0);
+	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
 	void set_item_text(int p_idx, const String &p_text);
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);

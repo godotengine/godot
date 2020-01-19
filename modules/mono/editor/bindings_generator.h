@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "editor/doc/doc_data.h"
 #include "editor/editor_help.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
 #include "core/ustring.h"
 
@@ -147,7 +147,7 @@ class BindingsGenerator {
 		bool requires_object_call;
 
 		/**
-		 * Determines if the method visibility is `internal` (visible only to files in the same assembly).
+		 * Determines if the method visibility is 'internal' (visible only to files in the same assembly).
 		 * Currently, we only use this for methods that are not meant to be exposed,
 		 * but are required by properties as getters or setters.
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
@@ -214,6 +214,14 @@ class BindingsGenerator {
 		 */
 		bool memory_own;
 
+		/**
+		 * This must be set to true for any struct bigger than 32-bits. Those cannot be passed/returned by value
+		 * with internal calls, so we must use pointers instead. Returns must be replace with out parameters.
+		 * In this case, [c_out] and [cs_out] must have a different format, explained below.
+		 * The Mono IL interpreter icall trampolines don't support passing structs bigger than 32-bits by value (at least not on WASM).
+		 */
+		bool ret_as_byref_arg;
+
 		// !! The comments of the following fields make reference to other fields via square brackets, e.g.: [field_name]
 		// !! When renaming those fields, make sure to rename their references in the comments
 
@@ -248,6 +256,14 @@ class BindingsGenerator {
 		 * %0: [c_type_out] of the return type
 		 * %1: name of the variable to be returned
 		 * %2: [name] of the return type
+		 * ---------------------------------------
+		 * If [ret_as_byref_arg] is true, the format is different. Instead of using a return statement,
+		 * the value must be assigned to a parameter. This type of this parameter is a pointer to [c_type_out].
+		 * Formatting elements:
+		 * %0: [c_type_out] of the return type
+		 * %1: name of the variable to be returned
+		 * %2: [name] of the return type
+		 * %3: name of the parameter that must be assigned the return value
 		 */
 		String c_out;
 
@@ -291,9 +307,10 @@ class BindingsGenerator {
 		 * One or more statements that determine how a variable of this type is returned from a method.
 		 * It must contain the return statement(s).
 		 * Formatting elements:
-		 * %0: internal method call statement
-		 * %1: [cs_type] of the return type
-		 * %2: [im_type_out] of the return type
+		 * %0: internal method name
+		 * %1: internal method call arguments without surrounding parenthesis
+		 * %2: [cs_type] of the return type
+		 * %3: [im_type_out] of the return type
 		 */
 		String cs_out;
 
@@ -417,7 +434,7 @@ class BindingsGenerator {
 
 			r_enum_itype.cs_type = r_enum_itype.proxy_name;
 			r_enum_itype.cs_in = "(int)%s";
-			r_enum_itype.cs_out = "return (%1)%0;";
+			r_enum_itype.cs_out = "return (%2)%0(%1);";
 			r_enum_itype.im_type_in = "int";
 			r_enum_itype.im_type_out = "int";
 			r_enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[r_enum_itype.proxy_name];
@@ -434,6 +451,8 @@ class BindingsGenerator {
 			is_instantiable = false;
 
 			memory_own = false;
+
+			ret_as_byref_arg = false;
 
 			c_arg_in = "%s";
 
@@ -472,6 +491,7 @@ class BindingsGenerator {
 	};
 
 	bool log_print_enabled;
+	bool initialized;
 
 	OrderedHashMap<StringName, TypeInterface> obj_types;
 
@@ -502,6 +522,7 @@ class BindingsGenerator {
 		StringName type_VarArg;
 		StringName type_Object;
 		StringName type_Reference;
+		StringName type_RID;
 		StringName type_String;
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
@@ -525,6 +546,7 @@ class BindingsGenerator {
 			type_VarArg = StaticCString::create("VarArg");
 			type_Object = StaticCString::create("Object");
 			type_Reference = StaticCString::create("Reference");
+			type_RID = StaticCString::create("RID");
 			type_String = StaticCString::create("String");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
@@ -590,9 +612,9 @@ class BindingsGenerator {
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 
-	void _default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
+	bool _arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
 
-	void _populate_object_type_interfaces();
+	bool _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();
 
 	void _populate_global_constants();
@@ -613,20 +635,23 @@ class BindingsGenerator {
 	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_files);
-	Error generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items);
+	Error generate_cs_core_project(const String &p_proj_dir);
+	Error generate_cs_editor_project(const String &p_proj_dir);
 	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
 
 	_FORCE_INLINE_ bool is_log_print_enabled() { return log_print_enabled; }
 	_FORCE_INLINE_ void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
 
+	_FORCE_INLINE_ bool is_initialized() { return initialized; }
+
 	static uint32_t get_version();
 
 	static void handle_cmdline_args(const List<String> &p_cmdline_args);
 
 	BindingsGenerator() :
-			log_print_enabled(true) {
+			log_print_enabled(true),
+			initialized(false) {
 		_initialize();
 	}
 };

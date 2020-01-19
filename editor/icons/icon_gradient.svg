@@ -1,11 +1,1 @@
-<svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<defs>
-<linearGradient id="a" x1="10" x2="10" y1="1" y2="15" gradientUnits="userSpaceOnUse">
-<stop stop-color="#e0e0e0" offset="0"/>
-<stop stop-color="#e0e0e0" stop-opacity="0" offset="1"/>
-</linearGradient>
-</defs>
-<g transform="translate(0 -1036.4)">
-<path transform="translate(0 1036.4)" d="m2 1c-0.55228 0-1 0.44772-1 1v12c0 0.55228 0.44772 1 1 1h12c0.55228 0 1-0.44772 1-1v-12c0-0.55228-0.44772-1-1-1z" fill="url(#a)"/>
-</g>
-</svg>
+<svg height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><linearGradient id="a" gradientUnits="userSpaceOnUse" x1="10" x2="10" y1="1" y2="15"><stop offset="0" stop-color="#e0e0e0"/><stop offset="1" stop-color="#e0e0e0" stop-opacity="0"/></linearGradient><path d="m2 1c-.55228 0-1 .44772-1 1v12c0 .55228.44772 1 1 1h12c.55228 0 1-.44772 1-1v-12c0-.55228-.44772-1-1-1z" fill="url(#a)"/></svg>

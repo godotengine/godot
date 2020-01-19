@@ -13,10 +13,10 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the video stream's name.
+				Returns the video stream's name, or [code]"&lt;No Stream&gt;"[/code] if no video stream is assigned.
 			</description>
 		</method>
-		<method name="get_video_texture">
+		<method name="get_video_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<description>
@@ -28,20 +28,22 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the video is playing.
+				[b]Note:[/b] The video is still considered playing if paused during playback.
 			</description>
 		</method>
 		<method name="play">
 			<return type="void">
 			</return>
 			<description>
-				Starts the video playback.
+				Starts the video playback from the beginning. If the video is paused, this will not unpause the video.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
 			<description>
-				Stops the video playback.
+				Stops the video playback and sets the stream position to 0.
+				[b]Note:[/b] Although the stream position will be set to 0, the first frame of the video stream won't become the current frame.
 			</description>
 		</method>
 	</methods>
@@ -65,6 +67,7 @@
 			If [code]true[/code], the video is paused.
 		</member>
 		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream">
+			The assigned video stream. See description for supported formats.
 		</member>
 		<member name="stream_position" type="float" setter="set_stream_position" getter="get_stream_position">
 			The current position of the stream, in seconds.

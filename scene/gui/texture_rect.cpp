@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,16 @@
 /*************************************************************************/
 
 #include "texture_rect.h"
+#include "core/core_string_names.h"
 #include "servers/visual_server.h"
 
 void TextureRect::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		if (texture.is_null())
+		if (texture.is_null()) {
 			return;
+		}
 
 		Size2 size;
 		Point2 offset;
@@ -84,11 +86,11 @@ void TextureRect::_notification(int p_what) {
 				size = get_size();
 
 				Size2 tex_size = texture->get_size();
-				Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
-				float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
-				Size2 scaledTexSize = tex_size * scale;
+				Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
+				float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
+				Size2 scaled_tex_size = tex_size * scale;
 
-				region.position = ((scaledTexSize - size) / scale).abs() / 2.0f;
+				region.position = ((scaled_tex_size - size) / scale).abs() / 2.0f;
 				region.size = size / scale;
 			} break;
 		}
@@ -106,11 +108,13 @@ void TextureRect::_notification(int p_what) {
 
 Size2 TextureRect::get_minimum_size() const {
 
-	if (!expand && !texture.is_null())
+	if (!expand && !texture.is_null()) {
 		return texture->get_size();
-	else
+	} else {
 		return Size2();
+	}
 }
+
 void TextureRect::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TextureRect::set_texture);
@@ -123,6 +127,7 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &TextureRect::is_flipped_v);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &TextureRect::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &TextureRect::_texture_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
@@ -140,14 +145,31 @@ void TextureRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
+void TextureRect::_texture_changed() {
+
+	if (texture.is_valid()) {
+		update();
+		minimum_size_changed();
+	}
+}
+
 void TextureRect::set_texture(const Ref<Texture> &p_tex) {
 
+	if (p_tex == texture) {
+		return;
+	}
+
+	if (texture.is_valid()) {
+		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
+
 	texture = p_tex;
+
+	if (texture.is_valid()) {
+		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+	}
+
 	update();
-	/*
-	if (texture.is_valid())
-		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
-	*/
 	minimum_size_changed();
 }
 
@@ -162,6 +184,7 @@ void TextureRect::set_expand(bool p_expand) {
 	update();
 	minimum_size_changed();
 }
+
 bool TextureRect::has_expand() const {
 
 	return expand;
@@ -183,6 +206,7 @@ void TextureRect::set_flip_h(bool p_flip) {
 	hflip = p_flip;
 	update();
 }
+
 bool TextureRect::is_flipped_h() const {
 
 	return hflip;
@@ -193,6 +217,7 @@ void TextureRect::set_flip_v(bool p_flip) {
 	vflip = p_flip;
 	update();
 }
+
 bool TextureRect::is_flipped_v() const {
 
 	return vflip;

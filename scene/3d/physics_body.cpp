@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,10 +129,7 @@ void PhysicsBody::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -140,10 +137,7 @@ void PhysicsBody::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -192,10 +186,9 @@ void StaticBody::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
+	ERR_FAIL_COND_MSG(p_friction < 0 || p_friction > 1, "Friction must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -206,8 +199,7 @@ void StaticBody::set_friction(real_t p_friction) {
 
 real_t StaticBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -222,10 +214,9 @@ void StaticBody::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
+	ERR_FAIL_COND_MSG(p_bounce < 0 || p_bounce > 1, "Bounce must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -236,8 +227,7 @@ void StaticBody::set_bounce(real_t p_bounce) {
 
 real_t StaticBody::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -636,8 +626,7 @@ void RigidBody::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -649,8 +638,7 @@ void RigidBody::set_friction(real_t p_friction) {
 }
 real_t RigidBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -665,8 +653,7 @@ void RigidBody::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -677,8 +664,7 @@ void RigidBody::set_bounce(real_t p_bounce) {
 	physics_material_override->set_bounce(p_bounce);
 }
 real_t RigidBody::get_bounce() const {
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 	if (physics_material_override.is_null()) {
 		return 0;
 	}
@@ -867,10 +853,7 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
-		if (contact_monitor->locked) {
-			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
-		}
-		ERR_FAIL_COND(contact_monitor->locked);
+		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
@@ -1031,7 +1014,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported"), "set_max_contacts_reported", "get_max_contacts_reported");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "contacts_reported", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_max_contacts_reported", "get_max_contacts_reported");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "contact_monitor"), "set_contact_monitor", "is_contact_monitor_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
@@ -1154,29 +1137,30 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
-//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+//so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
-	Vector3 lv = p_linear_velocity;
+	Vector3 body_velocity = p_linear_velocity;
+	Vector3 body_velocity_normal = body_velocity.normalized();
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
-			lv[i] = 0;
+			body_velocity[i] = 0;
 		}
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	Vector3 motion = (floor_velocity + lv) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
+	Vector3 motion = (floor_velocity + body_velocity) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
+	on_floor_body = RID();
 	on_ceiling = false;
 	on_wall = false;
 	colliders.clear();
+	floor_normal = Vector3();
 	floor_velocity = Vector3();
-
-	Vector3 lv_n = p_linear_velocity.normalized();
 
 	while (p_max_slides) {
 
@@ -1204,47 +1188,38 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				bool is_on_slope = false;
-				if (p_floor_direction == Vector3()) {
+				if (p_up_direction == Vector3()) {
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //floor
+					if (Math::acos(collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
+						floor_normal = collision.normal;
 						on_floor_body = collision.collider_rid;
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
+							if ((body_velocity_normal + p_up_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
-								gt.origin -= collision.travel;
+								gt.origin -= collision.travel.slide(p_up_direction);
 								set_global_transform(gt);
 								return Vector3();
 							}
 						}
-
-						is_on_slope = true;
-
-					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
+					} else if (Math::acos(collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
 					}
 				}
 
-				if (p_stop_on_slope && is_on_slope) {
-					motion = motion.slide(p_floor_direction);
-					lv = lv.slide(p_floor_direction);
-				} else {
-					Vector3 n = collision.normal;
-					motion = motion.slide(n);
-					lv = lv.slide(n);
-				}
+				motion = motion.slide(collision.normal);
+				body_velocity = body_velocity.slide(collision.normal);
 
 				for (int j = 0; j < 3; j++) {
 					if (locked_axis & (1 << j)) {
-						lv[j] = 0;
+						body_velocity[j] = 0;
 					}
 				}
 			}
@@ -1256,14 +1231,14 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		--p_max_slides;
 	}
 
-	return lv;
+	return body_velocity;
 }
 
-Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
 
-	Vector3 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
+	Vector3 ret = move_and_slide(p_linear_velocity, p_up_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
 	if (!was_on_floor || p_snap == Vector3()) {
 		return ret;
 	}
@@ -1274,15 +1249,16 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
 
 		bool apply = true;
-		if (p_floor_direction != Vector3()) {
-			if (Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+		if (p_up_direction != Vector3()) {
+			if (Math::acos(p_up_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
 				on_floor = true;
+				floor_normal = col.normal;
 				on_floor_body = col.collider_rid;
 				floor_velocity = col.collider_vel;
 				if (p_stop_on_slope) {
 					// move and collide may stray the object a bit because of pre un-stucking,
 					// so only ensure that motion happens on floor direction in this case.
-					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+					col.travel = col.travel.project(p_up_direction);
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
@@ -1309,6 +1285,11 @@ bool KinematicBody::is_on_wall() const {
 bool KinematicBody::is_on_ceiling() const {
 
 	return on_ceiling;
+}
+
+Vector3 KinematicBody::get_floor_normal() const {
+
+	return floor_normal;
 }
 
 Vector3 KinematicBody::get_floor_velocity() const {
@@ -1404,17 +1385,30 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
+void KinematicBody::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		// Reset move_and_slide() data.
+		on_floor = false;
+		on_floor_body = RID();
+		on_ceiling = false;
+		on_wall = false;
+		colliders.clear();
+		floor_velocity = Vector3();
+	}
+}
+
 void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody::is_on_ceiling);
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody::is_on_wall);
+	ClassDB::bind_method(D_METHOD("get_floor_normal"), &KinematicBody::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &KinematicBody::set_axis_lock);
@@ -1558,6 +1552,14 @@ bool PhysicalBone::JointData::_get(const StringName &p_name, Variant &r_ret) con
 }
 
 void PhysicalBone::JointData::_get_property_list(List<PropertyInfo> *p_list) const {
+}
+
+void PhysicalBone::apply_central_impulse(const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
+}
+
+void PhysicalBone::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
 }
 
 bool PhysicalBone::PinJointData::_set(const StringName &p_name, const Variant &p_value, RID j) {
@@ -2166,6 +2168,9 @@ void PhysicalBone::_notification(int p_what) {
 			update_bone_id();
 			reset_to_rest_position();
 			_reset_physics_simulation_state();
+			if (!joint.is_valid() && joint_data) {
+				_reload_joint();
+			}
 			break;
 		case NOTIFICATION_EXIT_TREE:
 			if (parent_skeleton) {
@@ -2174,7 +2179,10 @@ void PhysicalBone::_notification(int p_what) {
 				}
 			}
 			parent_skeleton = NULL;
-			update_bone_id();
+			if (joint.is_valid()) {
+				PhysicsServer::get_singleton()->free(joint);
+				joint = RID();
+			}
 			break;
 		case NOTIFICATION_TRANSFORM_CHANGED:
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -2187,7 +2195,7 @@ void PhysicalBone::_notification(int p_what) {
 
 void PhysicalBone::_direct_state_changed(Object *p_state) {
 
-	if (!simulate_physics) {
+	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
@@ -2210,12 +2218,15 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	// Update skeleton
 	if (parent_skeleton) {
 		if (-1 != bone_id) {
-			parent_skeleton->set_bone_global_pose(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse));
+			parent_skeleton->set_bone_global_pose_override(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse), 1.0, true);
 		}
 	}
 }
 
 void PhysicalBone::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicalBone::apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &PhysicalBone::apply_impulse);
+
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &PhysicalBone::_direct_state_changed);
 
 	ClassDB::bind_method(D_METHOD("set_joint_type", "joint_type"), &PhysicalBone::set_joint_type);
@@ -2721,7 +2732,6 @@ void PhysicalBone::_start_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
-	parent_skeleton->set_bone_ignore_animation(bone_id, true);
 	_internal_simulate_physics = true;
 }
 
@@ -2733,6 +2743,6 @@ void PhysicalBone::_stop_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
-	parent_skeleton->set_bone_ignore_animation(bone_id, false);
+	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
 }

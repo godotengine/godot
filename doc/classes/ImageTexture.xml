@@ -72,6 +72,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="7" />
 		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality" default="0.7">
 			The storage quality for [constant STORAGE_COMPRESS_LOSSY].
 		</member>

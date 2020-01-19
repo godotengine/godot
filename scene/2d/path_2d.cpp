@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #endif
 
+#ifdef TOOLS_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
 
 	if (!curve.is_valid() || curve->get_point_count() == 0)
@@ -85,6 +86,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
+#endif
 
 void Path2D::_notification(int p_what) {
 
@@ -110,7 +112,7 @@ void Path2D::_notification(int p_what) {
 
 				real_t frac = j / 8.0;
 				Vector2 p = curve->interpolate(i, frac);
-				draw_line(prev_p, p, color, line_width);
+				draw_line(prev_p, p, color, line_width, true);
 				prev_p = p;
 			}
 		}
@@ -173,16 +175,10 @@ void PathFollow2D::_update_transform() {
 	if (path_length == 0) {
 		return;
 	}
-	float bounded_offset = offset;
-	if (loop)
-		bounded_offset = Math::fposmod(bounded_offset, path_length);
-	else
-		bounded_offset = CLAMP(bounded_offset, 0, path_length);
-
-	Vector2 pos = c->interpolate_baked(bounded_offset, cubic);
+	Vector2 pos = c->interpolate_baked(offset, cubic);
 
 	if (rotate) {
-		float ahead = bounded_offset + lookahead;
+		float ahead = offset + lookahead;
 
 		if (loop && ahead >= path_length) {
 			// If our lookahead will loop, we need to check if the path is closed.
@@ -206,7 +202,7 @@ void PathFollow2D::_update_transform() {
 			// This will happen at the end of non-looping or non-closed paths.
 			// We'll try a look behind instead, in order to get a meaningful angle.
 			tangent_to_curve =
-					(pos - c->interpolate_baked(bounded_offset - lookahead, cubic)).normalized();
+					(pos - c->interpolate_baked(offset - lookahead, cubic)).normalized();
 		} else {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}

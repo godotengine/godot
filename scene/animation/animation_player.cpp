@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -248,10 +248,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
-		if (!child) {
-			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
-		}
-		ERR_CONTINUE(!child); // couldn't find the child node
+		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
 		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
@@ -259,7 +256,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 			Skeleton *sk = Object::cast_to<Skeleton>(child);
 			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
-			if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
+			if (bone_idx == -1) {
 
 				continue;
 			}
@@ -973,8 +970,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
 
 #ifdef DEBUG_ENABLED
-	ERR_EXPLAIN("Invalid animation name: " + String(p_name));
-	ERR_FAIL_COND_V(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
 #endif
 
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
@@ -1102,7 +1098,7 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 
 void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
 
-	ERR_FAIL_COND(p_time < 0);
+	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
 
 	BlendKey bk;
 	bk.from = p_animation1;
@@ -1158,10 +1154,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	if (String(name) == "")
 		name = playback.assigned;
 
-	if (!animation_set.has(name)) {
-		ERR_EXPLAIN("Animation not found: " + name);
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!animation_set.has(name), "Animation not found: " + name + ".");
 
 	Playback &c = playback;
 
@@ -1207,7 +1200,9 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 		}
 	}
 
-	_stop_playing_caches();
+	if (get_current_animation() != p_name) {
+		_stop_playing_caches();
+	}
 
 	c.current.from = &animation_set[name];
 

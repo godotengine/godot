@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -171,14 +171,14 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 		ad->start_counting_ticks();
 
 		if (!ad->active) {
-			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
+			for (uint64_t i = 0; i < ad->period_size * ad->channels; i++) {
 				ad->samples_out.write[i] = 0;
 			}
 
 		} else {
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
-			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
+			for (uint64_t i = 0; i < ad->period_size * ad->channels; i++) {
 				ad->samples_out.write[i] = ad->samples_in[i] >> 16;
 			}
 		}

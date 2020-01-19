@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 #include "core/cowdata.h"
 #include "core/typedefs.h"
 #include "core/vector.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 template <class T>
 class CharProxy {
@@ -227,6 +223,7 @@ public:
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
+	String repeat(int p_count) const;
 	String insert(int p_at_pos, const String &p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
@@ -325,7 +322,7 @@ public:
 	String path_to_file(const String &p_path) const;
 	String get_base_dir() const;
 	String get_file() const;
-	static String humanize_size(size_t p_size);
+	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
@@ -340,6 +337,8 @@ public:
 
 	String percent_encode() const;
 	String percent_decode() const;
+
+	String property_name_encode() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
@@ -372,6 +371,7 @@ String operator+(const char *p_chr, const String &p_str);
 String operator+(CharType p_chr, const String &p_str);
 
 String itos(int64_t p_val);
+String uitos(uint64_t p_val);
 String rtos(double p_val);
 String rtoss(double p_val); //scientific version
 

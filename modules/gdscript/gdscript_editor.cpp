@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,13 +84,16 @@ String GDScriptLanguage::_get_processed_template(const String &p_template, const
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	String _template = "extends %BASE%\n"
 					   "\n"
+					   "\n"
 					   "# Declare member variables here. Examples:\n"
 					   "# var a%INT_TYPE% = 2\n"
 					   "# var b%STRING_TYPE% = \"text\"\n"
 					   "\n"
+					   "\n"
 					   "# Called when the node enters the scene tree for the first time.\n"
 					   "func _ready()%VOID_RETURN%:\n"
 					   "%TS%pass # Replace with function body.\n"
+					   "\n"
 					   "\n"
 					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
 					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
@@ -223,7 +226,7 @@ bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false);
+		ScriptDebugger::get_singleton()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -237,7 +240,8 @@ bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue)
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
+		bool is_error_breakpoint = p_error != "Breakpoint";
+		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, is_error_breakpoint);
 		return true;
 	} else {
 		return false;
@@ -331,7 +335,9 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 
 ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
-	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	if (_debug_parse_err_line >= 0)
+		return NULL;
+
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
 
 	int l = _debug_call_stack_pos - p_level - 1;
@@ -551,7 +557,7 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_isarg = tr
 	}
 	if (p_info.type == Variant::NIL) {
 		if (p_isarg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
-			return "var";
+			return "Variant";
 		} else {
 			return "void";
 		}
@@ -634,7 +640,7 @@ static GDScriptCompletionIdentifier _type_from_gdtype(const GDScriptDataType &p_
 
 	switch (p_gdtype.kind) {
 		case GDScriptDataType::UNINITIALIZED: {
-			ERR_EXPLAIN("Uninitialized completion. Please report a bug.");
+			ERR_PRINT("Uninitialized completion. Please report a bug.");
 		} break;
 		case GDScriptDataType::BUILTIN: {
 			ci.type.kind = GDScriptParser::DataType::BUILTIN;
@@ -739,6 +745,14 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 			r_type.type.has_type = true;
 			r_type.type.kind = GDScriptParser::DataType::BUILTIN;
 			r_type.type.builtin_type = Variant::ARRAY;
+		} break;
+		case GDScriptParser::Node::TYPE_CAST: {
+			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
+			GDScriptCompletionIdentifier value;
+			if (_guess_expression_type(p_context, cn->source_node, r_type)) {
+				r_type.type = cn->get_datatype();
+				found = true;
+			}
 		} break;
 		case GDScriptParser::Node::TYPE_OPERATOR: {
 			const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_expression);
@@ -1228,6 +1242,9 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 		c.line = last_assign_line;
 		r_type.assigned_expression = last_assigned_expression;
 		if (_guess_expression_type(c, last_assigned_expression, r_type)) {
+			if (var_type.has_type) {
+				r_type.type = var_type;
+			}
 			return true;
 		}
 	}
@@ -1721,14 +1738,12 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	for (const List<PropertyInfo>::Element *E = p_info.arguments.front(); E; E = E->next()) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += _get_visual_datatype(E->get(), true) + " " + E->get().name;
+		arghint += E->get().name + ": " + _get_visual_datatype(E->get(), true);
 
 		if (i - def_args >= 0) {
 			arghint += String(" = ") + p_info.default_arguments[i - def_args].get_construct_string();
@@ -1744,8 +1759,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 	if (p_info.flags & METHOD_FLAG_VARARG) {
 		if (p_info.arguments.size() > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
@@ -1754,9 +1767,6 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx) {
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
-	}
-	if (p_info.arguments.size() > 0 || (p_info.flags & METHOD_FLAG_VARARG)) {
-		arghint += " ";
 	}
 
 	arghint += ")";
@@ -1772,14 +1782,12 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 	for (int i = 0; i < p_function->arguments.size(); i++) {
 		if (i > 0) {
 			arghint += ", ";
-		} else {
-			arghint += " ";
 		}
 
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += p_function->argument_types[i].to_string() + " " + p_function->arguments[i].operator String();
+		arghint += p_function->arguments[i].operator String() + ": " + p_function->argument_types[i].to_string();
 
 		if (i - def_args >= 0) {
 			String def_val = "<unknown>";
@@ -1803,9 +1811,6 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 	}
 
-	if (p_function->arguments.size() > 0) {
-		arghint += " ";
-	}
 	arghint += ")";
 
 	return arghint;
@@ -1936,6 +1941,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 				Ref<GDScript> script = base_type.script_type;
 				if (script.is_valid()) {
 					if (!_static && !p_only_functions) {
+						if (p_context.base && p_context.base->get_script_instance()) {
+							List<PropertyInfo> members;
+							p_context.base->get_script_instance()->get_property_list(&members);
+							for (List<PropertyInfo>::Element *E = members.front(); E; E = E->next()) {
+								ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_MEMBER);
+								r_result.insert(option.display, option);
+							}
+						}
 						for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
 							ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
 							r_result.insert(option.display, option);
@@ -2824,6 +2837,16 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 				clss = clss->owner;
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 					ScriptCodeCompletionOption option(Variant::get_type_name((Variant::Type)i), ScriptCodeCompletionOption::KIND_CLASS);
+					options.insert(option.display, option);
+				}
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+					String s = E->get().name;
+					if (!s.begins_with("autoload/")) {
+						continue;
+					}
+					ScriptCodeCompletionOption option(s.get_slice("/", 1), ScriptCodeCompletionOption::KIND_CLASS);
 					options.insert(option.display, option);
 				}
 			}

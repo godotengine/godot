@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
 #include "servers/visual/shader_types.h"
@@ -55,6 +56,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	_load_theme_settings();
 
 	get_text_edit()->set_text(p_shader->get_code());
+	get_text_edit()->clear_undo_history();
 
 	_validate_script();
 	_line_col_changed();
@@ -197,13 +199,9 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	ShaderLanguage sl;
 	String calltip;
 
-	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
-	if (err != OK)
-		ERR_PRINT("Shaderlang complete failed");
+	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
 
-	if (calltip != "") {
-		get_text_edit()->set_code_hint(calltip);
-	}
+	get_text_edit()->set_code_hint(calltip);
 }
 
 void ShaderTextEditor::_validate_script() {
@@ -371,7 +369,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
 	shader_editor->get_text_edit()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	shader_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
-	shader_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_numbers"));
+	shader_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
 	shader_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));
 	shader_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
 	shader_editor->get_text_edit()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
@@ -379,8 +377,10 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	shader_editor->get_text_edit()->add_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
 	shader_editor->get_text_edit()->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
-	shader_editor->get_text_edit()->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/open_scripts/smooth_scrolling"));
-	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/open_scripts/v_scroll_speed"));
+	shader_editor->get_text_edit()->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
+	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
+	shader_editor->get_text_edit()->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
+	shader_editor->get_text_edit()->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
 }
 
 void ShaderEditor::_bind_methods() {
@@ -522,26 +522,33 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					tx->cursor_set_column(col);
 				}
 			}
-			_make_context_menu(tx->is_selection_active());
+			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
 		}
+	}
+
+	Ref<InputEventKey> k = ev;
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_MENU) {
+		TextEdit *tx = shader_editor->get_text_edit();
+		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		context_menu->grab_focus();
 	}
 }
 
 void ShaderEditor::_update_bookmark_list() {
 
-	bookmarks_menu->get_popup()->clear();
+	bookmarks_menu->clear();
 
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	Array bookmark_list = shader_editor->get_text_edit()->get_bookmarks_array();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
 
-	bookmarks_menu->get_popup()->add_separator();
+	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
 		String line = shader_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
@@ -550,21 +557,21 @@ void ShaderEditor::_update_bookmark_list() {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->get_popup()->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->get_popup()->set_item_metadata(bookmarks_menu->get_popup()->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
 	}
 }
 
 void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 
 	if (p_idx < 4) { // Any item before the separator.
-		_menu_option(bookmarks_menu->get_popup()->get_item_id(p_idx));
+		_menu_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		shader_editor->goto_line(bookmarks_menu->get_popup()->get_item_metadata(p_idx));
+		shader_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
 	}
 }
 
-void ShaderEditor::_make_context_menu(bool p_selection) {
+void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 
 	context_menu->clear();
 	if (p_selection) {
@@ -584,7 +591,7 @@ void ShaderEditor::_make_context_menu(bool p_selection) {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
-	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }
@@ -649,16 +656,23 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
-	bookmarks_menu = memnew(MenuButton);
-	bookmarks_menu->set_text(TTR("Bookmarks"));
-	bookmarks_menu->set_switch_on_hover(true);
+	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_switch_on_hover(true);
+	goto_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu->get_popup()->add_separator();
+
+	bookmarks_menu = memnew(PopupMenu);
+	bookmarks_menu->set_name("Bookmarks");
+	goto_menu->get_popup()->add_child(bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect("index_pressed", this, "_bookmark_item_pressed");
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
@@ -670,7 +684,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
-	hbc->add_child(bookmarks_menu);
+	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
 	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
 	main_container->add_child(shader_editor);
@@ -745,7 +759,7 @@ ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	shader_editor = memnew(ShaderEditor(p_node));
 
-	shader_editor->set_custom_minimum_size(Size2(0, 300));
+	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
 	button->hide();
 }

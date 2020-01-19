@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,8 +120,8 @@ void RayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> pts;
 	float tsize = 4;
 	pts.push_back(tip + Vector2(0, tsize));
-	pts.push_back(tip + Vector2(0.707 * tsize, 0));
-	pts.push_back(tip + Vector2(-0.707 * tsize, 0));
+	pts.push_back(tip + Vector2(Math_SQRT12 * tsize, 0));
+	pts.push_back(tip + Vector2(-Math_SQRT12 * tsize, 0));
 	Vector<Color> cols;
 	for (int i = 0; i < 3; i++)
 		cols.push_back(p_color);
@@ -134,7 +134,7 @@ Rect2 RayShape2D::get_rect() const {
 	Rect2 rect;
 	rect.position = Vector2();
 	rect.expand_to(Vector2(0, length));
-	rect = rect.grow(0.707 * 4);
+	rect = rect.grow(Math_SQRT12 * 4);
 	return rect;
 }
 

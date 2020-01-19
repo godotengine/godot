@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,9 +58,10 @@ private:
 		ERR_NET_OTHER
 	};
 
-	NetError _get_socket_error();
+	NetError _get_socket_error() const;
 	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
 	_FORCE_INLINE_ Error _change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add);
+	_FORCE_INLINE_ void _set_close_exec_enabled(bool p_enabled);
 
 protected:
 	static NetSocket *_create_func();
@@ -88,7 +89,7 @@ public:
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
 
-	virtual void set_broadcasting_enabled(bool p_enabled);
+	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);
 	virtual void set_ipv6_only_enabled(bool p_enabled);
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);

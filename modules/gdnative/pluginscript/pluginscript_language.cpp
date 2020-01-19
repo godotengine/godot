@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,7 @@ void PluginScriptLanguage::get_recognized_extensions(List<String> *p_extensions)
 }
 
 void PluginScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
-	// TODO: provid this statically in `godot_pluginscript_language_desc` ?
+	// TODO: provide this statically in `godot_pluginscript_language_desc` ?
 	if (_desc.get_public_functions) {
 		Array functions;
 		_desc.get_public_functions(_data, (godot_array *)&functions);
@@ -212,7 +212,7 @@ void PluginScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) c
 }
 
 void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
-	// TODO: provid this statically in `godot_pluginscript_language_desc` ?
+	// TODO: provide this statically in `godot_pluginscript_language_desc` ?
 	if (_desc.get_public_constants) {
 		Dictionary constants;
 		_desc.get_public_constants(_data, (godot_dictionary *)&constants);

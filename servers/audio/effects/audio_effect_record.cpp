@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,10 +192,11 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 		}
 
 		ensure_thread_stopped();
+		recording_active = true;
 		current_instance->init();
+	} else {
+		recording_active = false;
 	}
-
-	recording_active = p_record;
 }
 
 bool AudioEffectRecord::is_recording_active() const {
@@ -217,7 +218,7 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 	PoolVector<uint8_t> dst_data;
 
 	ERR_FAIL_COND_V(current_instance.is_null(), NULL);
-	ERR_FAIL_COND_V(current_instance->recording_data.size(), NULL);
+	ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, NULL);
 
 	if (dst_format == AudioStreamSample::FORMAT_8_BITS) {
 		int data_size = current_instance->recording_data.size();
@@ -297,4 +298,5 @@ void AudioEffectRecord::_bind_methods() {
 
 AudioEffectRecord::AudioEffectRecord() {
 	format = AudioStreamSample::FORMAT_16_BITS;
+	recording_active = false;
 }

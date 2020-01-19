@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,8 +46,7 @@ bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	if (get_script_instance() && get_script_instance()->has_method("handles")) {
 		return get_script_instance()->call("handles", p_type);
 	}
-	ERR_EXPLAIN("EditorResourcePreviewGenerator::handles needs to be overridden");
-	ERR_FAIL_V(false);
+	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::handles needs to be overridden.");
 }
 
 Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
@@ -55,8 +54,7 @@ Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const S
 	if (get_script_instance() && get_script_instance()->has_method("generate")) {
 		return get_script_instance()->call("generate", p_from, p_size);
 	}
-	ERR_EXPLAIN("EditorResourcePreviewGenerator::generate needs to be overridden");
-	ERR_FAIL_V(Ref<Texture>());
+	ERR_FAIL_V_MSG(Ref<Texture>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
 }
 
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size) const {
@@ -118,7 +116,7 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 	uint64_t modified_time = 0;
 
 	if (p_str.begins_with("ID:")) {
-		hash = p_str.get_slicec(':', 2).to_int();
+		hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
 		path = "ID:" + p_str.get_slicec(':', 1);
 	} else {
 		modified_time = FileAccess::get_modified_time(path);
@@ -203,13 +201,13 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			if (has_small_texture) {
 				ResourceSaver::save(cache_base + "_small.png", r_small_texture);
 			}
-			Error err;
-			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE, &err);
-			ERR_FAIL_COND(err != OK);
+			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
+			ERR_FAIL_COND_MSG(!f, "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			f->store_line(itos(thumbnail_size));
 			f->store_line(itos(has_small_texture));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
 			f->store_line(FileAccess::get_md5(p_item.path));
+			f->close();
 			memdelete(f);
 		}
 	}
@@ -217,7 +215,6 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 
 void EditorResourcePreview::_thread() {
 
-#ifndef SERVER_ENABLED
 	exited = false;
 	while (!exit) {
 
@@ -297,10 +294,17 @@ void EditorResourcePreview::_thread() {
 								//update modified time
 
 								f = FileAccess::open(file, FileAccess::WRITE);
-								f->store_line(itos(modtime));
-								f->store_line(itos(has_small_texture));
-								f->store_line(md5);
-								memdelete(f);
+								if (!f) {
+									// Not returning as this would leave the thread hanging and would require
+									// some proper cleanup/disabling of resource preview generation.
+									ERR_PRINTS("Cannot create file '" + file + "'. Check user write permissions.");
+								} else {
+									f->store_line(itos(thumbnail_size));
+									f->store_line(itos(has_small_texture));
+									f->store_line(itos(modtime));
+									f->store_line(md5);
+									memdelete(f);
+								}
 							}
 						} else {
 							memdelete(f);
@@ -344,7 +348,6 @@ void EditorResourcePreview::_thread() {
 			preview_mutex->unlock();
 		}
 	}
-#endif
 	exited = true;
 }
 
@@ -451,7 +454,7 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND(thread);
+	ERR_FAIL_COND_MSG(thread, "Thread already started.");
 	thread = Thread::create(_thread_func, this);
 }
 

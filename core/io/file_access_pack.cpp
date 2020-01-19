@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,11 @@
 
 #include <stdio.h>
 
-#define PACK_VERSION 1
-
-Error PackedData::add_pack(const String &p_path) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 
 	for (int i = 0; i < sources.size(); i++) {
 
-		if (sources[i]->try_open_pack(p_path)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
 
 			return OK;
 		};
@@ -49,7 +47,7 @@ Error PackedData::add_pack(const String &p_path) {
 	return ERR_FILE_UNRECOGNIZED;
 };
 
-void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src) {
+void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 
 	PathMD5 pmd5(path.md5_buffer());
 	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
@@ -64,7 +62,8 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		pf.md5[i] = p_md5[i];
 	pf.src = p_src;
 
-	files[pmd5] = pf;
+	if (!exists || p_replace_files)
+		files[pmd5] = pf;
 
 	if (!exists) {
 		//search for dir
@@ -90,7 +89,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 			}
 		}
 		String filename = path.get_file();
-		// Don't add as a file if the path points to a directoryy
+		// Don't add as a file if the path points to a directory
 		if (!filename.empty()) {
 			cd->files.insert(filename);
 		}
@@ -133,23 +132,22 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f)
 		return false;
 
-	//printf("try open %ls!\n", p_path.c_str());
-
 	uint32_t magic = f->get_32();
 
-	if (magic != 0x43504447) {
+	if (magic != PACK_HEADER_MAGIC) {
 		//maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
 		magic = f->get_32();
-		if (magic != 0x43504447) {
+		if (magic != PACK_HEADER_MAGIC) {
 
+			f->close();
 			memdelete(f);
 			return false;
 		}
@@ -159,8 +157,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 		f->seek(f->get_position() - ds - 8);
 
 		magic = f->get_32();
-		if (magic != 0x43504447) {
+		if (magic != PACK_HEADER_MAGIC) {
 
+			f->close();
 			memdelete(f);
 			return false;
 		}
@@ -169,12 +168,18 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	f->get_32(); // ver_rev
+	f->get_32(); // patch number, not used for validation.
 
-	ERR_EXPLAIN("Pack version unsupported: " + itos(version));
-	ERR_FAIL_COND_V(version != PACK_VERSION, false);
-	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor));
-	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
+	if (version != PACK_FORMAT_VERSION) {
+		f->close();
+		memdelete(f);
+		ERR_FAIL_V_MSG(false, "Pack version unsupported: " + itos(version) + ".");
+	}
+	if (ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR)) {
+		f->close();
+		memdelete(f);
+		ERR_FAIL_V_MSG(false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
+	}
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -198,9 +203,11 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this);
+		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
 	};
 
+	f->close();
+	memdelete(f);
 	return true;
 };
 
@@ -322,10 +329,9 @@ bool FileAccessPack::file_exists(const String &p_name) {
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
-	if (!f) {
-		ERR_EXPLAIN("Can't open pack-referenced file: " + String(pf.pack));
-		ERR_FAIL_COND(!f);
-	}
+
+	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file '" + String(pf.pack) + "'.");
+
 	f->seek(pf.offset);
 	pos = 0;
 	eof = false;
@@ -463,10 +469,14 @@ String DirAccessPack::get_current_dir() {
 
 bool DirAccessPack::file_exists(String p_file) {
 
+	p_file = fix_path(p_file);
+
 	return current->files.has(p_file);
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
+
+	p_dir = fix_path(p_dir);
 
 	return current->subdirs.has(p_dir);
 }

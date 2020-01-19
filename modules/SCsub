@@ -16,7 +16,7 @@ for x in env.module_list:
     env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
     SConscript(x + "/SCsub")
 
-if env.split_modules:
+if env['split_libmodules']:
     env.split_lib("modules", env_lib = env_modules)
 else:
     lib = env_modules.add_library("modules", env.modules_sources)

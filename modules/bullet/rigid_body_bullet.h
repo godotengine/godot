@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,8 +114,8 @@ public:
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
 	virtual void add_torque(const Vector3 &p_torque);
 	virtual void apply_central_impulse(const Vector3 &p_impulse);
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j);
-	virtual void apply_torque_impulse(const Vector3 &p_j);
+	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	virtual void apply_torque_impulse(const Vector3 &p_impulse);
 
 	virtual void set_sleep_state(bool p_enable);
 	virtual bool is_sleeping() const;

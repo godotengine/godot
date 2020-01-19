@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +69,10 @@ public:
 
 			int region;
 			bool end;
+			ColorRegionInfo() {
+				region = 0;
+				end = false;
+			}
 		};
 
 		struct Line {
@@ -78,11 +82,22 @@ public:
 			bool bookmark : 1;
 			bool hidden : 1;
 			bool safe : 1;
+			bool has_info : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
 			Ref<Texture> info_icon;
 			String info;
 			String data;
+			Line() {
+				width_cache = 0;
+				marked = false;
+				breakpoint = false;
+				bookmark = false;
+				hidden = false;
+				safe = false;
+				has_info = false;
+				wrap_amount_cache = 0;
+			}
 		};
 
 	private:
@@ -115,10 +130,15 @@ public:
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+			if (p_icon.is_null()) {
+				text.write[p_line].has_info = false;
+				return;
+			}
 			text.write[p_line].info_icon = p_icon;
 			text.write[p_line].info = p_info;
+			text.write[p_line].has_info = true;
 		}
-		bool has_info_icon(int p_line) const { return text[p_line].info_icon.is_valid(); }
+		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
 		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
 		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
@@ -127,6 +147,7 @@ public:
 		void clear();
 		void clear_width_cache();
 		void clear_wrap_cache();
+		void clear_info_icons();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 		Text() { indent_size = 4; }
 	};
@@ -136,6 +157,14 @@ private:
 		int last_fit_x;
 		int line, column; ///< cursor
 		int x_ofs, line_ofs, wrap_ofs;
+		Cursor() {
+			last_fit_x = 0;
+			line = 0;
+			column = 0; ///< cursor
+			x_ofs = 0;
+			line_ofs = 0;
+			wrap_ofs = 0;
+		}
 	} cursor;
 
 	struct Selection {
@@ -160,7 +189,21 @@ private:
 		int to_line, to_column;
 
 		bool shiftclick_left;
-
+		Selection() {
+			selecting_mode = MODE_NONE;
+			selecting_line = 0;
+			selecting_column = 0;
+			selected_word_beg = 0;
+			selected_word_end = 0;
+			selected_word_origin = 0;
+			selecting_text = false;
+			active = false;
+			from_line = 0;
+			from_column = 0;
+			to_line = 0;
+			to_column = 0;
+			shiftclick_left = false;
+		}
 	} selection;
 
 	struct Cache {
@@ -211,9 +254,21 @@ private:
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
 		int info_gutter_width;
+		int minimap_width;
+		Cache() {
+
+			row_height = 0;
+			line_spacing = 0;
+			line_number_w = 0;
+			breakpoint_gutter_width = 0;
+			fold_gutter_width = 0;
+			info_gutter_width = 0;
+			minimap_width = 0;
+		}
 	} cache;
 
 	Map<int, int> color_region_cache;
+	Map<int, Map<int, HighlighterInfo> > syntax_highlighting_cache;
 
 	struct TextOperation {
 
@@ -231,6 +286,17 @@ private:
 		uint32_t version;
 		bool chain_forward;
 		bool chain_backward;
+		TextOperation() {
+			type = TYPE_NONE;
+			from_line = 0;
+			from_column = 0;
+			to_line = 0;
+			to_column = 0;
+			prev_version = 0;
+			version = 0;
+			chain_forward = false;
+			chain_backward = false;
+		}
 	};
 
 	String ime_text;
@@ -313,6 +379,10 @@ private:
 	bool hiding_enabled;
 	bool draw_info_gutter;
 	int info_gutter_width;
+	bool draw_minimap;
+	int minimap_width;
+	Point2 minimap_char_size;
+	int minimap_line_spacing;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -326,6 +396,12 @@ private:
 
 	bool smooth_scroll_enabled;
 	bool scrolling;
+	bool dragging_selection;
+	bool dragging_minimap;
+	bool can_drag_minimap;
+	bool minimap_clicked;
+	double minimap_scroll_ratio;
+	double minimap_scroll_click_pos;
 	float target_v_scroll;
 	float v_scroll_speed;
 
@@ -353,12 +429,19 @@ private:
 	int search_result_line;
 	int search_result_col;
 
+	bool selecting_enabled;
+
 	bool context_menu_enabled;
+	bool shortcut_keys_enabled;
 
 	int executing_line;
 
+	void _generate_context_menu();
+
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
+
+	int _get_minimap_visible_rows() const;
 
 	void update_cursor_wrap_offset();
 	void _update_wrap_at();
@@ -395,6 +478,8 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _update_minimap_click();
+	void _update_minimap_drag();
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
@@ -406,6 +491,7 @@ private:
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
+	int _get_control_height() const;
 
 	int get_row_height() const;
 
@@ -475,15 +561,20 @@ public:
 	};
 
 	enum SearchFlags {
-
 		SEARCH_MATCH_CASE = 1,
 		SEARCH_WHOLE_WORDS = 2,
 		SEARCH_BACKWARDS = 4
 	};
 
+	enum SearchResult {
+		SEARCH_RESULT_COLUMN,
+		SEARCH_RESULT_LINE,
+	};
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
+	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
 
 	//void delete_char();
 	//void delete_line();
@@ -564,6 +655,7 @@ public:
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
+	Vector2i _get_cursor_pixel_pos();
 
 	bool cursor_get_blink_enabled() const;
 	void cursor_set_blink_enabled(const bool p_enabled);
@@ -697,6 +789,12 @@ public:
 	void set_info_gutter_width(int p_gutter_width);
 	int get_info_gutter_width() const;
 
+	void set_draw_minimap(bool p_draw);
+	bool is_drawing_minimap() const;
+
+	void set_minimap_width(int p_minimap_width);
+	int get_minimap_width() const;
+
 	void set_hiding_enabled(bool p_enabled);
 	bool is_hiding_enabled() const;
 
@@ -713,6 +811,12 @@ public:
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 
+	void set_selecting_enabled(bool p_enabled);
+	bool is_selecting_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();
@@ -725,6 +829,7 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
+VARIANT_ENUM_CAST(TextEdit::SearchResult);
 
 class SyntaxHighlighter {
 protected:

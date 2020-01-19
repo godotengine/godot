@@ -12,4 +12,9 @@
 	</methods>
 	<constants>
 	</constants>
+	<theme_items>
+		<theme_item name="panel" type="StyleBox">
+			Sets a custom [StyleBox] for the panel of the [PopupDialog].
+		</theme_item>
+	</theme_items>
 </class>

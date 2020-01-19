@@ -104,6 +104,10 @@ uniform sampler2D CbCr; //texunit:1
 
 /* clang-format on */
 
+#ifdef USE_LOD
+uniform float mip_level;
+#endif
+
 #if defined(USE_TEXTURE3D) || defined(USE_TEXTURE2DARRAY)
 uniform float layer;
 #endif
@@ -165,11 +169,11 @@ void main() {
 #elif defined(USE_ASYM_PANO)
 
 	// When an asymmetrical projection matrix is used (applicable for stereoscopic rendering i.e. VR) we need to do this calculation per fragment to get a perspective correct result.
-	// Note that we're ignoring the x-offset for IPD, with Z sufficiently in the distance it becomes neglectible, as a result we could probably just set cube_normal.z to -1.
+	// Asymmetrical projection means the center of projection is no longer in the center of the screen but shifted.
 	// The Matrix[2][0] (= asym_proj.x) and Matrix[2][1] (= asym_proj.z) values are what provide the right shift in the image.
 
 	vec3 cube_normal;
-	cube_normal.z = -1000000.0;
+	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - asym_proj.x)) / asym_proj.y;
 	cube_normal.y = (cube_normal.z * (-uv_interp.y - asym_proj.z)) / asym_proj.a;
 	cube_normal = mat3(sky_transform) * mat3(pano_transform) * cube_normal;
@@ -190,7 +194,11 @@ void main() {
 	color.gb = textureLod(CbCr, uv_interp, 0.0).rg - vec2(0.5, 0.5);
 	color.a = 1.0;
 #else
+#ifdef USE_LOD
+	vec4 color = textureLod(source, uv_interp, mip_level);
+#else
 	vec4 color = textureLod(source, uv_interp, 0.0);
+#endif
 #endif
 
 #ifdef LINEAR_TO_SRGB

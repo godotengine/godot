@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,8 +97,14 @@ void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
 }
 
 void EditorSubScene::_selected_changed() {
-	selection.clear();
-	is_root = false;
+	TreeItem *item = tree->get_selected();
+	ERR_FAIL_COND(!item);
+	Node *n = item->get_metadata(0);
+
+	if (!n || !selection.find(n)) {
+		selection.clear();
+		is_root = false;
+	}
 }
 
 void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_selected) {
@@ -116,6 +122,11 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 				selection.clear();
 			}
 			selection.push_back(n);
+		} else {
+			List<Node *>::Element *E = selection.find(n);
+
+			if (E)
+				selection.erase(E);
 		}
 	}
 }

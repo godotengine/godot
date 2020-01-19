@@ -142,7 +142,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @brief  Specifies the maximum angle that may be between two vertex tangents
  *         that their tangents and bi-tangents are smoothed.
  *
- * This applies to the CalcTangentSpace-Step. TFvhe angle is specified
+ * This applies to the CalcTangentSpace-Step. The angle is specified
  * in degrees. The maximum value is 175.
  * Property type: float. Default value: 45 degrees
  */
@@ -998,6 +998,13 @@ enum aiComponent
 #if (!defined AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT)
 #   define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT  1.0f
 #endif // !! AI_DEBONE_THRESHOLD
+
+#define AI_CONFIG_APP_SCALE_KEY "APP_SCALE_FACTOR"
+
+#if (!defined AI_CONFIG_APP_SCALE_KEY)
+#   define AI_CONFIG_APP_SCALE_KEY 1.0
+#endif // AI_CONFIG_APP_SCALE_KEY
+
 
 // ---------- All the Build/Compile-time defines ------------
 

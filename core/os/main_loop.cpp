@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,8 @@ void MainLoop::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_drop_files", PropertyInfo(Variant::POOL_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "from_screen")));
 	BIND_VMETHOD(MethodInfo("_finalize"));
 
+	BIND_VMETHOD(MethodInfo("_global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
+
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_FOCUS_IN);
@@ -61,6 +63,10 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
 	BIND_CONSTANT(NOTIFICATION_CRASH);
 	BIND_CONSTANT(NOTIFICATION_OS_IME_UPDATE);
+	BIND_CONSTANT(NOTIFICATION_APP_RESUMED);
+	BIND_CONSTANT(NOTIFICATION_APP_PAUSED);
+
+	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
@@ -113,6 +119,12 @@ void MainLoop::drop_files(const Vector<String> &p_files, int p_from_screen) {
 
 	if (get_script_instance())
 		get_script_instance()->call("_drop_files", p_files, p_from_screen);
+}
+
+void MainLoop::global_menu_action(const Variant &p_id, const Variant &p_meta) {
+
+	if (get_script_instance())
+		get_script_instance()->call("_global_menu_action", p_id, p_meta);
 }
 
 void MainLoop::finish() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "mesh_instance_editor_plugin.h"
 
+#include "editor/editor_scale.h"
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/physics_body.h"
@@ -180,6 +181,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 				CollisionShape *cshape = memnew(CollisionShape);
 				cshape->set_shape(shapes[i]);
+				cshape->set_transform(node->get_transform());
 
 				Node *owner = node->get_owner();
 
@@ -455,7 +457,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(AcceptDialog);
-	debug_uv_dialog->set_title("UV Channel Debug");
+	debug_uv_dialog->set_title(TTR("UV Channel Debug"));
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);

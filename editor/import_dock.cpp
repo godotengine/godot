@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "import_dock.h"
 #include "editor_node.h"
+#include "editor_resource_preview.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -132,6 +133,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	params->paths.push_back(p_path);
 	import->set_disabled(false);
 	import_as->set_disabled(false);
+	preset->set_disabled(false);
 
 	imported->set_text(p_path.get_file());
 }
@@ -181,7 +183,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	clear();
 
-	//use the value that is repeated the mot
+	// Use the value that is repeated the most.
 	Map<String, Dictionary> value_frequency;
 
 	for (int i = 0; i < p_paths.size(); i++) {
@@ -287,6 +289,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->paths = p_paths;
 	import->set_disabled(false);
 	import_as->set_disabled(false);
+	preset->set_disabled(false);
 
 	imported->set_text(itos(p_paths.size()) + TTR(" Files"));
 }
@@ -367,6 +370,7 @@ void ImportDock::clear() {
 	import->set_disabled(true);
 	import_as->clear();
 	import_as->set_disabled(true);
+	preset->set_disabled(true);
 	params->values.clear();
 	params->properties.clear();
 	params->update();
@@ -528,11 +532,13 @@ ImportDock::ImportDock() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
+	import_as->set_disabled(true);
 	import_as->connect("item_selected", this, "_importer_selected");
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
-	preset->set_text(TTR("Preset..."));
+	preset->set_text(TTR("Preset"));
+	preset->set_disabled(true);
 	preset->get_popup()->connect("index_pressed", this, "_preset_selected");
 	hb->add_child(preset);
 
@@ -545,6 +551,7 @@ ImportDock::ImportDock() {
 	add_child(hb);
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
+	import->set_disabled(true);
 	import->connect("pressed", this, "_reimport_attempt");
 	hb->add_spacer();
 	hb->add_child(import);
