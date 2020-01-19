@@ -128,6 +128,7 @@ Error MIDIDriverALSAMidi::open() {
 	snd_device_name_free_hint(hints);
 
 	mutex = Mutex::create();
+	exit_thread = false;
 	thread = Thread::create(MIDIDriverALSAMidi::thread_func, this);
 
 	return OK;
