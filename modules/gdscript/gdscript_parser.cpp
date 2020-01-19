@@ -5404,12 +5404,12 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 
 					ident += ("." + subclass);
 
-					if (base_script->get_subclasses().has(subclass)) {
+					if (find_subclass->get_subclasses().has(subclass)) {
 
-						find_subclass = base_script->get_subclasses()[subclass];
-					} else if (base_script->get_constants().has(subclass)) {
+						find_subclass = find_subclass->get_subclasses()[subclass];
+					} else if (find_subclass->get_constants().has(subclass)) {
 
-						Ref<GDScript> new_base_class = base_script->get_constants()[subclass];
+						Ref<GDScript> new_base_class = find_subclass->get_constants()[subclass];
 						if (new_base_class.is_null()) {
 							_set_error("Constant isn't a class: " + ident, p_class->line);
 							return;
