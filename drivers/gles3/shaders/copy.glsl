@@ -104,6 +104,10 @@ uniform sampler2D CbCr; //texunit:1
 
 /* clang-format on */
 
+#ifdef USE_LOD
+uniform float mip_level;
+#endif
+
 #if defined(USE_TEXTURE3D) || defined(USE_TEXTURE2DARRAY)
 uniform float layer;
 #endif
@@ -190,7 +194,11 @@ void main() {
 	color.gb = textureLod(CbCr, uv_interp, 0.0).rg - vec2(0.5, 0.5);
 	color.a = 1.0;
 #else
+#ifdef USE_LOD
+	vec4 color = textureLod(source, uv_interp, mip_level);
+#else
 	vec4 color = textureLod(source, uv_interp, 0.0);
+#endif
 #endif
 
 #ifdef LINEAR_TO_SRGB

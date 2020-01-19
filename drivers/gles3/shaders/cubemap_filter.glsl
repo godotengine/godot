@@ -183,12 +183,12 @@ vec2 Hammersley(uint i, uint N) {
 #ifdef LOW_QUALITY
 
 #define SAMPLE_COUNT 64u
-#define SAMPLE_DELTA 0.05
+#define SAMPLE_DELTA 0.1
 
 #else
 
 #define SAMPLE_COUNT 512u
-#define SAMPLE_DELTA 0.01
+#define SAMPLE_DELTA 0.03
 
 #endif
 
