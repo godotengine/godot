@@ -656,7 +656,8 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 						if (var_node->name == "texture") {
 							// emit texture call
 
-							if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2D) {
+							if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2D ||
+									op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLEREXT) {
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";

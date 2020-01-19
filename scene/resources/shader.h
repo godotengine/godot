@@ -79,6 +79,9 @@ public:
 	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
 
+	void set_custom_defines(const String &p_defines);
+	String get_custom_defines();
+
 	virtual bool is_text_shader() const;
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {

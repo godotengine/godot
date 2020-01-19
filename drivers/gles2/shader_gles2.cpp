@@ -182,6 +182,16 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 #endif
 
+#ifdef ANDROID_ENABLED
+	strings.push_back("#define ANDROID_ENABLED\n");
+#endif
+
+	for (int i = 0; i < custom_defines.size(); i++) {
+
+		strings.push_back(custom_defines[i].get_data());
+		strings.push_back("\n");
+	}
+
 	for (int j = 0; j < conditional_count; j++) {
 		bool enable = (conditional_version.version & (1 << j)) > 0;
 
@@ -941,6 +951,10 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				} break;
 
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
+
+				} break;
+
 				case ShaderLanguage::TYPE_ISAMPLER2D: {
 
 				} break;
@@ -1057,6 +1071,10 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
 
 				} break;
 
