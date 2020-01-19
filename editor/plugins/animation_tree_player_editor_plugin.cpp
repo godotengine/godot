@@ -34,6 +34,7 @@
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
@@ -923,17 +924,18 @@ void AnimationTreePlayerEditor::_notification(int p_what) {
 				_draw_cos_line(source, dest, col);
 			}
 
+			const Ref<Font> f = get_font("font", "Label");
+			const Point2 status_offset = Point2(5, 25) * EDSCALE + Point2(0, f->get_ascent());
+
 			switch (anim_tree->get_last_error()) {
 
 				case AnimationTreePlayer::CONNECT_OK: {
 
-					Ref<Font> f = get_font("font", "Label");
-					f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), TTR("Animation tree is valid."), Color(0, 1, 0.6, 0.8));
+					f->draw(get_canvas_item(), status_offset, TTR("Animation tree is valid."), Color(0, 1, 0.6, 0.8));
 				} break;
 				default: {
 
-					Ref<Font> f = get_font("font", "Label");
-					f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), TTR("Animation tree is invalid."), Color(1, 0.6, 0.0, 0.8));
+					f->draw(get_canvas_item(), status_offset, TTR("Animation tree is invalid."), Color(1, 0.6, 0.0, 0.8));
 				} break;
 			}
 
@@ -1300,7 +1302,7 @@ AnimationTreePlayerEditor::AnimationTreePlayerEditor() {
 	p->connect("id_pressed", this, "_add_menu_item");
 
 	play_button = memnew(Button);
-	play_button->set_position(Point2(25, 0));
+	play_button->set_position(Point2(25, 0) * EDSCALE);
 	play_button->set_size(Point2(25, 15));
 	add_child(play_button);
 	play_button->set_toggle_mode(true);
@@ -1439,7 +1441,7 @@ AnimationTreePlayerEditorPlugin::AnimationTreePlayerEditorPlugin(EditorNode *p_n
 
 	editor = p_node;
 	anim_tree_editor = memnew(AnimationTreePlayerEditor);
-	anim_tree_editor->set_custom_minimum_size(Size2(0, 300));
+	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
 	button = editor->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();
