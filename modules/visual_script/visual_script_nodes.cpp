@@ -2377,10 +2377,7 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 	return tg;
 }
 
-void VisualScriptEngineSingleton::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
-	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) const {
 
 	String cc;
 
@@ -2397,7 +2394,16 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc += E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
+	property.hint = PROPERTY_HINT_ENUM;
+	property.hint_string = cc;
+}
+
+void VisualScriptEngineSingleton::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_singleton", "name"), &VisualScriptEngineSingleton::set_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton"), &VisualScriptEngineSingleton::get_singleton);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant"), "set_singleton", "get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
