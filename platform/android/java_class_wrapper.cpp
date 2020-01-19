@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "java_class_wrapper.h"
+#include "api/java_class_wrapper.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
@@ -545,11 +545,6 @@ JavaObject::~JavaObject() {
 }
 
 ////////////////////
-
-void JavaClassWrapper::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
-}
 
 bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig) {
 

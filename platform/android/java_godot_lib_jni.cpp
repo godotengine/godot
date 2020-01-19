@@ -33,6 +33,7 @@
 #include "java_godot_wrapper.h"
 
 #include "android/asset_manager_jni.h"
+#include "api/java_class_wrapper.h"
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/os/keyboard.h"
@@ -40,7 +41,6 @@
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
-#include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "net_socket_android.h"
@@ -739,7 +739,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", java_class_wrapper));
 	_initialize_java_modules();
 }
 

@@ -614,6 +614,9 @@ class VisualScriptEngineSingleton : public VisualScriptNode {
 
 	String singleton;
 
+protected:
+	void _validate_property(PropertyInfo &property) const;
+
 	static void _bind_methods();
 
 public:
