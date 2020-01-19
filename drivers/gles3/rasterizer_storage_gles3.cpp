@@ -1994,7 +1994,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, sky->radiance);
 				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_ARRAY_INDEX, j - 1); //read from previous to ensure better blur
-				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size / 2));
 			}
 
 			for (int i = 0; i < 2; i++) {
@@ -2124,7 +2123,6 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, sky->radiance);
 				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, float(lod - 1)); //read from previous to ensure better blur
-				shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_RESOLUTION, float(size));
 			}
 
 			for (int i = 0; i < 2; i++) {
