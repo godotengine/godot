@@ -856,6 +856,7 @@ void ShaderLanguage::clear() {
 	completion_type = COMPLETION_NONE;
 	completion_block = NULL;
 	completion_function = StringName();
+	completion_class = SubClassTag::TAG_GLOBAL;
 
 	error_line = 0;
 	tk_line = 1;
