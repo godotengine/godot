@@ -91,6 +91,7 @@
 			<argument index="0" name="effect" type="Variant">
 			</argument>
 			<description>
+				Installs a custom effect. [code]effect[/code] should be a valid [RichTextEffect].
 			</description>
 		</method>
 		<method name="newline">
@@ -115,6 +116,7 @@
 			<argument index="0" name="expressions" type="PoolStringArray">
 			</argument>
 			<description>
+				Parses BBCode parameter [code]expressions[/code] into a dictionary.
 			</description>
 		</method>
 		<method name="pop">
@@ -137,12 +139,14 @@
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][font][/code] tag with a bold font to the tag stack. This is the same as adding a [code][b][/code] tag if not currently in a [code][i][/code] tag.
 			</description>
 		</method>
 		<method name="push_bold_italics">
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][font][/code] tag with a bold italics font to the tag stack.
 			</description>
 		</method>
 		<method name="push_cell">
@@ -176,13 +180,14 @@
 			<argument index="0" name="level" type="int">
 			</argument>
 			<description>
-				Adds an [code][indent][/code] tag to the tag stack. Multiplies "level" by current tab_size to determine new margin length.
+				Adds an [code][indent][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_italics">
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
 		<method name="push_list">
@@ -207,12 +212,14 @@
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][font][/code] tag with a monospace font to the tag stack.
 			</description>
 		</method>
 		<method name="push_normal">
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][font][/code] tag with a normal font to the tag stack.
 			</description>
 		</method>
 		<method name="push_strikethrough">
@@ -245,6 +252,7 @@
 			</argument>
 			<description>
 				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
+				The [code]line[/code] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
 			</description>
 		</method>
 		<method name="scroll_to_line">
@@ -281,6 +289,8 @@
 			[b]Note:[/b] It is unadvised to use [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead.
 		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
+			The currently installed custom effects. This is an array of [RichTextEffect]s.
+			To add a custom effect, it's more convenient to use [method install_effect].
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
@@ -289,11 +299,12 @@
 			If [code]true[/code], the label uses the custom font color.
 		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
-			The text's visibility, as a [float] between 0.0 and 1.0.
+			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
+			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
-			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
+			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
 		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following" default="false">
 			If [code]true[/code], the window scrolls down to display new content automatically.
@@ -317,7 +328,7 @@
 			<argument index="0" name="meta" type="Nil">
 			</argument>
 			<description>
-				Triggered when the user clicks on content between [code][url][/code] tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
+				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
@@ -337,18 +348,25 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="Align">
+			Makes text left aligned.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1" enum="Align">
+			Makes text centered.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="Align">
+			Makes text right aligned.
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
+			Makes text fill width.
 		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
+			Each list item has a number marker.
 		</constant>
 		<constant name="LIST_LETTERS" value="1" enum="ListType">
+			Each list item has a letter marker.
 		</constant>
 		<constant name="LIST_DOTS" value="2" enum="ListType">
+			Each list item has a filled circle marker.
 		</constant>
 		<constant name="ITEM_FRAME" value="0" enum="ItemType">
 		</constant>

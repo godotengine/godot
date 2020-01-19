@@ -10,10 +10,7 @@ def build_api_solution(source, target, env):
 
     module_dir = env['module_dir']
 
-    solution_path = os.path.join(module_dir, 'glue/Managed/Generated/GodotSharp.sln')
-
-    if not os.path.isfile(solution_path):
-        raise RuntimeError("Godot API solution not found. Did you forget to run '--generate-mono-glue'?")
+    solution_path = os.path.join(module_dir, 'glue/GodotSharp/GodotSharp.sln')
 
     build_config = env['solution_build_config']
 

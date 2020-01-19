@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -587,24 +587,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_color_pressed", "Button", icon_color_pressed);
 
 	// OptionButton
-	Ref<StyleBoxFlat> style_option_button_normal = style_widget->duplicate();
-	Ref<StyleBoxFlat> style_option_button_hover = style_widget_hover->duplicate();
-	Ref<StyleBoxFlat> style_option_button_pressed = style_widget_pressed->duplicate();
-	Ref<StyleBoxFlat> style_option_button_focus = style_widget_focus->duplicate();
-	Ref<StyleBoxFlat> style_option_button_disabled = style_widget_disabled->duplicate();
-
-	int option_button_arrow_margin = theme->get_icon("GuiOptionArrow", "EditorIcons")->get_size().width + (default_margin_size + 4) * EDSCALE;
-	style_option_button_normal->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
-	style_option_button_hover->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
-	style_option_button_pressed->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
-	style_option_button_focus->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
-	style_option_button_disabled->set_default_margin(MARGIN_RIGHT, option_button_arrow_margin);
-
-	theme->set_stylebox("normal", "OptionButton", style_option_button_normal);
-	theme->set_stylebox("hover", "OptionButton", style_option_button_hover);
-	theme->set_stylebox("pressed", "OptionButton", style_option_button_pressed);
-	theme->set_stylebox("focus", "OptionButton", style_option_button_focus);
-	theme->set_stylebox("disabled", "OptionButton", style_option_button_disabled);
+	theme->set_stylebox("normal", "OptionButton", style_widget);
+	theme->set_stylebox("hover", "OptionButton", style_widget_hover);
+	theme->set_stylebox("pressed", "OptionButton", style_widget_pressed);
+	theme->set_stylebox("focus", "OptionButton", style_widget_focus);
+	theme->set_stylebox("disabled", "OptionButton", style_widget_disabled);
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_color_hover", "OptionButton", font_color_hl);
@@ -1025,6 +1012,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
 	}
+	theme->set_color("selection_fill", "GraphEdit", theme->get_color("box_selection_fill_color", "Editor"));
+	theme->set_color("selection_stroke", "GraphEdit", theme->get_color("box_selection_stroke_color", "Editor"));
 	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,21 +219,25 @@ void ScrollContainer::_update_scrollbar_position() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
-	v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
-	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-
 	h_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
 	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 	h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
 	h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+
+	v_scroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -vmin.width);
+	v_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+	v_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 
 	h_scroll->raise();
 	v_scroll->raise();
 }
 
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
+
+	if (!follow_focus) {
+		return;
+	}
 
 	if (is_a_parent_of(p_control)) {
 		Rect2 global_rect = get_global_rect();
@@ -313,6 +317,7 @@ void ScrollContainer::_notification(int p_what) {
 			r.position += ofs;
 			fit_child_in_rect(c, r);
 		}
+
 		update();
 	};
 
@@ -404,13 +409,17 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 hmin;
 	Size2 vmin;
-	if (scroll_h) hmin = h_scroll->get_combined_minimum_size();
-	if (scroll_v) vmin = v_scroll->get_combined_minimum_size();
+	if (scroll_h) {
+		hmin = h_scroll->get_combined_minimum_size();
+	}
+	if (scroll_v) {
+		vmin = v_scroll->get_combined_minimum_size();
+	}
 
 	Size2 min = child_max_size;
 
-	bool hide_scroll_v = !scroll_v || min.height <= size.height - hmin.height;
-	bool hide_scroll_h = !scroll_h || min.width <= size.width - vmin.width;
+	bool hide_scroll_v = !scroll_v || min.height <= size.height;
+	bool hide_scroll_h = !scroll_h || min.width <= size.width;
 
 	if (hide_scroll_v) {
 
@@ -445,6 +454,10 @@ void ScrollContainer::update_scrollbars() {
 
 		scroll.x = h_scroll->get_value();
 	}
+
+	// Avoid scrollbar overlapping.
+	h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, hide_scroll_v ? 0 : -vmin.width);
+	v_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, hide_scroll_h ? 0 : -hmin.height);
 }
 
 void ScrollContainer::_scroll_moved(float) {
@@ -457,8 +470,12 @@ void ScrollContainer::_scroll_moved(float) {
 };
 
 void ScrollContainer::set_enable_h_scroll(bool p_enable) {
+	if (scroll_h == p_enable) {
+		return;
+	}
 
 	scroll_h = p_enable;
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -468,8 +485,12 @@ bool ScrollContainer::is_h_scroll_enabled() const {
 }
 
 void ScrollContainer::set_enable_v_scroll(bool p_enable) {
+	if (scroll_v == p_enable) {
+		return;
+	}
 
 	scroll_v = p_enable;
+	minimum_size_changed();
 	queue_sort();
 }
 
@@ -504,6 +525,14 @@ int ScrollContainer::get_deadzone() const {
 
 void ScrollContainer::set_deadzone(int p_deadzone) {
 	deadzone = p_deadzone;
+}
+
+bool ScrollContainer::is_following_focus() const {
+	return follow_focus;
+}
+
+void ScrollContainer::set_follow_focus(bool p_follow) {
+	follow_focus = p_follow;
 }
 
 String ScrollContainer::get_configuration_warning() const {
@@ -555,12 +584,16 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ScrollContainer::get_v_scroll);
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
+	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
+	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
 	ClassDB::bind_method(D_METHOD("get_h_scrollbar"), &ScrollContainer::get_h_scrollbar);
 	ClassDB::bind_method(D_METHOD("get_v_scrollbar"), &ScrollContainer::get_v_scrollbar);
 
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_enable_h_scroll", "is_h_scroll_enabled");
@@ -577,12 +610,11 @@ ScrollContainer::ScrollContainer() {
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll);
+	h_scroll->connect("value_changed", this, "_scroll_moved");
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll);
-
-	h_scroll->connect("value_changed", this, "_scroll_moved");
 	v_scroll->connect("value_changed", this, "_scroll_moved");
 
 	drag_speed = Vector2();
@@ -593,6 +625,7 @@ ScrollContainer::ScrollContainer() {
 	scroll_v = true;
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	follow_focus = false;
 
 	set_clip_contents(true);
 };

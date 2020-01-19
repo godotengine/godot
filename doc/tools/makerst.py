@@ -393,14 +393,21 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write(make_type(child, state))
         f.write("\n\n")
 
-    # Category
-    if class_def.category is not None:
-        f.write('**Category:** ' + class_def.category.strip() + "\n\n")
-
     # Brief description
-    f.write(make_heading('Brief Description', '-'))
     if class_def.brief_description is not None:
         f.write(rstize_text(class_def.brief_description.strip(), state) + "\n\n")
+
+    # Class description
+    if class_def.description is not None and class_def.description.strip() != '':
+        f.write(make_heading('Description', '-'))
+        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
+
+    # Online tutorials
+    if len(class_def.tutorials) > 0:
+        f.write(make_heading('Tutorials', '-'))
+        for t in class_def.tutorials:
+            link = t.strip()
+            f.write("- " + make_url(link) + "\n\n")
 
     # Properties overview
     if len(class_def.properties) > 0:
@@ -493,18 +500,6 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write(' --- ' + rstize_text(constant.text.strip(), state))
 
             f.write('\n\n')
-
-    # Class description
-    if class_def.description is not None and class_def.description.strip() != '':
-        f.write(make_heading('Description', '-'))
-        f.write(rstize_text(class_def.description.strip(), state) + "\n\n")
-
-    # Online tutorials
-    if len(class_def.tutorials) > 0:
-        f.write(make_heading('Tutorials', '-'))
-        for t in class_def.tutorials:
-            link = t.strip()
-            f.write("- " + make_url(link) + "\n\n")
 
     # Property descriptions
     if any(not p.overridden for p in class_def.properties.values()) > 0:

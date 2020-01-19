@@ -155,7 +155,7 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which shapes overlapped.
+				Emitted when another area enters, reporting which shapes overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">

@@ -191,8 +191,9 @@ static void PredictorAdd0_SSE2(const uint32_t* in, const uint32_t* upper,
     _mm_storeu_si128((__m128i*)&out[i], res);
   }
   if (i != num_pixels) {
-    VP8LPredictorsAdd_C[0](in + i, upper + i, num_pixels - i, out + i);
+    VP8LPredictorsAdd_C[0](in + i, NULL, num_pixels - i, out + i);
   }
+  (void)upper;
 }
 
 // Predictor1: left.

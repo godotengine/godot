@@ -35,11 +35,14 @@ Copyright NVIDIA Corporation 2006 -- Ignacio Castano <icastano@nvidia.com>
 
 namespace xatlas {
 
-struct ChartFlags
+struct ChartType
 {
-	enum
+	enum Enum
 	{
-		Invalid = 1 << 0
+		Planar,
+		Ortho,
+		LSCM,
+		Piecewise
 	};
 };
 
@@ -47,10 +50,10 @@ struct ChartFlags
 struct Chart
 {
 	uint32_t atlasIndex; // Sub-atlas index.
-	uint32_t flags;
 	uint32_t *faceArray;
 	uint32_t faceCount;
 	uint32_t material;
+	ChartType::Enum type;
 };
 
 // Output vertex.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -356,14 +356,32 @@ void OSIPhone::delete_main_loop() {
 
 void OSIPhone::finalize() {
 
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
+	delete_main_loop();
+
+	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
 
-	memdelete(input);
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};

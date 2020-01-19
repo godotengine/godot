@@ -4,7 +4,7 @@
 		Control that provides single-line string editing.
 	</brief_description>
 	<description>
-		LineEdit provides a single-line string editor, used for text fields. It features many built-in shortcuts which will always be available:
+		LineEdit provides a single-line string editor, used for text fields. It features many built-in shortcuts which will always be available: (the Ctrl here maps to Command on macOS)
 		- Ctrl + C: Copy
 		- Ctrl + X: Cut
 		- Ctrl + V or Ctrl + Y: Paste/"yank"
@@ -14,6 +14,15 @@
 		- Ctrl + K: Delete text from the cursor position to the end of the line
 		- Ctrl + A: Select all text
 		- Up/Down arrow: Move the cursor to the beginning/end of the line
+		On macOS, some extra keyboard shortcuts are available:
+		- Ctrl + F: Like the right arrow key, move the cursor one character right
+		- Ctrl + B: Like the left arrow key, move the cursor one character left
+		- Ctrl + P: Like the up arrow key, move the cursor to the previous line
+		- Ctrl + N: Like the down arrow key, move the cursor to the next line
+		- Ctrl + D: Like the Delete key, delete the character on the right side of cursor
+		- Ctrl + H: Like the Backspace key, delete the character on the left side of the cursor
+		- Command + Left arrow: Like the Home key, move the cursor to the beginning of the line
+		- Command + Right arrow: Like the End key, move the cursor to the end of the line
 	</description>
 	<tutorials>
 	</tutorials>
@@ -96,7 +105,7 @@
 			The cursor's position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
-			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty.
+			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty, which can be used to clear the text quickly.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], the context menu will appear when right-clicked.
@@ -128,14 +137,22 @@
 			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]false[/code], using shortcuts will be disabled.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [LineEdit].
+			[b]Note:[/b] Changing text using this property won't emit the [signal text_changed] signal.
 		</member>
 	</members>
 	<signals>
+		<signal name="text_change_rejected">
+			<description>
+				Emitted when trying to append text that would overflow the [member max_length].
+			</description>
+		</signal>
 		<signal name="text_changed">
 			<argument index="0" name="new_text" type="String">
 			</argument>
@@ -192,30 +209,43 @@
 	</constants>
 	<theme_items>
 		<theme_item name="clear" type="Texture">
+			Texture for the clear button. See [member clear_button_enabled].
 		</theme_item>
 		<theme_item name="clear_button_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			Color used as default tint for the clear button.
 		</theme_item>
 		<theme_item name="clear_button_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+			Color used for the clear button when it's pressed.
 		</theme_item>
 		<theme_item name="cursor_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Color of the [LineEdit]'s visual cursor (caret).
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
+			Background used when [LineEdit] has GUI focus.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			Font used for the text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			Default font color.
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
+			Font color for selected text (inside the selection rectangle).
 		</theme_item>
 		<theme_item name="font_color_uneditable" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
+			Font color when editing is disabled.
 		</theme_item>
 		<theme_item name="minimum_spaces" type="int" default="12">
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of space characters (i.e. this amount of space characters can be displayed without scrolling).
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
+			Default background for the [LineEdit].
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+			Background used when [LineEdit] is in read-only mode ([member editable] is set to [code]false[/code]).
 		</theme_item>
 		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
+			Color of the selection rectangle.
 		</theme_item>
 	</theme_items>
 </class>

@@ -66,6 +66,7 @@
 			[NodePath] to the [Skeleton] associated with the instance.
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
+			Sets the skin to be used by this instance.
 		</member>
 	</members>
 	<constants>

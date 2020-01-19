@@ -170,6 +170,7 @@
 	</methods>
 	<members>
 		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
+			Compatibility property, always equals to an empty array.
 		</member>
 	</members>
 	<constants>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1409,9 +1409,7 @@ void ProjectList::sort_projects() {
 
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
-		if (item.control->is_visible()) {
-			item.control->get_parent()->move_child(item.control, i);
-		}
+		item.control->get_parent()->move_child(item.control, i);
 	}
 
 	// Rewind the coroutine because order of projects changed
@@ -1983,6 +1981,7 @@ void ProjectManager::_global_menu_action(const Variant &p_id, const Variant &p_m
 	int id = (int)p_id;
 	if (id == ProjectList::GLOBAL_NEW_WINDOW) {
 		List<String> args;
+		args.push_back("-p");
 		String exec = OS::get_singleton()->get_executable_path();
 
 		OS::ProcessID pid = 0;
@@ -2438,7 +2437,7 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
-	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2019 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);

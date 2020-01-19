@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,7 +172,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			min = 0;
 			max = 0;
 			sparse_count = 0;
+			sparse_indices_buffer_view = 0;
 			sparse_indices_byte_offset = 0;
+			sparse_indices_component_type = 0;
+			sparse_values_buffer_view = 0;
 			sparse_values_byte_offset = 0;
 		}
 	};
@@ -259,6 +262,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFAnimation {
+		bool loop = false;
 
 		enum Interpolation {
 			INTERP_LINEAR,

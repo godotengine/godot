@@ -21,6 +21,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the glow level [code]idx[/code] is specified, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_glow_level">
@@ -31,132 +32,133 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables or disables the glow level at index [code]idx[/code]. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="adjustment_brightness" type="float" setter="set_adjustment_brightness" getter="get_adjustment_brightness" default="1.0">
-			Global brightness value of the rendered scene (default value is 1).
+			The global brightness value of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
-			Applies the provided [Texture] resource to affect the global color aspect of the rendered scene.
+			Applies the provided [Texture] resource to affect the global color aspect of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
-			Global contrast value of the rendered scene (default value is 1).
+			The global contrast value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enable" getter="is_adjustment_enabled" default="false">
-			Enables the [code]adjustment_*[/code] options provided by this resource. If [code]false[/code], adjustments modifications will have no effect on the rendered scene.
+			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
-			Global color saturation value of the rendered scene (default value is 1).
+			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color( 0, 0, 0, 1 )">
-			[Color] of the ambient light.
+			The ambient light's [Color].
 		</member>
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
-			Energy of the ambient light. The higher the value, the stronger the light.
+			The ambient light's energy. The higher the value, the stronger the light.
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
 		</member>
 		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure" getter="get_tonemap_auto_exposure" default="false">
-			Enables the tonemapping auto exposure mode of the scene renderer. If activated, the renderer will automatically determine the exposure setting to adapt to the illumination of the scene and the observed light.
+			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
 		</member>
 		<member name="auto_exposure_max_luma" type="float" setter="set_tonemap_auto_exposure_max" getter="get_tonemap_auto_exposure_max" default="8.0">
-			Maximum luminance value for the auto exposure.
+			The maximum luminance value for the auto exposure.
 		</member>
 		<member name="auto_exposure_min_luma" type="float" setter="set_tonemap_auto_exposure_min" getter="get_tonemap_auto_exposure_min" default="0.05">
-			Minimum luminance value for the auto exposure.
+			The minimum luminance value for the auto exposure.
 		</member>
 		<member name="auto_exposure_scale" type="float" setter="set_tonemap_auto_exposure_grey" getter="get_tonemap_auto_exposure_grey" default="0.4">
-			Scale of the auto exposure effect. Affects the intensity of auto exposure.
+			The scale of the auto exposure effect. Affects the intensity of auto exposure.
 		</member>
 		<member name="auto_exposure_speed" type="float" setter="set_tonemap_auto_exposure_speed" getter="get_tonemap_auto_exposure_speed" default="0.5">
-			Speed of the auto exposure effect. Affects the time needed for the camera to perform auto exposure.
+			The speed of the auto exposure effect. Affects the time needed for the camera to perform auto exposure.
 		</member>
 		<member name="background_camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id" default="1">
-			The id of the camera feed to show in the background.
+			The ID of the camera feed to show in the background.
 		</member>
 		<member name="background_canvas_max_layer" type="int" setter="set_canvas_max_layer" getter="get_canvas_max_layer" default="0">
-			Maximum layer id (if using Layer background mode).
+			The maximum layer ID to display. Only effective when using the [constant BG_CANVAS] background mode.
 		</member>
 		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0, 0, 0, 1 )">
-			Color displayed for clear areas of the scene (if using Custom color or Color+Sky background modes).
+			The [Color] displayed for clear areas of the scene. Only effective when using the [constant BG_COLOR] or [constant BG_COLOR_SKY] background modes).
 		</member>
 		<member name="background_energy" type="float" setter="set_bg_energy" getter="get_bg_energy" default="1.0">
-			Power of light emitted by the background.
+			The power of the light emitted by the background.
 		</member>
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
-			Defines the mode of background.
+			The background mode. See [enum BGMode] for possible values.
 		</member>
 		<member name="background_sky" type="Sky" setter="set_sky" getter="get_sky">
-			[Sky] resource defined as background.
+			The [Sky] resource defined as background.
 		</member>
 		<member name="background_sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
-			[Sky] resource's custom field of view.
+			The [Sky] resource's custom field of view.
 		</member>
 		<member name="background_sky_orientation" type="Basis" setter="set_sky_orientation" getter="get_sky_orientation" default="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
-			[Sky] resource's rotation expressed as a [Basis].
+			The [Sky] resource's rotation expressed as a [Basis].
 		</member>
 		<member name="background_sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3( 0, 0, 0 )">
-			[Sky] resource's rotation expressed as Euler angles in radians.
+			The [Sky] resource's rotation expressed as Euler angles in radians.
 		</member>
 		<member name="background_sky_rotation_degrees" type="Vector3" setter="set_sky_rotation_degrees" getter="get_sky_rotation_degrees" default="Vector3( 0, 0, 0 )">
-			[Sky] resource's rotation expressed as Euler angles in degrees.
+			The [Sky] resource's rotation expressed as Euler angles in degrees.
 		</member>
 		<member name="dof_blur_far_amount" type="float" setter="set_dof_blur_far_amount" getter="get_dof_blur_far_amount" default="0.1">
-			Amount of far blur.
+			The amount of far blur for the depth-of-field effect.
 		</member>
 		<member name="dof_blur_far_distance" type="float" setter="set_dof_blur_far_distance" getter="get_dof_blur_far_distance" default="10.0">
-			Distance from the camera where the far blur effect affects the rendering.
+			The distance from the camera where the far blur effect affects the rendering.
 		</member>
 		<member name="dof_blur_far_enabled" type="bool" setter="set_dof_blur_far_enabled" getter="is_dof_blur_far_enabled" default="false">
-			Enables the far blur effect.
+			If [code]true[/code], enables the depth-of-field far blur effect.
 		</member>
 		<member name="dof_blur_far_quality" type="int" setter="set_dof_blur_far_quality" getter="get_dof_blur_far_quality" enum="Environment.DOFBlurQuality" default="1">
-			Quality of the far blur quality.
+			The depth-of-field far blur's quality. Higher values can mitigate the visible banding effect seen at higher strengths, but are much slower.
 		</member>
 		<member name="dof_blur_far_transition" type="float" setter="set_dof_blur_far_transition" getter="get_dof_blur_far_transition" default="5.0">
-			Transition between no-blur area and far blur.
+			The length of the transition between the no-blur area and far blur.
 		</member>
 		<member name="dof_blur_near_amount" type="float" setter="set_dof_blur_near_amount" getter="get_dof_blur_near_amount" default="0.1">
-			Amount of near blur.
+			The amount of near blur for the depth-of-field effect.
 		</member>
 		<member name="dof_blur_near_distance" type="float" setter="set_dof_blur_near_distance" getter="get_dof_blur_near_distance" default="2.0">
 			Distance from the camera where the near blur effect affects the rendering.
 		</member>
 		<member name="dof_blur_near_enabled" type="bool" setter="set_dof_blur_near_enabled" getter="is_dof_blur_near_enabled" default="false">
-			Enables the near blur effect.
+			If [code]true[/code], enables the depth-of-field near blur effect.
 		</member>
 		<member name="dof_blur_near_quality" type="int" setter="set_dof_blur_near_quality" getter="get_dof_blur_near_quality" enum="Environment.DOFBlurQuality" default="1">
-			Quality of the near blur quality.
+			The depth-of-field near blur's quality. Higher values can mitigate the visible banding effect seen at higher strengths, but are much slower.
 		</member>
 		<member name="dof_blur_near_transition" type="float" setter="set_dof_blur_near_transition" getter="get_dof_blur_near_transition" default="1.0">
-			Transition between near blur and no-blur area.
+			The length of the transition between the near blur and no-blur area.
 		</member>
 		<member name="fog_color" type="Color" setter="set_fog_color" getter="get_fog_color" default="Color( 0.5, 0.6, 0.7, 1 )">
-			Fog's [Color].
+			The fog's [Color].
 		</member>
 		<member name="fog_depth_begin" type="float" setter="set_fog_depth_begin" getter="get_fog_depth_begin" default="10.0">
-			Fog's depth starting distance from the camera.
+			The fog's depth starting distance from the camera.
 		</member>
 		<member name="fog_depth_curve" type="float" setter="set_fog_depth_curve" getter="get_fog_depth_curve" default="1.0">
-			Value defining the fog depth intensity.
+			The fog depth's intensity curve. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
 		</member>
 		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled" default="true">
-			Enables the fog depth.
+			If [code]true[/code], the depth fog effect is enabled. When enabled, fog will appear in the distance (relative to the camera).
 		</member>
 		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
-			Fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera.far] value.
+			The fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera.far] value.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
-			Enables the fog. Needs [member fog_height_enabled] and/or [member fog_depth_enabled] to actually display fog.
+			If [code]true[/code], fog effects are enabled. [member fog_height_enabled] and/or [member fog_depth_enabled] must be set to [code]true[/code] to actually display fog.
 		</member>
 		<member name="fog_height_curve" type="float" setter="set_fog_height_curve" getter="get_fog_height_curve" default="1.0">
-			Value defining the fog height intensity.
+			The height fog's intensity. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
 		</member>
 		<member name="fog_height_enabled" type="bool" setter="set_fog_height_enabled" getter="is_fog_height_enabled" default="false">
-			Enables the fog height.
+			If [code]true[/code], the height fog effect is enabled. When enabled, fog will appear in a defined height range, regardless of the distance from the camera. This can be used to simulate "deep water" effects with a lower performance cost compared to a dedicated shader.
 		</member>
 		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="0.0">
 			The Y coordinate where the height fog will be the most intense. If this value is greater than [member fog_height_min], fog will be displayed from bottom to top. Otherwise, it will be displayed from top to bottom.
@@ -165,131 +167,151 @@
 			The Y coordinate where the height fog will be the least intense. If this value is greater than [member fog_height_max], fog will be displayed from top to bottom. Otherwise, it will be displayed from bottom to top.
 		</member>
 		<member name="fog_sun_amount" type="float" setter="set_fog_sun_amount" getter="get_fog_sun_amount" default="0.0">
-			Amount of sun that affects the fog rendering.
+			The intensity of the depth fog color transition when looking towards the sun. The sun's direction is determined automatically using the DirectionalLight node in the scene.
 		</member>
 		<member name="fog_sun_color" type="Color" setter="set_fog_sun_color" getter="get_fog_sun_color" default="Color( 1, 0.9, 0.7, 1 )">
-			Sun [Color].
+			The depth fog's [Color] when looking towards the sun.
 		</member>
 		<member name="fog_transmit_curve" type="float" setter="set_fog_transmit_curve" getter="get_fog_transmit_curve" default="1.0">
-			Amount of light that the fog transmits.
+			The intensity of the fog light transmittance effect. Amount of light that the fog transmits.
 		</member>
 		<member name="fog_transmit_enabled" type="bool" setter="set_fog_transmit_enabled" getter="is_fog_transmit_enabled" default="false">
-			Enables fog's light transmission. If enabled, lets reflections light to be transmitted by the fog.
+			Enables fog's light transmission effect. If [code]true[/code], light will be more visible in the fog to simulate light scattering as in real life.
 		</member>
 		<member name="glow_bicubic_upscale" type="bool" setter="set_glow_bicubic_upscale" getter="is_glow_bicubic_upscale_enabled" default="false">
-			Smooths out blockiness created by sampling higher levels.
+			Smooths out the blockiness created by sampling higher levels, at the cost of performance.
+			[b]Note:[/b] When using the GLES2 renderer, this is only available if the GPU supports the [code]GL_EXT_gpu_shader4[/code] extension.
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
-			Glow blending mode.
+			The glow blending mode.
 		</member>
 		<member name="glow_bloom" type="float" setter="set_glow_bloom" getter="get_glow_bloom" default="0.0">
-			Bloom value (global glow).
+			The bloom's intensity. If set to a value higher than [code]0[/code], this will make glow visible in areas darker than the [member glow_hdr_threshold].
 		</member>
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled" default="false">
-			Enables glow rendering.
+			If [code]true[/code], the glow effect is enabled.
 		</member>
 		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap" default="12.0">
+			The higher threshold of the HDR glow. Areas brighter than this threshold will be clamped for the purposes of the glow effect.
 		</member>
 		<member name="glow_hdr_scale" type="float" setter="set_glow_hdr_bleed_scale" getter="get_glow_hdr_bleed_scale" default="2.0">
-			Bleed scale of the HDR glow.
+			The bleed scale of the HDR glow.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
-			Bleed threshold of the HDR glow. In GLES2, this needs to be below 1.0 in order for glow to be visible, a default value of 0.9 works well.
+			The lower threshold of the HDR glow. When using the GLES2 renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			Glow intensity. In GLES2, this should be increased to 1.5 by default to compensate for not using HDR.
+			The glow intensity. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="glow_levels/1" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
-			First level of glow (most local).
+			If [code]true[/code], the 1st level of glow is enabled. This is the most "local" level (least blurry).
 		</member>
 		<member name="glow_levels/2" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
-			Second level of glow.
+			If [code]true[/code], the 2th level of glow is enabled.
 		</member>
 		<member name="glow_levels/3" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="true">
-			Third level of glow.
+			If [code]true[/code], the 3th level of glow is enabled.
 		</member>
 		<member name="glow_levels/4" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
-			Fourth level of glow.
+			If [code]true[/code], the 4th level of glow is enabled.
 		</member>
 		<member name="glow_levels/5" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="true">
-			Fifth level of glow.
+			If [code]true[/code], the 5th level of glow is enabled.
 		</member>
 		<member name="glow_levels/6" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
-			Sixth level of glow.
+			If [code]true[/code], the 6th level of glow is enabled.
 		</member>
 		<member name="glow_levels/7" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
-			Seventh level of glow (most global).
+			If [code]true[/code], the 7th level of glow is enabled. This is the most "global" level (blurriest).
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			Glow strength. In GLES2, this should be increased to 1.3 by default to compensate for not using HDR.
+			The glow strength. When using the GLES2 renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
+			The depth tolerance for screen-space reflections.
 		</member>
 		<member name="ss_reflections_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
+			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [GIProbe]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 		</member>
 		<member name="ss_reflections_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
+			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection).
 		</member>
 		<member name="ss_reflections_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
+			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection.
 		</member>
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps" default="64">
+			The maximum number of steps for screen-space reflections. Higher values are slower.
 		</member>
 		<member name="ss_reflections_roughness" type="bool" setter="set_ssr_rough" getter="is_ssr_rough" default="true">
+			If [code]true[/code], screen-space reflections will take the material roughness into account.
 		</member>
 		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect" default="0.0">
+			The screen-space ambient occlusion intensity on materials that have an AO texture defined. Values higher than [code]0[/code] will make the SSAO effect visible in areas darkened by AO textures.
 		</member>
 		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias" default="0.01">
+			The screen-space ambient occlusion bias. This should be kept high enough to prevent "smooth" curves from being affected by ambient occlusion.
 		</member>
 		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="get_ssao_blur" enum="Environment.SSAOBlur" default="3">
+			The screen-space ambient occlusion blur quality. See [enum SSAOBlur] for possible values.
 		</member>
 		<member name="ssao_color" type="Color" setter="set_ssao_color" getter="get_ssao_color" default="Color( 0, 0, 0, 1 )">
+			The screen-space ambient occlusion color.
 		</member>
 		<member name="ssao_edge_sharpness" type="float" setter="set_ssao_edge_sharpness" getter="get_ssao_edge_sharpness" default="4.0">
+			The screen-space ambient occlusion edge sharpness.
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
+			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. This is a costly effect and should be disabled first when running into performance issues.
 		</member>
 		<member name="ssao_intensity" type="float" setter="set_ssao_intensity" getter="get_ssao_intensity" default="1.0">
+			The primary screen-space ambient occlusion intensity. See also [member ssao_radius].
 		</member>
 		<member name="ssao_intensity2" type="float" setter="set_ssao_intensity2" getter="get_ssao_intensity2" default="1.0">
+			The secondary screen-space ambient occlusion intensity. See also [member ssao_radius2].
 		</member>
 		<member name="ssao_light_affect" type="float" setter="set_ssao_direct_light_affect" getter="get_ssao_direct_light_affect" default="0.0">
+			The screen-space ambient occlusion intensity in direct light. In real life, ambient occlusion only applies to indirect light, which means its effects can't be seen in direct light. Values higher than [code]0[/code] will make the SSAO effect visible in direct light.
 		</member>
 		<member name="ssao_quality" type="int" setter="set_ssao_quality" getter="get_ssao_quality" enum="Environment.SSAOQuality" default="1">
+			The screen-space ambient occlusion quality. Higher qualities will make better use of small objects for ambient occlusion, but are slower.
 		</member>
 		<member name="ssao_radius" type="float" setter="set_ssao_radius" getter="get_ssao_radius" default="1.0">
+			The primary screen-space ambient occlusion radius.
 		</member>
 		<member name="ssao_radius2" type="float" setter="set_ssao_radius2" getter="get_ssao_radius2" default="0.0">
+			The secondary screen-space ambient occlusion radius. If set to a value higher than [code]0[/code], enables the secondary screen-space ambient occlusion effect which can be used to improve the effect's appearance (at the cost of performance).
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
-			Default exposure for tonemap.
+			The default exposure used for tonemapping.
 		</member>
 		<member name="tonemap_mode" type="int" setter="set_tonemapper" getter="get_tonemapper" enum="Environment.ToneMapper" default="0">
-			Tonemapping mode.
+			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on a LDR display. (Godot doesn't support rendering on HDR displays yet.)
 		</member>
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
-			White reference value for tonemap.
+			The white reference value for tonemapping. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR].
 		</member>
 	</members>
 	<constants>
 		<constant name="BG_KEEP" value="5" enum="BGMode">
-			Keep on screen every pixel drawn in the background.
+			Keeps on screen every pixel drawn in the background. This is the fastest background mode, but it can only be safely used in fully-interior scenes (no visible sky or sky reflections). If enabled in a scene where the background is visible, "ghost trail" artifacts will be visible when moving the camera.
 		</constant>
 		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
-			Clear the background using the project's clear color.
+			Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/default_clear_color].
 		</constant>
 		<constant name="BG_COLOR" value="1" enum="BGMode">
-			Clear the background using a custom clear color.
+			Clears the background using a custom clear color.
 		</constant>
 		<constant name="BG_SKY" value="2" enum="BGMode">
-			Display a user-defined sky in the background.
+			Displays a user-defined sky in the background.
 		</constant>
 		<constant name="BG_COLOR_SKY" value="3" enum="BGMode">
-			Clear the background using a custom clear color and allows defining a sky for shading and reflection.
+			Clears the background using a custom clear color and allows defining a sky for shading and reflection. This mode is slightly faster than [constant BG_SKY] and should be preferred in scenes where reflections can be visible, but the sky itself never is (e.g. top-down camera).
 		</constant>
 		<constant name="BG_CANVAS" value="4" enum="BGMode">
-			Display a [CanvasLayer] in the background.
+			Displays a [CanvasLayer] in the background.
 		</constant>
 		<constant name="BG_CAMERA_FEED" value="6" enum="BGMode">
-			Display a camera feed in the background.
+			Displays a camera feed in the background.
 		</constant>
 		<constant name="BG_MAX" value="7" enum="BGMode">
 			Represents the size of the [enum BGMode] enum.
@@ -301,10 +323,10 @@
 			Screen glow blending mode. Increases brightness, used frequently with bloom.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="GlowBlendMode">
-			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights, vivid bloom.
+			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights (vivid bloom).
 		</constant>
 		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="GlowBlendMode">
-			Replace glow blending mode. Replaces all pixels' color by the glow value.
+			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
 			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
@@ -319,27 +341,34 @@
 			Academy Color Encoding System tonemapper operator.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_LOW" value="0" enum="DOFBlurQuality">
-			Low depth-of-field blur quality.
+			Low depth-of-field blur quality (fastest).
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="1" enum="DOFBlurQuality">
 			Medium depth-of-field blur quality.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="2" enum="DOFBlurQuality">
-			High depth-of-field blur quality.
+			High depth-of-field blur quality (slowest).
 		</constant>
 		<constant name="SSAO_BLUR_DISABLED" value="0" enum="SSAOBlur">
+			No blur for the screen-space ambient occlusion effect (fastest).
 		</constant>
 		<constant name="SSAO_BLUR_1x1" value="1" enum="SSAOBlur">
+			1×1 blur for the screen-space ambient occlusion effect.
 		</constant>
 		<constant name="SSAO_BLUR_2x2" value="2" enum="SSAOBlur">
+			2×2 blur for the screen-space ambient occlusion effect.
 		</constant>
 		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
+			3×3 blur for the screen-space ambient occlusion effect (slowest).
 		</constant>
 		<constant name="SSAO_QUALITY_LOW" value="0" enum="SSAOQuality">
+			Low quality for the screen-space ambient occlusion effect (fastest).
 		</constant>
 		<constant name="SSAO_QUALITY_MEDIUM" value="1" enum="SSAOQuality">
+			Low quality for the screen-space ambient occlusion effect.
 		</constant>
 		<constant name="SSAO_QUALITY_HIGH" value="2" enum="SSAOQuality">
+			Low quality for the screen-space ambient occlusion effect (slowest).
 		</constant>
 	</constants>
 </class>

@@ -91,6 +91,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the font has an outline.
 			</description>
 		</method>
 		<method name="is_distance_field_hint" qualifiers="const">

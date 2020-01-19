@@ -86,7 +86,7 @@
 			The [member texture_progress] fills from right to left.
 		</constant>
 		<constant name="FILL_TOP_TO_BOTTOM" value="2" enum="FillMode">
-			The [member texture_progress] fills from top to bototm.
+			The [member texture_progress] fills from top to bottom.
 		</constant>
 		<constant name="FILL_BOTTOM_TO_TOP" value="3" enum="FillMode">
 			The [member texture_progress] fills from bottom to top.

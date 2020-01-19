@@ -89,18 +89,20 @@ namespace GodotTools.Ides.Rider
         {
             var installInfos = new List<RiderInfo>();
             // "/Applications/*Rider*.app"
+            // should be combined with "Contents/MacOS/rider"
             var folder = new DirectoryInfo("/Applications");
             if (folder.Exists)
             {
                 installInfos.AddRange(folder.GetDirectories("*Rider*.app")
-                  .Select(a => new RiderInfo(a.FullName, false))
+                  .Select(a => new RiderInfo(Path.Combine(a.FullName, "Contents/MacOS/rider"), false))
                   .ToList());
             }
 
             // /Users/user/Library/Application Support/JetBrains/Toolbox/apps/Rider/ch-1/181.3870.267/Rider EAP.app
+            // should be combined with "Contents/MacOS/rider"
             var toolboxRiderRootPath = GetToolboxBaseDir();
             var paths = CollectPathsFromToolbox(toolboxRiderRootPath, "", "Rider*.app", true)
-              .Select(a => new RiderInfo(a, true));
+              .Select(a => new RiderInfo(Path.Combine(a, "Contents/MacOS/rider"), true));
             installInfos.AddRange(paths);
 
             return installInfos.ToArray();

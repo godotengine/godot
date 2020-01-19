@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1090,15 +1090,14 @@ public:
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+
 		String err;
-		bool valid = true;
+		bool valid = false;
+
+		// Look for export templates (first official, and if defined custom templates).
+
 		Platform arch = (Platform)(int)(p_preset->get("architecture/target"));
-
-		String custom_debug_binary = p_preset->get("custom_template/debug");
-		String custom_release_binary = p_preset->get("custom_template/release");
-
 		String platform_infix;
-
 		switch (arch) {
 			case EditorExportPlatformUWP::ARM: {
 				platform_infix = "arm";
@@ -1111,38 +1110,26 @@ public:
 			} break;
 		}
 
-		if (!exists_export_template("uwp_" + platform_infix + "_debug.zip", &err) || !exists_export_template("uwp_" + platform_infix + "_release.zip", &err)) {
-			valid = false;
-			r_missing_templates = true;
-		}
+		bool dvalid = exists_export_template("uwp_" + platform_infix + "_debug.zip", &err);
+		bool rvalid = exists_export_template("uwp_" + platform_infix + "_release.zip", &err);
 
-		if (!valid && custom_debug_binary == "" && custom_release_binary == "") {
-			if (!err.empty()) {
-				r_error = err;
+		if (p_preset->get("custom_template/debug") != "") {
+			dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+			if (!dvalid) {
+				err += TTR("Custom debug template not found.") + "\n";
 			}
-			return valid;
+		}
+		if (p_preset->get("custom_template/release") != "") {
+			rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+			if (!rvalid) {
+				err += TTR("Custom release template not found.") + "\n";
+			}
 		}
 
-		bool dvalid = true;
-		bool rvalid = true;
+		valid = dvalid || rvalid;
+		r_missing_templates = !valid;
 
-		if (!FileAccess::exists(custom_debug_binary)) {
-			dvalid = false;
-			err += TTR("Custom debug template not found.") + "\n";
-		}
-
-		if (!FileAccess::exists(custom_release_binary)) {
-			rvalid = false;
-			err += TTR("Custom release template not found.") + "\n";
-		}
-
-		if (dvalid || rvalid)
-			valid = true;
-
-		if (!valid) {
-			r_error = err;
-			return valid;
-		}
+		// Validate the rest of the configuration.
 
 		if (!_valid_resource_name(p_preset->get("package/short_name"))) {
 			valid = false;

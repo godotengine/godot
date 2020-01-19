@@ -613,9 +613,9 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the build is a debug build.
-				Returns [code]true[/code] when running in the editor.
-				Returns [code]false[/code] if the build is a release build.
+				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
+				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
+				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("standalone")[/code] instead.
 			</description>
 		</method>
 		<method name="is_ok_left_and_cancel_right" qualifiers="const">
@@ -653,6 +653,14 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the window should always be on top of other windows.
+			</description>
+		</method>
+		<method name="is_window_focused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the window is currently focused.
+				[b]Note:[/b] Only implemented on desktop platforms. On other platforms, it will always return [code]true[/code].
 			</description>
 		</method>
 		<method name="kill">
@@ -905,7 +913,8 @@
 			The current screen index (starting from 0).
 		</member>
 		<member name="exit_code" type="int" setter="set_exit_code" getter="get_exit_code" default="0">
-			The exit code passed to the OS when the main loop exits.
+			The exit code passed to the OS when the main loop exits. By convention, an exit code of [code]0[/code] indicates success whereas a non-zero exit code indicates an error. For portability reasons, the exit code should be set between 0 and 125 (inclusive).
+			[b]Note:[/b] This value will be ignored if using [method SceneTree.quit] with an [code]exit_code[/code] argument passed.
 		</member>
 		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on" default="true">
 			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
@@ -930,6 +939,8 @@
 		</member>
 		<member name="vsync_via_compositor" type="bool" setter="set_vsync_via_compositor" getter="is_vsync_via_compositor_enabled" default="false">
 			If [code]true[/code] and [code]vsync_enabled[/code] is true, the operating system's window compositor will be used for vsync when the compositor is enabled and the game is in windowed mode.
+			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
+			[b]Note:[/b] This property is only implemented on Windows.
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
 			If [code]true[/code], removes the window frame.

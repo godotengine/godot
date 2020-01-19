@@ -6,7 +6,7 @@
 	<description>
 		This class implements a WebSocket server that can also support the high-level multiplayer API.
 		After starting the server ([method listen]), you will need to [method NetworkedMultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]). When clients connect, disconnect, or send data, you will receive the appropriate signal.
-		[b]Note:[/b] This class will not work in HTML5 exports due to browser restrictions.
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -83,6 +83,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bind_ip" type="String" setter="set_bind_ip" getter="get_bind_ip" default="&quot;*&quot;">
+			When not set to [code]*[/code] will restrict incoming connections to the specified IP address. Setting [code]bind_ip[/code] to [code]127.0.0.1[/code] will cause the server to listen only to the local host.
+		</member>
 		<member name="ca_chain" type="X509Certificate" setter="set_ca_chain" getter="get_ca_chain">
 			When using SSL (see [member private_key] and [member ssl_certificate]), you can set this to a valid [X509Certificate] to be provided as additional CA chain information during the SSL handshake.
 		</member>

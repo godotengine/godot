@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -253,24 +253,25 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		}                                                                                                                                                       \
 	}
 
-#define ENSURE_WIDTH(m_width)                                                                                                                                   \
-	if (p_mode == PROCESS_CACHE) {                                                                                                                              \
-		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                                                   \
-		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                                        \
-	}                                                                                                                                                           \
-	if (wofs + m_width > p_width) {                                                                                                                             \
-		line_wrapped = true;                                                                                                                                    \
-		if (p_mode == PROCESS_CACHE) {                                                                                                                          \
-			if (spaces > 0)                                                                                                                                     \
-				spaces -= 1;                                                                                                                                    \
-		}                                                                                                                                                       \
-		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x > p_ofs.x + wofs) { \
-			if (r_outside) *r_outside = true;                                                                                                                   \
-			*r_click_item = it;                                                                                                                                 \
-			*r_click_char = rchar;                                                                                                                              \
-			RETURN;                                                                                                                                             \
-		}                                                                                                                                                       \
-		NEW_LINE                                                                                                                                                \
+#define ENSURE_WIDTH(m_width)                                                                                                               \
+	if (p_mode == PROCESS_CACHE) {                                                                                                          \
+		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));                                                               \
+		l.minimum_width = MAX(l.minimum_width, m_width);                                                                                    \
+	}                                                                                                                                       \
+	if (wofs + m_width > p_width) {                                                                                                         \
+		line_wrapped = true;                                                                                                                \
+		if (p_mode == PROCESS_CACHE) {                                                                                                      \
+			if (spaces > 0)                                                                                                                 \
+				spaces -= 1;                                                                                                                \
+		}                                                                                                                                   \
+		const bool x_in_range = (p_click_pos.x > p_ofs.x + wofs) && (!p_frame->cell || p_click_pos.x < p_ofs.x + p_width);                  \
+		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && x_in_range) { \
+			if (r_outside) *r_outside = true;                                                                                               \
+			*r_click_item = it;                                                                                                             \
+			*r_click_char = rchar;                                                                                                          \
+			RETURN;                                                                                                                         \
+		}                                                                                                                                   \
+		NEW_LINE                                                                                                                            \
 	}
 
 #define ADVANCE(m_width)                                                                                                                                                                                     \
@@ -934,6 +935,14 @@ void RichTextLabel::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (meta_hovering) {
+				meta_hovering = NULL;
+				emit_signal("meta_hover_ended", current_meta);
+				current_meta = false;
+				update();
+			}
+		} break;
 		case NOTIFICATION_RESIZED: {
 
 			main->first_invalid_line = 0; //invalidate ALL
@@ -1063,10 +1072,10 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 	int line = 0;
 	Item *item = NULL;
+	bool outside;
+	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line, &outside);
 
-	((RichTextLabel *)(this))->_find_click(main, p_pos, &item, &line);
-
-	if (item && ((RichTextLabel *)(this))->_find_meta(item, NULL))
+	if (item && !outside && ((RichTextLabel *)(this))->_find_meta(item, NULL))
 		return CURSOR_POINTING_HAND;
 
 	return CURSOR_ARROW;

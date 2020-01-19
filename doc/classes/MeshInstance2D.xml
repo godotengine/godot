@@ -25,6 +25,7 @@
 	<signals>
 		<signal name="texture_changed">
 			<description>
+				Emitted when the [member texture] is changed.
 			</description>
 		</signal>
 	</signals>

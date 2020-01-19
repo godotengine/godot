@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #endif
 
@@ -207,8 +208,8 @@ void Main::print_help(const char *p_binary) {
 
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	OS::get_singleton()->print("(c) 2007-2019 Juan Linietsky, Ariel Manzur.\n");
-	OS::get_singleton()->print("(c) 2014-2019 Godot Engine contributors.\n");
+	OS::get_singleton()->print("(c) 2007-2020 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2020 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -285,11 +286,13 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  --export <target>                Export the project using the given export target. Export only main pack if path ends with .pck or .zip.\n");
-	OS::get_singleton()->print("  --export-debug <target>          Like --export, but use debug template.\n");
+	OS::get_singleton()->print("  --export <preset> <path>         Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
+	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
+	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>    Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
-	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects).\n");
+	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
@@ -672,7 +675,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
 			main_args.push_back(I->get());
 #endif
-		} else if (I->get() == "--export" || I->get() == "--export-debug") { // Export project
+		} else if (I->get() == "--export" || I->get() == "--export-debug" || I->get() == "--export-pack") { // Export project
 
 			editor = true;
 			main_args.push_back(I->get());
@@ -812,6 +815,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
+#ifdef TOOLS_ENABLED
+	if (editor && project_manager) {
+		OS::get_singleton()->print("Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
+		goto error;
+	}
+#endif
+
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
@@ -927,7 +937,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	if (!project_manager) {
+	if (!project_manager && !editor) {
 		// Determine if the project manager should be requested
 		project_manager = main_args.size() == 0 && !found_project;
 	}
@@ -1392,15 +1402,18 @@ bool Main::start() {
 	bool hasicon = false;
 	String doc_tool;
 	List<String> removal_docs;
-#ifdef TOOLS_ENABLED
-	bool doc_base = true;
-#endif
+	String positional_arg;
 	String game_path;
 	String script;
 	String test;
+	bool check_only = false;
+
+#ifdef TOOLS_ENABLED
+	bool doc_base = true;
 	String _export_preset;
 	bool export_debug = false;
-	bool check_only = false;
+	bool export_pack_only = false;
+#endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
@@ -1417,8 +1430,18 @@ bool Main::start() {
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
 #endif
-		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
-			game_path = args[i];
+		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
+			positional_arg = args[i];
+
+			if (args[i].ends_with(".scn") || args[i].ends_with(".tscn") || args[i].ends_with(".escn")) {
+				// Only consider the positional argument to be a scene path if it ends with
+				// a file extension associated with Godot scenes. This makes it possible
+				// for projects to parse command-line arguments for custom CLI arguments
+				// or other file extensions without trouble. This can be used to implement
+				// "drag-and-drop onto executable" logic, which can prove helpful
+				// for non-game applications.
+				game_path = args[i];
+			}
 		}
 		//parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {
@@ -1439,6 +1462,10 @@ bool Main::start() {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
 				export_debug = true;
+			} else if (args[i] == "--export-pack") {
+				editor = true;
+				_export_preset = args[i + 1];
+				export_pack_only = true;
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -1508,18 +1535,15 @@ bool Main::start() {
 		return false;
 	}
 
-#endif
-
 	if (_export_preset != "") {
-		if (game_path == "") {
-			String err = "Command line param ";
-			err += export_debug ? "--export-debug" : "--export";
-			err += " passed but no destination path given.\n";
+		if (positional_arg == "") {
+			String err = "Command line includes export parameter option, but no destination path was given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
-			ERR_PRINT(err.utf8().get_data());
+			ERR_PRINT(err);
 			return false;
 		}
 	}
+#endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
@@ -1697,20 +1721,14 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-
 		EditorNode *editor_node = NULL;
 		if (editor) {
-
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			//root_node->set_editor(editor);
-			//startup editor
-
 			if (_export_preset != "") {
-
-				editor_node->export_preset(_export_preset, game_path, export_debug, "", true);
-				game_path = ""; //no load anything
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
+				game_path = ""; // Do not load anything.
 			}
 		}
 #endif
@@ -2094,8 +2112,12 @@ bool Main::iteration() {
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
 		auto_build_solutions = false;
+		// Only relevant when running the editor.
+		if (!editor) {
+			ERR_FAIL_V_MSG(true, "Command line option --build-solutions was passed, but no project is being edited. Aborting.");
+		}
 		if (!EditorNode::get_singleton()->call_build()) {
-			ERR_FAIL_V(true);
+			ERR_FAIL_V_MSG(true, "Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}
 	}
 #endif
@@ -2146,6 +2168,9 @@ void Main::cleanup() {
 	ResourceLoader::clear_path_remaps();
 
 	ScriptServer::finish_languages();
+
+	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
+	VisualServer::get_singleton()->sync();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();

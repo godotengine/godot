@@ -16,6 +16,7 @@
 			<argument index="0" name="param" type="int" enum="Light.Param">
 			</argument>
 			<description>
+				Returns the value of the specified [enum Light.Param] parameter.
 			</description>
 		</method>
 		<method name="set_param">
@@ -26,6 +27,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of the specified [enum Light.Param] parameter.
 			</description>
 		</method>
 	</methods>
@@ -67,38 +69,54 @@
 			If [code]true[/code], the light will cast shadows.
 		</member>
 		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face" default="false">
+			If [code]true[/code], reverses the backface culling of the mesh. This can be useful when you have a flat mesh that has a light behind it. If you need to cast a shadow on both sides of the mesh, set the mesh to use double-sided shadows with [constant GeometryInstance.SHADOW_CASTING_SETTING_DOUBLE_SIDED].
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_ENERGY" value="0" enum="Param">
+			Constant for accessing [member light_energy].
 		</constant>
 		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
+			Constant for accessing [member light_indirect_energy].
 		</constant>
 		<constant name="PARAM_SPECULAR" value="2" enum="Param">
+			Constant for accessing [member light_specular].
 		</constant>
 		<constant name="PARAM_RANGE" value="3" enum="Param">
+			Constant for accessing [member OmniLight.omni_range] or [member SpotLight.spot_range].
 		</constant>
 		<constant name="PARAM_ATTENUATION" value="4" enum="Param">
+			Constant for accessing [member OmniLight.omni_attenuation] or [member SpotLight.spot_attenuation].
 		</constant>
 		<constant name="PARAM_SPOT_ANGLE" value="5" enum="Param">
+			Constant for accessing [member SpotLight.spot_angle].
 		</constant>
 		<constant name="PARAM_SPOT_ATTENUATION" value="6" enum="Param">
+			Constant for accessing [member SpotLight.spot_angle_attenuation].
 		</constant>
 		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="7" enum="Param">
+			Constant for accessing [member shadow_contact].
 		</constant>
 		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_max_distance].
 		</constant>
 		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_split_1].
 		</constant>
 		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_split_2].
 		</constant>
 		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_split_3].
 		</constant>
 		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="12" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_normal_bias].
 		</constant>
 		<constant name="PARAM_SHADOW_BIAS" value="13" enum="Param">
+			Constant for accessing [member shadow_bias].
 		</constant>
 		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_bias_split_scale].
 		</constant>
 		<constant name="PARAM_MAX" value="15" enum="Param">
 			Represents the size of the [enum Param] enum.

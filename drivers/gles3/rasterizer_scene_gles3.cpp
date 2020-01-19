@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1416,6 +1416,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			switch (multi_mesh->color_format) {
 
+				case VS::MULTIMESH_COLOR_MAX:
 				case VS::MULTIMESH_COLOR_NONE: {
 					glDisableVertexAttribArray(11);
 					glVertexAttrib4f(11, 1, 1, 1, 1);
@@ -1437,6 +1438,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 			switch (multi_mesh->custom_data_format) {
 
+				case VS::MULTIMESH_CUSTOM_DATA_MAX:
 				case VS::MULTIMESH_CUSTOM_DATA_NONE: {
 					glDisableVertexAttribArray(12);
 					glVertexAttrib4f(12, 1, 1, 1, 1);
@@ -1887,17 +1889,17 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		const RID *lights = e->instance->light_instances.ptr();
 
 		for (int i = 0; i < lc; i++) {
-			LightInstance *li = light_instance_owner.getptr(lights[i]);
-			if (li->last_pass != render_pass) //not visible
+			LightInstance *li = light_instance_owner.getornull(lights[i]);
+			if (!li || li->last_pass != render_pass) //not visible
 				continue;
 
-			if (li->light_ptr->type == VS::LIGHT_OMNI) {
+			if (li && li->light_ptr->type == VS::LIGHT_OMNI) {
 				if (omni_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					omni_indices[omni_count++] = li->light_index;
 				}
 			}
 
-			if (li->light_ptr->type == VS::LIGHT_SPOT) {
+			if (li && li->light_ptr->type == VS::LIGHT_SPOT) {
 				if (spot_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
 					spot_indices[spot_count++] = li->light_index;
 				}

@@ -6,6 +6,7 @@
 	<description>
 		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
 		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing Enter.
+		Item text only supports single-line strings, newline characters (e.g. [code]\n[/code]) in the string won't produce a newline. Text wrapping is enabled in [constant ICON_MODE_TOP] mode, but column's width is adjusted to fully fit its content by default. You need to set [member fixed_column_width] greater than zero to wrap the text.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,7 +58,8 @@
 			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
 			<description>
-				Given a position within the control return the item (if any) at that point.
+				Returns the item index at the given [code]position[/code].
+				When there is no item at that point, -1 will be returned if [code]exact[/code] is [code]true[/code], and the closest item index will be returned otherwise.
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
@@ -109,6 +111,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
@@ -174,6 +177,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the item icon will be drawn transposed, i.e. the X and Y axes are swapped.
 			</description>
 		</method>
 		<method name="is_item_selectable" qualifiers="const">
@@ -307,6 +311,7 @@
 			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Sets the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="set_item_icon_transposed">
@@ -314,9 +319,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="rect" type="bool">
+			<argument index="1" name="transposed" type="bool">
 			</argument>
 			<description>
+				Sets whether the item icon will be drawn transposed.
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -409,26 +415,33 @@
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
-			Sets the default column width in pixels. If left to default value, each item will have a width equal to the width of its content and the columns will have an uneven width.
+			The width all columns will be adjusted to.
+			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
 		</member>
 		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size" default="Vector2( 0, 0 )">
-			Sets the default icon size in pixels.
+			The size all icons will be adjusted to.
+			If either X or Y component is not greater than zero, icon size won't be affected.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode" default="1">
-			Sets the default position of the icon to either [constant ICON_MODE_LEFT] or [constant ICON_MODE_TOP].
+			The icon position, whether above or to the left of the text. See the [enum IconMode] constants.
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
-			Sets the icon size to its initial size multiplied by the specified scale.
+			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
-			Sets the maximum columns the list will have. If set to anything other than the default, the content will be split among the specified columns.
+			Maximum columns the list will have.
+			If greater than zero, the content will be split among the specified columns.
+			A value of zero means unlimited columns, i.e. all items will be put in the same row.
 		</member>
 		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines" default="1">
+			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
+			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
-			If set to [code]true[/code], all columns will have the same width specified by [member fixed_column_width].
+			Whether all columns will have the same width.
+			If [code]true[/code], the width is equal to the largest column width of all columns.
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
@@ -486,8 +499,10 @@
 	</signals>
 	<constants>
 		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
+			Icon is drawn above the text.
 		</constant>
 		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
+			Icon is drawn to the left of the text.
 		</constant>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
 			Only allow selecting a single item.

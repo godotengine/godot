@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,7 +122,7 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		Array ret;
 		ret.resize(baked_meshes.size());
 		for (int i = 0; i < baked_meshes.size(); i++) {
-			ret.push_back(baked_meshes[i].mesh);
+			ret[i] = baked_meshes[i].mesh;
 		}
 		r_ret = ret;
 

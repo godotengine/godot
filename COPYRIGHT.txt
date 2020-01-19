@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+Copyright: 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -77,8 +77,8 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./scene/animation/tween_interpolaters.cpp
@@ -98,16 +98,16 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/assimp/

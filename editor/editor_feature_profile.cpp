@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,10 @@ void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_d
 }
 
 bool EditorFeatureProfile::is_class_disabled(const StringName &p_class) const {
-	return disabled_classes.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_classes.has(p_class) || is_class_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, bool p_disabled) {
@@ -76,7 +79,10 @@ void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, b
 }
 
 bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) const {
-	return disabled_editors.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_editors.has(p_class) || is_class_editor_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {

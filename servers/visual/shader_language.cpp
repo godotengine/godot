@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -571,8 +571,10 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					CharType last_char = str[str.length() - 1];
 
 					if (hexa_found) {
-						//hex integers eg."0xFF" or "0x12AB", etc - NOT supported yet
-						return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant - Not supported");
+						//integer(hex)
+						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
+							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+						}
 					} else if (period_found || exponent_found || float_suffix_found) {
 						//floats
 						if (period_found) {
@@ -621,7 +623,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					else
 						tk.type = TK_INT_CONSTANT;
 
-					tk.constant = str.to_double(); //won't work with hex
+					if (hexa_found) {
+						tk.constant = (double)str.hex_to_int64(true);
+					} else {
+						tk.constant = str.to_double();
+					}
 					tk.line = tk_line;
 
 					return tk;
@@ -2054,7 +2060,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	//sub-functions
 
 	//array
-	{ "length", TYPE_INT, { TYPE_VOID }, TAG_ARRAY, false },
+	{ "length", TYPE_INT, { TYPE_VOID }, TAG_ARRAY, true },
 
 	{ NULL, TYPE_VOID, { TYPE_VOID }, TAG_GLOBAL, false }
 
@@ -3882,6 +3888,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				if (tk.type == TK_BRACKET_OPEN) {
 					bool unknown_size = false;
 
+					if (VisualServer::get_singleton()->is_low_end() && is_const) {
+						_set_error("Local const arrays are supported only on high-end platform!");
+						return ERR_PARSE_ERROR;
+					}
+
 					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
 					node->datatype = type;
 					node->precision = precision;
@@ -3917,6 +3928,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 					tk = _get_token();
 					if (tk.type == TK_OP_ASSIGN) {
+
+						if (VisualServer::get_singleton()->is_low_end()) {
+							_set_error("Array initialization is supported only on high-end platform!");
+							return ERR_PARSE_ERROR;
+						}
+
 						tk = _get_token();
 
 						if (tk.type != TK_CURLY_BRACKET_OPEN) {
@@ -3947,33 +3964,42 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 							tk = _get_token();
 							if (tk.type == TK_BRACKET_OPEN) {
-								Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
-								if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
-									_set_error("Expected single integer constant > 0");
-									return ERR_PARSE_ERROR;
-								}
+								TkPos pos2 = _get_tkpos();
+								tk = _get_token();
+								if (tk.type == TK_BRACKET_CLOSE) {
+									array_size2 = var.array_size;
+									tk = _get_token();
+								} else {
+									_set_tkpos(pos2);
 
-								ConstantNode *cnode = (ConstantNode *)n;
-								if (cnode->values.size() == 1) {
-									array_size2 = cnode->values[0].sint;
-									if (array_size2 <= 0) {
+									Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+									if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 										_set_error("Expected single integer constant > 0");
 										return ERR_PARSE_ERROR;
 									}
-								} else {
-									_set_error("Expected single integer constant > 0");
-									return ERR_PARSE_ERROR;
-								}
 
-								tk = _get_token();
-								if (tk.type != TK_BRACKET_CLOSE) {
-									_set_error("Expected ']");
-									return ERR_PARSE_ERROR;
-								} else {
+									ConstantNode *cnode = (ConstantNode *)n;
+									if (cnode->values.size() == 1) {
+										array_size2 = cnode->values[0].sint;
+										if (array_size2 <= 0) {
+											_set_error("Expected single integer constant > 0");
+											return ERR_PARSE_ERROR;
+										}
+									} else {
+										_set_error("Expected single integer constant > 0");
+										return ERR_PARSE_ERROR;
+									}
+
 									tk = _get_token();
+									if (tk.type != TK_BRACKET_CLOSE) {
+										_set_error("Expected ']'");
+										return ERR_PARSE_ERROR;
+									} else {
+										tk = _get_token();
+									}
 								}
 							} else {
-								_set_error("Expected '[");
+								_set_error("Expected '['");
 								return ERR_PARSE_ERROR;
 							}
 
@@ -4536,8 +4562,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
-				return OK;
+
+			BlockNode *block = p_block;
+			while (block) {
+				if (block->block_type == BlockNode::BLOCK_TYPE_CASE || block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+					return OK;
+				}
+				block = block->parent_block;
 			}
 		} else if (tk.type == TK_CF_DISCARD) {
 
@@ -4585,8 +4616,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
-			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
-				return OK;
+
+			BlockNode *block = p_block;
+			while (block) {
+				if (block->block_type == BlockNode::BLOCK_TYPE_CASE || block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+					return OK;
+				}
+				block = block->parent_block;
 			}
 
 		} else if (tk.type == TK_CF_CONTINUE) {

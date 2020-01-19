@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
 Dictionary Sprite::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -58,6 +59,11 @@ bool Sprite::_edit_use_pivot() const {
 	return true;
 }
 
+bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+
+	return is_pixel_opaque(p_point);
+}
+
 Rect2 Sprite::_edit_get_rect() const {
 	return get_rect();
 }
@@ -65,6 +71,7 @@ Rect2 Sprite::_edit_get_rect() const {
 bool Sprite::_edit_use_rect() const {
 	return texture.is_valid();
 }
+#endif
 
 Rect2 Sprite::get_anchorable_rect() const {
 	return get_rect();
@@ -303,11 +310,6 @@ void Sprite::set_hframes(int p_amount) {
 int Sprite::get_hframes() const {
 
 	return hframes;
-}
-
-bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
-	return is_pixel_opaque(p_point);
 }
 
 bool Sprite::is_pixel_opaque(const Point2 &p_point) const {

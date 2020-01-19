@@ -8,7 +8,8 @@ env_bullet = env_modules.Clone()
 # Thirdparty source files
 
 if env['builtin_bullet']:
-    # Build only version 2 for now (as of 2.87)
+    # Build only version 2 for now (as of 2.89)
+    # Sync file list with relevant upstream CMakeLists.txt for each folder.
     thirdparty_dir = "#thirdparty/bullet/"
 
     bullet2_src = [
@@ -67,8 +68,8 @@ if env['builtin_bullet']:
         , "BulletCollision/CollisionShapes/btCylinderShape.cpp"
         , "BulletCollision/CollisionShapes/btEmptyShape.cpp"
         , "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.cpp"
-        , "BulletCollision/CollisionShapes/btMinkowskiSumShape.cpp"
         , "BulletCollision/CollisionShapes/btMiniSDF.cpp"
+        , "BulletCollision/CollisionShapes/btMinkowskiSumShape.cpp"
         , "BulletCollision/CollisionShapes/btMultimaterialTriangleMeshShape.cpp"
         , "BulletCollision/CollisionShapes/btMultiSphereShape.cpp"
         , "BulletCollision/CollisionShapes/btOptimizedBvh.cpp"
@@ -124,6 +125,8 @@ if env['builtin_bullet']:
         , "BulletDynamics/ConstraintSolver/btHingeConstraint.cpp"
         , "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.cpp"
         , "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp"
+        , "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.cpp"
+        , "BulletDynamics/ConstraintSolver/btBatchedConstraints.cpp"
         , "BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.cpp"
         , "BulletDynamics/ConstraintSolver/btSliderConstraint.cpp"
         , "BulletDynamics/ConstraintSolver/btSolve2LinearConstraint.cpp"
@@ -138,15 +141,17 @@ if env['builtin_bullet']:
         , "BulletDynamics/Vehicle/btRaycastVehicle.cpp"
         , "BulletDynamics/Vehicle/btWheelInfo.cpp"
         , "BulletDynamics/Featherstone/btMultiBody.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodyConstraint.cpp"
         , "BulletDynamics/Featherstone/btMultiBodyConstraintSolver.cpp"
         , "BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.cpp"
-        , "BulletDynamics/Featherstone/btMultiBodyJointLimitConstraint.cpp"
-        , "BulletDynamics/Featherstone/btMultiBodyConstraint.cpp"
-        , "BulletDynamics/Featherstone/btMultiBodyPoint2Point.cpp"
         , "BulletDynamics/Featherstone/btMultiBodyFixedConstraint.cpp"
-        , "BulletDynamics/Featherstone/btMultiBodySliderConstraint.cpp"
-        , "BulletDynamics/Featherstone/btMultiBodyJointMotor.cpp"
         , "BulletDynamics/Featherstone/btMultiBodyGearConstraint.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodyJointLimitConstraint.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodyJointMotor.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodyMLCPConstraintSolver.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodyPoint2Point.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodySliderConstraint.cpp"
+        , "BulletDynamics/Featherstone/btMultiBodySphericalJointMotor.cpp"
         , "BulletDynamics/MLCPSolvers/btDantzigLCP.cpp"
         , "BulletDynamics/MLCPSolvers/btMLCPSolver.cpp"
         , "BulletDynamics/MLCPSolvers/btLemkeAlgorithm.cpp"
@@ -167,6 +172,12 @@ if env['builtin_bullet']:
         , "BulletSoftBody/btSoftMultiBodyDynamicsWorld.cpp"
         , "BulletSoftBody/btSoftSoftCollisionAlgorithm.cpp"
         , "BulletSoftBody/btDefaultSoftBodySolver.cpp"
+        , "BulletSoftBody/btDeformableBackwardEulerObjective.cpp"
+        , "BulletSoftBody/btDeformableBodySolver.cpp"
+        , "BulletSoftBody/btDeformableMultiBodyConstraintSolver.cpp"
+        , "BulletSoftBody/btDeformableContactProjection.cpp"
+        , "BulletSoftBody/btDeformableMultiBodyDynamicsWorld.cpp"
+        , "BulletSoftBody/btDeformableContactConstraint.cpp"
 
         # clew
         , "clew/clew.c"
@@ -182,6 +193,9 @@ if env['builtin_bullet']:
         , "LinearMath/btSerializer64.cpp"
         , "LinearMath/btThreads.cpp"
         , "LinearMath/btVector3.cpp"
+        , "LinearMath/TaskScheduler/btTaskScheduler.cpp"
+        , "LinearMath/TaskScheduler/btThreadSupportPosix.cpp"
+        , "LinearMath/TaskScheduler/btThreadSupportWin32.cpp"
     ]
 
     thirdparty_sources = [thirdparty_dir + file for file in bullet2_src]

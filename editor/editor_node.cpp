@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,16 +49,44 @@
 #include "core/version.h"
 #include "main/input_default.h"
 #include "main/main.h"
+#include "scene/gui/center_container.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tabs.h"
+#include "scene/gui/texture_progress.h"
+#include "scene/gui/tool_button.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
 
+#include "editor/audio_stream_preview.h"
+#include "editor/dependency_editor.h"
+#include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
+#include "editor/editor_export.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_layouts_dialog.h"
+#include "editor/editor_log.h"
+#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_run_native.h"
+#include "editor/editor_run_script.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
+#include "editor/export_template_manager.h"
+#include "editor/fileserver/editor_file_server.h"
+#include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
 #include "editor/import/resource_importer_bitmask.h"
@@ -71,7 +99,11 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
+#include "editor/import_dock.h"
 #include "editor/multi_node_edit.h"
+#include "editor/node_dock.h"
+#include "editor/pane_drag.h"
+#include "editor/plugin_config_dialog.h"
 #include "editor/plugins/animation_blend_space_1d_editor.h"
 #include "editor/plugins/animation_blend_space_2d_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
@@ -128,11 +160,18 @@
 #include "editor/plugins/tile_set_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
+#include "editor/progress_dialog.h"
+#include "editor/project_export.h"
+#include "editor/project_settings_editor.h"
 #include "editor/pvrtc_compress.h"
+#include "editor/quick_open.h"
 #include "editor/register_exporters.h"
+#include "editor/run_settings_dialog.h"
 #include "editor/script_editor_debugger.h"
+#include "editor/settings_config_dialog.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 EditorNode *EditorNode::singleton = NULL;
 
@@ -330,6 +369,19 @@ void EditorNode::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
+			{
+				_initializing_addons = true;
+				Vector<String> addons;
+				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+					addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
+				}
+
+				for (int i = 0; i < addons.size(); i++) {
+					set_addon_plugin_enabled(addons[i], true);
+				}
+				_initializing_addons = false;
+			}
+
 			VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
 			VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
 			VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
@@ -523,43 +575,65 @@ void EditorNode::_fs_changed() {
 
 	_mark_unsaved_scenes();
 
+	// FIXME: Move this to a cleaner location, it's hacky to do this is _fs_changed.
+	String export_error;
 	if (export_defer.preset != "" && !EditorFileSystem::get_singleton()->is_scanning()) {
+		String preset_name = export_defer.preset;
+		// Ensures export_project does not loop infinitely, because notifications may
+		// come during the export.
+		export_defer.preset = "";
 		Ref<EditorExportPreset> preset;
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
 			preset = EditorExport::get_singleton()->get_export_preset(i);
-			if (preset->get_name() == export_defer.preset) {
+			if (preset->get_name() == preset_name) {
 				break;
 			}
 			preset.unref();
 		}
 		if (preset.is_null()) {
-			String errstr = "Unknown export preset: " + export_defer.preset;
-			ERR_PRINTS(errstr);
+			export_error = vformat("Invalid export preset name: %s.", preset_name);
 		} else {
 			Ref<EditorExportPlatform> platform = preset->get_platform();
 			if (platform.is_null()) {
-				String errstr = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
-				ERR_PRINTS(errstr);
+				export_error = vformat("Export preset '%s' doesn't have a matching platform.", preset_name);
 			} else {
-				// ensures export_project does not loop infinitely, because notifications may
-				// come during the export
-				export_defer.preset = "";
 				Error err = OK;
-				if (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip")) {
+				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_defer.path.ends_with(".zip")) {
 						err = platform->export_zip(preset, export_defer.debug, export_defer.path);
 					} else if (export_defer.path.ends_with(".pck")) {
 						err = platform->export_pack(preset, export_defer.debug, export_defer.path);
 					}
-				} else {
-					err = platform->export_project(preset, export_defer.debug, export_defer.path);
+				} else { // Normal project export.
+					String config_error;
+					bool missing_templates;
+					if (!platform->can_export(preset, config_error, missing_templates)) {
+						ERR_PRINT(vformat("Cannot export project with preset '%s' due to configuration errors:\n%s", preset_name, config_error));
+						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
+					} else {
+						err = platform->export_project(preset, export_defer.debug, export_defer.path);
+					}
 				}
-				if (err != OK) {
-					ERR_PRINTS(vformat(TTR("Project export failed with error code %d."), (int)err));
+				switch (err) {
+					case OK:
+						break;
+					case ERR_FILE_NOT_FOUND:
+						export_error = vformat("Project export failed for preset '%s', the export template appears to be missing.", preset_name);
+						break;
+					case ERR_FILE_BAD_PATH:
+						export_error = vformat("Project export failed for preset '%s', the target path '%s' appears to be invalid.", preset_name, export_defer.path);
+						break;
+					default:
+						export_error = vformat("Project export failed with error code %d for preset '%s'.", (int)err, preset_name);
+						break;
 				}
 			}
 		}
 
+		if (!export_error.empty()) {
+			ERR_PRINT(export_error);
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+		}
 		_exit_editor();
 	}
 }
@@ -599,12 +673,14 @@ void EditorNode::_sources_changed(bool p_exist) {
 	if (waiting_for_first_scan) {
 		waiting_for_first_scan = false;
 
-		EditorResourcePreview::get_singleton()->start(); //start previes now that it's safe
+		// Start preview thread now that it's safe.
+		if (!singleton->cmdline_export_mode) {
+			EditorResourcePreview::get_singleton()->start();
+		}
 
 		_load_docks();
 
 		if (defer_load_scene != "") {
-
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -1021,76 +1097,83 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	EditorProgress save("save", TTR("Saving Scene"), 4);
-	save.step(TTR("Analyzing"), 0);
 
-	int c2d = 0;
-	int c3d = 0;
-	_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
+	if (editor_data.get_edited_scene_root() != NULL) {
+		save.step(TTR("Analyzing"), 0);
 
-	bool is2d;
-	if (c3d < c2d) {
-		is2d = true;
-	} else {
-		is2d = false;
-	}
-	save.step(TTR("Creating Thumbnail"), 1);
-	//current view?
+		int c2d = 0;
+		int c3d = 0;
 
-	Ref<Image> img;
-	if (is2d) {
-		img = scene_root->get_texture()->get_data();
-	} else {
-		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
-	}
+		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
 
-	if (img.is_valid()) {
-
-		img = img->duplicate();
-
-		save.step(TTR("Creating Thumbnail"), 2);
-		save.step(TTR("Creating Thumbnail"), 3);
-
-		int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-		preview_size *= EDSCALE;
-
-		// consider a square region
-		int vp_size = MIN(img->get_width(), img->get_height());
-		int x = (img->get_width() - vp_size) / 2;
-		int y = (img->get_height() - vp_size) / 2;
-
-		if (vp_size < preview_size) {
-			// just square it.
-			img->crop_from_point(x, y, vp_size, vp_size);
+		bool is2d;
+		if (c3d < c2d) {
+			is2d = true;
 		} else {
-			int ratio = vp_size / preview_size;
-			int size = preview_size * MAX(1, ratio / 2);
-
-			x = (img->get_width() - size) / 2;
-			y = (img->get_height() - size) / 2;
-
-			img->crop_from_point(x, y, size, size);
-			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
+			is2d = false;
 		}
-		img->convert(Image::FORMAT_RGB8);
+		save.step(TTR("Creating Thumbnail"), 1);
+		//current view?
 
-		img->flip_y();
+		Ref<Image> img;
+		if (is2d) {
+			img = scene_root->get_texture()->get_data();
+		} else {
+			img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+		}
 
-		//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
-		String temp_path = EditorSettings::get_singleton()->get_cache_dir();
-		String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
-		cache_base = temp_path.plus_file("resthumb-" + cache_base);
+		if (img.is_valid()) {
 
-		//does not have it, try to load a cached thumbnail
+			img = img->duplicate();
 
-		String file = cache_base + ".png";
+			save.step(TTR("Creating Thumbnail"), 2);
+			save.step(TTR("Creating Thumbnail"), 3);
 
-		post_process_preview(img);
-		img->save_png(file);
+			int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			preview_size *= EDSCALE;
+
+			// consider a square region
+			int vp_size = MIN(img->get_width(), img->get_height());
+			int x = (img->get_width() - vp_size) / 2;
+			int y = (img->get_height() - vp_size) / 2;
+
+			if (vp_size < preview_size) {
+				// just square it.
+				img->crop_from_point(x, y, vp_size, vp_size);
+			} else {
+				int ratio = vp_size / preview_size;
+				int size = preview_size * MAX(1, ratio / 2);
+
+				x = (img->get_width() - size) / 2;
+				y = (img->get_height() - size) / 2;
+
+				img->crop_from_point(x, y, size, size);
+				img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
+			}
+			img->convert(Image::FORMAT_RGB8);
+
+			img->flip_y();
+
+			//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
+			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
+			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
+			cache_base = temp_path.plus_file("resthumb-" + cache_base);
+
+			//does not have it, try to load a cached thumbnail
+
+			String file = cache_base + ".png";
+
+			post_process_preview(img);
+			img->save_png(file);
+		}
 	}
 
 	save.step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
-	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
+	if (!singleton->cmdline_export_mode) {
+		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+	}
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -3774,7 +3857,7 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
 	} else {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
@@ -3783,7 +3866,7 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
 		return false;
 	} else {
@@ -3794,7 +3877,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 
 void EditorNode::progress_end_task(const String &p_task) {
 
-	if (singleton->disable_progress_dialog) {
+	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": end");
 	} else {
 		singleton->progress_dialog->end_task(p_task);
@@ -3874,13 +3957,13 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
-Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only) {
 
 	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
-	export_defer.password = p_password;
-	disable_progress_dialog = true;
+	export_defer.pack_only = p_pack_only;
+	cmdline_export_mode = true;
 	return OK;
 }
 
@@ -5014,6 +5097,7 @@ void EditorNode::_global_menu_action(const Variant &p_id, const Variant &p_meta)
 	if (id == GLOBAL_NEW_WINDOW) {
 		if (OS::get_singleton()->get_main_loop()) {
 			List<String> args;
+			args.push_back("-e");
 			String exec = OS::get_singleton()->get_executable_path();
 
 			OS::ProcessID pid = 0;
@@ -5521,7 +5605,7 @@ EditorNode::EditorNode() {
 	_initializing_addons = false;
 	docks_visible = true;
 	restoring_scenes = false;
-	disable_progress_dialog = false;
+	cmdline_export_mode = false;
 	scene_distraction = false;
 	script_distraction = false;
 
@@ -6485,12 +6569,6 @@ EditorNode::EditorNode() {
 	gui_base->add_child(file);
 	file->set_current_dir("res://");
 
-	file_export = memnew(EditorFileDialog);
-	file_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	gui_base->add_child(file_export);
-	file_export->set_title(TTR("Export Project"));
-	file_export->connect("file_selected", this, "_dialog_action");
-
 	file_export_lib = memnew(EditorFileDialog);
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_mode(EditorFileDialog::MODE_SAVE_FILE);
@@ -6500,11 +6578,6 @@ EditorNode::EditorNode() {
 	file_export_lib_merge->set_pressed(true);
 	file_export_lib->get_vbox()->add_child(file_export_lib_merge);
 	gui_base->add_child(file_export_lib);
-
-	file_export_password = memnew(LineEdit);
-	file_export_password->set_secret(true);
-	file_export_password->set_editable(false);
-	file_export->get_vbox()->add_margin_child(TTR("Password:"), file_export_password);
 
 	file_script = memnew(EditorFileDialog);
 	file_script->set_title(TTR("Open & Run a Script"));
@@ -6720,19 +6793,6 @@ EditorNode::EditorNode() {
 	_update_scene_tabs();
 
 	import_dock->initialize_import_options();
-
-	{
-		_initializing_addons = true;
-		Vector<String> addons;
-		if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
-			addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
-		}
-
-		for (int i = 0; i < addons.size(); i++) {
-			set_addon_plugin_enabled(addons[i], true);
-		}
-		_initializing_addons = false;
-	}
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 

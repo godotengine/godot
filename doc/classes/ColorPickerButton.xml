@@ -43,10 +43,12 @@
 		</signal>
 		<signal name="picker_created">
 			<description>
+				Emitted when the [ColorPicker] is created (the button is pressed for the first time).
 			</description>
 		</signal>
 		<signal name="popup_closed">
 			<description>
+				Emitted when the [ColorPicker] is closed.
 			</description>
 		</signal>
 	</signals>

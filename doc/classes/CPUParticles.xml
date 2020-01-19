@@ -367,5 +367,8 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
+			Represents the size of the [enum EmissionShape] enum.
+		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,6 +137,18 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	if (img_format > Image::FORMAT_RGBA8) {
 		// TODO: we should be able to handle FORMAT_RGBA4444 and FORMAT_RGBA5551 eventually
 		return;
+	}
+
+	if (force_etc1_format) {
+		// If VRAM compression is using ETC, but image has alpha, convert to RGBA4444 or LA8
+		// This saves space while maintaining the alpha channel
+		if (detected_channels == Image::DETECTED_RGBA) {
+			p_img->convert(Image::FORMAT_RGBA4444);
+			return;
+		} else if (detected_channels == Image::DETECTED_LA) {
+			p_img->convert(Image::FORMAT_LA8);
+			return;
+		}
 	}
 
 	uint32_t imgw = p_img->get_width(), imgh = p_img->get_height();

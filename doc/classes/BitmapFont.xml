@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BitmapFont" inherits="Font" category="Core" version="3.2">
 	<brief_description>
-		Renders text using [code]*.fnt[/code] fonts.
+		Renders text using fonts under the [url=https://www.angelcode.com/products/bmfont/]BMFont[/url] format.
+		Handles files with the [code].fnt[/code] extension
 	</brief_description>
 	<description>
 		Renders text using [code]*.fnt[/code] fonts containing texture atlases. Supports distance fields. For using vector font files like TTF directly, see [DynamicFont].
