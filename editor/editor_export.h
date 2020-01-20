@@ -51,6 +51,7 @@ public:
 		EXPORT_ALL_RESOURCES,
 		EXPORT_SELECTED_SCENES,
 		EXPORT_SELECTED_RESOURCES,
+		EXPORT_SIMPLE_PACK,
 	};
 
 	enum ScriptExportMode {
@@ -193,6 +194,7 @@ private:
 
 	void _export_find_resources(EditorFileSystemDirectory *p_dir, Set<String> &p_paths);
 	void _export_find_dependencies(const String &p_path, Set<String> &p_paths);
+	void _export_find_files(const String &p_path, Set<String> &p_paths);
 
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);

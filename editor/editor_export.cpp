@@ -454,6 +454,37 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, Set<S
 	}
 }
 
+void EditorExportPlatform::_export_find_files(const String &p_path, Set<String> &p_paths) {
+
+	DirAccess *da = DirAccess::open(p_path);
+	ERR_FAIL_COND(!da);
+
+	da->list_dir_begin();
+
+	while (true) {
+		String f = da->get_next();
+		if (f == "") {
+			break;
+		}
+		if (f.begins_with(".") && f != ".import") { // Ignore UNIX style hidden and . / ..
+			continue;
+		}
+		if (da->current_is_hidden()) {
+			continue;
+		}
+
+		if (da->current_is_dir()) {
+			_export_find_files(p_path.plus_file(f), p_paths);
+		} else {
+			p_paths.insert(p_path.plus_file(f));
+		}
+	}
+
+	da->list_dir_end();
+
+	memdelete(da);
+}
+
 void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude) {
 
 	da->list_dir_begin();
@@ -691,19 +722,43 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Set<String> paths;
 	Vector<String> path_remaps;
 
-	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
-		//find stuff
-		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
-	} else {
-		bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
+	switch (p_preset->get_export_filter()) {
+		case EditorExportPreset::EXPORT_ALL_RESOURCES: {
+			//find stuff
+			_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);
+		} break;
+		case EditorExportPreset::EXPORT_SELECTED_SCENES:
+		case EditorExportPreset::EXPORT_SELECTED_RESOURCES: {
+			bool scenes_only = p_preset->get_export_filter() == EditorExportPreset::EXPORT_SELECTED_SCENES;
 
-		Vector<String> files = p_preset->get_files_to_export();
-		for (int i = 0; i < files.size(); i++) {
-			if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene")
-				continue;
+			Vector<String> files = p_preset->get_files_to_export();
+			for (int i = 0; i < files.size(); i++) {
+				if (scenes_only && ResourceLoader::get_resource_type(files[i]) != "PackedScene")
+					continue;
 
-			_export_find_dependencies(files[i], paths);
-		}
+				_export_find_dependencies(files[i], paths);
+			}
+		} break;
+		case EditorExportPreset::EXPORT_SIMPLE_PACK: {
+
+			Vector<String> files = p_preset->get_files_to_export();
+			for (int i = 0; i < files.size(); i++) {
+				_export_find_files(files[i], paths);
+			}
+
+			Error err = OK;
+			int n = 0;
+			for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
+				Vector<uint8_t> array = FileAccess::get_file_as_array(E->get());
+				print_line(E->get());
+				err = p_func(p_udata, E->get(), array, n, paths.size());
+				if (err) {
+					break;
+				}
+			}
+
+			return err;
+		} break;
 	}
 
 	//add native icons to non-resource include list
@@ -1183,6 +1238,10 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "resources");
 				save_files = true;
 			} break;
+			case EditorExportPreset::EXPORT_SIMPLE_PACK: {
+				// Not relevant here
+				continue;
+			}
 		}
 
 		if (save_files) {
