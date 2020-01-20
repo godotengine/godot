@@ -149,7 +149,7 @@ class State:
                 getter = property.get("getter") or None
                 default_value = property.get("default") or None
                 if default_value is not None:
-                    default_value = escape_rst(default_value)
+                    default_value = '``{}``'.format(default_value)
                 overridden = property.get("override") or False
 
                 property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value, overridden)
