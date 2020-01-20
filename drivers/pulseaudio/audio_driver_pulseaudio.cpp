@@ -229,8 +229,8 @@ Error AudioDriverPulseAudio::init_device() {
 	samples_out.resize(pa_buffer_size);
 
 	// Reset audio input to keep synchronisation.
-	capture_position = 0;
-	capture_size = 0;
+	input_position = 0;
+	input_size = 0;
 
 	return OK;
 }
@@ -465,7 +465,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			size_t bytes = pa_stream_readable_size(ad->pa_rec_str);
 			if (bytes > 0) {
 				const void *ptr = NULL;
-				size_t maxbytes = ad->capture_buffer.size() * sizeof(int16_t);
+				size_t maxbytes = ad->input_buffer.size() * sizeof(int16_t);
 
 				bytes = MIN(bytes, maxbytes);
 				ret = pa_stream_peek(ad->pa_rec_str, &ptr, &bytes);
@@ -475,11 +475,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					int16_t *srcptr = (int16_t *)ptr;
 					for (size_t i = bytes >> 1; i > 0; i--) {
 						int32_t sample = int32_t(*srcptr++) << 16;
-						ad->capture_buffer_write(sample);
+						ad->input_buffer_write(sample);
 
 						if (ad->pa_rec_map.channels == 1) {
-							// In case capture device is single channel convert it to Stereo
-							ad->capture_buffer_write(sample);
+							// In case input device is single channel convert it to Stereo
+							ad->input_buffer_write(sample);
 						}
 					}
 
@@ -666,7 +666,7 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 
 		default:
-			WARN_PRINTS("PulseAudio: Unsupported number of capture channels: " + itos(pa_rec_map.channels));
+			WARN_PRINTS("PulseAudio: Unsupported number of input channels: " + itos(pa_rec_map.channels));
 			pa_channel_map_init_stereo(&pa_rec_map);
 			break;
 	}
@@ -698,10 +698,10 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	capture_buffer_init(input_buffer_frames);
+	input_buffer_init(input_buffer_frames);
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " capture channels");
-	print_verbose("PulseAudio: capture buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
