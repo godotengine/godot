@@ -38,7 +38,7 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 
 	for (int i = 0; i < sources.size(); i++) {
 
-		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files, this)) {
 
 			return OK;
 		};
@@ -107,7 +107,9 @@ PackedData *PackedData::singleton = NULL;
 
 PackedData::PackedData() {
 
-	singleton = this;
+	if (!singleton) { // So only the main PackedData sets itself
+		singleton = this;
+	}
 	root = memnew(PackedDir);
 	root->parent = NULL;
 	disabled = false;
@@ -132,7 +134,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, PackedData *p_packed_data) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f)
@@ -203,7 +205,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
+		p_packed_data->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
 	};
 
 	f->close();
@@ -413,22 +415,20 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-Error DirAccessPack::change_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 
-	String nd = fix_path(p_dir).simplify_path();
-
-	if (nd == "") nd = ".";
+	if (p_dir == "") p_dir = ".";
 
 	bool absolute = false;
-	if (nd.begins_with("/")) {
-		nd = nd.replace_first("/", "res://");
+	if (p_dir.begins_with("/")) {
+		p_dir = p_dir.replace_first("/", "res://");
 		absolute = true;
-	} else if (nd.find("://") != -1) {
-		nd = nd.replace_first("://", "/");
+	} else if (p_dir.find("://") != -1) {
+		p_dir = p_dir.replace_first("://", "/");
 		absolute = true;
 	}
 
-	Vector<String> paths = nd.split("/");
+	Vector<String> paths = p_dir.split("/");
 
 	PackedData::PackedDir *pd;
 
@@ -442,23 +442,35 @@ Error DirAccessPack::change_dir(String p_dir) {
 		String p = paths[i];
 		if (p == ".") {
 			continue;
-		} else if (p == "..") {
-			if (pd->parent) {
-				pd = pd->parent;
-			}
 		} else if (pd->subdirs.has(p)) {
-
 			pd = pd->subdirs[p];
-
 		} else {
+			return NULL;
+		}
+	}
 
+	return pd;
+}
+
+Error DirAccessPack::change_dir(String p_dir) {
+
+	if (p_dir == "..") {
+		if (current->parent) {
+			current = current->parent;
+			return OK;
+		} else {
 			return ERR_INVALID_PARAMETER;
 		}
 	}
 
-	current = pd;
-
-	return OK;
+	String nd = fix_path(p_dir).simplify_path();
+	PackedData::PackedDir *pd = _find_dir(nd);
+	if (pd) {
+		current = pd;
+		return OK;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
 }
 
 String DirAccessPack::get_current_dir() {
@@ -478,16 +490,17 @@ String DirAccessPack::get_current_dir() {
 
 bool DirAccessPack::file_exists(String p_file) {
 
-	p_file = fix_path(p_file);
-
-	return current->files.has(p_file);
+	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
+	if (!pd) {
+		return false;
+	}
+	return pd->files.has(p_file.get_file());
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
 
-	p_dir = fix_path(p_dir);
-
-	return current->subdirs.has(p_dir);
+	PackedData::PackedDir *pd = _find_dir(p_dir);
+	return pd != NULL;
 }
 
 Error DirAccessPack::make_dir(String p_dir) {
@@ -513,9 +526,9 @@ String DirAccessPack::get_filesystem_type() const {
 	return "PCK";
 }
 
-DirAccessPack::DirAccessPack() {
+DirAccessPack::DirAccessPack(PackedData *p_packed_data) {
 
-	current = PackedData::get_singleton()->root;
+	current = p_packed_data->root;
 	cdir = false;
 }
 

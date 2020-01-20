@@ -30,6 +30,7 @@
 
 #include "dir_access.h"
 
+#include "core/io/file_access_pack.h"
 #include "core/os/file_access.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
@@ -285,7 +286,19 @@ DirAccess *DirAccess::create_for_path(const String &p_path) {
 
 DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
-	DirAccess *da = create_for_path(p_path);
+	//try packed data first
+
+	DirAccess *da = NULL;
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
+		da = PackedData::get_singleton()->try_open_directory(p_path);
+		if (da) {
+			if (r_error)
+				*r_error = OK;
+			return da;
+		}
+	}
+
+	da = create_for_path(p_path);
 
 	ERR_FAIL_COND_V_MSG(!da, NULL, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
@@ -293,7 +306,7 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 		*r_error = err;
 	if (err != OK) {
 		memdelete(da);
-		return NULL;
+		da = NULL;
 	}
 
 	return da;
@@ -471,6 +484,9 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
 }
 
 bool DirAccess::exists(String p_dir) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_directory(p_dir))
+		return true;
 
 	DirAccess *da = DirAccess::create_for_path(p_dir);
 	bool valid = da->change_dir(p_dir) == OK;

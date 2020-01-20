@@ -118,6 +118,9 @@ public:
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
 
+	_FORCE_INLINE_ DirAccess *try_open_directory(const String &p_path);
+	_FORCE_INLINE_ bool has_directory(const String &p_path);
+
 	PackedData();
 	~PackedData();
 };
@@ -125,7 +128,7 @@ public:
 class PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, PackedData *p_packed_data) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
@@ -133,7 +136,7 @@ public:
 class PackedSourcePCK : public PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, PackedData *p_packed_data = PackedData::get_singleton());
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
@@ -200,6 +203,17 @@ bool PackedData::has_path(const String &p_path) {
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
+bool PackedData::has_directory(const String &p_path) {
+
+	DirAccess *da = try_open_directory(p_path);
+	if (da) {
+		memdelete(da);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 class DirAccessPack : public DirAccess {
 
 	PackedData::PackedDir *current;
@@ -207,6 +221,8 @@ class DirAccessPack : public DirAccess {
 	List<String> list_dirs;
 	List<String> list_files;
 	bool cdir;
+
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 protected:
 	String _get_resource_path() const;
@@ -236,8 +252,24 @@ public:
 
 	virtual String get_filesystem_type() const;
 
-	DirAccessPack();
+	DirAccessPack(PackedData *p_packed_data = PackedData::get_singleton());
 	~DirAccessPack();
 };
+
+DirAccess *PackedData::try_open_directory(const String &p_path) {
+
+#ifdef HAVE_TOOLS
+	const String &path = p_path;
+#else
+	const String &path = p_path.replace_first("addons://", "res://addons/");
+#endif
+
+	DirAccess *da = memnew(DirAccessPack(this));
+	if (da->change_dir(path) != OK) {
+		memdelete(da);
+		da = NULL;
+	}
+	return da;
+}
 
 #endif // FILE_ACCESS_PACK_H
