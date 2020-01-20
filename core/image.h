@@ -172,8 +172,12 @@ private:
 		width = p_image.width;
 		height = p_image.height;
 		mipmaps = p_image.mipmaps;
-		data = p_image.data;
+		_safe_data_assign(p_image.data);
 	}
+
+	void _safe_data_assign(const PoolVector<uint8_t> &p_data);
+	void _safe_data_resize(int p_size);
+	void _check_for_lock();
 
 	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
 

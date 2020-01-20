@@ -1329,7 +1329,7 @@ void Image::expand_x2_hq2x() {
 
 	width *= 2;
 	height *= 2;
-	data = dest;
+	_safe_data_assign(dest);
 
 	if (current != FORMAT_RGBA8)
 		convert(current);
@@ -1365,7 +1365,7 @@ void Image::shrink_x2() {
 
 		width = MAX(width / 2, 1);
 		height = MAX(height / 2, 1);
-		data = new_img;
+		_safe_data_assign(new_img);
 
 	} else {
 
@@ -1408,7 +1408,7 @@ void Image::shrink_x2() {
 
 		width /= 2;
 		height /= 2;
-		data = new_img;
+		_safe_data_assign(new_img);
 	}
 }
 
@@ -1452,7 +1452,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 
 	int size = _get_dst_image_size(width, height, format, mmcount);
 
-	data.resize(size);
+	_safe_data_resize(size);
 
 	PoolVector<uint8_t>::Write wp = data.write();
 
@@ -1555,7 +1555,7 @@ void Image::clear_mipmaps() {
 
 	int ofs, w, h;
 	_get_mipmap_offset_and_size(1, ofs, w, h);
-	data.resize(ofs);
+	_safe_data_resize(ofs);
 
 	mipmaps = false;
 }
@@ -1577,7 +1577,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
-	data.resize(size);
+	_safe_data_resize(size);
 	{
 		PoolVector<uint8_t>::Write w = data.write();
 		zeromem(w.ptr(), size);
@@ -1602,7 +1602,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	height = p_height;
 	width = p_width;
 	format = p_format;
-	data = p_data;
+	_safe_data_assign(p_data);
 	mipmaps = p_use_mipmaps;
 }
 
@@ -2927,7 +2927,7 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 		}
 	}
 	format = FORMAT_RGBA8;
-	data = result_image;
+	_safe_data_assign(result_image);
 }
 
 void Image::srgb_to_linear() {
@@ -3138,6 +3138,29 @@ void Image::renormalize_half(uint16_t *p_rgb) {
 
 void Image::renormalize_rgbe9995(uint32_t *p_rgb) {
 	// Never used
+}
+
+// instead of replacing data directly we use a wrapper to error check
+// that there is not a lock on the old data
+void Image::_safe_data_assign(const PoolVector<uint8_t> &p_data) {
+	_check_for_lock();
+	data = p_data;
+}
+
+// instead of resizing data directly we use a wrapper to error check
+// that there is not a lock on the old data
+void Image::_safe_data_resize(int p_size) {
+	_check_for_lock();
+	data.resize(p_size);
+}
+
+void Image::_check_for_lock() {
+	// any function that modifies data size / location should call unlock first
+	// in case of user error (forgetting to unlock), which can cause data corruption
+	if (write_lock.ptr()) {
+		ERR_PRINT("Image still has an active lock, lock must be paired with an unlock.")
+		unlock();
+	}
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
