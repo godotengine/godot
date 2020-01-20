@@ -65,6 +65,7 @@ private:
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
+		List<int> prev_connected_nodes;
 	};
 
 	struct Graph {
@@ -135,6 +136,8 @@ public:
 	void remove_node(Type p_type, int p_id);
 
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+
+	bool is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const;
 	bool can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	Error connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);

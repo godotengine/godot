@@ -378,6 +378,9 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id || E->get().to_node == p_id) {
 			g->connections.erase(E);
+			if (E->get().from_node == p_id) {
+				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
+			}
 		}
 		E = N;
 	}
@@ -397,6 +400,25 @@ bool VisualShader::is_node_connection(Type p_type, int p_from_node, int p_from_p
 	}
 
 	return false;
+}
+
+bool VisualShader::is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const {
+	bool result = false;
+
+	const VisualShader::Node &node = p_graph->nodes[p_node];
+
+	for (const List<int>::Element *E = node.prev_connected_nodes.front(); E; E = E->next()) {
+
+		if (E->get() == p_target) {
+			return true;
+		}
+
+		result = is_nodes_connected_relatively(p_graph, E->get(), p_target);
+		if (result) {
+			break;
+		}
+	}
+	return result;
 }
 
 bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
@@ -433,6 +455,9 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 		}
 	}
 
+	if (is_nodes_connected_relatively(g, p_from_node, p_to_node))
+		return false;
+
 	return true;
 }
 
@@ -449,6 +474,8 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	c.to_node = p_to_node;
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
+	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
+
 	_queue_update();
 }
 
@@ -479,6 +506,7 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	c.to_node = p_to_node;
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
+	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
 
 	_queue_update();
 	return OK;
@@ -492,6 +520,7 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 			g->connections.erase(E);
+			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
 			_queue_update();
 			return;
 		}
@@ -1326,6 +1355,7 @@ void VisualShader::_input_type_changed(Type p_type, int p_id) {
 		List<Connection>::Element *N = E->next();
 		if (E->get().from_node == p_id) {
 			g->connections.erase(E);
+			g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
 		}
 		E = N;
 	}
