@@ -49,6 +49,7 @@ public:
 		TK_FALSE,
 		TK_REAL_CONSTANT,
 		TK_INT_CONSTANT,
+		TK_UINT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -443,13 +444,15 @@ public:
 		Map<StringName, Variable> variables;
 		List<Node *> statements;
 		bool single_statement;
+		DataType statement_datatype;
 
 		BlockNode() :
 				Node(TYPE_BLOCK),
 				parent_function(NULL),
 				parent_block(NULL),
 				block_type(BLOCK_TYPE_STANDART),
-				single_statement(false) {}
+				single_statement(false),
+				statement_datatype(DataType::TYPE_VOID) {}
 	};
 
 	struct ControlFlowNode : public Node {

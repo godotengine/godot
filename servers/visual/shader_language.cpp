@@ -216,7 +216,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 String ShaderLanguage::get_token_text(Token p_token) {
 
 	String name = token_names[p_token.type];
-	if (p_token.type == TK_INT_CONSTANT || p_token.type == TK_REAL_CONSTANT) {
+	if (p_token.type == TK_INT_CONSTANT || p_token.type == TK_UINT_CONSTANT || p_token.type == TK_REAL_CONSTANT) {
 		name += "(" + rtos(p_token.constant) + ")";
 	} else if (p_token.type == TK_IDENTIFIER) {
 		name += "(" + String(p_token.text) + ")";
@@ -531,6 +531,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					bool hexa_found = false;
 					bool sign_found = false;
 					bool float_suffix_found = false;
+					bool unsigned_suffix_found = false;
 
 					String str;
 					int i = 0;
@@ -552,6 +553,10 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							if (hexa_found || exponent_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
 							float_suffix_found = true;
+						} else if (GETCHAR(i) == 'u') {
+							if (period_found || exponent_found || hexa_found || float_suffix_found)
+								return _make_token(TK_ERROR, "Invalid numeric constant");
+							unsigned_suffix_found = true;
 						} else if (_is_number(GETCHAR(i))) {
 							if (float_suffix_found)
 								return _make_token(TK_ERROR, "Invalid numeric constant");
@@ -608,11 +613,20 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 					} else {
 						//integers
-						if (!_is_number(last_char)) {
-							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
-						}
-						if (!str.is_valid_integer()) {
-							return _make_token(TK_ERROR, "Invalid numeric constant");
+						if (unsigned_suffix_found) {
+							if (last_char != 'u') {
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+							}
+							if (!str.substr(0, str.size() - 2).is_valid_integer()) {
+								return _make_token(TK_ERROR, "Invalid numeric constant");
+							}
+						} else {
+							if (!_is_number(last_char)) {
+								return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+							}
+							if (!str.is_valid_integer()) {
+								return _make_token(TK_ERROR, "Invalid numeric constant");
+							}
 						}
 					}
 
@@ -620,8 +634,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					Token tk;
 					if (period_found || exponent_found || float_suffix_found)
 						tk.type = TK_REAL_CONSTANT;
-					else
+					else if (unsigned_suffix_found) {
+						tk.type = TK_UINT_CONSTANT;
+					} else {
 						tk.type = TK_INT_CONSTANT;
+					}
 
 					if (hexa_found) {
 						tk.constant = (double)str.hex_to_int64(true);
@@ -2839,6 +2856,15 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			constant->datatype = TYPE_INT;
 			expr = constant;
 
+		} else if (tk.type == TK_UINT_CONSTANT) {
+
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			ConstantNode::Value v;
+			v.uint = tk.constant;
+			constant->values.push_back(v);
+			constant->datatype = TYPE_UINT;
+			expr = constant;
+
 		} else if (tk.type == TK_TRUE) {
 
 			//handle true constant
@@ -4235,7 +4261,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
 			if (!n)
 				return ERR_PARSE_ERROR;
-			if (n->get_datatype() != TYPE_INT) {
+			if (n->get_datatype() != TYPE_INT && n->get_datatype() != TYPE_UINT) {
 				_set_error("Expected integer expression");
 				return ERR_PARSE_ERROR;
 			}
@@ -4252,6 +4278,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			BlockNode *switch_block = alloc_node<BlockNode>();
 			switch_block->block_type = BlockNode::BLOCK_TYPE_SWITCH;
 			switch_block->parent_block = p_block;
+			switch_block->statement_datatype = n->get_datatype();
 			cf->expressions.push_back(n);
 			cf->blocks.push_back(switch_block);
 			p_block->statements.push_back(cf);
@@ -4330,9 +4357,16 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				tk = _get_token();
 			}
 
-			if (tk.type != TK_INT_CONSTANT) {
-				_set_error("Expected integer constant");
-				return ERR_PARSE_ERROR;
+			if (p_block->statement_datatype == TYPE_UINT) {
+				if (tk.type != TK_UINT_CONSTANT) {
+					_set_error("Expected (unsigned) integer constant");
+					return ERR_PARSE_ERROR;
+				}
+			} else {
+				if (tk.type != TK_INT_CONSTANT) {
+					_set_error("Expected integer constant");
+					return ERR_PARSE_ERROR;
+				}
 			}
 
 			int constant = (int)tk.constant * sign;
@@ -4349,9 +4383,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			ConstantNode *n = alloc_node<ConstantNode>();
 			ConstantNode::Value v;
-			v.sint = constant;
+			if (p_block->statement_datatype == TYPE_UINT) {
+				v.uint = constant;
+			} else {
+				v.sint = constant;
+			}
 			n->values.push_back(v);
-			n->datatype = TYPE_INT;
+			n->datatype = p_block->statement_datatype;
 
 			BlockNode *case_block = alloc_node<BlockNode>();
 			case_block->block_type = BlockNode::BLOCK_TYPE_CASE;
