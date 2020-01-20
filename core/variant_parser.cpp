@@ -61,7 +61,7 @@ bool VariantParser::StreamString::is_utf8() const {
 	return false;
 }
 bool VariantParser::StreamString::is_eof() const {
-	return pos > s.length();
+	return pos >= s.length();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
