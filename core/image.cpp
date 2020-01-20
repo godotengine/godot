@@ -2027,8 +2027,7 @@ Rect2 Image::get_used_rect() const {
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
 
-			bool opaque = get_pixel(i, j).a > 0.99;
-			if (!opaque)
+			if (!(get_pixel(i, j).a > 0))
 				continue;
 			if (i > maxx)
 				maxx = i;

@@ -285,7 +285,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Returns a [Rect2] enclosing the visible portion of the image.
+				Returns a [Rect2] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
