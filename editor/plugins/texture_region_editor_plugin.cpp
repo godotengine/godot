@@ -1010,12 +1010,12 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom Reset"));
+	zoom_reset->set_tooltip(TTR("Zoom Reset"));
 	zoom_reset->connect("pressed", this, "_zoom_reset");
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(ToolButton);
-	zoom_out->set_tooltip(TTR("Zoom In"));
+	zoom_in->set_tooltip(TTR("Zoom In"));
 	zoom_in->connect("pressed", this, "_zoom_in");
 	zoom_hb->add_child(zoom_in);
 
