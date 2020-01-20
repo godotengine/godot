@@ -53,11 +53,9 @@ Error FileAccessJAndroid::_open(const String &p_path, int p_mode_flags) {
 	if (is_open())
 		close();
 
-	String path = fix_path(p_path).simplify_path();
+	String path = fix_path(p_path.simplify_path());
 	if (path.begins_with("/"))
 		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
-		path = path.substr(6, path.length());
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
@@ -166,11 +164,9 @@ bool FileAccessJAndroid::file_exists(const String &p_path) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	String path = fix_path(p_path).simplify_path();
+	String path = fix_path(p_path.simplify_path());
 	if (path.begins_with("/"))
 		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
-		path = path.substr(6, path.length());
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io, _file_open, js, false);

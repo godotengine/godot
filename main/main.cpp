@@ -34,6 +34,7 @@
 #include "core/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
+#include "core/io/file_access_resources.h"
 #include "core/io/file_access_zip.h"
 #include "core/io/image_loader.h"
 #include "core/io/ip.h"
@@ -842,7 +843,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 
-		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessResources<FileAccessNetwork> >(FileAccess::ACCESS_RESOURCES);
 	}
 
 	if (globals->setup(project_path, main_pack, upwards) == OK) {

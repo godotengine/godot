@@ -206,11 +206,10 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 		f.package = pkg_num;
 		unzGetFilePos(zfile, &f.file_pos);
 
-		String fname = String("res://") + filename_inzip;
-		files[fname] = f;
+		files[filename_inzip] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files);
+		PackedData::get_singleton()->add_path(p_path, filename_inzip, 1, 0, md5, this, p_replace_files);
 		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
 
 		if ((i + 1) < gi.number_entry) {
@@ -258,6 +257,11 @@ ZipArchive::~ZipArchive() {
 	packages.clear();
 }
 
+String FileAccessZip::_get_resource_path() const {
+
+	return "/";
+}
+
 Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 
 	close();
@@ -265,7 +269,7 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
 	ZipArchive *arch = ZipArchive::get_singleton();
 	ERR_FAIL_COND_V(!arch, FAILED);
-	zfile = arch->get_file_handle(p_path);
+	zfile = arch->get_file_handle(fix_path(p_path));
 	ERR_FAIL_COND_V(!zfile, FAILED);
 
 	int err = unzGetCurrentFileInfo64(zfile, &file_info, NULL, 0, NULL, 0, NULL, 0);

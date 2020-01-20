@@ -30,6 +30,7 @@
 
 #include "os_osx.h"
 
+#include "core/io/file_access_resources.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/version_generated.gen.h"
@@ -1405,7 +1406,7 @@ void OS_OSX::initialize_core() {
 
 	OS_Unix::initialize_core();
 
-	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessResources<DirAccessOSX> >(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessOSX>(DirAccess::ACCESS_FILESYSTEM);
 

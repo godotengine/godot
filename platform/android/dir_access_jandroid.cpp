@@ -114,22 +114,21 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
 		return OK;
 
-	String new_dir;
-
-	if (p_dir != "res://" && p_dir.length() > 1 && p_dir.ends_with("/"))
+	if (p_dir.length() > 1 && p_dir.ends_with("/"))
 		p_dir = p_dir.substr(0, p_dir.length() - 1);
 
-	if (p_dir.begins_with("/"))
-		new_dir = p_dir.substr(1, p_dir.length());
-	else if (p_dir.begins_with("res://"))
-		new_dir = p_dir.substr(6, p_dir.length());
-	else if (current_dir == "")
-		new_dir = p_dir;
-	else
+	String new_dir;
+	if (p_dir.is_rel_path()) {
 		new_dir = current_dir.plus_file(p_dir);
+	} else {
+		new_dir = p_dir;
+	}
 
 	//test if newdir exists
-	new_dir = new_dir.simplify_path();
+	new_dir = fix_path(new_dir);
+
+	if (new_dir.begins_with("/"))
+		new_dir = p_dir.substr(1, p_dir.length());
 
 	jstring js = env->NewStringUTF(new_dir.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);
@@ -146,7 +145,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 
 String DirAccessJAndroid::get_current_dir() {
 
-	return "res://" + current_dir;
+	return unfix_path(current_dir);
 }
 
 bool DirAccessJAndroid::file_exists(String p_file) {
@@ -170,21 +169,16 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 
 	String sd;
 
-	if (current_dir == "")
-		sd = p_dir;
-	else {
-		if (p_dir.is_rel_path())
-			sd = current_dir.plus_file(p_dir);
-		else
-			sd = fix_path(p_dir);
+	if (p_dir.is_rel_path() && current_dir == "") {
+		sd = current_dir.plus_file(p_dir);
 	}
+
+	sd = fix_path(sd);
 
 	String path = sd.simplify_path();
 
 	if (path.begins_with("/"))
-		path = path.substr(1, path.length());
-	else if (path.begins_with("res://"))
-		path = path.substr(6, path.length());
+		path = sd.substr(1, path.length());
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io, _dir_open, js);

@@ -32,6 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access_pack.h"
+#include "core/io/file_access_resources.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -124,6 +125,11 @@ FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
 	return create_func[p_access];
 };
 
+String FileAccess::_get_resource_path() const {
+
+	return ProjectSettings::get_singleton()->get_resource_path();
+}
+
 String FileAccess::fix_path(const String &p_path) const {
 	//helper used by file accesses that use a single filesystem
 
@@ -131,42 +137,40 @@ String FileAccess::fix_path(const String &p_path) const {
 
 	switch (_access_type) {
 
-		case ACCESS_RESOURCES: {
-
-			if (ProjectSettings::get_singleton()) {
-				if (r_path.begins_with("res://")) {
-
-					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (resource_path != "") {
-
-						return r_path.replace("res:/", resource_path);
-					};
-					return r_path.replace("res://", "");
-				}
-			}
-
-		} break;
+		case ACCESS_RESOURCES: break; // Managed by FileAccessResources
 		case ACCESS_USERDATA: {
 
 			if (r_path.begins_with("user://")) {
 
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (data_dir != "") {
-
-					return r_path.replace("user:/", data_dir);
-				};
-				return r_path.replace("user://", "");
+				r_path = r_path.replace("user:/", data_dir);
 			}
 
 		} break;
-		case ACCESS_FILESYSTEM: {
-
-			return r_path;
-		} break;
+		case ACCESS_FILESYSTEM: break;
 		case ACCESS_MAX: break; // Can't happen, but silences warning
 	}
 
 	return r_path;
+}
+
+String FileAccess::unfix_path(const String &p_path) const {
+
+	switch (_access_type) {
+
+		case ACCESS_USERDATA: {
+
+			String data_dir = OS::get_singleton()->get_user_data_dir();
+			return "user://" + p_path.right(data_dir.length());
+		} break;
+		case ACCESS_FILESYSTEM: {
+
+			return p_path;
+		} break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
+	}
+
+	return p_path;
 }
 
 /* these are all implemented for ease of porting, then can later be optimized */

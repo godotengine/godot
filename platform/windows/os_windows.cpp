@@ -33,6 +33,7 @@
 
 #include "os_windows.h"
 
+#include "core/io/file_access_resources.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -225,11 +226,11 @@ void OS_Windows::initialize_core() {
 	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
-	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
+	FileAccess::make_default<FileAccessResources<FileAccessWindows> >(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
 	//FileAccessBufferedFA<FileAccessWindows>::make_default();
-	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessResources<DirAccessWindows> >(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 

@@ -789,7 +789,7 @@ void FileDialog::_select_drive(int p_idx) {
 void FileDialog::_update_drives() {
 
 	int dc = dir_access->get_drive_count();
-	if (dc == 0 || access != ACCESS_FILESYSTEM) {
+	if (dc == 0) {
 		drives->hide();
 	} else {
 		drives->clear();

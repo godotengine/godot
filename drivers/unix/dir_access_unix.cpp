@@ -344,16 +344,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 String DirAccessUnix::get_current_dir() {
 
-	String base = _get_root_path();
-	if (base != "") {
-
-		String bd = current_dir.replace_first(base, "");
-		if (bd.begins_with("/"))
-			return _get_root_string() + bd.substr(1, bd.length());
-		else
-			return _get_root_string() + bd;
-	}
-	return current_dir;
+	return unfix_path(current_dir);
 }
 
 Error DirAccessUnix::rename(String p_path, String p_new_path) {
@@ -420,8 +411,6 @@ DirAccessUnix::DirAccessUnix() {
 	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == NULL);
 	if (current_dir.parse_utf8(real_current_dir_name))
 		current_dir = real_current_dir_name;
-
-	change_dir(current_dir);
 }
 
 DirAccessUnix::~DirAccessUnix() {

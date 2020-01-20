@@ -32,6 +32,7 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/io/file_access_resources.h"
 #include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -133,11 +134,11 @@ void OS_Unix::initialize_core() {
 	MutexPosix::make_default();
 	RWLockPosix::make_default();
 #endif
-	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+	FileAccess::make_default<FileAccessResources<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
 	//FileAccessBufferedFA<FileAccessUnix>::make_default();
-	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessResources<DirAccessUnix> >(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 

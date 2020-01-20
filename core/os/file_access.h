@@ -60,7 +60,10 @@ public:
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
 
 protected:
-	String fix_path(const String &p_path) const;
+	virtual String _get_resource_path() const;
+
+	virtual String fix_path(const String &p_path) const;
+	virtual String unfix_path(const String &p_path) const;
 	virtual Error _open(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 

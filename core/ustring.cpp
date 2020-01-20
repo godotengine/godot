@@ -3232,34 +3232,34 @@ String String::simplify_path() const {
 
 	String s = *this;
 	String drive;
-	if (s.begins_with("local://")) {
-		drive = "local://";
-		s = s.substr(8, s.length());
-	} else if (s.begins_with("res://")) {
 
-		drive = "res://";
-		s = s.substr(6, s.length());
-	} else if (s.begins_with("user://")) {
+	s = s.replace("\\", "/");
 
-		drive = "user://";
-		s = s.substr(7, s.length());
-	} else if (s.begins_with("/") || s.begins_with("\\")) {
+	if (s.begins_with("/")) {
 
-		drive = s.substr(0, 1);
+		// "/[...]"
+		drive = "/";
 		s = s.substr(1, s.length() - 1);
 	} else {
 
-		int p = s.find(":/");
-		if (p == -1)
-			p = s.find(":\\");
+		int p = s.find("://");
 		if (p != -1 && p < s.find("/")) {
 
-			drive = s.substr(0, p + 2);
-			s = s.substr(p + 2, s.length());
+			// "something://[...]"
+			drive = s.left(p + 3);
+			s = s.substr(p + 3, s.length());
+		} else {
+
+			// "C:/[...]"
+			p = s.find(":/");
+			if (p != -1 && p < s.find("/")) {
+
+				drive = s.substr(0, p + 2);
+				s = s.substr(p + 2, s.length());
+			}
 		}
 	}
 
-	s = s.replace("\\", "/");
 	while (true) { // in case of using 2 or more slash
 		String compare = s.replace("//", "/");
 		if (s == compare)
@@ -3337,7 +3337,7 @@ String String::humanize_size(uint64_t p_size) {
 bool String::is_abs_path() const {
 
 	if (length() > 1)
-		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1);
+		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1 || find(":") == 1);
 	else if ((length()) == 1)
 		return (operator[](0) == '/' || operator[](0) == '\\');
 	else

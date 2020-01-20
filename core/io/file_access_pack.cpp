@@ -66,7 +66,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		files[pmd5] = pf;
 
 	if (!exists) {
-		//search for dir
+		//search for dir (paths inside PCKs may have a leading res://)
 		String p = path.replace_first("res://", "");
 		PackedDir *cd = root;
 
@@ -218,6 +218,11 @@ FileAccess *PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFi
 
 //////////////////////////////////////////////////////////////////
 
+String FileAccessPack::_get_resource_path() const {
+
+	return "/";
+}
+
 Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -346,6 +351,11 @@ FileAccessPack::~FileAccessPack() {
 // DIR ACCESS
 //////////////////////////////////////////////////////////////////////////////////
 
+String DirAccessPack::_get_resource_path() const {
+
+	return "/";
+}
+
 Error DirAccessPack::list_dir_begin() {
 
 	list_dirs.clear();
@@ -405,17 +415,11 @@ String DirAccessPack::get_drive(int p_drive) {
 
 Error DirAccessPack::change_dir(String p_dir) {
 
-	String nd = p_dir.replace("\\", "/");
-	bool absolute = false;
-	if (nd.begins_with("res://")) {
-		nd = nd.replace_first("res://", "");
-		absolute = true;
-	}
-
-	nd = nd.simplify_path();
+	String nd = fix_path(p_dir).simplify_path();
 
 	if (nd == "") nd = ".";
 
+	bool absolute = false;
 	if (nd.begins_with("/")) {
 		nd = nd.replace_first("/", "");
 		absolute = true;
@@ -464,7 +468,7 @@ String DirAccessPack::get_current_dir() {
 		p = pd->name.plus_file(p);
 	}
 
-	return "res://" + p;
+	return unfix_path(p);
 }
 
 bool DirAccessPack::file_exists(String p_file) {

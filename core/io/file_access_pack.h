@@ -150,6 +150,9 @@ class FileAccessPack : public FileAccess {
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
+protected:
+	String _get_resource_path() const;
+
 public:
 	virtual void close();
 	virtual bool is_open() const;
@@ -204,6 +207,9 @@ class DirAccessPack : public DirAccess {
 	List<String> list_dirs;
 	List<String> list_files;
 	bool cdir;
+
+protected:
+	String _get_resource_path() const;
 
 public:
 	virtual Error list_dir_begin();

@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
+#include "core/io/file_access_resources.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -279,7 +280,7 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 
 	//if data.pck is found, all directory access will be from here
-	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessResources<DirAccessPack> >(DirAccess::ACCESS_RESOURCES);
 	using_datapack = true;
 
 	return true;

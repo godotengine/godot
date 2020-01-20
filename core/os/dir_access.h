@@ -53,10 +53,11 @@ private:
 	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
 
 protected:
-	String _get_root_path() const;
-	String _get_root_string() const;
+	virtual String _get_root_path() const;
+	virtual String _get_resource_path() const;
 
-	String fix_path(String p_path) const;
+	virtual String fix_path(const String &p_path) const;
+	virtual String unfix_path(const String &p_path) const;
 	bool next_is_dir;
 
 	template <class T>

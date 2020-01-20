@@ -31,6 +31,7 @@
 #include "os_android.h"
 
 #include "core/io/file_access_buffered_fa.h"
+#include "core/io/file_access_resources.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -89,22 +90,22 @@ void OS_Android::initialize_core() {
 	OS_Unix::initialize_core();
 
 	if (use_apk_expansion)
-		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessResources<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 	else {
 #ifdef USE_JAVA_FILE_ACCESS
-		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid> >(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessResources<FileAccessBufferedFA<FileAccessJAndroid> > >(FileAccess::ACCESS_RESOURCES);
 #else
-		//FileAccess::make_default<FileAccessBufferedFA<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
-		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
+		//FileAccess::make_default<FileAccessResources<FileAccessBufferedFA<FileAccessAndroid>> >(FileAccess::ACCESS_RESOURCES);
+		FileAccess::make_default<FileAccessResources<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
 #endif
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
 	//FileAccessBufferedFA<FileAccessUnix>::make_default();
 	if (use_apk_expansion)
-		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+		DirAccess::make_default<DirAccessResources<DirAccessUnix> >(DirAccess::ACCESS_RESOURCES);
 	else
-		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+		DirAccess::make_default<DirAccessResources<DirAccessJAndroid> >(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 

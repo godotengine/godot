@@ -33,6 +33,7 @@
 
 #include "os_uwp.h"
 
+#include "core/io/file_access_resources.h"
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -145,10 +146,10 @@ void OS_UWP::initialize_core() {
 	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
-	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
+	FileAccess::make_default<FileAccessResources<FileAccessWindows> >(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
+	DirAccess::make_default<DirAccessResources<DirAccessWindows> >(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 

@@ -37,20 +37,10 @@
 
 String DirAccess::_get_root_path() const {
 
-	switch (_access_type) {
-
-		case ACCESS_RESOURCES: return ProjectSettings::get_singleton()->get_resource_path();
-		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
-		default: return "";
-	}
-}
-String DirAccess::_get_root_string() const {
-
-	switch (_access_type) {
-
-		case ACCESS_RESOURCES: return "res://";
-		case ACCESS_USERDATA: return "user://";
-		default: return "";
+	if (_access_type == ACCESS_USERDATA) {
+		return OS::get_singleton()->get_user_data_dir();
+	} else {
+		return "";
 	}
 }
 
@@ -73,7 +63,7 @@ bool DirAccess::drives_are_shortcuts() {
 
 String DirAccess::get_current_dir_without_drive() {
 
-	if (_access_type != ACCESS_FILESYSTEM || drives_are_shortcuts()) {
+	if (drives_are_shortcuts()) {
 		return get_current_dir();
 	} else {
 		return get_current_dir().right(get_drive(get_current_drive()).length());
@@ -192,38 +182,40 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	return OK;
 }
+String DirAccess::_get_resource_path() const {
 
-String DirAccess::fix_path(String p_path) const {
+	return ProjectSettings::get_singleton()->get_resource_path();
+}
+
+String DirAccess::fix_path(const String &p_path) const {
 
 	switch (_access_type) {
 
-		case ACCESS_RESOURCES: {
-
-			if (ProjectSettings::get_singleton()) {
-				if (p_path.begins_with("res://")) {
-
-					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (resource_path != "") {
-
-						return p_path.replace_first("res:/", resource_path);
-					};
-					return p_path.replace_first("res://", "");
-				}
-			}
-
-		} break;
+		case ACCESS_RESOURCES: break; // Managed by DirAccessResources
 		case ACCESS_USERDATA: {
 
 			if (p_path.begins_with("user://")) {
 
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (data_dir != "") {
-
-					return p_path.replace_first("user:/", data_dir);
-				};
-				return p_path.replace_first("user://", "");
+				return p_path.replace_first("user:/", data_dir);
 			}
 
+		} break;
+		case ACCESS_FILESYSTEM: break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
+	}
+
+	return p_path;
+}
+
+String DirAccess::unfix_path(const String &p_path) const {
+
+	switch (_access_type) {
+
+		case ACCESS_USERDATA: {
+
+			String data_dir = OS::get_singleton()->get_user_data_dir();
+			return String("user://").plus_file(p_path.right(data_dir.length()));
 		} break;
 		case ACCESS_FILESYSTEM: {
 

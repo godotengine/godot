@@ -191,19 +191,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 String DirAccessWindows::get_current_dir() {
 
-	String base = _get_root_path();
-	if (base != "") {
-
-		String bd = current_dir.replace("\\", "/").replace_first(base, "");
-		if (bd.begins_with("/"))
-			return _get_root_string() + bd.substr(1, bd.length());
-		else
-			return _get_root_string() + bd;
-
-	} else {
-	}
-
-	return current_dir;
+	return unfix_path(current_dir);
 }
 
 bool DirAccessWindows::file_exists(String p_file) {
@@ -265,7 +253,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 	if (p_path.to_lower() == p_new_path.to_lower()) {
 		WCHAR tmpfile[MAX_PATH];
 
-		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), NULL, 0, tmpfile)) {
+		if (!GetTempFileNameW(current_dir.c_str(), NULL, 0, tmpfile)) {
 			return FAILED;
 		}
 
@@ -347,11 +335,9 @@ size_t DirAccessWindows::get_space_left() {
 }
 
 String DirAccessWindows::get_filesystem_type() const {
-	String path = fix_path(const_cast<DirAccessWindows *>(this)->get_current_dir());
-
-	int unit_end = path.find(":");
+	int unit_end = current_dir.find(":");
 	ERR_FAIL_COND_V(unit_end == -1, String());
-	String unit = path.substr(0, unit_end + 1) + "\\";
+	String unit = current_dir.substr(0, unit_end + 1) + "\\";
 
 	WCHAR szVolumeName[100];
 	WCHAR szFileSystemName[10];
@@ -399,7 +385,10 @@ DirAccessWindows::DirAccessWindows() {
 		}
 	}
 
-	change_dir(".");
+	wchar_t real_current_dir_name[2048];
+	GetCurrentDirectoryW(2048, real_current_dir_name);
+	current_dir = real_current_dir_name; // TODO, utf8 parser
+	current_dir = current_dir.replace("\\", "/");
 #endif
 }
 

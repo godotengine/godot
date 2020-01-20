@@ -85,15 +85,15 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 			}
 
 			//must match the best, using subdirs
-			String existing = E->get().replace_first("res://", "");
-			String current = path.replace_first("res://", "");
-			String lost = E->key().replace_first("res://", "");
+			String existing = E->get();
+			String current = path;
+			String lost = E->key();
 
-			Vector<String> existingv = existing.split("/");
+			Vector<String> existingv = existing.split("/", false);
 			existingv.invert();
-			Vector<String> currentv = current.split("/");
+			Vector<String> currentv = current.split("/", false);
 			currentv.invert();
-			Vector<String> lostv = lost.split("/");
+			Vector<String> lostv = lost.split("/", false);
 			lostv.invert();
 
 			int existing_score = 0;
