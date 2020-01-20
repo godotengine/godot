@@ -124,6 +124,22 @@
 				Configure the [CryptoKey] to use when [member use_dtls] is [code]true[/code]. Remember to also call [method set_dtls_certificate] to setup your [X509Certificate].
 			</description>
 		</method>
+		<method name="set_peer_timeout">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="timeout_limit" type="int">
+			</argument>
+			<argument index="2" name="timeout_min" type="int">
+			</argument>
+			<argument index="3" name="timeout_max" type="int">
+			</argument>
+			<description>
+				Sets the timeout parameters for a peer.	The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
+				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the avarage round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
