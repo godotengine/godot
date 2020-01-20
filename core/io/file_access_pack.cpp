@@ -47,6 +47,38 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 	return ERR_FILE_UNRECOGNIZED;
 };
 
+#ifdef TOOLS_ENABLED
+// This works only for "disjoint" packs. That means that if a pack A containing a path P is mounted
+// and then a pack B containing the same path P, after unmounting B, the path P is removed altogether
+// from the packed file system. There's no bookkeeping of multiple packs containing the same path.
+// For the current only use case (plugins in PCK), that's enough.
+void PackedData::remove_pack(const String &p_path) {
+
+	Map<PathMD5, PackedFile>::Element *E = files.front();
+	while (E) {
+		Map<PathMD5, PackedFile>::Element *next = E->next();
+		if (E->get().pack == p_path) {
+			const PackedFile &pf = E->get();
+			PackedDir *pd = pf.dir;
+			pd->files.erase(pf.name);
+
+			do {
+				if (pd->files.size() != 0 || pd->subdirs.size() != 0) {
+					break;
+				}
+				PackedDir *parent = pd->parent;
+				pd->parent->subdirs.erase(pd->name);
+				memdelete(pd);
+				pd = parent;
+			} while (pd != root);
+
+			files.erase(E);
+		}
+		E = next;
+	}
+}
+#endif
+
 void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 
 	PathMD5 pmd5(path.md5_buffer());
@@ -64,6 +96,11 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 
 	if (!exists || p_replace_files)
 		files[pmd5] = pf;
+
+	String filename = path.get_file();
+#ifdef TOOLS_ENABLED
+	pf.name = filename;
+#endif
 
 	if (!exists) {
 		// Keep the file system as a subdirectory of the root
@@ -87,8 +124,10 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 					cd = cd->subdirs[ds[j]];
 				}
 			}
+#ifdef TOOLS_ENABLED
+			pf.dir = cd;
+#endif
 		}
-		String filename = path.get_file();
 		// Don't add as a file if the path points to a directory
 		if (!filename.empty()) {
 			cd->files.insert(filename);

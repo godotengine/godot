@@ -49,6 +49,8 @@ class PackedData {
 	friend class DirAccessPack;
 	friend class PackSource;
 
+	struct PackedDir;
+
 public:
 	struct PackedFile {
 
@@ -57,6 +59,10 @@ public:
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
+#ifdef TOOLS_ENABLED
+		PackedDir *dir;
+		String name;
+#endif
 	};
 
 private:
@@ -114,6 +120,9 @@ public:
 
 	static PackedData *get_singleton() { return singleton; }
 	Error add_pack(const String &p_path, bool p_replace_files);
+#ifdef TOOLS_ENABLED
+	void remove_pack(const String &p_path);
+#endif
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
