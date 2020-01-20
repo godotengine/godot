@@ -130,7 +130,10 @@ Error DynamicFontAtSize::_load() {
 		} else {
 
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-			ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			if (!f) {
+				FT_Done_FreeType(library);
+				ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+			}
 
 			size_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
@@ -145,7 +148,10 @@ Error DynamicFontAtSize::_load() {
 	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		if (!f) {
+			FT_Done_FreeType(library);
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
+		}
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = NULL;
@@ -176,6 +182,7 @@ Error DynamicFontAtSize::_load() {
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
 	} else {
+		FT_Done_FreeType(library);
 		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
