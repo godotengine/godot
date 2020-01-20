@@ -577,6 +577,7 @@ public:
 
 	Error change_dir(String p_dir); // Can be relative or absolute, return false on success.
 	String get_current_dir(); // Return current dir location.
+	String get_current_dir_without_drive();
 
 	Error make_dir(String p_dir);
 	Error make_dir_recursive(String p_dir);

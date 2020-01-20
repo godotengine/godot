@@ -100,6 +100,8 @@ private:
 	ToolButton *dir_next;
 	ToolButton *dir_up;
 
+	HBoxContainer *drives_container;
+	HBoxContainer *shortcuts_container;
 	OptionButton *drives;
 	ItemList *item_list;
 	PopupMenu *item_menu;

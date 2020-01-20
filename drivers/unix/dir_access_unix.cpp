@@ -269,6 +269,11 @@ String DirAccessUnix::get_drive(int p_drive) {
 	return list[p_drive];
 }
 
+bool DirAccessUnix::drives_are_shortcuts() {
+
+	return true;
+}
+
 Error DirAccessUnix::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION

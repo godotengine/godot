@@ -2367,6 +2367,11 @@ String _Directory::get_current_dir() {
 	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
 	return d->get_current_dir();
 }
+String _Directory::get_current_dir_without_drive() {
+
+	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
+	return d->get_current_dir_without_drive();
+}
 Error _Directory::make_dir(String p_dir) {
 
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
