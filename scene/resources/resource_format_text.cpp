@@ -776,7 +776,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 			String type = next_tag.fields["type"];
 
 			bool relative = false;
-			if (!path.begins_with("res://")) {
+			if (!path.is_resource_path()) {
 				path = base_path.plus_file(path).simplify_path();
 				relative = true;
 			}
@@ -1476,7 +1476,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
 	bundle_resources = p_flags & ResourceSaver::FLAG_BUNDLE_RESOURCES;
 	takeover_paths = p_flags & ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
-	if (!p_path.begins_with("res://")) {
+	if (!p_path.is_resource_path()) {
 		takeover_paths = false;
 	}
 

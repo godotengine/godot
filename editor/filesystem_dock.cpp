@@ -58,36 +58,63 @@ Ref<Texture> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_di
 }
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
-	bool parent_should_expand = false;
+	bool should_expand = false;
 
-	// Create a tree item for the subdirectory.
-	TreeItem *subdirectory_item = tree->create_item(p_parent);
-	String dname = p_dir->get_name();
-	if (dname == "")
-		dname = "res://";
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 
-	subdirectory_item->set_text(0, dname);
-	subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
-	subdirectory_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
-	subdirectory_item->set_selectable(0, true);
-	String lpath = p_dir->get_path();
-	subdirectory_item->set_metadata(0, lpath);
-	if (!p_select_in_favorites && (path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && path.get_base_dir() == lpath))) {
-		subdirectory_item->select(0);
+		EditorFileSystemDirectory *subdir = p_dir->get_subdir(i);
+
+		// Create a tree item for the subdirectory
+		TreeItem *subdirectory_item = tree->create_item(p_parent);
+
+		subdirectory_item->set_text(0, subdir->get_name());
+		subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+		subdirectory_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
+		subdirectory_item->set_selectable(0, true);
+		String lpath = subdir->get_path();
+		subdirectory_item->set_metadata(0, lpath);
+		if (!p_select_in_favorites && (path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && path.get_base_dir() == lpath))) {
+			subdirectory_item->select(0);
+		}
+
+		bool collapsed = true;
+		if (p_unfold_path && path.begins_with(lpath) && path != lpath) {
+			collapsed = false;
+		} else {
+			if (uncollapsed_paths.find(lpath) != -1) {
+				collapsed = false;
+			} else {
+				Set<String>::Element *pending = no_surrender_uncollapsed_paths.find(lpath);
+				if (pending) {
+					collapsed = false;
+					no_surrender_uncollapsed_paths.erase(pending);
+				}
+			}
+		}
+		subdirectory_item->set_collapsed(collapsed);
+
+		if (searched_string.length() > 0) {
+			if (subdir->get_name().to_lower().find(searched_string) >= 0) {
+				should_expand = true;
+			}
+		}
+
+		if (display_mode == DISPLAY_MODE_SPLIT && lpath.get_base_dir() == path.get_base_dir()) {
+			subdirectory_item->select(0);
+			subdirectory_item->set_as_cursor(0);
+		}
+
+		should_expand = _create_tree(subdirectory_item, subdir, uncollapsed_paths, p_select_in_favorites, p_unfold_path) || should_expand;
+
+		if (searched_string.length() > 0) {
+			if (should_expand) {
+				subdirectory_item->set_collapsed(false);
+			} else {
+				p_parent->remove_child(subdirectory_item);
+				memdelete(subdirectory_item);
+			}
+		}
 	}
-
-	if (p_unfold_path && path.begins_with(lpath) && path != lpath) {
-		subdirectory_item->set_collapsed(false);
-	} else {
-		subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
-	}
-	if (searched_string.length() > 0 && dname.to_lower().find(searched_string) >= 0) {
-		parent_should_expand = true;
-	}
-
-	// Create items for all subdirectories.
-	for (int i = 0; i < p_dir->get_subdir_count(); i++)
-		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites, p_unfold_path) || parent_should_expand);
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
@@ -108,14 +135,14 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 					continue;
 				} else {
 					// We expand all parents.
-					parent_should_expand = true;
+					should_expand = true;
 				}
 			}
 
-			TreeItem *file_item = tree->create_item(subdirectory_item);
+			TreeItem *file_item = tree->create_item(p_parent);
 			file_item->set_text(0, file_name);
 			file_item->set_icon(0, _get_tree_item_icon(p_dir, i));
-			String file_metadata = lpath.plus_file(file_name);
+			String file_metadata = p_dir->get_path().plus_file(file_name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && path == file_metadata) {
 				file_item->select(0);
@@ -129,23 +156,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			udata.push_back(file_item);
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
-	} else if (display_mode == DISPLAY_MODE_SPLIT) {
-		if (lpath.get_base_dir() == path.get_base_dir()) {
-			subdirectory_item->select(0);
-			subdirectory_item->set_as_cursor(0);
-		}
 	}
 
-	if (searched_string.length() > 0) {
-		if (parent_should_expand) {
-			subdirectory_item->set_collapsed(false);
-		} else if (dname != "res://") {
-			subdirectory_item->get_parent()->remove_child(subdirectory_item);
-			memdelete(subdirectory_item);
-		}
-	}
-
-	return parent_should_expand;
+	return should_expand;
 }
 
 Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
@@ -158,22 +171,22 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 			uncollapsed_paths.push_back(favorites_item->get_metadata(0));
 		}
 
-		TreeItem *resTree = root->get_children()->get_next();
-		if (resTree) {
-			Vector<TreeItem *> needs_check;
-			needs_check.push_back(resTree);
+		Vector<TreeItem *> needs_check;
+		for (TreeItem *resTree = root->get_children()->get_next(); resTree; resTree = resTree->get_next()) {
 
-			while (needs_check.size()) {
-				if (!needs_check[0]->is_collapsed()) {
-					uncollapsed_paths.push_back(needs_check[0]->get_metadata(0));
-					TreeItem *child = needs_check[0]->get_children();
-					while (child) {
-						needs_check.push_back(child);
-						child = child->get_next();
-					}
+			needs_check.push_back(resTree);
+		}
+
+		while (needs_check.size()) {
+			if (!needs_check[0]->is_collapsed()) {
+				uncollapsed_paths.push_back(needs_check[0]->get_metadata(0));
+				TreeItem *child = needs_check[0]->get_children();
+				while (child) {
+					needs_check.push_back(child);
+					child = child->get_next();
 				}
-				needs_check.remove(0);
 			}
+			needs_check.remove(0);
 		}
 	}
 	return uncollapsed_paths;
@@ -196,7 +209,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 	for (int i = 0; i < favorite_paths.size(); i++) {
 		String fave = favorite_paths[i];
-		if (!fave.begins_with("res://"))
+		if (!fave.is_resource_path())
 			continue;
 
 		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
@@ -248,11 +261,13 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
 	if (p_uncollapse_root) {
-		uncollapsed_paths.push_back("res://");
+		// Adding no to surrender since drives will likely not be ready the first time
+		no_surrender_uncollapsed_paths.insert("res://");
 	}
 
 	// Create the remaining of the tree.
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, p_unfold_path);
+
 	tree->ensure_cursor_is_visible();
 	updating_tree = false;
 }
@@ -456,7 +471,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	} else {
 		String target_path = p_path;
 		// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
-		if (target_path.ends_with("/")) {
+		if (!target_path.is_filesystem_prefix() && target_path.ends_with("/")) {
 			target_path = target_path.substr(0, target_path.length() - 1);
 		}
 		DirAccess *dirAccess = DirAccess::open("res://");
@@ -694,7 +709,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 	} else {
 		// Get infos on the directory + file.
-		if (directory.ends_with("/") && directory != "res://") {
+		if (directory.ends_with("/") && !directory.is_filesystem_prefix()) {
 			directory = directory.substr(0, directory.length() - 1);
 		}
 		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
@@ -712,11 +727,11 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
 				// Display folders in the list.
-				if (directory != "res://") {
+				if (!directory.is_filesystem_prefix()) {
 					files->add_item("..", folder_icon, true);
 
 					String bd = directory.get_base_dir();
-					if (bd != "res://" && !bd.ends_with("/"))
+					if (!bd.is_filesystem_prefix() && !bd.ends_with("/"))
 						bd += "/";
 
 					files->set_item_metadata(files->get_item_count() - 1, bd);
@@ -824,7 +839,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
-		if (fpath != "res://") {
+		if (!fpath.is_filesystem_prefix()) {
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
 	} else if (fpath != "Favorites") {
@@ -989,7 +1004,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 
 	if (new_path == old_path) {
 		return;
-	} else if (old_path == "res://") {
+	} else if (old_path.is_filesystem_prefix()) {
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
@@ -1058,7 +1073,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 
 	if (new_path == old_path) {
 		return;
-	} else if (old_path == "res://") {
+	} else if (old_path.is_filesystem_prefix()) {
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
@@ -1655,7 +1670,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
 				String fpath = collapsed_paths[i];
-				if (fpath != "res://") {
+				if (!fpath.is_filesystem_prefix()) {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
 			}
@@ -1668,7 +1683,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Rename the active file.
 			if (!p_selected.empty()) {
 				to_rename.path = p_selected[0];
-				if (to_rename.path != "res://") {
+				if (!to_rename.path.is_filesystem_prefix()) {
 					to_rename.is_file = !to_rename.path.ends_with("/");
 					if (to_rename.is_file) {
 						String name = to_rename.path.get_file();
@@ -1695,7 +1710,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 			for (int i = 0; i < collapsed_paths.size(); i++) {
 				String fpath = collapsed_paths[i];
-				if (fpath != "res://") {
+				if (!fpath.is_filesystem_prefix()) {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
 					} else {
@@ -2108,7 +2123,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 				} else {
 					if (ti->get_parent() != tree->get_root()->get_children()) {
 						// Not in the favorite section.
-						if (fpath != "res://") {
+						if (!fpath.is_filesystem_prefix()) {
 							// We drop between two files
 							if (fpath.ends_with("/")) {
 								fpath = fpath.substr(0, fpath.length() - 1);

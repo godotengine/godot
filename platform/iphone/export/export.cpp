@@ -742,7 +742,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
-		if (!asset.begins_with("res://")) {
+		if (!asset.is_resource_path()) {
 			// either SDK-builtin or already a part of the export template
 			IOSExportAsset exported_asset = { asset, p_is_framework };
 			r_exported_assets.push_back(exported_asset);
@@ -760,7 +760,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				return ERR_FILE_NOT_FOUND;
 			}
 			String additional_dir = p_is_framework && asset.ends_with(".dylib") ? "/dylibs/" : "/";
-			String destination_dir = p_out_dir + additional_dir + asset.get_base_dir().replace("res://", "");
+			String destination_dir = p_out_dir + additional_dir + asset.get_base_dir().strip_filesystem_prefix();
 			if (!filesystem_da->dir_exists(destination_dir)) {
 				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
 				if (make_dir_err) {

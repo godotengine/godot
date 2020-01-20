@@ -68,6 +68,13 @@ protected:
 		return _get_resource_path();
 	}
 
+	virtual void _get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const {
+
+		*r_logical_base = "res://";
+		*r_physical_base = _get_resource_path();
+	}
+
+public:
 	virtual String fix_path(const String &p_path) const {
 
 		if (p_path.begins_with("res://")) {
@@ -77,13 +84,6 @@ protected:
 		}
 	}
 
-	virtual String unfix_path(const String &p_path) const {
-
-		String resource_path = _get_resource_path();
-		return String("res://").plus_file(p_path.right(resource_path.length()));
-	}
-
-public:
 	virtual int get_drive_count() {
 
 		return 1;
@@ -110,7 +110,7 @@ public:
 		if (p == -1) {
 			return d;
 		}
-		return d.right(p + 3);
+		return d.right(p + 2); // Keep the leading /
 	}
 };
 

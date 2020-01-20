@@ -55,9 +55,7 @@ private:
 protected:
 	virtual String _get_root_path() const;
 	virtual String _get_resource_path() const;
-
-	virtual String fix_path(const String &p_path) const;
-	virtual String unfix_path(const String &p_path) const;
+	virtual void _get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const;
 	bool next_is_dir;
 
 	template <class T>
@@ -67,6 +65,11 @@ protected:
 	}
 
 public:
+	AccessType get_access_type() const;
+
+	virtual String fix_path(const String &p_path) const;
+	virtual String unfix_path(const String &p_path) const;
+
 	virtual Error list_dir_begin() = 0; ///< This starts dir listing
 	virtual String get_next() = 0;
 	virtual bool current_is_dir() const = 0;

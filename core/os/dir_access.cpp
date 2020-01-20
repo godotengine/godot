@@ -35,6 +35,11 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+DirAccess::AccessType DirAccess::get_access_type() const {
+
+	return _access_type;
+}
+
 String DirAccess::_get_root_path() const {
 
 	if (_access_type == ACCESS_USERDATA) {
@@ -151,18 +156,16 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	//int slices = full_dir.get_slice_count("/");
 
-	String base;
+	String base = full_dir.get_filesystem_prefix();
 
-	if (full_dir.begins_with("res://"))
-		base = "res://";
-	else if (full_dir.begins_with("user://"))
-		base = "user://";
-	else if (full_dir.begins_with("/"))
-		base = "/";
-	else if (full_dir.find(":/") != -1) {
-		base = full_dir.substr(0, full_dir.find(":/") + 2);
-	} else {
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	if (base == "") {
+		if (full_dir.begins_with("/"))
+			base = "/";
+		else if (full_dir.find(":/") != -1) {
+			base = full_dir.substr(0, full_dir.find(":/") + 2);
+		} else {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		}
 	}
 
 	full_dir = full_dir.replace_first(base, "").simplify_path();
@@ -208,23 +211,57 @@ String DirAccess::fix_path(const String &p_path) const {
 	return p_path;
 }
 
+void DirAccess::_get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const {
+
+	if (_access_type == ACCESS_USERDATA) {
+		*r_logical_base = "user://";
+		*r_physical_base = OS::get_singleton()->get_user_data_dir();
+	}
+}
+
 String DirAccess::unfix_path(const String &p_path) const {
 
-	switch (_access_type) {
+	String logical_base;
+	String physical_base;
+	_get_path_bases_for_unfix(p_path, &logical_base, &physical_base);
 
-		case ACCESS_USERDATA: {
-
-			String data_dir = OS::get_singleton()->get_user_data_dir();
-			return String("user://").plus_file(p_path.right(data_dir.length()));
-		} break;
-		case ACCESS_FILESYSTEM: {
-
-			return p_path;
-		} break;
-		case ACCESS_MAX: break; // Can't happen, but silences warning
+	if (logical_base == "") {
+		return p_path;
 	}
 
-	return p_path;
+	int pbl = physical_base.length();
+
+	String r_path = p_path;
+
+	// Remove trailing directory slashes
+	if (!r_path.is_filesystem_prefix() && r_path.length() >= 2 && r_path.ends_with("/")) {
+		r_path = r_path.left(r_path.length() - 1);
+	}
+	if (pbl >= 2 && physical_base.ends_with("/")) {
+		physical_base = physical_base.left(pbl - 1);
+		pbl--;
+	}
+
+	if (!r_path.begins_with(physical_base)) {
+		// Doesn't belong in this access mode
+		return r_path;
+	}
+	if (r_path.length() > pbl && r_path[pbl] != '/') {
+		// It's a file in the parent directory whose name begins with the last part of the base dir;
+		// doesn't belong here either
+		return r_path;
+	}
+
+	r_path = r_path.right(pbl);
+	if (r_path.ends_with("/")) {
+		r_path = r_path.left(r_path.length() - 1);
+	}
+
+	if (r_path == "") {
+		return logical_base;
+	} else {
+		return logical_base.plus_file(r_path).replace("///", "//");
+	}
 }
 
 DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { 0, 0, 0 };

@@ -115,6 +115,7 @@ private:
 
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
+	Set<String> no_surrender_uncollapsed_paths;
 
 	TextureRect *search_icon;
 	HBoxContainer *path_hb;

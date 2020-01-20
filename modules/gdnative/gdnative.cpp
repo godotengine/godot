@@ -300,7 +300,7 @@ bool GDNative::initialize() {
 	String path = lib_path.get_file();
 #elif defined(UWP_ENABLED)
 	// On UWP we use a relative path from the app
-	String path = lib_path.replace("res://", "");
+	String path = lib_path.strip_filesystem_prefix();
 #elif defined(OSX_ENABLED)
 	// On OSX the exported libraries are located under the Frameworks directory.
 	// So we need to replace the library path.

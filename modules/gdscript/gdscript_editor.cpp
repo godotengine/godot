@@ -860,7 +860,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 																script = script.right(1);
 															}
 
-															if (!script.begins_with("res://")) {
+															if (!script.is_resource_path()) {
 																script = "res://" + script;
 															}
 

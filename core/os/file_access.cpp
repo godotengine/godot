@@ -161,7 +161,7 @@ String FileAccess::unfix_path(const String &p_path) const {
 		case ACCESS_USERDATA: {
 
 			String data_dir = OS::get_singleton()->get_user_data_dir();
-			return "user://" + p_path.right(data_dir.length());
+			return String("user://").plus_file(p_path.right(data_dir.length()));
 		} break;
 		case ACCESS_FILESYSTEM: {
 

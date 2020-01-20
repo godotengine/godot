@@ -1184,7 +1184,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		String path = get_ustring(f);
 
 		bool relative = false;
-		if (!path.begins_with("res://")) {
+		if (!path.is_resource_path()) {
 			path = local_path.plus_file(path).simplify_path();
 			relative = true;
 		}
@@ -1759,7 +1759,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	big_endian = p_flags & ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
 	takeover_paths = p_flags & ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	if (!p_path.begins_with("res://"))
+	if (!p_path.is_resource_path())
 		takeover_paths = false;
 
 	local_path = p_path.get_base_dir();

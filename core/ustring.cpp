@@ -3816,33 +3816,35 @@ String String::path_to(const String &p_path) const {
 		dst += "/";
 
 	String base;
+	{
+		String src_fs = src.get_filesystem_prefix();
+		if (src_fs != "") {
+			String dst_fs = dst.get_filesystem_prefix();
+			if (src_fs == dst_fs) {
 
-	if (src.begins_with("res://") && dst.begins_with("res://")) {
+				base = src.left(src_fs.length() - 1);
+				src = src.replace(src_fs, "/");
+				dst = dst.replace(src_fs, "/");
+			}
+		}
+	}
 
-		base = "res:/";
-		src = src.replace("res://", "/");
-		dst = dst.replace("res://", "/");
+	if (base == "") {
+		if (src.begins_with("/") && dst.begins_with("/")) {
 
-	} else if (src.begins_with("user://") && dst.begins_with("user://")) {
+			//nothing
+		} else {
+			//dos style
+			String src_begin = src.get_slicec('/', 0);
+			String dst_begin = dst.get_slicec('/', 0);
 
-		base = "user:/";
-		src = src.replace("user://", "/");
-		dst = dst.replace("user://", "/");
+			if (src_begin != dst_begin)
+				return p_path; //impossible to do this
 
-	} else if (src.begins_with("/") && dst.begins_with("/")) {
-
-		//nothing
-	} else {
-		//dos style
-		String src_begin = src.get_slicec('/', 0);
-		String dst_begin = dst.get_slicec('/', 0);
-
-		if (src_begin != dst_begin)
-			return p_path; //impossible to do this
-
-		base = src_begin;
-		src = src.substr(src_begin.length(), src.length());
-		dst = dst.substr(dst_begin.length(), dst.length());
+			base = src_begin;
+			src = src.substr(src_begin.length(), src.length());
+			dst = dst.substr(dst_begin.length(), dst.length());
+		}
 	}
 
 	//remove leading and trailing slash and split
@@ -3879,6 +3881,24 @@ String String::path_to(const String &p_path) const {
 	if (dir.length() == 0)
 		dir = "./";
 	return dir;
+}
+
+String String::get_filesystem_prefix() const {
+
+	int pos = find("://");
+	if (pos == -1) {
+		return "";
+	}
+	return left(pos + 3);
+}
+
+String String::strip_filesystem_prefix() const {
+
+	int pos = find("://");
+	if (pos == -1) {
+		return *this;
+	}
+	return right(pos + 3);
 }
 
 bool String::is_valid_html_color() const {
@@ -3940,7 +3960,30 @@ bool String::is_valid_ip_address() const {
 
 bool String::is_resource_file() const {
 
-	return begins_with("res://") && find("::") == -1;
+	return is_resource_path() && find("::") == -1;
+}
+
+bool String::is_resource_path() const {
+
+	return begins_with("res://");
+}
+
+bool String::is_filesystem_prefix() const {
+
+	if (length() < 4) {
+		return false;
+	}
+	if (substr(length() - 3, 3) != "://") {
+		return false;
+	}
+	for (int i = 0; i < length() - 3; i++) {
+		CharType c = operator[](i);
+		if (c < 'a' || c > 'z') {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool String::is_rel_path() const {

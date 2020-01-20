@@ -58,62 +58,10 @@ String ProjectSettings::get_resource_path() const {
 
 String ProjectSettings::localize_path(const String &p_path) const {
 
-	if (resource_path == "")
-		return p_path; //not initialized yet
-
-	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
-			(p_path.is_abs_path() && !p_path.begins_with(resource_path)))
-		return p_path.simplify_path();
-
-	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-
-	String path = p_path.replace("\\", "/").simplify_path();
-
-	if (dir->change_dir(path) == OK) {
-
-		String cwd = dir->get_current_dir();
-		cwd = cwd.replace("\\", "/");
-
-		memdelete(dir);
-
-		// Ensure that we end with a '/'.
-		// This is important to ensure that we do not wrongly localize the resource path
-		// in an absolute path that just happens to contain this string but points to a
-		// different folder (e.g. "/my/project" as resource_path would be contained in
-		// "/my/project_data", even though the latter is not part of res://.
-		// `plus_file("")` is an easy way to ensure we have a trailing '/'.
-		const String res_path = resource_path.plus_file("");
-
-		// DirAccess::get_current_dir() is not guaranteed to return a path that with a trailing '/',
-		// so we must make sure we have it as well in order to compare with 'res_path'.
-		cwd = cwd.plus_file("");
-
-		if (!cwd.begins_with(res_path)) {
-			return p_path;
-		};
-
-		return cwd.replace_first(res_path, "res://");
-	} else {
-
-		memdelete(dir);
-
-		int sep = path.find_last("/");
-		if (sep == -1) {
-			return "res://" + path;
-		};
-
-		String parent = path.substr(0, sep);
-
-		String plocal = localize_path(parent);
-		if (plocal == "") {
-			return "";
-		};
-		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
-		if (plocal[plocal.length() - 1] == '/') {
-			sep += 1;
-		}
-		return plocal + path.substr(sep, path.size() - sep);
-	};
+	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	String local_path = dir->unfix_path(p_path);
+	memdelete(dir);
+	return local_path;
 }
 
 void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
@@ -129,24 +77,10 @@ void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restar
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 
-	if (p_path.begins_with("res://")) {
-
-		if (resource_path != "") {
-
-			return p_path.replace("res:/", resource_path);
-		};
-		return p_path.replace("res://", "");
-	} else if (p_path.begins_with("user://")) {
-
-		String data_dir = OS::get_singleton()->get_user_data_dir();
-		if (data_dir != "") {
-
-			return p_path.replace("user:/", data_dir);
-		};
-		return p_path.replace("user://", "");
-	}
-
-	return p_path;
+	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	String global_path = dir->fix_path(p_path);
+	memdelete(dir);
+	return global_path;
 }
 
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {

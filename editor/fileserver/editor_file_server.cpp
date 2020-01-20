@@ -159,10 +159,10 @@ void EditorFileServer::_subthread_start(void *s) {
 					print_verbose("OPEN: " + s2);
 				}
 
-				if (!s2.begins_with("res://")) {
+				if (!s2.is_resource_path()) {
 
 					_close_client(cd);
-					ERR_FAIL_COND(!s2.begins_with("res://"));
+					ERR_FAIL_COND(!s2.is_resource_path());
 				}
 				ERR_CONTINUE(cd->files.has(id));
 

@@ -100,7 +100,7 @@ String EditorFileSystemDirectory::get_path() const {
 		d = d->parent;
 	}
 
-	return "res://" + p;
+	return p;
 }
 
 String EditorFileSystemDirectory::get_file_path(int p_idx) const {
@@ -112,7 +112,7 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 		d = d->parent;
 	}
 
-	return "res://" + file;
+	return file;
 }
 
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
@@ -202,8 +202,6 @@ void EditorFileSystem::_scan_filesystem() {
 
 	sources_changed.clear();
 	file_cache.clear();
-
-	String project = ProjectSettings::get_singleton()->get_resource_path();
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
 	FileAccess *f = FileAccess::open(fscache, FileAccess::READ);
@@ -299,12 +297,19 @@ void EditorFileSystem::_scan_filesystem() {
 	sp.hi = 1;
 	sp.progress = &scan_progress;
 
+	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
 	new_filesystem = memnew(EditorFileSystemDirectory);
 	new_filesystem->parent = NULL;
 
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	d->change_dir("res://");
-	_scan_new_dir(new_filesystem, d, sp);
+	for (int i = 0; i < d->get_drive_count(); i++) {
+		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
+		efd->parent = new_filesystem;
+		efd->name = d->get_drive(i);
+		new_filesystem->subdirs.push_back(efd);
+
+		_scan_new_dir(efd, d, sp);
+	}
 
 	file_cache.clear(); //clear caches, no longer needed
 
@@ -664,6 +669,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 	List<String> dirs;
 	List<String> files;
 
+	// Drive?
+	if (p_dir->get_name().is_filesystem_prefix()) {
+		da->change_dir(p_dir->get_name());
+	}
+
 	String cd = da->get_current_dir();
 
 	p_dir->modified_time = FileAccess::get_modified_time(cd);
@@ -839,12 +849,19 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress) {
 
+	if (!p_dir->get_parent()) {
+		for (int i = 0; i < p_dir->subdirs.size(); i++) {
+			_scan_fs_changes(p_dir->subdirs[i], p_progress);
+		}
+		return;
+	}
+
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
 	bool updated_dir = false;
 	String cd = p_dir->get_path();
 
-	if (current_mtime != p_dir->modified_time || using_fat32_or_exfat) {
+	if (current_mtime == 0 || current_mtime != p_dir->modified_time || using_fat32_or_exfat) {
 
 		updated_dir = true;
 		p_dir->modified_time = current_mtime;
@@ -1237,15 +1254,15 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_file);
 
-	if (!f.begins_with("res://"))
+	if (!f.is_resource_path())
 		return false;
-	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
 
-	Vector<String> path = f.split("/");
-
+	Vector<String> path = f.split("/", false);
 	if (path.size() == 0)
 		return false;
+	path.set(0, path[0] + "//"); // Add back drive trailing slashes
+
 	String file = path[path.size() - 1];
 	path.resize(path.size() - 1);
 
@@ -1344,21 +1361,20 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	if (!f.begins_with("res://"))
+	if (!f.is_resource_path())
 		return NULL;
 
-	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
 	if (f == String())
 		return filesystem;
 
-	if (f.ends_with("/"))
+	if (!f.is_filesystem_prefix() && f.ends_with("/"))
 		f = f.substr(0, f.length() - 1);
 
-	Vector<String> path = f.split("/");
-
+	Vector<String> path = f.split("/", false);
 	if (path.size() == 0)
 		return NULL;
+	path.set(0, path[0] + "//"); // Add back drive trailing slashes
 
 	EditorFileSystemDirectory *fs = filesystem;
 

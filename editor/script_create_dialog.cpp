@@ -148,12 +148,10 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 	if (p_string.length() == 0)
 		return false;
 
-	for (int i = 0; i < p_string.length(); i++) {
+	if (p_string[0] >= '0' && p_string[0] <= '9')
+		return false; // no start with number plz
 
-		if (i == 0) {
-			if (p_string[0] >= '0' && p_string[0] <= '9')
-				return false; // no start with number plz
-		}
+	for (int i = 0; i < p_string.length(); i++) {
 
 		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
 

@@ -3336,7 +3336,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	String lpath = ProjectSettings::get_singleton()->localize_path(p_scene);
 
-	if (!lpath.begins_with("res://")) {
+	if (!lpath.is_resource_path()) {
 
 		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
 		opening_prev = false;

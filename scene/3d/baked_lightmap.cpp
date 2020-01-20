@@ -342,7 +342,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 
 	String save_path;
 
-	if (image_path.begins_with("res://")) {
+	if (image_path.is_resource_path()) {
 		save_path = image_path;
 	} else {
 		if (get_filename() != "") {

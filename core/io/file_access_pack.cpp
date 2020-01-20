@@ -66,8 +66,8 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		files[pmd5] = pf;
 
 	if (!exists) {
-		//search for dir (paths inside PCKs may have a leading res://)
-		String p = path.replace_first("res://", "");
+		// Keep the file system as a subdirectory of the root
+		String p = path.replace_first("://", "/");
 		PackedDir *cd = root;
 
 		if (p.find("/") != -1) { //in a subdir
@@ -421,7 +421,10 @@ Error DirAccessPack::change_dir(String p_dir) {
 
 	bool absolute = false;
 	if (nd.begins_with("/")) {
-		nd = nd.replace_first("/", "");
+		nd = nd.replace_first("/", "res://");
+		absolute = true;
+	} else if (nd.find("://") != -1) {
+		nd = nd.replace_first("://", "/");
 		absolute = true;
 	}
 
@@ -467,6 +470,8 @@ String DirAccessPack::get_current_dir() {
 		pd = pd->parent;
 		p = pd->name.plus_file(p);
 	}
+
+	p = p.replace_first("/", "://");
 
 	return unfix_path(p);
 }

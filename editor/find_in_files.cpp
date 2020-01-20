@@ -179,7 +179,7 @@ void FindInFiles::_iterate() {
 			_current_dir = _current_dir.plus_file(folder_name);
 
 			PoolStringArray sub_dirs;
-			_scan_dir("res://" + _current_dir, sub_dirs);
+			_scan_dir(_current_dir, sub_dirs);
 
 			_folders_stack.push_back(sub_dirs);
 
@@ -346,12 +346,9 @@ FindInFilesDialog::FindInFilesDialog() {
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		Label *prefix_label = memnew(Label);
-		prefix_label->set_text("res://");
-		hbc->add_child(prefix_label);
-
 		_folder_line_edit = memnew(LineEdit);
 		_folder_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+		_folder_line_edit->set_text("res://");
 		hbc->add_child(_folder_line_edit);
 
 		Button *folder_button = memnew(Button);
@@ -405,7 +402,12 @@ bool FindInFilesDialog::is_whole_words() const {
 
 String FindInFilesDialog::get_folder() const {
 	String text = _folder_line_edit->get_text();
-	return text.strip_edges();
+	text = text.strip_edges();
+	if (text == "") {
+		return "res://";
+	} else {
+		return text;
+	}
 }
 
 Set<String> FindInFilesDialog::get_filter() const {
@@ -478,9 +480,6 @@ void FindInFilesDialog::_on_search_text_entered(String text) {
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
-	int i = path.find("://");
-	if (i != -1)
-		path = path.right(i + 3);
 	_folder_line_edit->set_text(path);
 }
 

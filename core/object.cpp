@@ -1587,7 +1587,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 			if (!r.is_valid())
 				return;
 
-			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1)
+			if (!r->get_path().is_resource_path() || r->get_path().find("::") == -1)
 				return; //not an internal resource
 
 			Object *object = p_var;

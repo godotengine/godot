@@ -55,7 +55,12 @@ String EditorQuickOpen::get_selected() const {
 	if (!ti)
 		return String();
 
-	return "res://" + ti->get_text(0);
+	String path = ti->get_text(0);
+	if (path.is_resource_path()) {
+		return path;
+	} else {
+		return String("res://").plus_file(path);
+	}
 }
 
 Vector<String> EditorQuickOpen::get_selected_files() const {
@@ -65,7 +70,12 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 	TreeItem *item = search_options->get_next_selected(search_options->get_root());
 	while (item) {
 
-		files.push_back("res://" + item->get_text(0));
+		String path = item->get_text(0);
+		if (path.is_resource_path()) {
+			files.push_back(path);
+		} else {
+			files.push_back(String("res://").plus_file(path));
+		}
 
 		item = search_options->get_next_selected(item);
 	}
@@ -137,8 +147,10 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 		String path = efsd->get_path();
 		if (!path.ends_with("/"))
 			path += "/";
-		if (path != "res://") {
-			path = path.substr(6, path.length());
+		if (!path.is_filesystem_prefix()) {
+			if (path.begins_with("res://")) { // Others, like addons://, kept explicit
+				path = path.strip_filesystem_prefix();
+			}
 			if (search_text.is_subsequence_ofi(path)) {
 				Pair<String, Ref<Texture> > pair;
 				pair.first = path;
@@ -166,7 +178,9 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 
 		String file = efsd->get_file_path(i);
-		file = file.substr(6, file.length());
+		if (file.begins_with("res://")) { // Others, like addons://, kept explicit
+			file = file.strip_filesystem_prefix();
+		}
 
 		if (ClassDB::is_parent_class(efsd->get_file_type(i), base_type) && (search_text.is_subsequence_ofi(file))) {
 			Pair<String, Ref<Texture> > pair;

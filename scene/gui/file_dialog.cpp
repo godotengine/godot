@@ -611,7 +611,7 @@ Vector<String> FileDialog::get_filters() const {
 
 String FileDialog::get_current_dir() const {
 
-	return dir->get_text();
+	return dir_access->get_current_dir();
 }
 String FileDialog::get_current_file() const {
 
@@ -619,7 +619,7 @@ String FileDialog::get_current_file() const {
 }
 String FileDialog::get_current_path() const {
 
-	return dir->get_text().plus_file(file->get_text());
+	return dir_access->get_current_dir().plus_file(file->get_text());
 }
 void FileDialog::set_current_dir(const String &p_dir) {
 

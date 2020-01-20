@@ -133,7 +133,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 			if (p_flags & FLAG_CHANGE_PATH)
 				rwcopy->set_path(old_path);
 
-			if (save_callback && p_path.begins_with("res://"))
+			if (save_callback && p_path.is_resource_path())
 				save_callback(p_resource, p_path);
 
 			return OK;

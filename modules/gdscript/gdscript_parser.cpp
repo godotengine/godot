@@ -7598,7 +7598,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				if (script.begins_with("*")) {
 					script = script.right(1);
 				}
-				if (!script.begins_with("res://")) {
+				if (!script.is_resource_path()) {
 					script = "res://" + script;
 				}
 				Ref<Script> singleton = ResourceLoader::load(script);

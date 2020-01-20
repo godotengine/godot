@@ -318,8 +318,12 @@ public:
 	bool is_abs_path() const;
 	bool is_rel_path() const;
 	bool is_resource_file() const;
+	bool is_resource_path() const;
+	bool is_filesystem_prefix() const;
 	String path_to(const String &p_path) const;
 	String path_to_file(const String &p_path) const;
+	String get_filesystem_prefix() const;
+	String strip_filesystem_prefix() const;
 	String get_base_dir() const;
 	String get_file() const;
 	static String humanize_size(uint64_t p_size);

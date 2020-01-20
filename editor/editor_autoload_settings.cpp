@@ -651,7 +651,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 		return false;
 	}
 
-	if (!path.begins_with("res://")) {
+	if (!path.is_resource_path()) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("Not in resource path."));
 		return false;
 	}

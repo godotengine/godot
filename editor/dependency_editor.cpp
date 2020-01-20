@@ -521,7 +521,7 @@ void DependencyRemoveDialog::ok_pressed() {
 			ProjectSettings::get_singleton()->set("audio/default_bus_layout", "");
 		}
 
-		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
+		String path = ProjectSettings::get_singleton()->globalize_path(files_to_delete[i]);
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
@@ -538,7 +538,7 @@ void DependencyRemoveDialog::ok_pressed() {
 	} else {
 
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
-			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
+			String path = ProjectSettings::get_singleton()->globalize_path(dirs_to_delete[i]);
 			print_verbose("Moving to trash: " + path);
 			Error err = OS::get_singleton()->move_to_trash(path);
 			if (err != OK) {

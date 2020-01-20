@@ -35,34 +35,36 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
-void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
+void EditorDirDialog::_update_dir(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 
 	updating = true;
 
-	String path = p_dir->get_path();
-
-	p_item->set_metadata(0, p_dir->get_path());
-	p_item->set_icon(0, get_icon("Folder", "EditorIcons"));
-
-	if (!p_item->get_parent()) {
-		p_item->set_text(0, "res://");
-	} else {
-
-		if (!opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
-			p_item->set_collapsed(true);
-		}
-
-		p_item->set_text(0, p_dir->get_name());
+	if (!p_parent) {
+		p_parent = tree->create_item();
 	}
 
-	//this should be handled by EditorFileSystem already
-	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
-	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 
-		TreeItem *ti = tree->create_item(p_item);
-		_update_dir(ti, p_dir->get_subdir(i));
+		EditorFileSystemDirectory *subdir = p_dir->get_subdir(i);
+		TreeItem *ti = tree->create_item(p_parent);
+
+		String path = subdir->get_path();
+
+		ti->set_metadata(0, path);
+		ti->set_icon(0, get_icon("Folder", "EditorIcons"));
+
+		if (p_parent && !opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
+			ti->set_collapsed(true);
+		}
+
+		ti->set_text(0, subdir->get_name());
+
+		updating = false;
+		_update_dir(ti, subdir, p_select_path);
+		updating = true;
 	}
+
+	updating = false;
 }
 
 void EditorDirDialog::reload(const String &p_path) {
@@ -73,9 +75,7 @@ void EditorDirDialog::reload(const String &p_path) {
 	}
 
 	tree->clear();
-	TreeItem *root = tree->create_item();
-	_update_dir(root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
-	_item_collapsed(root);
+	_update_dir(NULL, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
 	must_reload = false;
 }
 
@@ -186,6 +186,7 @@ EditorDirDialog::EditorDirDialog() {
 	tree = memnew(Tree);
 	add_child(tree);
 
+	tree->set_hide_root(true);
 	tree->connect("item_activated", this, "_ok");
 
 	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
