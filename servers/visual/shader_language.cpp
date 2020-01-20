@@ -1407,21 +1407,21 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC3, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "mat2", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "mat3", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1435,22 +1435,22 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 	{ "int", TYPE_INT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "int", TYPE_INT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "int", TYPE_INT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "int", TYPE_INT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "float", TYPE_FLOAT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "float", TYPE_FLOAT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "float", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "float", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "uint", TYPE_UINT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uint", TYPE_UINT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "uint", TYPE_UINT, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "bool", TYPE_BOOL, { TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bool", TYPE_BOOL, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "bool", TYPE_BOOL, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "bool", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 
 	//conversion vectors
@@ -1462,57 +1462,57 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 	{ "vec2", TYPE_VEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "vec2", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec2", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "vec2", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "vec2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "uvec2", TYPE_UVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec2", TYPE_UVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec2", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "uvec2", TYPE_UVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec2", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "bvec2", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "bvec2", TYPE_BVEC2, { TYPE_IVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec2", TYPE_BVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "bvec2", TYPE_BVEC2, { TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "bvec2", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "ivec3", TYPE_IVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec3", TYPE_IVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "ivec3", TYPE_IVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "ivec3", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "vec3", TYPE_VEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "vec3", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec3", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "vec3", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "vec3", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "uvec3", TYPE_UVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec3", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "uvec3", TYPE_UVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec3", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "bvec3", TYPE_BVEC3, { TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec3", TYPE_BVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "bvec3", TYPE_BVEC3, { TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "bvec3", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "ivec4", TYPE_IVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "ivec4", TYPE_IVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "ivec4", TYPE_IVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "ivec4", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "vec4", TYPE_VEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "vec4", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "vec4", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "vec4", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "vec4", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "uvec4", TYPE_UVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "uvec4", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "uvec4", TYPE_UVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "uvec4", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "bvec4", TYPE_BVEC4, { TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
 	//conversion between matrixes
@@ -1704,13 +1704,13 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "min", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "min", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "max", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1728,13 +1728,13 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "max", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "max", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "clamp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1752,13 +1752,13 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "clamp", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "clamp", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "mix", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1865,9 +1865,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "lessThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "lessThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "lessThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "lessThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "lessThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "lessThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "greaterThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "greaterThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1877,9 +1877,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "greaterThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "greaterThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "greaterThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "greaterThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "greaterThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "greaterThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "lessThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "lessThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1889,9 +1889,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "lessThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "lessThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "lessThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "lessThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "lessThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1901,9 +1901,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "equal", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "equal", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1913,9 +1913,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "equal", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "equal", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "equal", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "equal", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "equal", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "equal", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "equal", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "equal", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "equal", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -1929,9 +1929,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "notEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "notEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
-	{ "notEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, false },
-	{ "notEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "notEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "notEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "notEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "notEqual", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "notEqual", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID }, TAG_GLOBAL, false },
@@ -3857,6 +3857,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			DataType type = get_token_datatype(tk.type);
 
+			if (_validate_datatype(type) != OK) {
+				return ERR_PARSE_ERROR;
+			}
+
 			tk = _get_token();
 
 			Node *vardecl = NULL;
@@ -4688,27 +4692,17 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 		bool invalid_type = false;
 
 		switch (p_type) {
+			case TYPE_UINT:
+			case TYPE_UVEC2:
+			case TYPE_UVEC3:
+			case TYPE_UVEC4:
 			case TYPE_ISAMPLER2D:
-				invalid_type = true;
-				break;
 			case TYPE_USAMPLER2D:
-				invalid_type = true;
-				break;
 			case TYPE_SAMPLER3D:
-				invalid_type = true;
-				break;
 			case TYPE_ISAMPLER3D:
-				invalid_type = true;
-				break;
 			case TYPE_USAMPLER3D:
-				invalid_type = true;
-				break;
 			case TYPE_SAMPLER2DARRAY:
-				invalid_type = true;
-				break;
 			case TYPE_USAMPLER2DARRAY:
-				invalid_type = true;
-				break;
 			case TYPE_ISAMPLER2DARRAY:
 				invalid_type = true;
 				break;
