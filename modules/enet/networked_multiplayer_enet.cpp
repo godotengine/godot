@@ -807,6 +807,14 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 #endif
 }
 
+void NetworkedMultiplayerENet::set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max) {
+
+	ERR_FAIL_COND(!peer_map.has(p_peer_id));
+	ERR_FAIL_COND(!is_server() && p_peer_id != 1);
+	ERR_FAIL_COND(peer_map[p_peer_id] == NULL);
+	enet_peer_timeout(peer_map[p_peer_id], p_timeout_limit, p_timeout_min, p_timeout_max);
+}
+
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
 
 	ERR_FAIL_COND(p_channel < -1 || p_channel >= channel_count);
@@ -858,6 +866,7 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
+	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &NetworkedMultiplayerENet::set_peer_timeout);
 
 	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
 	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
