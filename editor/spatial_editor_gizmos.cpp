@@ -885,7 +885,7 @@ void LightSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx,
 				d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
 			}
 
-			if (d < 0)
+			if (d <= 0) // Equal is here for negative zero.
 				d = 0;
 
 			light->set_param(Light::PARAM_RANGE, d);
