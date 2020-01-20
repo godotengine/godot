@@ -302,8 +302,10 @@ Error ScriptClassParser::_skip_generic_type_params() {
 				Error err = _skip_generic_type_params();
 				if (err)
 					return err;
-				continue;
-			} else if (tk == TK_OP_GREATER) {
+				tk = get_token();
+			}
+
+			if (tk == TK_OP_GREATER) {
 				return OK;
 			} else if (tk != TK_COMMA) {
 				error_str = "Unexpected token: " + get_token_name(tk);

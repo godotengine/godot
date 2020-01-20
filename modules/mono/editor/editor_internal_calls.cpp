@@ -201,7 +201,9 @@ uint32_t godot_icall_BindingsGenerator_CsGlueVersion() {
 	return CS_GLUE_VERSION;
 }
 
-int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes) {
+int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
+	*r_error_str = NULL;
+
 	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
 
 	ScriptClassParser scp;
@@ -219,6 +221,11 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 			classDeclDict["nested"] = classDecl.nested;
 			classDeclDict["base_count"] = classDecl.base.size();
 			classes.push_back(classDeclDict);
+		}
+	} else {
+		String error_str = scp.get_error();
+		if (!error_str.empty()) {
+			*r_error_str = GDMonoMarshal::mono_string_from_godot(error_str);
 		}
 	}
 	return err;

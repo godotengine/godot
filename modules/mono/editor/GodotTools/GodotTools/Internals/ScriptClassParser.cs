@@ -25,14 +25,14 @@ namespace GodotTools.Internals
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern Error internal_ParseFile(string filePath, Array<Dictionary> classes);
+        private static extern Error internal_ParseFile(string filePath, Array<Dictionary> classes, out string errorStr);
 
         public static void ParseFileOrThrow(string filePath, out IEnumerable<ClassDecl> classes)
         {
             var classesArray = new Array<Dictionary>();
-            var error = internal_ParseFile(filePath, classesArray);
+            var error = internal_ParseFile(filePath, classesArray, out string errorStr);
             if (error != Error.Ok)
-                throw new Exception($"Failed to determine namespace and class for script: {filePath}. Parse error: {error}");
+                throw new Exception($"Failed to determine namespace and class for script: {filePath}. Parse error: {errorStr ?? error.ToString()}");
 
             var classesList = new List<ClassDecl>();
 
