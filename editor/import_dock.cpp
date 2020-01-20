@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "import_dock.h"
+
+#include "core/io/resource_importer.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 
@@ -95,7 +97,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	Ref<ConfigFile> config;
 	config.instance();
-	Error err = config->load(p_path + ".import");
+	Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_path));
 	if (err != OK) {
 		clear();
 		return;
@@ -190,7 +192,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 		Ref<ConfigFile> config;
 		config.instance();
-		Error err = config->load(p_paths[i] + ".import");
+		Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_paths[i]));
 		ERR_CONTINUE(err != OK);
 
 		if (i == 0) {
@@ -304,7 +306,7 @@ void ImportDock::_importer_selected(int i_idx) {
 	Ref<ConfigFile> config;
 	if (params->paths.size()) {
 		config.instance();
-		Error err = config->load(params->paths[0] + ".import");
+		Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(params->paths[0]));
 		if (err != OK) {
 			config.unref();
 		}
@@ -405,7 +407,7 @@ void ImportDock::_reimport_attempt() {
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instance();
-		Error err = config->load(params->paths[i] + ".import");
+		Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(params->paths[i]));
 		ERR_CONTINUE(err != OK);
 
 		String imported_with = config->get_value("remap", "importer");
@@ -440,7 +442,7 @@ void ImportDock::_reimport() {
 
 		Ref<ConfigFile> config;
 		config.instance();
-		Error err = config->load(params->paths[i] + ".import");
+		Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(params->paths[i]));
 		ERR_CONTINUE(err != OK);
 
 		String importer_name = params->importer->get_importer_name();
@@ -475,7 +477,7 @@ void ImportDock::_reimport() {
 			config->set_value("remap", "group_file", Variant()); //clear group file if unused
 		}
 
-		config->save(params->paths[i] + ".import");
+		config->save(ResourceFormatImporter::get_singleton()->get_import_settings_path(params->paths[i]));
 	}
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);

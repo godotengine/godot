@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "baked_lightmap.h"
+
 #include "core/io/config_file.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_saver.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
@@ -552,7 +554,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 					srgb = true;
 				}
 
-				if (!FileAccess::exists(image_path + ".import")) {
+				if (!ResourceFormatImporter::get_singleton()->exists(image_path)) {
 					Ref<ConfigFile> config;
 					config.instance();
 					config->set_value("remap", "importer", "texture");
@@ -564,7 +566,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 					config->set_value("params", "flags/mipmaps", false);
 					config->set_value("params", "flags/srgb", srgb);
 
-					config->save(image_path + ".import");
+					config->save(ResourceFormatImporter::get_singleton()->get_import_settings_path(image_path));
 				}
 
 				ResourceLoader::import(image_path);

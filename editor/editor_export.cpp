@@ -33,6 +33,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
@@ -742,11 +743,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		String path = E->get();
 		String type = ResourceLoader::get_resource_type(path);
 
-		if (FileAccess::exists(path + ".import")) {
+		if (ResourceFormatImporter::get_singleton()->exists(path)) {
 			//file is imported, replace by what it imports
 			Ref<ConfigFile> config;
 			config.instance();
-			Error err = config->load(path + ".import");
+			Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(path));
 			if (err != OK) {
 				ERR_PRINTS("Could not parse: '" + path + "', not exported.");
 				continue;
@@ -795,8 +796,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 			//also save the .import file
-			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
-			err = p_func(p_udata, path + ".import", array, idx, total);
+			Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceFormatImporter::get_singleton()->get_import_settings_path(path));
+			err = p_func(p_udata, ResourceFormatImporter::get_singleton()->get_import_settings_path(path), array, idx, total);
 
 			if (err != OK) {
 				return err;

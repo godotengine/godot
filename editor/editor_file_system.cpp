@@ -344,7 +344,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	if (!reimport_on_missing_imported_files && p_only_imported_files)
 		return false;
 
-	if (!FileAccess::exists(p_path + ".import")) {
+	if (!ResourceFormatImporter::get_singleton()->exists(p_path)) {
 		return true;
 	}
 
@@ -354,7 +354,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	}
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_path), FileAccess::READ, &err);
 
 	if (!f) { //no import file, do reimport
 		return true;
@@ -567,7 +567,7 @@ bool EditorFileSystem::_update_scan_actions() {
 					//must not reimport, all was good
 					//update modified times, to avoid reimport
 					ia.dir->files[idx]->modified_time = FileAccess::get_modified_time(full_path);
-					ia.dir->files[idx]->import_modified_time = FileAccess::get_modified_time(full_path + ".import");
+					ia.dir->files[idx]->import_modified_time = FileAccess::get_modified_time(ResourceFormatImporter::get_singleton()->get_import_settings_path(full_path));
 				}
 
 				fs_changed = true;
@@ -759,8 +759,8 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 			//is imported
 			uint64_t import_mt = 0;
-			if (FileAccess::exists(path + ".import")) {
-				import_mt = FileAccess::get_modified_time(path + ".import");
+			if (ResourceFormatImporter::get_singleton()->exists(path)) {
+				import_mt = FileAccess::get_modified_time(ResourceFormatImporter::get_singleton()->get_import_settings_path(path));
 			}
 
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
@@ -974,11 +974,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 			if (mt != p_dir->files[i]->modified_time) {
 				reimport = true; //it was modified, must be reimported.
-			} else if (!FileAccess::exists(path + ".import")) {
+			} else if (!ResourceFormatImporter::get_singleton()->exists(path)) {
 				reimport = true; //no .import file, obviously reimport
 			} else {
 
-				uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
+				uint64_t import_mt = FileAccess::get_modified_time(ResourceFormatImporter::get_singleton()->get_import_settings_path(path));
 				if (import_mt != p_dir->files[i]->import_modified_time) {
 					reimport = true;
 				} else if (_test_for_reimport(path, true)) {
@@ -1026,14 +1026,14 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 }
 
 void EditorFileSystem::_delete_internal_files(String p_file) {
-	if (FileAccess::exists(p_file + ".import")) {
+	if (ResourceFormatImporter::get_singleton()->exists(p_file)) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (List<String>::Element *E = paths.front(); E; E = E->next()) {
 			da->remove(E->get());
 		}
-		da->remove(p_file + ".import");
+		da->remove(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file));
 		memdelete(da);
 	}
 }
@@ -1547,7 +1547,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		Ref<ConfigFile> config;
 		config.instance();
-		Error err = config->load(p_files[i] + ".import");
+		Error err = config->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_files[i]));
 		ERR_CONTINUE(err != OK);
 		ERR_CONTINUE(!config->has_section_key("remap", "importer"));
 		String file_importer_name = config->get_value("remap", "importer");
@@ -1597,7 +1597,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		const String &file = E->key();
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
-		FileAccessRef f = FileAccess::open(file + ".import", FileAccess::WRITE);
+		FileAccessRef f = FileAccess::open(ResourceFormatImporter::get_singleton()->get_import_settings_path(file), FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
 
 		//write manually, as order matters ([remap] has to go first for performance).
@@ -1674,7 +1674,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		//update modified times, to avoid reimport
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
-		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(file + ".import");
+		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(ResourceFormatImporter::get_singleton()->get_import_settings_path(file));
 		fs->files[cpos]->deps = _get_dependencies(file);
 		fs->files[cpos]->type = importer->get_resource_type();
 		fs->files[cpos]->import_valid = err == OK;
@@ -1711,11 +1711,11 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	Map<StringName, Variant> params;
 	String importer_name;
 
-	if (FileAccess::exists(p_file + ".import")) {
+	if (ResourceFormatImporter::get_singleton()->exists(p_file)) {
 		//use existing
 		Ref<ConfigFile> cf;
 		cf.instance();
-		Error err = cf->load(p_file + ".import");
+		Error err = cf->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file));
 		if (err == OK) {
 			if (cf->has_section("params")) {
 				List<String> sk;
@@ -1785,7 +1785,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	//as import is complete, save the .import file
 
-	FileAccess *f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file), FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + p_file + ".import'.");
 
 	//write manually, as order matters ([remap] has to go first for performance).
@@ -1882,7 +1882,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
+	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file));
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->type = importer->get_resource_type();
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
@@ -2028,7 +2028,7 @@ void EditorFileSystem::_move_group_files(EditorFileSystemDirectory *efd, const S
 
 			Ref<ConfigFile> config;
 			config.instance();
-			String path = efd->get_file_path(i) + ".import";
+			String path = ResourceFormatImporter::get_singleton()->get_import_settings_path(efd->get_file_path(i));
 			Error err = config->load(path);
 			if (err != OK) {
 				continue;

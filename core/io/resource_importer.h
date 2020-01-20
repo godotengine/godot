@@ -89,6 +89,8 @@ public:
 	String get_import_settings_hash() const;
 
 	String get_import_base_path(const String &p_for_file) const;
+	String get_import_settings_path(const String &p_for_file) const;
+
 	ResourceFormatImporter();
 };
 

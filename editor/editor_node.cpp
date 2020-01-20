@@ -34,6 +34,7 @@
 #include "core/class_db.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
@@ -1785,7 +1786,7 @@ void EditorNode::_edit_current() {
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
 			String base_path = current_res->get_path().substr(0, subr_idx);
-			if (FileAccess::exists(base_path + ".import")) {
+			if (ResourceFormatImporter::get_singleton()->exists(base_path)) {
 				editable_warning = TTR("This resource belongs to a scene that was imported, so it's not editable.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
 			} else {
 				if ((!get_edited_scene() || get_edited_scene()->get_filename() != base_path) && ResourceLoader::get_resource_type(base_path) == "PackedScene") {
@@ -1793,7 +1794,7 @@ void EditorNode::_edit_current() {
 				}
 			}
 		} else if (current_res->get_path().is_resource_file()) {
-			if (FileAccess::exists(current_res->get_path() + ".import")) {
+			if (ResourceFormatImporter::get_singleton()->exists(current_res->get_path())) {
 				editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
 			}
 		}
@@ -1815,7 +1816,7 @@ void EditorNode::_edit_current() {
 
 		if (get_edited_scene() && get_edited_scene()->get_filename() != String()) {
 			String source_scene = get_edited_scene()->get_filename();
-			if (FileAccess::exists(source_scene + ".import")) {
+			if (ResourceFormatImporter::get_singleton()->exists(source_scene)) {
 				editable_warning = TTR("This scene was imported, so changes to it won't be kept.\nInstancing it or inheriting will allow making changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
 			}
 		}
@@ -3321,7 +3322,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			}
 		}
 
-		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) {
+		if (!p_force_open_imported && ResourceFormatImporter::get_singleton()->exists(p_scene)) {
 			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), p_scene.get_file()));
 			open_imported->popup_centered_minsize();
 			new_inherited_button->grab_focus();

@@ -40,7 +40,7 @@ bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceIm
 Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(get_import_settings_path(p_path), FileAccess::READ, &err);
 
 	if (!f) {
 		if (r_valid) {
@@ -188,12 +188,12 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 bool ResourceFormatImporter::exists(const String &p_path) const {
 
-	return FileAccess::exists(p_path + ".import");
+	return FileAccess::exists(get_import_settings_path(p_path));
 }
 
 bool ResourceFormatImporter::recognize_path(const String &p_path, const String &p_for_type) const {
 
-	return FileAccess::exists(p_path + ".import");
+	return FileAccess::exists(get_import_settings_path(p_path));
 }
 
 bool ResourceFormatImporter::can_be_imported(const String &p_path) const {
@@ -205,7 +205,7 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 
 	Ref<ResourceImporter> importer;
 
-	if (FileAccess::exists(p_path + ".import")) {
+	if (FileAccess::exists(get_import_settings_path(p_path))) {
 
 		PathAndType pat;
 		Error err = _get_path_and_type(p_path, pat);
@@ -254,7 +254,7 @@ String ResourceFormatImporter::get_internal_resource_path(const String &p_path) 
 void ResourceFormatImporter::get_internal_resource_path_list(const String &p_path, List<String> *r_paths) {
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(get_import_settings_path(p_path), FileAccess::READ, &err);
 
 	if (!f)
 		return;
@@ -398,6 +398,11 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
 
 	return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+}
+
+String ResourceFormatImporter::get_import_settings_path(const String &p_for_file) const {
+
+	return p_for_file + ".import";
 }
 
 bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {

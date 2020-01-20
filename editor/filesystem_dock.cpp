@@ -30,6 +30,7 @@
 
 #include "filesystem_dock.h"
 
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -1012,8 +1013,8 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
 		// Move/Rename any corresponding import settings too.
-		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
-			err = da->rename(old_path + ".import", new_path + ".import");
+		if (p_item.is_file && ResourceFormatImporter::get_singleton()->exists(old_path)) {
+			err = da->rename(ResourceFormatImporter::get_singleton()->get_import_settings_path(old_path), ResourceFormatImporter::get_singleton()->get_import_settings_path(new_path));
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".import\n");
 			}
@@ -1071,8 +1072,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
 		// Move/Rename any corresponding import settings too.
-		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
-			err = da->copy(old_path + ".import", new_path + ".import");
+		if (p_item.is_file && ResourceFormatImporter::get_singleton()->exists(old_path)) {
+			err = da->copy(ResourceFormatImporter::get_singleton()->get_import_settings_path(old_path), ResourceFormatImporter::get_singleton()->get_import_settings_path(new_path));
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
 			}
@@ -2402,13 +2403,13 @@ void FileSystemDock::_update_import_dock() {
 			break;
 		}
 
-		if (!FileAccess::exists(fpath + ".import")) {
+		if (!ResourceFormatImporter::get_singleton()->exists(fpath)) {
 			imports.clear();
 			break;
 		}
 		Ref<ConfigFile> cf;
 		cf.instance();
-		Error err = cf->load(fpath + ".import");
+		Error err = cf->load(ResourceFormatImporter::get_singleton()->get_import_settings_path(fpath));
 		if (err != OK) {
 			imports.clear();
 			break;
