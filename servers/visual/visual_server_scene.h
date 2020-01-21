@@ -55,22 +55,6 @@ public:
 
 	static VisualServerScene *singleton;
 
-// FIXME: Kept as reference for future implementation
-#if 0
-	struct Portal {
-
-		bool enabled;
-		float disable_distance;
-		Color disable_color;
-		float connect_range;
-		Vector<Point2> shape;
-		Rect2 bounds;
-
-
-		Portal() { enabled=true; disable_distance=50; disable_color=Color(); connect_range=0.8; }
-	};
-#endif
-
 	/* CAMERA API */
 
 	struct Camera : public RID_Data {
@@ -450,11 +434,10 @@ public:
 
 	RID_Owner<Instance> instance_owner;
 
-	// from can be mesh, light,  area and portal so far.
-	virtual RID instance_create(); // from can be mesh, light, poly, area and portal so far.
+	virtual RID instance_create();
 
-	virtual void instance_set_base(RID p_instance, RID p_base); // from can be mesh, light, poly, area and portal so far.
-	virtual void instance_set_scenario(RID p_instance, RID p_scenario); // from can be mesh, light, poly, area and portal so far.
+	virtual void instance_set_base(RID p_instance, RID p_base);
+	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);

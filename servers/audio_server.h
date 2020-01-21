@@ -247,18 +247,6 @@ private:
 
 	void _mix_step();
 
-#if 0
-	struct AudioInBlock {
-
-		Ref<AudioStreamSample> audio_stream;
-		int current_position;
-		bool loops;
-	};
-
-	Map<StringName, AudioInBlock *> audio_in_block_map;
-	Vector<AudioInBlock *> audio_in_blocks;
-#endif
-
 	struct CallbackItem {
 
 		AudioCallback callback;

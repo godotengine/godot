@@ -1206,32 +1206,21 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	GLenum type = GL_UNSIGNED_BYTE;
 
 	// Set the initial (empty) mipmaps
-#if 1
-	//Mobile hardware (PowerVR specially) prefers this approach, the other one kills the game
+	// Mobile hardware (PowerVR specially) prefers this approach,
+	// the previous approach with manual lod levels kills the game.
 	for (int i = 0; i < 6; i++) {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, NULL);
 	}
 
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-	//no filters for now
+
+	// No filters for now
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-#else
-	while (size >= 1) {
-
-		for (int i = 0; i < 6; i++) {
-			glTexImage2D(_cube_side_enum[i], lod, internal_format, size, size, 0, format, type, NULL);
-		}
-
-		lod++;
-
-		size >>= 1;
-	}
-#endif
-	//framebuffer
+	// Framebuffer
 
 	glBindFramebuffer(GL_FRAMEBUFFER, resources.mipmap_blur_fbo);
 

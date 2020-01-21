@@ -400,7 +400,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for (int i = 0; i < max_uniforms; i++) {
 				r_gen_code.uniforms += uniform_defines[i];
 			}
-#if 1
+
 			// add up
 			int offset = 0;
 			for (int i = 0; i < uniform_sizes.size(); i++) {
@@ -420,45 +420,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
 				r_gen_code.uniform_total_size += r_gen_code.uniform_total_size % 16;
 			}
-#else
-			// add up
-			for (int i = 0; i < uniform_sizes.size(); i++) {
-
-				if (i > 0) {
-
-					int align = uniform_sizes[i - 1] % uniform_alignments[i];
-					if (align != 0) {
-						uniform_sizes[i - 1] += uniform_alignments[i] - align;
-					}
-
-					uniform_sizes[i] = uniform_sizes[i] + uniform_sizes[i - 1];
-				}
-			}
-			//offset
-			r_gen_code.uniform_offsets.resize(uniform_sizes.size());
-			for (int i = 0; i < uniform_sizes.size(); i++) {
-
-				if (i > 0)
-					r_gen_code.uniform_offsets[i] = uniform_sizes[i - 1];
-				else
-					r_gen_code.uniform_offsets[i] = 0;
-			}
-			/*
-			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
-
-				if (SL::is_sampler_type(E->get().type)) {
-					continue;
-				}
-
-			}
-
-*/
-			if (uniform_sizes.size()) {
-				r_gen_code.uniform_total_size = uniform_sizes[uniform_sizes.size() - 1];
-			} else {
-				r_gen_code.uniform_total_size = 0;
-			}
-#endif
 
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
 

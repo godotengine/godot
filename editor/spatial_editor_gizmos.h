@@ -160,19 +160,6 @@ public:
 	PhysicalBoneSpatialGizmoPlugin();
 };
 
-#if 0
-class PortalSpatialGizmo : public EditorSpatialGizmo {
-
-	GDCLASS(PortalSpatialGizmo, EditorSpatialGizmo);
-
-	Portal *portal;
-
-public:
-	void redraw();
-	PortalSpatialGizmo(Portal *p_portal = NULL);
-};
-#endif
-
 class RayCastSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(RayCastSpatialGizmoPlugin, EditorSpatialGizmoPlugin);

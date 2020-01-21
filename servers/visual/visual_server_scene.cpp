@@ -29,10 +29,13 @@
 /*************************************************************************/
 
 #include "visual_server_scene.h"
+
 #include "core/os/os.h"
 #include "visual_server_globals.h"
 #include "visual_server_raster.h"
+
 #include <new>
+
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -314,7 +317,6 @@ void VisualServerScene::_instance_queue_update(Instance *p_instance, bool p_upda
 	_instance_update_list.add(&p_instance->update_item);
 }
 
-// from can be mesh, light,  area and portal so far.
 RID VisualServerScene::instance_create() {
 
 	Instance *instance = memnew(Instance);

@@ -1146,47 +1146,6 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_draw = p_material->shader->spatial.depth_draw_mode;
 	}
 
-#if 0
-	//blend mode
-	if (state.current_blend_mode!=p_material->shader->spatial.blend_mode) {
-
-		switch(p_material->shader->spatial.blend_mode) {
-
-			 case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MIX: {
-				glBlendEquation(GL_FUNC_ADD);
-				if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-				} else {
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				}
-
-			 } break;
-			 case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_ADD: {
-
-				glBlendEquation(GL_FUNC_ADD);
-				glBlendFunc(p_alpha_pass?GL_SRC_ALPHA:GL_ONE,GL_ONE);
-
-			 } break;
-			 case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_SUB: {
-
-				glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-				glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-			 } break;
-			case RasterizerStorageGLES3::Shader::Spatial::BLEND_MODE_MUL: {
-				glBlendEquation(GL_FUNC_ADD);
-				if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
-					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-				} else {
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				}
-
-			} break;
-		}
-
-		state.current_blend_mode=p_material->shader->spatial.blend_mode;
-
-	}
-#endif
 	//material parameters
 
 	state.scene_shader.set_custom_shader(p_material->shader->custom_code_id);
@@ -3007,16 +2966,6 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				li->light_index = state.spot_light_count;
 				copymem(&state.spot_array_tmp[li->light_index * state.ubo_light_size], &ubo_data, state.ubo_light_size);
 				state.spot_light_count++;
-
-#if 0
-				if (li->light_ptr->shadow_enabled) {
-					CameraMatrix bias;
-					bias.set_light_bias();
-					Transform modelview=Transform(camera_transform_inverse * li->transform).inverse();
-					li->shadow_projection[0] = bias * li->projection * modelview;
-					lights_use_shadow=true;
-				}
-#endif
 			} break;
 		}
 
