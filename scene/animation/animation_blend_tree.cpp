@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_blend_tree.h"
+
 #include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
@@ -717,21 +718,6 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 	ERR_FAIL_INDEX_V(p_input, MAX_INPUTS, String());
 	return inputs[p_input].name;
 }
-
-#if 0
-	Ref<AnimationNodeBlendTree> tree = get_parent();
-
-	if (tree.is_valid() && current >= 0) {
-		prev = current;
-		prev_xfading = xfade;
-		time = 0;
-		current = p_current;
-		switched = true;
-		_change_notify("current");
-	} else {
-		current = p_current;
-	}
-#endif
 
 void AnimationNodeTransition::set_cross_fade_time(float p_fade) {
 	xfade = p_fade;

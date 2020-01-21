@@ -1550,10 +1550,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				OPCODE_BREAK;
 			}
 
-// Enable for debugging
-#if 0
+#if 0 // Enable for debugging.
 			default: {
-
 				err_text = "Illegal opcode " + itos(_code_ptr[ip]) + " at address " + itos(ip);
 				OPCODE_BREAK;
 			}

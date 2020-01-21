@@ -4838,25 +4838,6 @@ struct _AnimMoveRestore {
 
 void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
-
-#if 0
-		// going back seems like the most comfortable thing to do, but it results
-		// in weird behaviors and crashes, because going back to animation editor
-		// triggers the editor setting up again itself
-
-		bool go_back = false;
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
-			EditorNode::get_singleton()->push_item(NULL);
-			go_back = true;
-		}
-
-		memdelete(key_edit);
-		key_edit = NULL;
-
-		if (go_back) {
-			EditorNode::get_singleton()->get_inspector_dock()->go_back();
-		}
-#else
 		//if key edit is the object being inspected, remove it first
 		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit ||
 				EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
@@ -4871,7 +4852,6 @@ void AnimationTrackEditor::_clear_key_edit() {
 			memdelete(multi_key_edit);
 			multi_key_edit = NULL;
 		}
-#endif
 	}
 }
 

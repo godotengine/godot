@@ -339,8 +339,6 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-#if 1
-
 	Size2 win_size = OS::get_singleton()->get_window_size();
 	if (rt->external.fbo != 0) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
@@ -350,21 +348,6 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-#else
-	canvas->canvas_begin();
-	glDisable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, rt->color);
-	//glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[0].color);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
-
-	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
-	glBindTexture(GL_TEXTURE_2D, 0);
-	canvas->canvas_end();
-#endif
 }
 
 void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {

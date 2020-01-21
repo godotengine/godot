@@ -474,69 +474,6 @@ void SpriteEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) 
 	p_new_node->set_owner(this->get_tree()->get_edited_scene_root());
 }
 
-#if 0
-void SpriteEditor::_create_uv_lines() {
-
-	Ref<Mesh> sprite = node->get_sprite();
-	ERR_FAIL_COND(!sprite.is_valid());
-
-	Set<SpriteEditorEdgeSort> edges;
-	uv_lines.clear();
-	for (int i = 0; i < sprite->get_surface_count(); i++) {
-		if (sprite->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
-			continue;
-		Array a = sprite->surface_get_arrays(i);
-
-		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.size() == 0) {
-			err_dialog->set_text(TTR("Model has no UV in this layer"));
-			err_dialog->popup_centered_minsize();
-			return;
-		}
-
-		PoolVector<Vector2>::Read r = uv.read();
-
-		PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
-		PoolVector<int>::Read ri;
-
-		int ic;
-		bool use_indices;
-
-		if (indices.size()) {
-			ic = indices.size();
-			ri = indices.read();
-			use_indices = true;
-		} else {
-			ic = uv.size();
-			use_indices = false;
-		}
-
-		for (int j = 0; j < ic; j += 3) {
-
-			for (int k = 0; k < 3; k++) {
-
-				SpriteEditorEdgeSort edge;
-				if (use_indices) {
-					edge.a = r[ri[j + k]];
-					edge.b = r[ri[j + ((k + 1) % 3)]];
-				} else {
-					edge.a = r[j + k];
-					edge.b = r[j + ((k + 1) % 3)];
-				}
-
-				if (edges.has(edge))
-					continue;
-
-				uv_lines.push_back(edge.a);
-				uv_lines.push_back(edge.b);
-				edges.insert(edge);
-			}
-		}
-	}
-
-	debug_uv_dialog->popup_centered_minsize();
-}
-#endif
 void SpriteEditor::_debug_uv_draw() {
 
 	Ref<Texture> tex = node->get_texture();

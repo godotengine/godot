@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "voxel_light_baker.h"
+
 #include "core/os/os.h"
 #include "core/os/threaded_array_processor.h"
 
@@ -2118,8 +2119,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			}
 		}
 
-// Enable for debugging
-#if 0
+#if 0 // Enable for debugging.
 		{
 			PoolVector<uint8_t> img;
 			int ls = lightmap.size();
