@@ -3055,7 +3055,7 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 }
 
 void TileSetEditor::add_texture(Ref<Texture> p_texture) {
-	texture_list->add_item(p_texture->get_path().get_file());
+	texture_list->add_item(p_texture->get_path().get_file().get_basename());
 	texture_map.insert(p_texture->get_rid(), p_texture);
 	texture_list->set_item_metadata(texture_list->get_item_count() - 1, p_texture->get_rid());
 }
