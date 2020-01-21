@@ -266,7 +266,7 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
 	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::REAL, "value")));
-	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::REAL, "value")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min_value"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_value"), "set_max", "get_max");
