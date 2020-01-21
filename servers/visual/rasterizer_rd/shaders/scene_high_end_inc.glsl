@@ -58,7 +58,7 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	uint directional_light_count;
 	float dual_paraboloid_side;
 	float z_far;
-	uint pad0;
+	float z_near;
 
 #if 0
 	vec4 ambient_light_color;
@@ -118,11 +118,6 @@ struct InstanceData {
 	uint instance_ofs; //instance_offset in instancing/skeleton buffer
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap)
 	uint layer_mask;
-
-	uint reflection_probe_indices[4];
-	uint omni_light_indices[4];
-	uint spot_light_indices[4];
-	uint decal_indices[4];
 };
 
 layout(set = 0, binding = 4, std430) buffer Instances {
@@ -205,6 +200,16 @@ layout(set = 0, binding = 8, std140) uniform GIProbes {
 } gi_probes;
 
 layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
+
+#define CLUSTER_COUNTER_SHIFT 20
+#define CLUSTER_POINTER_MASK ((1 << CLUSTER_COUNTER_SHIFT) - 1)
+#define CLUSTER_COUNTER_MASK 0xfff
+
+layout(set = 0, binding = 10) uniform utexture3D cluster_texture;
+
+layout(set = 0, binding = 11, std430) buffer ClusterData {
+	uint indices[];
+} cluster_data;
 
 /* Set 1, Scene data that changes per render pass */
 

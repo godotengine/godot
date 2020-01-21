@@ -35,14 +35,14 @@
 #include "core/thread_work_pool.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_canvas_rd.h"
-#include "servers/visual/rasterizer_rd/rasterizer_scene_forward_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_scene_high_end_rd.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 
 class RasterizerRD : public Rasterizer {
 protected:
 	RasterizerCanvasRD *canvas;
 	RasterizerStorageRD *storage;
-	RasterizerSceneForwardRD *scene;
+	RasterizerSceneHighEndRD *scene;
 
 	RID copy_viewports_rd_shader;
 	RID copy_viewports_rd_pipeline;

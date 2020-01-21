@@ -167,5 +167,5 @@ RasterizerRD::RasterizerRD() {
 	time = 0;
 	storage = memnew(RasterizerStorageRD);
 	canvas = memnew(RasterizerCanvasRD(storage));
-	scene = memnew(RasterizerSceneForwardRD(storage));
+	scene = memnew(RasterizerSceneHighEndRD(storage));
 }

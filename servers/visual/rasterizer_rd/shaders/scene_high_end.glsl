@@ -5,7 +5,7 @@
 
 VERSION_DEFINES
 
-#include "scene_forward_inc.glsl"
+#include "scene_high_end_inc.glsl"
 
 /* INPUT ATTRIBS */
 
@@ -276,7 +276,7 @@ VERTEX_SHADER_CODE
 
 VERSION_DEFINES
 
-#include "scene_forward_inc.glsl"
+#include "scene_high_end_inc.glsl"
 
 /* Varyings */
 
@@ -1236,9 +1236,7 @@ void main() {
 
 	float normaldepth = 1.0;
 
-#if defined(SCREEN_UV_USED)
 	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
-#endif
 
 	float sss_strength = 0.0;
 
@@ -1394,23 +1392,20 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif
+
+	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]),vec3(screen_uv,(abs(vertex.z)-scene_data.z_near)/(scene_data.z_far-scene_data.z_near)));
+
 	{ // process reflections
 
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
-		uint reflection_probe_count = instances.data[instance_index].flags & INSTANCE_FLAGS_FORWARD_MASK;
+		uint reflection_probe_count = cluster_cell.z >> CLUSTER_COUNTER_SHIFT;
+		uint reflection_probe_pointer = cluster_cell.z & CLUSTER_POINTER_MASK;
 
 		for (uint i = 0; i < reflection_probe_count; i++) {
 
-			uint ref_index = instances.data[instance_index].reflection_probe_indices[i >> 1];
-
-			if (bool(i & 1)) {
-				ref_index >>= 16;
-			} else {
-				ref_index &= 0xFFFF;
-			}
-
+			uint ref_index = cluster_data.indices[reflection_probe_pointer + i];
 			reflection_process(ref_index, vertex, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
@@ -1527,21 +1522,17 @@ FRAGMENT_SHADER_CODE
 	}
 
 	{ //omni lights
-		uint omni_light_count = (instances.data[instance_index].flags >> INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT) & INSTANCE_FLAGS_FORWARD_MASK;
+
+		uint omni_light_count = cluster_cell.x >> CLUSTER_COUNTER_SHIFT;
+		uint omni_light_pointer = cluster_cell.x & CLUSTER_POINTER_MASK;
+
 		for (uint i = 0; i < omni_light_count; i++) {
 
-			uint light_index = instances.data[instance_index].omni_light_indices[i >> 1];
+			uint light_index = cluster_data.indices[omni_light_pointer + i];
 
-			if (bool(i & 1)) {
-				light_index >>= 16;
-			} else {
-				light_index &= 0xFFFF;
+			if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
+				continue; //not masked
 			}
-
-			//this is done on CPU, so no need to do it here
-			//if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
-			//	continue; //not masked
-			//}
 
 			light_process_omni(light_index, vertex, view, normal, albedo, roughness, metallic, specular, specular_blob_intensity,
 #ifdef LIGHT_TRANSMISSION_USED
@@ -1565,21 +1556,16 @@ FRAGMENT_SHADER_CODE
 	}
 
 	{ //spot lights
-		uint spot_light_count = (instances.data[instance_index].flags >> INSTANCE_FLAGS_FORWARD_SPOT_LIGHT_SHIFT) & INSTANCE_FLAGS_FORWARD_MASK;
+		uint spot_light_count = cluster_cell.y >> CLUSTER_COUNTER_SHIFT;
+		uint spot_light_pointer = cluster_cell.y & CLUSTER_POINTER_MASK;
+
 		for (uint i = 0; i < spot_light_count; i++) {
 
-			uint light_index = instances.data[instance_index].spot_light_indices[i >> 1];
+			uint light_index = cluster_data.indices[spot_light_pointer + i];
 
-			if (bool(i & 1)) {
-				light_index >>= 16;
-			} else {
-				light_index &= 0xFFFF;
+			if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
+				continue; //not masked
 			}
-
-			//this is done on CPU, so no need to do it here
-			//if (!bool(lights.data[light_index].mask&instances.data[instance_index].layer_mask)) {
-			//	continue; //not masked
-			//}
 
 			light_process_spot(light_index, vertex, view, normal, albedo, roughness, metallic, specular, specular_blob_intensity,
 #ifdef LIGHT_TRANSMISSION_USED

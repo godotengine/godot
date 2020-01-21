@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_SCENE_FORWARD_RD_H
-#define RASTERIZER_SCENE_FORWARD_RD_H
+#ifndef RASTERIZER_SCENE_HIGHEND_RD_H
+#define RASTERIZER_SCENE_HIGHEND_RD_H
 
+#include "servers/visual/rasterizer_rd/light_cluster_builder.h"
 #include "servers/visual/rasterizer_rd/rasterizer_scene_rd.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/visual/rasterizer_rd/shaders/scene_forward.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/scene_high_end.glsl.gen.h"
 
-class RasterizerSceneForwardRD : public RasterizerSceneRD {
+class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 	/* Shader */
 
@@ -56,7 +57,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	};
 
 	struct {
-		SceneForwardShaderRD scene_shader;
+		SceneHighEndShaderRD scene_shader;
 		ShaderCompilerRD compiler;
 	} shader;
 
@@ -151,7 +152,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	RasterizerStorageRD::ShaderData *_create_shader_func();
 	static RasterizerStorageRD::ShaderData *_create_shader_funcs() {
-		return static_cast<RasterizerSceneForwardRD *>(singleton)->_create_shader_func();
+		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_shader_func();
 	}
 
 	struct MaterialData : public RasterizerStorageRD::MaterialData {
@@ -173,7 +174,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	RasterizerStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
 	static RasterizerStorageRD::MaterialData *_create_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
-		return static_cast<RasterizerSceneForwardRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
 	}
 
 	/* Push Constant */
@@ -282,11 +283,6 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		uint32_t instance_ofs; //instance_offset in instancing/skeleton buffer
 		uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap)
 		uint32_t mask;
-
-		uint16_t reflection_probe_indices[8];
-		uint16_t omni_light_indices[8];
-		uint16_t spot_light_indices[8];
-		uint16_t decal_indices[8];
 	};
 
 	struct SceneState {
@@ -321,7 +317,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 			uint32_t directional_light_count;
 			float dual_paraboloid_side;
 			float z_far;
-			uint32_t pad[1];
+			float z_near;
 		};
 
 		UBO ubo;
@@ -497,7 +493,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	RenderList render_list;
 
-	static RasterizerSceneForwardRD *singleton;
+	static RasterizerSceneHighEndRD *singleton;
 	uint64_t render_pass;
 	double time;
 	RID default_shader;
@@ -511,6 +507,8 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
+	LightClusterBuilder cluster_builder;
+
 	enum PassMode {
 		PASS_MODE_COLOR,
 		PASS_MODE_COLOR_SPECULAR,
@@ -523,7 +521,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		PASS_MODE_DEPTH_MATERIAL,
 	};
 
-	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color);
+	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
 	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
@@ -547,7 +545,7 @@ public:
 
 	virtual bool free(RID p_rid);
 
-	RasterizerSceneForwardRD(RasterizerStorageRD *p_storage);
-	~RasterizerSceneForwardRD();
+	RasterizerSceneHighEndRD(RasterizerStorageRD *p_storage);
+	~RasterizerSceneHighEndRD();
 };
-#endif // RASTERIZER_SCENE_FORWARD_RD_H
+#endif // RASTERIZER_SCENE_HIGHEND_RD_H
