@@ -828,8 +828,8 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
 
-	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f == NULL, "Cannot open file from path '" + fpath + "'.");
+	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
+	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + fpath + "'.");
 
 	String buffer;
 	int current_line = 1;
