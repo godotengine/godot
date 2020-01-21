@@ -36,6 +36,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
@@ -197,11 +198,15 @@ public:
 
 FileAccess *PackedData::try_open_path(const String &p_path) {
 
+	bool remap_addons = false;
 #ifdef TOOLS_ENABLED
-	const String &path = p_path;
+	if (ProjectSettings::get_singleton()->is_using_datapack()) {
+		remap_addons = true;
+	}
 #else
-	const String &path = p_path.replace_first("addons://", "res://addons/");
+	remap_addons = true;
 #endif
+	const String &path = remap_addons ? p_path.replace_first("addons://", "res://addons/") : p_path;
 
 	PathMD5 pmd5(path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
@@ -215,11 +220,15 @@ FileAccess *PackedData::try_open_path(const String &p_path) {
 
 bool PackedData::has_path(const String &p_path) {
 
+	bool remap_addons = false;
 #ifdef TOOLS_ENABLED
-	const String &path = p_path;
+	if (ProjectSettings::get_singleton()->is_using_datapack()) {
+		remap_addons = true;
+	}
 #else
-	const String &path = p_path.replace_first("addons://", "res://addons/");
+	remap_addons = true;
 #endif
+	const String &path = remap_addons ? p_path.replace_first("addons://", "res://addons/") : p_path;
 
 	return files.has(PathMD5(path.md5_buffer()));
 }

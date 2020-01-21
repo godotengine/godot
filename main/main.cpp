@@ -1660,7 +1660,9 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 #ifdef TOOLS_ENABLED
-			PluginsDB::get_singleton()->scan();
+			if (!ProjectSettings::get_singleton()->is_using_datapack()) {
+				PluginsDB::get_singleton()->scan();
+			}
 #endif
 
 			if (game_path != "" || script != "") {

@@ -204,10 +204,20 @@ public:
 // DIR ACCESS
 //////////////////////////////////////////////////////////////////////////////////
 
-template <class T>
-class DirAccessResources : public PathAccessResources<T> {
-	bool at_addons_root;
+/*
+ * NOTE: DirAccessResources adds further abstraction, to make it possible to jump
+ * between packed and non-packed locations. That makes it much easier for consumers
+ * to browse the file system, seamlessly jumping between directories.
+ * For instance, that's useful for the editor file scan and the file dialog.
+ */
 
+template <class T>
+class DirAccessResources : public PathAccessResources<DirAccess> {
+	DirAccess *da_normal;
+	DirAccess *da_packed;
+	DirAccess *current_da; // NULL means we are at addons:// root
+
+	// For directory listing
 	enum ListingMode {
 		LISTING_MODE_NONE,
 		LISTING_MODE_PASS_THROUGH,
@@ -215,9 +225,8 @@ class DirAccessResources : public PathAccessResources<T> {
 		LISTING_MODE_ADDONS_FS_ROOT,
 		LISTING_MODE_ADDONS_FS_SUBDIR_OR_BELOW,
 	} listing_mode;
-
-	Vector<String> fake_subdir_list;
-	String listing_dir;
+	DirAccess *listing_da;
+	Vector<String> addons_fs_children;
 	Vector<String> editor_only_paths;
 	bool current_item_is_dir;
 	bool current_item_is_hidden;
@@ -240,6 +249,58 @@ protected:
 		return get_current_dir();
 	}
 
+	String _resolve_full_path(const String &p_path, bool p_da_depends_on_parent, DirAccess **r_relevant_da_impl) {
+
+		String full_path;
+		if (p_path.get_filesystem_prefix() != "") {
+			full_path = p_path;
+		} else if (p_path.begins_with("/")) {
+			full_path = get_current_dir().get_filesystem_prefix().plus_file(p_path);
+		} else {
+			Vector<String> resolved_parts = get_current_dir_without_drive().split("/", false);
+			Vector<String> rel_parts = p_path.split("/", false);
+
+			for (int i = 0; i < rel_parts.size(); ++i) {
+				if (rel_parts[i] == ".") {
+					continue;
+				}
+				if (rel_parts[i] == "..") {
+					if (resolved_parts.size() != 0) {
+						resolved_parts.resize(resolved_parts.size() - 1);
+					} else {
+						return ""; // Invalid
+					}
+				} else {
+					resolved_parts.push_back(rel_parts[i]);
+				}
+			}
+
+			full_path = get_current_dir().get_filesystem_prefix().plus_file(String("/").join(resolved_parts));
+		}
+
+		String full_path_for_da;
+		if (p_da_depends_on_parent) {
+			int p = full_path.trim_suffix("/").find_last("/");
+			full_path_for_da = full_path.left(p);
+		} else {
+			full_path_for_da = full_path;
+		}
+
+		if (full_path_for_da == "addons://") {
+			*r_relevant_da_impl = NULL;
+		} else if (full_path_for_da.begins_with("addons://")) {
+			if (AddonsFileSystemManager::get_singleton()->is_path_packed(full_path_for_da)) {
+				*r_relevant_da_impl = da_packed;
+			} else {
+				*r_relevant_da_impl = da_normal;
+			}
+		} else {
+			*r_relevant_da_impl = da_normal;
+		}
+
+		return full_path;
+	}
+
 public:
 	virtual Error list_dir_begin() {
 
@@ -250,11 +311,11 @@ public:
 		ListingMode intended_listing_mode = LISTING_MODE_NONE;
 		Error result = OK;
 
-		if (at_addons_root) {
-			AddonsFileSystemManager::get_singleton()->get_all_subdirectories(&fake_subdir_list);
+		if (!current_da) {
+			AddonsFileSystemManager::get_singleton()->get_all_subdirectories(&addons_fs_children);
 			intended_listing_mode = LISTING_MODE_ADDONS_FS_ROOT;
 		} else if (get_current_dir() == "res://addons") {
-			result = T::list_dir_begin();
+			result = da_normal->list_dir_begin();
 			if (result == OK) {
 				intended_listing_mode = LISTING_MODE_RES_ADDONS;
 			}
@@ -265,18 +326,26 @@ public:
 				if (parts.size() >= 1) {
 					PluginsDB::PluginInfo info;
 					if (PluginsDB::get_singleton()->get_plugin_info(parts[0], &info)) {
-						intended_listing_mode = LISTING_MODE_ADDONS_FS_SUBDIR_OR_BELOW;
-						listing_dir = get_current_dir();
 						if (Engine::get_singleton()->is_editor_hint()) {
-							Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
-							if (show_editor_only_plugins.find(parts[0]) == -1) {
+							if (info.is_pack) {
 								editor_only_paths = info.editor_only_paths;
+							} else {
+								Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
+								if (show_editor_only_plugins.find(parts[0]) == -1) {
+									editor_only_paths = info.editor_only_paths;
+								}
 							}
 						}
+						intended_listing_mode = LISTING_MODE_ADDONS_FS_SUBDIR_OR_BELOW;
+						listing_da = current_da;
 					}
 				}
 			}
-			result = T::list_dir_begin();
+			if (listing_da) {
+				result = listing_da->list_dir_begin();
+			} else {
+				result = current_da->list_dir_begin();
+			}
 		}
 
 		// This must be set after calling superclass' list_dir_begin() since it may call list_dir_end()
@@ -295,10 +364,9 @@ public:
 			} break;
 
 			case LISTING_MODE_PASS_THROUGH: {
-				String f = T::get_next();
-				result = f;
-				current_item_is_dir = T::current_is_dir();
-				current_item_is_hidden = T::current_is_hidden();
+				result = da_normal->get_next();
+				current_item_is_dir = da_normal->current_is_dir();
+				current_item_is_hidden = da_normal->current_is_hidden();
 			} break;
 
 			case LISTING_MODE_RES_ADDONS: {
@@ -306,8 +374,8 @@ public:
 				String f;
 				do {
 					skip = false;
-					f = T::get_next();
-					if (f != "" && T::current_is_dir()) {
+					f = da_normal->get_next();
+					if (f != "" && da_normal->current_is_dir()) {
 						// Consider res://addons/<subdir> inexistent if is a new model plugin
 						if (PluginsDB::get_singleton()->has_universal_plugin(f)) {
 							skip = true;
@@ -315,14 +383,14 @@ public:
 					}
 				} while (skip);
 				result = f;
-				current_item_is_dir = T::current_is_dir();
-				current_item_is_hidden = T::current_is_hidden();
+				current_item_is_dir = da_normal->current_is_dir();
+				current_item_is_hidden = da_normal->current_is_hidden();
 			} break;
 
 			case LISTING_MODE_ADDONS_FS_ROOT: {
-				if (fake_subdir_list.size()) {
-					String subdir = fake_subdir_list[0];
-					fake_subdir_list.remove(0);
+				if (addons_fs_children.size()) {
+					String subdir = addons_fs_children[0];
+					addons_fs_children.remove(0);
 					result = subdir;
 					current_item_is_dir = true;
 					current_item_is_hidden = AddonsFileSystemManager::get_singleton()->is_subdirectory_hidden(subdir);
@@ -330,10 +398,13 @@ public:
 			} break;
 
 			case LISTING_MODE_ADDONS_FS_SUBDIR_OR_BELOW: {
-				String f = T::get_next();
+				String f = listing_da->get_next();
 				result = f;
-				current_item_is_dir = T::current_is_dir();
-				current_item_is_hidden = T::current_is_hidden() || PluginsDB::get_singleton()->is_editor_only_path(listing_dir.plus_file(f), &editor_only_paths);
+				current_item_is_dir = listing_da->current_is_dir();
+				current_item_is_hidden = listing_da->current_is_hidden();
+				if (!current_item_is_hidden) {
+					current_item_is_hidden = PluginsDB::get_singleton()->is_editor_only_path(unfix_path(listing_da->get_current_dir()).plus_file(f), &editor_only_paths);
+				}
 			}
 		}
 
@@ -348,20 +419,21 @@ public:
 			} break;
 
 			case LISTING_MODE_PASS_THROUGH: {
-				T::list_dir_end();
+				da_normal->list_dir_end();
 			} break;
 
 			case LISTING_MODE_RES_ADDONS: {
-				T::list_dir_end();
+				da_normal->list_dir_end();
 			} break;
 
 			case LISTING_MODE_ADDONS_FS_ROOT: {
-				fake_subdir_list.clear();
+				addons_fs_children.clear();
 			} break;
 
 			case LISTING_MODE_ADDONS_FS_SUBDIR_OR_BELOW: {
-				T::list_dir_end();
-				listing_dir = "";
+				listing_da->list_dir_end();
+				listing_da = NULL;
+
 				editor_only_paths = Vector<String>();
 			}
 		}
@@ -400,57 +472,37 @@ public:
 
 	virtual Error change_dir(String p_dir) {
 
-		if (p_dir == ".") {
+		DirAccess *new_da = NULL;
+		String new_dir = _resolve_full_path(p_dir, false, &new_da);
+		if (new_dir == "") {
+			return ERR_INVALID_PARAMETER;
+		}
+
+		if (!new_da) {
+			current_da = NULL;
 			return OK;
 		}
 
-		if (p_dir == ".." && get_current_dir().begins_with("addons://")) {
-			int level = get_current_dir_without_drive().split("/", false).size();
-			if (level == 1) {
-				at_addons_root = true;
-				return OK;
-			}
+		Error err = new_da->change_dir(fix_path(new_dir));
+		if (err == OK) {
+			current_da = new_da;
 		}
 
-		if (p_dir.is_abs_path()) {
-			if (p_dir == "addons://" || at_addons_root && p_dir == "/") {
-				at_addons_root = true;
-				return OK;
-			}
-		} else {
-			if (at_addons_root) {
-				p_dir = String("addons://").plus_file(p_dir);
-			}
-		}
-
-		Error result = T::change_dir(p_dir);
-		if (result == OK) {
-			at_addons_root = false;
-		}
-		return result;
+		return err;
 	}
 
 	virtual String get_current_dir() {
 
-		if (at_addons_root) {
+		if (!current_da) {
 			return "addons://";
 		} else {
-			return T::get_current_dir();
+			return unfix_path(current_da->get_current_dir());
 		}
 	}
 
 	virtual String get_current_dir_without_drive() {
 
-		if (at_addons_root) {
-			return "/";
-		} else {
-			String d = T::get_current_dir();
-			int p = d.find("://");
-			if (p == -1) {
-				return d;
-			}
-			return d.right(p + 2); // Keep the leading /
-		}
+		return "/" + get_current_dir().strip_filesystem_prefix();
 	}
 
 	virtual Error make_dir(String p_dir) {
@@ -460,7 +512,18 @@ public:
 			return result;
 		}
 
-		return T::make_dir(p_dir);
+		DirAccess *relevant_da = NULL;
+		String full_dir = _resolve_full_path(p_dir, true, &relevant_da);
+		if (full_dir == "") {
+			return ERR_INVALID_PARAMETER;
+		}
+		if (relevant_da == NULL) {
+			return ERR_UNAVAILABLE;
+		} else if (relevant_da == da_packed) {
+			return ERR_CANT_CREATE;
+		} else { // da_normal
+			return relevant_da->make_dir(fix_path(full_dir));
+		}
 	}
 
 	virtual bool file_exists(String p_file) {
@@ -469,7 +532,16 @@ public:
 			return false;
 		}
 
-		return T::file_exists(p_file);
+		DirAccess *relevant_da = NULL;
+		String full_path = _resolve_full_path(p_file, true, &relevant_da);
+		if (full_path == "") {
+			return false;
+		}
+		if (!relevant_da) {
+			return false;
+		} else {
+			return relevant_da->file_exists(fix_path(full_path));
+		}
 	}
 
 	virtual bool dir_exists(String p_dir) {
@@ -482,7 +554,13 @@ public:
 			return false;
 		}
 
-		return T::dir_exists(p_dir);
+		DirAccess *relevant_da = NULL;
+		String full_dir = _resolve_full_path(p_dir, false, &relevant_da);
+		if (full_dir == "") {
+			return false;
+		}
+		ERR_FAIL_COND_V(!relevant_da, false);
+		return relevant_da->dir_exists(fix_path(full_dir));
 	}
 
 	virtual Error rename(String p_from, String p_to) {
@@ -494,7 +572,25 @@ public:
 			return result;
 		}
 
-		return T::rename(p_from, p_to);
+		DirAccess *relevant_da_from = NULL;
+		String full_path_from = _resolve_full_path(p_from, false, &relevant_da_from);
+		if (full_path_from == "") {
+			return ERR_INVALID_PARAMETER;
+		}
+		ERR_FAIL_COND_V(!relevant_da_from, ERR_BUG);
+
+		DirAccess *relevant_da_to = NULL;
+		String full_path_to = _resolve_full_path(p_to, false, &relevant_da_to);
+		if (full_path_to == "") {
+			return ERR_INVALID_PARAMETER;
+		}
+		ERR_FAIL_COND_V(!relevant_da_to, ERR_BUG);
+
+		if (relevant_da_from != relevant_da_to) {
+			return ERR_UNAVAILABLE;
+		}
+
+		return relevant_da_from->rename(fix_path(p_from), fix_path(p_to));
 	}
 
 	virtual Error remove(String p_name) {
@@ -504,22 +600,48 @@ public:
 			return result;
 		}
 
-		return T::remove(p_name);
+		DirAccess *relevant_da = NULL;
+		String full_path = _resolve_full_path(p_name, false, &relevant_da);
+		if (full_path == "") {
+			return ERR_INVALID_PARAMETER;
+		}
+		ERR_FAIL_COND_V(!relevant_da, ERR_BUG);
+		return relevant_da->remove(fix_path(p_name));
 	}
 
 	virtual String get_filesystem_type() const {
 
-		if (at_addons_root) {
+		if (!current_da) {
 			return "ADDONS";
 		} else {
-			return T::get_filesystem_type();
+			return current_da->get_filesystem_type();
+		}
+	}
+
+	virtual size_t get_space_left() {
+
+		if (!current_da) {
+			return 0;
+		} else {
+			return current_da->get_space_left();
 		}
 	}
 
 	DirAccessResources() :
-			at_addons_root(false),
+			da_normal(memnew(T)),
+			da_packed(memnew(DirAccessPack)),
+			current_da(da_normal),
 			listing_mode(LISTING_MODE_NONE),
-			current_item_is_hidden(false) {}
+			listing_da(NULL),
+			current_item_is_dir(false),
+			current_item_is_hidden(false) {
+	}
+
+	~DirAccessResources() {
+
+		memdelete(da_normal);
+		memdelete(da_packed);
+	}
 };
 
 #else // TOOLS_ENABLED

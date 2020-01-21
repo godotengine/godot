@@ -30,7 +30,6 @@
 
 #include "editor_file_system.h"
 
-#include "core/io/file_access_pack.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -692,12 +691,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 		if (da->current_is_hidden())
 			continue;
 
-		// Since we are using DirAccessPack rather than DirAccessResources, we need this check
-		// (luckily, here it's easy because editor-only paths in PCK plugins) are always hidden
-		if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && PluginsDB::get_singleton()->is_editor_only_path(cd.plus_file(f))) {
-			continue;
-		}
-
 		if (da->current_is_dir()) {
 
 			if (f.begins_with(".")) // Ignore UNIX style hidden and . / ..
@@ -726,38 +719,21 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 	for (List<String>::Element *E = dirs.front(); E; E = E->next(), idx++) {
 
-		Error err;
-		DirAccess *da_packed = NULL;
-		String new_dir = cd.plus_file(E->get());
-		if (!AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && AddonsFileSystemManager::get_singleton()->is_path_packed(new_dir)) {
-			// Switch to packed for this directory and all its descendants
-			da_packed = PackedData::get_singleton()->try_open_directory(new_dir);
-			err = da_packed ? OK : ERR_CANT_OPEN;
-		} else {
-			err = da->change_dir(E->get());
-		}
+		if (da->change_dir(E->get()) == OK) {
 
-		if (err == OK) {
+			String d = da->get_current_dir();
 
-			bool should_process = true;
-			if (!da_packed) {
-				String d = da->get_current_dir();
-
-				if (d == cd || !d.begins_with(cd)) {
-					// Avoid recursion
-					da->change_dir(cd);
-					should_process = false;
-				}
-			}
-
-			if (should_process) {
+			if (d == cd || !d.begins_with(cd)) {
+				da->change_dir(cd); //avoid recursion
+			} else {
 
 				EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
+				bool packed = da->get_filesystem_type() == "PCK";
 				efd->parent = p_dir;
 				efd->name = E->get();
 
-				_scan_new_dir(efd, da_packed ? da_packed : da, p_progress.get_sub(idx, total));
+				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
 
 				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -772,11 +748,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 					p_dir->subdirs.insert(idx2, efd);
 				}
 
-				if (!da_packed) {
-					da->change_dir("..");
-				} else {
-					memdelete(da_packed);
-				}
+				da->change_dir("..");
 			}
 		} else {
 			ERR_PRINTS("Cannot go into subdir '" + E->get() + "'.");
@@ -913,17 +885,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 		//then scan files and directories and check what's different
 
-		DirAccess *da;
-		if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd)) {
-			da = PackedData::get_singleton()->try_open_directory(cd);
-		} else {
-			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (da->change_dir(cd) != OK) {
-				memdelete(da);
-				da = NULL;
-			}
-		}
-		if (!da) {
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da->change_dir(cd) != OK) {
+			memdelete(da);
 			ERR_PRINTS("Cannot go into dir: " + cd);
 			return;
 		}
@@ -937,12 +901,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 			if (da->current_is_hidden())
 				continue;
-
-			// Since we are using DirAccessPack rather than DirAccessResources, we need this check
-			// (luckily, here it's easy because editor-only paths in PCK plugins) are always hidden
-			if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && PluginsDB::get_singleton()->is_editor_only_path(cd.plus_file(f))) {
-				continue;
-			}
 
 			if (da->current_is_dir()) {
 
@@ -962,17 +920,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					efd->parent = p_dir;
 					efd->name = f;
 
-					DirAccess *d;
-					if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd.plus_file(f))) {
-						d = PackedData::get_singleton()->try_open_directory(cd.plus_file(f));
-					} else {
-						d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-						if (d->change_dir(cd.plus_file(f)) != OK) {
-							memdelete(d);
-							d = NULL;
-						}
-					}
-					if (!d) {
+					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+					if (d->change_dir(cd.plus_file(f)) != OK) {
+						memdelete(d);
+						d = NULL;
 						ERR_PRINTS("Cannot go into dir: " + f);
 						continue;
 					}
