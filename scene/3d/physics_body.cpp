@@ -1323,7 +1323,7 @@ bool KinematicBody::separate_raycast_shapes(bool p_infinite_inertia, Collision &
 	Vector3 recover;
 	int hits = PhysicsServer::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
 	int deepest = -1;
-	float deepest_depth;
+	float deepest_depth = 0.f;
 	for (int i = 0; i < hits; i++) {
 		if (deepest == -1 || sep_res[i].collision_depth > deepest_depth) {
 			deepest = i;
