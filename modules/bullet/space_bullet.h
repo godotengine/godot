@@ -188,8 +188,8 @@ public:
 	real_t get_linear_damp() const { return linear_damp; }
 	real_t get_angular_damp() const { return angular_damp; }
 
-	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes);
-	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, real_t p_margin);
+	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_motion_result, bool p_exclude_raycast_shapes);
+	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_separation_results, int p_result_max, real_t p_margin);
 
 private:
 	void create_empty_world(bool p_create_soft_world);
@@ -197,27 +197,25 @@ private:
 	void check_ghost_overlaps();
 	void check_body_collision();
 
-	struct RecoverResult {
-		bool hasPenetration = false;
+	struct KinematicCollisionResult {
+		bool isColliding = false;
 		btVector3 normal = btVector3(0, 0, 0);
 		btVector3 pointWorld = btVector3(0, 0, 0);
-		btScalar penetration_distance = 1e20; // Negative mean penetration
+		btScalar penetration_distance = 1e20;
 		int other_compound_shape_index = 0;
 		const btCollisionObject *other_collision_object = nullptr;
 		int local_shape_most_recovered = 0;
 
-		RecoverResult() {}
+		KinematicCollisionResult() {}
 	};
 
-	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);
-	/// This is an API that recover a kinematic object from penetration
-	/// This allow only Convex Convex test and it always use GJK algorithm, With this API we don't benefit of Bullet special accelerated functions
-	bool RFP_convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);
-	/// This is an API that recover a kinematic object from penetration
-	/// Using this we leave Bullet to select the best algorithm, For example GJK in case we have Convex Convex, or a Bullet accelerated algorithm
-	bool RFP_convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);
+	bool kinematic_collision_test(RigidBodyBullet *p_body, const btTransform &p_body_position, bool p_infinite_inertia, btVector3 &r_recover_motion, KinematicCollisionResult *r_collision_result = nullptr);
+	// Uses GJK algorithm to determine the collision between two convex shapes.
+	bool convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btVector3 &r_recover_motion, KinematicCollisionResult *r_collision_result = nullptr);
+	// Allows Bullet to select the best algorithm to determine the collision between two shapes.
+	bool convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btVector3 &r_recover_motion, KinematicCollisionResult *r_collision_result = nullptr);
 
-	int add_separation_result(PhysicsServer3D::SeparationResult *r_results, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const;
-	int recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer3D::SeparationResult *r_results);
+	int kinematic_ray_separation(RigidBodyBullet *p_body, const btTransform &p_body_position, bool p_infinite_inertia, int p_result_max, btVector3 &r_recover_movement, PhysicsServer3D::SeparationResult *r_separation_results);
+	int add_separation_result(const SpaceBullet::KinematicCollisionResult &p_collision_result, int p_shape_id, const btCollisionObject *p_other_object, PhysicsServer3D::SeparationResult *r_separation_results) const;
 };
 #endif
