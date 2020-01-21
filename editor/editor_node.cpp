@@ -3562,6 +3562,7 @@ void EditorNode::_instance_request(const Vector<String> &p_files) {
 void EditorNode::_export_plugin_request(const String &p_plugin_path) {
 
 	file_export_plugin->set_meta("plugin_path", p_plugin_path);
+	file_export_plugin->get_line_edit()->set_text(p_plugin_path.get_file() + ".pck");
 	file_export_plugin->popup_centered_ratio();
 }
 
@@ -6695,6 +6696,7 @@ EditorNode::EditorNode() {
 	file_export_plugin->set_title(TTR("Export Plugin"));
 	file_export_plugin->add_filter("*.pck");
 	file_export_plugin->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_export_plugin->get_line_edit()->set_editable(false);
 	file_export_plugin->connect("file_selected", this, "_export_plugin_confirmed");
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);

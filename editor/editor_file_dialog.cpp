@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "dependency_editor.h"
+#include "editor/addons_fs_manager.h"
 #include "editor_file_system.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
@@ -155,11 +156,15 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/create_folder", p_event)) {
-				_make_dir();
+				if (!AddonsFileSystemManager::get_singleton()->is_path_read_only(dir_access->get_current_dir())) {
+					_make_dir();
+				}
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/delete", p_event)) {
-				_delete_items();
+				if (makedir->is_visible() && !makedir->is_disabled()) {
+					_delete_items();
+				}
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
@@ -224,6 +229,8 @@ void EditorFileDialog::update_dir() {
 			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
 	}
+
+	makedir->set_disabled(AddonsFileSystemManager::get_singleton()->is_path_read_only(dir_access->get_current_dir()));
 }
 
 void EditorFileDialog::_dir_entered(String p_dir) {
@@ -598,6 +605,10 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			allow_delete = false;
 			break;
 		}
+		if (AddonsFileSystemManager::get_singleton()->is_path_read_only(item_meta["path"])) {
+			allow_delete = false;
+			break;
+		}
 	}
 
 	if (single_item_selected) {
@@ -629,7 +640,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	item_menu->clear();
 	item_menu->set_size(Size2(1, 1));
 
-	if (can_create_dir) {
+	if (can_create_dir && !AddonsFileSystemManager::get_singleton()->is_path_read_only(dir_access->get_current_dir())) {
 		item_menu->add_icon_item(get_icon("folder", "FileDialog"), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KEY_MASK_CMD | KEY_N);
 	}
 	item_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
@@ -682,8 +693,10 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 
 bool EditorFileDialog::_is_open_should_be_disabled() {
 
-	if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE)
+	if (mode == MODE_OPEN_ANY)
 		return false;
+	if (mode == MODE_SAVE_FILE)
+		return AddonsFileSystemManager::get_singleton()->is_path_read_only(dir_access->get_current_dir());
 
 	Vector<int> items = item_list->get_selected_items();
 	if (items.size() == 0)
@@ -767,6 +780,7 @@ void EditorFileDialog::update_file_list() {
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
 	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
+	const Color disabled_color = get_color("disabled_font_color", "Editor");
 	List<String> files;
 	List<String> dirs;
 
@@ -807,7 +821,12 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
-		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
+		if (AddonsFileSystemManager::get_singleton()->is_path_packed(d["path"])) {
+			item_list->set_item_icon_modulate(item_list->get_item_count() - 1, disabled_color);
+			item_list->set_item_custom_fg_color(item_list->get_item_count() - 1, disabled_color);
+		} else {
+			item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
+		}
 
 		dirs.pop_front();
 	}
@@ -877,6 +896,10 @@ void EditorFileDialog::update_file_list() {
 			String fullpath = cdir.plus_file(files.front()->get());
 			d["path"] = fullpath;
 			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+
+			if (AddonsFileSystemManager::get_singleton()->is_path_packed(d["path"])) {
+				item_list->set_item_custom_fg_color(item_list->get_item_count() - 1, disabled_color);
+			}
 
 			if (display_mode == DISPLAY_THUMBNAILS) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);

@@ -45,6 +45,9 @@ class EditorFileSystemDirectory : public Object {
 
 	String name;
 	uint64_t modified_time;
+	String note;
+	String tooltip;
+	bool packed;
 	bool verified; //used for checking changes
 
 	EditorFileSystemDirectory *parent;
@@ -81,6 +84,10 @@ class EditorFileSystemDirectory : public Object {
 public:
 	String get_name();
 	String get_path() const;
+
+	String get_note();
+	String get_tooltip();
+	bool is_packed();
 
 	int get_subdir_count() const;
 	EditorFileSystemDirectory *get_subdir(int p_idx);

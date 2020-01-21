@@ -270,6 +270,25 @@ bool PluginsDB::get_plugin_info(const String &p_plugin_name, PluginInfo *r_plugi
 	return true;
 }
 
+String PluginsDB::get_plugin_abstract_path(const String &p_plugin_name) {
+
+	Map<String, PluginInfo>::Element *entry = entries.find(p_plugin_name);
+	if (!entry) {
+		return "";
+	}
+
+	const PluginInfo &pi = entry->get();
+	if (pi.model == 1 || !pi.is_user_level) {
+		return "<project>/addons/" + p_plugin_name + "/";
+	} else {
+		if (pi.is_pack) {
+			return "<godot_settings>/addons/" + pi.location.get_file();
+		} else {
+			return "<godot_settings>/addons/" + p_plugin_name + "/";
+		}
+	}
+}
+
 bool PluginsDB::has_plugin(const String &p_plugin_name) {
 
 	return entries.find(p_plugin_name) != NULL;

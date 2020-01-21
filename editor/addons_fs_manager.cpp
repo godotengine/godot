@@ -162,6 +162,20 @@ bool AddonsFileSystemManager::is_path_packed(const String &p_path) {
 	return subdir->value().is_pack;
 }
 
+bool AddonsFileSystemManager::is_path_read_only(const String &p_path) {
+
+	if (p_path == "addons://") {
+		return true;
+	}
+
+	return is_path_packed(p_path);
+}
+
+bool AddonsFileSystemManager::is_path_or_parent_read_only(const String &p_path) {
+
+	return is_path_read_only(p_path) || is_path_read_only(p_path.trim_suffix("/").get_base_dir());
+}
+
 AddonsFileSystemManager::AddonsFileSystemManager() :
 		has_any_pack(false) {
 

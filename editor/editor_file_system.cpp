@@ -157,6 +157,21 @@ EditorFileSystemDirectory *EditorFileSystemDirectory::get_parent() {
 	return parent;
 }
 
+String EditorFileSystemDirectory::get_note() {
+
+	return note;
+}
+
+String EditorFileSystemDirectory::get_tooltip() {
+
+	return tooltip;
+}
+
+bool EditorFileSystemDirectory::is_packed() {
+
+	return packed;
+}
+
 void EditorFileSystemDirectory::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_subdir_count"), &EditorFileSystemDirectory::get_subdir_count);
@@ -180,6 +195,7 @@ EditorFileSystemDirectory::EditorFileSystemDirectory() {
 	modified_time = 0;
 	parent = NULL;
 	verified = false;
+	packed = false;
 }
 
 EditorFileSystemDirectory::~EditorFileSystemDirectory() {
@@ -729,9 +745,16 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 				EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
-				bool packed = da->get_filesystem_type() == "PCK";
+				bool packed = AddonsFileSystemManager::get_singleton()->is_path_packed(d);
 				efd->parent = p_dir;
 				efd->name = E->get();
+				if (cd == "addons://") {
+					if (packed) {
+						efd->note = "PCK";
+					}
+					efd->tooltip = efd->name + " (" + PluginsDB::get_singleton()->get_plugin_abstract_path(E->get()) + ")";
+				}
+				efd->packed = packed;
 
 				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
 
@@ -908,7 +931,13 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					continue;
 
 				int idx = p_dir->find_dir_index(f);
-				if (idx == -1) {
+				bool packed = AddonsFileSystemManager::get_singleton()->is_path_packed(cd.plus_file(f));
+
+				bool found = idx != -1;
+				bool changed = found && packed != p_dir->subdirs[idx]->is_packed();
+				bool should_create = !found || changed;
+				bool should_remove = found && changed;
+				if (should_create) {
 
 					if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
 						continue;
@@ -919,6 +948,13 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 					efd->parent = p_dir;
 					efd->name = f;
+					if (cd == "addons://") {
+						if (packed) {
+							efd->note = "PCK";
+						}
+						efd->tooltip = efd->name + " (" + PluginsDB::get_singleton()->get_plugin_abstract_path(f) + ")";
+					}
+					efd->packed = packed;
 
 					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 					if (d->change_dir(cd.plus_file(f)) != OK) {
@@ -937,7 +973,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					ia.file = f;
 					ia.new_dir = efd;
 					scan_actions.push_back(ia);
-				} else {
+				}
+				if (found && !should_remove) {
 					p_dir->subdirs[idx]->verified = true;
 				}
 

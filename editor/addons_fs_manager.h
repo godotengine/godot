@@ -62,6 +62,8 @@ public:
 	bool find_subdirectory_for_path(const String &p_path, String *r_subdir, String *r_location);
 
 	bool is_path_packed(const String &p_path);
+	bool is_path_read_only(const String &p_path);
+	bool is_path_or_parent_read_only(const String &p_path);
 
 	void set_subdirectory_hidden(const String &p_subdir, bool p_hidden);
 	bool is_subdirectory_hidden(const String &p_subdir);

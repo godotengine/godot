@@ -66,6 +66,7 @@ public:
 
 	Vector<String> get_plugin_names();
 	bool get_plugin_info(const String &p_plugin_name, PluginInfo *r_plugin_info);
+	String get_plugin_abstract_path(const String &p_plugin_name);
 	bool has_plugin(const String &p_plugin_name);
 	bool has_universal_plugin(const String &p_plugin_name);
 

@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "editor/addons_fs_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
@@ -52,12 +53,19 @@ void EditorDirDialog::_update_dir(TreeItem *p_parent, EditorFileSystemDirectory 
 
 		ti->set_metadata(0, path);
 		ti->set_icon(0, get_icon("Folder", "EditorIcons"));
+		if (subdir->is_packed()) {
+			ti->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		}
 
 		if (p_parent && !opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
 			ti->set_collapsed(true);
 		}
 
-		ti->set_text(0, subdir->get_name());
+		String text = subdir->get_name();
+		if (subdir->get_note() != "") {
+			text += " [" + subdir->get_note() + "]";
+		}
+		ti->set_text(0, text);
 
 		updating = false;
 		_update_dir(ti, subdir, p_select_path);
@@ -76,6 +84,8 @@ void EditorDirDialog::reload(const String &p_path) {
 
 	tree->clear();
 	_update_dir(NULL, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
+	get_ok()->set_disabled(true);
+	makedir->set_disabled(true);
 	must_reload = false;
 }
 
@@ -118,6 +128,25 @@ void EditorDirDialog::_item_collapsed(Object *p_item) {
 		opened_paths.erase(item->get_metadata(0));
 	else
 		opened_paths.insert(item->get_metadata(0));
+}
+
+void EditorDirDialog::_item_selected() {
+
+	String path = tree->get_selected()->get_metadata(0);
+	bool read_only = AddonsFileSystemManager::get_singleton()->is_path_read_only(path);
+
+	// TODO: If MODE_LOAD is neeed at some point, implement modes
+	/*if (mode == MODE_LOAD) {
+		get_ok()->set_disabled(false);
+	} else if (mode == MODE_SAVE) {*/
+	get_ok()->set_disabled(read_only);
+	//}
+	makedir->set_disabled(read_only);
+}
+
+void EditorDirDialog::_item_activated() {
+
+	ok_pressed();
 }
 
 void EditorDirDialog::ok_pressed() {
@@ -168,6 +197,8 @@ void EditorDirDialog::_make_dir_confirm() {
 
 void EditorDirDialog::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_item_selected"), &EditorDirDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_item_activated"), &EditorDirDialog::_item_activated);
 	ClassDB::bind_method(D_METHOD("_item_collapsed"), &EditorDirDialog::_item_collapsed);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &EditorDirDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &EditorDirDialog::_make_dir_confirm);
@@ -187,7 +218,8 @@ EditorDirDialog::EditorDirDialog() {
 	add_child(tree);
 
 	tree->set_hide_root(true);
-	tree->connect("item_activated", this, "_ok");
+	tree->connect("item_selected", this, "_item_selected");
+	tree->connect("item_activated", this, "_item_activated");
 
 	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
 	makedir->connect("pressed", this, "_make_dir");

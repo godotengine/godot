@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "editor/addons_fs_manager.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
@@ -66,10 +67,19 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 		// Create a tree item for the subdirectory
 		TreeItem *subdirectory_item = tree->create_item(p_parent);
-
-		subdirectory_item->set_text(0, subdir->get_name());
+		String text = subdir->get_name();
+		if (subdir->get_note() != "") {
+			text += " [" + subdir->get_note() + "]";
+		}
+		subdirectory_item->set_tooltip(0, subdir->get_tooltip());
+		subdirectory_item->set_text(0, text);
 		subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
-		subdirectory_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
+		if (subdir->is_packed()) {
+			subdirectory_item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+			subdirectory_item->set_icon_modulate(0, get_color("disabled_font_color", "Editor"));
+		} else {
+			subdirectory_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
+		}
 		subdirectory_item->set_selectable(0, true);
 		String lpath = subdir->get_path();
 		subdirectory_item->set_metadata(0, lpath);
@@ -142,6 +152,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			TreeItem *file_item = tree->create_item(p_parent);
 			file_item->set_text(0, file_name);
 			file_item->set_icon(0, _get_tree_item_icon(p_dir, i));
+			if (p_dir->is_packed()) {
+				file_item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+			}
 			String file_metadata = p_dir->get_path().plus_file(file_name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && path == file_metadata) {
@@ -667,9 +680,11 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 	Ref<Texture> folder_icon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
 	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
+	const Color packed_color = get_color("disabled_font_color", "Editor");
 
 	// Build the FileInfo list.
 	List<FileInfo> filelist;
+	EditorFileSystemDirectory *efd = NULL;
 	if (path == "Favorites") {
 		// Display the favorites.
 		Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
@@ -693,7 +708,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				}
 			} else {
 				int index;
-				EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(favorite, &index);
+				efd = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 
 				FileInfo fi;
 				fi.name = favorite.get_file();
@@ -716,7 +731,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		if (directory.ends_with("/") && !directory.is_filesystem_prefix()) {
 			directory = directory.substr(0, directory.length() - 1);
 		}
-		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
+		efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
 		if (!efd) {
 			directory = path.get_base_dir();
 			file = path.get_file();
@@ -740,7 +755,12 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(files->get_item_count() - 1, bd);
 					files->set_item_selectable(files->get_item_count() - 1, false);
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					if (efd->is_packed()) {
+						files->set_item_icon_modulate(files->get_item_count() - 1, packed_color);
+						files->set_item_custom_fg_color(files->get_item_count() - 1, packed_color);
+					} else {
+						files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					}
 				}
 
 				for (int i = 0; i < efd->get_subdir_count(); i++) {
@@ -748,7 +768,12 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(files->get_item_count() - 1, directory.plus_file(dname) + "/");
-					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					if (efd->get_subdir(i)->is_packed()) {
+						files->set_item_icon_modulate(files->get_item_count() - 1, packed_color);
+						files->set_item_custom_fg_color(files->get_item_count() - 1, packed_color);
+					} else {
+						files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
+					}
 
 					if (cselection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
@@ -806,6 +831,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			files->add_item(fname, type_icon, true);
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
+		}
+		if (efd->is_packed()) {
+			files->set_item_custom_fg_color(item_index, get_color("disabled_font_color", "Editor"));
 		}
 
 		if (fpath == main_scene) {
@@ -1577,8 +1605,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
+
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
-			OS::get_singleton()->shell_open(String("file://") + dir);
+			if (dir.get_filesystem_prefix() == "") { // Otherwise, the path couldn't be localized
+				OS::get_singleton()->shell_open(String("file://") + dir);
+			}
 		} break;
 
 		case FILE_OPEN: {
@@ -1674,7 +1705,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
 				String fpath = collapsed_paths[i];
-				if (!fpath.is_filesystem_prefix()) {
+				if (!fpath.is_filesystem_prefix() && !AddonsFileSystemManager::get_singleton()->is_path_or_parent_read_only(fpath)) {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
 			}
@@ -1687,7 +1718,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Rename the active file.
 			if (!p_selected.empty()) {
 				to_rename.path = p_selected[0];
-				if (!to_rename.path.is_filesystem_prefix()) {
+				if (!to_rename.path.is_filesystem_prefix() && !AddonsFileSystemManager::get_singleton()->is_path_or_parent_read_only(to_rename.path)) {
 					to_rename.is_file = !to_rename.path.ends_with("/");
 					if (to_rename.is_file) {
 						String name = to_rename.path.get_file();
@@ -1714,7 +1745,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 			for (int i = 0; i < collapsed_paths.size(); i++) {
 				String fpath = collapsed_paths[i];
-				if (!fpath.is_filesystem_prefix()) {
+				if (!fpath.is_filesystem_prefix() && !AddonsFileSystemManager::get_singleton()->is_path_or_parent_read_only(fpath)) {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
 					} else {
@@ -1908,6 +1939,10 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 				// The "Favorites" item is not draggable.
 				return Variant();
 			}
+			if (selected->get_parent() == tree->get_root()) {
+				// File systems are not draggable
+				return Variant();
+			}
 
 			bool is_favorite = selected->get_parent() != NULL && tree->get_root()->get_children() == selected->get_parent();
 			all_favorites &= is_favorite;
@@ -1931,6 +1966,12 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 	if (paths.empty())
 		return Variant();
+
+	for (int i = 0; i < paths.size(); i++) {
+		if (AddonsFileSystemManager::get_singleton()->is_path_or_parent_read_only(paths[i])) {
+			return Variant();
+		}
+	}
 
 	Dictionary drag_data = EditorNode::get_singleton()->drag_files_and_dirs(paths, p_from);
 	if (!all_not_favorites) {
@@ -1975,20 +2016,22 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		// Move resources.
 		String to_dir;
 		bool favorite;
-		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !to_dir.empty();
+		bool read_only;
+		_get_drag_target_folder(to_dir, favorite, read_only, p_point, p_from);
+		return !to_dir.empty() && !read_only;
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
 		// Move files or dir.
 		String to_dir;
 		bool favorite;
-		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		bool read_only;
+		_get_drag_target_folder(to_dir, favorite, read_only, p_point, p_from);
 
 		if (favorite)
 			return true;
 
-		if (to_dir.empty())
+		if (to_dir.empty() || read_only)
 			return false;
 
 		// Attempting to move a folder into itself will fail later,
@@ -2078,7 +2121,8 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		Ref<Resource> res = drag_data["resource"];
 		String to_dir;
 		bool favorite;
-		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		bool read_only;
+		_get_drag_target_folder(to_dir, favorite, read_only, p_point, p_from);
 		if (res.is_valid() && !to_dir.empty()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
@@ -2089,7 +2133,8 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		// Move files or add to favorites.
 		String to_dir;
 		bool favorite;
-		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		bool read_only;
+		_get_drag_target_folder(to_dir, favorite, read_only, p_point, p_from);
 		if (!to_dir.empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
@@ -2112,9 +2157,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	}
 }
 
-void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favorites, const Point2 &p_point, Control *p_from) const {
+void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favorites, bool &target_read_only, const Point2 &p_point, Control *p_from) const {
 	target = String();
 	target_favorites = false;
+	target_read_only = false;
 
 	// In the file list.
 	if (p_from == files) {
@@ -2162,6 +2208,10 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 					}
 				}
 			}
+		}
+
+		if (target != "") {
+			target_read_only = AddonsFileSystemManager::get_singleton()->is_path_read_only(target);
 		}
 	}
 }
@@ -2257,7 +2307,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (all_files) {
 		if (filenames.size() == 1) {
-			p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
+			if (!AddonsFileSystemManager::get_singleton()->is_path_read_only(p_paths[0])) {
+				p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
+			}
 			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
 			p_popup->add_separator();
 		}
@@ -2294,7 +2346,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
-		if (p_display_path_dependent_options) {
+		if (p_display_path_dependent_options && !AddonsFileSystemManager::get_singleton()->is_path_read_only(p_paths[0])) {
 			p_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
 			p_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
 			p_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
@@ -2378,11 +2430,14 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->clear();
 	file_list_popup->set_size(Size2(1, 1));
 
-	file_list_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_list_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
-	file_list_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_list_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
-	file_list_popup->add_separator();
+	if (!AddonsFileSystemManager::get_singleton()->is_path_read_only(path)) {
+		file_list_popup->add_icon_item(get_icon("Folder", "EditorIcons"), TTR("New Folder..."), FILE_NEW_FOLDER);
+		file_list_popup->add_icon_item(get_icon("PackedScene", "EditorIcons"), TTR("New Scene..."), FILE_NEW_SCENE);
+		file_list_popup->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script..."), FILE_NEW_SCRIPT);
+		file_list_popup->add_icon_item(get_icon("Object", "EditorIcons"), TTR("New Resource..."), FILE_NEW_RESOURCE);
+		file_list_popup->add_separator();
+	}
+
 	file_list_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);
 	file_list_popup->popup();
