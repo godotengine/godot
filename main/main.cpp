@@ -72,6 +72,7 @@
 #include "servers/register_server_types.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/addons_fs_manager.h"
 #include "editor/doc/doc_data.h"
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
@@ -95,6 +96,10 @@ static PackedData *packed_data = NULL;
 static ZipArchive *zip_packed_data = NULL;
 #endif
 static FileAccessNetworkClient *file_access_network_client = NULL;
+#ifdef TOOLS_ENABLED
+static AddonsFileSystemManager *addons_fs = NULL;
+static PluginsDB *plugins_db = NULL;
+#endif
 static ScriptDebugger *script_debugger = NULL;
 static MessageQueue *message_queue = NULL;
 
@@ -292,6 +297,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --export-debug <preset> <path>   Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>    Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
+	OS::get_singleton()->print("  --export-plugin <plugin> <path>  Export a specific universal plugin as a .pck file.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
 #ifdef DEBUG_METHODS_ENABLED
@@ -408,6 +414,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool saw_vsync_via_compositor_override = false;
 #ifdef TOOLS_ENABLED
 	bool found_project = false;
+
+	addons_fs = AddonsFileSystemManager::get_singleton();
+	if (!addons_fs)
+		addons_fs = memnew(AddonsFileSystemManager);
+
+	plugins_db = PluginsDB::get_singleton();
+	if (!plugins_db)
+		plugins_db = memnew(PluginsDB);
 #endif
 
 	packed_data = PackedData::get_singleton();
@@ -676,7 +690,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// We still pass it to the main arguments since the argument handling itself is not done in this function
 			main_args.push_back(I->get());
 #endif
-		} else if (I->get() == "--export" || I->get() == "--export-debug" || I->get() == "--export-pack") { // Export project
+		} else if (I->get() == "--export" || I->get() == "--export-debug" || I->get() == "--export-pack" || I->get() == "--export-plugin") { // Export project
 
 			editor = true;
 			main_args.push_back(I->get());
@@ -1176,6 +1190,12 @@ error:
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
+#ifdef TOOLS_ENABLED
+	if (plugins_db)
+		memdelete(plugins_db);
+	if (addons_fs)
+		memdelete(addons_fs);
+#endif
 
 	unregister_core_driver_types();
 	unregister_core_types();
@@ -1414,6 +1434,7 @@ bool Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+	String _export_plugin;
 #endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
@@ -1467,6 +1488,9 @@ bool Main::start() {
 				editor = true;
 				_export_preset = args[i + 1];
 				export_pack_only = true;
+			} else if (args[i] == "--export-plugin") {
+				editor = true;
+				_export_plugin = args[i + 1];
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -1536,7 +1560,7 @@ bool Main::start() {
 		return false;
 	}
 
-	if (_export_preset != "") {
+	if (_export_preset != "" || _export_plugin != "") {
 		if (positional_arg == "") {
 			String err = "Command line includes export parameter option, but no destination path was given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
@@ -1635,6 +1659,10 @@ bool Main::start() {
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
+#ifdef TOOLS_ENABLED
+			PluginsDB::get_singleton()->scan();
+#endif
+
 			if (game_path != "" || script != "") {
 				if (script_debugger && script_debugger->is_remote()) {
 					ScriptDebuggerRemote *remote_debugger = static_cast<ScriptDebuggerRemote *>(script_debugger);
@@ -1729,6 +1757,9 @@ bool Main::start() {
 
 			if (_export_preset != "") {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
+				game_path = ""; // Do not load anything.
+			} else if (_export_plugin != "") {
+				editor_node->export_plugin(_export_plugin, positional_arg);
 				game_path = ""; // Do not load anything.
 			}
 		}

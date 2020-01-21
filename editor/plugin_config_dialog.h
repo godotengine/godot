@@ -42,6 +42,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
 
 	LineEdit *name_edit;
+	OptionButton *model_option;
 	LineEdit *subfolder_edit;
 	TextEdit *desc_edit;
 	LineEdit *author_edit;
@@ -53,6 +54,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	bool _edit_mode;
 
 	void _clear_fields();
+	void _on_model_selected(int p_index);
 	void _on_confirmed();
 	void _on_cancelled();
 	void _on_required_text_changed(const String &p_text);

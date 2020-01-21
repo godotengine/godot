@@ -129,20 +129,16 @@ Error DirAccessWindows::change_dir(String p_dir) {
 
 	wchar_t real_current_dir_name[2048];
 	GetCurrentDirectoryW(2048, real_current_dir_name);
-	String prev_dir = real_current_dir_name;
+	String prev_dir = String(real_current_dir_name).replace("\\", "/");
+	;
 
 	SetCurrentDirectoryW(current_dir.c_str());
 	bool worked = (SetCurrentDirectoryW(p_dir.c_str()) != 0);
 
-	String base = _get_root_path();
-	if (base != "") {
-
-		GetCurrentDirectoryW(2048, real_current_dir_name);
-		String new_dir;
-		new_dir = String(real_current_dir_name).replace("\\", "/");
-		if (!new_dir.begins_with(base)) {
-			worked = false;
-		}
+	GetCurrentDirectoryW(2048, real_current_dir_name);
+	String new_dir = String(real_current_dir_name).replace("\\", "/");
+	if (!_is_valid_dir_change(prev_dir, new_dir)) {
+		worked = false;
 	}
 
 	if (worked) {

@@ -3965,7 +3965,7 @@ bool String::is_resource_file() const {
 
 bool String::is_resource_path() const {
 
-	return begins_with("res://");
+	return begins_with("res://") || begins_with("addons://");
 }
 
 bool String::is_filesystem_prefix() const {

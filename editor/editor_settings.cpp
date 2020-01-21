@@ -770,79 +770,67 @@ EditorSettings *EditorSettings::get_singleton() {
 	return singleton.ptr();
 }
 
+void EditorSettings::get_main_paths(MainPaths *r_paths) {
+
+	r_paths->exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+
+	DirAccess *d = DirAccess::create_for_path(r_paths->exe_path);
+	if (d->file_exists(r_paths->exe_path + "/._sc_")) {
+		r_paths->sc_path = r_paths->exe_path + "/._sc_";
+	} else if (d->file_exists(r_paths->exe_path + "/_sc_")) {
+		r_paths->sc_path = r_paths->exe_path + "/_sc_";
+	} else {
+		r_paths->sc_path = "";
+	}
+	memdelete(d);
+
+	if (r_paths->sc_path != "") {
+
+		// editor is self contained, all in same folder
+		r_paths->data_path = r_paths->exe_path;
+		r_paths->data_dir = r_paths->data_path.plus_file("editor_data");
+		r_paths->config_path = r_paths->exe_path;
+		r_paths->config_dir = r_paths->data_dir;
+		r_paths->cache_path = r_paths->exe_path;
+		r_paths->cache_dir = r_paths->data_dir.plus_file("cache");
+	} else {
+
+		// Typically XDG_DATA_HOME or %APPDATA%
+		r_paths->data_path = OS::get_singleton()->get_data_path();
+		r_paths->data_dir = r_paths->data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		// Can be different from data_path e.g. on Linux or macOS
+		r_paths->config_path = OS::get_singleton()->get_config_path();
+		r_paths->config_dir = r_paths->config_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		// Can be different from above paths, otherwise a subfolder of data_dir
+		r_paths->cache_path = OS::get_singleton()->get_cache_path();
+		if (r_paths->cache_path == r_paths->data_path) {
+			r_paths->cache_dir = r_paths->data_dir.plus_file("cache");
+		} else {
+			r_paths->cache_dir = r_paths->cache_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		}
+	}
+}
+
 void EditorSettings::create() {
 
 	if (singleton.ptr())
 		return; //pointless
 
-	DirAccess *dir = NULL;
-
-	String data_path;
-	String data_dir;
-	String config_path;
-	String config_dir;
-	String cache_path;
-	String cache_dir;
-
-	Ref<ConfigFile> extra_config = memnew(ConfigFile);
-
-	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
-	DirAccess *d = DirAccess::create_for_path(exe_path);
-	bool self_contained = false;
-
-	if (d->file_exists(exe_path + "/._sc_")) {
-		self_contained = true;
-		Error err = extra_config->load(exe_path + "/._sc_");
-		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
-		}
-	} else if (d->file_exists(exe_path + "/_sc_")) {
-		self_contained = true;
-		Error err = extra_config->load(exe_path + "/_sc_");
-		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
-		}
-	}
-	memdelete(d);
-
-	if (self_contained) {
-
-		// editor is self contained, all in same folder
-		data_path = exe_path;
-		data_dir = data_path.plus_file("editor_data");
-		config_path = exe_path;
-		config_dir = data_dir;
-		cache_path = exe_path;
-		cache_dir = data_dir.plus_file("cache");
-	} else {
-
-		// Typically XDG_DATA_HOME or %APPDATA%
-		data_path = OS::get_singleton()->get_data_path();
-		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
-		// Can be different from data_path e.g. on Linux or macOS
-		config_path = OS::get_singleton()->get_config_path();
-		config_dir = config_path.plus_file(OS::get_singleton()->get_godot_dir_name());
-		// Can be different from above paths, otherwise a subfolder of data_dir
-		cache_path = OS::get_singleton()->get_cache_path();
-		if (cache_path == data_path) {
-			cache_dir = data_dir.plus_file("cache");
-		} else {
-			cache_dir = cache_path.plus_file(OS::get_singleton()->get_godot_dir_name());
-		}
-	}
-
 	ClassDB::register_class<EditorSettings>(); //otherwise it can't be unserialized
+
+	MainPaths paths;
+	get_main_paths(&paths);
 
 	String config_file_path;
 
-	if (data_path != "" && config_path != "" && cache_path != "") {
+	if (paths.data_path != "" && paths.config_path != "" && paths.cache_path != "") {
 
 		// Validate/create data dir and subdirectories
 
-		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (dir->change_dir(data_dir) != OK) {
-			dir->make_dir_recursive(data_dir);
-			if (dir->change_dir(data_dir) != OK) {
+		DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (dir->change_dir(paths.data_dir) != OK) {
+			dir->make_dir_recursive(paths.data_dir);
+			if (dir->change_dir(paths.data_dir) != OK) {
 				ERR_PRINT("Cannot create data directory!");
 				memdelete(dir);
 				goto fail;
@@ -857,9 +845,9 @@ void EditorSettings::create() {
 
 		// Validate/create cache dir
 
-		if (dir->change_dir(cache_dir) != OK) {
-			dir->make_dir_recursive(cache_dir);
-			if (dir->change_dir(cache_dir) != OK) {
+		if (dir->change_dir(paths.cache_dir) != OK) {
+			dir->make_dir_recursive(paths.cache_dir);
+			if (dir->change_dir(paths.cache_dir) != OK) {
 				ERR_PRINT("Cannot create cache directory!");
 				memdelete(dir);
 				goto fail;
@@ -868,9 +856,9 @@ void EditorSettings::create() {
 
 		// Validate/create config dir and subdirectories
 
-		if (dir->change_dir(config_dir) != OK) {
-			dir->make_dir_recursive(config_dir);
-			if (dir->change_dir(config_dir) != OK) {
+		if (dir->change_dir(paths.config_dir) != OK) {
+			dir->make_dir_recursive(paths.config_dir);
+			if (dir->change_dir(paths.config_dir) != OK) {
 				ERR_PRINT("Cannot create config directory!");
 				memdelete(dir);
 				goto fail;
@@ -897,6 +885,12 @@ void EditorSettings::create() {
 
 		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
 
+		if (dir->change_dir("addons") != OK) {
+			dir->make_dir("addons");
+		} else {
+			dir->change_dir("..");
+		}
+
 		if (dir->change_dir("projects") != OK) {
 			dir->make_dir("projects");
 		} else {
@@ -908,7 +902,7 @@ void EditorSettings::create() {
 		dir->change_dir("projects");
 		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
 		if (project_config_dir.ends_with("/"))
-			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
+			project_config_dir = paths.config_path.substr(0, project_config_dir.size() - 1);
 		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
 
 		if (dir->change_dir(project_config_dir) != OK) {
@@ -921,7 +915,7 @@ void EditorSettings::create() {
 		// Validate editor config file
 
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
-		config_file_path = config_dir.plus_file(config_file_name);
+		config_file_path = paths.config_dir.plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
 			goto fail;
 		}
@@ -938,9 +932,9 @@ void EditorSettings::create() {
 		singleton->save_changed_setting = true;
 		singleton->config_file_path = config_file_path;
 		singleton->project_config_dir = project_config_dir;
-		singleton->settings_dir = config_dir;
-		singleton->data_dir = data_dir;
-		singleton->cache_dir = cache_dir;
+		singleton->settings_dir = paths.config_dir;
+		singleton->data_dir = paths.data_dir;
+		singleton->cache_dir = paths.cache_dir;
 
 		print_verbose("EditorSettings: Load OK!");
 
@@ -954,22 +948,30 @@ void EditorSettings::create() {
 
 fail:
 
-	// patch init projects
-	if (extra_config->has_section("init_projects")) {
-		Vector<String> list = extra_config->get_value("init_projects", "list");
-		for (int i = 0; i < list.size(); i++) {
+	Ref<ConfigFile> extra_config;
+	if (paths.sc_path != "") {
+		Error err = extra_config->load(paths.sc_path);
+		if (err != OK) {
+			ERR_PRINTS("Can't load config from path '" + paths.sc_path + "'.");
+		}
 
-			list.write[i] = exe_path.plus_file(list[i]);
+		// patch init projects
+		if (extra_config->has_section("init_projects")) {
+			Vector<String> list = extra_config->get_value("init_projects", "list");
+			for (int i = 0; i < list.size(); i++) {
+
+				list.write[i] = paths.exe_path.plus_file(list[i]);
+			};
+			extra_config->set_value("init_projects", "list", list);
 		};
-		extra_config->set_value("init_projects", "list", list);
-	};
+	}
 
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
 	singleton->save_changed_setting = true;
 	singleton->config_file_path = config_file_path;
-	singleton->settings_dir = config_dir;
-	singleton->data_dir = data_dir;
-	singleton->cache_dir = cache_dir;
+	singleton->settings_dir = paths.config_dir;
+	singleton->data_dir = paths.data_dir;
+	singleton->cache_dir = paths.cache_dir;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
@@ -1215,6 +1217,11 @@ String EditorSettings::get_script_templates_dir() const {
 String EditorSettings::get_project_script_templates_dir() const {
 
 	return ProjectSettings::get_singleton()->get("editor/script_templates_search_path");
+}
+
+String EditorSettings::get_plugins_dir() const {
+
+	return get_settings_dir().plus_file("addons");
 }
 
 // Cache directory

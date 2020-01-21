@@ -44,6 +44,7 @@
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins_db.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/resources/resource_format_text.h"
@@ -469,7 +470,8 @@ void EditorExportPlatform::_export_find_files(const String &p_path, Set<String> 
 		if (f.begins_with(".") && f != ".import") { // Ignore UNIX style hidden and . / ..
 			continue;
 		}
-		if (da->current_is_hidden()) {
+		// Editor-only paths, although considered hidden by the addons file system, must end up in the PCK file
+		if (da->current_is_hidden() && !PluginsDB::get_singleton()->is_editor_only_path(p_path.plus_file(f))) {
 			continue;
 		}
 
@@ -779,7 +781,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 		}
 		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-			p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size());
+			p_func(p_udata, _fixup_addons_path(export_plugins[i]->extra_files[j].path), export_plugins[i]->extra_files[j].data, 0, paths.size());
 		}
 
 		export_plugins.write[i]->_clear();
@@ -796,6 +798,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
 
 		String path = E->get();
+
+		if (PluginsDB::get_singleton()->is_editor_only_path(path)) {
+			print_line("Skipping editor-only path: " + path);
+			continue;
+		}
+
 		String type = ResourceLoader::get_resource_type(path);
 
 		if (ResourceFormatImporter::get_singleton()->exists(path)) {
@@ -834,14 +842,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				if (remap == "path") {
 					String remapped_path = config->get_value("remap", remap);
 					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-					err = p_func(p_udata, remapped_path, array, idx, total);
+					err = p_func(p_udata, _fixup_addons_path(remapped_path), array, idx, total);
 				} else if (remap.begins_with("path.")) {
 					String feature = remap.get_slice(".", 1);
 
 					if (remap_features.has(feature)) {
 						String remapped_path = config->get_value("remap", remap);
 						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-						err = p_func(p_udata, remapped_path, array, idx, total);
+						err = p_func(p_udata, _fixup_addons_path(remapped_path), array, idx, total);
 					}
 				}
 			}
@@ -852,7 +860,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			//also save the .import file
 			Vector<uint8_t> array = FileAccess::get_file_as_array(ResourceFormatImporter::get_singleton()->get_import_settings_path(path));
-			err = p_func(p_udata, ResourceFormatImporter::get_singleton()->get_import_settings_path(path), array, idx, total);
+			err = p_func(p_udata, _fixup_addons_path(ResourceFormatImporter::get_singleton()->get_import_settings_path(path)), array, idx, total);
 
 			if (err != OK) {
 				return err;
@@ -874,7 +882,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-					p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total);
+					p_func(p_udata, _fixup_addons_path(export_plugins[i]->extra_files[j].path), export_plugins[i]->extra_files[j].data, idx, total);
 					if (export_plugins[i]->extra_files[j].remap) {
 						do_export = false; //if remap, do not
 						path_remaps.push_back(path);
@@ -893,7 +901,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			//just store it as it comes
 			if (do_export) {
 				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-				p_func(p_udata, path, array, idx, total);
+				p_func(p_udata, _fixup_addons_path(path), array, idx, total);
 			}
 		}
 
@@ -930,7 +938,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					new_file.write[j] = utf8[j];
 				}
 
-				p_func(p_udata, from + ".remap", new_file, idx, total);
+				p_func(p_udata, _fixup_addons_path(from + ".remap"), new_file, idx, total);
 			}
 		} else {
 			//old remap mode, will still work, but it's unused because it's not multiple pck export friendly
@@ -943,11 +951,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 	if (icon != String() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
-		p_func(p_udata, icon, array, idx, total);
+		p_func(p_udata, _fixup_addons_path(icon), array, idx, total);
 	}
 	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
-		p_func(p_udata, splash, array, idx, total);
+		p_func(p_udata, _fixup_addons_path(splash), array, idx, total);
 	}
 
 	String config_file = "project.binary";
@@ -959,6 +967,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	p_func(p_udata, "res://" + config_file, data, idx, total);
 
 	return OK;
+}
+
+String EditorExportPlatform::_fixup_addons_path(const String &p_path) {
+
+	return p_path.replace_first("addons://", "res://addons/");
 }
 
 Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObject &p_so) {

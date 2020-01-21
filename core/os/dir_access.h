@@ -53,7 +53,7 @@ private:
 	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
 
 protected:
-	virtual String _get_root_path() const;
+	virtual bool _is_valid_dir_change(const String &p_curr_dir, const String &p_new_dir) const;
 	virtual String _get_resource_path() const;
 	virtual void _get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const;
 	bool next_is_dir;

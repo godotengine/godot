@@ -34,15 +34,14 @@
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/project_settings.h"
+#include "editor/plugins_db.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
-		update_plugins();
-	} else if (p_what == Node::NOTIFICATION_READY) {
+	if (p_what == Node::NOTIFICATION_READY) {
 		plugin_config_dialog->connect("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
 		plugin_list->connect("button_pressed", this, "_cell_button_pressed");
 	}
@@ -52,46 +51,22 @@ void EditorPluginSettings::update_plugins() {
 
 	plugin_list->clear();
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error err = da->change_dir("res://addons");
-	if (err != OK) {
-		memdelete(da);
-		return;
-	}
-
 	updating = true;
 
 	TreeItem *root = plugin_list->create_item();
 
-	da->list_dir_begin();
+	PluginsDB *plugins_db = PluginsDB::get_singleton();
+	plugins_db->scan();
+	Vector<String> plugin_names = plugins_db->get_plugin_names();
 
-	String d = da->get_next();
+	for (int i = 0; i < plugin_names.size(); i++) {
 
-	Vector<String> plugins;
-
-	while (d != String()) {
-
-		bool dir = da->current_is_dir();
-		String path = "res://addons/" + d + "/plugin.cfg";
-
-		if (dir && FileAccess::exists(path)) {
-
-			plugins.push_back(d);
-		}
-
-		d = da->get_next();
-	}
-
-	da->list_dir_end();
-	memdelete(da);
-
-	plugins.sort();
-
-	for (int i = 0; i < plugins.size(); i++) {
+		PluginsDB::PluginInfo info;
+		ERR_CONTINUE(!plugins_db->get_plugin_info(plugin_names[i], &info));
 
 		Ref<ConfigFile> cf;
 		cf.instance();
-		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
+		String path = info.is_pack ? "addons://" + plugin_names[i] + "/plugin.cfg" : info.location.plus_file("plugin.cfg");
 
 		Error err2 = cf->load(path);
 
@@ -122,7 +97,8 @@ void EditorPluginSettings::update_plugins() {
 			}
 
 			if (!key_missing) {
-				String d2 = plugins[i];
+				String d2 = plugin_names[i];
+				int model = cf->get_value("plugin", "model", 1);
 				String name = cf->get_value("plugin", "name");
 				String author = cf->get_value("plugin", "author");
 				String version = cf->get_value("plugin", "version");
@@ -130,25 +106,46 @@ void EditorPluginSettings::update_plugins() {
 				String script = cf->get_value("plugin", "script");
 
 				TreeItem *item = plugin_list->create_item(root);
-				item->set_text(0, name);
-				item->set_tooltip(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
-				item->set_metadata(0, d2);
-				item->set_text(1, version);
-				item->set_metadata(1, script);
-				item->set_text(2, author);
-				item->set_metadata(2, description);
-				item->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
-				item->set_range_config(3, 0, 1, 1);
-				item->set_text(3, "Inactive,Active");
-				item->set_editable(3, true);
-				item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+				if (info.model >= 2) {
+					if (info.is_user_level) {
+						item->set_text(0, info.is_pack ? TTR("User (PCK)") : TTR("User"));
+					} else {
+						item->set_text(0, TTR("Project"));
+					}
+					item->set_custom_color(0, get_color("accent_color", "Editor"));
+				} else {
+					item->set_text(0, TTR("Project"));
+				}
+				item->set_text(1, name);
+				item->set_tooltip(1, "Name: " + name + "\nPath: " + ProjectSettings::get_singleton()->localize_path(info.location) + "\nLocation: " + info.location + "\nMain Script: " + script + "\nDescription: " + description);
+				item->set_metadata(1, d2);
+				item->set_text(2, version);
+				item->set_metadata(2, script);
+				item->set_text(3, author);
+				item->set_metadata(3, description);
+				item->set_cell_mode(4, TreeItem::CELL_MODE_RANGE);
+				item->set_range_config(4, 0, 1, 1);
+				item->set_text(4, "Inactive,Active");
+				item->set_editable(4, true);
+				if (!info.is_pack) {
+					item->add_button(5, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+				}
 
 				if (EditorNode::get_singleton()->is_addon_plugin_enabled(d2)) {
-					item->set_custom_color(3, get_color("success_color", "Editor"));
-					item->set_range(3, 1);
+					// Switch currently active and the one just found if they are not really the same
+					// despite having the same name
+					EditorPlugin *current = EditorNode::get_singleton()->get_enabled_addon_plugin(d2);
+					String curr_discrimiator = itos(model) + "*" + info.location;
+					if (current->get_discriminator() != curr_discrimiator) {
+						call_deferred("_set_addon_plugin_enabled", d2, false);
+						call_deferred("_set_addon_plugin_enabled", d2, true);
+					}
+
+					item->set_custom_color(4, get_color("success_color", "Editor"));
+					item->set_range(4, 1);
 				} else {
-					item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
-					item->set_range(3, 0);
+					item->set_custom_color(4, get_color("disabled_font_color", "Editor"));
+					item->set_range(4, 0);
 				}
 			}
 		}
@@ -164,23 +161,24 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
-	bool active = ti->get_range(3);
-	String name = ti->get_metadata(0);
+	bool active = ti->get_range(4);
+	String name = ti->get_metadata(1);
 
 	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active, true);
+	PluginsDB::get_singleton()->scan();
 
 	bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(name);
 
 	if (is_active != active) {
 		updating = true;
-		ti->set_range(3, is_active ? 1 : 0);
+		ti->set_range(4, is_active ? 1 : 0);
 		updating = false;
 	}
 
 	if (is_active)
-		ti->set_custom_color(3, get_color("success_color", "Editor"));
+		ti->set_custom_color(4, get_color("success_color", "Editor"));
 	else
-		ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
+		ti->set_custom_color(4, get_color("disabled_font_color", "Editor"));
 }
 
 void EditorPluginSettings::_create_clicked() {
@@ -188,14 +186,21 @@ void EditorPluginSettings::_create_clicked() {
 	plugin_config_dialog->popup_centered();
 }
 
+void EditorPluginSettings::_set_addon_plugin_enabled(const String &p_name, bool p_enabled) {
+
+	EditorNode::get_singleton()->set_addon_plugin_enabled(p_name, p_enabled);
+}
+
 void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item)
 		return;
 	if (p_id == BUTTON_PLUGIN_EDIT) {
-		if (p_column == 4) {
-			String dir = item->get_metadata(0);
-			plugin_config_dialog->config("res://addons/" + dir + "/plugin.cfg");
+		if (p_column == 5) {
+			String dir = item->get_metadata(1);
+			PluginsDB::PluginInfo info;
+			ERR_FAIL_COND(!PluginsDB::get_singleton()->get_plugin_info(dir, &info));
+			plugin_config_dialog->config(info.location.plus_file("plugin.cfg"));
 			plugin_config_dialog->popup_centered();
 		}
 	}
@@ -207,6 +212,7 @@ void EditorPluginSettings::_bind_methods() {
 	ClassDB::bind_method("_create_clicked", &EditorPluginSettings::_create_clicked);
 	ClassDB::bind_method("_plugin_activity_changed", &EditorPluginSettings::_plugin_activity_changed);
 	ClassDB::bind_method("_cell_button_pressed", &EditorPluginSettings::_cell_button_pressed);
+	ClassDB::bind_method(D_METHOD("_set_addon_plugin_enabled", "name", "enabled"), &EditorPluginSettings::_set_addon_plugin_enabled);
 }
 
 EditorPluginSettings::EditorPluginSettings() {
@@ -228,22 +234,25 @@ EditorPluginSettings::EditorPluginSettings() {
 
 	plugin_list = memnew(Tree);
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	plugin_list->set_columns(5);
+	plugin_list->set_columns(6);
 	plugin_list->set_column_titles_visible(true);
-	plugin_list->set_column_title(0, TTR("Name:"));
-	plugin_list->set_column_title(1, TTR("Version:"));
-	plugin_list->set_column_title(2, TTR("Author:"));
-	plugin_list->set_column_title(3, TTR("Status:"));
-	plugin_list->set_column_title(4, TTR("Edit:"));
-	plugin_list->set_column_expand(0, true);
-	plugin_list->set_column_expand(1, false);
+	plugin_list->set_column_title(0, TTR("Scope:"));
+	plugin_list->set_column_title(1, TTR("Name:"));
+	plugin_list->set_column_title(2, TTR("Version:"));
+	plugin_list->set_column_title(3, TTR("Author:"));
+	plugin_list->set_column_title(4, TTR("Status:"));
+	plugin_list->set_column_title(5, TTR("Edit:"));
+	plugin_list->set_column_expand(0, false);
+	plugin_list->set_column_expand(1, true);
 	plugin_list->set_column_expand(2, false);
 	plugin_list->set_column_expand(3, false);
 	plugin_list->set_column_expand(4, false);
-	plugin_list->set_column_min_width(1, 100 * EDSCALE);
-	plugin_list->set_column_min_width(2, 250 * EDSCALE);
-	plugin_list->set_column_min_width(3, 80 * EDSCALE);
-	plugin_list->set_column_min_width(4, 40 * EDSCALE);
+	plugin_list->set_column_expand(5, false);
+	plugin_list->set_column_min_width(0, 100 * EDSCALE);
+	plugin_list->set_column_min_width(2, 100 * EDSCALE);
+	plugin_list->set_column_min_width(3, 250 * EDSCALE);
+	plugin_list->set_column_min_width(4, 80 * EDSCALE);
+	plugin_list->set_column_min_width(5, 40 * EDSCALE);
 	plugin_list->set_hide_root(true);
 	plugin_list->connect("item_edited", this, "_plugin_activity_changed");
 

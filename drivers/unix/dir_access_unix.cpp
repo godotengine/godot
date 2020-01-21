@@ -325,15 +325,11 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	String base = _get_root_path();
-	if (base != String() && !try_dir.begins_with(base)) {
-		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
-		String new_dir;
-		new_dir.parse_utf8(real_current_dir_name);
-
-		if (!new_dir.begins_with(base)) {
-			try_dir = current_dir; //revert
-		}
+	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
+	String new_dir;
+	new_dir.parse_utf8(real_current_dir_name);
+	if (!_is_valid_dir_change(prev_dir, new_dir)) {
+		try_dir = current_dir; //revert
 	}
 
 	// the directory exists, so set current_dir to try_dir

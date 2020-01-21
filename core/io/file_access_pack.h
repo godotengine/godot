@@ -197,19 +197,31 @@ public:
 
 FileAccess *PackedData::try_open_path(const String &p_path) {
 
-	PathMD5 pmd5(p_path.md5_buffer());
+#ifdef TOOLS_ENABLED
+	const String &path = p_path;
+#else
+	const String &path = p_path.replace_first("addons://", "res://addons/");
+#endif
+
+	PathMD5 pmd5(path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
 	if (!E)
 		return NULL; //not found
 	if (E->get().offset == 0)
 		return NULL; //was erased
 
-	return E->get().src->get_file(p_path, &E->get());
+	return E->get().src->get_file(path, &E->get());
 }
 
 bool PackedData::has_path(const String &p_path) {
 
-	return files.has(PathMD5(p_path.md5_buffer()));
+#ifdef TOOLS_ENABLED
+	const String &path = p_path;
+#else
+	const String &path = p_path.replace_first("addons://", "res://addons/");
+#endif
+
+	return files.has(PathMD5(path.md5_buffer()));
 }
 
 bool PackedData::has_directory(const String &p_path) {
@@ -267,7 +279,7 @@ public:
 
 DirAccess *PackedData::try_open_directory(const String &p_path) {
 
-#ifdef HAVE_TOOLS
+#ifdef TOOLS_ENABLED
 	const String &path = p_path;
 #else
 	const String &path = p_path.replace_first("addons://", "res://addons/");

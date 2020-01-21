@@ -279,10 +279,11 @@ void EditorFileDialog::_post_popup() {
 		bool res = access == ACCESS_RESOURCES;
 		Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
 		for (int i = 0; i < recentd.size(); i++) {
-			bool cres = recentd[i].begins_with("res://");
+			bool cres = recentd[i].is_resource_path();
 			if (cres != res)
 				continue;
 			String name = recentd[i];
+			// "addons://" (root) is left as it is
 			if (res && name == "res://") {
 				name = "/";
 			} else {
@@ -1254,7 +1255,7 @@ void EditorFileDialog::_update_favorites() {
 
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 	for (int i = 0; i < favorited.size(); i++) {
-		bool cres = favorited[i].begins_with("res://");
+		bool cres = favorited[i].is_resource_path();
 		if (cres != res)
 			continue;
 		String name = favorited[i];
@@ -1264,6 +1265,11 @@ void EditorFileDialog::_update_favorites() {
 			if (name == current)
 				setthis = true;
 			name = "/";
+
+			favorites->add_item(name, folder_icon);
+		} else if (res && name == "addons://") {
+			if (name == current)
+				setthis = true;
 
 			favorites->add_item(name, folder_icon);
 		} else if (name.ends_with("/")) {
@@ -1299,7 +1305,7 @@ void EditorFileDialog::_favorite_pressed() {
 
 	bool found = false;
 	for (int i = 0; i < favorited.size(); i++) {
-		bool cres = favorited[i].begins_with("res://");
+		bool cres = favorited[i].is_resource_path();
 		if (cres != res)
 			continue;
 
@@ -1501,10 +1507,10 @@ void EditorFileDialog::_save_to_recent() {
 
 	const int max = 20;
 	int count = 0;
-	bool res = dir.begins_with("res://");
+	bool res = dir.is_resource_path();
 
 	for (int i = 0; i < recent.size(); i++) {
-		bool cres = recent[i].begins_with("res://");
+		bool cres = recent[i].is_resource_path();
 		if (recent[i] == dir || (res == cres && count > max)) {
 			recent.remove(i);
 			i--;

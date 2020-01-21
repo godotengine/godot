@@ -163,6 +163,9 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		if (script_path.find("res://addons/", 0) != -1) {
 			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3)))
 				return;
+		} else if (script_path.find("addons://", 0) != -1) {
+			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 2)))
+				return;
 		}
 	}
 

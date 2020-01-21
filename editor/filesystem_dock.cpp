@@ -222,6 +222,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			text = "/";
 			icon = folder_icon;
 			color = folder_color;
+		} else if (fave == "addons://") {
+			text = "addons://";
+			icon = folder_icon;
+			color = folder_color;
 		} else if (fave.ends_with("/")) {
 			text = fave.substr(0, fave.length() - 1).get_file();
 			icon = folder_icon;
@@ -1792,6 +1796,30 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_NEW_RESOURCE: {
 			new_resource_dialog->popup_create(true);
 		} break;
+
+		case FILE_SHOW_EDITOR_ONLY:
+		case FILE_HIDE_EDITOR_ONLY: {
+			Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
+			for (int i = 0; i < p_selected.size(); i++) {
+				Vector<String> parts = p_selected[i].trim_prefix("addons://").split("/", false, 1);
+				ERR_CONTINUE(parts.size() != 1);
+				const String &plugin_name = parts[0];
+				int curr_idx = show_editor_only_plugins.find(plugin_name);
+				if (p_option == FILE_SHOW_EDITOR_ONLY) {
+					if (curr_idx == -1) {
+						show_editor_only_plugins.push_back(plugin_name);
+					}
+				} else { // FILE_HIDE_EDITOR_ONLY
+					show_editor_only_plugins.remove(curr_idx);
+				}
+				EditorSettings::get_singleton()->set_project_metadata("editor_plugins", "show_editor_only", show_editor_only_plugins);
+			}
+			EditorFileSystem::get_singleton()->scan_changes();
+		} break;
+
+		case FILE_EXPORT_PLUGIN: {
+			emit_signal("export_plugin", p_selected[0].trim_suffix("/"));
+		} break;
 	}
 }
 
@@ -2146,18 +2174,37 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	Vector<String> foldernames;
 
 	Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
 
 	bool all_files = true;
 	bool all_files_scenes = true;
 	bool all_folders = true;
 	bool all_favorites = true;
 	bool all_not_favorites = true;
+	bool all_folders_non_packed_universal_plugins = true;
+	bool all_editor_only_shown = true;
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		String fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
 			all_files = false;
+
+			bool is_non_packed_univ_plugin = false;
+			if (fpath.begins_with("addons://")) {
+				Vector<String> parts = fpath.strip_filesystem_prefix().split("/", false, 1);
+				if (parts.size() == 1) {
+					DirAccess *da = DirAccess::open(fpath);
+					if (da) {
+						if (da->get_filesystem_type() != "PCK") {
+							is_non_packed_univ_plugin = true;
+							all_editor_only_shown &= show_editor_only_plugins.find(parts[0]) != -1;
+						}
+						memdelete(da);
+					}
+				}
+			}
+			all_folders_non_packed_universal_plugins &= is_non_packed_univ_plugin;
 		} else {
 			filenames.push_back(fpath);
 			all_folders = false;
@@ -2217,6 +2264,18 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	} else if (all_folders && foldernames.size() > 0) {
 		p_popup->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Open"), FILE_OPEN);
+
+		if (all_folders_non_packed_universal_plugins) {
+			if (all_editor_only_shown) {
+				p_popup->add_item(TTR("Hide editor-only items"), FILE_HIDE_EDITOR_ONLY);
+			} else {
+				p_popup->add_item(TTR("Show editor-only items"), FILE_SHOW_EDITOR_ONLY);
+			}
+			if (p_paths.size() == 1) {
+				p_popup->add_item(TTR("Export as PCK..."), FILE_EXPORT_PLUGIN);
+			}
+		}
+
 		p_popup->add_separator();
 	}
 
@@ -2511,6 +2570,7 @@ void FileSystemDock::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
+	ADD_SIGNAL(MethodInfo("export_plugin", PropertyInfo(Variant::STRING, "plugin_path")));
 
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));

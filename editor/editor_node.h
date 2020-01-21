@@ -331,6 +331,8 @@ private:
 	String current_path;
 	MenuButton *update_spinner;
 
+	EditorFileDialog *file_export_plugin;
+
 	String defer_load_scene;
 	Node *_last_instanced_scene;
 
@@ -438,6 +440,7 @@ private:
 	bool opening_prev;
 
 	void _dialog_action(String p_file);
+	void _export_plugin_confirmed(String p_file);
 
 	void _edit_current();
 	void _dialog_display_save_error(String p_file, Error p_error);
@@ -486,6 +489,7 @@ private:
 
 	void _inherit_request(String p_file);
 	void _instance_request(const Vector<String> &p_files);
+	void _export_plugin_request(const String &p_plugin_path);
 
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
@@ -559,6 +563,8 @@ private:
 		String path;
 		bool debug;
 		bool pack_only;
+		String plugin;
+
 	} export_defer;
 
 	bool cmdline_export_mode;
@@ -697,6 +703,7 @@ public:
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
+	EditorPlugin *get_enabled_addon_plugin(const String &p_addon);
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource) { inspector_dock->edit_resource(p_resource); };
@@ -781,6 +788,9 @@ public:
 	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
+
+	Error export_plugin(const String &p_plugin_path, const String &p_output_file);
+	Error do_plugin_export(const String &p_plugin_path, const String &p_output_file);
 
 	static void register_editor_types();
 	static void unregister_editor_types();

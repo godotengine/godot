@@ -48,6 +48,7 @@
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/version.h"
+#include "editor/plugins_db.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "scene/gui/center_container.h"
@@ -161,6 +162,7 @@
 #include "editor/plugins/tile_set_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
+#include "editor/plugins_db.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
@@ -405,6 +407,7 @@ void EditorNode::_notification(int p_what) {
 			// Restore the original FPS cap after focusing back on the editor
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
+			project_settings->update_plugins();
 			EditorFileSystem::get_singleton()->scan_changes();
 		} break;
 
@@ -523,6 +526,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	if (p_activate_name.length()) {
 		set_addon_plugin_enabled(p_activate_name, true);
 	}
+	PluginsDB::get_singleton()->scan();
 	project_settings->update_plugins();
 	project_settings->hide();
 	push_item(script.operator->());
@@ -635,6 +639,19 @@ void EditorNode::_fs_changed() {
 			ERR_PRINT(export_error);
 			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 		}
+		_exit_editor();
+	}
+
+	if (export_defer.plugin != "" && !EditorFileSystem::get_singleton()->is_scanning()) {
+
+		Error err = OK;
+		err = do_plugin_export(export_defer.plugin, export_defer.path);
+
+		if (err != OK) {
+			ERR_PRINTS(vformat(TTR("Plugin export failed with error code %d."), (int)err));
+		}
+
+		export_defer.plugin = "";
 		_exit_editor();
 	}
 }
@@ -3004,6 +3021,17 @@ void EditorNode::_update_addon_config() {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
 	}
 
+	Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
+	int i = 0;
+	while (i < show_editor_only_plugins.size()) {
+		if (enabled_addons.find(show_editor_only_plugins[i]) == -1) {
+			show_editor_only_plugins.remove(i);
+		} else {
+			++i;
+		}
+	}
+	EditorSettings::get_singleton()->set_project_metadata("editor_plugins", "show_editor_only", show_editor_only_plugins);
+
 	project_settings->queue_save();
 }
 
@@ -3022,10 +3050,8 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		return;
 	}
 
-	Ref<ConfigFile> cf;
-	cf.instance();
-	String addon_path = String("res://addons").plus_file(p_addon).plus_file("plugin.cfg");
-	if (!DirAccess::exists(addon_path.get_base_dir())) {
+	PluginsDB::PluginInfo info;
+	if (!PluginsDB::get_singleton()->get_plugin_info(p_addon, &info)) {
 		ProjectSettings *ps = ProjectSettings::get_singleton();
 		PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 		for (int i = 0; i < enabled_plugins.size(); ++i) {
@@ -3036,17 +3062,30 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		}
 		ps->set("editor_plugins/enabled", enabled_plugins);
 		ps->save();
+
+		Vector<String> show_editor_only_plugins = EditorSettings::get_singleton()->get_project_metadata("editor_plugins", "show_editor_only", Vector<String>());
+		{
+			int idx = show_editor_only_plugins.find(p_addon);
+			if (idx != -1) {
+				show_editor_only_plugins.remove(idx);
+			}
+		}
+		EditorSettings::get_singleton()->set_project_metadata("editor_plugins", "show_editor_only", show_editor_only_plugins);
+
 		WARN_PRINTS("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
-	Error err = cf->load(addon_path);
+	String plugin_path = ProjectSettings::get_singleton()->localize_path(info.location);
+	Ref<ConfigFile> cf;
+	cf.instance();
+	Error err = cf->load(plugin_path.plus_file("plugin.cfg"));
 	if (err != OK) {
-		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), plugin_path));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(vformat(TTR("Unable to find script field for addon plugin at: 'res://addons/%s'."), p_addon));
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), plugin_path));
 		return;
 	}
 
@@ -3055,7 +3094,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
 	if (script_path.length() > 0) {
-		script_path = String("res://addons").plus_file(p_addon).plus_file(script_path);
+		script_path = plugin_path.plus_file(cf->get_value("plugin", "script"));
 		script = ResourceLoader::load(script_path);
 
 		if (script.is_null()) {
@@ -3083,6 +3122,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	EditorPlugin *ep = memnew(EditorPlugin);
 	ep->set_script(script.get_ref_ptr());
+	ep->set_discriminator(itos(cf->get_value("plugin", "model", 1)) + String("*") + info.location);
 	plugin_addons[p_addon] = ep;
 	add_editor_plugin(ep, p_config_changed);
 
@@ -3092,6 +3132,12 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 
 	return plugin_addons.has(p_addon);
+}
+
+EditorPlugin *EditorNode::get_enabled_addon_plugin(const String &p_addon) {
+
+	ERR_FAIL_COND_V(!plugin_addons.has(p_addon), NULL);
+	return plugin_addons[p_addon];
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -3511,6 +3557,21 @@ void EditorNode::_inherit_request(String p_file) {
 void EditorNode::_instance_request(const Vector<String> &p_files) {
 
 	request_instance_scenes(p_files);
+}
+
+void EditorNode::_export_plugin_request(const String &p_plugin_path) {
+
+	file_export_plugin->set_meta("plugin_path", p_plugin_path);
+	file_export_plugin->popup_centered_ratio();
+}
+
+void EditorNode::_export_plugin_confirmed(String p_file) {
+
+	Error err = do_plugin_export(file_export_plugin->get_meta("plugin_path"), p_file);
+
+	if (err != OK) {
+		ERR_PRINTS(vformat(TTR("Plugin export failed with error code %d."), (int)err));
+	}
 }
 
 void EditorNode::_close_messages() {
@@ -3966,6 +4027,28 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.pack_only = p_pack_only;
 	cmdline_export_mode = true;
 	return OK;
+}
+
+Error EditorNode::export_plugin(const String &p_plugin_name, const String &p_output_file) {
+
+	export_defer.preset = "";
+	export_defer.path = p_output_file;
+	export_defer.plugin = "addons://" + p_plugin_name;
+	cmdline_export_mode = true;
+	return OK;
+}
+
+Error EditorNode::do_plugin_export(const String &p_plugin_path, const String &p_output_file) {
+
+	Ref<EditorExportPlatformPC> platform;
+
+	platform.instance();
+	Ref<EditorExportPreset> preset = platform->create_preset();
+	preset->set_export_filter(EditorExportPreset::ExportFilter::EXPORT_SIMPLE_PACK);
+	preset->add_export_file(p_plugin_path);
+
+	Error err = platform->export_pack(preset, false, p_output_file);
+	return err;
 }
 
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
@@ -5407,6 +5490,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_menu_confirm_current", &EditorNode::_menu_confirm_current);
 	ClassDB::bind_method("_dialog_action", &EditorNode::_dialog_action);
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
+	ClassDB::bind_method("_export_plugin_confirmed", &EditorNode::_export_plugin_confirmed);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
@@ -5480,6 +5564,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_bottom_panel_raise_toggled"), &EditorNode::_bottom_panel_raise_toggled);
 
 	ClassDB::bind_method(D_METHOD("_on_plugin_ready"), &EditorNode::_on_plugin_ready);
+	ClassDB::bind_method(D_METHOD("_export_plugin_request", "plugin_path"), &EditorNode::_export_plugin_request);
 
 	ClassDB::bind_method(D_METHOD("_video_driver_selected"), &EditorNode::_video_driver_selected);
 
@@ -5771,6 +5856,8 @@ EditorNode::EditorNode() {
 	theme = create_custom_theme();
 
 	register_exporters();
+
+	PluginsDB::get_singleton()->scan();
 
 	GLOBAL_DEF("editor/main_run_args", "");
 
@@ -6430,6 +6517,7 @@ EditorNode::EditorNode() {
 	filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->connect("inherit", this, "_inherit_request");
 	filesystem_dock->connect("instance", this, "_instance_request");
+	filesystem_dock->connect("export_plugin", this, "_export_plugin_request");
 	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
 
 	// Scene: Top left
@@ -6600,6 +6688,14 @@ EditorNode::EditorNode() {
 
 	file->connect("file_selected", this, "_dialog_action");
 	file_templates->connect("file_selected", this, "_dialog_action");
+
+	file_export_plugin = memnew(EditorFileDialog);
+	file_export_plugin->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	gui_base->add_child(file_export_plugin);
+	file_export_plugin->set_title(TTR("Export Plugin"));
+	file_export_plugin->add_filter("*.pck");
+	file_export_plugin->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_export_plugin->connect("file_selected", this, "_export_plugin_confirmed");
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);

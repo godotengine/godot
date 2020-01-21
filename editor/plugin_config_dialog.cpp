@@ -34,12 +34,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_scale.h"
+#include "editor/plugins_db.h"
 #include "editor/project_settings_editor.h"
 #include "modules/gdscript/gdscript.h"
 #include "scene/gui/grid_container.h"
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");
+	model_option->select(model_option->get_item_index(2));
+	_on_model_selected(model_option->get_selected());
 	subfolder_edit->set_text("");
 	desc_edit->set_text("");
 	author_edit->set_text("");
@@ -47,18 +50,41 @@ void PluginConfigDialog::_clear_fields() {
 	script_edit->set_text("");
 }
 
+void PluginConfigDialog::_on_model_selected(int p_index) {
+
+	int model = model_option->get_item_id(p_index);
+	if (model < 2) {
+		subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
+		script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
+	} else {
+		subfolder_edit->set_placeholder("\"my_plugin\" -> addons://my_plugin");
+		script_edit->set_placeholder("\"plugin.gd\" -> addons://my_plugin/plugin.gd");
+	}
+}
+
 void PluginConfigDialog::_on_confirmed() {
 
 	String path = "res://addons/" + subfolder_edit->get_text();
 
+	int model = model_option->get_selected_id();
+
+	Ref<ConfigFile> cf = memnew(ConfigFile);
 	if (!_edit_mode) {
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (!d || d->make_dir_recursive(path) != OK)
 			return;
+	} else {
+		if (model >= 2) {
+			path = "addons://" + subfolder_edit->get_text();
+		}
+		// To avoid losing values not editable by this dialog
+		cf->load(path.plus_file("plugin.cfg"));
 	}
 
-	Ref<ConfigFile> cf = memnew(ConfigFile);
 	cf->set_value("plugin", "name", name_edit->get_text());
+	if (model != 1) {
+		cf->set_value("plugin", "model", model);
+	}
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
 	cf->set_value("plugin", "version", version_edit->get_text());
@@ -67,6 +93,13 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->save(path.plus_file("plugin.cfg"));
 
 	if (!_edit_mode) {
+		// At this point we need the plugin to be discovered, something possible now the plugin.cfg exists
+		PluginsDB::get_singleton()->scan();
+
+		if (model >= 2) {
+			path = "addons://" + subfolder_edit->get_text();
+		}
+
 		int lang_idx = script_option_edit->get_selected();
 		String lang_name = ScriptServer::get_language(lang_idx)->get_name();
 
@@ -78,17 +111,31 @@ void PluginConfigDialog::_on_confirmed() {
 		if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
 			// Hard-coded GDScript template to keep usability until we use script templates.
 			Ref<Script> gdscript = memnew(GDScript);
-			gdscript->set_source_code(
+			String source =
 					"tool\n"
 					"extends EditorPlugin\n"
-					"\n"
+					"\n";
+			if (model >= 2) {
+				source +=
+						"# This plugin uses the new universal model. Things you need to know:\n"
+						"# - You can place it inside a specific project, at <project_dir>/addons/ or,\n"
+						"#   to make it user-wide (available for any project you open under your OS\n"
+						"#   user), put it instead at <user_editor_settings>/addons/.\n"
+						"#   In either case it will be available in the Godot file system as\n"
+						"#   addons://plugin_name/.\n"
+						"# - To reference resources, you must use that kind of paths. For instance:\n"
+						"#   var scene = load(\"addons://my_plugin/scene.tscn\")\n"
+						"\n";
+			}
+			source +=
 					"\n"
 					"func _enter_tree()%VOID_RETURN%:\n"
 					"%TS%pass\n"
 					"\n"
 					"\n"
 					"func _exit_tree()%VOID_RETURN%:\n"
-					"%TS%pass\n");
+					"%TS%pass\n";
+			gdscript->set_source_code(source);
 			GDScriptLanguage::get_singleton()->make_template("", "", gdscript);
 			String script_path = path.plus_file(script_edit->get_text());
 			gdscript->set_path(script_path);
@@ -139,6 +186,8 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		ERR_FAIL_COND_MSG(err != OK, "Cannot load config file from path '" + p_config_path + "'.");
 
 		name_edit->set_text(cf->get_value("plugin", "name", ""));
+		model_option->select(model_option->get_item_index(cf->get_value("plugin", "model", 1)));
+		_on_model_selected(model_option->get_selected());
 		subfolder_edit->set_text(p_config_path.get_base_dir().get_basename().get_file());
 		desc_edit->set_text(cf->get_value("plugin", "description", ""));
 		author_edit->set_text(cf->get_value("plugin", "author", ""));
@@ -146,6 +195,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		script_edit->set_text(cf->get_value("plugin", "script", ""));
 
 		_edit_mode = true;
+		model_option->set_disabled(true);
 		active_edit->hide();
 		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->hide();
 		subfolder_edit->hide();
@@ -154,6 +204,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 	} else {
 		_clear_fields();
 		_edit_mode = false;
+		model_option->set_disabled(false);
 		active_edit->show();
 		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->show();
 		subfolder_edit->show();
@@ -165,6 +216,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 }
 
 void PluginConfigDialog::_bind_methods() {
+	ClassDB::bind_method("_on_model_selected", &PluginConfigDialog::_on_model_selected);
 	ClassDB::bind_method("_on_required_text_changed", &PluginConfigDialog::_on_required_text_changed);
 	ClassDB::bind_method("_on_confirmed", &PluginConfigDialog::_on_confirmed);
 	ClassDB::bind_method("_on_cancelled", &PluginConfigDialog::_on_cancelled);
@@ -188,12 +240,21 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit->set_placeholder("MyPlugin");
 	grid->add_child(name_edit);
 
+	Label *model_lb = memnew(Label);
+	model_lb->set_text(TTR("Model:"));
+	grid->add_child(model_lb);
+
+	model_option = memnew(OptionButton);
+	model_option->connect("item_selected", this, "_on_model_selected");
+	model_option->add_item(TTR("Universal (addons://, project or user)"), 2);
+	model_option->add_item(TTR("Legacy (res://, project only)"), 1);
+	grid->add_child(model_option);
+
 	Label *subfolder_lb = memnew(Label);
 	subfolder_lb->set_text(TTR("Subfolder:"));
 	grid->add_child(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
-	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
 	grid->add_child(subfolder_edit);
 
 	Label *desc_lb = memnew(Label);
@@ -242,7 +303,6 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_edit = memnew(LineEdit);
 	script_edit->connect("text_changed", this, "_on_required_text_changed");
-	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	grid->add_child(script_edit);
 
 	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.

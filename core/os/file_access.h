@@ -61,6 +61,7 @@ public:
 
 protected:
 	virtual String _get_resource_path() const;
+	virtual void _get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const;
 
 	virtual String fix_path(const String &p_path) const;
 	virtual String unfix_path(const String &p_path) const;

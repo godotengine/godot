@@ -104,7 +104,8 @@ void EditorSceneImporterAssimp::_bind_methods() {
 Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	Assimp::Importer importer;
-	std::wstring w_path = ProjectSettings::get_singleton()->globalize_path(p_path).c_str();
+	String global_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	std::wstring w_path = global_path.c_str();
 	std::string s_path(w_path.begin(), w_path.end());
 	importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 	// Cannot remove pivot points because the static mesh will be in the wrong place
@@ -147,7 +148,22 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 // aiProcess_EmbedTextures |
 								 //aiProcess_SplitByBoneCount |
 								 0;
-	aiScene *scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
+	aiScene *scene = NULL;
+	bool import_from_memory = false;
+	{
+		DirAccess *da = DirAccess::open(global_path.get_base_dir());
+		ERR_FAIL_COND_V(!da, NULL);
+		if (da->get_filesystem_type() == "PCK") {
+			import_from_memory = true;
+		}
+		memdelete(da);
+	}
+	if (!import_from_memory) {
+		scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
+	} else {
+		Vector<uint8_t> data = FileAccess::get_file_as_array(global_path);
+		scene = (aiScene *)importer.ReadFileFromMemory(data.ptr(), data.size(), post_process_Steps);
+	}
 
 	ERR_FAIL_COND_V_MSG(scene == NULL, NULL, String("Open Asset Import failed to open: ") + String(importer.GetErrorString()));
 

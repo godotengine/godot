@@ -118,6 +118,7 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled;
 
 	String last_main_screen_name;
+	String discriminator;
 
 protected:
 	static void _bind_methods();
@@ -235,6 +236,11 @@ public:
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
+
+	void set_discriminator(const String &p_discriminator) { discriminator = p_discriminator; }
+	String get_discriminator() { return discriminator; }
+
+	Ref<ConfigFile> get_config();
 
 	void enable_plugin();
 	void disable_plugin();

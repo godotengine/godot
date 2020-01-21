@@ -72,7 +72,7 @@ void FileAccess::_set_access_type(AccessType p_access) {
 FileAccess *FileAccess::create_for_path(const String &p_path) {
 
 	FileAccess *ret = NULL;
-	if (p_path.begins_with("res://")) {
+	if (p_path.begins_with("res://") || p_path.begins_with("addons://")) {
 
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
@@ -154,23 +154,30 @@ String FileAccess::fix_path(const String &p_path) const {
 	return r_path;
 }
 
+void FileAccess::_get_path_bases_for_unfix(const String &p_path, String *r_logical_base, String *r_physical_base) const {
+
+	if (_access_type == ACCESS_USERDATA) {
+		*r_logical_base = "user://";
+		*r_physical_base = OS::get_singleton()->get_user_data_dir();
+	}
+}
+
 String FileAccess::unfix_path(const String &p_path) const {
 
-	switch (_access_type) {
+	String logical_base;
+	String physical_base;
+	_get_path_bases_for_unfix(p_path, &logical_base, &physical_base);
 
-		case ACCESS_USERDATA: {
-
-			String data_dir = OS::get_singleton()->get_user_data_dir();
-			return String("user://").plus_file(p_path.right(data_dir.length()));
-		} break;
-		case ACCESS_FILESYSTEM: {
-
-			return p_path;
-		} break;
-		case ACCESS_MAX: break; // Can't happen, but silences warning
+	if (logical_base == "") {
+		return p_path;
 	}
 
-	return p_path;
+	if (!p_path.begins_with(physical_base)) {
+		// Doesn't belong in this access mode
+		return p_path;
+	}
+
+	return logical_base.plus_file(p_path.right(physical_base.length())).replace("///", "//");
 }
 
 /* these are all implemented for ease of porting, then can later be optimized */

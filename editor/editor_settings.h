@@ -130,9 +130,21 @@ public:
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 
+	struct MainPaths {
+		String exe_path;
+		String sc_path;
+		String data_path;
+		String data_dir;
+		String config_path;
+		String config_dir;
+		String cache_path;
+		String cache_dir;
+	};
+
 	static EditorSettings *get_singleton();
 
 	static void create();
+	static void get_main_paths(MainPaths *r_paths);
 	void setup_language();
 	void setup_network();
 	static void save();
@@ -167,6 +179,7 @@ public:
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
 	String get_project_script_templates_dir() const;
+	String get_plugins_dir() const;
 	String get_cache_dir() const;
 	String get_feature_profiles_dir() const;
 

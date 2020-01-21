@@ -196,6 +196,8 @@ private:
 	void _export_find_dependencies(const String &p_path, Set<String> &p_paths);
 	void _export_find_files(const String &p_path, Set<String> &p_paths);
 
+	String _fixup_addons_path(const String &p_path);
+
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
 	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);

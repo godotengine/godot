@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  editor_plugin_settings.h                                             */
+/*  plugins_db.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,43 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPLUGINSETTINGS_H
-#define EDITORPLUGINSETTINGS_H
+#ifndef PLUGINS_DB_H
+#define PLUGINS_DB_H
 
-#include "core/undo_redo.h"
-#include "editor/plugin_config_dialog.h"
-#include "editor_data.h"
-#include "property_editor.h"
-#include "scene/gui/dialogs.h"
+#include "core/map.h"
+#include "core/ustring.h"
+#include "core/vector.h"
 
-class EditorPluginSettings : public VBoxContainer {
-
-	GDCLASS(EditorPluginSettings, VBoxContainer);
-
-	enum {
-		BUTTON_PLUGIN_EDIT
-	};
-
-	PluginConfigDialog *plugin_config_dialog;
-	Button *create_plugin;
-	Button *update_list;
-	Tree *plugin_list;
-	bool updating;
-
-	void _plugin_activity_changed();
-	void _create_clicked();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
-	void _set_addon_plugin_enabled(const String &p_name, bool p_enabled);
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
+class PluginsDB {
+	static PluginsDB *singleton;
 
 public:
-	void update_plugins();
+	struct PluginInfo {
+		String location;
+		int model;
+		// model >= 2
+		bool is_user_level;
+		bool is_pack;
+		Vector<String> editor_only_paths;
+	};
 
-	EditorPluginSettings();
+private:
+	String project_addons_dir;
+	String user_addons_dir;
+
+	Vector<String> addons_dirs;
+	Map<String, PluginInfo> pack_entries_cache;
+	Map<String, PluginInfo> entries;
+	Vector<String> mounted_packs_paths;
+
+	bool _parse_plugin(const String &p_location, bool p_is_user_level, String p_expected_name_for_pack, PluginInfo *r_entry);
+
+public:
+	static PluginsDB *get_singleton();
+
+	void scan();
+
+	Vector<String> get_plugin_names();
+	bool get_plugin_info(const String &p_plugin_name, PluginInfo *r_plugin_info);
+	bool has_plugin(const String &p_plugin_name);
+	bool has_universal_plugin(const String &p_plugin_name);
+
+	bool is_editor_only_path(const String &p_path, const Vector<String> *p_editor_only_paths = NULL);
+
+	PluginsDB();
 };
 
-#endif // EDITORPLUGINSETTINGS_H
+#endif

@@ -41,12 +41,12 @@ DirAccess::AccessType DirAccess::get_access_type() const {
 	return _access_type;
 }
 
-String DirAccess::_get_root_path() const {
+bool DirAccess::_is_valid_dir_change(const String &p_curr_dir, const String &p_new_dir) const {
 
 	if (_access_type == ACCESS_USERDATA) {
-		return OS::get_singleton()->get_user_data_dir();
+		return p_new_dir.begins_with(OS::get_singleton()->get_user_data_dir());
 	} else {
-		return "";
+		return true;
 	}
 }
 
@@ -270,7 +270,7 @@ DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { 0, 0, 0 };
 DirAccess *DirAccess::create_for_path(const String &p_path) {
 
 	DirAccess *da = NULL;
-	if (p_path.begins_with("res://")) {
+	if (p_path.begins_with("res://") || p_path.begins_with("addons://")) {
 
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {

@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  editor_plugin_settings.h                                             */
+/*  addons_fs_manager.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,43 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPLUGINSETTINGS_H
-#define EDITORPLUGINSETTINGS_H
+#ifndef ADDONS_FS_MANAGER_H
+#define ADDONS_FS_MANAGER_H
 
-#include "core/undo_redo.h"
-#include "editor/plugin_config_dialog.h"
-#include "editor_data.h"
-#include "property_editor.h"
-#include "scene/gui/dialogs.h"
+#include "core/map.h"
+#include "core/os/thread_safe.h"
+#include "core/ustring.h"
 
-class EditorPluginSettings : public VBoxContainer {
+class AddonsFileSystemManager {
+	_THREAD_SAFE_CLASS_
 
-	GDCLASS(EditorPluginSettings, VBoxContainer);
+	static AddonsFileSystemManager *singleton;
 
-	enum {
-		BUTTON_PLUGIN_EDIT
+	struct Subdirectory {
+		String location; // Full real location
+		bool is_pack;
+		bool hidden;
 	};
-
-	PluginConfigDialog *plugin_config_dialog;
-	Button *create_plugin;
-	Button *update_list;
-	Tree *plugin_list;
-	bool updating;
-
-	void _plugin_activity_changed();
-	void _create_clicked();
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
-	void _set_addon_plugin_enabled(const String &p_name, bool p_enabled);
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
+	Map<String, Subdirectory> subdirs;
+	bool has_any_pack;
 
 public:
-	void update_plugins();
+	static AddonsFileSystemManager *get_singleton();
 
-	EditorPluginSettings();
+	void start_building();
+	void add_subdirectory(const String &p_subdir, const String &p_location);
+	void add_pack_subdirectory(const String &p_subdir, const String &p_pack_location);
+	void end_building();
+
+	bool has_subdirectory(const String &p_subdir);
+	String get_subdirectory_location(const String &p_subdir);
+	void get_all_subdirectories(Vector<String> *r_subdir_list);
+	bool find_subdirectory_for_path(const String &p_path, String *r_subdir, String *r_location);
+
+	bool is_path_packed(const String &p_path);
+
+	void set_subdirectory_hidden(const String &p_subdir, bool p_hidden);
+	bool is_subdirectory_hidden(const String &p_subdir);
+
+	AddonsFileSystemManager();
 };
 
-#endif // EDITORPLUGINSETTINGS_H
+#endif

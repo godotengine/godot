@@ -30,6 +30,7 @@
 
 #include "editor_file_system.h"
 
+#include "core/io/file_access_pack.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -37,6 +38,8 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/variant_parser.h"
+#include "editor/addons_fs_manager.h"
+#include "editor/plugins_db.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
@@ -422,6 +425,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
+	ERR_FAIL_COND_V(base_path == "", false);
 	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
 	if (!md5s) { // No md5's stored for this resource
 		return true;
@@ -688,6 +692,12 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 		if (da->current_is_hidden())
 			continue;
 
+		// Since we are using DirAccessPack rather than DirAccessResources, we need this check
+		// (luckily, here it's easy because editor-only paths in PCK plugins) are always hidden
+		if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && PluginsDB::get_singleton()->is_editor_only_path(cd.plus_file(f))) {
+			continue;
+		}
+
 		if (da->current_is_dir()) {
 
 			if (f.begins_with(".")) // Ignore UNIX style hidden and . / ..
@@ -716,20 +726,38 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 	for (List<String>::Element *E = dirs.front(); E; E = E->next(), idx++) {
 
-		if (da->change_dir(E->get()) == OK) {
+		Error err;
+		DirAccess *da_packed = NULL;
+		String new_dir = cd.plus_file(E->get());
+		if (!AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && AddonsFileSystemManager::get_singleton()->is_path_packed(new_dir)) {
+			// Switch to packed for this directory and all its descendants
+			da_packed = PackedData::get_singleton()->try_open_directory(new_dir);
+			err = da_packed ? OK : ERR_CANT_OPEN;
+		} else {
+			err = da->change_dir(E->get());
+		}
 
-			String d = da->get_current_dir();
+		if (err == OK) {
 
-			if (d == cd || !d.begins_with(cd)) {
-				da->change_dir(cd); //avoid recursion
-			} else {
+			bool should_process = true;
+			if (!da_packed) {
+				String d = da->get_current_dir();
+
+				if (d == cd || !d.begins_with(cd)) {
+					// Avoid recursion
+					da->change_dir(cd);
+					should_process = false;
+				}
+			}
+
+			if (should_process) {
 
 				EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
 				efd->parent = p_dir;
 				efd->name = E->get();
 
-				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
+				_scan_new_dir(efd, da_packed ? da_packed : da, p_progress.get_sub(idx, total));
 
 				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -744,7 +772,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 					p_dir->subdirs.insert(idx2, efd);
 				}
 
-				da->change_dir("..");
+				if (!da_packed) {
+					da->change_dir("..");
+				} else {
+					memdelete(da_packed);
+				}
 			}
 		} else {
 			ERR_PRINTS("Cannot go into subdir '" + E->get() + "'.");
@@ -881,9 +913,21 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 		//then scan files and directories and check what's different
 
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		DirAccess *da;
+		if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd)) {
+			da = PackedData::get_singleton()->try_open_directory(cd);
+		} else {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			if (da->change_dir(cd) != OK) {
+				memdelete(da);
+				da = NULL;
+			}
+		}
+		if (!da) {
+			ERR_PRINTS("Cannot go into dir: " + cd);
+			return;
+		}
 
-		da->change_dir(cd);
 		da->list_dir_begin();
 		while (true) {
 
@@ -893,6 +937,12 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 			if (da->current_is_hidden())
 				continue;
+
+			// Since we are using DirAccessPack rather than DirAccessResources, we need this check
+			// (luckily, here it's easy because editor-only paths in PCK plugins) are always hidden
+			if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd) && PluginsDB::get_singleton()->is_editor_only_path(cd.plus_file(f))) {
+				continue;
+			}
 
 			if (da->current_is_dir()) {
 
@@ -911,8 +961,22 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 					efd->parent = p_dir;
 					efd->name = f;
-					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-					d->change_dir(cd.plus_file(f));
+
+					DirAccess *d;
+					if (AddonsFileSystemManager::get_singleton()->is_path_packed(cd.plus_file(f))) {
+						d = PackedData::get_singleton()->try_open_directory(cd.plus_file(f));
+					} else {
+						d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+						if (d->change_dir(cd.plus_file(f)) != OK) {
+							memdelete(d);
+							d = NULL;
+						}
+					}
+					if (!d) {
+						ERR_PRINTS("Cannot go into dir: " + f);
+						continue;
+					}
+
 					_scan_new_dir(efd, d, p_progress.get_sub(1, 1));
 					memdelete(d);
 
@@ -1783,6 +1847,10 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		}
 	}
 
+	if (PluginsDB::get_singleton()->is_editor_only_path(p_file)) {
+		load_default = false;
+	}
+
 	//mix with default params, in case a parameter is missing
 
 	List<ResourceImporter::ImportOption> opts;
@@ -1805,7 +1873,19 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	}
 
 	//finally, perform import!!
+
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_file);
+	ERR_FAIL_COND(base_path == "");
+
+	String base_dir = base_path.get_base_dir();
+	if (!DirAccess::exists(base_dir)) {
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error err = da->make_dir(base_dir);
+		memdelete(da);
+		if (err) {
+			ERR_FAIL_COND_MSG(err != OK, "Failed to create '" + base_dir + "' folder.");
+		}
+	}
 
 	List<String> import_variants;
 	List<String> gen_files;
@@ -1818,8 +1898,19 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	//as import is complete, save the .import file
 
-	FileAccess *f = FileAccess::open(ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file), FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + p_file + ".import'.");
+	String settings_path = ResourceFormatImporter::get_singleton()->get_import_settings_path(p_file);
+	ERR_FAIL_COND(settings_path == "");
+
+	String settings_dir = settings_path.get_base_dir();
+	if (!DirAccess::exists(settings_dir)) {
+		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		err = da->make_dir(settings_dir);
+		memdelete(da);
+		ERR_FAIL_COND_MSG(err, "Failed to create '" + settings_dir + "' folder.");
+	}
+
+	FileAccess *f = FileAccess::open(settings_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + settings_path + ".");
 
 	//write manually, as order matters ([remap] has to go first for performance).
 	f->store_line("[remap]");
@@ -1956,18 +2047,6 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<Str
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
-
-	{ //check that .import folder exists
-		DirAccess *da = DirAccess::open("res://");
-		if (da->change_dir(".import") != OK) {
-			Error err = da->make_dir(".import");
-			if (err) {
-				memdelete(da);
-				ERR_FAIL_MSG("Failed to create 'res://.import' folder.");
-			}
-		}
-		memdelete(da);
-	}
 
 	importing = true;
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());

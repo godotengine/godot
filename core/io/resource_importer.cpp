@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/variant_parser.h"
+#include "editor/plugins_db.h"
 
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
@@ -397,12 +398,50 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
 
-	return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+	if (p_for_file.begins_with("addons://")) {
+		String plugin_name = p_for_file.strip_filesystem_prefix().get_slicec('/', 0);
+		if (plugin_name.length()) {
+#ifdef TOOLS_ENABLED
+			bool editor_only = PluginsDB::get_singleton()->is_editor_only_path(p_for_file);
+#else
+			bool editor_only = false;
+#endif
+			if (editor_only) {
+				return "addons://" + plugin_name + "/.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+			} else {
+				return "res://.import/plugin-" + plugin_name + "-" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+			}
+		}
+	} else if (p_for_file.begins_with("res://")) {
+		return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+	}
+
+	// Error
+	return "";
 }
 
 String ResourceFormatImporter::get_import_settings_path(const String &p_for_file) const {
 
-	return p_for_file + ".import";
+	if (p_for_file.begins_with("addons://")) {
+		String plugin_name = p_for_file.strip_filesystem_prefix().get_slicec('/', 0);
+		if (plugin_name.length()) {
+#ifdef TOOLS_ENABLED
+			bool editor_only = PluginsDB::get_singleton()->is_editor_only_path(p_for_file);
+#else
+			bool editor_only = false;
+#endif
+			if (editor_only) {
+				return p_for_file + ".import";
+			} else {
+				return "res://addons/plugin-" + plugin_name + "-" + p_for_file.get_file() + "-" + p_for_file.md5_text() + ".import";
+			}
+		}
+	} else if (p_for_file.begins_with("res://")) {
+		return p_for_file + ".import";
+	}
+
+	// Error
+	return "";
 }
 
 bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {
