@@ -291,9 +291,8 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 	} else {
 		CameraMatrix cm;
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-		float screen_w, screen_h;
-		cm.get_viewport_size(screen_w, screen_h);
-		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -near).normalized();
+		Vector2 screen_he = cm.get_viewport_half_extents();
+		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -near).normalized();
 	}
 
 	return ray;
@@ -402,13 +401,12 @@ Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 	else
 		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
 
-	Size2 vp_size;
-	cm.get_viewport_size(vp_size.x, vp_size.y);
+	Vector2 vp_he = cm.get_viewport_half_extents();
 
 	Vector2 point;
 	point.x = (p_point.x / viewport_size.x) * 2.0 - 1.0;
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
-	point *= vp_size;
+	point *= vp_he;
 
 	Vector3 p(point.x, point.y, -p_z_depth);
 
