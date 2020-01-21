@@ -98,7 +98,7 @@ void WebSocketMultiplayerPeer::_bind_methods() {
 //
 int WebSocketMultiplayerPeer::get_available_packet_count() const {
 
-	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, 0, "Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
 
 	return _incoming_packets.size();
 }
