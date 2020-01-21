@@ -111,6 +111,7 @@ void MultiplayerAPI::poll() {
 		Error err = network_peer->get_packet(&packet, len);
 		if (err != OK) {
 			ERR_PRINT("Error getting packet!");
+			break; // Something is wrong!
 		}
 
 		rpc_sender_id = sender;
