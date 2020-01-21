@@ -52,6 +52,7 @@
 #include "audio/effects/audio_effect_reverb.h"
 #include "audio/effects/audio_effect_spectrum_analyzer.h"
 #include "audio/effects/audio_effect_stereo_enhance.h"
+#include "audio/effects/audio_effect_stream.h"
 #include "audio/effects/audio_stream_generator.h"
 #include "audio_server.h"
 #include "camera/camera_feed.h"
@@ -139,6 +140,8 @@ void register_server_types() {
 
 	{
 		//audio effects
+		ClassDB::register_class<AudioEffectStream>();
+
 		ClassDB::register_class<AudioEffectAmplify>();
 
 		ClassDB::register_class<AudioEffectReverb>();
