@@ -81,7 +81,12 @@ namespace GodotTools
                     }
                 }
 
-                ScriptClassParser.ParseFileOrThrow(projectIncludeFile, out var classes);
+                Error parseError = ScriptClassParser.ParseFile(projectIncludeFile, out var classes, out string errorStr);
+                if (parseError != Error.Ok)
+                {
+                    GD.PushError($"Failed to determine namespace and class for script: {projectIncludeFile}. Parse error: {errorStr ?? parseError.ToString()}");
+                    continue;
+                }
 
                 string searchName = System.IO.Path.GetFileNameWithoutExtension(projectIncludeFile);
 
