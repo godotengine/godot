@@ -795,12 +795,12 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
-		if (space)
+		if (space && space->get_delta_time() != 0)
 			btBody->setLinearVelocity((p_global_transform.getOrigin() - btBody->getWorldTransform().getOrigin()) / space->get_delta_time());
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(p_global_transform);
 	} else {
-		// Is necesasry to avoid wrong location on the rendering side on the next frame
+		// Is necessary to avoid wrong location on the rendering side on the next frame
 		godotMotionState->setWorldTransform(p_global_transform);
 	}
 	CollisionObjectBullet::set_transform__bullet(p_global_transform);
