@@ -75,6 +75,7 @@ struct CameraMatrix {
 
 	bool get_endpoints(const Transform &p_transform, Vector3 *p_8points) const;
 	void get_viewport_size(real_t &r_width, real_t &r_height) const;
+	void get_far_plane_size(real_t &r_width, real_t &r_height) const;
 
 	void invert();
 	CameraMatrix inverse() const;
@@ -92,6 +93,21 @@ struct CameraMatrix {
 	operator Transform() const;
 
 	void flip_y();
+
+	bool operator==(const CameraMatrix &p_cam) const {
+		for (uint32_t i = 0; i < 4; i++) {
+			for (uint32_t j = 0; j < 4; j++) {
+				if (matrix[i][j] != p_cam.matrix[i][j]) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const CameraMatrix &p_cam) const {
+		return !(*this == p_cam);
+	}
 
 	CameraMatrix();
 	CameraMatrix(const Transform &p_transform);

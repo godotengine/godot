@@ -277,6 +277,36 @@ void CameraMatrix::get_viewport_size(real_t &r_width, real_t &r_height) const {
 	r_height = res.y;
 }
 
+void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
+
+	const real_t *matrix = (const real_t *)this->matrix;
+	///////--- Far Plane ---///////
+	Plane far_plane = Plane(matrix[3] - matrix[2],
+			matrix[7] - matrix[6],
+			matrix[11] - matrix[10],
+			-matrix[15] + matrix[14]);
+	far_plane.normalize();
+
+	///////--- Right Plane ---///////
+	Plane right_plane = Plane(matrix[3] - matrix[0],
+			matrix[7] - matrix[4],
+			matrix[11] - matrix[8],
+			-matrix[15] + matrix[12]);
+	right_plane.normalize();
+
+	Plane top_plane = Plane(matrix[3] - matrix[1],
+			matrix[7] - matrix[5],
+			matrix[11] - matrix[9],
+			-matrix[15] + matrix[13]);
+	top_plane.normalize();
+
+	Vector3 res;
+	far_plane.intersect_3(right_plane, top_plane, &res);
+
+	r_width = res.x;
+	r_height = res.y;
+}
+
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
 
 	Vector<Plane> planes = get_projection_planes(Transform());
