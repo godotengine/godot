@@ -77,16 +77,19 @@ void PluginConfigDialog::_on_confirmed() {
 
 		if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
 			// Hard-coded GDScript template to keep usability until we use script templates.
-			Ref<GDScript> gdscript = memnew(GDScript);
+			Ref<Script> gdscript = memnew(GDScript);
 			gdscript->set_source_code(
 					"tool\n"
 					"extends EditorPlugin\n"
 					"\n"
-					"func _enter_tree():\n"
-					"\tpass\n"
 					"\n"
-					"func _exit_tree():\n"
-					"\tpass\n");
+					"func _enter_tree()%VOID_RETURN%:\n"
+					"%TS%pass\n"
+					"\n"
+					"\n"
+					"func _exit_tree()%VOID_RETURN%:\n"
+					"%TS%pass\n");
+			GDScriptLanguage::get_singleton()->make_template("", "", gdscript);
 			String script_path = path.plus_file(script_edit->get_text());
 			gdscript->set_path(script_path);
 			ResourceSaver::save(script_path, gdscript);
