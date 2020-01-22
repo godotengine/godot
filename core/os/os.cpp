@@ -221,7 +221,7 @@ bool OS::has_virtual_keyboard() const {
 	return false;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 }
 
 void OS::hide_virtual_keyboard() {
