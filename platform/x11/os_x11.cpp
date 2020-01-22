@@ -2000,11 +2000,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		if (last_is_pressed) {
 			k->set_echo(true);
 		}
-	} else {
-		//ignore
-		if (!last_is_pressed) {
-			return;
-		}
 	}
 
 	//printf("key: %x\n",k->get_scancode());
