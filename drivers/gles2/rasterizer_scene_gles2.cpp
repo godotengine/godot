@@ -2658,14 +2658,14 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	};
 
 	if (!asymmetrical) {
-		float vw, vh, zn;
-		camera.get_viewport_size(vw, vh);
+		Vector2 vp_he = camera.get_viewport_half_extents();
+		float zn;
 		zn = p_projection.get_z_near();
 
 		for (int i = 0; i < 4; i++) {
 			Vector3 uv = vertices[i * 2 + 1];
-			uv.x = (uv.x * 2.0 - 1.0) * vw;
-			uv.y = -(uv.y * 2.0 - 1.0) * vh;
+			uv.x = (uv.x * 2.0 - 1.0) * vp_he.x;
+			uv.y = -(uv.y * 2.0 - 1.0) * vp_he.y;
 			uv.z = -zn;
 			vertices[i * 2 + 1] = p_transform.basis.xform(uv).normalized();
 			vertices[i * 2 + 1].z = -vertices[i * 2 + 1].z;

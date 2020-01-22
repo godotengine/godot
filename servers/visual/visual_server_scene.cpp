@@ -1400,9 +1400,9 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				if (p_cam_orthogonal) {
 
-					float w, h;
-					p_cam_projection.get_viewport_size(w, h);
-					camera_matrix.set_orthogonal(w, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+					Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
+
+					camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 				} else {
 
 					float fov = p_cam_projection.get_fov();
@@ -2090,8 +2090,8 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				float zn = p_cam_projection.get_z_near();
 				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); //camera near plane
 
-				float vp_w, vp_h; //near plane size in screen coordinates
-				p_cam_projection.get_viewport_size(vp_w, vp_h);
+				// near plane half width and height
+				Vector2 vp_half_extents = p_cam_projection.get_viewport_half_extents();
 
 				switch (VSG::storage->light_get_type(ins->base)) {
 
@@ -2117,7 +2117,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 						}
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_w + vp_h);
+						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 					} break;
 					case VS::LIGHT_SPOT: {
 
@@ -2146,7 +2146,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 						}
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_w + vp_h);
+						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
 
 					} break;
 					default: {
