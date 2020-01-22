@@ -386,6 +386,16 @@
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
+		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
+		</member>
+		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
+		</member>
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.5 )">
+		</member>
+		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">
+		</member>
+		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color( 0.1, 1, 0.7, 0.4 )">
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
@@ -467,6 +477,8 @@
 		</member>
 		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="" default="3">
 			Timer for detecting idle in the editor (in seconds).
+		</member>
+		<member name="gui/timers/tooltip_delay_sec" type="float" setter="" getter="" default="0.5">
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 		</member>
@@ -730,19 +742,45 @@
 		<member name="node/name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
+		<member name="physics/2d/bp_hash_table_size" type="int" setter="" getter="" default="4096">
+		</member>
+		<member name="physics/2d/cell_size" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
+		</member>
 		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
 		</member>
+		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+		</member>
+		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
+		</member>
+		<member name="physics/2d/large_object_surface_threshold_in_cells" type="int" setter="" getter="" default="512">
+		</member>
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+		</member>
+		<member name="physics/2d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+		</member>
+		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 		</member>
 		<member name="physics/2d/thread_model" type="int" setter="" getter="" default="1">
 			Sets whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
 		</member>
+		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
+		</member>
 		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 		</member>
+		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3( 0, -1, 0 )">
+		</member>
+		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
+		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use.
+		</member>
+		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			Frames per second used in the physics. Physics always needs a fixed amount of frames per second.
@@ -752,6 +790,8 @@
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
+		</member>
+		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
@@ -784,6 +824,10 @@
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
+		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/quality/depth/hdr.mobile" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
@@ -806,6 +850,8 @@
 		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="" default="4">
 			Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16).
 		</member>
+		<member name="rendering/quality/filters/msaa" type="int" setter="" getter="" default="0">
+		</member>
 		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
@@ -813,6 +859,10 @@
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports).
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="" default="3">
+		</member>
+		<member name="rendering/quality/reflections/atlas_size" type="int" setter="" getter="" default="2048">
+		</member>
+		<member name="rendering/quality/reflections/atlas_subdiv" type="int" setter="" getter="" default="8">
 		</member>
 		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses a high amount of samples to create blurred variants of reflection probes and panorama backgrounds (sky). Those blurred variants are used by rough materials.
