@@ -45,7 +45,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Changes the value set for this material of a uniform in the shader.
+				Changes the value set for this material of a uniform in the shader. [b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
 			</description>
 		</method>
 	</methods>
