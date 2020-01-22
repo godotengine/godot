@@ -52,7 +52,12 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 	uint32_t param_position = 1;
 
 	if (length >= 1) {
-		if ((data[0] & 0x80) == 0x00) {
+		if (data[0] >= 0xF0) {
+			// channel does not apply to system common messages
+			event->set_channel(0);
+			event->set_message(data[0]);
+			last_received_message = data[0];
+		} else if ((data[0] & 0x80) == 0x00) {
 			// running status
 			event->set_channel(last_received_message & 0xF);
 			event->set_message(last_received_message >> 4);
