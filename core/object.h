@@ -465,8 +465,7 @@ private:
 
 		MethodInfo user;
 		VMap<Target, Slot> slot_map;
-		int lock;
-		Signal() { lock = 0; }
+		Signal() {}
 	};
 
 	HashMap<StringName, Signal> signal_map;
@@ -481,6 +480,7 @@ private:
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
+	bool _emitting;
 #ifdef TOOLS_ENABLED
 	bool _edited;
 	uint32_t _edited_version;
