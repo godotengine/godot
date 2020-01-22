@@ -1865,7 +1865,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, p_radiance_size, 2.0 * p_radiance_size, 0, format, type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #ifdef DEBUG_ENABLED
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
