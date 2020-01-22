@@ -774,6 +774,15 @@
 		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="" default="1024">
 			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
 		</member>
+		<member name="rendering/limits/culling/max_instance_cull" type="int" setter="" getter="" default="65536">
+			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves. You may want to modify this value if you also modify the max renderable elements value.
+		</member>
+		<member name="rendering/limits/culling/max_lights_culled" type="int" setter="" getter="" default="4096">
+			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation. You may want to modify this value if you also modify the max renderable lights value.
+		</member>
+		<member name="rendering/limits/culling/max_reflection_probes_culled" type="int" setter="" getter="" default="4096">
+			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation. You may want to modify this value if you also modify the max renderable reflections.
+		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>

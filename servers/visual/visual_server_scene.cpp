@@ -1328,7 +1328,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
 				//optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
-				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK);
 				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
 				//check distance max and min
 
@@ -1526,7 +1526,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
 				light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
-				int cull_count = p_scenario->octree.cull_convex(light_frustum_planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->octree.cull_convex(light_frustum_planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK);
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
@@ -1590,7 +1590,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
 					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
-					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK);
 					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 					for (int j = 0; j < cull_count; j++) {
@@ -1644,7 +1644,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
-					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK);
 
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
@@ -1681,7 +1681,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
-			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, max_instance_cull, VS::INSTANCE_GEOMETRY_MASK);
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -1864,7 +1864,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	instance_cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
+	instance_cull_count = scenario->octree.cull_convex(planes, instance_cull_result, max_instance_cull);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
@@ -1894,7 +1894,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			//failure
 		} else if (ins->base_type == VS::INSTANCE_LIGHT && ins->visible) {
 
-			if (light_cull_count < MAX_LIGHTS_CULLED) {
+			if (light_cull_count < max_lights_culled) {
 
 				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
@@ -1911,7 +1911,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			}
 		} else if (ins->base_type == VS::INSTANCE_REFLECTION_PROBE && ins->visible) {
 
-			if (reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
+			if (reflection_probe_cull_count < max_reflection_probes_culled) {
 
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(ins->base_data);
 
@@ -2041,7 +2041,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 		for (List<Instance *>::Element *E = scenario->directional_lights.front(); E; E = E->next()) {
 
-			if (light_cull_count + directional_light_count >= MAX_LIGHTS_CULLED) {
+			if (light_cull_count + directional_light_count >= max_lights_culled) {
 				break;
 			}
 
@@ -3522,6 +3522,19 @@ VisualServerScene::VisualServerScene() {
 
 	render_pass = 1;
 	singleton = this;
+
+	max_instance_cull = GLOBAL_DEF_RST("rendering/limits/culling/max_instance_cull", (int)VisualServerScene::DEFAULT_MAX_INSTANCE_CULL);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_instance_cull", PropertyInfo(Variant::INT, "rendering/limits/culling/max_instance_cull", PROPERTY_HINT_RANGE, "1024,1000000,1"));
+	max_lights_culled = GLOBAL_DEF("rendering/limits/culling/max_lights_culled", (int)VisualServerScene::DEFAULT_MAX_LIGHTS_CULLED);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_lights_culled", PropertyInfo(Variant::INT, "rendering/limits/culling/max_lights_culled", PROPERTY_HINT_RANGE, "16,4096,1"));
+	max_reflection_probes_culled = GLOBAL_DEF("rendering/limits/culling/max_reflection_probes_culled", (int)VisualServerScene::DEFAULT_MAX_REFLECTION_PROBES_CULLED);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/culling/max_reflection_probes_culled", PropertyInfo(Variant::INT, "rendering/limits/culling/max_reflection_probes_culled", PROPERTY_HINT_RANGE, "8,4096,1"));
+
+	instance_cull_result = memnew_arr(Instance *, max_instance_cull);
+	instance_shadow_cull_result = memnew_arr(Instance *, max_instance_cull);
+	light_cull_result = memnew_arr(Instance *, max_lights_culled);
+	light_instance_cull_result = memnew_arr(RID, max_lights_culled);
+	reflection_probe_instance_cull_result = memnew_arr(RID, max_reflection_probes_culled);
 }
 
 VisualServerScene::~VisualServerScene() {
@@ -3535,4 +3548,10 @@ VisualServerScene::~VisualServerScene() {
 	memdelete(probe_bake_mutex);
 
 #endif
+
+	memdelete_arr(instance_cull_result);
+	memdelete_arr(instance_shadow_cull_result);
+	memdelete_arr(light_cull_result);
+	memdelete_arr(light_instance_cull_result);
+	memdelete_arr(reflection_probe_instance_cull_result);
 }
