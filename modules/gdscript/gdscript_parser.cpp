@@ -1868,6 +1868,10 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						_set_error("Can't assign to constant", tokenizer->get_token_line() - 1);
 						error_line = op->line;
 						return op;
+					} else if (op->arguments[0]->type == Node::TYPE_SELF) {
+						_set_error("Can't assign to self.", op->line);
+						error_line = op->line;
+						return op;
 					}
 
 					if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
@@ -6290,6 +6294,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 			node_type.has_type = true;
 			node_type.kind = DataType::CLASS;
 			node_type.class_type = current_class;
+			node_type.is_constant = true;
 		} break;
 		case Node::TYPE_IDENTIFIER: {
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_node);
