@@ -295,7 +295,8 @@ int ARVRController::get_joystick_id() const {
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
-		return 0;
+		// No tracker? no joystick id... (0 is our first joystick)
+		return -1;
 	};
 
 	return tracker->get_joy_id();
