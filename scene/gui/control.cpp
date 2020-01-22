@@ -2475,9 +2475,9 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Transform2D xform = c->get_global_transform();
 
 		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(get_size().x, 0));
-		points[2] = xform.xform(get_size());
-		points[3] = xform.xform(Point2(0, get_size().y));
+		points[1] = xform.xform(Point2(c->get_size().x, 0));
+		points[2] = xform.xform(c->get_size());
+		points[3] = xform.xform(Point2(0, c->get_size().y));
 
 		float min = 1e7;
 
