@@ -280,13 +280,27 @@ void DocData::generate(bool p_basic_types) {
 			prop.overridden = inherited;
 
 			bool default_value_valid = false;
-			Variant default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
+			Variant default_value;
 
-			if (inherited) {
-				bool base_default_value_valid = false;
-				Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E->get().name, base_default_value_valid);
-				if (!default_value_valid || !base_default_value_valid || default_value == base_default_value)
+			if (name == "ProjectSettings") {
+				// Special case for project settings, so that settings are not taken from the current project's settings
+				if (E->get().name == "script" ||
+						ProjectSettings::get_singleton()->get_order(E->get().name) >= ProjectSettings::NO_BUILTIN_ORDER_BASE) {
 					continue;
+				}
+				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+					default_value = ProjectSettings::get_singleton()->property_get_revert(E->get().name);
+					default_value_valid = true;
+				}
+			} else {
+				default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
+
+				if (inherited) {
+					bool base_default_value_valid = false;
+					Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E->get().name, base_default_value_valid);
+					if (!default_value_valid || !base_default_value_valid || default_value == base_default_value)
+						continue;
+				}
 			}
 
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
