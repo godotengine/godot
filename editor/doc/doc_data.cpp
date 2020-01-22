@@ -233,6 +233,8 @@ void DocData::generate(bool p_basic_types) {
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
+	// Move ProjectSettings, so that other classes can register properties there
+	classes.move_to_back(classes.find("ProjectSettings"));
 
 	bool skip_setter_getter_methods = true;
 
