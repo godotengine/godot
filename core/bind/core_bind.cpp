@@ -2773,8 +2773,9 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
-	ERR_FAIL_COND_MSG(active, "Reference to a Thread object object was lost while the thread is still running...");
+	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
 }
+
 /////////////////////////////////////
 
 PoolStringArray _ClassDB::get_class_list() const {
