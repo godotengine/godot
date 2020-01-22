@@ -333,11 +333,15 @@ def configure(env):
     if not env['tools']:
         import subprocess
         import re
-        binutils_version = re.search('\s(\d+\.\d+)', str(subprocess.check_output(['ld', '-v']))).group(1)
-        if float(binutils_version) >= 2.30:
-            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+        linker_version_str = subprocess.check_output([env.subst(env["LINK"]), '-Wl,--version']).decode("utf-8")
+        gnu_ld_version = re.search('^GNU ld [^$]*(\d+\.\d+)$', linker_version_str, re.MULTILINE)
+        if not gnu_ld_version:
+            print("Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld")
         else:
-            env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
+            if float(gnu_ld_version.group(1)) >= 2.30:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
+            else:
+                env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.legacy.ld'])
 
     ## Cross-compilation
 
