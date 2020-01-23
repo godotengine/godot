@@ -25,6 +25,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
 			</argument>
 			<description>
+				Returns the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
@@ -33,6 +34,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
 			</argument>
 			<description>
+				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
@@ -41,6 +43,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles.Parameter">
 			</argument>
 			<description>
+				Returns the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
@@ -49,6 +52,7 @@
 			<argument index="0" name="flag" type="int" enum="CPUParticles.Flags">
 			</argument>
 			<description>
+				Returns the enabled state of the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 		<method name="restart">
@@ -66,6 +70,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_curve">
@@ -76,6 +81,7 @@
 			<argument index="1" name="curve" type="Curve">
 			</argument>
 			<description>
+				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
@@ -86,6 +92,7 @@
 			<argument index="1" name="randomness" type="float">
 			</argument>
 			<description>
+				Sets the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
@@ -96,6 +103,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disables the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 	</methods>

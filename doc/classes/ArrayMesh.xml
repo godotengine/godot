@@ -4,7 +4,8 @@
 		[Mesh] type that provides utility for constructing a surface from arrays.
 	</brief_description>
 	<description>
-		The [ArrayMesh] is used to construct a [Mesh] by specifying the attributes as arrays. The most basic example is the creation of a single triangle
+		The [ArrayMesh] is used to construct a [Mesh] by specifying the attributes as arrays.
+		The most basic example is the creation of a single triangle:
 		[codeblock]
 		var vertices = PoolVector3Array()
 		vertices.push_back(Vector3(0, 1, 0))
@@ -20,7 +21,7 @@
 		var m = MeshInstance.new()
 		m.mesh = arr_mesh
 		[/codeblock]
-		The [code]MeshInstance[/code] is ready to be added to the SceneTree to be shown.
+		The [MeshInstance] is ready to be added to the [SceneTree] to be shown.
 	</description>
 	<tutorials>
 		<link>http://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
@@ -234,10 +235,10 @@
 			Array format will include vertices (mandatory).
 		</constant>
 		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
-			Array format will include normals
+			Array format will include normals.
 		</constant>
 		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
-			Array format will include tangents
+			Array format will include tangents.
 		</constant>
 		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
 			Array format will include a color array.

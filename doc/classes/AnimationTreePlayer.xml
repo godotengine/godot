@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationTreePlayer" inherits="Node" category="Core" version="3.2">
 	<brief_description>
-		Animation Player that uses a node graph for blending Animations.
+		Animation player that uses a node graph for blending animations.
 	</brief_description>
 	<description>
 		A node graph tool for blending multiple animations bound to an [AnimationPlayer]. Especially useful for animating characters or other skeleton-based rigs. It can combine several animations to form a desired pose.
 		It takes [Animation]s from an [AnimationPlayer] node and mixes them depending on the graph.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">
@@ -27,7 +28,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
+				Shifts position in the animation timeline. [code]delta[/code] is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_node_get_animation" qualifiers="const">
@@ -54,6 +55,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+				Returns the absolute playback timestamp of the animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_set_animation">
@@ -122,10 +124,8 @@
 			</argument>
 			<description>
 				Sets the blend amount of a Blend2 node given its name and value.
-				A Blend2 Node blends two animations with the amount between 0 and 1.
-				At 0, Output is input a.
-				Towards 1, the influence of a gets lessened, the influence of b gets raised.
-				At 1, Output is input b.
+				A Blend2 node blends two animations (A and B) with the amount between 0 and 1.
+				At 0, output is input A. Towards 1, the influence of A gets lessened, the influence of B gets raised. At 1, output is input B.
 			</description>
 		</method>
 		<method name="blend2_node_set_filter_path">
@@ -138,7 +138,7 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]enable[/code] is [code]true[/code], the blend2 node with ID [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
+				If [code]enable[/code] is [code]true[/code], the Blend2 node with name [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
 			</description>
 		</method>
 		<method name="blend3_node_get_amount" qualifiers="const">
@@ -159,12 +159,8 @@
 			</argument>
 			<description>
 				Sets the blend amount of a Blend3 node given its name and value.
-				A Blend3 Node blends three animations with the amount between -1 and 1.
-				At -1, Output is input b-.
-				From -1 to 0, the influence of b- gets lessened, the influence of a gets raised and the influence of b+ is 0.
-				At 0, Output is input a.
-				From 0 to 1, the influence of a gets lessened, the influence of b+ gets raised and the influence of b+ is 0.
-				At 1, Output is input b+.
+				A Blend3 Node blends three animations (A, B-, B+) with the amount between -1 and 1.
+				At -1, output is input B-. From -1 to 0, the influence of B- gets lessened, the influence of A gets raised and the influence of B+ is 0. At 0, output is input A. From 0 to 1, the influence of A gets lessened, the influence of B+ gets raised and the influence of B+ is 0. At 1, output is input B+.
 			</description>
 		</method>
 		<method name="blend4_node_get_amount" qualifiers="const">
@@ -186,7 +182,7 @@
 			<description>
 				Sets the blend amount of a Blend4 node given its name and value.
 				A Blend4 Node blends two pairs of animations.
-				The two pairs are blended like blend2 and then added together.
+				The two pairs are blended like Blend2 and then added together.
 			</description>
 		</method>
 		<method name="connect_nodes">
@@ -226,7 +222,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns mix amount of a Mix node given its name.
+				Returns the mix amount of a Mix node given its name.
 			</description>
 		</method>
 		<method name="mix_node_set_amount">
@@ -237,7 +233,7 @@
 			<argument index="1" name="ratio" type="float">
 			</argument>
 			<description>
-				Sets mix amount of a Mix node given its name and value.
+				Sets the mix amount of a Mix node given its name and value.
 				A Mix node adds input b to input a by the amount given by ratio.
 			</description>
 		</method>
@@ -296,7 +292,7 @@
 			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
-				Rename a node in the graph.
+				Renames a node in the graph.
 			</description>
 		</method>
 		<method name="node_set_position">
@@ -307,7 +303,7 @@
 			<argument index="1" name="screen_position" type="Vector2">
 			</argument>
 			<description>
-				Sets position of a node in the graph given its name and position.
+				Sets the position of a node in the graph given its name and position.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_delay" qualifiers="const">
@@ -316,7 +312,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns autostart delay of a OneShot node given its name.
+				Returns the autostart delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_autorestart_random_delay" qualifiers="const">
@@ -325,7 +321,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns autostart random delay of a OneShot node given its name.
+				Returns the autostart random delay of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadein_time" qualifiers="const">
@@ -334,7 +330,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns fade in time of a OneShot node given its name.
+				Returns the fade in time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_get_fadeout_time" qualifiers="const">
@@ -343,7 +339,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns fade out time of a OneShot node given its name.
+				Returns the fade out time of a OneShot node given its name.
 			</description>
 		</method>
 		<method name="oneshot_node_has_autorestart" qualifiers="const">
@@ -372,7 +368,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets autorestart property of a OneShot node given its name and value.
+				Sets the autorestart property of a OneShot node given its name and value.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_delay">
@@ -383,7 +379,7 @@
 			<argument index="1" name="delay_sec" type="float">
 			</argument>
 			<description>
-				Sets autorestart delay of a OneShot node given its name and value in seconds.
+				Sets the autorestart delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_random_delay">
@@ -394,7 +390,7 @@
 			<argument index="1" name="rand_sec" type="float">
 			</argument>
 			<description>
-				Sets autorestart random delay of a OneShot node given its name and value in seconds.
+				Sets the autorestart random delay of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadein_time">
@@ -405,7 +401,7 @@
 			<argument index="1" name="time_sec" type="float">
 			</argument>
 			<description>
-				Sets fade in time of a OneShot node given its name and value in seconds.
+				Sets the fade in time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadeout_time">
@@ -416,7 +412,7 @@
 			<argument index="1" name="time_sec" type="float">
 			</argument>
 			<description>
-				Sets fade out time of a OneShot node given its name and value in seconds.
+				Sets the fade out time of a OneShot node given its name and value in seconds.
 			</description>
 		</method>
 		<method name="oneshot_node_set_filter_path">
@@ -429,7 +425,7 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]enable[/code] is [code]true[/code], the oneshot node with ID [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
+				If [code]enable[/code] is [code]true[/code], the OneShot node with ID [code]id[/code] turns off the track modifying the property at [code]path[/code]. The modified node's children continue to animate.
 			</description>
 		</method>
 		<method name="oneshot_node_start">
@@ -479,7 +475,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns time scale value of the TimeScale node with name [code]id[/code].
+				Returns the time scale value of the TimeScale node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="timescale_node_set_scale">
@@ -491,7 +487,7 @@
 			</argument>
 			<description>
 				Sets the time scale of the TimeScale node with name [code]id[/code] to [code]scale[/code].
-				The timescale node is used to speed [Animation]s up if the scale is above 1 or slow them down if it is below 1.
+				The TimeScale node is used to speed [Animation]s up if the scale is above 1 or slow them down if it is below 1.
 				If applied after a blend or mix, affects all input animations to that blend or mix.
 			</description>
 		</method>
@@ -533,7 +529,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns the number of inputs for the transition node with name [code]id[/code]. You can add inputs by rightclicking on the transition node.
+				Returns the number of inputs for the transition node with name [code]id[/code]. You can add inputs by right-clicking on the transition node.
 			</description>
 		</method>
 		<method name="transition_node_get_xfade_time" qualifiers="const">
@@ -553,7 +549,7 @@
 			<argument index="1" name="input_idx" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the input at [code]input_idx[/code] on transition node with name [code]id[/code] is set to automatically advance to the next input upon completion.
+				Returns [code]true[/code] if the input at [code]input_idx[/code] on the transition node with name [code]id[/code] is set to automatically advance to the next input upon completion.
 			</description>
 		</method>
 		<method name="transition_node_set_current">
@@ -609,11 +605,11 @@
 		</member>
 		<member name="base_path" type="NodePath" setter="set_base_path" getter="get_base_path" default="NodePath(&quot;..&quot;)">
 			The node from which to relatively access other nodes.
-			It accesses the Bones, so it should point to the same Node the AnimationPlayer would point its Root Node at.
+			It accesses the bones, so it should point to the same node the [AnimationPlayer] would point its Root Node at.
 		</member>
 		<member name="master_player" type="NodePath" setter="set_master_player" getter="get_master_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] from which this [AnimationTreePlayer] binds animations to animation nodes.
-			Once set, Animation nodes can be added to the AnimationTreePlayer.
+			Once set, [Animation] nodes can be added to the [AnimationTreePlayer].
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode" default="1">
 			The thread in which to update animations.

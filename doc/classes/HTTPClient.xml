@@ -100,7 +100,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				This needs to be called in order to have any request processed. Check results with [method get_status]
+				This needs to be called in order to have any request processed. Check results with [method get_status].
 			</description>
 		</method>
 		<method name="query_string_from_dict">

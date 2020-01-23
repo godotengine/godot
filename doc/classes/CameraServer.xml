@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CameraServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		The CameraServer keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
+		Server keeping track of different cameras accessible in Godot.
 	</brief_description>
 	<description>
+		The [CameraServer] keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
+		It is notably used to provide AR modules with a video feed from the camera.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -55,14 +57,14 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted when a [CameraFeed] is added (webcam is plugged in).
+				Emitted when a [CameraFeed] is added (e.g. webcam is plugged in).
 			</description>
 		</signal>
 		<signal name="camera_feed_removed">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted when a [CameraFeed] is removed (webcam is removed).
+				Emitted when a [CameraFeed] is removed (e.g. webcam is unplugged).
 			</description>
 		</signal>
 	</signals>

@@ -4,7 +4,7 @@
 		Boolean built-in type.
 	</brief_description>
 	<description>
-		Boolean is a built-in type. It can represent any data type that is either a true or false value. You can think of it as an switch with on or off (1 or 0) setting . It's often used as part of programming logic in condition statements like [code]if[/code] statements.
+		Boolean is a built-in type. It can represent any data type that is either a true or false value. You can think of it as an switch with on or off (1 or 0) setting. It's often used as part of programming logic in condition statements like [code]if[/code] statements.
 		[b]Note:[/b] In a code below [code]if can_shoot[/code] is equivalent of [code]if can_shoot == true[/code]. It is good practice to follow the natural spoken language structure when possible. Use [code]if can_shoot[/code] rather than [code]if can_shoot == true[/code] and use [code]if not can_shoot[/code] rather than [code]if can_shoot == false[/code].
 		[codeblock]
 		var can_shoot = true

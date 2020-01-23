@@ -8,6 +8,7 @@
 		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through [ARVRServer].
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_camera_feed_id">
@@ -120,7 +121,7 @@
 			We don't know the status of the tracking or this interface does not provide feedback.
 		</constant>
 		<constant name="ARVR_NOT_TRACKING" value="4" enum="Tracking_status">
-			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.)
+			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
 		</constant>
 	</constants>
 </class>

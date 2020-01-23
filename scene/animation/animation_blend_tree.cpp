@@ -832,8 +832,8 @@ void AnimationNodeTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01"), "set_cross_fade_time", "get_cross_fade_time");
 
 	for (int i = 0; i < MAX_INPUTS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name"), "set_input_caption", "get_input_caption", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance"), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_caption", "get_input_caption", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_as_auto_advance", "is_input_set_as_auto_advance", i);
 	}
 }
 

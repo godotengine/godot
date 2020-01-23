@@ -45,7 +45,7 @@
 			<return type="Dictionary">
 			</return>
 			<description>
-				Returns a dictionary which keys are the peer ids and values the peer representation as in [method get_peer]
+				Returns a dictionary which keys are the peer ids and values the peer representation as in [method get_peer].
 			</description>
 		</method>
 		<method name="has_peer">

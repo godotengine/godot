@@ -100,7 +100,7 @@
 			<argument index="5" name="usage" type="int">
 			</argument>
 			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]
+				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty].
 			</description>
 		</method>
 	</methods>
