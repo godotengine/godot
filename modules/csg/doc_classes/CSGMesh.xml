@@ -12,9 +12,10 @@
 	</methods>
 	<members>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The [Material] used in drawing the CSG shape.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
-			The mesh resource to use as a CSG shape.
+			The [Mesh] resource to use as a CSG shape.
 		</member>
 	</members>
 	<constants>
