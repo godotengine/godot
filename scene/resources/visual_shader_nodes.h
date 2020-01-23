@@ -1635,7 +1635,7 @@ class VisualShaderNodeCompare : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCompare, VisualShaderNode);
 
 public:
-	enum ComparsionType {
+	enum ComparisonType {
 		CTYPE_SCALAR,
 		CTYPE_VECTOR,
 		CTYPE_BOOLEAN,
@@ -1657,7 +1657,7 @@ public:
 	};
 
 protected:
-	ComparsionType ctype;
+	ComparisonType ctype;
 	Function func;
 	Condition condition;
 
@@ -1677,8 +1677,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	void set_comparsion_type(ComparsionType p_type);
-	ComparsionType get_comparsion_type() const;
+	void set_comparison_type(ComparisonType p_type);
+	ComparisonType get_comparison_type() const;
 
 	void set_function(Function p_func);
 	Function get_function() const;
@@ -1692,7 +1692,7 @@ public:
 	VisualShaderNodeCompare();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparsionType)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
 
