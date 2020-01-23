@@ -151,7 +151,9 @@ void FileDialog::update_dir() {
 void FileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	update_dir();
 }
@@ -276,7 +278,9 @@ void FileDialog::_action_pressed() {
 				if (!valid && filterSliceCount > 0) {
 					String str = (flt.get_slice(",", 0).strip_edges());
 					f += str.substr(1, str.length() - 1);
-					file->set_text(f.get_file());
+					if (file->is_editable()) {
+						file->set_text(f.get_file());
+					}
 					valid = true;
 				}
 			} else {
@@ -303,7 +307,9 @@ void FileDialog::_action_pressed() {
 
 void FileDialog::_cancel_pressed() {
 
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	hide();
 }
@@ -377,7 +383,9 @@ void FileDialog::_tree_selected() {
 
 	if (!d["dir"]) {
 
-		file->set_text(d["name"]);
+		if (file->is_editable()) {
+			file->set_text(d["name"]);
+		}
 	} else if (mode == MODE_OPEN_DIR) {
 		get_ok()->set_text(RTR("Select This Folder"));
 	}
@@ -397,7 +405,9 @@ void FileDialog::_tree_item_activated() {
 
 		dir_access->change_dir(d["name"]);
 		if (mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES || mode == MODE_OPEN_DIR || mode == MODE_OPEN_ANY)
-			file->set_text("");
+			if (file->is_editable()) {
+				file->set_text("");
+			}
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
 	} else {
@@ -414,7 +424,9 @@ void FileDialog::update_file_name() {
 		String file_str = file->get_text();
 		String base_name = file_str.get_basename();
 		file_str = base_name + "." + filter_str.strip_edges().to_lower();
-		file->set_text(file_str);
+		if (file->is_editable()) {
+			file->set_text(file_str);
+		}
 	}
 }
 
@@ -629,7 +641,9 @@ void FileDialog::set_current_dir(const String &p_dir) {
 }
 void FileDialog::set_current_file(const String &p_file) {
 
-	file->set_text(p_file);
+	if (file->is_editable()) {
+		file->set_text(p_file);
+	}
 	update_dir();
 	invalidate();
 	int lp = p_file.find_last(".");
@@ -781,7 +795,9 @@ void FileDialog::_select_drive(int p_idx) {
 
 	String d = drives->get_item_text(p_idx);
 	dir_access->change_dir(d);
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	update_dir();
 }

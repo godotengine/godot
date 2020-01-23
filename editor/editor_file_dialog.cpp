@@ -229,7 +229,9 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	update_dir();
 	_push_history();
@@ -440,7 +442,9 @@ void EditorFileDialog::_action_pressed() {
 					String str = (flt.get_slice(",", 0).strip_edges());
 					f += str.substr(1, str.length() - 1);
 					_request_single_thumbnail(get_current_dir().plus_file(f.get_file()));
-					file->set_text(f.get_file());
+					if (file->is_editable()) {
+						file->set_text(f.get_file());
+					}
 					valid = true;
 				}
 			} else {
@@ -468,7 +472,9 @@ void EditorFileDialog::_action_pressed() {
 
 void EditorFileDialog::_cancel_pressed() {
 
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	hide();
 }
@@ -483,7 +489,9 @@ void EditorFileDialog::_item_selected(int p_item) {
 
 	if (!d["dir"]) {
 
-		file->set_text(d["name"]);
+		if (file->is_editable()) {
+			file->set_text(d["name"]);
+		}
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	} else if (mode == MODE_OPEN_DIR) {
 		get_ok()->set_text(TTR("Select This Folder"));
@@ -502,7 +510,9 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 
 	if (!d["dir"] && p_selected) {
 
-		file->set_text(d["name"]);
+		if (file->is_editable()) {
+			file->set_text(d["name"]);
+		}
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	}
 
@@ -702,7 +712,9 @@ void EditorFileDialog::update_file_name() {
 		} else {
 			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
 		}
-		file->set_text(file_str);
+		if (file->is_editable()) {
+			file->set_text(file_str);
+		}
 	}
 }
 
@@ -973,7 +985,9 @@ void EditorFileDialog::set_current_dir(const String &p_dir) {
 }
 void EditorFileDialog::set_current_file(const String &p_file) {
 
-	file->set_text(p_file);
+	if (file->is_editable()) {
+		file->set_text(p_file);
+	}
 	update_dir();
 	invalidate();
 	int lp = p_file.find_last(".");
@@ -1143,7 +1157,9 @@ void EditorFileDialog::_select_drive(int p_idx) {
 
 	String d = drives->get_item_text(p_idx);
 	dir_access->change_dir(d);
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	invalidate();
 	update_dir();
 	_push_history();
@@ -1176,7 +1192,9 @@ void EditorFileDialog::_update_drives() {
 void EditorFileDialog::_favorite_selected(int p_idx) {
 
 	dir_access->change_dir(favorites->get_item_metadata(p_idx));
-	file->set_text("");
+	if (file->is_editable()) {
+		file->set_text("");
+	}
 	update_dir();
 	invalidate();
 	_push_history();
