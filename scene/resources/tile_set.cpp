@@ -1038,6 +1038,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 	}
 
 	tile_map[p_id].shapes_data = shapes_data;
+	emit_changed();
 }
 
 Array TileSet::_tile_get_shapes(int p_id) const {
