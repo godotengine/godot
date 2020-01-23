@@ -387,6 +387,19 @@ namespace Godot
             return b;
         }
 
+        public Basis Slerp(Basis target, real_t t)
+        {
+            var from = new Quat(this);
+            var to = new Quat(target);
+
+            var b = new Basis(from.Slerp(to, t));
+            b.Row0 *= Mathf.Lerp(Row0.Length(), target.Row0.Length(), t);
+            b.Row1 *= Mathf.Lerp(Row1.Length(), target.Row1.Length(), t);
+            b.Row2 *= Mathf.Lerp(Row2.Length(), target.Row2.Length(), t);
+
+            return b;
+        }
+
         public real_t Tdotx(Vector3 with)
         {
             return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];

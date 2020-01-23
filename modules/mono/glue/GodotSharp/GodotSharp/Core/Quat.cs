@@ -82,12 +82,20 @@ namespace Godot
 
         public Vector3 GetEuler()
         {
+#if DEBUG
+            if (!IsNormalized())
+                throw new InvalidOperationException("Quat is not normalized");
+#endif
             var basis = new Basis(this);
             return basis.GetEuler();
         }
 
         public Quat Inverse()
         {
+#if DEBUG
+            if (!IsNormalized())
+                throw new InvalidOperationException("Quat is not normalized");
+#endif
             return new Quat(-x, -y, -z, w);
         }
 
@@ -125,6 +133,13 @@ namespace Godot
 
         public Quat Slerp(Quat b, real_t t)
         {
+#if DEBUG
+            if (!IsNormalized())
+                throw new InvalidOperationException("Quat is not normalized");
+            if (!b.IsNormalized())
+                throw new ArgumentException("Argument is not normalized", nameof(b));
+#endif
+
             // Calculate cosine
             real_t cosom = x * b.x + y * b.y + z * b.z + w * b.w;
 
@@ -200,9 +215,13 @@ namespace Godot
 
         public Vector3 Xform(Vector3 v)
         {
-            Quat q = this * v;
-            q *= Inverse();
-            return new Vector3(q.x, q.y, q.z);
+#if DEBUG
+            if (!IsNormalized())
+                throw new InvalidOperationException("Quat is not normalized");
+#endif
+            var u = new Vector3(x, y, z);
+            Vector3 uv = u.Cross(v);
+            return v + ((uv * w) + u.Cross(uv)) * 2;
         }
 
         // Static Readonly Properties
@@ -257,8 +276,12 @@ namespace Godot
 
         public Quat(Vector3 axis, real_t angle)
         {
+#if DEBUG
+            if (!axis.IsNormalized())
+                throw new ArgumentException("Argument is not normalized", nameof(axis));
+#endif
+
             real_t d = axis.Length();
-            real_t angle_t = angle;
 
             if (d == 0f)
             {
@@ -269,12 +292,14 @@ namespace Godot
             }
             else
             {
-                real_t s = Mathf.Sin(angle_t * 0.5f) / d;
+                real_t sinAngle = Mathf.Sin(angle * 0.5f);
+                real_t cosAngle = Mathf.Cos(angle * 0.5f);
+                real_t s = sinAngle / d;
 
                 x = axis.x * s;
                 y = axis.y * s;
                 z = axis.z * s;
-                w = Mathf.Cos(angle_t * 0.5f);
+                w = cosAngle;
             }
         }
 
