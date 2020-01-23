@@ -129,6 +129,16 @@ void Particles2D::_update_particle_emission_transform() {
 
 void Particles2D::set_process_material(const Ref<Material> &p_material) {
 
+	if (process_material == p_material) {
+		return;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (process_material.is_valid()) {
+		process_material->remove_change_receptor(this);
+	}
+#endif
+
 	process_material = p_material;
 	Ref<ParticlesMaterial> pm = p_material;
 	if (pm.is_valid() && !pm->get_flag(ParticlesMaterial::FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
@@ -137,8 +147,12 @@ void Particles2D::set_process_material(const Ref<Material> &p_material) {
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
 	RID material_rid;
-	if (process_material.is_valid())
+	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+#ifdef TOOLS_ENABLED
+		process_material->add_change_receptor(this);
+#endif
+	}
 	VS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
@@ -290,12 +304,41 @@ Ref<Texture> Particles2D::get_normal_map() const {
 void Particles2D::_validate_property(PropertyInfo &property) const {
 }
 
+#ifdef TOOLS_ENABLED
+void Particles2D::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_changed == this) {
+		Ref<Material> material = get_material();
+		if (material != checked_material) {
+			if (checked_material.is_valid()) {
+				checked_material->remove_change_receptor(this);
+			}
+			if (material.is_valid()) {
+				material->add_change_receptor(this);
+			}
+			checked_material = material;
+		}
+	}
+
+	update_configuration_warning();
+}
+#endif
+
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
 	VS::get_singleton()->particles_set_emitting(particles, true);
 }
 
 void Particles2D::_notification(int p_what) {
+
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		add_change_receptor(this);
+	}
+
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		remove_change_receptor(this);
+	}
+#endif
 
 	if (p_what == NOTIFICATION_DRAW) {
 
