@@ -166,7 +166,8 @@ void PopupMenu::_activate_submenu(int over) {
 
 	pm->set_position(pos);
 	pm->set_scale(get_global_transform().get_scale());
-	pm->popup();
+	pm->show();
+	pm->grab_focus();
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
@@ -178,13 +179,29 @@ void PopupMenu::_activate_submenu(int over) {
 			int from = items[over + 1]._ofs_cache;
 			pum->add_autohide_area(Rect2(pr.position.x, pr.position.y + from, pr.size.x, pr.size.y - from));
 		}
+		current_submenu = pum;
 	}
 }
 
 void PopupMenu::_submenu_timeout() {
 
-	if (mouse_over == submenu_over)
+	if (submenu_over == -1) {
+		call_deferred("hide");
+		return;
+	}
+
+	if (current_submenu && current_submenu->is_visible_in_tree() && get_node(items[submenu_over].submenu) == current_submenu) {
+		return;
+	}
+
+	if (current_submenu) {
+		current_submenu->hide();
+		current_submenu = NULL;
+	}
+
+	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
+	}
 
 	submenu_over = -1;
 }
@@ -350,11 +367,18 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				invalidated_click = false;
 		}
 
-		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
+		if (current_submenu) {
+			if (current_submenu->is_visible_in_tree()) {
+				Vector2 rel_pos = m->get_position() + (get_position() - current_submenu->get_position());
 
-			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
-				call_deferred("hide");
-				return;
+				for (List<Rect2>::Element *E = current_submenu->autohide_areas.front(); E; E = E->next()) {
+					if (!Rect2(Point2(), current_submenu->get_size()).has_point(rel_pos) && E->get().has_point(rel_pos)) {
+						current_submenu->submenu_over = -1;
+						current_submenu->submenu_timer->start();
+					}
+				}
+			} else {
+				submenu_over = -1;
 			}
 		}
 
@@ -427,12 +451,6 @@ bool PopupMenu::has_point(const Point2 &p_point) const {
 
 	if (parent_rect.has_point(p_point))
 		return true;
-	for (const List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
-
-		if (E->get().has_point(p_point))
-			return true;
-	}
-
 	return Control::has_point(p_point);
 }
 
@@ -598,6 +616,11 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 
 			if (mouse_over >= 0 && (items[mouse_over].submenu == "" || submenu_over != -1)) {
+				if (current_submenu) {
+					submenu_timer->stop();
+					current_submenu->submenu_timer->stop();
+				}
+
 				mouse_over = -1;
 				update();
 			}
@@ -1516,6 +1539,8 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", this, "_submenu_timeout");
 	add_child(submenu_timer);
+
+	current_submenu = NULL;
 }
 
 PopupMenu::~PopupMenu() {
