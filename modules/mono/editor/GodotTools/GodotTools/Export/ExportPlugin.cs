@@ -17,12 +17,59 @@ namespace GodotTools.Export
 {
     public class ExportPlugin : EditorExportPlugin
     {
+        [Flags]
+        enum I18NCodesets
+        {
+            None = 0,
+            CJK = 1,
+            MidEast = 2,
+            Other = 4,
+            Rare = 8,
+            West = 16,
+            All = CJK | MidEast | Other | Rare | West
+        }
+
+        private void AddI18NAssemblies(Godot.Collections.Dictionary<string, string> assemblies, string platform)
+        {
+            var codesets = (I18NCodesets) ProjectSettings.GetSetting("mono/export/i18n_codesets");
+
+            if (codesets == I18NCodesets.None)
+                return;
+
+            string bclDir = DeterminePlatformBclDir(platform) ?? typeof(object).Assembly.Location.GetBaseDir();
+
+            void AddI18NAssembly(string name) => assemblies.Add(name, Path.Combine(bclDir, $"{name}.dll"));
+
+            AddI18NAssembly("I18N");
+
+            if ((codesets & I18NCodesets.CJK) != 0)
+                AddI18NAssembly("I18N.CJK");
+            if ((codesets & I18NCodesets.MidEast) != 0)
+                AddI18NAssembly("I18N.MidEast");
+            if ((codesets & I18NCodesets.Other) != 0)
+                AddI18NAssembly("I18N.Other");
+            if ((codesets & I18NCodesets.Rare) != 0)
+                AddI18NAssembly("I18N.Rare");
+            if ((codesets & I18NCodesets.West) != 0)
+                AddI18NAssembly("I18N.West");
+        }
+
         public void RegisterExportSettings()
         {
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
 
             GlobalDef("mono/export/include_scripts_content", false);
             GlobalDef("mono/export/export_assemblies_inside_pck", true);
+
+            GlobalDef("mono/export/i18n_codesets", I18NCodesets.All);
+
+            ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = Variant.Type.Int,
+                ["name"] = "mono/export/i18n_codesets",
+                ["hint"] = PropertyHint.Flags,
+                ["hint_string"] = "CJK,MidEast,Other,Rare,West"
+            });
 
             GlobalDef("mono/export/aot/enabled", false);
             GlobalDef("mono/export/aot/full_aot", false);
@@ -144,6 +191,8 @@ namespace GodotTools.Export
 
             var initialDependencies = dependencies.Duplicate();
             internal_GetExportedAssemblyDependencies(initialDependencies, buildConfig, DeterminePlatformBclDir(platform), dependencies);
+
+            AddI18NAssemblies(dependencies, platform);
 
             string outputDataDir = null;
 
