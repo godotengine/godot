@@ -92,6 +92,9 @@ void Polygon2DEditor::_notification(int p_what) {
 			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
 			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
 			uv_icon_zoom->set_texture(get_icon("Zoom", "EditorIcons"));
+
+			uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -1471,12 +1474,10 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_vscroll = memnew(VScrollBar);
 	uv_vscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_vscroll);
-	uv_vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	uv_vscroll->connect("value_changed", this, "_uv_scroll_changed");
 	uv_hscroll = memnew(HScrollBar);
 	uv_hscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_hscroll);
-	uv_hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 	uv_hscroll->connect("value_changed", this, "_uv_scroll_changed");
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
