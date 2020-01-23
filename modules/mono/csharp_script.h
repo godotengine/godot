@@ -308,8 +308,9 @@ class CSharpLanguage : public ScriptLanguage {
 	Map<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
-	// List of unsafely referenced objects
-	List<ObjectID> unsafely_referenced_objects;
+	// List of unsafe object references
+	Map<ObjectID, int> unsafe_object_references;
+	Mutex *unsafe_object_references_lock;
 #endif
 
 	struct StringNameCache {

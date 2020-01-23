@@ -160,7 +160,7 @@ void CSharpLanguage::finish() {
 	script_bindings.clear();
 
 #ifdef DEBUG_ENABLED
-	for (List<ObjectID>::Element *E = unsafely_referenced_objects.front(); E; E = E->next()) {
+	for (Map<ObjectID, int>::Element *E = unsafe_object_references.front(); E; E = E->next()) {
 		const ObjectID &id = E->get();
 		Object *obj = ObjectDB::get_instance(id);
 
@@ -632,18 +632,20 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
+	SCOPED_MUTEX_LOCK(unsafe_object_references_lock);
 	ObjectID id = p_obj->get_instance_id();
-	ERR_FAIL_COND_MSG(unsafely_referenced_objects.find(id), "Multiple unsafe references for object: " + p_obj->get_class() + ":" + itos(id));
-	unsafely_referenced_objects.push_back(id);
+	unsafe_object_references[id]++;
 #endif
 }
 
 void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 #ifdef DEBUG_ENABLED
+	SCOPED_MUTEX_LOCK(unsafe_object_references_lock);
 	ObjectID id = p_obj->get_instance_id();
-	List<ObjectID>::Element *elem = unsafely_referenced_objects.find(id);
+	Map<ObjectID, int>::Element *elem = unsafe_object_references.find(id);
 	ERR_FAIL_NULL(elem);
-	unsafely_referenced_objects.erase(elem);
+	if (--elem->value() == 0)
+		unsafe_object_references.erase(elem);
 #endif
 }
 
@@ -1246,6 +1248,14 @@ CSharpLanguage::CSharpLanguage() {
 	language_bind_mutex = Mutex::create();
 #endif
 
+#ifdef DEBUG_ENABLED
+#ifdef NO_THREADS
+	unsafe_object_references_lock = NULL;
+#else
+	unsafe_object_references_lock = Mutex::create();
+#endif
+#endif
+
 	lang_idx = -1;
 
 	scripts_metadata_invalidated = true;
@@ -1273,6 +1283,13 @@ CSharpLanguage::~CSharpLanguage() {
 		memdelete(script_gchandle_release_mutex);
 		script_gchandle_release_mutex = NULL;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (unsafe_object_references_lock) {
+		memdelete(unsafe_object_references_lock);
+		unsafe_object_references_lock = NULL;
+	}
+#endif
 
 	singleton = NULL;
 }
