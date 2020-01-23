@@ -4,7 +4,8 @@
 		Control that provides single-line string editing.
 	</brief_description>
 	<description>
-		LineEdit provides a single-line string editor, used for text fields. It features many built-in shortcuts which will always be available: (the Ctrl here maps to Command on macOS)
+		LineEdit provides a single-line string editor, used for text fields.
+		It features many built-in shortcuts which will always be available ([code]Ctrl[/code] here maps to [code]Command[/code] on macOS):
 		- Ctrl + C: Copy
 		- Ctrl + X: Cut
 		- Ctrl + V or Ctrl + Y: Paste/"yank"

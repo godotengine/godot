@@ -209,7 +209,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
 		</member>
 	</members>

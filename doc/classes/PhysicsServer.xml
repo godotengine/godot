@@ -1315,7 +1315,7 @@
 			If [code]true[/code], the Hinge has a maximum and a minimum rotation.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
-			If [code]true[/code], a motor turns the Hinge
+			If [code]true[/code], a motor turns the Hinge.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
 			The maximum difference between the pivot points on their X axis before damping happens.

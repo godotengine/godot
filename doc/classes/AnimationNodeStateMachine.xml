@@ -4,7 +4,7 @@
 		State machine for control of animations.
 	</brief_description>
 	<description>
-		Contains multiple nodes representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the AnimationNodeStateMachinePlayback object from the [AnimationTree] node to control it programmatically.
+		Contains multiple nodes representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
 		[b]Example:[/b]
 		[codeblock]
 		var state_machine = $AnimationTree.get("parameters/playback")
@@ -12,6 +12,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">
@@ -159,7 +160,7 @@
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
-				Deletes the given transition.
+				Deletes the transition between the two specified nodes.
 			</description>
 		</method>
 		<method name="remove_transition_by_index">
@@ -168,7 +169,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Deletes the given transition.
+				Deletes the given transition by index.
 			</description>
 		</method>
 		<method name="rename_node">

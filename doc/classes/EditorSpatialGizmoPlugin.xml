@@ -49,7 +49,7 @@
 			<argument index="0" name="spatial" type="Spatial">
 			</argument>
 			<description>
-				Override this method to return a custom [EditorSpatialGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. (See also [method has_gizmo])
+				Override this method to return a custom [EditorSpatialGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method has_gizmo].
 			</description>
 		</method>
 		<method name="create_handle_material">

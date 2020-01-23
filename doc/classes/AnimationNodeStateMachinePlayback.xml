@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeStateMachinePlayback" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Playback control for AnimationNodeStateMachine.
+		Playback control for [AnimationNodeStateMachine].
 	</brief_description>
 	<description>
 		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
@@ -12,6 +12,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_node" qualifiers="const">
@@ -25,6 +26,7 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns the current travel path as computed internally by the A* algorithm.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">

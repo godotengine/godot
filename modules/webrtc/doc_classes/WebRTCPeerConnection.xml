@@ -143,7 +143,7 @@
 			</argument>
 			<description>
 				Emitted when a new in-band channel is received, i.e. when the channel was created with [code]negotiated: false[/code] (default).
-				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel]
+				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel].
 			</description>
 		</signal>
 		<signal name="ice_candidate_created">

@@ -67,14 +67,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the last packet fetched via [method PacketPeer.get_packet]
+				Returns the channel of the last packet fetched via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_packet_channel" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet]
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">

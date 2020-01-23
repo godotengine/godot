@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ARVRServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		The AR/VR server.
+		Server for AR and VR features.
 	</brief_description>
 	<description>
-		The AR/VR server is the heart of our AR/VR solution and handles all the processing.
+		The AR/VR server is the heart of our Advanced and Virtual Reality solution and handles all the processing.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="center_on_hmd">
@@ -47,14 +48,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Gets the interface registered at a given index in our list of interfaces.
+				Returns the interface registered at a given index in our list of interfaces.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Gets the number of interfaces currently registered with the AR/VR server. If your project supports multiple AR/VR platforms, you can look through the available interface, and either present the user with a selection or simply try to initialize each interface and use the first one that returns [code]true[/code].
+				Returns the number of interfaces currently registered with the AR/VR server. If your project supports multiple AR/VR platforms, you can look through the available interface, and either present the user with a selection or simply try to initialize each interface and use the first one that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_interfaces" qualifiers="const">
@@ -68,25 +69,28 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the absolute timestamp (in μs) of the last [ARVRServer] commit of the AR/VR eyes to [VisualServer]. The value comes from an internal call to [method OS.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_last_frame_usec">
 			<return type="int">
 			</return>
 			<description>
+				Returns the duration (in μs) of the last frame. This is computed as the difference between [method get_last_commit_usec] and [method get_last_process_usec] when committing.
 			</description>
 		</method>
 		<method name="get_last_process_usec">
 			<return type="int">
 			</return>
 			<description>
+				Returns the absolute timestamp (in μs) of the last [ARVRServer] process callback. The value comes from an internal call to [method OS.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
-				Gets the reference frame transform. Mostly used internally and exposed for GDNative build interfaces.
+				Returns the reference frame transform. Mostly used internally and exposed for GDNative build interfaces.
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
@@ -95,19 +99,20 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Gets the positional tracker at the given ID.
+				Returns the positional tracker at the given ID.
 			</description>
 		</method>
 		<method name="get_tracker_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Gets the number of trackers currently registered.
+				Returns the number of trackers currently registered.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="primary_interface" type="ARVRInterface" setter="set_primary_interface" getter="get_primary_interface">
+			The primary [ARVRInterface] currently bound to the [ARVRServer].
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
 			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.

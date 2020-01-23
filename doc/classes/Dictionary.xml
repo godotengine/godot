@@ -20,7 +20,7 @@
 		[codeblock]
 		export(String, "White", "Yellow", "Orange") var my_color
 		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-		
+
 		func _ready():
 		    var points = points_dir[my_color]
 		[/codeblock]
@@ -42,13 +42,13 @@
 		[codeblock]
 		array1 = [1, 2, 3]
 		array2 = [1, 2, 3]
-		
+
 		func compare_arrays():
-		    print(array1 == array2) # Will print true. 
-		
+		    print(array1 == array2) # Will print true.
+
 		dir1 = {"a": 1, "b": 2, "c": 3}
 		dir2 = {"a": 1, "b": 2, "c": 3}
-		
+
 		func compare_dictionaries():
 		    print(dir1 == dir2) # Will NOT print true.
 		[/codeblock]
@@ -56,7 +56,7 @@
 		[codeblock]
 		dir1 = {"a": 1, "b": 2, "c": 3}
 		dir2 = {"a": 1, "b": 2, "c": 3}
-		
+
 		func compare_dictionaries():
 		    print(dir1.hash() == dir2.hash()) # Will print true.
 		[/codeblock]

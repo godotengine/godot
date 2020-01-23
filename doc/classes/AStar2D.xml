@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar2D" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		AStar class representation that uses 2d-vectors as edges.
+		AStar class representation that uses 2D vectors as edges.
 	</brief_description>
 	<description>
 		This is a wrapper for the [AStar] class which uses 2D vectors instead of 3D vectors.

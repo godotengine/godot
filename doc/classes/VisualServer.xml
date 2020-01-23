@@ -64,7 +64,7 @@
 			<argument index="1" name="layers" type="int">
 			</argument>
 			<description>
-				Sets the cull mask associated with this camera. The cull mask describes which 3d layers are rendered by this camera. Equivalent to [member Camera.cull_mask].
+				Sets the cull mask associated with this camera. The cull mask describes which 3D layers are rendered by this camera. Equivalent to [member Camera.cull_mask].
 			</description>
 		</method>
 		<method name="camera_set_environment">
@@ -1679,7 +1679,7 @@
 			<argument index="0" name="feature" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the OS supports a certain feature. Features might be s3tc, etc, etc2 and pvrtc,
+				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code] and [code]pvrtc[/code].
 			</description>
 		</method>
 		<method name="immediate_begin">
@@ -3018,7 +3018,7 @@
 			<argument index="0" name="particles" type="RID">
 			</argument>
 			<description>
-				Reset the particles on the next update. Equivalent to [method Particles.restart]
+				Reset the particles on the next update. Equivalent to [method Particles.restart].
 			</description>
 		</method>
 		<method name="particles_set_amount">

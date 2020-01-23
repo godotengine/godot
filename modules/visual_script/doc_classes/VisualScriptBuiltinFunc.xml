@@ -203,7 +203,7 @@
 			Deserialize a [Variant] from a [PoolByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
 		<constant name="COLORN" value="63" enum="BuiltinFunc">
-			Return the [Color] with the given name and alpha ranging from 0 to 1
+			Return the [Color] with the given name and alpha ranging from 0 to 1.
 			[b]Note:[/b] Names are defined in [code]color_names.inc[/code].
 		</constant>
 		<constant name="MATH_SMOOTHSTEP" value="64" enum="BuiltinFunc">

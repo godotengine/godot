@@ -115,7 +115,7 @@
 			<argument index="2" name="s2" type="Vector3">
 			</argument>
 			<description>
-				Returns the 3d point on the 3d segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
+				Returns the 3D point on the 3D segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_2d">
@@ -128,7 +128,7 @@
 			<argument index="2" name="s2" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2d point on the 2d segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
+				Returns the 2D point on the 2D segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_uncapped">
@@ -141,7 +141,7 @@
 			<argument index="2" name="s2" type="Vector3">
 			</argument>
 			<description>
-				Returns the 3d point on the 3d line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
+				Returns the 3D point on the 3D line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_uncapped_2d">
@@ -154,7 +154,7 @@
 			<argument index="2" name="s2" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2d point on the 2d line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
+				Returns the 2D point on the 2D line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
 		<method name="get_closest_points_between_segments">
@@ -169,7 +169,7 @@
 			<argument index="3" name="q2" type="Vector3">
 			</argument>
 			<description>
-				Given the two 3d segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector3Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
+				Given the two 3D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector3Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="get_closest_points_between_segments_2d">
@@ -184,7 +184,7 @@
 			<argument index="3" name="q2" type="Vector2">
 			</argument>
 			<description>
-				Given the two 2d segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
+				Given the two 2D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="get_uv84_normal_bit">
@@ -350,7 +350,7 @@
 			<argument index="4" name="c" type="Vector3">
 			</argument>
 			<description>
-				Tests if the 3d ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
+				Tests if the 3D ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
 			</description>
 		</method>
 		<method name="segment_intersects_circle">
@@ -365,7 +365,7 @@
 			<argument index="3" name="circle_radius" type="float">
 			</argument>
 			<description>
-				Given the 2d segment ([code]segment_from[/code], [code]segment_to[/code]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [code]circle_position[/code] and has radius [code]circle_radius[/code]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
+				Given the 2D segment ([code]segment_from[/code], [code]segment_to[/code]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [code]circle_position[/code] and has radius [code]circle_radius[/code]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
 			</description>
 		</method>
 		<method name="segment_intersects_convex">

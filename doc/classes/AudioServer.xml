@@ -4,7 +4,7 @@
 		Server interface for low-level audio access.
 	</brief_description>
 	<description>
-		AudioServer is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
+		[AudioServer] is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
@@ -52,6 +52,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets which audio input device is used for audio capture.
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
@@ -100,6 +101,7 @@
 			<argument index="2" name="channel" type="int" default="0">
 			</argument>
 			<description>
+				Returns the [AudioEffectInstance] assigned to the given bus and effect indices (and optionally channel).
 			</description>
 		</method>
 		<method name="get_bus_index" qualifiers="const">
@@ -192,12 +194,14 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the relative time since the last mix occurred.
 			</description>
 		</method>
 		<method name="get_time_to_next_mix" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the relative time until the next mix occurs.
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">
@@ -242,7 +246,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the audio driver's main loop. Remember to unlock it afterwards.
+				Locks the audio driver's main loop.
+				[b]Note:[/b] Remember to unlock it afterwards.
 			</description>
 		</method>
 		<method name="move_bus">
@@ -411,10 +416,10 @@
 			A 3.1 channel surround setup was detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
-			A 5.1 channel surround setup was  detected.
+			A 5.1 channel surround setup was detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
-			A 7.1 channel surround setup was  detected.
+			A 7.1 channel surround setup was detected.
 		</constant>
 	</constants>
 </class>

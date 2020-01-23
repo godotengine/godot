@@ -51,14 +51,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the project name of the VCS working directory
+				Returns the project name of the VCS working directory.
 			</description>
 		</method>
 		<method name="get_vcs_name">
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the VCS if the VCS has been initialized, else return an empty string.
+				Returns the name of the VCS if the VCS has been initialized, else return an empty string.
 			</description>
 		</method>
 		<method name="initialize">
@@ -67,7 +67,7 @@
 			<argument index="0" name="project_root_path" type="String">
 			</argument>
 			<description>
-				Initialize the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
+				Initializes the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_addon_ready">
@@ -97,7 +97,7 @@
 			<argument index="0" name="file_path" type="String">
 			</argument>
 			<description>
-				Stage the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+				Stages the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 		<method name="unstage_file">
@@ -106,7 +106,7 @@
 			<argument index="0" name="file_path" type="String">
 			</argument>
 			<description>
-				Unstage the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+				Unstages the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 	</methods>

@@ -26,6 +26,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_curve" qualifiers="const">
@@ -34,6 +35,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_param_randomness" qualifiers="const">
@@ -42,6 +44,7 @@
 			<argument index="0" name="param" type="int" enum="CPUParticles2D.Parameter">
 			</argument>
 			<description>
+				Returns the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
@@ -50,6 +53,7 @@
 			<argument index="0" name="flag" type="int" enum="CPUParticles2D.Flags">
 			</argument>
 			<description>
+				Returns the enabled state of the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 		<method name="restart">
@@ -67,6 +71,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the base value of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_curve">
@@ -77,6 +82,7 @@
 			<argument index="1" name="curve" type="Curve">
 			</argument>
 			<description>
+				Sets the [Curve] of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_param_randomness">
@@ -87,6 +93,7 @@
 			<argument index="1" name="randomness" type="float">
 			</argument>
 			<description>
+				Sets the randomness factor of the parameter specified by [enum Parameter].
 			</description>
 		</method>
 		<method name="set_particle_flag">
@@ -97,6 +104,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables or disables the given flag (see [enum Flags] for options).
 			</description>
 		</method>
 	</methods>
@@ -187,8 +195,6 @@
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
-		</member>
-		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEvent" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Generic input event
+		Generic input event.
 	</brief_description>
 	<description>
 		Base class of all sort of input event. See [method Node._input].
