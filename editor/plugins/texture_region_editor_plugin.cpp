@@ -736,6 +736,9 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
+			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -1022,12 +1025,10 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	edit_draw->add_child(vscroll);
-	vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	vscroll->connect("value_changed", this, "_scroll_changed");
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	edit_draw->add_child(hscroll);
-	hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
 	hscroll->connect("value_changed", this, "_scroll_changed");
 
 	updating_scroll = false;
