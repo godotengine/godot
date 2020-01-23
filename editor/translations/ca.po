@@ -4601,7 +4601,6 @@ msgid "Animation Tools"
 msgstr "Eines d'Animació"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animació"
 
@@ -5724,6 +5723,11 @@ msgid "Auto Insert Key"
 msgstr "Inserir Clau Automàticament"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "S'ha insertit una Clau d'Animació."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Insereix una Clau (Pistes existents)"
 
@@ -6017,7 +6021,6 @@ msgid "No mesh to debug."
 msgstr "Cap malla per depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "El model no té UVs en aquesta capa"
 

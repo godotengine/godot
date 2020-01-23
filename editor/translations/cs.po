@@ -4580,7 +4580,6 @@ msgid "Animation Tools"
 msgstr "Nástroje pro animaci"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animace"
 
@@ -5663,6 +5662,11 @@ msgid "Auto Insert Key"
 msgstr "Animace: vložit klíč"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animační klíč vložen."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Vložit klíč (existující stopy)"
 
@@ -5957,7 +5961,6 @@ msgid "No mesh to debug."
 msgstr "Žádná mesh pro debugování."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Model nemá UV v této vrstvě"
 

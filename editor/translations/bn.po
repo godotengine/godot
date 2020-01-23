@@ -4888,7 +4888,6 @@ msgid "Animation Tools"
 msgstr "অ্যানিমেশনের সরঞ্জামসমূহ"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "অ্যানিমেশন"
 
@@ -6042,6 +6041,11 @@ msgid "Auto Insert Key"
 msgstr "অ্যানিমেশনে (Anim) চাবি যোগ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "অ্যানিমেশনের চাবি সন্নিবেশিত হয়েছে।"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "চাবি সন্নিবেশ করুন (বিদ্যমান ট্র্যাক/পথসমূহ)"
 
@@ -6351,7 +6355,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 

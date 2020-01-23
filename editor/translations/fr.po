@@ -4639,7 +4639,6 @@ msgid "Animation Tools"
 msgstr "Outils d'animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animation"
 
@@ -5716,6 +5715,10 @@ msgid "Auto Insert Key"
 msgstr "Auto insertion de clé"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Animation Key and Pose Options"
+msgstr "Options pour les clés et poses d'animations"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Insérer clé (pistes existantes)"
 
@@ -6000,7 +6003,6 @@ msgid "No mesh to debug."
 msgstr "Aucun maillage à déboguer."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Le modèle n'a pas d'UV dans cette couche"
 

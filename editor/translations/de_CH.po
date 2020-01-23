@@ -2,23 +2,22 @@
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
-#
 # Christian Fisch <christian.fiesel@gmail.com>, 2016.
-#
+# Nils <nfa106008@iet-gibb.ch>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: Christian Fisch <christian.fiesel@gmail.com>\n"
-"Language-Team: Swiss High German <https://hosted.weblate.org/projects/godot-"
-"engine/godot/de_CH/>\n"
+"PO-Revision-Date: 2020-01-20 11:39+0000\n"
+"Last-Translator: Nils <nfa106008@iet-gibb.ch>\n"
+"Language-Team: German (Swiss High) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/de_CH/>\n"
 "Language: de_CH\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -41,108 +40,103 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "self cha nid brucht wärde wöu d Instanz null isch (nid düre cho)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Invalidi Operande füre Operator %s, %s und %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Invalide index vom Typ %s füre Basis Typ %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Invalid benamslete index '%s' füre Basis Typ %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Invalidi argumänt für s '%s' z konstruiere"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "Ufem ufruef für '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr ""
+msgstr "Gratis"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Usgliche"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Spiegu"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Zit:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Wärt:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Bild einfügen"
+msgstr "Schlüssu hie ifüege"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Node(s) duplizieren"
+msgstr "Usgwäuti Schlüssle dupliziere"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Node(s) löschen"
+msgstr "Usgwäuti Schlüssle lösche"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Script hinzufügen"
+msgstr "Dr Bezier Punkt hinzuefüege"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Ungültige Bilder löschen"
+msgstr "Dr Bezier Punkt bewege"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Bilder duplizieren"
+msgstr "Anim Schlüssle Dupliziere"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Bilder löschen"
+msgstr "Anim Schlüssle lösche"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -232,37 +226,36 @@ msgstr "Animations-Node"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "Spur hinzuefüege"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animations-Node"
+msgstr "Animationswiderholig"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funktione:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Audioclips:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animationsclips:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "D Spur wächsle"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "Die Spur ah-/abschaute"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Update Modus (Wie die Eigeschaft gsetzt isch)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -4569,7 +4562,6 @@ msgid "Animation Tools"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr ""
 
@@ -5666,6 +5658,11 @@ msgid "Auto Insert Key"
 msgstr "Anim Bild einfügen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animationsbild eingefügt."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Bild in bestehende Ebene einfügen"
 
@@ -5957,7 +5954,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 

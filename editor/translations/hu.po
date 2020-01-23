@@ -4751,7 +4751,6 @@ msgid "Animation Tools"
 msgstr "Animációs Eszközök"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animáció"
 
@@ -5893,6 +5892,11 @@ msgid "Auto Insert Key"
 msgstr "Animáció kulcs beillesztés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animáció hossza (másodpercben)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Kulcs Beszúrása (Meglévő Nyomvonalakra)"
 
@@ -6191,7 +6195,6 @@ msgid "No mesh to debug."
 msgstr "Nincs mesh a hibakereséshez."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "A modellnek nincs UV-je ezen a rétegen"
 

@@ -4689,7 +4689,6 @@ msgid "Animation Tools"
 msgstr "เครื่องมือแอนิเมชัน"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "แอนิเมชัน"
 
@@ -5822,6 +5821,11 @@ msgid "Auto Insert Key"
 msgstr "แทรกคีย์แอนิเมชัน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "แทรกคีย์แอนิเมชัน"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "เพิ่มคีย์ (แทร็กที่มีอยู่แล้ว)"
 
@@ -6121,7 +6125,6 @@ msgid "No mesh to debug."
 msgstr "ไม่มีพื้นผิวให้แก้ไขจุดบกพร่อง"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "โมเดลไม่มี UV ในชั้นนี้"
 

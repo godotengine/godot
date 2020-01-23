@@ -42,12 +42,13 @@
 # StarFang208 <polaritymanx@yahoo.it>, 2019.
 # Katia Piazza <gydey@ridiculousglitch.com>, 2019.
 # nickfla1 <lanterniniflavio@gmail.com>, 2019.
+# Fabio Iotti <fabiogiopla@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-30 17:25+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2020-01-21 23:23+0000\n"
+"Last-Translator: Fabio Iotti <fabiogiopla@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -55,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -456,7 +457,7 @@ msgstr "Non è possibile aggiungere una nuova traccia senza un nodo root"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Traccia non valida per la curva Bézier (nessuna sottoproprietà adatta)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -1229,9 +1230,8 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Errore nell'apertura del file package: non è in formato ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Già esistente"
+msgstr "%s (già esistente)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1242,9 +1242,8 @@ msgid "The following files failed extraction from package:"
 msgstr "Impossibile estrarre i file seguenti dal pacchetto:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d altri file"
+msgstr "E %s altri file."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1256,9 +1255,8 @@ msgid "Success!"
 msgstr "Successo!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Contenuti:"
+msgstr "Contenuti del pacchetto:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1398,9 +1396,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "File non valido, non è una disposizione di un bus audio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Errore nel salvataggio file!"
+msgstr "Errore nel salvataggio file: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1978,9 +1975,8 @@ msgid "Inherited by:"
 msgstr "Ereditato da:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Descrizione:"
+msgstr "Descrizione"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2003,12 +1999,11 @@ msgstr "Proprietà"
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "override:"
-msgstr "Sovrascrizioni"
+msgstr "ridefinizione:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Default"
+msgstr "predefinito:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2031,9 +2026,8 @@ msgid "Property Descriptions"
 msgstr "Descrizioni delle proprietà"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Valore"
+msgstr "(valore)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2062,12 +2056,11 @@ msgstr "Cerca aiuto"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr "Case Sensitive"
+msgstr "Distinzione maiuscole/minuscole"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "Mostra Guide"
+msgstr "Mostra dipendenze"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2106,9 +2099,8 @@ msgid "Class"
 msgstr "Classe"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "Metodi"
+msgstr "Metodo"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
@@ -2119,12 +2111,10 @@ msgid "Constant"
 msgstr "Costante"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "Proprietà:"
+msgstr "Proprietà"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
 msgstr "Proprietà del tema"
 
@@ -3513,13 +3503,14 @@ msgid "Importing:"
 msgstr "Importo:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error getting the list of mirrors."
-msgstr "Errore in creazione del signature object."
+msgstr "Errore nella ricezione della lista dei mirror."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON of mirror list. Please report this issue!"
 msgstr ""
+"Errore elaborazione JSON della lista dei mirror. Si prega di segnalare "
+"questo problema!"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3532,7 +3523,7 @@ msgstr ""
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr "Impossibile risolvete."
+msgstr "Impossibile risolvere."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -4605,7 +4596,6 @@ msgid "Animation Tools"
 msgstr "Strumenti di Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animazione"
 
@@ -4711,7 +4701,7 @@ msgstr "Sposta Nodo"
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
 msgid "Transition exists!"
-msgstr "Transizioni"
+msgstr "La transizione esiste!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Add Transition"
@@ -5681,6 +5671,11 @@ msgid "Auto Insert Key"
 msgstr "Inserimento Automatico Chiave"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Key d'Animazione Inserito."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Inserisci Key (Tracce Esistenti)"
 
@@ -5789,20 +5784,19 @@ msgstr "Maschera Emissione"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Rimpicciolisci (Pixels): "
+msgstr "Pixel Solidi"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Pixel del Bordo"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Directed Border Pixels"
-msgstr "File e cartelle:"
+msgstr "Pixel dei Bordi Diretti"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5966,7 +5960,6 @@ msgid "No mesh to debug."
 msgstr "Nessuna mesh da debuggare."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Il modello non ha UV su questo layer"
 
@@ -6032,18 +6025,19 @@ msgstr "Dimensione Outline:"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Channel Debug"
-msgstr ""
+msgstr "Debug del Canale UV"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
 msgstr "Rimuovi elemento %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "Aggiorna da Scena"
+msgstr ""
+"Aggiornare da scena esistente?:\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -7358,7 +7352,7 @@ msgstr "Anteprima Cinematografica"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr ""
+msgstr "Non disponibile quando il renderer GLES2 è in uso."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -7602,35 +7596,32 @@ msgid "Create Mesh2D"
 msgstr "Crea Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "Creazione Anteprime Mesh"
+msgstr "Anteprima Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
-msgstr "Crea Poligono 2D"
+msgstr "Crea Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Anteprima Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
-msgstr "Crea Poligono di Collisione 2D"
+msgstr "Crea CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "Crea Poligono di Collisione 2D"
+msgstr "Anteprima CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
-msgstr "Crea Occlusore di Luce 2D"
+msgstr "Crea LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "Crea Occlusore di Luce 2D"
+msgstr "Crea LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7656,7 +7647,7 @@ msgstr "Geometria non valida, impossibile creare il poligono."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
-msgstr "Converti in Poligono 2D"
+msgstr "Converti in Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
@@ -7664,7 +7655,7 @@ msgstr "Geometria non valida, impossibile creare un poligono di collisione."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "Crea fratello del Poligono di Collisione 2D"
+msgstr "Crea fratello del CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7672,7 +7663,7 @@ msgstr "Geometria non valida, impossibile creare un occlusore di luce."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
-msgstr "Crea fratello di Occlusore di Luce 2D"
+msgstr "Crea fratello del LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -7713,7 +7704,7 @@ msgstr "Aggiungi frame"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "Unable to load images"
-msgstr "Impossibile caricare immagine:"
+msgstr "Impossibile caricare le immagini"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8405,14 +8396,12 @@ msgid "Edit Tile Z Index"
 msgstr "Modifica Indice Z della Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Rendi il Poligono Convesso"
+msgstr "Rendi Convesso"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "Rendi il Poligono Concavo"
+msgstr "Rendi Concavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -10907,9 +10896,8 @@ msgid "Will load an existing script file."
 msgstr "Caricherà un file di script esistente."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script file already exists."
-msgstr "L'Azione '%s' esiste già!"
+msgstr "Il file di script esiste già."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12609,11 +12597,13 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Colore: #%s\n"
+"LMB: Imposta colore\n"
+"RMB: Rimuovi preset"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Pick a color from the editor window."
-msgstr "Scegliere un colore dallo schermo."
+msgstr "Scegli un colore dalla finestra dell'editor."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"

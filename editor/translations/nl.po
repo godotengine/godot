@@ -39,13 +39,13 @@
 # ebbe <ebbesteenhoudt@gmail.com>, 2019.
 # Tirrin <lensenjoe@gmail.com>, 2019.
 # Filip Van Raemdonck <arrawn@gmail.com>, 2019.
-# Julian <jdhoogvorst@gmail.com>, 2019.
+# Julian <jdhoogvorst@gmail.com>, 2019, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-19 11:03+0000\n"
-"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
+"PO-Revision-Date: 2020-01-22 23:17+0000\n"
+"Last-Translator: Julian <jdhoogvorst@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -288,7 +288,7 @@ msgstr "Schakel deze track aan/uit."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Update Modus (Setting van deze eigenschap)"
+msgstr "Bijwerkmodus (hoe de eigenschap ingesteld wordt)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -296,8 +296,7 @@ msgstr "Interpolatiemodus"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
-"Terugloopmodus (Interpolatie tussen het begin en het einde van de loop)"
+msgstr "Naadloze-lusmodus (interpoleert einde met begin van lus)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -363,11 +362,11 @@ msgstr "Sleutel(s) verwijderen"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Verander animatie update modus"
+msgstr "Animatiebijwerkmodus veranderen"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Verander Animatie Interpolatiemodus"
+msgstr "Animatieinterpolatiemodus veranderen"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -1373,15 +1372,15 @@ msgstr "Verplaats audiobus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Sla Audio Bus Layout Op Als..."
+msgstr "Audiobusindeling opslaan als..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr "Locatie voor Nieuwe Layout..."
+msgstr "Opslagplaats voor nieuwe indeling..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Open Audio Bus Lay-out"
+msgstr "Audiobusindeling openen"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
@@ -1393,7 +1392,7 @@ msgstr "Indeling"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Ongeldig bestand, geen audiobus layout."
+msgstr "Ongeldig bestand, geen audiobusindeling."
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
@@ -1405,7 +1404,7 @@ msgstr "Bus Toevoegen"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
-msgstr "Voeg een nieuwe Audio Bus toe aan deze layout."
+msgstr "Nieuwe audiobus toevoegen aan deze indeling."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1415,7 +1414,7 @@ msgstr "Laden"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "Laad een bestaand audiobus layout."
+msgstr "Bestaande busindeling laden."
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"
@@ -1423,7 +1422,7 @@ msgstr "Opslaan Als"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "Sla deze audiobus layout op in een bestand."
+msgstr "Audiobusindeling opslaan in een bestand."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -1431,11 +1430,11 @@ msgstr "Laad standaard"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Laad de standaard audiobus layout."
+msgstr "Standaard audiobusindeling laden."
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "Maak een nieuwe audiobus layout."
+msgstr "Maak een nieuwe audiobusindeling."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1874,7 +1873,7 @@ msgstr "Toggle Favoriet"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr "Toggle Modus"
+msgstr "Modus omschakelen"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
@@ -2307,19 +2306,19 @@ msgstr "Error bij het opslaan van TileSet!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr "Error bij het opslaan van layout!"
+msgstr "Fout bij het opslaan van indeling!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Standaard editorindeling overschreven."
+msgstr "Standaardeditorindeling overschreven."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr "Lay-out naam niet gevonden!"
+msgstr "Indelingsnaam niet gevonden!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Standaard layout hersteld naar basisinstellingen."
+msgstr "Standaardindeling teruggezet naar basisinstellingen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2553,7 +2552,7 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"Volgend script kon niet geladen worden: '%s' Script is niet in tool modus."
+"Uitbreidingsscript kon niet geladen worden: '%s' Script is niet in toolmodus."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2610,11 +2609,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr "Layout Opslaan"
+msgstr "Indeling opslaan"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr "Layout Verwijderen"
+msgstr "Indeling verwijderen"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
@@ -2672,11 +2671,11 @@ msgstr "Tabbladpositie"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr "Afleidingsvrije Modus"
+msgstr "Afleidingsvrijemodus"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr "Afleidingsvrije modus veranderen."
+msgstr "Afleidingsvrijemodus omschakelen."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
@@ -2912,7 +2911,7 @@ msgstr "Editor Instellingen..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "Editor Layout"
+msgstr "Editorindeling"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
@@ -2928,7 +2927,7 @@ msgstr "Schakel Volledig Scherm"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr "Systeemconsole (on)zichtbaar maken"
+msgstr "Systeemconsole aan-/uitschakelen"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -3785,7 +3784,7 @@ msgstr "Bestandssysteem Opnieuw Scannen"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle Split Mode"
-msgstr "Split-modus in-/uitschakelen"
+msgstr "Splitsmodus omschakelen"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -4573,7 +4572,6 @@ msgid "Animation Tools"
 msgstr "Animatiehulpmiddelen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animatie"
 
@@ -5405,7 +5403,7 @@ msgstr "Zoom terugzetten"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Selecteer Modus"
+msgstr "Selecteermodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5438,7 +5436,7 @@ msgstr "Rotatiemodus"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "Schaalwijze"
+msgstr "Schaalmodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5446,8 +5444,8 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Toon een lijst van alle objecten op de aangeklikte positie\n"
-"(hetzelfde als Alt+RMK in de selectiemodus)."
+"Toon alle knopen op de aangeklikte positie\n"
+"(zelfde als Alt+RMK in de selecteermodus)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
@@ -5455,7 +5453,7 @@ msgstr "Klik om het draaipunt van het object aan te passen."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
-msgstr "Verschuif Modus"
+msgstr "Verschuifmodus"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Ruler Mode"
@@ -5648,6 +5646,11 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
 msgstr "Sleutel automatisch invoegen"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animatiesleutel Ingevoegd."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5932,7 +5935,6 @@ msgid "No mesh to debug."
 msgstr "Geen mesh om te debuggen."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Model heeft geen UV in deze laag"
 
@@ -6661,13 +6663,13 @@ msgstr "Script herladen mislukt, zie de console voor foutmeldingen."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr "Script is niet in 'tool' modus en kan niet uitgevoerd worden."
+msgstr "Script is niet in 'tool'-modus en kan niet uitgevoerd worden."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
-"Om dit script uit te voeren moet het erven van EditorScript en in 'tool' "
+"Om dit script uit te voeren moet het erven van EditorScript en in 'tool'-"
 "modus gezet worden."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7270,7 +7272,7 @@ msgstr "Deze bewerking vereist één geselecteerde knoop."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
-msgstr "Vergrendel View Rotatie"
+msgstr "Beeldrotatie vergrendelen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -7322,7 +7324,7 @@ msgstr "Bioscoop Preview"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr ""
+msgstr "Niet beschikbaar bij gebruik van de GLES2 renderer."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -7367,7 +7369,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
-msgstr "Bekijk rotatie vergrendeld"
+msgstr "Beeldrotatie vergrendeld"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8136,19 +8138,19 @@ msgstr "Z Index"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region Mode"
-msgstr "Regio Modus"
+msgstr "Bereikmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Collision Mode"
-msgstr "Collision modus"
+msgstr "Botsingsmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occlusion Mode"
-msgstr "Occlusion Mode"
+msgstr "Occlusiemodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation Mode"
-msgstr "Navigatie Modus"
+msgstr "Navigatiemodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask Mode"
@@ -8156,15 +8158,15 @@ msgstr "Bitmaskermodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Priority Mode"
-msgstr "Prioriteit Modus"
+msgstr "Prioriteitmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon Mode"
-msgstr "Icoon Modus"
+msgstr "Icoonmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Z Index Mode"
-msgstr "Z Index Modus"
+msgstr "Z-Indexmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -9457,7 +9459,7 @@ msgstr "Exporteer geselecteerde bronnen (en afhankelijkheden)"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
-msgstr "Exporteer Modus:"
+msgstr "Exporteermodus:"
 
 #: editor/project_export.cpp
 msgid "Resources to export:"
@@ -9509,7 +9511,7 @@ msgstr "Script"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
-msgstr "Script Exporteer modus:"
+msgstr "Script-exporteermodus:"
 
 #: editor/project_export.cpp
 msgid "Text"
@@ -9541,7 +9543,7 @@ msgstr "Project Exporteren"
 
 #: editor/project_export.cpp
 msgid "Export mode?"
-msgstr "Exporteer modus?"
+msgstr "Exporteermodus?"
 
 #: editor/project_export.cpp
 msgid "Export All"
@@ -10116,7 +10118,7 @@ msgstr "Lokale Filter Gewijzigd"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr "Lokale Filtermodus Gewijzigd"
+msgstr "Taalfiltermodus gewijzigd"
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
@@ -10200,7 +10202,7 @@ msgstr "Alleen geselecteerde talen tonen"
 
 #: editor/project_settings_editor.cpp
 msgid "Filter mode:"
-msgstr "Filter modus:"
+msgstr "Filtermodus:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales:"
@@ -10740,7 +10742,7 @@ msgid ""
 "Node is locked.\n"
 "Click to unlock it."
 msgstr ""
-"Knooppund vergrendeld.\n"
+"Knoop is vergrendeld.\n"
 "Klik om te ontgrendelen."
 
 #: editor/scene_tree_editor.cpp

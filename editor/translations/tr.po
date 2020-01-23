@@ -4578,7 +4578,6 @@ msgid "Animation Tools"
 msgstr "Animasyon Araçları"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animasyon"
 
@@ -5671,6 +5670,11 @@ msgid "Auto Insert Key"
 msgstr "Otomatik Anahtar Gir"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animasyon Anahtarı Eklendi."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Anahtar Gir (Var Olan İzler)"
 
@@ -5955,7 +5959,6 @@ msgid "No mesh to debug."
 msgstr "Hata ayıklaöma için örüntü yok."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Model bu katmanda UV'ye sahip değil"
 

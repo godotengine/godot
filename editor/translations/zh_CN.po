@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-01-19 11:03+0000\n"
+"PO-Revision-Date: 2020-01-20 11:39+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4491,7 +4491,6 @@ msgid "Animation Tools"
 msgstr "动画工具"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "动画"
 
@@ -5549,6 +5548,11 @@ msgid "Auto Insert Key"
 msgstr "自动插入关键帧"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "插入动画键。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "插入关键帧（已有轨道）"
 
@@ -5831,7 +5835,6 @@ msgid "No mesh to debug."
 msgstr "没有要调试的网格。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "模型在此层上没有UV图"
 
@@ -7208,7 +7211,7 @@ msgstr "效果预览"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr ""
+msgstr "使用GLES2渲染器时不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

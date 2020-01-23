@@ -4820,7 +4820,6 @@ msgid "Animation Tools"
 msgstr "Animasjonsverktøy"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animasjon"
 
@@ -5970,6 +5969,11 @@ msgid "Auto Insert Key"
 msgstr "Anim Sett Inn Nøkkel"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Animasjonslengde (sekunder)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Sett inn Nøkkel (Eksisterende Spor)"
 
@@ -6268,7 +6272,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 

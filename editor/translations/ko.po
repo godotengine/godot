@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-19 11:03+0000\n"
+"PO-Revision-Date: 2020-01-22 23:17+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -28,12 +28,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.10.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert() 메서드의 인수 유형이 잘못되었어요. TYPE_* 상수를 사용하세요."
+msgstr "convert() 메서드의 인수 유형이 잘못됐어요. TYPE_* 상수를 사용하세요."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -47,7 +47,7 @@ msgstr "디코딩할 바이트가 모자라거나 잘못된 형식이에요."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "표현식에서 입력 %i이(가) 잘못되었어요 (전달되지 않음)"
+msgstr "표현식에서 입력 %i이(가) 잘못됐어요 (전달되지 않음)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -55,15 +55,15 @@ msgstr "인스턴스가 비어있어서 Self를 사용할 수 없어요 (전달�
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "연산자 %s와(과) %s, %s의 연산 대상이 잘못되었어요."
+msgstr "연산자 %s와(과) %s, %s의 연산 대상이 잘못됐어요."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "기본 유형이 %s인 %s 유형의 인덱스가 잘못되었어요"
+msgstr "기본 유형이 %s인 %s 유형의 인덱스가 잘못됐어요"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "기본 유형이 %s인 '%s' 인덱스의 이름이 잘못되었어요"
+msgstr "기본 유형이 %s인 '%s' 인덱스의 이름이 잘못됐어요"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -381,7 +381,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "애니메이션 생성하기 & 삽입하기"
+msgstr "애니메이션 만들기 & 삽입하기"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
@@ -439,7 +439,7 @@ msgstr "베지어 트랙 추가하기"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "트랙 경로가 잘못되었어요. 키를 추가할 수 없어요."
+msgstr "트랙 경로가 잘못됐어요. 키를 추가할 수 없어요."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
@@ -1674,7 +1674,7 @@ msgstr "켜진 클래스:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr "파일 '%s' 형식이 잘못되었어요. 가져올 수 없어요."
+msgstr "파일 '%s' 형식이 잘못됐어요. 가져올 수 없어요."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
@@ -2271,7 +2271,7 @@ msgstr "레이아웃 저장 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "편집기 기본 레이아웃이 새로 정의되었어요."
+msgstr "편집기 기본 레이아웃이 새로 정의됐어요."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2370,7 +2370,7 @@ msgstr "닫기 전에 '%s'에 변경 사항을 저장할까요?"
 
 #: editor/editor_node.cpp
 msgid "Saved %s modified resource(s)."
-msgstr "수정된 리소스 %s이(가) 저장되었어요."
+msgstr "수정된 리소스 %s이(가) 저장됐어요."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
@@ -2851,7 +2851,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
-msgstr "편집기"
+msgstr "편집기(Editor)"
 
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
@@ -3412,7 +3412,7 @@ msgstr "템플릿에 version.txt를 찾을 수 없어요."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
-msgstr "템플릿의 경로 생성 중 오류:"
+msgstr "템플릿의 경로를 만드는 중 오류:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -4504,7 +4504,6 @@ msgid "Animation Tools"
 msgstr "애니메이션 도구"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "애니메이션(Animation)"
 
@@ -5565,6 +5564,11 @@ msgid "Auto Insert Key"
 msgstr "자동으로 키 삽입하기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "애니메이션 키를 삽입했어요."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "키 삽입하기 (기존 트랙)"
 
@@ -5847,7 +5851,6 @@ msgid "No mesh to debug."
 msgstr "디버그할 메시가 없어요."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "이 레이어에서 모델은 UV가 없어요"
 
@@ -7234,7 +7237,7 @@ msgstr "시네마틱 미리 보기"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr ""
+msgstr "GLES2 렌더러에서 사용할 수 없어요."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -9496,7 +9499,7 @@ msgstr "프로젝트 경로에서 project.godot 파일을 편집할 수 없어�
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr "프로젝트 경로에서 project.godot 파일을 생성할 수 없어요."
+msgstr "프로젝트 경로에서 project.godot 파일을 만들 수 없어요."
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
@@ -9588,7 +9591,7 @@ msgstr "누락된 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
-msgstr "오류: 프로젝트가 파일 시스템에서 누락되었어요."
+msgstr "오류: 프로젝트가 파일 시스템에서 누락됐어요."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -11280,7 +11283,7 @@ msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"노드가 Yield되었지만, 첫번째 작업 메모리의 함수 상태를 반환하지 않았어요."
+"노드가 Yield됐지만, 첫번째 작업 메모리의 함수 상태를 반환하지 않았어요."
 
 #: modules/visual_script/visual_script.cpp
 msgid ""

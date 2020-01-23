@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-19 11:03+0000\n"
+"PO-Revision-Date: 2020-01-20 11:39+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4543,7 +4543,6 @@ msgid "Animation Tools"
 msgstr "Ferramentas de Animação"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animação"
 
@@ -5613,6 +5612,11 @@ msgid "Auto Insert Key"
 msgstr "Inserir Chave automaticamente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Chave de Animação inserida."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Inserir Chave (Pistas existentes)"
 
@@ -5895,7 +5899,6 @@ msgid "No mesh to debug."
 msgstr "Nenhuma malha para depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "O Modelo não tem UV nesta camada"
 
@@ -7280,7 +7283,7 @@ msgstr "Pré-visualização Cinemática"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr ""
+msgstr "Não disponível para o renderizador GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"

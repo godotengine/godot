@@ -4617,7 +4617,6 @@ msgid "Animation Tools"
 msgstr "Ferramentas de Animação"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animação"
 
@@ -5692,6 +5691,11 @@ msgid "Auto Insert Key"
 msgstr "Inserir Chave Automaticamente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Chave de Animação Inserida."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "Inserir Chave (Trilhas Existentes)"
 
@@ -5974,7 +5978,6 @@ msgid "No mesh to debug."
 msgstr "Nenhuma malha para depurar."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "Modelo não tem uma UV nesta camada"
 

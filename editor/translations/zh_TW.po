@@ -4730,7 +4730,6 @@ msgid "Animation Tools"
 msgstr "動畫工具"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "動畫"
 
@@ -5856,6 +5855,11 @@ msgid "Auto Insert Key"
 msgstr "新增關鍵畫格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "動畫長度（秒）"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr "插入幀 (現有軌道)"
 
@@ -6151,7 +6155,6 @@ msgid "No mesh to debug."
 msgstr "沒有要調試的網格。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 
