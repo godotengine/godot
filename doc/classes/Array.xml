@@ -8,11 +8,11 @@
 		[b]Example:[/b]
 		[codeblock]
 		var array = ["One", 2, 3, "Four"]
-		print(array[0])   # One
-		print(array[2])   # 3
-		print(array[-1])  # Four
+		print(array[0]) # One.
+		print(array[2]) # 3.
+		print(array[-1]) # Four.
 		array[2] = "Three"
-		print(array[-2])  # Three
+		print(array[-2]) # Three.
 		[/codeblock]
 		Arrays are always passed by reference.
 	</description>
@@ -342,7 +342,7 @@
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort_ascending")
-				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]]
+				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
 				[/codeblock]
 			</description>
 		</method>
