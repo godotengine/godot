@@ -1167,10 +1167,10 @@
 			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
 			[codeblock]
 			var err = method_that_returns_error()
-			if (err != OK):
+			if err != OK:
 			    print("Failure!)
 			# Or, equivalent:
-			if (err):
+			if err:
 			    print("Still failing!)
 			[/codeblock]
 		</constant>
