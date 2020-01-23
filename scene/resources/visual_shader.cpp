@@ -79,7 +79,7 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
 
-Array VisualShaderNode::_get_default_input_values() const {
+Array VisualShaderNode::get_default_input_values() const {
 
 	Array ret;
 	for (Map<int, Variant>::Element *E = default_input_values.front(); E; E = E->next()) {
@@ -88,7 +88,7 @@ Array VisualShaderNode::_get_default_input_values() const {
 	}
 	return ret;
 }
-void VisualShaderNode::_set_default_input_values(const Array &p_values) {
+void VisualShaderNode::set_default_input_values(const Array &p_values) {
 
 	if (p_values.size() % 2 == 0) {
 		for (int i = 0; i < p_values.size(); i += 2) {
@@ -115,11 +115,11 @@ void VisualShaderNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_port_default_value", "port", "value"), &VisualShaderNode::set_input_port_default_value);
 	ClassDB::bind_method(D_METHOD("get_input_port_default_value", "port"), &VisualShaderNode::get_input_port_default_value);
 
-	ClassDB::bind_method(D_METHOD("_set_default_input_values", "values"), &VisualShaderNode::_set_default_input_values);
-	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualShaderNode::_get_default_input_values);
+	ClassDB::bind_method(D_METHOD("set_default_input_values", "values"), &VisualShaderNode::set_default_input_values);
+	ClassDB::bind_method(D_METHOD("get_default_input_values"), &VisualShaderNode::get_default_input_values);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_default_input_values", "_get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
 	ADD_SIGNAL(MethodInfo("editor_refresh_request"));
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
