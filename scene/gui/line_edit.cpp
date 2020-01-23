@@ -128,7 +128,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.doubleclick = false;
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
 		}
 
 		update();
@@ -913,7 +913,7 @@ void LineEdit::_notification(int p_what) {
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {

@@ -32,6 +32,7 @@ package org.godotengine.godot.input;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.text.InputFilter;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -104,6 +105,7 @@ public class GodotEditText extends EditText {
 					edit.append(text);
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
+					setMaxInputLength(edit, msg.arg1);
 					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.showSoftInput(edit, 0);
 				}
@@ -117,6 +119,16 @@ public class GodotEditText extends EditText {
 				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
 				edit.mView.requestFocus();
 			} break;
+		}
+	}
+
+	private void setMaxInputLength(EditText p_edit_text, int p_max_input_length) {
+		if (p_max_input_length >= 0) {
+			InputFilter[] filters = new InputFilter[1];
+			filters[0] = new InputFilter.LengthFilter(p_max_input_length);
+			p_edit_text.setFilters(filters);
+		} else {
+			p_edit_text.setFilters(new InputFilter[] {});
 		}
 	}
 
@@ -149,12 +161,13 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text) {
+	public void showKeyboard(String p_existing_text, int p_max_input_length) {
 		this.mOriginText = p_existing_text;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
 		msg.obj = this;
+		msg.arg1 = p_max_input_length;
 		sHandler.sendMessage(msg);
 	}
 
