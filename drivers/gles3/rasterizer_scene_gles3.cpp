@@ -4130,13 +4130,13 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = 0;
 	state.ubo_data.opaque_prepass_threshold = 0.99;
 
-	int viewport_width_pixels = storage->frame.current_rt->width;
-	int viewport_height_pixels = storage->frame.current_rt->height;
-
-	state.ubo_data.viewport_size[0] = viewport_width_pixels;
-	state.ubo_data.viewport_size[1] = viewport_height_pixels;
-
 	if (storage->frame.current_rt) {
+		int viewport_width_pixels = storage->frame.current_rt->width;
+		int viewport_height_pixels = storage->frame.current_rt->height;
+
+		state.ubo_data.viewport_size[0] = viewport_width_pixels;
+		state.ubo_data.viewport_size[1] = viewport_height_pixels;
+
 		state.ubo_data.screen_pixel_size[0] = 1.0 / viewport_width_pixels;
 		state.ubo_data.screen_pixel_size[1] = 1.0 / viewport_height_pixels;
 	}
