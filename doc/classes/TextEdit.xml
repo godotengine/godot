@@ -315,7 +315,7 @@
 				[codeblock]
 				var result = search(key, flags, line, column)
 				if result.size() &gt; 0:
-				    # result found
+				    # Result found.
 				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
 				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
 				[/codeblock]

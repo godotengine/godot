@@ -12,8 +12,8 @@
 		Property membership can be tested directly in GDScript using [code]in[/code]:
 		[codeblock]
 		var n = Node2D.new()
-		print("position" in n)  # Prints "True".
-		print("other_property" in n)  # Prints "False".
+		print("position" in n) # Prints "True".
+		print("other_property" in n) # Prints "False".
 		[/codeblock]
 		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
 	</description>

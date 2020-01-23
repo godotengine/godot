@@ -78,9 +78,9 @@
 				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblock]
 				text = "Welcome"
-				select()     # Will select "Welcome"
-				select(4)    # Will select "ome"
-				select(2, 5) # Will select "lco"
+				select() # Will select "Welcome".
+				select(4) # Will select "ome".
+				select(2, 5) # Will select "lco".
 				[/codeblock]
 			</description>
 		</method>
