@@ -5602,17 +5602,26 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				int idx = 0;
+				bool low_end = VisualServer::get_singleton()->is_low_end();
 
 				while (builtin_func_defs[idx].name) {
-
+					if (low_end && builtin_func_defs[idx].high_end) {
+						idx++;
+						continue;
+					}
 					matches.insert(String(builtin_func_defs[idx].name), ScriptCodeCompletionOption::KIND_FUNCTION);
 					idx++;
 				}
 
 			} else { // sub-class
 				int idx = 0;
+				bool low_end = VisualServer::get_singleton()->is_low_end();
 
 				while (builtin_func_defs[idx].name) {
+					if (low_end && builtin_func_defs[idx].high_end) {
+						idx++;
+						continue;
+					}
 					if (builtin_func_defs[idx].tag == completion_class) {
 						matches.insert(String(builtin_func_defs[idx].name), ScriptCodeCompletionOption::KIND_FUNCTION);
 					}
@@ -5676,8 +5685,14 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			int idx = 0;
 
 			String calltip;
+			bool low_end = VisualServer::get_singleton()->is_low_end();
 
 			while (builtin_func_defs[idx].name) {
+
+				if (low_end && builtin_func_defs[idx].high_end) {
+					idx++;
+					continue;
+				}
 
 				if (completion_function == builtin_func_defs[idx].name) {
 
