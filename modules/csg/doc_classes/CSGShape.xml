@@ -31,6 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an [Array] with two elements, the first is the [Transform] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
 			</description>
 		</method>
 		<method name="is_root_shape" qualifiers="const">
@@ -79,6 +80,7 @@
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
 		</member>
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.001">
+			Snap makes the mesh snap to a given distance so that the faces of two meshes can be perfectly aligned. A lower value results in greater precision but may be harder to adjust.
 		</member>
 		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
 			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden.
