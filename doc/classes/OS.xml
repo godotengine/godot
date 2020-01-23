@@ -95,7 +95,7 @@
 			</argument>
 			<argument index="1" name="arguments" type="PoolStringArray">
 			</argument>
-			<argument index="2" name="blocking" type="bool">
+			<argument index="2" name="blocking" type="bool" default="true">
 			</argument>
 			<argument index="3" name="output" type="Array" default="[  ]">
 			</argument>
