@@ -881,6 +881,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 inside_code = True
             elif cmd.startswith('enum '):
                 tag_text = make_enum(cmd[5:], state)
+                escape_post = True
             else:
                 tag_text = make_type(tag_text, state)
                 escape_post = True
