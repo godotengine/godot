@@ -243,6 +243,10 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	msg.msg_length = p_buffer_size;
 
 	wslay_event_queue_msg(_data->ctx, &msg);
+	if (wslay_event_send(_data->ctx) < 0) {
+		close_now();
+		return FAILED;
+	}
 	return OK;
 }
 
