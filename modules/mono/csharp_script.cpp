@@ -2425,6 +2425,9 @@ bool CSharpScript::_update_exports() {
 			top = top->get_parent_class();
 		}
 
+		// Need to check this here, before disposal
+		bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
+
 		// Dispose the temporary managed instance
 
 		MonoException *exc = NULL;
@@ -2438,7 +2441,7 @@ bool CSharpScript::_update_exports() {
 		MonoGCHandle::free_handle(tmp_pinned_gchandle);
 		tmp_object = NULL;
 
-		if (tmp_native && !Object::cast_to<Reference>(tmp_native)) {
+		if (tmp_native && !base_ref) {
 			Node *node = Object::cast_to<Node>(tmp_native);
 			if (node && node->is_inside_tree()) {
 				ERR_PRINTS("Temporary instance was added to the scene tree.");
