@@ -719,7 +719,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	bool aa_on = rounded_corners && anti_aliased;
-	float aa_size_grow = 0.5 * ((float)aa_size + 1.0);
+	float aa_size_grow = 0.5 * ((aa_size + 1) / 2);
 
 	bool blend_on = blend_border && draw_border;
 
@@ -789,6 +789,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	if (aa_on) {
+		float aa_size_fill = 0.5 * ((float)aa_size + 1.0);
+
 		int aa_border_width[4];
 		int aa_fill_width[4];
 		if (draw_border) {
@@ -798,13 +800,13 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 					aa_fill_width[i] = 0;
 				} else {
 					aa_border_width[i] = 0;
-					aa_fill_width[i] = aa_size_grow;
+					aa_fill_width[i] = aa_size_fill;
 				}
 			}
 		} else {
 			for (int i = 0; i < 4; i++) {
 				aa_border_width[i] = 0;
-				aa_fill_width[i] = aa_size_grow;
+				aa_fill_width[i] = aa_size_fill;
 			}
 		}
 
