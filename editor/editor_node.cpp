@@ -3292,6 +3292,10 @@ bool EditorNode::is_scene_open(const String &p_path) {
 	return false;
 }
 
+EditorRun::Status EditorNode::get_run_status() const {
+	return editor_run.get_status();
+}
+
 void EditorNode::fix_dependencies(const String &p_for_file) {
 	dependency_fixer->edit(p_for_file);
 }

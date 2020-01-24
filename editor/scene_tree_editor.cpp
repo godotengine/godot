@@ -534,6 +534,9 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 }
 
 void SceneTreeEditor::_node_renamed(Node *p_node) {
+	if (EditorNode::get_singleton()->get_run_status() != EditorRun::Status::STATUS_STOP) { // to prevent incorrect closing of shader editor
+		return;
+	}
 
 	emit_signal("node_renamed");
 

@@ -742,6 +742,7 @@ public:
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
 	bool is_scene_open(const String &p_path);
+	EditorRun::Status get_run_status() const;
 
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
