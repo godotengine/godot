@@ -188,22 +188,22 @@ template <>
 struct EditorSceneImporterAssetImportInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
+		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
+		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
 
 		return start.slerp(end, t).normalized();
 	}
