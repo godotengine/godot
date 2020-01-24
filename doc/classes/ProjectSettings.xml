@@ -749,8 +749,20 @@
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 		</member>
 		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
+			The default gravity strength in 2D.
+			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
+			[codeblock]
+			# Set the default gravity strength to 98.
+			Physics2DServer.area_set_param(get_viewport().find_world_2d().get_space(), Physics2DServer.AREA_PARAM_GRAVITY, 98)
+			[/codeblock]
 		</member>
 		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+			The default gravity direction in 2D.
+			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
+			[codeblock]
+			# Set the default gravity direction to `Vector2(0, 1)`.
+			Physics2DServer.area_set_param(get_viewport().find_world_2d().get_space(), Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2(0, 1))
+			[/codeblock]
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 		</member>
@@ -772,8 +784,20 @@
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
+			The default gravity strength in 3D.
+			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
+			[codeblock]
+			# Set the default gravity strength to 9.8.
+			PhysicsServer.area_set_param(get_viewport().find_world().get_space(), PhysicsServer.AREA_PARAM_GRAVITY, 9.8)
+			[/codeblock]
 		</member>
 		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3( 0, -1, 0 )">
+			The default gravity direction in 3D.
+			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
+			[codeblock]
+			# Set the default gravity direction to `Vector3(0, -1, 0)`.
+			PhysicsServer.area_set_param(get_viewport().find_world().get_space(), PhysicsServer.AREA_PARAM_GRAVITY_VECTOR, Vector3(0, -1, 0))
+			[/codeblock]
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 		</member>
