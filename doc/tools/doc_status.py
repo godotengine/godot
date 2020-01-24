@@ -69,8 +69,8 @@ long_flags = {
 
     'empty': 'e',
 }
-table_columns = ['name', 'brief_description', 'description', 'methods', 'constants', 'members', 'signals']
-table_column_names = ['Name', 'Brief Desc.', 'Desc.', 'Methods', 'Constants', 'Members', 'Signals']
+table_columns = ['name', 'brief_description', 'description', 'methods', 'constants', 'members', 'signals', 'theme_items']
+table_column_names = ['Name', 'Brief Desc.', 'Desc.', 'Methods', 'Constants', 'Members', 'Signals', 'Theme Items']
 colors = {
     'name': [36],  # cyan
     'part_big_problem': [4, 31],  # underline, red
@@ -176,6 +176,7 @@ class ClassStatus:
             'methods': ClassStatusProgress(),
             'constants': ClassStatusProgress(),
             'members': ClassStatusProgress(),
+            'theme_items': ClassStatusProgress(),
             'signals': ClassStatusProgress()
         }
 
@@ -220,7 +221,7 @@ class ClassStatus:
         )
         items_progress = ClassStatusProgress()
 
-        for k in ['methods', 'constants', 'members', 'signals']:
+        for k in ['methods', 'constants', 'members', 'signals', 'theme_items']:
             items_progress += self.progresses[k]
             output[k] = self.progresses[k].to_configured_colored_string()
 
@@ -257,7 +258,7 @@ class ClassStatus:
                 for sub_tag in list(tag):
                     descr = sub_tag.find('description')
                     status.progresses[tag.tag].increment(len(descr.text.strip()) > 0)
-            elif tag.tag in ['constants', 'members']:
+            elif tag.tag in ['constants', 'members', 'theme_items']:
                 for sub_tag in list(tag):
                     if not sub_tag.text is None:
                         status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
@@ -300,7 +301,7 @@ for arg in sys.argv[1:]:
         sys.exit(1)
 
 if flags['i']:
-    for r in ['methods', 'constants', 'members', 'signals']:
+    for r in ['methods', 'constants', 'members', 'signals', 'theme_items']:
         index = table_columns.index(r)
         del table_column_names[index]
         del table_columns[index]
