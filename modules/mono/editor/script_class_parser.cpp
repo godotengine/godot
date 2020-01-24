@@ -635,13 +635,14 @@ static String get_preprocessor_directive(const String &p_line, int p_from) {
 	CRASH_COND(p_line[p_from] != '#');
 	p_from++;
 	int i = p_from;
-	while (i < p_line.length() && p_line[i] != ' ' && p_line[i] != '\t') {
+	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') ||
+										  (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
 		i++;
 	}
 	return p_line.substr(p_from, i - p_from);
 }
 
-static void run_dummy_preprocessor(String &r_source) {
+static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 
 	Vector<String> lines = r_source.split("\n", /* p_allow_empty: */ true);
 
@@ -655,8 +656,8 @@ static void run_dummy_preprocessor(String &r_source) {
 
 		const int line_len = line.length();
 
-		int j = 0;
-		while (j < line_len) {
+		int j;
+		for (j = 0; j < line_len; j++) {
 			if (line[j] != ' ' && line[j] != '\t') {
 				if (line[j] == '#') {
 					// First non-whitespace char of the line is '#'
@@ -668,13 +669,13 @@ static void run_dummy_preprocessor(String &r_source) {
 						if_level++;
 						is_branch_being_compiled.push_back(if_level == 0 || is_branch_being_compiled[if_level - 1]);
 					} else if (directive == "elif") {
-						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#elif' directive.");
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#elif' directive. File: '" + p_filepath + "'.");
 						is_branch_being_compiled.write[if_level] = false;
 					} else if (directive == "else") {
-						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#else' directive.");
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#else' directive. File: '" + p_filepath + "'.");
 						is_branch_being_compiled.write[if_level] = false;
 					} else if (directive == "endif") {
-						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#endif' directive.");
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#endif' directive. File: '" + p_filepath + "'.");
 						is_branch_being_compiled.remove(if_level);
 						if_level--;
 					}
@@ -686,8 +687,6 @@ static void run_dummy_preprocessor(String &r_source) {
 					break;
 				}
 			}
-
-			j++;
 		}
 
 		if (j == line_len) {
@@ -722,7 +721,7 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 											" Please ensure that scripts are saved in valid UTF-8 unicode." :
 					"Failed to read file: '" + p_filepath + "'.");
 
-	run_dummy_preprocessor(source);
+	run_dummy_preprocessor(source, p_filepath);
 
 	return parse(source);
 }
