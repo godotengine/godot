@@ -75,14 +75,42 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	ConfirmationDialog *delete_dialog;
 
+	enum SplitMode {
+		SPLIT_GRID,
+		SPLIT_PIXEL,
+		SPLIT_AUTO
+	};
+
+	enum ZoomMode {
+		ZOOM_OUT,
+		ZOOM_RESET,
+		ZOOM_FIT,
+		ZOOM_IN,
+		ZOOM_MAX
+	};
+
 	ConfirmationDialog *split_sheet_dialog;
 	ScrollContainer *splite_sheet_scroll;
 	TextureRect *split_sheet_preview;
-	SpinBox *split_sheet_h;
-	SpinBox *split_sheet_v;
+	SpinBox *split_grid_h;
+	SpinBox *split_grid_v;
+	SpinBox *split_pixel_x;
+	SpinBox *split_pixel_y;
+	SpinBox *split_offset_x;
+	SpinBox *split_offset_y;
 	EditorFileDialog *file_split_sheet;
-	Set<int> frames_selected;
-	int last_frame_selected;
+	OptionButton *split_mode;
+	VBoxContainer *hv_container;
+	VBoxContainer *xy_container;
+	VBoxContainer *off_container;
+	Panel *split_panel;
+	CheckBox *skip_empty;
+	Label *zoom_perc;
+	ToolButton *zoom[ZOOM_MAX];
+
+	Map<RID, List<Rect2> > cache_map;
+	List<Rect2> frames_grid;
+	List<Rect2> frames_selected;
 
 	void _load_pressed();
 	void _load_scene_pressed();
@@ -119,7 +147,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
-	void _sheet_select_clear_all_frames();
+	void _sheet_select_all_frames();
+	void _sheet_clear_all_frames();
+	void _sheet_mode_changed(int p_mode);
+	void _sheet_compute_grid();
+	void _zoom(int p_mode);
+	void _update_autoslice();
 
 protected:
 	void _notification(int p_what);
