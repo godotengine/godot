@@ -1352,22 +1352,26 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			pos = brk_pos + 1;
 
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
-			int tag_end = tag.find(" ");
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
-			String link_tag = tag.substr(0, tag_end);
-			String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
-
+			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
 			p_rt->push_meta("@" + link_tag + " " + link_target);
 			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
+			p_rt->pop();
 			pos = brk_end + 1;
 
 		} else if (doc->class_list.has(tag)) {
+			// Class reference tag such as [Node2D] or [SceneTree].
+			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
+			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			pos = brk_end + 1;
