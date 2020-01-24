@@ -279,7 +279,7 @@ void register_scene_types() {
 	ClassDB::register_class<Object>();
 
 	ClassDB::register_class<Node>();
-	ClassDB::register_virtual_class<InstancePlaceholder>();
+	ClassDB::register_class<InstancePlaceholder>();
 
 	ClassDB::register_virtual_class<Viewport>();
 	ClassDB::register_class<SubViewport>();
