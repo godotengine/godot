@@ -13,12 +13,14 @@
 			<return type="HScrollBar">
 			</return>
 			<description>
+				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
 			</description>
 		</method>
 		<method name="get_v_scrollbar">
 			<return type="VScrollBar">
 			</return>
 			<description>
+				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].
 			</description>
 		</method>
 	</methods>
