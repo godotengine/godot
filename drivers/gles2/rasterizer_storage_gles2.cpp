@@ -2692,6 +2692,7 @@ void RasterizerStorageGLES2::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb
 	ERR_FAIL_COND(!mesh);
 
 	mesh->custom_aabb = p_aabb;
+	mesh->instance_change_notify(true, false);
 }
 
 AABB RasterizerStorageGLES2::mesh_get_custom_aabb(RID p_mesh) const {
