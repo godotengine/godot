@@ -260,7 +260,7 @@ void PathFollow2D::_validate_property(PropertyInfo &property) const {
 		if (path && path->get_curve().is_valid())
 			max = path->get_curve()->get_baked_length();
 
-		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser";
+		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
 }
 
@@ -302,8 +302,8 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
 	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotate"), "set_rotate", "is_rotating");
