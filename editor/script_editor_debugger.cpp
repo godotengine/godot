@@ -1622,6 +1622,7 @@ void ScriptEditorDebugger::_output_clear() {
 void ScriptEditorDebugger::_export_csv() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_mode = SAVE_CSV;
 	file_dialog->popup_centered_ratio();
 }
