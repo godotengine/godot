@@ -333,6 +333,7 @@
 			</argument>
 			<description>
 				Returns the given scancode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
+				See also [member InputEventKey.scancode] and [method InputEventKey.get_scancode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
