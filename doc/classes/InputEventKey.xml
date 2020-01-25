@@ -15,6 +15,7 @@
 			</return>
 			<description>
 				Returns the scancode combined with modifier keys such as [code]Shift[/code] or [code]Alt[/code]. See also [InputEventWithModifiers].
+				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_scancode_string(event.get_scancode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
 			</description>
 		</method>
 	</methods>
@@ -26,10 +27,11 @@
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode" default="0">
-			Key scancode, one of the [enum KeyList] constants.
+			The key scancode, which corresponds to one of the [enum KeyList] constants.
+			To get a human-readable representation of the [InputEventKey], use [code]OS.get_scancode_string(event.scancode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
-			Key Unicode identifier when relevant. Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method OS.set_ime_active] for more information.
+			The key Unicode identifier (when relevant). Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method OS.set_ime_active] for more information.
 		</member>
 	</members>
 	<constants>
