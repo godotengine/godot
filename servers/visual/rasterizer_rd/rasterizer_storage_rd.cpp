@@ -2052,7 +2052,7 @@ AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	AABB aabb;
 
-	for (int i = 0; i < mesh->surface_count; i++) {
+	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 
 		AABB laabb;
 		if ((mesh->surfaces[i]->format & VS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->bone_aabbs.size()) {

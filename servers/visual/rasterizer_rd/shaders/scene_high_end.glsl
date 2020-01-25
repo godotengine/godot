@@ -53,7 +53,7 @@ layout(location = 6) out vec3 binormal_interp;
 #endif
 
 #ifdef USE_MATERIAL_UNIFORMS
-layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
+layout(set = 5, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */
 MATERIAL_UNIFORMS
 	/* clang-format on */
@@ -316,7 +316,7 @@ layout(location = 8) in float dp_clip;
 #define projection_matrix scene_data.projection_matrix
 
 #ifdef USE_MATERIAL_UNIFORMS
-layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
+layout(set = 5, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */
 MATERIAL_UNIFORMS
 	/* clang-format on */
@@ -341,6 +341,12 @@ layout(location = 4) out float depth_output_buffer;
 
 #endif
 
+#ifdef MODE_RENDER_NORMAL
+layout(location = 0) out vec4 normal_output_buffer;
+#ifdef MODE_RENDER_ROUGHNESS
+layout(location = 1) out float roughness_output_buffer;
+#endif //MODE_RENDER_ROUGHNESS
+#endif //MODE_RENDER_NORMAL
 #else // RENDER DEPTH
 
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
@@ -1145,7 +1151,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 		ao = 1.0 - min(1.0, ao);
 
-		light *= mix(1.0, ao, gi_probes.data[index].ambient_occlusion);
+		light = mix(scene_data.ao_color.rgb,light,mix(1.0, ao, gi_probes.data[index].ambient_occlusion));
 	}
 
 	out_diff += vec4(light * blend, blend);
@@ -1236,7 +1242,7 @@ void main() {
 
 	float normaldepth = 1.0;
 
-	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
+	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size + scene_data.screen_pixel_size * 0.5; //account for center
 
 	float sss_strength = 0.0;
 
@@ -1633,18 +1639,44 @@ FRAGMENT_SHADER_CODE
 	emission_output_buffer.a = 0.0;
 #endif
 
+#ifdef MODE_RENDER_NORMAL
+	normal_output_buffer = vec4(normal * 0.5 + 0.5,0.0);
+#ifdef MODE_RENDER_ROUGHNESS
+	roughness_output_buffer = roughness;
+#endif //MODE_RENDER_ROUGHNESS
+#endif //MODE_RENDER_NORMAL
+
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
 	specular_light *= scene_data.reflection_multiplier;
 	ambient_light *= albedo; //ambient must be multiplied by albedo at the end
 
+//ambient occlusion
 #if defined(AO_USED)
-	ambient_light *= ao;
+
+	if (scene_data.ssao_enabled && scene_data.ssao_ao_affect > 0.0) {
+		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]),screen_uv).r;
+		ao = mix(ao,min(ao,ssao),scene_data.ssao_ao_affect);
+		ao_light_affect = mix(ao_light_affect,max(ao_light_affect,scene_data.ssao_light_affect),scene_data.ssao_ao_affect);
+	}
+
+	ambient_light = mix(scene_data.ao_color.rgb,ambient_light,ao);
 	ao_light_affect = mix(1.0, ao, ao_light_affect);
-	specular_light *= ao_light_affect;
-	diffuse_light *= ao_light_affect;
-#endif
+	specular_light = mix(scene_data.ao_color.rgb,specular_light,ao_light_affect);
+	diffuse_light = mix(scene_data.ao_color.rgb,diffuse_light,ao_light_affect);
+
+#else
+
+	if (scene_data.ssao_enabled) {
+		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]),screen_uv).r;
+		ambient_light = mix(scene_data.ao_color.rgb,ambient_light,ao);
+		float ao_light_affect = mix(1.0, ao,scene_data.ssao_light_affect);
+		specular_light = mix(scene_data.ao_color.rgb,specular_light,ao_light_affect);
+		diffuse_light = mix(scene_data.ao_color.rgb,diffuse_light,ao_light_affect);
+	}
+
+#endif // AO_USED
 
 	// base color remapping
 	diffuse_light *= 1.0 - metallic; // TODO: avoid all diffuse and ambient light calculations when metallic == 1 up to this point
