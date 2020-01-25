@@ -450,6 +450,9 @@ void VisualServerViewport::viewport_set_size(RID p_viewport, int p_width, int p_
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+	//	if (viewport->size.width == p_width && viewport->size.height == p_height) {
+	//		return; //nothing to do
+	//	}
 	viewport->size = Size2(p_width, p_height);
 	VSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
 	if (viewport->render_buffers.is_valid()) {

@@ -62,6 +62,11 @@ protected:
 
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
 
+	virtual void _base_uniforms_changed() = 0;
+	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers) = 0;
+
+	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
+
 private:
 	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
@@ -94,6 +99,7 @@ private:
 	/* SKY */
 	struct Sky {
 		RID radiance;
+		RID uniform_set;
 		int radiance_size = 256;
 		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
 		RID panorama;
@@ -266,7 +272,6 @@ private:
 
 	bool gi_probe_use_anisotropy = false;
 	GIProbeQuality gi_probe_quality = GIPROBE_QUALITY_MEDIUM;
-	bool gi_probe_slots_dirty = true;
 
 	Vector<RID> gi_probe_slots;
 
@@ -455,6 +460,7 @@ private:
 		float ambient_light_energy = 1.0;
 		float ambient_sky_contribution = 1.0;
 		VS::EnvironmentReflectionSource reflection_source = VS::ENV_REFLECTION_SOURCE_BG;
+		Color ao_color;
 
 		/// Tonemap
 
@@ -481,7 +487,21 @@ private:
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
 		bool glow_bicubic_upscale = false;
+
+		/// SSAO
+
+		bool ssao_enabled = false;
+		float ssao_radius = 1;
+		float ssao_intensity = 1;
+		float ssao_bias = 0.01;
+		float ssao_direct_light_affect = 0.0;
+		float ssao_ao_channel_affect = 0.0;
+		float ssao_blur_edge_sharpness = 4.0;
+		VS::EnvironmentSSAOBlur ssao_blur = VS::ENV_SSAO_BLUR_3x3;
 	};
+
+	VS::EnvironmentSSAOQuality ssao_quality = VS::ENV_SSAO_QUALITY_MEDIUM;
+	bool ssao_half_size = false;
 
 	static uint64_t auto_exposure_counter;
 
@@ -546,6 +566,13 @@ private:
 			Vector<RID> reduce;
 			RID current;
 		} luminance;
+
+		struct SSAO {
+			RID depth;
+			Vector<RID> depth_slices;
+			RID ao[2];
+			RID ao_full; //when using half-size
+		} ssao;
 	};
 
 	mutable RID_Owner<RenderBuffers> render_buffers_owner;
@@ -606,6 +633,7 @@ public:
 
 	RID sky_get_panorama_texture_rd(RID p_sky) const;
 	RID sky_get_radiance_texture_rd(RID p_sky) const;
+	RID sky_get_radiance_uniform_set_rd(RID p_sky, RID p_shader, int p_set) const;
 
 	/* ENVIRONMENT API */
 
@@ -618,7 +646,7 @@ public:
 	void environment_set_bg_color(RID p_env, const Color &p_color);
 	void environment_set_bg_energy(RID p_env, float p_energy);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
-	void environment_set_ambient_light(RID p_env, const Color &p_color, VS::EnvironmentAmbientSource p_ambient = VS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, VS::EnvironmentReflectionSource p_reflection_source = VS::ENV_REFLECTION_SOURCE_BG);
+	void environment_set_ambient_light(RID p_env, const Color &p_color, VS::EnvironmentAmbientSource p_ambient = VS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, VS::EnvironmentReflectionSource p_reflection_source = VS::ENV_REFLECTION_SOURCE_BG, const Color &p_ao_color = Color());
 
 	VS::EnvironmentBG environment_get_background(RID p_env) const;
 	RID environment_get_sky(RID p_env) const;
@@ -632,6 +660,7 @@ public:
 	float environment_get_ambient_light_ambient_energy(RID p_env) const;
 	float environment_get_ambient_sky_contribution(RID p_env) const;
 	VS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
+	Color environment_get_ao_color(RID p_env) const;
 
 	bool is_environment(RID p_env) const;
 
@@ -640,7 +669,12 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
+	void environment_set_ssao_quality(VS::EnvironmentSSAOQuality p_quality, bool p_half_size);
+	bool environment_is_ssao_enabled(RID p_env) const;
+	float environment_get_ssao_ao_affect(RID p_env) const;
+	float environment_get_ssao_light_affect(RID p_env) const;
+	bool environment_is_ssr_enabled(RID p_env) const;
 
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
@@ -869,8 +903,6 @@ public:
 	}
 
 	const Vector<RID> &gi_probe_get_slots() const;
-	bool gi_probe_slots_are_dirty() const;
-	void gi_probe_slots_make_not_dirty();
 	_FORCE_INLINE_ bool gi_probe_is_anisotropic() const {
 		return gi_probe_use_anisotropy;
 	}
@@ -879,6 +911,7 @@ public:
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
+	RID render_buffers_get_ao_texture(RID p_render_buffers);
 	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
 
 	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_camera_effects, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);

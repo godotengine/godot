@@ -360,6 +360,7 @@ void EditorNode::_notification(int p_what) {
 				VS::DOFBlurQuality dof_quality = VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality")));
 				bool dof_jitter = GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter");
 				VS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
+				VS::get_singleton()->environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

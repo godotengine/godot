@@ -279,6 +279,9 @@ void main() {
 
 #ifdef MODE_SIMPLE_COPY
 	vec4 color = texture(source_color, uv_interp, 0.0);
+	if (bool(blur.flags & FLAG_COPY_FORCE_LUMINANCE)) {
+		color.rgb = vec3(max(max(color.r,color.g),color.b));
+	}
 	frag_color = color;
 #endif
 
@@ -286,5 +289,6 @@ void main() {
 	vec4 color = texture(source_color, uv_interp, 0.0);
 	float ssao = texture(source_ssao, uv_interp, 0.0).r;
 	frag_color = vec4(mix(color.rgb, color.rgb * mix(blur.ssao_color.rgb, vec3(1.0), ssao), color.a), 1.0);
+
 #endif
 }

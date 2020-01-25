@@ -432,14 +432,16 @@ public:
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
+	FUNC7(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource, const Color &)
 
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)
 #endif
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
+
+	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
 	FUNC12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 

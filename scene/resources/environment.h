@@ -87,12 +87,6 @@ public:
 		SSAO_BLUR_3x3
 	};
 
-	enum SSAOQuality {
-		SSAO_QUALITY_LOW,
-		SSAO_QUALITY_MEDIUM,
-		SSAO_QUALITY_HIGH
-	};
-
 private:
 	RID environment;
 
@@ -105,6 +99,7 @@ private:
 	int bg_canvas_max_layer;
 	Color ambient_color;
 	float ambient_energy;
+	Color ao_color;
 	float ambient_sky_contribution;
 	int camera_feed_id;
 	AmbientSource ambient_source;
@@ -135,15 +130,11 @@ private:
 	bool ssao_enabled;
 	float ssao_radius;
 	float ssao_intensity;
-	float ssao_radius2;
-	float ssao_intensity2;
 	float ssao_bias;
 	float ssao_direct_light_affect;
 	float ssao_ao_channel_affect;
-	Color ssao_color;
 	SSAOBlur ssao_blur;
 	float ssao_edge_sharpness;
-	SSAOQuality ssao_quality;
 
 	bool glow_enabled;
 	int glow_levels;
@@ -278,12 +269,6 @@ public:
 	void set_ssao_intensity(float p_intensity);
 	float get_ssao_intensity() const;
 
-	void set_ssao_radius2(float p_radius);
-	float get_ssao_radius2() const;
-
-	void set_ssao_intensity2(float p_intensity);
-	float get_ssao_intensity2() const;
-
 	void set_ssao_bias(float p_bias);
 	float get_ssao_bias() const;
 
@@ -293,14 +278,11 @@ public:
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
 
-	void set_ssao_color(const Color &p_color);
-	Color get_ssao_color() const;
+	void set_ao_color(const Color &p_color);
+	Color get_ao_color() const;
 
 	void set_ssao_blur(SSAOBlur p_blur);
 	SSAOBlur get_ssao_blur() const;
-
-	void set_ssao_quality(SSAOQuality p_quality);
-	SSAOQuality get_ssao_quality() const;
 
 	void set_ssao_edge_sharpness(float p_edge_sharpness);
 	float get_ssao_edge_sharpness() const;
@@ -391,7 +373,6 @@ VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-VARIANT_ENUM_CAST(Environment::SSAOQuality)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
 
 class CameraEffects : public Resource {

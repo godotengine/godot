@@ -39,6 +39,9 @@
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/ssao.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/tonemap.glsl.gen.h"
 
 #include "servers/visual_server.h"
@@ -71,7 +74,8 @@ class RasterizerEffectsRD {
 		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 2),
 		BLUR_FLAG_DOF_NEAR_FIRST_TAP = (1 << 3),
 		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 4),
-		BLUR_FLAG_FLIP_Y = (1 << 5)
+		BLUR_FLAG_FLIP_Y = (1 << 5),
+		BLUR_COPY_FORCE_LUMINANCE = (1 << 6)
 	};
 
 	struct BlurPushConstant {
@@ -265,6 +269,76 @@ class RasterizerEffectsRD {
 		RID pipelines[BOKEH_MAX];
 	} bokeh;
 
+	enum SSAOMode {
+		SSAO_MINIFY_FIRST,
+		SSAO_MINIFY_MIPMAP,
+		SSAO_GATHER_LOW,
+		SSAO_GATHER_MEDIUM,
+		SSAO_GATHER_HIGH,
+		SSAO_GATHER_ULTRA,
+		SSAO_GATHER_LOW_HALF,
+		SSAO_GATHER_MEDIUM_HALF,
+		SSAO_GATHER_HIGH_HALF,
+		SSAO_GATHER_ULTRA_HALF,
+		SSAO_BLUR_PASS,
+		SSAO_BLUR_PASS_HALF,
+		SSAO_BLUR_UPSCALE,
+		SSAO_MAX
+	};
+
+	struct SSAOMinifyPushConstant {
+		float pixel_size[2];
+		float z_far;
+		float z_near;
+		int32_t source_size[2];
+		uint32_t orthogonal;
+		uint32_t pad;
+	};
+
+	struct SSAOGatherPushConstant {
+		int32_t screen_size[2];
+		float z_far;
+		float z_near;
+
+		uint32_t orthogonal;
+		float intensity_div_r6;
+		float radius;
+		float bias;
+
+		float proj_info[4];
+		float pixel_size[2];
+		float proj_scale;
+		uint32_t pad;
+	};
+
+	struct SSAOBlurPushConstant {
+		float edge_sharpness;
+		int32_t filter_scale;
+		float z_far;
+		float z_near;
+		uint32_t orthogonal;
+		uint32_t pad[3];
+		int32_t axis[2];
+		int32_t screen_size[2];
+	};
+
+	struct SSAO {
+
+		SSAOMinifyPushConstant minify_push_constant;
+		SsaoMinifyShaderRD minify_shader;
+		RID minify_shader_version;
+
+		SSAOGatherPushConstant gather_push_constant;
+		SsaoShaderRD gather_shader;
+		RID gather_shader_version;
+
+		SSAOBlurPushConstant blur_push_constant;
+		SsaoBlurShaderRD blur_shader;
+		RID blur_shader_version;
+
+		RID pipelines[SSAO_MAX];
+	} ssao;
+
 	RID default_sampler;
 	RID default_mipmap_sampler;
 	RID index_buffer;
@@ -283,7 +357,7 @@ public:
 	//TODO must re-do most of the shaders in compute
 
 	void region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
-	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false);
+	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false, bool p_force_luminance = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
 	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
@@ -330,6 +404,8 @@ public:
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
+
+	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();

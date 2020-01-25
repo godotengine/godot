@@ -39,6 +39,15 @@
 
 class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
+	enum {
+		SCENE_UNIFORM_SET = 0,
+		RADIANCE_UNIFORM_SET = 1,
+		VIEW_DEPENDANT_UNIFORM_SET = 2,
+		RENDER_BUFFERS_UNIFORM_SET = 3,
+		TRANSFORMS_UNIFORM_SET = 4,
+		MATERIAL_UNIFORM_SET = 5
+	};
+
 	/* Shader */
 
 	enum ShaderVersion {
@@ -186,28 +195,44 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 	/* Framebuffer */
 
-	struct RenderBufferDataForward : public RenderBufferData {
+	struct RenderBufferDataHighEnd : public RenderBufferData {
 		//for rendering, may be MSAAd
 		RID color;
 		RID depth;
+		RID specular;
+		RID normal_buffer;
+		RID roughness_buffer;
 		RID depth_fb;
+		RID depth_normal_fb;
+		RID depth_normal_roughness_fb;
 		RID color_fb;
-		RID color_only_fb;
+		RID color_specular_fb;
 		int width, height;
 
+		void ensure_specular();
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
-		~RenderBufferDataForward();
+		RID uniform_set;
+
+		~RenderBufferDataHighEnd();
 	};
 
 	virtual RenderBufferData *_create_render_buffer_data();
+	void _allocate_normal_texture(RenderBufferDataHighEnd *rb);
+	void _allocate_roughness_texture(RenderBufferDataHighEnd *rb);
 
 	RID shadow_sampler;
 	RID render_base_uniform_set;
-	RID render_pass_uniform_set;
+	RID view_dependant_uniform_set;
+
+	virtual void _base_uniforms_changed();
+	void _render_buffers_clear_uniform_set(RenderBufferDataHighEnd *rb);
+	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers);
+
 	void _update_render_base_uniform_set();
-	void _setup_render_pass_uniform_set(RID p_depth_buffer, RID p_color_buffer, RID p_normal_buffer, RID p_roughness_limit_buffer, RID p_radiance_cubemap, RID p_shadow_atlas, RID p_reflection_atlas);
+	void _setup_view_dependant_uniform_set(RID p_shadow_atlas, RID p_reflection_atlas);
+	void _update_render_buffers_uniform_set(RID p_render_buffers);
 
 	/* Scene State UBO */
 
@@ -318,6 +343,13 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float dual_paraboloid_side;
 			float z_far;
 			float z_near;
+
+			uint32_t ssao_enabled;
+			float ssao_light_affect;
+			float ssao_ao_affect;
+			uint32_t pad_ssao;
+
+			float ao_color[4];
 		};
 
 		UBO ubo;
@@ -503,6 +535,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	RID wireframe_material_shader;
 	RID wireframe_material;
 	RID default_shader_rd;
+	RID default_radiance_uniform_set;
+	RID default_render_buffers_uniform_set;
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
@@ -527,7 +561,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth);
-	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi);
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_radiance_uniform_set, RID p_render_buffers_uniform_set);
 	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index);
 	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index);
 

@@ -16,3 +16,6 @@ if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('giprobe_sdf.glsl');
     env.RD_GLSL('luminance_reduce.glsl');
     env.RD_GLSL('bokeh_dof.glsl');
+    env.RD_GLSL('ssao.glsl');
+    env.RD_GLSL('ssao_minify.glsl');
+    env.RD_GLSL('ssao_blur.glsl');
