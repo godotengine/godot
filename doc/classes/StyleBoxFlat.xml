@@ -179,7 +179,8 @@
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
 			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
-			For corner radii smaller than 10, 4-5 should be enough. For corner radii smaller than 30, 8-12 should be enough.
+			For corner radii smaller than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii smaller than 30, values between [code]8[/code] and [code]12[/code] should be enough.
+			A corner detail of [code]1[/code] will result in chamfered corners instead of rounded corners, which is useful for some artistic effects.
 		</member>
 		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
 			The bottom-left corner's radius. If [code]0[/code], the corner is not rounded.
