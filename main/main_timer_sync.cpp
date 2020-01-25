@@ -147,7 +147,8 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 		p_idle_step = 1.0 / fixed_fps;
 
 	// compensate for last deficit
-	p_idle_step += time_deficit;
+	// Disabled: Causes negative delta times during lag spikes
+	//p_idle_step += time_deficit;
 
 	MainFrameTime ret = advance_core(p_frame_slice, p_iterations_per_second, p_idle_step);
 
@@ -176,7 +177,8 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	time_accum = ret.idle_step - idle_minus_accum;
 
 	// track deficit
-	time_deficit = p_idle_step - ret.idle_step;
+	// Disabled: Causes negative delta times during lag spikes
+	//time_deficit = p_idle_step - ret.idle_step;
 
 	// p_frame_slice is 1.0 / iterations_per_sec
 	// i.e. the time in seconds taken by a physics tick
@@ -197,7 +199,8 @@ MainTimerSync::MainTimerSync() :
 		last_cpu_ticks_usec(0),
 		current_cpu_ticks_usec(0),
 		time_accum(0),
-		time_deficit(0),
+		// Disabled: Causes negative delta times during lag spikes
+		//time_deficit(0),
 		fixed_fps(0) {
 	for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
 		typical_physics_steps[i] = i;

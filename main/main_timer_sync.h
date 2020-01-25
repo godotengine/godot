@@ -50,7 +50,8 @@ class MainTimerSync {
 	float time_accum;
 
 	// current difference between wall clock time and reported sum of idle_steps
-	float time_deficit;
+	// Disabled: Causes negative delta times during lag spikes
+	//float time_deficit;
 
 	// number of frames back for keeping accumulated physics steps roughly constant.
 	// value of 12 chosen because that is what is required to make 144 Hz monitors
