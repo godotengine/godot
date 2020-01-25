@@ -1825,7 +1825,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &VisualServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &VisualServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance", "roughness"), &VisualServer::environment_set_ssr);
-	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "radius2", "intensity2", "bias", "light_affect", "ao_channel_affect", "color", "quality", "blur", "bilateral_sharpness"), &VisualServer::environment_set_ssao);
+	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "radius2", "intensity2", "bias", "light_affect", "ao_channel_affect", "color", "blur", "bilateral_sharpness"), &VisualServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &VisualServer::environment_set_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_end", "depth_curve", "transmit", "transmit_curve"), &VisualServer::environment_set_fog_depth);
@@ -2320,6 +2320,10 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_quality", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low,Medium,High (Slow)"));
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_use_jitter", false);
+
+	GLOBAL_DEF("rendering/quality/ssao/quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium,High (Slow),Ultra (Very Slow)"));
+	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
 }
 
 VisualServer::~VisualServer() {

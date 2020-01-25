@@ -60,6 +60,13 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float z_far;
 	float z_near;
 
+	bool ssao_enabled;
+	float ssao_light_affect;
+	float ssao_ao_affect;
+	uint pad_ssao;
+
+	vec4 ao_color;
+
 #if 0
 	vec4 ambient_light_color;
 	vec4 bg_color;
@@ -211,33 +218,41 @@ layout(set = 0, binding = 11, std430) buffer ClusterData {
 	uint indices[];
 } cluster_data;
 
-/* Set 1, Scene data that changes per render pass */
+layout(set = 0, binding = 12) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 0) uniform texture2D depth_buffer;
-layout(set = 1, binding = 1) uniform texture2D color_buffer;
-layout(set = 1, binding = 2) uniform texture2D normal_buffer;
-layout(set = 1, binding = 3) uniform texture2D roughness_limit;
+// decal atlas
+
+/* Set 1, Radiance */
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 4) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 0) uniform textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 1, binding = 4) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 0) uniform textureCube radiance_cubemap;
 
 #endif
 
-layout(set = 1, binding = 5) uniform textureCubeArray reflection_atlas;
 
-layout(set = 1, binding = 6) uniform texture2D shadow_atlas;
+/* Set 2, Reflection and Shadow Atlases (view dependant) */
 
-layout(set = 1, binding = 7) uniform texture2D directional_shadow_atlas;
+layout(set = 2, binding = 0) uniform textureCubeArray reflection_atlas;
 
-/* Set 2 Skeleton & Instancing (Multimesh) */
+layout(set = 2, binding = 1) uniform texture2D shadow_atlas;
 
-layout(set = 2, binding = 0, std430) buffer Transforms {
+/* Set 1, Render Buffers */
+
+layout(set = 3, binding = 0) uniform texture2D depth_buffer;
+layout(set = 3, binding = 1) uniform texture2D color_buffer;
+layout(set = 3, binding = 2) uniform texture2D normal_buffer;
+layout(set = 3, binding = 3) uniform texture2D roughness_buffer;
+layout(set = 3, binding = 4) uniform texture2D ao_buffer;
+
+/* Set 4 Skeleton & Instancing (Multimesh) */
+
+layout(set = 4, binding = 0, std430) buffer Transforms {
 	vec4 data[];
 } transforms;
 
-/* Set 3 User Material */
+/* Set 5 User Material */

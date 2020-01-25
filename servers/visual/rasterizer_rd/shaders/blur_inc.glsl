@@ -4,6 +4,7 @@
 #define FLAG_DOF_NEAR_FIRST_TAP (1 << 3)
 #define FLAG_GLOW_FIRST_PASS (1 << 4)
 #define FLAG_FLIP_Y (1 << 5)
+#define FLAG_COPY_FORCE_LUMINANCE (1 << 6)
 
 layout(push_constant, binding = 1, std430) uniform Blur {
 	vec4 section;
