@@ -182,6 +182,9 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	// i.e. the time in seconds taken by a physics tick
 	ret.interpolation_fraction = time_accum / p_frame_slice;
 
+	// workaround for when time_deficit makes idle_step negative
+	ret.idle_step = MAX(ret.idle_step, 0.0);
+
 	return ret;
 }
 
