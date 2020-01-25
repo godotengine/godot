@@ -693,7 +693,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
 
-		String version_name = p_preset->get("version/name");
+		String version_name = GLOBAL_GET("application/config/version");
 		int version_code = p_preset->get("version/code");
 		String package_name = p_preset->get("package/unique_name");
 
@@ -1541,7 +1541,7 @@ public:
 		int rv;
 
 		bool remove_prev = p_preset->get("one_click_deploy/clear_previous_install");
-		String version_name = p_preset->get("version/name");
+		String version_name = GLOBAL_GET("application/config/version");
 		String package_name = p_preset->get("package/unique_name");
 
 		if (remove_prev) {
@@ -2170,7 +2170,7 @@ public:
 		String cmdline = p_preset->get("command_line/extra_args");
 
 		int version_code = p_preset->get("version/code");
-		String version_name = p_preset->get("version/name");
+		String version_name = GLOBAL_GET("application/config/version");
 		String package_name = p_preset->get("package/unique_name");
 
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
