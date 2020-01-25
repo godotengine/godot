@@ -141,14 +141,10 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 	return ret;
 }
 
-// calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
+// calls advance_core, forces fixed fps to have a consistent idle step among other things
 MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iterations_per_second, float p_idle_step) {
 	if (fixed_fps != -1)
 		p_idle_step = 1.0 / fixed_fps;
-
-	// compensate for last deficit
-	// Disabled: Causes negative delta times during lag spikes
-	//p_idle_step += time_deficit;
 
 	MainFrameTime ret = advance_core(p_frame_slice, p_iterations_per_second, p_idle_step);
 
@@ -166,19 +162,11 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 		}
 	}
 
-	// second clamping: keep abs(time_deficit) < jitter_fix * frame_slise
-	float max_clock_deviation = get_physics_jitter_fix() * p_frame_slice;
-	ret.clamp_idle(p_idle_step - max_clock_deviation, p_idle_step + max_clock_deviation);
-
-	// last clamping: make sure time_accum is between 0 and p_frame_slice for consistency between physics and idle
+	// make sure time_accum is between 0 and p_frame_slice for consistency between physics and idle
 	ret.clamp_idle(idle_minus_accum, idle_minus_accum + p_frame_slice);
 
 	// restore time_accum
 	time_accum = ret.idle_step - idle_minus_accum;
-
-	// track deficit
-	// Disabled: Causes negative delta times during lag spikes
-	//time_deficit = p_idle_step - ret.idle_step;
 
 	// p_frame_slice is 1.0 / iterations_per_sec
 	// i.e. the time in seconds taken by a physics tick
@@ -199,8 +187,6 @@ MainTimerSync::MainTimerSync() :
 		last_cpu_ticks_usec(0),
 		current_cpu_ticks_usec(0),
 		time_accum(0),
-		// Disabled: Causes negative delta times during lag spikes
-		//time_deficit(0),
 		fixed_fps(0) {
 	for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
 		typical_physics_steps[i] = i;

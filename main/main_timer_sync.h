@@ -49,10 +49,6 @@ class MainTimerSync {
 	// logical game time since last physics timestep
 	float time_accum;
 
-	// current difference between wall clock time and reported sum of idle_steps
-	// Disabled: Causes negative delta times during lag spikes
-	//float time_deficit;
-
 	// number of frames back for keeping accumulated physics steps roughly constant.
 	// value of 12 chosen because that is what is required to make 144 Hz monitors
 	// behave well with 60 Hz physics updates. The only worse commonly available refresh
@@ -80,7 +76,7 @@ protected:
 	// advance physics clock by p_idle_step, return appropriate number of steps to simulate
 	MainFrameTime advance_core(float p_frame_slice, int p_iterations_per_second, float p_idle_step);
 
-	// calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
+	// calls advance_core, forces fixed fps to have a consistent idle step among other things
 	MainFrameTime advance_checked(float p_frame_slice, int p_iterations_per_second, float p_idle_step);
 
 	// determine wall clock step since last iteration
