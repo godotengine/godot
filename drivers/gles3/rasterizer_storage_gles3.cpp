@@ -1854,6 +1854,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sky->irradiance, 0);
 
+		int irradiance_size = GLOBAL_GET("rendering/quality/reflections/irradiance_max_size");
+		int upscale_size = MIN(int(previous_power_of_2(irradiance_size)), p_radiance_size);
+
 		GLuint tmp_fb2;
 		GLuint tmp_tex;
 		{
@@ -1862,7 +1865,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb2);
 			glGenTextures(1, &tmp_tex);
 			glBindTexture(GL_TEXTURE_2D, tmp_tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, p_radiance_size, 2.0 * p_radiance_size, 0, format, type, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, upscale_size, 2.0 * upscale_size, 0, format, type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_tex, 0);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1882,9 +1885,8 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::SOURCE_MIP_LEVEL, MAX(Math::floor(Math::log(float(texture->width)) / Math::log(2.0f)) - 10.0f, 0.0f));
 
 		// Compute Irradiance for a large texture, specified by radiance size and then pull out a low mipmap corresponding to 32x32
-		int vp_size = p_radiance_size;
 		for (int i = 0; i < 2; i++) {
-			glViewport(0, i * vp_size, vp_size, vp_size);
+			glViewport(0, i * upscale_size, upscale_size, upscale_size);
 			glBindVertexArray(resources.quadie_array);
 
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES3::Z_FLIP, i > 0);
@@ -1903,7 +1905,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		shaders.copy.set_conditional(CopyShaderGLES3::USE_LOD, true);
 		shaders.copy.bind();
-		shaders.copy.set_uniform(CopyShaderGLES3::MIP_LEVEL, MAX(Math::floor(Math::log(float(p_radiance_size)) / Math::log(2.0f)) - 5.0f, 0.0f)); // Mip level that corresponds to a 32x32 texture
+		shaders.copy.set_uniform(CopyShaderGLES3::MIP_LEVEL, MAX(Math::floor(Math::log(float(upscale_size)) / Math::log(2.0f)) - 5.0f, 0.0f)); // Mip level that corresponds to a 32x32 texture
 
 		glViewport(0, 0, size, size * 2.0);
 		glBindVertexArray(resources.quadie_array);
