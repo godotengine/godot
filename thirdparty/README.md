@@ -253,10 +253,11 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.3
+- Version: 2.16.4
 - License: Apache 2.0
 
 File extracted from upstream release tarball (`-apache.tgz` variant):
+
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 - LICENSE and apache-2.0.txt files
