@@ -468,39 +468,31 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Online tutorials
-	{
+	if (cd.tutorials.size()) {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Online Tutorials"));
 		class_desc->pop();
 		class_desc->pop();
+
 		class_desc->push_indent(1);
-
 		class_desc->push_font(doc_code_font);
-
 		class_desc->add_newline();
-		//	class_desc->add_newline();
 
-		if (cd.tutorials.size() != 0) {
-
-			for (int i = 0; i < cd.tutorials.size(); i++) {
-				String link = cd.tutorials[i];
-				String linktxt = link;
-				int seppos = linktxt.find("//");
-				if (seppos != -1) {
-					linktxt = link.right(seppos + 2);
-				}
-
-				class_desc->push_color(symbol_color);
-				class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
-				class_desc->pop();
-				class_desc->add_newline();
+		for (int i = 0; i < cd.tutorials.size(); i++) {
+			const String link = cd.tutorials[i];
+			String linktxt = link;
+			const int seppos = linktxt.find("//");
+			if (seppos != -1) {
+				linktxt = link.right(seppos + 2);
 			}
-		} else {
-			class_desc->push_color(comment_color);
-			class_desc->append_bbcode(TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].").replace("$url2", REQUEST_URL).replace("$url", CONTRIBUTE2_URL).replace("$color", link_color_text));
+
+			class_desc->push_color(symbol_color);
+			class_desc->append_bbcode("[url=" + link + "]" + linktxt + "[/url]");
 			class_desc->pop();
+			class_desc->add_newline();
 		}
+
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
