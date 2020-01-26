@@ -113,7 +113,7 @@
 		<signal name="property_changed">
 			<argument index="0" name="property" type="String">
 			</argument>
-			<argument index="1" name="value" type="Nil">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 				Do not emit this manually, use the [method emit_changed] method instead.
@@ -138,7 +138,7 @@
 		<signal name="property_keyed_with_value">
 			<argument index="0" name="property" type="String">
 			</argument>
-			<argument index="1" name="value" type="Nil">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 				Emit it if you want to key a property with a single value.
