@@ -538,6 +538,8 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
+	BIND2(screen_space_roughness_limiter_set_active, bool, float)
+
 	/* CAMERA EFFECTS */
 
 	BIND0R(RID, camera_effects_create)

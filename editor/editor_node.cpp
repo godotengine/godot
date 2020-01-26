@@ -361,6 +361,7 @@ void EditorNode::_notification(int p_what) {
 				bool dof_jitter = GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter");
 				VS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 				VS::get_singleton()->environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+				VS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve"));
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

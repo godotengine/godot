@@ -159,6 +159,9 @@ public:
 
 	PoolVector<uint8_t>::Write write_lock;
 
+	_FORCE_INLINE_ Color _get_color_at_ofs(uint8_t *ptr, uint32_t ofs) const;
+	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);
+
 protected:
 	static void _bind_methods();
 
@@ -223,6 +226,7 @@ public:
 	 */
 	Format get_format() const;
 
+	int get_mipmap_byte_size(int p_mipmap) const; //get where the mipmap begins in data
 	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
 	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
 	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; //get where the mipmap begins in data
@@ -248,6 +252,16 @@ public:
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
 	Error generate_mipmaps(bool p_renormalize = false);
+
+	enum RoughnessChannel {
+		ROUGHNESS_CHANNEL_R,
+		ROUGHNESS_CHANNEL_G,
+		ROUGHNESS_CHANNEL_B,
+		ROUGHNESS_CHANNEL_A,
+		ROUGHNESS_CHANNEL_L,
+	};
+
+	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
 	void clear_mipmaps();
 	void normalize(); //for normal maps
@@ -385,5 +399,6 @@ VARIANT_ENUM_CAST(Image::CompressMode)
 VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
+VARIANT_ENUM_CAST(Image::RoughnessChannel)
 
 #endif

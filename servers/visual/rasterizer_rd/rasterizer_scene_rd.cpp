@@ -2640,6 +2640,16 @@ void RasterizerSceneRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_s
 		RID ao_buf = rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
 		effects->copy_to_rect(ao_buf, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
 	}
+
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER && _render_buffers_get_roughness_texture(p_render_buffers).is_valid()) {
+		Size2 rtsize = storage->render_target_get_size(rb->render_target);
+		effects->copy_to_rect(_render_buffers_get_roughness_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
+	}
+
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(p_render_buffers).is_valid()) {
+		Size2 rtsize = storage->render_target_get_size(rb->render_target);
+		effects->copy_to_rect(_render_buffers_get_normal_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize));
+	}
 }
 
 RID RasterizerSceneRD::render_buffers_get_back_buffer_texture(RID p_render_buffers) {
@@ -2999,6 +3009,19 @@ void RasterizerSceneRD::set_time(double p_time, double p_step) {
 	time_step = p_step;
 }
 
+void RasterizerSceneRD::screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) {
+	screen_space_roughness_limiter = p_enable;
+	screen_space_roughness_limiter_curve = p_curve;
+}
+
+bool RasterizerSceneRD::screen_space_roughness_limiter_is_active() const {
+	return screen_space_roughness_limiter;
+}
+
+float RasterizerSceneRD::screen_space_roughness_limiter_get_curve() const {
+	return screen_space_roughness_limiter_curve;
+}
+
 RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	storage = p_storage;
 
@@ -3096,6 +3119,8 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	camera_effects_set_dof_blur_bokeh_shape(VS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape"))));
 	camera_effects_set_dof_blur_quality(VS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter"));
 	environment_set_ssao_quality(VS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter");
+	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve");
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {

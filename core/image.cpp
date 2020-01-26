@@ -330,6 +330,17 @@ int Image::get_mipmap_offset(int p_mipmap) const {
 	return ofs;
 }
 
+int Image::get_mipmap_byte_size(int p_mipmap) const {
+
+	ERR_FAIL_INDEX_V(p_mipmap, get_mipmap_count() + 1, -1);
+
+	int ofs, w, h;
+	_get_mipmap_offset_and_size(p_mipmap, ofs, w, h);
+	int ofs2;
+	_get_mipmap_offset_and_size(p_mipmap + 1, ofs2, w, h);
+	return ofs2 - ofs;
+}
+
 void Image::get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const {
 
 	int ofs, w, h;
@@ -1567,6 +1578,206 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	return OK;
 }
 
+Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
+
+	Vector<double> normal_sat_vec; //summed area table
+	double *normal_sat = nullptr; //summed area table for normalmap
+	int normal_w = 0, normal_h = 0;
+
+	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->empty(), ERR_INVALID_PARAMETER, "Must provide a valid normalmap for roughness mipmaps");
+
+	Ref<Image> nm = p_normal_map->duplicate();
+	if (nm->is_compressed()) {
+		nm->decompress();
+	}
+
+	normal_w = nm->get_width();
+	normal_h = nm->get_height();
+
+	normal_sat_vec.resize(normal_w * normal_h * 3);
+
+	normal_sat = normal_sat_vec.ptrw();
+
+	//create summed area table
+	nm->lock();
+
+	for (int y = 0; y < normal_h; y++) {
+		double line_sum[3] = { 0, 0, 0 };
+		for (int x = 0; x < normal_w; x++) {
+			double normal[3];
+			Color color = nm->get_pixel(x, y);
+			normal[0] = color.r * 2.0 - 1.0;
+			normal[1] = color.g * 2.0 - 1.0;
+			normal[2] = Math::sqrt(MAX(0.0, 1.0 - (normal[0] * normal[0] + normal[1] * normal[1]))); //reconstruct if missing
+
+			line_sum[0] += normal[0];
+			line_sum[1] += normal[1];
+			line_sum[2] += normal[2];
+
+			uint32_t ofs = (y * normal_w + x) * 3;
+
+			normal_sat[ofs + 0] = line_sum[0];
+			normal_sat[ofs + 1] = line_sum[1];
+			normal_sat[ofs + 2] = line_sum[2];
+
+			if (y > 0) {
+				uint32_t prev_ofs = ((y - 1) * normal_w + x) * 3;
+				normal_sat[ofs + 0] += normal_sat[prev_ofs + 0];
+				normal_sat[ofs + 1] += normal_sat[prev_ofs + 1];
+				normal_sat[ofs + 2] += normal_sat[prev_ofs + 2];
+			}
+		}
+	}
+
+#if 0
+	{
+		Vector3 beg(normal_sat_vec[0], normal_sat_vec[1], normal_sat_vec[2]);
+		Vector3 end(normal_sat_vec[normal_sat_vec.size() - 3], normal_sat_vec[normal_sat_vec.size() - 2], normal_sat_vec[normal_sat_vec.size() - 1]);
+		Vector3 avg = (end - beg) / (normal_w * normal_h);
+		print_line("average: " + avg);
+	}
+#endif
+
+	int mmcount;
+
+	_get_dst_image_size(width, height, format, mmcount);
+
+	lock();
+
+	uint8_t *base_ptr = write_lock.ptr();
+
+	for (int i = 1; i <= mmcount; i++) {
+
+		int ofs, w, h;
+		_get_mipmap_offset_and_size(i, ofs, w, h);
+		uint8_t *ptr = &base_ptr[ofs];
+
+		for (int x = 0; x < w; x++) {
+			for (int y = 0; y < h; y++) {
+				int from_x = x * normal_w / w;
+				int from_y = y * normal_h / h;
+				int to_x = (x + 1) * normal_w / w;
+				int to_y = (y + 1) * normal_h / h;
+				to_x = MIN(to_x - 1, normal_w);
+				to_y = MIN(to_y - 1, normal_h);
+
+				int size_x = (to_x - from_x) + 1;
+				int size_y = (to_y - from_y) + 1;
+
+				//summed area table version (much faster)
+
+				double avg[3] = { 0, 0, 0 };
+
+				if (from_x > 0 && from_y > 0) {
+					uint32_t tofs = ((from_y - 1) * normal_w + (from_x - 1)) * 3;
+					avg[0] += normal_sat[tofs + 0];
+					avg[1] += normal_sat[tofs + 1];
+					avg[2] += normal_sat[tofs + 2];
+				}
+
+				if (from_y > 0) {
+					uint32_t tofs = ((from_y - 1) * normal_w + to_x) * 3;
+					avg[0] -= normal_sat[tofs + 0];
+					avg[1] -= normal_sat[tofs + 1];
+					avg[2] -= normal_sat[tofs + 2];
+				}
+
+				if (from_x > 0) {
+					uint32_t tofs = (to_y * normal_w + (from_x - 1)) * 3;
+					avg[0] -= normal_sat[tofs + 0];
+					avg[1] -= normal_sat[tofs + 1];
+					avg[2] -= normal_sat[tofs + 2];
+				}
+
+				uint32_t tofs = (to_y * normal_w + to_x) * 3;
+				avg[0] += normal_sat[tofs + 0];
+				avg[1] += normal_sat[tofs + 1];
+				avg[2] += normal_sat[tofs + 2];
+
+				double div = double(size_x * size_y);
+				Vector3 vec(avg[0] / div, avg[1] / div, avg[2] / div);
+
+				float r = vec.length();
+
+				int pixel_ofs = y * w + x;
+				Color c = _get_color_at_ofs(ptr, pixel_ofs);
+
+				float roughness;
+
+				switch (p_roughness_channel) {
+					case ROUGHNESS_CHANNEL_R: {
+						roughness = c.r;
+					} break;
+					case ROUGHNESS_CHANNEL_G: {
+						roughness = c.g;
+					} break;
+					case ROUGHNESS_CHANNEL_B: {
+						roughness = c.b;
+					} break;
+					case ROUGHNESS_CHANNEL_L: {
+						roughness = c.gray();
+					} break;
+					case ROUGHNESS_CHANNEL_A: {
+						roughness = c.a;
+					} break;
+				}
+
+				float variance = 0;
+				if (r < 1.0f) {
+					float r2 = r * r;
+					float kappa = (3.0f * r - r * r2) / (1.0f - r2);
+					variance = 0.25f / kappa;
+				}
+
+				float threshold = 0.4;
+				roughness = Math::sqrt(roughness * roughness + MIN(3.0f * variance, threshold * threshold));
+
+				switch (p_roughness_channel) {
+					case ROUGHNESS_CHANNEL_R: {
+						c.r = roughness;
+					} break;
+					case ROUGHNESS_CHANNEL_G: {
+						c.g = roughness;
+					} break;
+					case ROUGHNESS_CHANNEL_B: {
+						c.b = roughness;
+					} break;
+					case ROUGHNESS_CHANNEL_L: {
+						c.r = roughness;
+						c.g = roughness;
+						c.b = roughness;
+					} break;
+					case ROUGHNESS_CHANNEL_A: {
+						c.a = roughness;
+					} break;
+				}
+
+				_set_color_at_ofs(ptr, pixel_ofs, c);
+			}
+		}
+#if 0
+		{
+			int size = get_mipmap_byte_size(i);
+			print_line("size for mimpap " + itos(i) + ": " + itos(size));
+			PoolVector<uint8_t> imgdata;
+			imgdata.resize(size);
+			PoolVector<uint8_t>::Write wr = imgdata.write();
+			copymem(wr.ptr(), ptr, size);
+			wr = PoolVector<uint8_t>::Write();
+			Ref<Image> im;
+			im.instance();
+			im->create(w, h, false, format, imgdata);
+			im->save_png("res://mipmap_" + itos(i) + ".png");
+		}
+#endif
+	}
+
+	unlock();
+	nm->unlock();
+
+	return OK;
+}
+
 void Image::clear_mipmaps() {
 
 	if (!mipmaps)
@@ -2440,18 +2651,7 @@ Color Image::get_pixelv(const Point2 &p_src) const {
 	return get_pixel(p_src.x, p_src.y);
 }
 
-Color Image::get_pixel(int p_x, int p_y) const {
-
-	uint8_t *ptr = write_lock.ptr();
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V_MSG(!ptr, Color(), "Image must be locked with 'lock()' before using get_pixel().");
-
-	ERR_FAIL_INDEX_V(p_x, width, Color());
-	ERR_FAIL_INDEX_V(p_y, height, Color());
-
-#endif
-
-	uint32_t ofs = p_y * width + p_x;
+Color Image::_get_color_at_ofs(uint8_t *ptr, uint32_t ofs) const {
 
 	switch (format) {
 		case FORMAT_L8: {
@@ -2564,23 +2764,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 	}
 }
 
-void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {
-	set_pixel(p_dst.x, p_dst.y, p_color);
-}
-
-void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
-
-	uint8_t *ptr = write_lock.ptr();
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(!ptr, "Image must be locked with 'lock()' before using set_pixel().");
-
-	ERR_FAIL_INDEX(p_x, width);
-	ERR_FAIL_INDEX(p_y, height);
-
-#endif
-
-	uint32_t ofs = p_y * width + p_x;
-
+void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) {
 	switch (format) {
 		case FORMAT_L8: {
 			ptr[ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
@@ -2686,6 +2870,40 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 			ERR_FAIL_MSG("Can't set_pixel() on compressed image, sorry.");
 		}
 	}
+}
+
+Color Image::get_pixel(int p_x, int p_y) const {
+
+	uint8_t *ptr = write_lock.ptr();
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(!ptr, Color(), "Image must be locked with 'lock()' before using get_pixel().");
+
+	ERR_FAIL_INDEX_V(p_x, width, Color());
+	ERR_FAIL_INDEX_V(p_y, height, Color());
+
+#endif
+
+	uint32_t ofs = p_y * width + p_x;
+	return _get_color_at_ofs(ptr, ofs);
+}
+
+void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {
+	set_pixel(p_dst.x, p_dst.y, p_color);
+}
+
+void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
+
+	uint8_t *ptr = write_lock.ptr();
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!ptr, "Image must be locked with 'lock()' before using set_pixel().");
+
+	ERR_FAIL_INDEX(p_x, width);
+	ERR_FAIL_INDEX(p_y, height);
+
+#endif
+
+	uint32_t ofs = p_y * width + p_x;
+	_set_color_at_ofs(ptr, ofs, p_color);
 }
 
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {

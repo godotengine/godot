@@ -1272,6 +1272,7 @@ FRAGMENT_SHADER_CODE
 
 #endif // !USE_SHADOW_TO_OPACITY
 
+
 #if defined(NORMALMAP_USED)
 
 	normalmap.xy = normalmap.xy * 2.0 - 1.0;
@@ -1309,6 +1310,13 @@ FRAGMENT_SHADER_CODE
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+	if (scene_data.roughness_limiter_enabled) {
+		float limit = texelFetch(sampler2D(roughness_buffer, material_samplers[SAMPLER_NEAREST_CLAMP]),ivec2(gl_FragCoord.xy),0).r;
+		roughness = max(roughness,limit);
+
+	}
+
 
 	if (scene_data.use_reflection_cubemap) {
 

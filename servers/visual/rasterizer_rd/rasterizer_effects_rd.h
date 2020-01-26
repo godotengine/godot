@@ -38,6 +38,7 @@
 #include "servers/visual/rasterizer_rd/shaders/copy.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/roughness_limiter.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
@@ -339,6 +340,21 @@ class RasterizerEffectsRD {
 		RID pipelines[SSAO_MAX];
 	} ssao;
 
+	struct RoughnessLimiterPushConstant {
+		int32_t screen_size[2];
+		float curve;
+		uint32_t pad;
+	};
+
+	struct RoughnessLimiter {
+
+		RoughnessLimiterPushConstant push_constant;
+		RoughnessLimiterShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+
+	} roughness_limiter;
+
 	RID default_sampler;
 	RID default_mipmap_sampler;
 	RID index_buffer;
@@ -406,6 +422,8 @@ public:
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 
 	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness);
+
+	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();
