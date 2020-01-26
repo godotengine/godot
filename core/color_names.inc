@@ -1,4 +1,4 @@
-// Names from https://en.wikipedia.org/wiki/List_of_colors (through https://raw.githubusercontent.com/SuperUserNameMan/color_to_name/616a7cddafefda91478b7bc26167de97fb5badb1/godot_version.gd), slightly edited and normalized
+// Names from https://en.wikipedia.org/wiki/X11_color_names
 #include "core/map.h"
 
 static Map<String, Color> _named_colors;
