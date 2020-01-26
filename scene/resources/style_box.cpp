@@ -723,6 +723,23 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	bool blend_on = blend_border && draw_border;
 
+	int border_width_solid[4];
+	Rect2 outer_rect = style_rect;
+	if (aa_on && draw_border) {
+		for (int i = 0; i < 4; i++) {
+			if (border_width[i] > 0) {
+				outer_rect = outer_rect.grow_margin((Margin)i, aa_size_grow);
+				border_width_solid[i] = MAX(0, border_width[i] - aa_size_grow);
+			} else {
+				border_width_solid[i] = border_width[i];
+			}
+		}
+	} else {
+		for (int i = 0; i < 4; i++) {
+			border_width_solid[i] = border_width[i];
+		}
+	}
+
 	Color border_color_alpha = Color(border_color.r, border_color.g, border_color.b, 0);
 	Color border_color_blend = (draw_center ? bg_color : border_color_alpha);
 	Color border_color_inner = blend_on ? border_color_blend : border_color;
@@ -731,8 +748,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	int width = MAX(style_rect.size.width, 0);
 	int height = MAX(style_rect.size.height, 0);
 	int adapted_border[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
-	adapt_values(MARGIN_TOP, MARGIN_BOTTOM, adapted_border, border_width, height, height, height);
-	adapt_values(MARGIN_LEFT, MARGIN_RIGHT, adapted_border, border_width, width, width, width);
+	adapt_values(MARGIN_TOP, MARGIN_BOTTOM, adapted_border, border_width_solid, height, height, height);
+	adapt_values(MARGIN_LEFT, MARGIN_RIGHT, adapted_border, border_width_solid, width, width, width);
 
 	//adapt corners (prevent weird overlapping/glitchy drawings)
 	int adapted_corner[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
@@ -742,15 +759,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	adapt_values(CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, width, width - adapted_border[MARGIN_RIGHT], width - adapted_border[MARGIN_LEFT]);
 
 	Rect2 infill_rect = style_rect.grow_individual(-adapted_border[MARGIN_LEFT], -adapted_border[MARGIN_TOP], -adapted_border[MARGIN_RIGHT], -adapted_border[MARGIN_BOTTOM]);
-
-	Rect2 border_style_rect = style_rect;
-	if (aa_on) {
-		for (int i = 0; i < 4; i++) {
-			if (border_width[i] > 0) {
-				border_style_rect = border_style_rect.grow_margin((Margin)i, -aa_size_grow);
-			}
-		}
-	}
 
 	Vector<Point2> verts;
 	Vector<int> indices;
@@ -778,13 +786,13 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	//DRAW border
 	if (draw_border) {
-		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail);
+		draw_ring(verts, indices, colors, style_rect, adapted_corner,
+				style_rect, infill_rect, border_color_inner, border_color, corner_detail);
 	}
 
 	//DRAW INFILL
 	if (draw_center && (!aa_on || blend_on || !draw_border)) {
-		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+		draw_ring(verts, indices, colors, style_rect, adapted_corner,
 				infill_rect, infill_rect, bg_color, bg_color, corner_detail, true);
 	}
 
@@ -814,7 +822,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		if (draw_center) {
 			if (!blend_on && draw_border) {
 				//DRAW INFILL WITHIN BORDER AA
-				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+				draw_ring(verts, indices, colors, style_rect, adapted_corner,
 						infill_inner_rect, infill_inner_rect, bg_color, bg_color, corner_detail, true);
 			}
 
@@ -833,22 +841,21 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		if (draw_border) {
 			if (!blend_on) {
 				//DRAW INNER BORDER AA
-				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+				draw_ring(verts, indices, colors, style_rect, adapted_corner,
 						infill_rect, infill_inner_rect, border_color_blend, border_color, corner_detail);
 			}
 
 			//DRAW OUTER BORDER AA
-			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					style_rect, border_style_rect, border_color, border_color_alpha, corner_detail);
+			draw_ring(verts, indices, colors, style_rect, adapted_corner,
+					outer_rect, style_rect, border_color, border_color_alpha, corner_detail);
 		}
 	}
 
 	//COMPUTE UV COORDINATES
-	Rect2 uv_rect = style_rect.grow(aa_on ? aa_size_grow : 0);
 	uvs.resize(verts.size());
 	for (int i = 0; i < verts.size(); i++) {
-		uvs.write[i].x = (verts[i].x - uv_rect.position.x) / uv_rect.size.width;
-		uvs.write[i].y = (verts[i].y - uv_rect.position.y) / uv_rect.size.height;
+		uvs.write[i].x = (verts[i].x - outer_rect.position.x) / outer_rect.size.width;
+		uvs.write[i].y = (verts[i].y - outer_rect.position.y) / outer_rect.size.height;
 	}
 
 	//DRAWING
