@@ -260,6 +260,8 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	blend_state_blend.attachments.push_back(blend_attachment);
 	RD::PipelineColorBlendState blend_state_opaque = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_opaque_specular = RD::PipelineColorBlendState::create_disabled(2);
+	RD::PipelineColorBlendState blend_state_depth_normal = RD::PipelineColorBlendState::create_disabled(1);
+	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(2);
 
 	//update pipelines
 
@@ -326,8 +328,10 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 						blend_state = blend_state_opaque;
 					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
 						//none, leave empty
-					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
-						blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL) {
+						blend_state = blend_state_depth_normal;
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
+						blend_state = blend_state_depth_normal;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
 
@@ -941,7 +945,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	}
 }
 
-void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar) {
+void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers) {
 
 	//CameraMatrix projection = p_cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
@@ -1031,7 +1035,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 			scene_state.ubo.use_reflection_cubemap = false;
 		}
 
-		scene_state.ubo.ssao_enabled = environment_is_ssao_enabled(p_environment);
+		scene_state.ubo.ssao_enabled = p_opaque_render_buffers && environment_is_ssao_enabled(p_environment);
 		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_environment);
 
@@ -1058,6 +1062,8 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
 	}
+
+	scene_state.ubo.roughness_limiter_enabled = p_opaque_render_buffers && screen_space_roughness_limiter_is_active();
 
 	RD::get_singleton()->buffer_update(scene_state.uniform_buffer, 0, sizeof(SceneState::UBO), &scene_state.ubo, true);
 }
@@ -1723,9 +1729,15 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		screen_pixel_size.height = 1.0 / render_buffer->height;
 
 		opaque_framebuffer = render_buffer->color_fb;
+
 		if (p_environment.is_valid() && environment_is_ssr_enabled(p_environment)) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
-		} else if (p_environment.is_valid() && environment_is_ssao_enabled(p_environment)) {
+		} else if (screen_space_roughness_limiter_is_active()) {
+			depth_pass_mode = PASS_MODE_DEPTH_NORMAL;
+			//we need to allocate both these, if not allocated
+			_allocate_normal_texture(render_buffer);
+			_allocate_roughness_texture(render_buffer);
+		} else if (p_environment.is_valid() && (environment_is_ssao_enabled(p_environment) || get_debug_draw_mode() == VS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL;
 		}
 
@@ -1773,7 +1785,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows);
 	_setup_reflections(p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_cam_transform.affine_inverse(), p_environment);
 	_setup_gi_probes(p_gi_probe_cull_result, p_gi_probe_cull_count, p_cam_transform);
-	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far());
+	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
 	cluster_builder.bake_cluster(); //bake to cluster
 
@@ -1855,11 +1867,17 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		_process_ssao(p_render_buffer, p_environment, render_buffer->normal_buffer, p_cam_projection);
 	}
 
+	if (p_render_buffer.is_valid() && screen_space_roughness_limiter_is_active()) {
+		storage->get_effects()->roughness_limit(render_buffer->normal_buffer, render_buffer->roughness_buffer, Size2(render_buffer->width, render_buffer->height), screen_space_roughness_limiter_get_curve());
+	}
+
 	if (p_render_buffer.is_valid()) {
 		//update the render buffers uniform set in case it changed
 		_update_render_buffers_uniform_set(p_render_buffer);
 		render_buffers_uniform_set = render_buffer->uniform_set;
 	}
+
+	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), p_render_buffer.is_valid());
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
@@ -1900,6 +1918,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	}
 
 	RENDER_TIMESTAMP("Render Transparent Pass");
+
+	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
 	render_list.sort_by_reverse_depth_and_priority(true);
 
@@ -2273,6 +2293,18 @@ void RasterizerSceneHighEndRD::_render_buffers_uniform_set_changed(RID p_render_
 	RenderBufferDataHighEnd *rb = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffers);
 
 	_render_buffers_clear_uniform_set(rb);
+}
+
+RID RasterizerSceneHighEndRD::_render_buffers_get_roughness_texture(RID p_render_buffers) {
+	RenderBufferDataHighEnd *rb = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffers);
+
+	return rb->roughness_buffer;
+}
+
+RID RasterizerSceneHighEndRD::_render_buffers_get_normal_texture(RID p_render_buffers) {
+	RenderBufferDataHighEnd *rb = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffers);
+
+	return rb->normal_buffer;
 }
 
 void RasterizerSceneHighEndRD::_update_render_buffers_uniform_set(RID p_render_buffers) {

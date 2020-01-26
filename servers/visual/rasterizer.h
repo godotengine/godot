@@ -260,6 +260,9 @@ public:
 	virtual RID render_buffers_create() = 0;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
 
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
+	virtual bool screen_space_roughness_limiter_is_active() const = 0;
+
 	virtual bool free(RID p_rid) = 0;
 
 	virtual void update() = 0;
