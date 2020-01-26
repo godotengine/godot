@@ -170,6 +170,15 @@
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
+		<method name="push_bgcolor">
+			<return type="void">
+			</return>
+			<argument index="0" name="bgcolor" type="Color">
+			</argument>
+			<description>
+				Adds a [code][bgcolor][/code] tag to the tag stack.
+			</description>
+		</method>
 		<method name="push_bold">
 			<return type="void">
 			</return>
@@ -219,6 +228,15 @@
 			</argument>
 			<description>
 				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
+			</description>
+		</method>
+		<method name="push_fgcolor">
+			<return type="void">
+			</return>
+			<argument index="0" name="fgcolor" type="Color">
+			</argument>
+			<description>
+				Adds a [code][fgcolor][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_font">
@@ -592,11 +610,15 @@
 		</constant>
 		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="21" enum="ItemType">
+		<constant name="ITEM_BGCOLOR" value="21" enum="ItemType">
 		</constant>
-		<constant name="ITEM_DROPCAP" value="22" enum="ItemType">
+		<constant name="ITEM_FGCOLOR" value="22" enum="ItemType">
 		</constant>
-		<constant name="ITEM_CUSTOMFX" value="23" enum="ItemType">
+		<constant name="ITEM_META" value="23" enum="ItemType">
+		</constant>
+		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>
