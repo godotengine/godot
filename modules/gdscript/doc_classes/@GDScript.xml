@@ -48,19 +48,6 @@
 			</description>
 		</method>
 		<method name="abs">
-			<return type="int">
-			</return>
-			<argument index="0" name="s" type="int">
-			</argument>
-			<description>
-				Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value).
-				[codeblock]
-				# a is 1
-				a = abs(-1)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="abs">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
@@ -71,6 +58,19 @@
 				# a is 1.0
 				a = abs(-1.0)
 				[/codeblock]
+			</description>
+		</method>
+		<method name="abs">
+			<return type="int">
+			</return>
+			<argument index="0" name="s" type="int">
+				Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value).
+				[codeblock]
+				# a is 1
+				a = abs(-1)
+				[/codeblock]
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="acos">
@@ -194,24 +194,6 @@
 			</description>
 		</method>
 		<method name="clamp">
-			<return type="int">
-			</return>
-			<argument index="0" name="value" type="int">
-			</argument>
-			<argument index="1" name="min" type="int">
-			</argument>
-			<argument index="2" name="max" type="int">
-			</argument>
-			<description>
-				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
-				[codeblock]
-				speed = -10
-				# a is 1
-				a = clamp(speed, 1, 20)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="clamp">
 			<return type="float">
 			</return>
 			<argument index="0" name="value" type="float">
@@ -226,6 +208,24 @@
 				speed = 1000.0
 				# a is 20.0
 				a = clamp(speed, 1.0, 20.0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="clamp">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Clamps [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 1000
+				# a is 20
+				a = clamp(speed, 1, 20)
 				[/codeblock]
 			</description>
 		</method>
@@ -665,20 +665,6 @@
 			</description>
 		</method>
 		<method name="max">
-			<return type="int">
-			</return>
-			<argument index="0" name="a" type="int">
-			</argument>
-			<argument index="1" name="b" type="int">
-			</argument>
-			<description>
-				Returns the maximum of two values.
-				[codeblock]
-				max(1, 2) # Returns 2
-				[/codeblock]
-			</description>
-		</method>
-		<method name="max">
 			<return type="float">
 			</return>
 			<argument index="0" name="a" type="float">
@@ -692,7 +678,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="min">
+		<method name="max">
 			<return type="int">
 			</return>
 			<argument index="0" name="a" type="int">
@@ -700,9 +686,9 @@
 			<argument index="1" name="b" type="int">
 			</argument>
 			<description>
-				Returns the minimum of two values.
+				Returns the maximum of two values.
 				[codeblock]
-				min(1, 2) # Returns 1
+				max(1, 2) # Returns 2
 				[/codeblock]
 			</description>
 		</method>
@@ -717,6 +703,20 @@
 				Returns the minimum of two values.
 				[codeblock]
 				min(-3.99, -4) # Returns -4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="min">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the maximum of two values.
+				[codeblock]
+				max(1, 2) # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1095,20 +1095,6 @@
 			</description>
 		</method>
 		<method name="sign">
-			<return type="int">
-			</return>
-			<argument index="0" name="s" type="int">
-			</argument>
-			<description>
-				Returns the sign of [code]s[/code]: -1 or 1. Returns 0 if [code]s[/code] is 0.
-				[codeblock]
-				sign(-6) # Returns -1
-				sign(0)  # Returns 0
-				sign(6)  # Returns 1
-				[/codeblock]
-			</description>
-		</method>
-		<method name="sign">
 			<return type="float">
 			</return>
 			<argument index="0" name="s" type="float">
@@ -1120,6 +1106,20 @@
 				sign(0)  # Returns 0
 				sign(6.0)  # Returns 1
 				[/codeblock]
+			</description>
+		</method>
+		<method name="sign">
+			<return type="int">
+			</return>
+			<argument index="0" name="s" type="int">
+				Returns the sign of [code]s[/code]: -1 or 1. Returns 0 if [code]s[/code] is 0.
+				[codeblock]
+				sign(-6) # Returns -1
+				sign(0)  # Returns 0
+				sign(6)  # Returns 1
+				[/codeblock]
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="sin">
