@@ -4,7 +4,8 @@
 		Control for playing video streams.
 	</brief_description>
 	<description>
-		Control node for playing video streams. Supported formats are [url=https://www.webmproject.org/]WebM[/url] and [url=https://www.theora.org/]Ogg Theora[/url].
+		Control node for playing video streams using [VideoStream] resources.
+		Supported video formats are [url=https://www.webmproject.org/]WebM[/url] ([VideoStreamWebm]), [url=https://www.theora.org/]Ogg Theora[/url] ([VideoStreamTheora]), and any format exposed via a GDNative plugin using [VideoStreamGDNative].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -61,7 +62,7 @@
 			Audio bus to use for sound playback.
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="true">
-			If [code]true[/code], the video scales to the control size.
+			If [code]true[/code], the video scales to the control size. Otherwise, the control minimum size will be automatically adjusted to match the video stream's dimensions.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">
 			If [code]true[/code], the video is paused.

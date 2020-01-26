@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOSTREAMSAMPLE_H
-#define AUDIOSTREAMSAMPLE_H
+#ifndef AUDIO_STREAM_SAMPLE_H
+#define AUDIO_STREAM_SAMPLE_H
 
 #include "servers/audio/audio_stream.h"
 
@@ -153,4 +153,4 @@ public:
 VARIANT_ENUM_CAST(AudioStreamSample::Format)
 VARIANT_ENUM_CAST(AudioStreamSample::LoopMode)
 
-#endif // AUDIOSTREAMSample_H
+#endif // AUDIO_STREAM_SAMPLE_H

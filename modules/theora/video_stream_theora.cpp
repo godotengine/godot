@@ -147,7 +147,6 @@ void VideoStreamPlaybackTheora::clear() {
 	thread = NULL;
 	ring_buffer.clear();
 #endif
-	//file_name = "";
 
 	theora_p = 0;
 	vorbis_p = 0;
