@@ -934,6 +934,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
+		Vector2 fbg_line_off = off + p_ofs;
+		// Draw background color box
+		Vector2i chr_range = TS->shaped_text_get_range(rid);
+		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 0);
+
 		// Draw main text.
 		Color selection_fg = get_theme_color("font_selected_color");
 		Color selection_bg = get_theme_color("selection_color");
@@ -1079,6 +1084,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				off.x += glyphs[i].advance;
 			}
 		}
+		// Draw foreground color box
+		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 1);
+
 		off.y += TS->shaped_text_get_descent(rid) + l.text_buf->get_spacing_bottom();
 	}
 
@@ -2036,6 +2044,36 @@ bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item)
 	return false;
 }
 
+Color RichTextLabel::_find_bgcolor(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_BGCOLOR) {
+			ItemBGColor *color = static_cast<ItemBGColor *>(item);
+			return color->color;
+		}
+
+		item = item->parent;
+	}
+
+	return Color(0, 0, 0, 0);
+}
+
+Color RichTextLabel::_find_fgcolor(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_FGCOLOR) {
+			ItemFGColor *color = static_cast<ItemFGColor *>(item);
+			return color->color;
+		}
+
+		item = item->parent;
+	}
+
+	return Color(0, 0, 0, 0);
+}
+
 bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 	if (from && from != to) {
 		if (from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH) {
@@ -2543,6 +2581,22 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	item->frequency = p_frequency;
 	item->saturation = p_saturation;
 	item->value = p_value;
+	_add_item(item, true);
+}
+
+void RichTextLabel::push_bgcolor(const Color &p_color) {
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemBGColor *item = memnew(ItemBGColor);
+
+	item->color = p_color;
+	_add_item(item, true);
+}
+
+void RichTextLabel::push_fgcolor(const Color &p_color) {
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemFGColor *item = memnew(ItemFGColor);
+
+	item->color = p_color;
 	_add_item(item, true);
 }
 
@@ -3352,6 +3406,23 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("rainbow");
 			set_process_internal(true);
+
+		} else if (tag.begins_with("bgcolor=")) {
+			String color_str = tag.substr(8, tag.length());
+			Color color = Color::from_string(color_str, base_color);
+
+			push_bgcolor(color);
+			pos = brk_end + 1;
+			tag_stack.push_front("bgcolor");
+
+		} else if (tag.begins_with("fgcolor=")) {
+			String color_str = tag.substr(8, tag.length());
+			Color color = Color::from_string(color_str, base_color);
+
+			push_fgcolor(color);
+			pos = brk_end + 1;
+			tag_stack.push_front("fgcolor");
+
 		} else {
 			Vector<String> &expr = split_tag_block;
 			if (expr.size() < 1) {
@@ -3918,6 +3989,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_size_override", "min_size", "max_size"), &RichTextLabel::set_cell_size_override);
 	ClassDB::bind_method(D_METHOD("set_cell_padding", "padding"), &RichTextLabel::set_cell_padding);
 	ClassDB::bind_method(D_METHOD("push_cell"), &RichTextLabel::push_cell);
+	ClassDB::bind_method(D_METHOD("push_fgcolor", "fgcolor"), &RichTextLabel::push_fgcolor);
+	ClassDB::bind_method(D_METHOD("push_bgcolor", "bgcolor"), &RichTextLabel::push_bgcolor);
 	ClassDB::bind_method(D_METHOD("pop"), &RichTextLabel::pop);
 
 	ClassDB::bind_method(D_METHOD("clear"), &RichTextLabel::clear);
@@ -4056,6 +4129,8 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ITEM_WAVE);
 	BIND_ENUM_CONSTANT(ITEM_TORNADO);
 	BIND_ENUM_CONSTANT(ITEM_RAINBOW);
+	BIND_ENUM_CONSTANT(ITEM_BGCOLOR);
+	BIND_ENUM_CONSTANT(ITEM_FGCOLOR);
 	BIND_ENUM_CONSTANT(ITEM_META);
 	BIND_ENUM_CONSTANT(ITEM_DROPCAP);
 	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
@@ -4106,6 +4181,65 @@ Size2 RichTextLabel::get_minimum_size() const {
 	}
 
 	return size;
+}
+
+void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag) {
+	Vector2i fbg_index = Vector2i(end, start);
+	Color last_color = Color(0, 0, 0, 0);
+	bool draw_box = false;
+	// Draw a box based on color tags associated with glyphs
+	for (int i = start; i < end; i++) {
+		Item *it = _get_item_at_pos(it_from, it_to, i);
+		Color color = Color(0, 0, 0, 0);
+
+		if (fbg_flag == 0) {
+			color = _find_bgcolor(it);
+		} else {
+			color = _find_fgcolor(it);
+		}
+
+		bool change_to_color = ((color.a > 0) && ((last_color.a - 0.0) < 0.01));
+		bool change_from_color = (((color.a - 0.0) < 0.01) && (last_color.a > 0.0));
+		bool change_color = (((color.a > 0) == (last_color.a > 0)) && (color != last_color));
+
+		if (change_to_color) {
+			fbg_index.x = MIN(i, fbg_index.x);
+			fbg_index.y = MAX(i, fbg_index.y);
+		}
+
+		if (change_from_color || change_color) {
+			fbg_index.x = MIN(i, fbg_index.x);
+			fbg_index.y = MAX(i, fbg_index.y);
+			draw_box = true;
+		}
+
+		if (draw_box) {
+			Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, fbg_index.y);
+			for (int j = 0; j < sel.size(); j++) {
+				Vector2 rect_off = line_off + Vector2(sel[j].x, -TS->shaped_text_get_ascent(p_rid));
+				Vector2 rect_size = Vector2(sel[j].y - sel[j].x, TS->shaped_text_get_size(p_rid).y);
+				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
+			}
+			fbg_index = Vector2i(end, start);
+			draw_box = false;
+		}
+
+		if (change_color) {
+			fbg_index.x = MIN(i, fbg_index.x);
+			fbg_index.y = MAX(i, fbg_index.y);
+		}
+
+		last_color = color;
+	}
+
+	if (last_color.a > 0) {
+		Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, end);
+		for (int i = 0; i < sel.size(); i++) {
+			Vector2 rect_off = line_off + Vector2(sel[i].x, -TS->shaped_text_get_ascent(p_rid));
+			Vector2 rect_size = Vector2(sel[i].y - sel[i].x, TS->shaped_text_get_size(p_rid).y);
+			RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
+		}
+	}
 }
 
 Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
