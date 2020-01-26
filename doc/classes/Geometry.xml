@@ -193,6 +193,7 @@
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<description>
+				Used internally by the engine.
 			</description>
 		</method>
 		<method name="intersect_polygons_2d">

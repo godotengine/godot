@@ -63,14 +63,19 @@
 	</members>
 	<constants>
 		<constant name="TEXTURE_SIZE_256" value="0" enum="TextureSize">
+			Sky texture will be 256x128.
 		</constant>
 		<constant name="TEXTURE_SIZE_512" value="1" enum="TextureSize">
+			Sky texture will be 512x256.
 		</constant>
 		<constant name="TEXTURE_SIZE_1024" value="2" enum="TextureSize">
+			Sky texture will be 1024x512. This is the default size.
 		</constant>
 		<constant name="TEXTURE_SIZE_2048" value="3" enum="TextureSize">
+			Sky texture will be 2048x1024.
 		</constant>
 		<constant name="TEXTURE_SIZE_4096" value="4" enum="TextureSize">
+			Sky texture will be 4096x2048.
 		</constant>
 		<constant name="TEXTURE_SIZE_MAX" value="5" enum="TextureSize">
 			Represents the size of the [enum TextureSize] enum.

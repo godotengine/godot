@@ -3897,7 +3897,7 @@
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
 			<description>
-				Copies viewport to a region of the screen specified by [code]rect[/code]. If Viewport.[member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				Copies viewport to a region of the screen specified by [code]rect[/code]. If [member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
 				For example, you can set the root viewport to not render at all with the following code:
 				[codeblock]
 				func _ready():
