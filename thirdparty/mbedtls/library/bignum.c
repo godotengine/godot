@@ -1071,6 +1071,107 @@ int mbedtls_mpi_cmp_mpi( const mbedtls_mpi *X, const mbedtls_mpi *Y )
     return( 0 );
 }
 
+/** Decide if an integer is less than the other, without branches.
+ *
+ * \param x         First integer.
+ * \param y         Second integer.
+ *
+ * \return          1 if \p x is less than \p y, 0 otherwise
+ */
+static unsigned ct_lt_mpi_uint( const mbedtls_mpi_uint x,
+        const mbedtls_mpi_uint y )
+{
+    mbedtls_mpi_uint ret;
+    mbedtls_mpi_uint cond;
+
+    /*
+     * Check if the most significant bits (MSB) of the operands are different.
+     */
+    cond = ( x ^ y );
+    /*
+     * If the MSB are the same then the difference x-y will be negative (and
+     * have its MSB set to 1 during conversion to unsigned) if and only if x<y.
+     */
+    ret = ( x - y ) & ~cond;
+    /*
+     * If the MSB are different, then the operand with the MSB of 1 is the
+     * bigger. (That is if y has MSB of 1, then x<y is true and it is false if
+     * the MSB of y is 0.)
+     */
+    ret |= y & cond;
+
+
+    ret = ret >> ( biL - 1 );
+
+    return (unsigned) ret;
+}
+
+/*
+ * Compare signed values in constant time
+ */
+int mbedtls_mpi_lt_mpi_ct( const mbedtls_mpi *X, const mbedtls_mpi *Y,
+        unsigned *ret )
+{
+    size_t i;
+    /* The value of any of these variables is either 0 or 1 at all times. */
+    unsigned cond, done, X_is_negative, Y_is_negative;
+
+    MPI_VALIDATE_RET( X != NULL );
+    MPI_VALIDATE_RET( Y != NULL );
+    MPI_VALIDATE_RET( ret != NULL );
+
+    if( X->n != Y->n )
+        return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
+
+    /*
+     * Set sign_N to 1 if N >= 0, 0 if N < 0.
+     * We know that N->s == 1 if N >= 0 and N->s == -1 if N < 0.
+     */
+    X_is_negative = ( X->s & 2 ) >> 1;
+    Y_is_negative = ( Y->s & 2 ) >> 1;
+
+    /*
+     * If the signs are different, then the positive operand is the bigger.
+     * That is if X is negative (X_is_negative == 1), then X < Y is true and it
+     * is false if X is positive (X_is_negative == 0).
+     */
+    cond = ( X_is_negative ^ Y_is_negative );
+    *ret = cond & X_is_negative;
+
+    /*
+     * This is a constant-time function. We might have the result, but we still
+     * need to go through the loop. Record if we have the result already.
+     */
+    done = cond;
+
+    for( i = X->n; i > 0; i-- )
+    {
+        /*
+         * If Y->p[i - 1] < X->p[i - 1] then X < Y is true if and only if both
+         * X and Y are negative.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = ct_lt_mpi_uint( Y->p[i - 1], X->p[i - 1] );
+        *ret |= cond & ( 1 - done ) & X_is_negative;
+        done |= cond;
+
+        /*
+         * If X->p[i - 1] < Y->p[i - 1] then X < Y is true if and only if both
+         * X and Y are positive.
+         *
+         * Again even if we can make a decision, we just mark the result and
+         * the fact that we are done and continue looping.
+         */
+        cond = ct_lt_mpi_uint( X->p[i - 1], Y->p[i - 1] );
+        *ret |= cond & ( 1 - done ) & ( 1 - X_is_negative );
+        done |= cond;
+    }
+
+    return( 0 );
+}
+
 /*
  * Compare signed values
  */
@@ -2337,8 +2438,6 @@ static int mpi_miller_rabin( const mbedtls_mpi *X, size_t rounds,
     s = mbedtls_mpi_lsb( &W );
     MBEDTLS_MPI_CHK( mbedtls_mpi_copy( &R, &W ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( &R, s ) );
-
-    i = mbedtls_mpi_bitlen( X );
 
     for( i = 0; i < rounds; i++ )
     {
