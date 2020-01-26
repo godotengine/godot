@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
 

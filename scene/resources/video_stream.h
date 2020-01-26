@@ -37,9 +37,6 @@ class VideoStreamPlayback : public Resource {
 
 	GDCLASS(VideoStreamPlayback, Resource);
 
-protected:
-	static void _bind_methods();
-
 public:
 	typedef int (*AudioMixCallback)(void *p_udata, const float *p_data, int p_frames);
 
@@ -61,28 +58,22 @@ public:
 
 	virtual void set_audio_track(int p_idx) = 0;
 
-	//virtual int mix(int16_t* p_buffer,int p_frames)=0;
-
 	virtual Ref<Texture> get_texture() const = 0;
 	virtual void update(float p_delta) = 0;
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) = 0;
 	virtual int get_channels() const = 0;
 	virtual int get_mix_rate() const = 0;
-
-	VideoStreamPlayback();
 };
 
 class VideoStream : public Resource {
 
 	GDCLASS(VideoStream, Resource);
-	OBJ_SAVE_TYPE(VideoStream); //children are all saved as AudioStream, so they can be exchanged
+	OBJ_SAVE_TYPE(VideoStream); // Saves derived classes with common type so they can be interchanged.
 
 public:
 	virtual void set_audio_track(int p_track) = 0;
 	virtual Ref<VideoStreamPlayback> instance_playback() = 0;
-
-	VideoStream() {}
 };
 
 #endif

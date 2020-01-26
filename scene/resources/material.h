@@ -42,7 +42,7 @@ class Material : public Resource {
 
 	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("material")
-	OBJ_SAVE_TYPE(Material)
+	OBJ_SAVE_TYPE(Material);
 
 	RID material;
 	Ref<Material> next_pass;
