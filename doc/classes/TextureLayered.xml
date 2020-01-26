@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextureLayered" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
+		Base class for 3D texture types.
 	</brief_description>
 	<description>
+		Base class for [Texture3D] and [TextureArray]. Cannot be used directly.
 	</description>
 	<tutorials>
 	</tutorials>

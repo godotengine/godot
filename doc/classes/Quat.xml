@@ -195,6 +195,7 @@
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Quat( 0, 0, 0, 1 )">
+			The identity rotation. Equivalent to an identity matrix. If a vector is transformed by an identity quaternion, it will not change.
 		</constant>
 	</constants>
 </class>
