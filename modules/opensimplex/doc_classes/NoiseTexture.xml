@@ -6,6 +6,12 @@
 	<description>
 		Uses an [OpenSimplexNoise] to fill the texture data. You can specify the texture size but keep in mind that larger textures will take longer to generate and seamless noise only works with square sized textures.
 		NoiseTexture can also generate normalmap textures.
+		The class uses [Thread]s to generate the texture data internally, so [method Texture.get_data] may return [code]null[/code] if the generation process has not completed yet. In that case, you need to wait for the texture to be generated before accessing the data:
+		[codeblock]
+		var texture = preload("res://noise.tres")
+		yield(texture, "changed")
+		var image = texture.get_data()
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
