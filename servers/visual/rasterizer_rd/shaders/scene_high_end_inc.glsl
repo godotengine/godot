@@ -63,7 +63,7 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	bool ssao_enabled;
 	float ssao_light_affect;
 	float ssao_ao_affect;
-	uint pad_ssao;
+	bool roughness_limiter_enabled;
 
 	vec4 ao_color;
 

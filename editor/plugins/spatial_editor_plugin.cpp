@@ -2726,13 +2726,15 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_OVERDRAW:
 		case VIEW_DISPLAY_SHADELESS:
 		case VIEW_DISPLAY_LIGHTING:
+		case VIEW_DISPLAY_NORMAL_BUFFER:
 		case VIEW_DISPLAY_DEBUG_SHADOW_ATLAS:
 		case VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS:
 		case VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO:
 		case VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING:
 		case VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION:
 		case VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE:
-		case VIEW_DISPLAY_DEBUG_SSAO: {
+		case VIEW_DISPLAY_DEBUG_SSAO:
+		case VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER: {
 
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
@@ -2740,6 +2742,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_OVERDRAW,
 				VIEW_DISPLAY_SHADELESS,
 				VIEW_DISPLAY_LIGHTING,
+				VIEW_DISPLAY_NORMAL_BUFFER,
 				VIEW_DISPLAY_WIREFRAME,
 				VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 				VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
@@ -2748,6 +2751,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION,
 				VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 				VIEW_DISPLAY_DEBUG_SSAO,
+				VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -2756,6 +2760,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_OVERDRAW,
 				Viewport::DEBUG_DRAW_UNSHADED,
 				Viewport::DEBUG_DRAW_LIGHTING,
+				Viewport::DEBUG_DRAW_NORMAL_BUFFER,
 				Viewport::DEBUG_DRAW_WIREFRAME,
 				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
@@ -2763,7 +2768,8 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_GI_PROBE_LIGHTING,
 				Viewport::DEBUG_DRAW_GI_PROBE_EMISSION,
 				Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
-				Viewport::DEBUG_DRAW_SSAO
+				Viewport::DEBUG_DRAW_SSAO,
+				Viewport::DEBUG_DRAW_ROUGHNESS_LIMITER,
 			};
 
 			int idx = 0;
@@ -3597,6 +3603,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_lighting", TTR("Display Lighting")), VIEW_DISPLAY_LIGHTING);
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTR("Display Unshaded")), VIEW_DISPLAY_SHADELESS);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
+	display_submenu->add_radio_check_item(TTR("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER);
+	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS);
 	display_submenu->add_radio_check_item(TTR("Directional Shadow"), VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS);
 	display_submenu->add_separator();
@@ -3607,6 +3615,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	display_submenu->add_radio_check_item(TTR("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("SSAO"), VIEW_DISPLAY_DEBUG_SSAO);
+	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("Roughness Limiter"), VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER);
 	display_submenu->set_name("display_advanced");
 	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced");
 	view_menu->get_popup()->add_separator();

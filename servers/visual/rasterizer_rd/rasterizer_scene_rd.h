@@ -64,6 +64,8 @@ protected:
 
 	virtual void _base_uniforms_changed() = 0;
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers) = 0;
+	virtual RID _render_buffers_get_roughness_texture(RID p_render_buffers) = 0;
+	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 
@@ -575,6 +577,9 @@ private:
 		} ssao;
 	};
 
+	bool screen_space_roughness_limiter = false;
+	float screen_space_roughness_limiter_curve = 1.0;
+
 	mutable RID_Owner<RenderBuffers> render_buffers_owner;
 
 	void _free_render_buffer_data(RenderBuffers *rb);
@@ -922,6 +927,10 @@ public:
 
 	virtual void set_scene_pass(uint64_t p_pass) { scene_pass = p_pass; }
 	_FORCE_INLINE_ uint64_t get_scene_pass() { return scene_pass; }
+
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve);
+	virtual bool screen_space_roughness_limiter_is_active() const;
+	virtual float screen_space_roughness_limiter_get_curve() const;
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;

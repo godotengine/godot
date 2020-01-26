@@ -453,6 +453,8 @@ public:
 	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
+	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
+
 	FUNCRID(camera_effects)
 
 	FUNC2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)

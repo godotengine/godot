@@ -658,6 +658,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_LIGHTING,
 		VIEWPORT_DEBUG_DRAW_OVERDRAW,
 		VIEWPORT_DEBUG_DRAW_WIREFRAME,
+		VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER,
 		VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO,
 		VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING,
 		VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION,
@@ -665,6 +666,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
+		VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER,
 
 	};
 
@@ -767,6 +769,8 @@ public:
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
+
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
 
 	/* CAMERA EFFECTS */
 

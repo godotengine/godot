@@ -19,5 +19,6 @@ if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('ssao.glsl');
     env.RD_GLSL('ssao_minify.glsl');
     env.RD_GLSL('ssao_blur.glsl');
+    env.RD_GLSL('roughness_limiter.glsl');
     
 

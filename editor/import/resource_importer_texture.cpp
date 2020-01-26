@@ -326,7 +326,7 @@ void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image
 	}
 }
 
-void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap) {
+void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 
 	FileAccess *f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	f->store_8('G');
@@ -385,6 +385,10 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		image->clear_mipmaps();
 	}
 
+	if (image->has_mipmaps() && p_normal.is_valid()) {
+		image->generate_mipmap_roughness(p_roughness_channel, p_normal);
+	}
+
 	if (p_force_rgbe && image->get_format() >= Image::FORMAT_RF && image->get_format() < Image::FORMAT_RGBE9995) {
 		image->convert(Image::FORMAT_RGBE9995);
 	}
@@ -421,7 +425,17 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
 	int bptc_ldr = p_options["compress/bptc_ldr"];
 	int roughness = p_options["roughness/mode"];
+	String normal_map = p_options["roughness/src_normal"];
 
+	Ref<Image> normal_image;
+	Image::RoughnessChannel roughness_channel;
+
+	if (mipmaps && roughness > 1 && FileAccess::exists(normal_map)) {
+		normal_image.instance();
+		if (ImageLoader::load_image(normal_map, normal_image) == OK) {
+			roughness_channel = Image::RoughnessChannel(roughness - 2);
+		}
+	}
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, NULL, hdr_as_srgb, scale);
@@ -516,7 +530,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (can_bptc || can_s3tc) {
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit);
+			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("s3tc");
 			formats_imported.push_back("s3tc");
 			ok_on_pc = true;
@@ -524,20 +538,20 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
-			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit);
+			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
-			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit);
+			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("etc");
 			formats_imported.push_back("etc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
-			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit);
+			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
 		}
@@ -547,7 +561,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 	} else {
 		//import normally
-		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit);
+		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 	}
 
 	if (r_metadata) {
