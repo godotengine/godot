@@ -1495,17 +1495,19 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
 
 		ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
+
+		String can_export_error;
+		bool can_export_missing_templates;
+		if (!can_export(p_preset, can_export_error, can_export_missing_templates)) {
+			EditorNode::add_io_error(can_export_error);
+			return ERR_UNCONFIGURED;
+		}
+
 		device_lock->lock();
 
 		EditorProgress ep("run", "Running on " + devices[p_device].name, 3);
 
 		String adb = EditorSettings::get_singleton()->get("export/android/adb");
-		if (adb == "") {
-
-			EditorNode::add_io_error("ADB executable not configured in settings, can't run.");
-			device_lock->unlock();
-			return ERR_UNCONFIGURED;
-		}
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK", 0)) {
