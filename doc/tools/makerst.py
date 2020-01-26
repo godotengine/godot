@@ -98,7 +98,6 @@ class ClassDef:
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
         self.inherits = None  # type: Optional[str]
-        self.category = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
         self.description = None  # type: Optional[str]
         self.theme_items = None  # type: Optional[OrderedDict[str, List[ThemeItemDef]]]
@@ -121,10 +120,6 @@ class State:
         inherits = class_root.get("inherits")
         if inherits is not None:
             class_def.inherits = inherits
-
-        category = class_root.get("category")
-        if category is not None:
-            class_def.category = category
 
         brief_desc = class_root.find("brief_description")
         if brief_desc is not None and brief_desc.text:

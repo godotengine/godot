@@ -251,7 +251,6 @@ void DocData::generate(bool p_basic_types) {
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
 		c.inherits = ClassDB::get_parent_class(name);
-		c.category = ClassDB::get_category(name);
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
@@ -531,7 +530,6 @@ void DocData::generate(bool p_basic_types) {
 		class_list[cname] = ClassDoc();
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
-		c.category = "Built-In Types";
 
 		Variant::CallError cerror;
 		Variant v = Variant::construct(Variant::Type(i), NULL, 0, cerror);
@@ -843,8 +841,6 @@ Error DocData::_load(Ref<XMLParser> parser) {
 		c.name = name;
 		if (parser->has_attribute("inherits"))
 			c.inherits = parser->get_attribute_value("inherits");
-		if (parser->has_attribute("category"))
-			c.category = parser->get_attribute_value("category");
 
 		while (parser->read() == OK) {
 
@@ -1034,25 +1030,24 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		String header = "<class name=\"" + c.name + "\"";
 		if (c.inherits != "")
 			header += " inherits=\"" + c.inherits + "\"";
-
-		String category = c.category;
-		if (c.category == "")
-			category = "Core";
-		header += " category=\"" + category + "\"";
 		header += String(" version=\"") + VERSION_NUMBER + "\"";
 		header += ">";
 		_write_string(f, 0, header);
+
 		_write_string(f, 1, "<brief_description>");
 		_write_string(f, 2, c.brief_description.strip_edges().xml_escape());
 		_write_string(f, 1, "</brief_description>");
+
 		_write_string(f, 1, "<description>");
 		_write_string(f, 2, c.description.strip_edges().xml_escape());
 		_write_string(f, 1, "</description>");
+
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
+
 		_write_string(f, 1, "<methods>");
 
 		c.methods.sort();

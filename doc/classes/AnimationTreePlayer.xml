@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationTreePlayer" inherits="Node" category="Core" version="3.2">
+<class name="AnimationTreePlayer" inherits="Node" version="3.2">
 	<brief_description>
 		Animation player that uses a node graph for blending animations.
 	</brief_description>

@@ -93,16 +93,14 @@ void DocDump::dump(const String &p_file) {
 		String inherits = ClassDB::get_parent_class(name);
 		if (inherits != "")
 			header += " inherits=\"" + inherits + "\"";
-		String category = ClassDB::get_category(name);
-		if (category == "")
-			category = "Core";
-		header += " category=\"" + category + "\"";
-		header += ">";
 		_write_string(f, 0, header);
+
 		_write_string(f, 1, "<brief_description>");
 		_write_string(f, 1, "</brief_description>");
+
 		_write_string(f, 1, "<description>");
 		_write_string(f, 1, "</description>");
+
 		_write_string(f, 1, "<methods>");
 
 		List<MethodInfo> method_list;
