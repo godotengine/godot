@@ -277,6 +277,8 @@
 			<argument index="3" name="guid" type="String">
 			</argument>
 			<description>
+				Notifies the [Input] singleton that a connection has changed, to update the state for the [code]device[/code] index.
+				This is used internally and should not have to be called from user scripts. See [signal joy_connection_changed] for the signal emitted when this is triggered internally.
 			</description>
 		</method>
 		<method name="parse_input_event">

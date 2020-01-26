@@ -1454,7 +1454,7 @@
 			Default method flags.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
-			Variable is of type [Nil] (only applied for [code]null[/code]).
+			Variable is [code]null[/code].
 		</constant>
 		<constant name="TYPE_BOOL" value="1" enum="Variant.Type">
 			Variable is of type [bool].

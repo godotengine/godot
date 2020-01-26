@@ -33,7 +33,7 @@
 	</methods>
 	<signals>
 		<signal name="completed">
-			<argument index="0" name="result" type="Nil">
+			<argument index="0" name="result" type="Variant">
 			</argument>
 			<description>
 			</description>

@@ -233,7 +233,7 @@ void DocData::generate(bool p_basic_types) {
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
-	// Move ProjectSettings, so that other classes can register properties there
+	// Move ProjectSettings, so that other classes can register properties there.
 	classes.move_to_back(classes.find("ProjectSettings"));
 
 	bool skip_setter_getter_methods = true;
@@ -403,13 +403,10 @@ void DocData::generate(bool p_basic_types) {
 				} else {
 
 					const PropertyInfo &arginfo = E->get().arguments[i];
-
 					ArgumentDoc argument;
-
 					argument_doc_from_arginfo(argument, arginfo);
 
 					int darg_idx = i - (E->get().arguments.size() - E->get().default_arguments.size());
-
 					if (darg_idx >= 0) {
 						Variant default_arg = E->get().default_arguments[darg_idx];
 						argument.default_value = default_arg.get_construct_string();
@@ -433,14 +430,10 @@ void DocData::generate(bool p_basic_types) {
 				signal.name = EV->get().name;
 				for (int i = 0; i < EV->get().arguments.size(); i++) {
 
-					PropertyInfo arginfo = EV->get().arguments[i];
+					const PropertyInfo &arginfo = EV->get().arguments[i];
 					ArgumentDoc argument;
-					argument.name = arginfo.name;
-					if (arginfo.type == Variant::OBJECT && arginfo.class_name != StringName()) {
-						argument.type = arginfo.class_name.operator String();
-					} else {
-						argument.type = Variant::get_type_name(arginfo.type);
-					}
+					argument_doc_from_arginfo(argument, arginfo);
+
 					signal.arguments.push_back(argument);
 				}
 
@@ -518,7 +511,7 @@ void DocData::generate(bool p_basic_types) {
 	}
 
 	{
-		//so it can be documented that it does not exist
+		// So we can document the concept of Variant even if it's not a usable class per se.
 		class_list["Variant"] = ClassDoc();
 		class_list["Variant"].name = "Variant";
 	}
@@ -526,10 +519,12 @@ void DocData::generate(bool p_basic_types) {
 	if (!p_basic_types)
 		return;
 
+	// Add Variant types.
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-
+		if (i == Variant::NIL)
+			continue; // Not exposed outside of 'null', should not be in class list.
 		if (i == Variant::OBJECT)
-			continue; //use the core type instead
+			continue; // Use the core type instead.
 
 		String cname = Variant::get_type_name(Variant::Type(i));
 
@@ -556,14 +551,9 @@ void DocData::generate(bool p_basic_types) {
 			for (int j = 0; j < mi.arguments.size(); j++) {
 
 				PropertyInfo arginfo = mi.arguments[j];
-
 				ArgumentDoc ad;
+				argument_doc_from_arginfo(ad, mi.arguments[j]);
 				ad.name = arginfo.name;
-
-				if (arginfo.type == Variant::NIL)
-					ad.type = "Variant";
-				else
-					ad.type = Variant::get_type_name(arginfo.type);
 
 				int defarg = mi.default_arguments.size() - mi.arguments.size() + j;
 				if (defarg >= 0)
