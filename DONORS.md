@@ -322,7 +322,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Jako Danar
     James A F Manley
     Jannik Gröger
-    Jarrod Davis
     Jax
     Jeff Hungerford
     Jennifer Graves
@@ -464,6 +463,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     tiansheng li
     Tim Drumheller
     Timothy B. MacDonald
+    tinyBigGames LLC
     Tobbun
     Tom Fulp
     Tom Glenn
