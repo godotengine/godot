@@ -98,6 +98,8 @@ class PhysicsShapeQueryResult2D;
 class PhysicsShapeQueryParameters2D : public Reference {
 	GDCLASS(PhysicsShapeQueryParameters2D, Reference);
 	friend class PhysicsDirectSpaceState2D;
+
+	RES shape_ref;
 	RID shape;
 	Transform2D transform;
 	Vector2 motion;
@@ -112,7 +114,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_shape(const RES &p_shape);
+	void set_shape(const RES &p_shape_ref);
+	RES get_shape() const;
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const;
 

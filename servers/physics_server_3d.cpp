@@ -136,13 +136,21 @@ PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 
 ///////////////////////////////////////////////////////
 
-void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape) {
-	ERR_FAIL_COND(p_shape.is_null());
-	shape = p_shape->get_rid();
+void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape_ref) {
+	ERR_FAIL_COND(p_shape_ref.is_null());
+	shape_ref = p_shape_ref;
+	shape = p_shape_ref->get_rid();
+}
+
+RES PhysicsShapeQueryParameters3D::get_shape() const {
+	return shape_ref;
 }
 
 void PhysicsShapeQueryParameters3D::set_shape_rid(const RID &p_shape) {
-	shape = p_shape;
+	if (shape != p_shape) {
+		shape_ref = RES();
+		shape = p_shape;
+	}
 }
 
 RID PhysicsShapeQueryParameters3D::get_shape_rid() const {
@@ -208,6 +216,7 @@ bool PhysicsShapeQueryParameters3D::is_collide_with_areas_enabled() const {
 
 void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters3D::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsShapeQueryParameters3D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters3D::set_shape_rid);
 	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters3D::get_shape_rid);
 
@@ -232,7 +241,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::_RID) + ":"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
-	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", ""); // FIXME: Lacks a getter
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
