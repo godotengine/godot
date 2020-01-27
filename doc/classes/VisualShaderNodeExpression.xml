@@ -7,12 +7,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="build">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" override="true" default="true" />
