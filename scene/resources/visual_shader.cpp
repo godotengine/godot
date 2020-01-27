@@ -2532,10 +2532,6 @@ void VisualShaderNodeExpression::set_expression(const String &p_expression) {
 	expression = p_expression;
 }
 
-void VisualShaderNodeExpression::build() {
-	emit_changed();
-}
-
 String VisualShaderNodeExpression::get_expression() const {
 	return expression;
 }
@@ -2641,8 +2637,6 @@ void VisualShaderNodeExpression::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_expression", "expression"), &VisualShaderNodeExpression::set_expression);
 	ClassDB::bind_method(D_METHOD("get_expression"), &VisualShaderNodeExpression::get_expression);
-
-	ClassDB::bind_method(D_METHOD("build"), &VisualShaderNodeExpression::build);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "expression"), "set_expression", "get_expression");
 }

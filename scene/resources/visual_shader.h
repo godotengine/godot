@@ -457,8 +457,6 @@ public:
 	void set_expression(const String &p_expression);
 	String get_expression() const;
 
-	void build();
-
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeExpression();
