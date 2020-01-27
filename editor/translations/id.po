@@ -1965,16 +1965,6 @@ msgid "Online Tutorials"
 msgstr "Tutorial Daring"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Untuk saat ini tidak ada tutorial dalam kelas ini, anda bisa [color=$color]"
-"[url=$url]ikut berkontribusi[/url][/color] atau [color=$color][url="
-"$url2]memberikan usulan[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Properti Objek"
 
@@ -12692,6 +12682,15 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Untuk saat ini tidak ada tutorial dalam kelas ini, anda bisa [color="
+#~ "$color][url=$url]ikut berkontribusi[/url][/color] atau [color=$color][url="
+#~ "$url2]memberikan usulan[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

@@ -66,7 +66,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-23 15:05+0000\n"
+"PO-Revision-Date: 2020-01-27 07:10+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2001,16 +2001,6 @@ msgstr "Описание"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Онлайн-уроки"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"В настоящее время отсутствуют учебники для этого класса, вы можете его "
-"[color=$color][url=$url]добавить[/url][/color] или [color=$color][url="
-"$url2]запросить[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -6706,7 +6696,7 @@ msgstr "Сохранить тему как..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
-msgstr "%s Справка по классу"
+msgstr "Справка по классу %s"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -12696,6 +12686,15 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "В настоящее время отсутствуют учебники для этого класса, вы можете его "
+#~ "[color=$color][url=$url]добавить[/url][/color] или [color=$color][url="
+#~ "$url2]запросить[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "перечисление  "

@@ -44,8 +44,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-22 23:17+0000\n"
-"Last-Translator: Julian <jdhoogvorst@gmail.com>\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
+"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -1977,16 +1977,6 @@ msgstr "Beschrijving"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Online Zelfstudie"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Er is momenteel geen handleiding voor deze methode. Help ons alsjeblieft "
-"door [color=$color][url=$url]een toe te voegen[/url][/color] of [color="
-"$color][url=$url2]een aan te vragen[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -5648,9 +5638,8 @@ msgid "Auto Insert Key"
 msgstr "Sleutel automatisch invoegen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Animatiesleutel Ingevoegd."
+msgstr "Opties voor animatiesleutels en -poses"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -9721,7 +9710,7 @@ msgstr "Naamloos Project"
 
 #: editor/project_manager.cpp
 msgid "Missing Project"
-msgstr "Ontbrekend project"
+msgstr "Bestanden ontbreken"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
@@ -9829,7 +9818,7 @@ msgid ""
 "The project folders' contents won't be modified."
 msgstr ""
 "Alle ontbrekende projecten uit de lijst verwijderen?\n"
-"De inhoud van de projectmap wordt niet geraakt."
+"De inhoud van de projectmap wordt niet veranderd."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9874,7 +9863,7 @@ msgstr "Nieuw Project"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
-msgstr "Ontbrekende verwijderen"
+msgstr "Lijst opruimen"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -10396,7 +10385,7 @@ msgstr "Knoopouder wijzigen"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "Reparent Locatie (Selecteer nieuwe Ouder):"
+msgstr "Plaats instellen (selecteer nieuwe ouder):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -10404,7 +10393,7 @@ msgstr "Houd Globale Transformatie"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Reparent"
+msgstr "Ouder veranderen"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -10627,11 +10616,11 @@ msgstr "Knoop hieronder toevoegen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
-msgstr "Alles Uitklappen/Inklappen"
+msgstr "Alles uit-/inklappen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
-msgstr "Verander het type"
+msgstr "Type veranderen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
@@ -12683,6 +12672,15 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Er is momenteel geen handleiding voor deze methode. Help ons alsjeblieft "
+#~ "door [color=$color][url=$url]een toe te voegen[/url][/color] of [color="
+#~ "$color][url=$url2]een aan te vragen[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

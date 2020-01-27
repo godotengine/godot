@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 11:39+0000\n"
+"PO-Revision-Date: 2020-01-27 07:10+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -1956,16 +1956,6 @@ msgstr "Опис"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Підручники в інтернеті"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Настанов щодо цього класу ще немає. Ви можете [color=$color][url="
-"$url]створити їх[/url][/color] або [color=$color][url=$url2]надіслати запит "
-"щодо їхнього створення[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -5627,9 +5617,8 @@ msgid "Auto Insert Key"
 msgstr "Автовставлення ключового кадру"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Вставлено ключ анімації."
+msgstr "Параметри ключового кадру та пози анімації"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -12668,6 +12657,15 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Настанов щодо цього класу ще немає. Ви можете [color=$color][url="
+#~ "$url]створити їх[/url][/color] або [color=$color][url=$url2]надіслати "
+#~ "запит щодо їхнього створення[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "перелічуваний  "

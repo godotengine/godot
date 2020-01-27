@@ -63,7 +63,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-01-20 11:39+0000\n"
+"PO-Revision-Date: 2020-01-27 07:10+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1967,15 +1967,6 @@ msgstr "描述"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "在线教程"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"当前没有此类型的教程，你可以[color=$color][url=$url]贡献一个[/url][/color]或"
-"[color=$color][url=$url2]请求一个[/url][/color]。"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -5548,9 +5539,8 @@ msgid "Auto Insert Key"
 msgstr "自动插入关键帧"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "插入动画键。"
+msgstr "动画关键帧与姿势选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -12380,6 +12370,14 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "当前没有此类型的教程，你可以[color=$color][url=$url]贡献一个[/url][/color]"
+#~ "或[color=$color][url=$url2]请求一个[/url][/color]。"
 
 #~ msgid "enum  "
 #~ msgstr "枚举  "

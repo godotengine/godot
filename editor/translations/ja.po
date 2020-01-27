@@ -35,7 +35,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-23 15:05+0000\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -681,7 +681,7 @@ msgstr "コピー"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "全てを選択/解除"
+msgstr "すべてを選択/解除"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -928,7 +928,7 @@ msgstr "このシグナルから全ての接続を除去してもよろしいで
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr "全て切断"
+msgstr "すべて切断"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
@@ -1202,7 +1202,7 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr "全てのコンポーネント"
+msgstr "すべてのコンポーネント"
 
 #: editor/editor_about.cpp
 msgid "Components"
@@ -1968,16 +1968,6 @@ msgid "Online Tutorials"
 msgstr "オンラインチュートリアル"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"現在、このクラスのチュートリアルはありませんが、[color=$color][url=$url]貢献"
-"[/url][/color]、または[color=$color][url=$url2]リクエスト[/url][/color]は可能"
-"です。"
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "プロパティ"
 
@@ -2630,7 +2620,7 @@ msgstr "他のタブを閉じる"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr "タブを右に閉じる"
+msgstr "右側のタブを閉じる"
 
 #: editor/editor_node.cpp
 msgid "Close All Tabs"
@@ -2718,7 +2708,7 @@ msgstr "シーンを保存"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
-msgstr "全てのシーンを保存"
+msgstr "すべてのシーンを保存"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -4745,7 +4735,7 @@ msgstr "プレイモード:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "アニメーションツリー"
+msgstr "AnimationTree(アニメーションツリー)"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5976,11 +5966,12 @@ msgid "Remove item %d?"
 msgstr "アイテム%dを取り除きますか？"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "シーンからアップデート"
+msgstr ""
+"既存シーンからアップデートしますか？:\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -7341,9 +7332,8 @@ msgstr ""
 "ゲーム内のパフォーマンスを確実に示すものとして使用することはできません。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Rotation Locked"
-msgstr "情報を表示"
+msgstr "ビューの回転を固定中"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7423,7 +7413,7 @@ msgstr "フリールックの切り替え"
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform"
-msgstr "変形"
+msgstr "幾何学変換(変形)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
@@ -10982,7 +10972,7 @@ msgstr "フォーマット"
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr "使用"
+msgstr "使用法"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
@@ -12662,6 +12652,15 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "現在、このクラスのチュートリアルはありませんが、[color=$color][url=$url]貢"
+#~ "献[/url][/color]、または[color=$color][url=$url2]リクエスト[/url][/color]"
+#~ "は可能です。"
 
 #~ msgid "enum  "
 #~ msgstr "列挙型  "

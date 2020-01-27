@@ -1963,16 +1963,6 @@ msgid "Online Tutorials"
 msgstr "Online návody"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"V současné době pro tuto třídu neexistují žádné návody, můžete nějaký [color="
-"$color][url=$url]vytvořit[/url][/color] nebo o něj [color=$color][url="
-"$url2]zažádat[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Vlastnosti"
 
@@ -12740,6 +12730,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "V současné době pro tuto třídu neexistují žádné návody, můžete nějaký "
+#~ "[color=$color][url=$url]vytvořit[/url][/color] nebo o něj [color=$color]"
+#~ "[url=$url2]zažádat[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "výčet  "

@@ -6,12 +6,14 @@
 # Shaqir Rafiq <moshamoradev@gmail.com>, 2018.
 # Syaz Amirin <amirin123z@gmail.com>, 2018.
 # Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
+# Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: Nafis Ibrahim <thepreciousnafis@gmail.com>\n"
+"PO-Revision-Date: 2020-01-27 07:10+0000\n"
+"Last-Translator: Muhammad Hazim bin Hafizalshah "
+"<muhammadhazimhafizalshah@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -19,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1912,13 +1914,6 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
-msgstr ""
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -4261,9 +4256,8 @@ msgid "Audio Clips"
 msgstr "Anim Tambah Trek"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Semua Pilihan"
+msgstr "Fungsi"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4590,7 +4584,7 @@ msgstr ""
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr ""
+msgstr "AnimationTree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -9765,9 +9759,8 @@ msgid "Action:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Action"
-msgstr "Semua Pilihan"
+msgstr "Aksi"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"

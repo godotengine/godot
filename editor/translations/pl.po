@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 22:39+0000\n"
+"PO-Revision-Date: 2020-01-27 07:10+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -1970,22 +1970,12 @@ msgid "Online Tutorials"
 msgstr "Poradniki online"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color][url="
-"$url]dodać jeden[/url][/color] lub [color=$color][url=$url2]poprosić o "
-"jakiś[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Właściwości"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr "przeciążenie:"
+msgstr "nadpisanie:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -5632,9 +5622,8 @@ msgid "Auto Insert Key"
 msgstr "Automatycznie wstaw klucz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Wstawiono klucz animacji."
+msgstr "Opcje kluczy animacji i pozy"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -8018,8 +8007,8 @@ msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
-"Shift+PPM: Rysowanie linii\n"
-"Shift+Ctrl+PPM: Malowanie prostokąta"
+"Shift+LPM: Rysowanie linii\n"
+"Shift+Ctrl+LPM: Malowanie prostokąta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -12646,6 +12635,15 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color]"
+#~ "[url=$url]dodać jeden[/url][/color] lub [color=$color][url=$url2]poprosić "
+#~ "o jakiś[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

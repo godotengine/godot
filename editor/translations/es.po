@@ -46,7 +46,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 22:39+0000\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -1988,16 +1988,6 @@ msgstr "Descripción"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "Tutoriales en línea"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Actualmente no existen tutoriales para esta clase, puedes [color=$color][url="
-"$url]contribuir uno[/url][/color] o [color=$color][url=$url2]solicitar uno[/"
-"url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -5676,9 +5666,8 @@ msgid "Auto Insert Key"
 msgstr "Auto Insertar Clave"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Clave de animación insertada."
+msgstr "Clave de animación y Opciones de Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -12726,6 +12715,15 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Actualmente no existen tutoriales para esta clase, puedes [color=$color]"
+#~ "[url=$url]contribuir uno[/url][/color] o [color=$color][url="
+#~ "$url2]solicitar uno[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

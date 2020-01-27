@@ -9,12 +9,13 @@
 # roger <616steam@gmail.com>, 2019.
 # Roger BR <drai_kin@hotmail.com>, 2019.
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2020.
+# Xavier Gomez <hiulit@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-03 21:21+0000\n"
-"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
+"Last-Translator: Xavier Gomez <hiulit@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -431,7 +432,7 @@ msgstr "No es pot afegir una nova pista sense cap arrel"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "La pista no és vàlida per a Bezier (no hi ha subpropietats adequades)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -500,16 +501,23 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Aquesta animació pertany a una escena importada, de manera que no es desaran "
+"els canvis a les pistes importades.\n"
+"\n"
+"Per habilitar la possibilitat d’afegir pistes personalitzades, navegueu a la "
+"configuració d’importació de l’escena i establiu\n"
+"\"Animation > Storage\" a \"Files\", activeu \"Animation > Keep Custom Tracks"
+"\", i, després, reimporteu.\n"
+"També podeu fer servir una configuració preestablerta que importi animacions "
+"a fitxers separats."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
 msgstr "Advertiment: Edició d'animació importada"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"Selecciona un AnimationPlayer a l'Arbre de l'Escena per editar-ne l'animació."
+msgstr "Seleccioneu un node AnimationPlayer per a crear i editar animacions."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -811,9 +819,8 @@ msgid "Extra Call Arguments:"
 msgstr "Arguments de Crida addicionals:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "Selecciona un Mètode"
+msgstr "Mètode Receptor:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1166,22 +1173,21 @@ msgid "License"
 msgstr "Llicència"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
 msgstr "Llicències de Tercers"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"El motor Godot es recolza en una sèrie de biblioteques lliures i de codi "
-"obert, totes elles compatibles amb els termes de la llicència MIT. Tot "
-"seguit podeu trobar la llista exhaustiva de tots aquests components externs "
-"amb llurs respectius drets d'autor i  termes de llicenciament."
+"Godot Engine compta amb diverses biblioteques gratuïtes i de codi obert de "
+"tercers, totes compatibles amb els termes de la seva llicència MIT. A "
+"continuació, es mostra una llista exhaustiva de tots aquests components de "
+"tercers amb les seves respectives declaracions de copyright i termes de "
+"llicència."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1196,14 +1202,13 @@ msgid "Licenses"
 msgstr "Llicències"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file, not in ZIP format."
-msgstr "Error en obrir el arxiu comprimit, el fitxer no té el format ZIP."
+msgstr ""
+"S'ha produit un error en obrir el fitxer comprimit, no té el format ZIP."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "Ja existeix"
+msgstr "%s (Ja existeix)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
@@ -1214,9 +1219,8 @@ msgid "The following files failed extraction from package:"
 msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d fitxer(s) més"
+msgstr "I %d fitxer(s) més."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1228,9 +1232,8 @@ msgid "Success!"
 msgstr "Èxit!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Continguts:"
+msgstr "Contingut del Paquet:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1285,9 +1288,8 @@ msgid "Delete Bus Effect"
 msgstr "Elimina l'Efecte de Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "Arrossegueu i deixeu anar per reordenar."
+msgstr "Arrossegueu i deixeu anar per a reorganitzar."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1371,9 +1373,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Fitxer incorrecte. No és un disseny de bus d'àudio."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "Error en desar el fitxer!"
+msgstr "S'ha produit un error al desar el fitxer! %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1422,28 +1423,20 @@ msgid "Valid characters:"
 msgstr "Caràcters vàlids:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "No pot coincidir amb noms de classe del motor ja existents."
+msgstr "No ha de coincidir amb un nom de classe de motor existent."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr ""
-"El Nom no és vàlid. No pot coincidir amb noms de tipus integrats ja "
-"existents."
+msgstr "No ha de coincidir amb un nom de tipus incorporat existent."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
-msgstr ""
-"El Nom no és vàlid. No pot coincidir amb noms de constants globals ja "
-"existents."
+msgstr "No ha de coincidir amb una constant global existent."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Keyword cannot be used as an autoload name."
-msgstr "Una paraula clau no es pot utilitzar com a nom de càrrega automàtica."
+msgstr "La paraula clau no es pot utilitzar com a nom d'autocàrrega."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1595,6 +1588,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"La plataforma de destinació requereix una compressió de textura 'ETC' per a "
+"utilitzar GLES2 com a controlador alternatiu.\n"
+"Activeu \"Import Etc\" a Configuració del Projecte o desactiveu la opció "
+"'Driver Fallback Enabled''."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1613,11 +1610,9 @@ msgid "Template file not found:"
 msgstr "No s'ha trobat la Plantilla:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
-"En les exportacions de 32 bits, el PCK incrustat no pot ser més gran que 4 "
-"GiB."
+"En les exportacions de 32 bits, el PCK incrustat no pot ser superior a 4 GiB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1968,16 +1963,6 @@ msgstr "Descripció:"
 #, fuzzy
 msgid "Online Tutorials"
 msgstr "Tutorials en línia:"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Aquesta classe no disposa encara de cap Tutorial. Podeu contribuir  [color="
-"$color][url=$url] tot aportant-ne un[/url][/color] o  [color=$color][url="
-"$url2]sol·licitant-lo[/url][/color]."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -12990,6 +12975,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Aquesta classe no disposa encara de cap Tutorial. Podeu contribuir  "
+#~ "[color=$color][url=$url] tot aportant-ne un[/url][/color] o  [color="
+#~ "$color][url=$url2]sol·licitant-lo[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

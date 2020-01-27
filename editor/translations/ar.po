@@ -1999,16 +1999,6 @@ msgid "Online Tutorials"
 msgstr "الدورس علي الإنترنت:"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] المساهمة "
-"في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها [/url][/"
-"color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "خصائص"
 
@@ -12815,6 +12805,15 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] "
+#~ "المساهمة في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها "
+#~ "[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "التعداد  "

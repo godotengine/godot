@@ -36,7 +36,7 @@
 # Davide Giuliano <davidegiuliano00@gmail.com>, 2019.
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
-# Micila Micillotto <micillotto@gmail.com>, 2019.
+# Micila Micillotto <micillotto@gmail.com>, 2019, 2020.
 # Mirko Soppelsa <miknsop@gmail.com>, 2019.
 # No <kingofwizards.kw7@gmail.com>, 2019.
 # StarFang208 <polaritymanx@yahoo.it>, 2019.
@@ -47,8 +47,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-21 23:23+0000\n"
-"Last-Translator: Fabio Iotti <fabiogiopla@gmail.com>\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1983,23 +1983,12 @@ msgid "Online Tutorials"
 msgstr "Tutorial Online"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Al momento non esiste alcuna descrizione per questa classe. Aiutaci [color="
-"$color][url=$url]aggiungendone una[/url][/color] oppure [color=$color][url="
-"$url2]richiedendone una[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Proprietà"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "ridefinizione:"
+msgstr "sovrascrivi:"
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -4699,7 +4688,6 @@ msgid "Move Node"
 msgstr "Sposta Nodo"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
 msgstr "La transizione esiste!"
 
@@ -5671,9 +5659,8 @@ msgid "Auto Insert Key"
 msgstr "Inserimento Automatico Chiave"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Key d'Animazione Inserito."
+msgstr "Chiavi d'Animazione e Opzioni Posa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5794,7 +5781,6 @@ msgstr "Pixel del Bordo"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
 msgstr "Pixel dei Bordi Diretti"
 
@@ -7702,7 +7688,6 @@ msgid "Add Frame"
 msgstr "Aggiungi frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Unable to load images"
 msgstr "Impossibile caricare le immagini"
 
@@ -11349,9 +11334,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Cursore Cancella Rotazione"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Cancella Selezione"
+msgstr "Incolla Selezioni"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -12722,6 +12706,15 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Al momento non esiste alcuna descrizione per questa classe. Aiutaci "
+#~ "[color=$color][url=$url]aggiungendone una[/url][/color] oppure [color="
+#~ "$color][url=$url2]richiedendone una[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

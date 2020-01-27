@@ -2059,16 +2059,6 @@ msgid "Online Tutorials"
 msgstr "Online dokumentasjon:"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Det finnes i øyeblikket ingen beskrivelse av denne metoden, men du kan "
-"[colour=$color][url=$url]bidra med en[/url][/color] eller [color=$color][url="
-"$url2]be om en[/url][/color]."
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Egenskaper"
 
@@ -13043,6 +13033,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Det finnes i øyeblikket ingen beskrivelse av denne metoden, men du kan "
+#~ "[colour=$color][url=$url]bidra med en[/url][/color] eller [color=$color]"
+#~ "[url=$url2]be om en[/url][/color]."
 
 #~ msgid "enum  "
 #~ msgstr "num  "

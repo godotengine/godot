@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-22 23:17+0000\n"
+"PO-Revision-Date: 2020-01-27 07:09+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -1940,16 +1940,6 @@ msgstr "설명"
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
 msgstr "온라인 튜토리얼"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"현재 이 클래스에 대한 튜토리얼이 없어요. [color=$color][url=$url]튜토리얼에 "
-"기여하거나[/url][/color] [color=$color][url=$url2]튜토리얼을 요청할 수[/url]"
-"[/color] 있어요."
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -5564,9 +5554,8 @@ msgid "Auto Insert Key"
 msgstr "자동으로 키 삽입하기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "애니메이션 키를 삽입했어요."
+msgstr "애니메이션 키와 포즈 설정"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -12488,6 +12477,15 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있어요."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없어요."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "현재 이 클래스에 대한 튜토리얼이 없어요. [color=$color][url=$url]튜토리얼"
+#~ "에 기여하거나[/url][/color] [color=$color][url=$url2]튜토리얼을 요청할 수"
+#~ "[/url][/color] 있어요."
 
 #~ msgid "enum  "
 #~ msgstr "이넘  "

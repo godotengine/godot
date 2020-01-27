@@ -1888,13 +1888,6 @@ msgid "Online Tutorials"
 msgstr ""
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr ""
 

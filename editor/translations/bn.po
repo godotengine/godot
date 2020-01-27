@@ -2076,17 +2076,6 @@ msgstr "টিউটোরিয়ালসমূহ"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"এই মেথড সম্পর্কে বিস্তারিত তথ্য লিপিবদ্ধ করা হয়নি। অনুগ্রহ করে তথ্য প্রদানের মাধ্যমে "
-"সহায়তা করুন। তথ্য প্রদানের জন্য [color=$color][url=$url], [/url][/color] ফরম্যাট "
-"ব্যাবহার করুন !"
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Properties"
 msgstr "প্রোপার্টি-সমূহ:"
 
@@ -13394,6 +13383,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "এই মেথড সম্পর্কে বিস্তারিত তথ্য লিপিবদ্ধ করা হয়নি। অনুগ্রহ করে তথ্য প্রদানের "
+#~ "মাধ্যমে সহায়তা করুন। তথ্য প্রদানের জন্য [color=$color][url=$url], [/url][/"
+#~ "color] ফরম্যাট ব্যাবহার করুন !"
 
 #~ msgid "enum  "
 #~ msgstr "enum  "

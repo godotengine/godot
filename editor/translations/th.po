@@ -2044,15 +2044,6 @@ msgid "Online Tutorials"
 msgstr "สอนใช้งานออนไลน์:"
 
 #: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"คลาสนี้ยังไม่มีการสอนการใช้งาน ท่านสามารถ[color=$color][url=$url]ช่วยเขียน[/url][/"
-"color] หรือ [color=$color][url=$url2]ขอให้จัดทำ[/url][/color]"
-
-#: editor/editor_help.cpp
 msgid "Properties"
 msgstr "คุณสมบัติ"
 
@@ -12991,6 +12982,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "คลาสนี้ยังไม่มีการสอนการใช้งาน ท่านสามารถ[color=$color][url=$url]ช่วยเขียน[/url][/"
+#~ "color] หรือ [color=$color][url=$url2]ขอให้จัดทำ[/url][/color]"
 
 #~ msgid "enum  "
 #~ msgstr "กลุ่มค่าคงที่  "
