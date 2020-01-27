@@ -30,8 +30,6 @@
 
 #ifdef JACK_ENABLED
 
-// TODO: the capture devices
-
 #include "audio_driver_jack.h"
 #include "core/project_settings.h"
 #include "core/version.h"
