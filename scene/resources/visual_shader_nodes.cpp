@@ -792,7 +792,7 @@ String VisualShaderNodeCubeMap::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_COLOR: u += " : hint_albedo"; break;
 			case TYPE_NORMALMAP: u += " : hint_normal"; break;
 		}
-		return u + ";";
+		return u + ";\n";
 	}
 	return String();
 }
@@ -809,29 +809,32 @@ String VisualShaderNodeCubeMap::generate_code(Shader::Mode p_mode, VisualShader:
 		return String();
 	}
 
+	code += "\t{\n";
+
 	if (id == String()) {
-		code += "\tvec4 " + id + "_read = vec4(0.0);\n";
-		code += "\t" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
-		code += "\t" + p_output_vars[1] + " = " + id + "_read.a;\n";
+		code += "\t\tvec4 " + id + "_read = vec4(0.0);\n";
+		code += "\t\t" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
+		code += "\t\t" + p_output_vars[1] + " = " + id + "_read.a;\n";
 		return code;
 	}
 
 	if (p_input_vars[0] == String()) { // Use UV by default.
 
 		if (p_input_vars[1] == String()) {
-			code += "\tvec4 " + id + "_read = texture( " + id + " , vec3( UV, 0.0 ) );\n";
+			code += "\t\tvec4 " + id + "_read = texture( " + id + " , vec3( UV, 0.0 ) );\n";
 		} else {
-			code += "\tvec4 " + id + "_read = textureLod( " + id + " , vec3( UV, 0.0 )" + " , " + p_input_vars[1] + " );\n";
+			code += "\t\tvec4 " + id + "_read = textureLod( " + id + " , vec3( UV, 0.0 )" + " , " + p_input_vars[1] + " );\n";
 		}
 
 	} else if (p_input_vars[1] == String()) {
 		//no lod
-		code += "\tvec4 " + id + "_read = texture( " + id + " , " + p_input_vars[0] + " );\n";
+		code += "\t\tvec4 " + id + "_read = texture( " + id + " , " + p_input_vars[0] + " );\n";
 	} else {
-		code += "\tvec4 " + id + "_read = textureLod( " + id + " , " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
+		code += "\t\tvec4 " + id + "_read = textureLod( " + id + " , " + p_input_vars[0] + " , " + p_input_vars[1] + " );\n";
 	}
-	code += "\t" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
-	code += "\t" + p_output_vars[1] + " = " + id + "_read.a;\n";
+	code += "\t\t" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
+	code += "\t\t" + p_output_vars[1] + " = " + id + "_read.a;\n";
+	code += "\t}\n";
 
 	return code;
 }
