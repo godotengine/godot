@@ -60,6 +60,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="bg" type="StyleBox">
+			The background [StyleBox] of the [ScrollContainer].
 		</theme_item>
 	</theme_items>
 </class>
