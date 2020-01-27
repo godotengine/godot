@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 dependencies {
-	implementation libraries.supportCoreUtils
+    implementation libraries.supportCoreUtils
 }
 
 def pathToRootDir = "../../../../"

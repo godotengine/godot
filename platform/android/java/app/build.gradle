@@ -33,7 +33,7 @@ allprojects {
 }
 
 dependencies {
-	implementation libraries.supportCoreUtils
+    implementation libraries.supportCoreUtils
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
