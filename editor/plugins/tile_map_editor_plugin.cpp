@@ -627,13 +627,14 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 		if (r != bucket_cache_rect)
 			_clear_bucket_cache();
 		// Cache grid is not initialized
-		if (bucket_cache_visited == 0) {
+		if (bucket_cache_visited == NULL) {
 			bucket_cache_visited = new bool[area];
 			invalidate_cache = true;
 		}
 		// Tile ID changed or position wasn't visited by the previous fill
-		int loc = (p_start.x - r.position.x) + (p_start.y - r.position.y) * r.get_size().x;
-		if (prev_id != bucket_cache_tile || !bucket_cache_visited[loc]) {
+		const int loc = (p_start.x - r.position.x) + (p_start.y - r.position.y) * r.get_size().x;
+		const bool in_range = 0 <= loc && loc < area;
+		if (prev_id != bucket_cache_tile || (in_range && !bucket_cache_visited[loc])) {
 			invalidate_cache = true;
 		}
 		if (invalidate_cache) {
@@ -893,7 +894,7 @@ void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Po
 void TileMapEditor::_clear_bucket_cache() {
 	if (bucket_cache_visited) {
 		delete[] bucket_cache_visited;
-		bucket_cache_visited = 0;
+		bucket_cache_visited = NULL;
 	}
 }
 
@@ -1924,7 +1925,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	transpose = false;
 
 	bucket_cache_tile = -1;
-	bucket_cache_visited = 0;
+	bucket_cache_visited = NULL;
 
 	invalid_cell.resize(1);
 	invalid_cell.write[0] = TileMap::INVALID_CELL;
