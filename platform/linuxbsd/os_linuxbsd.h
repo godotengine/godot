@@ -35,6 +35,7 @@
 #include "crash_handler_linuxbsd.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
+#include "drivers/jack/audio_driver_jack.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
@@ -61,6 +62,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+#ifdef JACK_ENABLED
+	AudioDriverJACK driver_jack;
 #endif
 
 	CrashHandler crash_handler;

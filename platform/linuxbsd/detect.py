@@ -72,6 +72,7 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
+        BoolVariable('jack', 'Detect and use JACK', True),
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
@@ -347,6 +348,14 @@ def configure(env):
             env.ParseConfig("pkg-config --cflags libpulse")
         else:
             print("PulseAudio development libraries not found, disabling driver")
+
+    if env['jack']:
+        if (os.system("pkg-config --exists jack") == 0): # 0 means found
+            print("Enabling JACK")
+            env.Append(CPPDEFINES=["JACK_ENABLED"])
+            env.ParseConfig('pkg-config --cflags --libs jack')
+        else:
+            print("JACK development libraries not found, disabling driver")
 
     if env["dbus"]:
         if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
