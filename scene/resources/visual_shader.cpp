@@ -2509,6 +2509,7 @@ void VisualShaderNodeGroupBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &VisualShaderNodeGroupBase::is_editable);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 }
 
 String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
