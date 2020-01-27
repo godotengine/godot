@@ -188,30 +188,15 @@ Error InAppStore::restore_purchases() {
 				NSData *receipt = nil;
 				int sdk_version = 6;
 
-				if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+				NSURL *receiptFileURL = nil;
+				NSBundle *bundle = [NSBundle mainBundle];
 
-					NSURL *receiptFileURL = nil;
-					NSBundle *bundle = [NSBundle mainBundle];
-					if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
+				// Get the transaction receipt file path location in the app bundle.
+				receiptFileURL = [bundle appStoreReceiptURL];
 
-						// Get the transaction receipt file path location in the app bundle.
-						receiptFileURL = [bundle appStoreReceiptURL];
-
-						// Read in the contents of the transaction file.
-						receipt = [NSData dataWithContentsOfURL:receiptFileURL];
-						sdk_version = 7;
-
-					} else {
-						// Fall back to deprecated transaction receipt,
-						// which is still available in iOS 7.
-
-						// Use SKPaymentTransaction's transactionReceipt.
-						receipt = transaction.transactionReceipt;
-					}
-
-				} else {
-					receipt = transaction.transactionReceipt;
-				}
+				// Read in the contents of the transaction file.
+				receipt = [NSData dataWithContentsOfURL:receiptFileURL];
+				sdk_version = 7;
 
 				NSString *receipt_to_send = nil;
 				if (receipt != nil) {
@@ -273,7 +258,7 @@ Error InAppStore::purchase(Variant p_params) {
 	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
 
 	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
-	SKPayment *payment = [SKPayment paymentWithProductIdentifier:pid];
+	SKPayment *payment = [SKPayment +paymentWithProduct:pid];
 	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
 	[defq addPayment:payment];
 	printf("purchase sent!\n");
