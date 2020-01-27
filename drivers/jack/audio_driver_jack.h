@@ -44,6 +44,7 @@ class AudioDriverJACK : public AudioDriver {
 
 	jack_client_t *client;
 	Vector<jack_port_t *> ports;
+	Vector<jack_port_t *> capture_ports;
 
 	Vector<int32_t> samples_in;
 
@@ -61,11 +62,17 @@ class AudioDriverJACK : public AudioDriver {
 	static const DeviceJACK devices[];
 	static const unsigned num_devices;
 
+	static const DeviceJACK capture_devices[];
+	static const unsigned num_capture_devices;
+
 	int device_index;
+	int capture_device_index;
 
 	bool active;
+	bool capture_active;
 
 	void connect_physical_ports();
+	void connect_physical_capture_ports();
 
 public:
 	const char *get_name() const {
@@ -82,6 +89,12 @@ public:
 	void lock();
 	void unlock();
 	void finish();
+
+	Error capture_start();
+	Error capture_stop();
+	void capture_set_device(const String &device);
+	String capture_get_device();
+	Array capture_get_device_list();
 
 	AudioDriverJACK();
 	~AudioDriverJACK();
