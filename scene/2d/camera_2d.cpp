@@ -54,6 +54,9 @@ void Camera2D::_update_scroll() {
 
 		Transform2D xform = get_camera_transform();
 
+		// Round origin to nearest whole pixel to prevent sprite jittering
+		xform.set_origin(xform.get_origin().round());
+
 		viewport->set_canvas_transform(xform);
 
 		Size2 screen_size = viewport->get_visible_rect().size;
