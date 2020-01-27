@@ -87,12 +87,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="has_input_port" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -199,17 +193,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
 		</member>
 	</members>
 	<constants>
