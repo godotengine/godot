@@ -944,6 +944,14 @@ String RigidBody2D::get_configuration_warning() const {
 
 	String warning = CollisionObject2D::get_configuration_warning();
 
+	// Remove this if GH-5734 is fixed.
+	if (!get_scale().is_equal_approx(Vector2(1.0, 1.0))) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Scaling RigidBody2D is not supported by the physics engine and will lead to undefined behavior.\nYou may scale its parent node or sprite, but the RigidBody2D and its collision shape or polygon should have a scale of Vector2(1.0, 1.0).\nThis design limitation may be lifted in a future release.");
+	}
+
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
 		if (warning != String()) {
 			warning += "\n\n";

@@ -915,6 +915,14 @@ String RigidBody::get_configuration_warning() const {
 
 	String warning = CollisionObject::get_configuration_warning();
 
+	// Remove this if GH-5734 is fixed.
+	if (!get_scale().is_equal_approx(Vector3(1.0, 1.0, 1.0))) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Scaling RigidBody is not supported by the physics engine and will lead to undefined behavior.\nYou may scale their parent node or mesh, but the RigidBody and its collision shape or polygon should have a scale of Vector3(1.0, 1.0, 1.0).\nThis design limitation may be lifted in a future release.");
+	}
+
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (warning != String()) {
 			warning += "\n\n";
