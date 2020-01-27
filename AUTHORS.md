@@ -46,6 +46,7 @@ name is available.
     Bernard Liebl (poke1024)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
+    Bruno Lourenço (MadEqua)
     bruvzg
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
@@ -65,6 +66,7 @@ name is available.
     Emmanuel Leblond (touilleMan)
     Eoin O'Neill (Eoin-ONeill-Yokai)
     Eric Lasota (elasota)
+    Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
     Fabian Mathews (supagu)
