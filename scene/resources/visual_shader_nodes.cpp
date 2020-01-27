@@ -815,6 +815,7 @@ String VisualShaderNodeCubeMap::generate_code(Shader::Mode p_mode, VisualShader:
 		code += "\t\tvec4 " + id + "_read = vec4(0.0);\n";
 		code += "\t\t" + p_output_vars[0] + " = " + id + "_read.rgb;\n";
 		code += "\t\t" + p_output_vars[1] + " = " + id + "_read.a;\n";
+		code += "\t}\n";
 		return code;
 	}
 
