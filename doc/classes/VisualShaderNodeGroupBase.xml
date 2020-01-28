@@ -195,8 +195,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
-		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
 		</member>
 	</members>
