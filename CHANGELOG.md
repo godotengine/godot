@@ -161,7 +161,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - `Light.use_gi_probe` property to exclude specific lights from GIProbe computations.
 - TranslationServer method `get_loaded_locales()` to retrieve the list of languages with a translation loaded.
 - `FRUSTUM` 3D camera mode to create tilted frustums for mirror or portal effects.
-- `Camera.project_position()` now accepts an optional `depth` parameter.
 - `CanvasItem.draw_rect()` now has `width` and `antialiased` properties to match `draw_line()`'s functionality.
 - `Engine.get_idle_frames()` and `Engine.get_physics_frames()` to get the number of idle and physics frame iterations since the project started.
   - Unlike `Engine.get_frames_drawn()`, `Engine.get_idle_frames()` will be incremented even if the render loop is disabled.
@@ -376,6 +375,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Functions called from a signal can no longer disconnect the node from the signal they're connected to (unless using `call_deferred()`).
 - Tabs and space indentation can no longer be mixed in the same GDScript file.
   - Each file must now use only tabs or spaces for indentation (not both).
+- `assert()` in GDScript must now always be used with parentheses.
+  - `assert(true)` is still valid, but `assert true` isn't valid anymore.
+  - This is to account for the optional second parameter that defines a custom message.
 - The "Trim" and "Normalize" WAV import options are now disabled by default.
   - This makes the default behavior more consistent with Ogg import.
 - Ogg samples now have an icon in the editor, like WAV samples.
