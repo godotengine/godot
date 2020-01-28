@@ -68,6 +68,7 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
+	virtual void set_no_delay(bool p_enabled);
 
 	EMWSPeer();
 	~EMWSPeer();

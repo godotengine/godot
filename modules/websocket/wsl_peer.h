@@ -109,6 +109,7 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
+	virtual void set_no_delay(bool p_enabled);
 
 	void make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size, unsigned int p_out_pkt_size);
 	Error parse_message(const wslay_event_on_msg_recv_arg *arg);
