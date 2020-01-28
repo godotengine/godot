@@ -258,7 +258,7 @@ Error InAppStore::purchase(Variant p_params) {
 	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
 
 	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
-	SKPayment *payment = [SKPayment +paymentWithProduct:pid];
+	SKPayment *payment = [SKPayment paymentWithProductIdentifier:pid];
 	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
 	[defq addPayment:payment];
 	printf("purchase sent!\n");
