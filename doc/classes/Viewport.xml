@@ -253,7 +253,7 @@
 			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targetting very high-end systems.
+			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
 		</member>
 		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" default="false">
 			If [code]true[/code], the viewport will use [World] defined in [code]world[/code] property.

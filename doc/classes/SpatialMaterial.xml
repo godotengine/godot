@@ -16,7 +16,7 @@
 			<argument index="0" name="feature" type="int" enum="SpatialMaterial.Feature">
 			</argument>
 			<description>
-				Returns [code]true[/code], if the specifed [enum Feature] is enabled.
+				Returns [code]true[/code], if the specified [enum Feature] is enabled.
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">

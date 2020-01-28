@@ -749,6 +749,8 @@
 		</constant>
 		<constant name="BIND_LEFT" value="8" enum="AutotileBindings">
 		</constant>
+		<constant name="BIND_CENTER" value="16" enum="AutotileBindings">
+		</constant>
 		<constant name="BIND_RIGHT" value="32" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_BOTTOMLEFT" value="64" enum="AutotileBindings">
