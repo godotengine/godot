@@ -757,7 +757,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 
 	Array static_functions;
 	for (int i = 0; i < p_class->static_functions.size(); ++i) {
-		static_functions.append(dump_function_api(p_class->functions[i]));
+		static_functions.append(dump_function_api(p_class->static_functions[i]));
 	}
 	class_api["static_functions"] = static_functions;
 
