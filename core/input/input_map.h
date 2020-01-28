@@ -61,6 +61,7 @@ private:
 
 	Array _action_get_events(const StringName &p_action);
 	Array _get_actions();
+	String _suggest_actions(const StringName &p_action) const;
 
 protected:
 	static void _bind_methods();
