@@ -232,7 +232,6 @@ void Label::_notification(int p_what) {
 					return;
 				}
 				if (from->space_count) {
-					chars_total += from->space_count;
 					/* spacing */
 					x_ofs += space_w * from->space_count;
 					if (can_fill && align == ALIGN_FILL && spaces) {

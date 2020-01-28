@@ -449,7 +449,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Decreased the `rotation_degrees` range in various nodes to -360..360 to be easier to adjust using the slider.
   - Lower and higher values can still be entered manually, which is useful for animation purposes.
 - The default RichTextLabel color is now `#ffffff`, matching the default Label color for better consistency.
-- Label's `visible_characters` property now takes spaces into account to be consistent with RichTextLabel.
 - SpinBoxes now calculate the entered value using the Expression class.
   - For example, writing `2 + 2` in a SpinBox then pressing Enter will result in `4`.
 - Saved resources no longer contain dependency indices and metadata such as node folding, resulting in more VCS-friendly files.
