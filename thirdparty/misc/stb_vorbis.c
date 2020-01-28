@@ -5449,7 +5449,7 @@ int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, in
     0.97 - builds under c++ (typecasting, don't use 'class' keyword)
     0.96 - somehow MY 0.95 was right, but the web one was wrong, so here's my 0.95 rereleased as 0.96, fixes a typo in the clamping code
     0.95 - clamping code for 16-bit functions
-    0.94 - not publically released
+    0.94 - not publicly released
     0.93 - fixed all-zero-floor case (was decoding garbage)
     0.92 - fixed a memory leak
     0.91 - conditional compiles to omit parts of the API and the infrastructure to support them: STB_VORBIS_NO_PULLDATA_API, STB_VORBIS_NO_PUSHDATA_API, STB_VORBIS_NO_STDIO, STB_VORBIS_NO_INTEGER_CONVERSION

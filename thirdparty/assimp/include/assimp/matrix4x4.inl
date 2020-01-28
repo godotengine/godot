@@ -657,7 +657,7 @@ aiMatrix4x4t<TReal>& aiMatrix4x4t<TReal>::Scaling( const aiVector3t<TReal>& v, a
 /** A function for creating a rotation matrix that rotates a vector called
  * "from" into another vector called "to".
  * Input : from[3], to[3] which both must be *normalized* non-zero vectors
- * Output: mtx[3][3] -- a 3x3 matrix in colum-major form
+ * Output: mtx[3][3] -- a 3x3 matrix in column-major form
  * Authors: Tomas Möller, John Hughes
  *          "Efficiently Building a Matrix to Rotate One Vector to Another"
  *          Journal of Graphics Tools, 4(4):1-4, 1999

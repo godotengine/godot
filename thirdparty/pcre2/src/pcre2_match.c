@@ -345,7 +345,7 @@ Arguments:
   mb          points to match block
   lengthptr   pointer for returning the length matched
 
-Returns:      = 0 sucessful match; number of code units matched is set
+Returns:      = 0 successful match; number of code units matched is set
               < 0 no match
               > 0 partial match
 */

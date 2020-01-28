@@ -578,7 +578,7 @@ namespace miniz {
        - Critical fix for the MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY bug
    (thanks kahmyong.moon@hp.com) which could cause locate files to not find
    files. This bug
-        would only have occured in earlier versions if you explicitly used this
+        would only have occurred in earlier versions if you explicitly used this
    flag, OR if you used mz_zip_extract_archive_file_to_heap() or
    mz_zip_add_mem_to_archive_file_in_place()
         (which used this flag). If you can't switch to v1.15 but want to fix

@@ -201,7 +201,7 @@ namespace Etc
 	// create a set of encoding bits that conforms to a_format
 	// find best fit using a_errormetric
 	// explore a range of possible encodings based on a_fEffort (range = [0:100])
-	// speed up process using a_uiJobs as the number of process threads (a_uiJobs must not excede a_uiMaxJobs)
+	// speed up process using a_uiJobs as the number of process threads (a_uiJobs must not exceed a_uiMaxJobs)
 	//
 	Image::EncodingStatus Image::Encode(Format a_format, ErrorMetric a_errormetric, float a_fEffort, unsigned int a_uiJobs, unsigned int a_uiMaxJobs)
 	{

@@ -995,7 +995,7 @@ namespace Etc
 	// try version 1 of the degenerate search
 	// degenerate encodings use basecolor movement and a subset of the selectors to find useful encodings
 	// each subsequent version of the degenerate search uses more basecolor movement and is less likely to
-	//		be successfull
+	//		be successful
 	//
 	void Block4x4Encoding_ETC1::TryDegenerates1(void)
 	{
@@ -1011,7 +1011,7 @@ namespace Etc
 	// try version 2 of the degenerate search
 	// degenerate encodings use basecolor movement and a subset of the selectors to find useful encodings
 	// each subsequent version of the degenerate search uses more basecolor movement and is less likely to
-	//		be successfull
+	//		be successful
 	//
 	void Block4x4Encoding_ETC1::TryDegenerates2(void)
 	{
@@ -1027,7 +1027,7 @@ namespace Etc
 	// try version 3 of the degenerate search
 	// degenerate encodings use basecolor movement and a subset of the selectors to find useful encodings
 	// each subsequent version of the degenerate search uses more basecolor movement and is less likely to
-	//		be successfull
+	//		be successful
 	//
 	void Block4x4Encoding_ETC1::TryDegenerates3(void)
 	{
@@ -1043,7 +1043,7 @@ namespace Etc
 	// try version 4 of the degenerate search
 	// degenerate encodings use basecolor movement and a subset of the selectors to find useful encodings
 	// each subsequent version of the degenerate search uses more basecolor movement and is less likely to
-	//		be successfull
+	//		be successful
 	//
 	void Block4x4Encoding_ETC1::TryDegenerates4(void)
 	{

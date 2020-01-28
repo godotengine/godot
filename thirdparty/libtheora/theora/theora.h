@@ -260,7 +260,7 @@ typedef struct{
  * the 'comment' header packet.
  *
  * Meta data is stored as a series of (tag, value) pairs, in
- * length-encoded string vectors. The first occurence of the 
+ * length-encoded string vectors. The first occurrence of the 
  * '=' character delimits the tag and value. A particular tag
  * may occur more than once. The character set encoding for
  * the strings is always UTF-8, but the tag names are limited

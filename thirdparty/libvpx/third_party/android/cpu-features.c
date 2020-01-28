@@ -201,7 +201,7 @@ read_file(const char*  pathname, char*  buffer, size_t  buffsize)
 }
 
 #ifdef __arm__
-/* Extract the content of a the first occurence of a given field in
+/* Extract the content of a the first occurrence of a given field in
  * the content of /proc/cpuinfo and return it as a heap-allocated
  * string that must be freed by the caller.
  *
@@ -216,7 +216,7 @@ extract_cpuinfo_field(const char* buffer, int buflen, const char* field)
     int len;
     const char *p, *q;
 
-    /* Look for first field occurence, and ensures it starts the line. */
+    /* Look for first field occurrence, and ensures it starts the line. */
     p = buffer;
     for (;;) {
         p = memmem(p, bufend-p, field, fieldlen);

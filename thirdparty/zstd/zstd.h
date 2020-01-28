@@ -1232,7 +1232,7 @@ ZSTDLIB_API unsigned long long ZSTD_findDecompressedSize(const void* src, size_t
  *  `srcSize` must be the _exact_ size of this series
  *       (i.e. there should be a frame boundary at `src + srcSize`)
  *  @return : - upper-bound for the decompressed size of all data in all successive frames
- *            - if an error occured: ZSTD_CONTENTSIZE_ERROR
+ *            - if an error occurred: ZSTD_CONTENTSIZE_ERROR
  *
  *  note 1  : an error can occur if `src` contains an invalid or incorrectly formatted frame.
  *  note 2  : the upper-bound is exact when the decompressed size field is available in every ZSTD encoded frame of `src`.

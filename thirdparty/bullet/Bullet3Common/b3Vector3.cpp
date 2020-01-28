@@ -417,7 +417,7 @@ long b3_maxdot_large(const float *vv, const float *vec, unsigned long count, flo
 
 		dotMax = max;
 
-		// scan for the first occurence of max in the array
+		// scan for the first occurrence of max in the array
 		size_t test;
 		for (index = 0; 0 == (test = _mm_movemask_ps(_mm_cmpeq_ps(stack_array[index], max))); index++)  // local_count must be a multiple of 4
 		{
@@ -812,7 +812,7 @@ long b3_mindot_large(const float *vv, const float *vec, unsigned long count, flo
 
 		dotmin = min;
 
-		// scan for the first occurence of min in the array
+		// scan for the first occurrence of min in the array
 		size_t test;
 		for (index = 0; 0 == (test = _mm_movemask_ps(_mm_cmpeq_ps(stack_array[index], min))); index++)  // local_count must be a multiple of 4
 		{

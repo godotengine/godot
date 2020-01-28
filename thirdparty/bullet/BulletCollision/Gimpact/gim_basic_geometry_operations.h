@@ -3,7 +3,7 @@
 
 /*! \file gim_basic_geometry_operations.h
 *\author Francisco Leon Najera
-type independant geometry routines
+type independent geometry routines
 
 */
 /*
