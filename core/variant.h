@@ -131,10 +131,7 @@ private:
 		RefPtr ref;
 	};
 
-	_FORCE_INLINE_ ObjData &_get_obj();
-	_FORCE_INLINE_ const ObjData &_get_obj() const;
-
-	union {
+	union Data {
 		bool _bool;
 		int64_t _int;
 		double _real;
@@ -143,7 +140,11 @@ private:
 		Basis *_basis;
 		Transform *_transform;
 		void *_ptr; //generic pointer
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
+		uint8_t _mem[sizeof(real_t) * 4];
+		ObjData _obj;
+
+		Data() {}
+		~Data() {}
 	} _data GCC_ALIGNED_8;
 
 	void reference(const Variant &p_variant);
@@ -438,16 +439,6 @@ struct VariantComparator {
 
 	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
-
-Variant::ObjData &Variant::_get_obj() {
-
-	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
-}
-
-const Variant::ObjData &Variant::_get_obj() const {
-
-	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
-}
 
 String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
 #endif

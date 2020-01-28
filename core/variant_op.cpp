@@ -399,7 +399,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj == NULL);
+					_RETURN(p_b._data._obj.obj == NULL);
 
 				_RETURN(false);
 			}
@@ -416,9 +416,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
+					_RETURN((p_a._data._obj.obj == p_b._data._obj.obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj == NULL);
+					_RETURN(p_a._data._obj.obj == NULL);
 
 				_RETURN_FAIL;
 			}
@@ -486,7 +486,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NOT_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj != NULL);
+					_RETURN(p_b._data._obj.obj != NULL);
 
 				_RETURN(true);
 			}
@@ -504,9 +504,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_NOT_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
+					_RETURN((p_a._data._obj.obj != p_b._data._obj.obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj != NULL);
+					_RETURN(p_a._data._obj.obj != NULL);
 
 				_RETURN_FAIL;
 			}
@@ -589,7 +589,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
+				_RETURN((p_a._data._obj.obj < p_b._data._obj.obj));
 			}
 
 			CASE_TYPE(math, OP_LESS, ARRAY) {
@@ -643,7 +643,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
+				_RETURN((p_a._data._obj.obj <= p_b._data._obj.obj));
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
@@ -693,7 +693,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj > p_b._get_obj().obj));
+				_RETURN((p_a._data._obj.obj > p_b._data._obj.obj));
 			}
 
 			CASE_TYPE(math, OP_GREATER, ARRAY) {
@@ -747,7 +747,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj >= p_b._get_obj().obj));
+				_RETURN((p_a._data._obj.obj >= p_b._data._obj.obj));
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
@@ -1513,14 +1513,14 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (!_data._obj.obj) {
 				break;
-			} else if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			} else if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null() && !ObjectDB::instance_validate(_data._obj.obj)) {
 				break;
 			}
 
 #endif
-			_get_obj().obj->set(p_index, p_value, &valid);
+			_data._obj.obj->set(p_index, p_value, &valid);
 
 		} break;
 		default: {
@@ -1678,13 +1678,13 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (!_data._obj.obj) {
 				if (r_valid)
 					*r_valid = false;
 				return "Instance base is null.";
 			} else {
 
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+				if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null() && !ObjectDB::instance_validate(_data._obj.obj)) {
 					if (r_valid)
 						*r_valid = false;
 					return "Attempted use of stray pointer object.";
@@ -1693,7 +1693,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 
 #endif
 
-			return _get_obj().obj->get(p_index, r_valid);
+			return _data._obj.obj->get(p_index, r_valid);
 
 		} break;
 		default: {
@@ -2167,12 +2167,12 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case OBJECT: {
 
-			Object *obj = _get_obj().obj;
+			Object *obj = _data._obj.obj;
 			//only if debugging!
 
 			if (obj) {
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+				if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null()) {
 
 					if (!ObjectDB::instance_validate(obj)) {
 						WARN_PRINT("Attempted use of stray pointer object.");
@@ -2542,11 +2542,11 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case _RID: {
 		} break;
 		case OBJECT: {
-			Object *obj = _get_obj().obj;
+			Object *obj = _data._obj.obj;
 			if (obj) {
 
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+				if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null()) {
 					//only if debugging!
 					if (!ObjectDB::instance_validate(obj)) {
 						valid = false;
@@ -2606,12 +2606,12 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case OBJECT: {
-			Object *obj = _get_obj().obj;
+			Object *obj = _data._obj.obj;
 			if (obj) {
 
 				bool valid = false;
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+				if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null()) {
 					//only if debugging!
 					if (!ObjectDB::instance_validate(obj)) {
 						if (r_valid) {
@@ -2880,10 +2880,10 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case OBJECT: {
 
-			Object *obj = _get_obj().obj;
+			Object *obj = _data._obj.obj;
 			if (obj) {
 #ifdef DEBUG_ENABLED
-				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+				if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null()) {
 					//only if debugging!
 					if (!ObjectDB::instance_validate(obj)) {
 						WARN_PRINT("Attempted get_property list on stray pointer.");
@@ -2962,12 +2962,12 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (!_data._obj.obj) {
 				valid = false;
 				return false;
 			}
 
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null() && !ObjectDB::instance_validate(_data._obj.obj)) {
 				valid = false;
 				return false;
 			}
@@ -2978,7 +2978,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = _data._obj.obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
 				valid = false;
@@ -3130,12 +3130,12 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (!_data._obj.obj) {
 				valid = false;
 				return false;
 			}
 
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null() && !ObjectDB::instance_validate(_data._obj.obj)) {
 				valid = false;
 				return false;
 			}
@@ -3146,7 +3146,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = _data._obj.obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
 				valid = false;
@@ -3289,12 +3289,12 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (!_data._obj.obj) {
 				r_valid = false;
 				return Variant();
 			}
 
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null() && !ObjectDB::instance_validate(_data._obj.obj)) {
 				r_valid = false;
 				return Variant();
 			}
@@ -3302,7 +3302,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = _data._obj.obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
 			if (ce.error != Variant::CallError::CALL_OK) {
 				r_valid = false;
@@ -3428,8 +3428,8 @@ Variant Variant::duplicate(bool deep) const {
 	switch (type) {
 		case OBJECT: {
 			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
-				Ref<Resource> resource = _get_obj().ref;
+			if (deep && !_data._obj.ref.is_null()) {
+				Ref<Resource> resource = _data._obj.ref;
 				if (resource.is_valid()) {
 					return resource->duplicate(true);
 				}

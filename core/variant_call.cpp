@@ -1094,13 +1094,13 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 	if (type == Variant::OBJECT) {
 		//call object
-		Object *obj = _get_obj().obj;
+		Object *obj = _data._obj.obj;
 		if (!obj) {
 			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
 		}
 #ifdef DEBUG_ENABLED
-		if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
+		if (ScriptDebugger::get_singleton() && _data._obj.ref.is_null()) {
 			//only if debugging!
 			if (!ObjectDB::instance_validate(obj)) {
 				r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -1109,7 +1109,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 		}
 
 #endif
-		ret = _get_obj().obj->call(p_method, p_args, p_argcount, r_error);
+		ret = _data._obj.obj->call(p_method, p_args, p_argcount, r_error);
 
 		//else if (type==Variant::METHOD) {
 
