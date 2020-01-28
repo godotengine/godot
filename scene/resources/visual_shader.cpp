@@ -2502,9 +2502,6 @@ void VisualShaderNodeGroupBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_free_input_port_id"), &VisualShaderNodeGroupBase::get_free_input_port_id);
 	ClassDB::bind_method(D_METHOD("get_free_output_port_id"), &VisualShaderNodeGroupBase::get_free_output_port_id);
 
-	ClassDB::bind_method(D_METHOD("set_control", "control", "index"), &VisualShaderNodeGroupBase::set_control);
-	ClassDB::bind_method(D_METHOD("get_control", "index"), &VisualShaderNodeGroupBase::get_control);
-
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 }
 

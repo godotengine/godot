@@ -43,14 +43,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_control">
-			<return type="Control">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_free_input_port_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -123,16 +115,6 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_control">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
-			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
 			</description>
