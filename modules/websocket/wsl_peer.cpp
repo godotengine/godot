@@ -318,6 +318,12 @@ uint16_t WSLPeer::get_connected_port() const {
 	return _data->tcp->get_connected_port();
 }
 
+void WSLPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
+	_data->tcp->set_no_delay(p_enabled);
+}
+
 void WSLPeer::invalidate() {
 	if (_data)
 		_data->valid = false;

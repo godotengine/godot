@@ -53,6 +53,16 @@
 				Returns [code]true[/code] if this peer is currently connected.
 			</description>
 		</method>
+		<method name="set_no_delay">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Disable Nagle's algorithm on the underling TCP socket (default). See [method StreamPeerTCP.set_no_delay] for more information.
+				[b]Note:[/b] Not available in the HTML5 export.
+			</description>
+		</method>
 		<method name="set_write_mode">
 			<return type="void">
 			</return>

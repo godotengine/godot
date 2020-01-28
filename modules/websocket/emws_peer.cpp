@@ -139,6 +139,11 @@ uint16_t EMWSPeer::get_connected_port() const {
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
+void EMWSPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_MSG("'set_no_delay' is not supported in HTML5 export.");
+}
+
 EMWSPeer::EMWSPeer() {
 	peer_sock = -1;
 	write_mode = WRITE_MODE_BINARY;

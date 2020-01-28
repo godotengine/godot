@@ -206,6 +206,7 @@ void WSLServer::poll() {
 
 		Ref<WSLPeer> ws_peer = memnew(WSLPeer);
 		ws_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
+		ws_peer->set_no_delay(true);
 
 		_peer_map[id] = ws_peer;
 		remove_peers.push_back(ppeer);
