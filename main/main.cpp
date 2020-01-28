@@ -854,7 +854,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		String error_msg = "Error: Could not load game data at path '" + project_path + "'. Is the .pck file missing?\n";
+		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
 		OS::get_singleton()->print("%s", error_msg.ascii().get_data());
 		OS::get_singleton()->alert(error_msg);
 
