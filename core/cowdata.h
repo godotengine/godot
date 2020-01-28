@@ -74,6 +74,15 @@ private:
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
 
+	_FORCE_INLINE_ uint64_t _get_allocated_bytes() const {
+
+		if (!_ptr)
+			return 0;
+
+		// Note the uint64_t! This is provided at the prepadding by the allocating routines
+		return *(reinterpret_cast<uint64_t *>(_ptr) - 2);
+	}
+
 	_FORCE_INLINE_ T *_get_data() const {
 
 		if (!_ptr)
@@ -104,6 +113,8 @@ private:
 		return true;
 #endif
 	}
+
+	_ALWAYS_INLINE_ T *_realloc_safe(int p_current_size, int p_new_size, size_t p_alloc_size);
 
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
@@ -224,8 +235,8 @@ void CowData<T>::_copy_on_write() {
 	if (unlikely(*refc > 1)) {
 		/* in use by more than me */
 		uint32_t current_size = *_get_size();
-
-		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
+		size_t alloc_size = _get_allocated_bytes();
+		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(alloc_size, true);
 
 		*(mem_new - 2) = 1; //refcount
 		*(mem_new - 1) = current_size; //size
@@ -268,21 +279,24 @@ Error CowData<T>::resize(int p_size) {
 	size_t alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
-	if (p_size > size()) {
-
-		if (size() == 0) {
+	int current_size = size();
+	if (p_size > current_size) {
+		if (current_size == 0) {
 			// alloc from scratch
 			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
-			*(ptr - 1) = 0; //size, currently none
+			*(ptr - 1) = p_size;
 			*(ptr - 2) = 1; //refcount
 
 			_ptr = (T *)ptr;
 
+		} else if (alloc_size > _get_allocated_bytes()) {
+			T *ptr = _realloc_safe(current_size, p_size, alloc_size);
+			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
+			_ptr = ptr;
 		} else {
-			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
-			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-			_ptr = (T *)(_ptrnew);
+			// New item count fits in the current mem block
+			*((uint32_t *)_ptr - 1) = p_size;
 		}
 
 		// construct the newly created elements
@@ -290,32 +304,63 @@ Error CowData<T>::resize(int p_size) {
 		if (!__has_trivial_constructor(T)) {
 			T *elems = _get_data();
 
-			for (int i = *_get_size(); i < p_size; i++) {
+			for (int i = current_size; i < p_size; i++) {
 				memnew_placement(&elems[i], T);
 			}
 		}
-
-		*_get_size() = p_size;
-
-	} else if (p_size < size()) {
+	} else if (p_size < current_size) {
 
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
-			for (uint32_t i = p_size; i < *_get_size(); i++) {
+			for (int i = p_size; i < current_size; i++) {
 				T *t = &_get_data()[i];
 				t->~T();
 			}
 		}
+		*((uint32_t *)_ptr - 1) = p_size;
 
-		void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
-		ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-
-		_ptr = (T *)(_ptrnew);
-
-		*_get_size() = p_size;
+		if (alloc_size < _get_allocated_bytes()) {
+			// At this point the downsize has already happened (excess items destroyed and size updated),
+			// so a reallocation error, if it can even happen at all, is non-fatal
+			T *ptr = _realloc_safe(p_size, p_size, alloc_size);
+			if (ptr) {
+				_ptr = ptr;
+			} else {
+				WARN_PRINT("Couldn't downsize an allocated memory block");
+			}
+		}
 	}
 
 	return OK;
+}
+
+template <class T>
+T *CowData<T>::_realloc_safe(int p_current_size, int p_new_size, size_t p_alloc_size) {
+	if (__has_trivial_copy(T)) {
+		// T is trivially-copyable; realloc is enough
+		T *_ptrnew = (T *)Memory::realloc_static(_ptr, p_alloc_size, true);
+		if (!_ptrnew) {
+			return NULL;
+		}
+		*((uint32_t *)_ptrnew - 1) = p_new_size;
+		return _ptrnew;
+	} else {
+		// T is not trivially-copyable; copy-construct existing items in a new block and destroy the old ones
+		T *_ptrnew = (T *)Memory::alloc_static(p_alloc_size, true);
+		if (!_ptrnew) {
+			return NULL;
+		}
+		*((uint32_t *)_ptrnew - 1) = p_new_size;
+		*((uint32_t *)_ptrnew - 2) = 1; ///refcount
+		for (int i = 0; i < p_current_size; i++) {
+			memnew_placement(&_ptrnew[i], T(_ptr[i]));
+			if (!__has_trivial_destructor(T)) {
+				_ptr[i].~T();
+			}
+		}
+		Memory::free_static(_ptr, true);
+		return _ptrnew;
+	}
 }
 
 template <class T>
