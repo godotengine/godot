@@ -421,6 +421,8 @@ void Image::convert(Format p_new_format) {
 	if (p_new_format == format)
 		return;
 
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot convert image when it is locked.");
+
 	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
 
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
@@ -880,8 +882,8 @@ void Image::resize_to_po2(bool p_square) {
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
-
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(write_lock.ptr(), "Cannot resize image when it is locked.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
@@ -2063,6 +2065,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
 
@@ -2283,6 +2286,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 }
 
 void Image::fill(const Color &c) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
 	lock();
 
