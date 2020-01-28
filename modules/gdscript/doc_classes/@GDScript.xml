@@ -64,13 +64,13 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="s" type="int">
+			</argument>
+			<description>
 				Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value).
 				[codeblock]
 				# a is 1
 				a = abs(-1)
 				[/codeblock]
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="acos">
@@ -1112,14 +1112,14 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="s" type="int">
+			</argument>
+			<description>
 				Returns the sign of [code]s[/code]: -1 or 1. Returns 0 if [code]s[/code] is 0.
 				[codeblock]
 				sign(-6) # Returns -1
 				sign(0)  # Returns 0
 				sign(6)  # Returns 1
 				[/codeblock]
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="sin">
