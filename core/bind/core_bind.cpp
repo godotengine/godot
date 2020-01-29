@@ -1636,6 +1636,27 @@ Vector<int> _Geometry::triangulate_delaunay_2d(const Vector<Vector2> &p_points) 
 	return Geometry::triangulate_delaunay_2d(p_points);
 }
 
+Array _Geometry::decompose_polygon_in_convex(const Vector<Point2> &p_polygon_outer, Array p_polygons_inner) {
+
+	Vector<Vector<Point2> > decomp;
+
+	if (!p_polygons_inner.empty()) {
+		Vector<Vector<Point2> > polygons_inner;
+		for (int i = 0; i < p_polygons_inner.size(); i++) {
+			polygons_inner.push_back(p_polygons_inner[i]);
+		}
+		decomp = Geometry::decompose_polygon_in_convex(p_polygon_outer, &polygons_inner);
+	} else {
+		decomp = Geometry::decompose_polygon_in_convex(p_polygon_outer);
+	}
+
+	Array ret;
+	for (int i = 0; i < decomp.size(); i++) {
+		ret.push_back(decomp[i]);
+	}
+	return ret;
+}
+
 Vector<Point2> _Geometry::convex_hull_2d(const Vector<Point2> &p_points) {
 
 	return Geometry::convex_hull_2d(p_points);
@@ -1807,6 +1828,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay_2d", "points"), &_Geometry::triangulate_delaunay_2d);
+	ClassDB::bind_method(D_METHOD("decompose_polygon_in_convex", "polygon", "polygons_inner"), &_Geometry::decompose_polygon_in_convex, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry::clip_polygon);
 

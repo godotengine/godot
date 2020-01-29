@@ -408,6 +408,7 @@ public:
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points);
+	Array decompose_polygon_in_convex(const Vector<Point2> &p_polygon_outer, Array p_polygons_inner);
 	Vector<Point2> convex_hull_2d(const Vector<Point2> &p_points);
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
 

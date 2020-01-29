@@ -686,17 +686,32 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 	return wrapped_faces;
 }
 
-Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
-	Vector<Vector<Vector2> > decomp;
+Vector<Vector<Point2> > Geometry::decompose_polygon_in_convex(const Vector<Point2> &p_polygon_outer, Vector<Vector<Point2> > *r_polygons_inner) {
+	Vector<Vector<Point2> > decomp;
 	List<TriangulatorPoly> in_poly, out_poly;
 
 	TriangulatorPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
+	inp.Init(p_polygon_outer.size());
+	for (int i = 0; i < p_polygon_outer.size(); i++) {
+		inp.GetPoint(i) = p_polygon_outer[i];
 	}
-	inp.SetOrientation(TRIANGULATOR_CCW);
+	inp.SetOrientation(TRIANGULATOR_CCW); // Boundary.
 	in_poly.push_back(inp);
+
+	if (r_polygons_inner) {
+		for (int i = 0; i < r_polygons_inner->size(); i++) {
+			TriangulatorPoly inp_inner;
+			const Vector<Point2> &polygon_inner = (*r_polygons_inner)[i];
+			inp_inner.Init(polygon_inner.size());
+			for (int j = 0; j < polygon_inner.size(); j++) {
+				inp_inner.GetPoint(j) = polygon_inner[j];
+			}
+			inp_inner.SetOrientation(TRIANGULATOR_CW); // Hole.
+			inp_inner.SetHole(true);
+			in_poly.push_back(inp_inner);
+		}
+	}
+
 	TriangulatorPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
