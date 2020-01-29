@@ -98,6 +98,29 @@ public:
 
 	} state;
 
+	struct CommandState {
+		CommandState(RasterizerCanvasGLES2 *p_owner) {
+			reset();
+			owner = p_owner;
+		}
+
+		void reset();
+		bool release(Item::Command::Type p_command_type);
+		void set_force_repeat(bool p_repeat);
+		void set_tiling(bool p_tile);
+
+		Item::Command::Type type;
+		bool complete; // whether state change is completed
+		bool tiling;
+		bool force_repeat;
+		RID RID_texture;
+		RID RID_normal;
+		RasterizerStorageGLES2::Texture *current_tex;
+		Size2 tex_pixel_size;
+		Color color;
+		RasterizerCanvasGLES2 *owner;
+	};
+
 	typedef void Texture;
 
 	RasterizerSceneGLES2 *scene_render;
@@ -144,5 +167,72 @@ public:
 
 	RasterizerCanvasGLES2();
 };
+
+// clear our internal records of state
+inline void RasterizerCanvasGLES2::CommandState::reset() {
+	complete = false;
+	tiling = false;
+	force_repeat = false;
+	RID_texture = RID();
+	RID_normal = RID();
+	current_tex = 0;
+	color.a = -1; // just to ensure a difference is found
+	type = Item::Command::TYPE_NULL;
+}
+
+// return whether command type changed
+inline bool RasterizerCanvasGLES2::CommandState::release(Item::Command::Type p_command_type) {
+	// noop, no state change
+	if (p_command_type == type)
+		return false;
+
+	// this will always occur on the first command item
+	if (type == Item::Command::TYPE_NULL)
+		return true; // nothing to do
+
+	// put opengl back into a 'default' state when finishing a 'batch' of similar commands
+	switch (type) {
+		// only dealing with speeding up rects so far
+		case Item::Command::TYPE_RECT: {
+			// only considering one case for now
+			if (!owner->use_nvidia_rect_workaround) {
+				set_tiling(false);
+				set_force_repeat(false);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+		} break;
+		default:
+			break;
+	}
+
+	reset();
+
+	return true;
+}
+
+inline void RasterizerCanvasGLES2::CommandState::set_force_repeat(bool p_repeat) {
+	// noop
+	if (p_repeat == force_repeat)
+		return;
+
+	owner->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, p_repeat);
+	force_repeat = p_repeat;
+}
+
+inline void RasterizerCanvasGLES2::CommandState::set_tiling(bool p_tile) {
+	// noop?
+	if (p_tile == tiling)
+		return;
+
+	if (p_tile) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	} else {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+	tiling = p_tile;
+}
 
 #endif // RASTERIZERCANVASGLES2_H

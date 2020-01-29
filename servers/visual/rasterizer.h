@@ -684,6 +684,7 @@ public:
 
 			enum Type {
 
+				TYPE_NULL,
 				TYPE_LINE,
 				TYPE_POLYLINE,
 				TYPE_RECT,
@@ -1006,6 +1007,10 @@ public:
 					} break;
 
 					case Item::Command::TYPE_CLIP_IGNORE: {
+
+					} break;
+
+					case Item::Command::TYPE_NULL: {
 
 					} break;
 				}

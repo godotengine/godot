@@ -1250,6 +1250,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				}
 
 			} break;
+			case Item::Command::TYPE_NULL: {
+			} break;
 		}
 	}
 }

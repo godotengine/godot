@@ -543,12 +543,21 @@ static const GLenum gl_primitive[] = {
 
 void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip, RasterizerStorageGLES2::Material *p_material) {
 
+	// We will keep track of what state we have set OpenGL to throughout rendering commands,
+	// in order to minimize OpenGL state changes. This struct keeps a record of state and performs
+	// housekeeping.
+	CommandState command_state(this);
+
 	int command_count = p_item->commands.size();
 	Item::Command **commands = p_item->commands.ptrw();
 
 	for (int i = 0; i < command_count; i++) {
 
 		Item::Command *command = commands[i];
+
+		// if the command type has changed, we should release the previous state
+		// so that OpenGL is left in some 'convention' (this may not be required but may be relied on by other code)
+		bool command_type_changed = command_state.release(command->type);
 
 		switch (command->type) {
 
@@ -616,24 +625,51 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				Item::CommandRect *r = static_cast<Item::CommandRect *>(command);
 
-				glDisableVertexAttribArray(VS::ARRAY_COLOR);
-				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
+				if (!command_state.complete)
+					glDisableVertexAttribArray(VS::ARRAY_COLOR);
+
+				const Color &current_state_color = r->modulate;
+
+				if (current_state_color != command_state.color) {
+					glVertexAttrib4fv(VS::ARRAY_COLOR, current_state_color.components);
+					command_state.color = current_state_color;
+				}
 
 				bool can_tile = true;
-				if (r->texture.is_valid() && r->flags & CANVAS_RECT_TILE && !storage->config.support_npot_repeat_mipmap) {
+
+				// if we have previously recorded that we are fake tiling
+				if (command_state.force_repeat) {
+					can_tile = false;
+				}
+
+				// if the texture has changed (it will always change at the start of a state, unless the texture is NULL)
+				// we must check if it is non-POT
+				if (command_state.RID_texture != r->texture) {
 					// workaround for when setting tiling does not work due to hardware limitation
+					if (!storage->config.support_npot_repeat_mipmap) {
+						bool force_repeat = false;
 
-					RasterizerStorageGLES2::Texture *texture = storage->texture_owner.getornull(r->texture);
+						if (r->texture.is_valid() && r->flags & CANVAS_RECT_TILE) {
 
-					if (texture) {
+							RasterizerStorageGLES2::Texture *texture = storage->texture_owner.getornull(r->texture);
 
-						texture = texture->get_ptr();
+							if (texture) {
 
-						if (next_power_of_2(texture->alloc_width) != (unsigned int)texture->alloc_width && next_power_of_2(texture->alloc_height) != (unsigned int)texture->alloc_height) {
-							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
+								texture = texture->get_ptr();
+
+								if (next_power_of_2(texture->alloc_width) != (unsigned int)texture->alloc_width && next_power_of_2(texture->alloc_height) != (unsigned int)texture->alloc_height) {
+
+									force_repeat = true;
+								}
+							}
+						}
+
+						command_state.set_force_repeat(force_repeat);
+						if (force_repeat) {
 							can_tile = false;
 						}
-					}
+
+					} // if not support non POT
 				}
 
 				// On some widespread Nvidia cards, the normal draw method can produce some
@@ -720,20 +756,45 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						_draw_gui_primitive(4, points, NULL, uvs);
 					}
 
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 				} else {
 					// This branch is better for performance, but can produce flicker on Nvidia, see above comment.
-					_bind_quad_buffer();
 
-					state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+					if (command_type_changed && !command_state.complete) {
+						_bind_quad_buffer();
 
-					if (state.canvas_shader.bind()) {
-						_set_uniforms();
-						state.canvas_shader.use_material((void *)p_material);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+
+						if (state.canvas_shader.bind()) {
+							_set_uniforms();
+							state.canvas_shader.use_material((void *)p_material);
+						}
 					}
 
-					RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(r->texture, r->normal_map);
+					RasterizerStorageGLES2::Texture *tex;
+					if ((!command_type_changed) && (r->texture == command_state.RID_texture) && (r->normal_map == command_state.RID_normal)) {
+						tex = command_state.current_tex;
+					} else {
+						tex = _bind_canvas_texture(r->texture, r->normal_map);
+						command_state.RID_texture = r->texture;
+						command_state.RID_normal = r->normal_map;
+						command_state.current_tex = tex;
+
+						if (tex) {
+							command_state.tex_pixel_size.x = 1.0 / tex->width;
+							command_state.tex_pixel_size.y = 1.0 / tex->height;
+						}
+
+						// mark the cstate as incomplete, because the texture has changed...
+						// and we may need to resend uniforms
+						// this catches the case where the command type is the same (i.e. Rects) but the texture has changed.
+						command_state.complete = false;
+					}
 
 					if (!tex) {
+
 						Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
 
 						if (dst_rect.size.width < 0) {
@@ -751,15 +812,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 					} else {
 
-						bool untile = false;
+						// decide whether to tile and tell OpenGL but only if state changed
+						command_state.set_tiling(can_tile && r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT));
 
-						if (can_tile && r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-							untile = true;
-						}
+						const Size2 &texpixel_size = command_state.tex_pixel_size;
 
-						Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 						Rect2 src_rect = (r->flags & CANVAS_RECT_REGION) ? Rect2(r->source.position * texpixel_size, r->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
 
 						Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
@@ -785,24 +842,18 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 							dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
 						}
 
-						state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
+						if (!command_state.complete)
+							state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
 						state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
 						state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
 
 						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-						if (untile) {
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-						}
 					}
-
-					glBindBuffer(GL_ARRAY_BUFFER, 0);
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}
 
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
+				// this ensures uniforms etc aren't resent to OpenGL unless something changes
+				command_state.complete = true;
 
 			} break;
 
@@ -1352,7 +1403,12 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				//print_line("other");
 			} break;
 		}
+
+		command_state.type = command->type;
 	}
+
+	// when exiting the routine, make sure openGL is left in default state
+	command_state.release(Item::Command::TYPE_NULL);
 }
 
 void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
