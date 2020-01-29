@@ -70,8 +70,8 @@ void EditorRunNative::_notification(int p_what) {
 			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
 			Ref<EditorExportPreset> preset;
 
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-				Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+			for (int j = 0; j < EditorExport::get_singleton()->get_export_preset_count(); j++) {
+				Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(j);
 				if (ep->is_runnable() && ep->get_platform() == eep) {
 					preset = ep;
 					break;
