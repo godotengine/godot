@@ -66,6 +66,32 @@ void EditorRunNative::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+			Ref<EditorExportPreset> preset;
+
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+				Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
+				if (ep->is_runnable() && ep->get_platform() == eep) {
+					preset = ep;
+					break;
+				}
+			}
+
+			if (preset.is_null()) {
+				menus[i]->set_disabled(true);
+			} else {
+				String can_export_error;
+				bool can_export_missing_templates;
+				if (eep->can_export(preset, can_export_error, can_export_missing_templates)) {
+					menus[i]->set_disabled(false);
+					menus[i]->set_tooltip("");
+				} else {
+					menus[i]->set_disabled(true);
+					menus[i]->set_tooltip(can_export_error);
+				}
+			}
+		}
 
 		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
