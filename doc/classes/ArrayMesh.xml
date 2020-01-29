@@ -24,7 +24,7 @@
 		The [MeshInstance] is ready to be added to the [SceneTree] to be shown.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_shape">

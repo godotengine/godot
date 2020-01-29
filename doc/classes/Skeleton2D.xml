@@ -6,7 +6,7 @@
 	<description>
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bone">

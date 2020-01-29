@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [3.2] - YYYY-MM-DD
 
@@ -780,7 +780,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
     - unreachable code after a `return` statement,
     - …
   - Warnings can be disabled in the Project Settings or by writing special comments.
-- [GDScript keyword `class_name` to register scripts as classes.](http://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting_continued.html#register-scripts-as-classes)
+- [GDScript keyword `class_name` to register scripts as classes.](https://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting_continued.html#register-scripts-as-classes)
 - Simple expression language independent from GDScript, used by inspector boxes that accept numeric values.
   - Can also be used in projects.
 - C# projects can now be exported for Windows, Linux, and macOS targets.
@@ -1009,7 +1009,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Rewritten audio engine from scratch.
   - Supports audio routing with arbitrary number of channels, including Area-based audio redirection ([video](https://youtu.be/K2XOBaJ5OQ0)).
   - More than a dozen of audio effects included.
-- Rewritten 3D physics using [Bullet](http://bulletphysics.org/).
+- Rewritten 3D physics using [Bullet](https://bulletphysics.org/).
 - UDP-based high-level networking API using [ENet](http://enet.bespin.org/).
 - IPv6 support for all of the engine's networking APIs.
 - Visual scripting.
@@ -1027,7 +1027,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - Setters and getters for node properties.
   - Underscores in number literals are now allowed for improved readability (for example,`1_000_000`).
   - Improved performance (+20% to +40%, based on various benchmarks).
-- [Feature tags](http://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html) in the Project Settings, for custom per-platform settings.
+- [Feature tags](https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html) in the Project Settings, for custom per-platform settings.
 - Full support for the [glTF 2.0](https://www.khronos.org/gltf/) 3D interchange format.
 - Freelook and fly navigation to the 3D editor.
 - Built-in editor logging (logging standard output to a file), disabled by default.
@@ -1080,7 +1080,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Exporting to Windows now changes the exported project's icon using `rcedit` (requires WINE if exporting from Linux or macOS).
 - Improved build system.
   - Support for compiling using Visual Studio 2017.
-  - [SCons](http://scons.org/) 3.0 and Python 3 are now supported (SCons 2.5 and Python 2.7 still work).
+  - [SCons](https://scons.org/) 3.0 and Python 3 are now supported (SCons 2.5 and Python 2.7 still work).
   - Link-time optimization can now be enabled by passing `use_lto=yes` to the SCons command line.
     - Produces faster and sometimes smaller binaries.
     - Currently only supported with GCC and MSVC.
@@ -1095,11 +1095,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Increased the default 3D editor camera's field of view (55 → 70).
 - Increased the default 3D Camera node's field of view (65 → 70).
 - Changed the default editor font (Droid Sans → [Noto Sans](https://www.google.com/get/noto/)).
-- Changed the default script editor font (Source Code Pro → [Hack](http://sourcefoundry.org/hack/))
+- Changed the default script editor font (Source Code Pro → [Hack](https://sourcefoundry.org/hack/))
 - Renamed `engine.cfg` to `project.godot`.
   - This allows users to open a project by double-clicking the file if Godot is associated to `.godot` files.
 - Some methods from the `OS` singleton were moved to the new `Engine` singleton.
-- Switched from [GLEW](http://glew.sourceforge.net/) to [GLAD](http://glad.dav1d.de/) for OpenGL wrapping.
+- Switched from [GLEW](http://glew.sourceforge.net/) to [GLAD](https://glad.dav1d.de/) for OpenGL wrapping.
 - Changed the SCons build flag for simple logs (`colored=yes` → `verbose=no`).
 - The HTML5 platform now uses WebGL 2.0 (instead of 1.0).
 - Redesigned the Godot logo to be more legible at small sizes.
