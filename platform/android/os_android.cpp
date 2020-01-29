@@ -507,9 +507,8 @@ void OS_Android::process_double_tap(Point2 p_pos) {
 	ev.instance();
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(true);
+	ev->set_pressed(false);
 	ev->set_doubleclick(true);
-	ev->set_button_index(1);
 	input->parse_input_event(ev);
 }
 
