@@ -68,6 +68,8 @@ public:
 	_FORCE_INLINE_ void operator=(const CharProxy<T> &other) const {
 		_cowdata.set(_index, other.operator T());
 	}
+
+	_FORCE_INLINE_ CharProxy(const CharProxy &) = default;
 };
 
 class CharString {
