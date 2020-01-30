@@ -46,8 +46,6 @@ void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 }
 
 void VisualServerWrapMT::thread_flush() {
-
-	atomic_decrement(&draw_pending);
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
@@ -83,7 +81,6 @@ void VisualServerWrapMT::sync() {
 
 	if (create_thread) {
 
-		atomic_increment(&draw_pending);
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 
