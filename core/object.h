@@ -477,6 +477,7 @@ private:
 	int _predelete_ok;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
+	Variant *variant_sentinel;
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
@@ -588,6 +589,9 @@ public:
 	}
 
 	bool _is_gpl_reversed() const { return false; }
+
+	_FORCE_INLINE_ Variant *_get_variant_sentinel() const { return variant_sentinel; }
+	_FORCE_INLINE_ void _set_variant_sentinel(Variant *p_variant_sentinel) { variant_sentinel = p_variant_sentinel; }
 
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 	// this is used for editors

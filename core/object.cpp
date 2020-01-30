@@ -1918,6 +1918,7 @@ Object::Object() {
 	_predelete_ok = 0;
 	_instance_id = 0;
 	_instance_id = ObjectDB::add_instance(this);
+	variant_sentinel = NULL;
 	_can_translate = true;
 	_is_queued_for_deletion = false;
 	_emitting = false;
@@ -1940,6 +1941,15 @@ Object::~Object() {
 	if (script_instance)
 		memdelete(script_instance);
 	script_instance = NULL;
+
+	if (variant_sentinel) {
+#ifdef DEBUG_ENABLED
+		int num_dangling = variant_sentinel->_clear_sentinel_chain_from_this();
+		ERR_PRINTS("Object " + to_string() + " was freed while there were still " + itos(num_dangling) + " references to it. They have been set to null.");
+#else
+		variant_sentinel->_clear_sentinel_chain_from_this();
+#endif
+	}
 
 	const StringName *S = NULL;
 

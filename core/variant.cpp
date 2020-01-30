@@ -999,7 +999,26 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 
-			memnew_placement(_data._mem, ObjData(p_variant._data._obj));
+			_data._obj.obj = p_variant._data._obj.obj;
+			_data._obj.is_ref = p_variant._data._obj.is_ref;
+			memnew_placement(&_data._obj.ref, RefPtr(p_variant._data._obj.ref));
+			if (likely(_data._obj.obj)) {
+				if (likely(!_data._obj.is_ref)) {
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					_check_sentinel_chain_sanity(_data._obj.obj, this, true);
+#endif
+					_data._obj.next_sentinel = p_variant._data._obj.next_sentinel;
+					p_variant._data._obj.next_sentinel = this;
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					_check_sentinel_chain_sanity(_data._obj.obj, this);
+					_check_sentinel_chain_sanity(_data._obj.obj, &p_variant);
+#endif
+				} else {
+					_data._obj.next_sentinel = NULL;
+				}
+			} else {
+				_data._obj.next_sentinel = NULL;
+			}
 		} break;
 		case NODE_PATH: {
 
@@ -1114,8 +1133,32 @@ void Variant::clear() {
 		} break;
 		case OBJECT: {
 
-			_data._obj.obj = NULL;
-			_data._obj.ref.unref();
+			if (likely(!_data._obj.is_ref && _data._obj.obj)) {
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+				_check_sentinel_chain_sanity(_data._obj.obj, this);
+#endif
+				// Remove this from the sentinel chain
+				Variant *first_sentinel = _data._obj.obj->_get_variant_sentinel();
+				if (unlikely(first_sentinel == this)) {
+					_data._obj.obj->_set_variant_sentinel(_data._obj.next_sentinel);
+				} else {
+					Variant *v = first_sentinel;
+					do {
+						if (v->_data._obj.next_sentinel == this) {
+							v->_data._obj.next_sentinel = v->_data._obj.next_sentinel->_data._obj.next_sentinel;
+							break;
+						}
+						v = v->_data._obj.next_sentinel;
+					} while (v);
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					CRASH_COND(!v);
+#endif
+				}
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+				_check_sentinel_chain_sanity(_data._obj.obj, this, true);
+#endif
+			}
+			_data._obj.ref.~RefPtr();
 		} break;
 		case _RID: {
 			// not much need probably
@@ -2279,10 +2322,10 @@ Variant::Variant(const NodePath &p_node_path) {
 Variant::Variant(const RefPtr &p_resource) {
 
 	type = OBJECT;
-	memnew_placement(_data._mem, ObjData);
 	REF *ref = reinterpret_cast<REF *>(p_resource.get_data());
 	_data._obj.obj = ref->ptr();
-	_data._obj.ref = p_resource;
+	_data._obj.is_ref = true;
+	memnew_placement(&_data._obj.ref, RefPtr(p_resource));
 }
 
 Variant::Variant(const RID &p_rid) {
@@ -2295,8 +2338,21 @@ Variant::Variant(const Object *p_object) {
 
 	type = OBJECT;
 
-	memnew_placement(_data._mem, ObjData);
 	_data._obj.obj = const_cast<Object *>(p_object);
+	memnew_placement(&_data._obj.ref, RefPtr);
+	_data._obj.is_ref = false;
+	if (likely(_data._obj.obj)) {
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+		_check_sentinel_chain_sanity(_data._obj.obj, this, true);
+#endif
+		_data._obj.next_sentinel = _data._obj.obj->_get_variant_sentinel();
+		_data._obj.obj->_set_variant_sentinel(this);
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+		_check_sentinel_chain_sanity(_data._obj.obj, this);
+#endif
+	} else {
+		_data._obj.next_sentinel = NULL;
+	}
 }
 
 Variant::Variant(const Dictionary &p_dictionary) {
@@ -2607,7 +2663,57 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 
-			*reinterpret_cast<ObjData *>(_data._mem) = p_variant._data._obj;
+			if (unlikely(_data._obj.obj == p_variant._data._obj.obj)) {
+				break;
+			}
+			if (unlikely(_data._obj.is_ref != p_variant._data._obj.is_ref)) {
+				reference(p_variant);
+				break;
+			}
+
+			if (likely(!_data._obj.is_ref && _data._obj.obj)) {
+				// Remove this from the sentinel chain
+				Variant *first_sentinel = _data._obj.obj->_get_variant_sentinel();
+				if (unlikely(first_sentinel == this)) {
+					_data._obj.obj->_set_variant_sentinel(_data._obj.next_sentinel);
+				} else {
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					_check_sentinel_chain_sanity(_data._obj.obj, this);
+#endif
+					Variant *v = first_sentinel;
+					do {
+						if (v->_data._obj.next_sentinel == this) {
+							v->_data._obj.next_sentinel = v->_data._obj.next_sentinel->_data._obj.next_sentinel;
+							break;
+						}
+						v = v->_data._obj.next_sentinel;
+					} while (v);
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					CRASH_COND(!v);
+					_check_sentinel_chain_sanity(_data._obj.obj, this, true);
+#endif
+				}
+			}
+
+			_data._obj.obj = p_variant._data._obj.obj;
+			_data._obj.ref = p_variant._data._obj.ref;
+
+			if (likely(!_data._obj.is_ref)) {
+				if (likely(_data._obj.obj)) {
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					_check_sentinel_chain_sanity(_data._obj.obj, (Variant *)&p_variant);
+#endif
+					Variant *next_backup = p_variant._data._obj.next_sentinel;
+					p_variant._data._obj.next_sentinel = this;
+					_data._obj.next_sentinel = next_backup;
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+					_check_sentinel_chain_sanity(_data._obj.obj, this);
+					_check_sentinel_chain_sanity(_data._obj.obj, (Variant *)&p_variant);
+#endif
+				} else {
+					_data._obj.next_sentinel = NULL;
+				}
+			}
 		} break;
 		case NODE_PATH: {
 
@@ -3303,3 +3409,37 @@ String vformat(const String &p_text, const Variant &p1, const Variant &p2, const
 
 	return fmt;
 }
+
+int Variant::_clear_sentinel_chain_from_this() {
+
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+	CRASH_COND(type != OBJECT);
+	CRASH_COND(_data._obj.is_ref);
+	CRASH_COND(!_data._obj.obj);
+#endif
+	int n = 0;
+	Variant *v = this;
+	do {
+		Variant *next_v = v->_data._obj.next_sentinel;
+		v->clear();
+		v = next_v;
+		n++;
+	} while (v);
+	return n;
+}
+
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+void Variant::_check_sentinel_chain_sanity(const Object *p_obj, const Variant *p_ensured, bool p_check_absent) const {
+	Variant *v = p_obj->_get_variant_sentinel();
+	bool present = false;
+	while (v) {
+		if (v == p_ensured) {
+			present = true;
+		}
+		Variant *next_v = v->_data._obj.next_sentinel;
+		CRASH_COND(v == next_v);
+		v = next_v;
+	}
+	CRASH_COND(p_check_absent ? present : !present);
+}
+#endif

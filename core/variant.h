@@ -120,15 +120,18 @@ public:
 
 private:
 	friend struct _VariantCall;
-	// Variant takes 20 bytes when real_t is float, and 36 if double
-	// it only allocates extra memory for aabb/matrix.
+
+	// Variant takes 24 bytes when real_t is float, and 40 if double.
+	// It only allocates extra memory for Transform, Transform2D, AABB and Matrix.
 
 	Type type;
 
 	struct ObjData {
 
 		Object *obj;
+		bool is_ref;
 		RefPtr ref;
+		mutable Variant *next_sentinel;
 	};
 
 	union Data {
@@ -150,7 +153,13 @@ private:
 	void reference(const Variant &p_variant);
 	void clear();
 
+#ifdef DEBUG_SENTINEL_VARIANTS_ENABLED
+	void _check_sentinel_chain_sanity(const Object *p_obj, const Variant *p_ensured, bool p_check_absent = false) const;
+#endif
+
 public:
+	int _clear_sentinel_chain_from_this();
+
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
