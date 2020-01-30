@@ -2374,6 +2374,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF_RST("rendering/vram_compression/import_etc2", true);
 	GLOBAL_DEF_RST("rendering/vram_compression/import_pvrtc", false);
 
+	GLOBAL_DEF("rendering/quality/2d/use_batching", true);
 	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
