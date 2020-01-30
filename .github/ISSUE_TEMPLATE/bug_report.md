@@ -2,7 +2,7 @@
 name: Bug report
 about: Report a bug in Godot
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---

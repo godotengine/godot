@@ -2,7 +2,7 @@
 name: Feature / Enhancement Request
 about: Adding new features or improving existing ones.
 title: 'IMPORTANT: This repository no longer accepts feature / enhancement requests.'
-labels: ''
+labels: 'archived'
 assignees: ''
 
 ---
