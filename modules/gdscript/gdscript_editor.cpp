@@ -1838,6 +1838,9 @@ static void _find_enumeration_candidates(const String p_enum_hint, Map<String, S
 		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
 		for (List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
 			String candidate = class_name + "." + E->get();
+			if (candidate[0] == '_') { // Trim leading underscore.
+				candidate = candidate.substr(1);
+			}
 			ScriptCodeCompletionOption option(candidate, ScriptCodeCompletionOption::KIND_ENUM);
 			r_result.insert(option.display, option);
 		}
