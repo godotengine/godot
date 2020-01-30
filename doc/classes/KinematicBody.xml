@@ -99,7 +99,7 @@
 			</argument>
 			<argument index="3" name="max_slides" type="int" default="4">
 			</argument>
-			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			<argument index="4" name="floor_max_angle" type="float" default="0.802851">
 			</argument>
 			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
@@ -109,7 +109,7 @@
 				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall.
 				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
-				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
+				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 46 degrees, which means 1:1 slopes will be treated as floors.
 				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody] nodes like with [StaticBody].
 				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
@@ -127,7 +127,7 @@
 			</argument>
 			<argument index="4" name="max_slides" type="int" default="4">
 			</argument>
-			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
+			<argument index="5" name="floor_max_angle" type="float" default="0.802851">
 			</argument>
 			<argument index="6" name="infinite_inertia" type="bool" default="true">
 			</argument>
