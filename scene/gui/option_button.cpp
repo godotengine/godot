@@ -110,14 +110,19 @@ void OptionButton::pressed() {
 void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
 
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1 && auto_select)
 		select(0);
 }
 void OptionButton::add_item(const String &p_label, int p_id) {
 
 	popup->add_radio_check_item(p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1 && auto_select)
 		select(0);
+}
+
+void OptionButton::set_auto_select(bool p_enabled) {
+
+	auto_select = p_enabled;
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -174,6 +179,11 @@ Variant OptionButton::get_item_metadata(int p_idx) const {
 	return popup->get_item_metadata(p_idx);
 }
 
+bool OptionButton::is_auto_select_enabled() const {
+
+	return auto_select;
+}
+
 bool OptionButton::is_item_disabled(int p_idx) const {
 
 	return popup->is_item_disabled(p_idx);
@@ -193,24 +203,32 @@ void OptionButton::clear() {
 
 	popup->clear();
 	set_text("");
+	set_icon(NULL);
 	current = -1;
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
 
-	if (p_which < 0)
-		return;
 	if (p_which == current)
 		return;
 
-	ERR_FAIL_INDEX(p_which, popup->get_item_count());
+	ERR_FAIL_COND(p_which < -1 || p_which >= popup->get_item_count());
+
+	current = p_which;
 
 	for (int i = 0; i < popup->get_item_count(); i++) {
 
-		popup->set_item_checked(i, i == p_which);
+		if (popup->is_item_checkable(i))
+			popup->set_item_checked(i, i == current);
 	}
 
-	current = p_which;
+	if (current == -1) {
+		set_text("");
+		set_icon(NULL);
+
+		return;
+	}
+
 	set_text(popup->get_item_text(current));
 	set_icon(popup->get_item_icon(current));
 
@@ -220,7 +238,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 void OptionButton::_select_int(int p_which) {
 
-	if (p_which < 0 || p_which >= popup->get_item_count())
+	if (p_which < -1 || p_which >= popup->get_item_count())
 		return;
 	_select(p_which, false);
 }
@@ -253,6 +271,9 @@ Variant OptionButton::get_selected_metadata() const {
 void OptionButton::remove_item(int p_idx) {
 
 	popup->remove_item(p_idx);
+
+	if (p_idx == current)
+		_select(-1);
 }
 
 PopupMenu *OptionButton::get_popup() const {
@@ -307,6 +328,7 @@ void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_auto_select", "enabled"), &OptionButton::set_auto_select);
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &OptionButton::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "texture"), &OptionButton::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
@@ -317,6 +339,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("is_auto_select_enabled"), &OptionButton::is_auto_select_enabled);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
@@ -336,6 +359,7 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_select"), "set_auto_select", "is_auto_select_enabled");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "id")));
 }
@@ -343,6 +367,7 @@ void OptionButton::_bind_methods() {
 OptionButton::OptionButton() {
 
 	current = -1;
+	auto_select = true;
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);

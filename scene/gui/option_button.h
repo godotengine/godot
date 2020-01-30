@@ -40,6 +40,7 @@ class OptionButton : public Button {
 
 	PopupMenu *popup;
 	int current;
+	bool auto_select;
 
 	void _focused(int p_which);
 	void _selected(int p_which);
@@ -60,6 +61,7 @@ public:
 	void add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1);
 	void add_item(const String &p_label, int p_id = -1);
 
+	void set_auto_select(bool p_enabled);
 	void set_item_text(int p_idx, const String &p_text);
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
 	void set_item_id(int p_idx, int p_id);
@@ -71,6 +73,7 @@ public:
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
 	Variant get_item_metadata(int p_idx) const;
+	bool is_auto_select_enabled() const;
 	bool is_item_disabled(int p_idx) const;
 
 	int get_item_count() const;
