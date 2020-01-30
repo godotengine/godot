@@ -1842,7 +1842,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
 	String name = GlobalConstants::get_global_constant_name(index);
-	return PropertyInfo(Variant::REAL, name);
+	return PropertyInfo(Variant::INT, name);
 }
 
 String VisualScriptGlobalConstant::get_caption() const {
@@ -2060,7 +2060,7 @@ PropertyInfo VisualScriptBasicTypeConstant::get_input_value_port_info(int p_idx)
 
 PropertyInfo VisualScriptBasicTypeConstant::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::INT, "value");
+	return PropertyInfo(type, "value");
 }
 
 String VisualScriptBasicTypeConstant::get_caption() const {
@@ -2069,8 +2069,11 @@ String VisualScriptBasicTypeConstant::get_caption() const {
 }
 
 String VisualScriptBasicTypeConstant::get_text() const {
-
-	return Variant::get_type_name(type) + "." + String(name);
+	if (name == "") {
+		return Variant::get_type_name(type);
+	} else {
+		return Variant::get_type_name(type) + "." + String(name);
+	}
 }
 
 void VisualScriptBasicTypeConstant::set_basic_type_constant(const StringName &p_which) {
@@ -2087,6 +2090,23 @@ StringName VisualScriptBasicTypeConstant::get_basic_type_constant() const {
 void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
 
 	type = p_which;
+
+	List<StringName> constants;
+	Variant::get_constants_for_type(type, &constants);
+	if (constants.size() > 0) {
+		bool found_name = false;
+		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+			if (E->get() == name) {
+				found_name = true;
+				break;
+			}
+		}
+		if (!found_name) {
+			name = constants[0];
+		}
+	} else {
+		name = "";
+	}
 	_change_notify();
 	ports_changed_notify();
 }
