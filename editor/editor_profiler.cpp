@@ -165,12 +165,10 @@ void EditorProfiler::_item_edited() {
 
 void EditorProfiler::_update_plot() {
 
-	int w = graph->get_size().width;
-	int h = graph->get_size().height;
-
+	const int w = graph->get_size().width;
+	const int h = graph->get_size().height;
 	bool reset_texture = false;
-
-	int desired_len = w * h * 4;
+	const int desired_len = w * h * 4;
 
 	if (graph_image.size() != desired_len) {
 		reset_texture = true;
@@ -178,18 +176,19 @@ void EditorProfiler::_update_plot() {
 	}
 
 	PoolVector<uint8_t>::Write wr = graph_image.write();
+	const Color background_color = get_color("dark_color_2", "Editor");
 
-	//clear
+	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
-		wr[i + 0] = 0;
-		wr[i + 1] = 0;
-		wr[i + 2] = 0;
+		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
+		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
+		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
 		wr[i + 3] = 255;
 	}
 
 	//find highest value
 
-	bool use_self = display_time->get_selected() == DISPLAY_SELF_TIME;
+	const bool use_self = display_time->get_selected() == DISPLAY_SELF_TIME;
 	float highest = 0;
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
@@ -321,21 +320,23 @@ void EditorProfiler::_update_plot() {
 
 			for (int j = 0; j < h * 4; j += 4) {
 
-				int a = column[j + 3];
+				const int a = column[j + 3];
 				if (a > 0) {
 					column[j + 0] /= a;
 					column[j + 1] /= a;
 					column[j + 2] /= a;
 				}
 
-				uint8_t r = uint8_t(column[j + 0]);
-				uint8_t g = uint8_t(column[j + 1]);
-				uint8_t b = uint8_t(column[j + 2]);
+				const uint8_t red = uint8_t(column[j + 0]);
+				const uint8_t green = uint8_t(column[j + 1]);
+				const uint8_t blue = uint8_t(column[j + 2]);
+				const bool is_filled = red >= 1 || green >= 1 || blue >= 1;
+				const int widx = ((j >> 2) * w + i) * 4;
 
-				int widx = ((j >> 2) * w + i) * 4;
-				wr[widx + 0] = r;
-				wr[widx + 1] = g;
-				wr[widx + 2] = b;
+				// If the pixel isn't filled by any profiler line, apply the background color instead.
+				wr[widx + 0] = is_filled ? red : Math::fast_ftoi(background_color.r * 255);
+				wr[widx + 1] = is_filled ? green : Math::fast_ftoi(background_color.g * 255);
+				wr[widx + 2] = is_filled ? blue : Math::fast_ftoi(background_color.b * 255);
 				wr[widx + 3] = 255;
 			}
 		}
