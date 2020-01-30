@@ -94,7 +94,6 @@ class RenderingServerDefault : public RenderingServer {
 	SafeFlag draw_thread_up;
 	bool create_thread;
 
-	SafeNumeric<uint64_t> draw_pending;
 	void _thread_draw(bool p_swap_buffers, double frame_step);
 	void _thread_flush();
 
