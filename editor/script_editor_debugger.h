@@ -226,6 +226,7 @@ private:
 
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos);
 	void _item_menu_id_pressed(int p_option);
+	void _tab_changed(int p_tab);
 
 	void _export_csv();
 
