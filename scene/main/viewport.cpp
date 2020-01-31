@@ -4658,6 +4658,8 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+float Viewport::editor_tooltip_delay = 0.5f;
+
 Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
 	world_2d->register_viewport(this);
@@ -4691,8 +4693,12 @@ Viewport::Viewport() {
 	shortcut_input_group = "_vp_shortcut_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
-	// Window tooltip.
-	gui.tooltip_delay = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+	// Set the tooltip delay to be either the editor delay, or regular delay, depending on whether this is in the editor or not.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		gui.tooltip_delay = editor_tooltip_delay;
+	} else {
+		gui.tooltip_delay = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+	}
 
 #ifndef _3D_DISABLED
 	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));

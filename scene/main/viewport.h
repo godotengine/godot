@@ -95,6 +95,8 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	static float editor_tooltip_delay;
+
 	enum Scaling3DMode {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
