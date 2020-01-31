@@ -1281,11 +1281,11 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_date", "utc"), &_OS::get_date, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time", "utc"), &_OS::get_time, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time_zone_info"), &_OS::get_time_zone_info);
-	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
-	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
-	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
-	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
-	ClassDB::bind_method(D_METHOD("get_system_time_msecs"), &_OS::get_system_time_msecs);
+	ClassDB::bind_method(D_METHOD("get_unix_time:uint64_t"), &_OS::get_unix_time);
+	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val:int64_t"), &_OS::get_datetime_from_unix_time);
+	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime:int64_t", "datetime"), &_OS::get_unix_time_from_datetime);
+	ClassDB::bind_method(D_METHOD("get_system_time_secs:uint64_t"), &_OS::get_system_time_secs);
+	ClassDB::bind_method(D_METHOD("get_system_time_msecs:uint64_t"), &_OS::get_system_time_msecs);
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &_OS::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
@@ -1293,11 +1293,11 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
 	ClassDB::bind_method(D_METHOD("set_exit_code", "code"), &_OS::set_exit_code);
 
-	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &_OS::delay_usec);
-	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &_OS::delay_msec);
-	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &_OS::get_ticks_msec);
-	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &_OS::get_ticks_usec);
-	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"), &_OS::get_splash_tick_msec);
+	ClassDB::bind_method(D_METHOD("delay_usec", "usec:uint32_t"), &_OS::delay_usec);
+	ClassDB::bind_method(D_METHOD("delay_msec", "msec:uint32_t"), &_OS::delay_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_msec:uint32_t"), &_OS::get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_usec:uint64_t"), &_OS::get_ticks_usec);
+	ClassDB::bind_method(D_METHOD("get_splash_tick_msec:uint32_t"), &_OS::get_splash_tick_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &_OS::get_latin_keyboard_variant);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
@@ -1321,9 +1321,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_OS::print_resources_in_use, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &_OS::print_all_resources, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &_OS::get_static_memory_usage);
-	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
-	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_usage:uint64_t"), &_OS::get_static_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage:uint64_t"), &_OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage:uint64_t"), &_OS::get_dynamic_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
@@ -1340,8 +1340,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("native_video_pause"), &_OS::native_video_pause);
 	ClassDB::bind_method(D_METHOD("native_video_unpause"), &_OS::native_video_unpause);
 
-	ClassDB::bind_method(D_METHOD("get_scancode_string", "code"), &_OS::get_scancode_string);
-	ClassDB::bind_method(D_METHOD("is_scancode_unicode", "code"), &_OS::is_scancode_unicode);
+	ClassDB::bind_method(D_METHOD("get_scancode_string", "code:uint32_t"), &_OS::get_scancode_string);
+	ClassDB::bind_method(D_METHOD("is_scancode_unicode", "code:uint32_t"), &_OS::is_scancode_unicode);
 	ClassDB::bind_method(D_METHOD("find_scancode_from_string", "string"), &_OS::find_scancode_from_string);
 
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
@@ -2227,17 +2227,17 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_path"), &_File::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &_File::get_path_absolute);
 	ClassDB::bind_method(D_METHOD("is_open"), &_File::is_open);
-	ClassDB::bind_method(D_METHOD("seek", "position"), &_File::seek);
-	ClassDB::bind_method(D_METHOD("seek_end", "position"), &_File::seek_end, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_position"), &_File::get_position);
-	ClassDB::bind_method(D_METHOD("get_len"), &_File::get_len);
+	ClassDB::bind_method(D_METHOD("seek", "position:int64_t"), &_File::seek);
+	ClassDB::bind_method(D_METHOD("seek_end", "position:int64_t"), &_File::seek_end, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_position:int64_t"), &_File::get_position);
+	ClassDB::bind_method(D_METHOD("get_len:int64_t"), &_File::get_len);
 	ClassDB::bind_method(D_METHOD("eof_reached"), &_File::eof_reached);
-	ClassDB::bind_method(D_METHOD("get_8"), &_File::get_8);
-	ClassDB::bind_method(D_METHOD("get_16"), &_File::get_16);
-	ClassDB::bind_method(D_METHOD("get_32"), &_File::get_32);
-	ClassDB::bind_method(D_METHOD("get_64"), &_File::get_64);
-	ClassDB::bind_method(D_METHOD("get_float"), &_File::get_float);
-	ClassDB::bind_method(D_METHOD("get_double"), &_File::get_double);
+	ClassDB::bind_method(D_METHOD("get_8:uint8_t"), &_File::get_8);
+	ClassDB::bind_method(D_METHOD("get_16:uint16_t"), &_File::get_16);
+	ClassDB::bind_method(D_METHOD("get_32:uint32_t"), &_File::get_32);
+	ClassDB::bind_method(D_METHOD("get_64:uint64_t"), &_File::get_64);
+	ClassDB::bind_method(D_METHOD("get_float:float"), &_File::get_float);
+	ClassDB::bind_method(D_METHOD("get_double:double"), &_File::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &_File::get_real);
 	ClassDB::bind_method(D_METHOD("get_buffer", "len"), &_File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &_File::get_line);
@@ -2250,12 +2250,12 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error"), &_File::get_error);
 	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &_File::get_var, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("store_8", "value"), &_File::store_8);
-	ClassDB::bind_method(D_METHOD("store_16", "value"), &_File::store_16);
-	ClassDB::bind_method(D_METHOD("store_32", "value"), &_File::store_32);
-	ClassDB::bind_method(D_METHOD("store_64", "value"), &_File::store_64);
-	ClassDB::bind_method(D_METHOD("store_float", "value"), &_File::store_float);
-	ClassDB::bind_method(D_METHOD("store_double", "value"), &_File::store_double);
+	ClassDB::bind_method(D_METHOD("store_8", "value:uint8_t"), &_File::store_8);
+	ClassDB::bind_method(D_METHOD("store_16", "value:uint16_t"), &_File::store_16);
+	ClassDB::bind_method(D_METHOD("store_32", "value:uint32_t"), &_File::store_32);
+	ClassDB::bind_method(D_METHOD("store_64", "value:uint64_t"), &_File::store_64);
+	ClassDB::bind_method(D_METHOD("store_float", "value:float"), &_File::store_float);
+	ClassDB::bind_method(D_METHOD("store_double", "value:double"), &_File::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &_File::store_real);
 	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), &_File::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &_File::store_line);
@@ -2267,7 +2267,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &_File::get_pascal_string);
 
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_File::file_exists);
-	ClassDB::bind_method(D_METHOD("get_modified_time", "file"), &_File::get_modified_time);
+	ClassDB::bind_method(D_METHOD("get_modified_time:uint64_t", "file"), &_File::get_modified_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "endian_swap"), "set_endian_swap", "get_endian_swap");
 
@@ -3119,8 +3119,8 @@ void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &_Engine::get_frames_drawn);
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &_Engine::get_frames_per_second);
-	ClassDB::bind_method(D_METHOD("get_physics_frames"), &_Engine::get_physics_frames);
-	ClassDB::bind_method(D_METHOD("get_idle_frames"), &_Engine::get_idle_frames);
+	ClassDB::bind_method(D_METHOD("get_physics_frames:uint64_t"), &_Engine::get_physics_frames);
+	ClassDB::bind_method(D_METHOD("get_idle_frames:uint64_t"), &_Engine::get_idle_frames);
 
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &_Engine::get_main_loop);
 
