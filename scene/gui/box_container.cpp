@@ -48,14 +48,17 @@ void BoxContainer::_resort() {
 	int sep = get_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first = true;
-	int children_count = 0;
+	int visible_control_count = 0;
 	int stretch_min = 0;
 	int stretch_avail = 0;
 	float stretch_ratio_total = 0;
 	Map<Control *, _MinSizeCache> min_size_cache;
 
+	int child_count = get_child_count();
+
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		int child_index = flip_order ? child_count - i - 1 : i;
+		Control *c = Object::cast_to<Control>(get_child(child_index));
 		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
@@ -81,13 +84,13 @@ void BoxContainer::_resort() {
 		}
 		msc.final_size = msc.min_size;
 		min_size_cache[c] = msc;
-		children_count++;
+		visible_control_count++;
 	}
 
-	if (children_count == 0)
+	if (visible_control_count == 0)
 		return;
 
-	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
+	int stretch_max = (vertical ? new_size.height : new_size.width) - (visible_control_count - 1) * sep;
 	int stretch_diff = stretch_max - stretch_min;
 	if (stretch_diff < 0) {
 		//avoid negative stretch space
@@ -105,8 +108,8 @@ void BoxContainer::_resort() {
 		bool refit_successful = true; //assume refit-test will go well
 
 		for (int i = 0; i < get_child_count(); i++) {
-
-			Control *c = Object::cast_to<Control>(get_child(i));
+			int child_index = flip_order ? child_count - i - 1 : i;
+			Control *c = Object::cast_to<Control>(get_child(child_index));
 			if (!c || !c->is_visible_in_tree())
 				continue;
 			if (c->is_set_as_toplevel())
@@ -158,8 +161,8 @@ void BoxContainer::_resort() {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
-		Control *c = Object::cast_to<Control>(get_child(i));
+		int child_index = flip_order ? child_count - i - 1 : i;
+		Control *c = Object::cast_to<Control>(get_child(child_index));
 		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
@@ -175,7 +178,7 @@ void BoxContainer::_resort() {
 		int from = ofs;
 		int to = ofs + msc.final_size;
 
-		if (msc.will_stretch && idx == children_count - 1) {
+		if (msc.will_stretch && idx == visible_control_count - 1) {
 			//adjust so the last one always fits perfect
 			//compensating for numerical imprecision
 
@@ -270,6 +273,15 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
+void BoxContainer::set_flip_order(bool p_enabled) {
+	flip_order = p_enabled;
+	_resort();
+}
+
+bool BoxContainer::is_flip_order_enabled() const {
+	return flip_order;
+}
+
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew(Control);
@@ -288,6 +300,7 @@ void BoxContainer::add_spacer(bool p_begin) {
 BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical = p_vertical;
+	flip_order = false;
 	align = ALIGN_BEGIN;
 	//set_ignore_mouse(true);
 	set_mouse_filter(MOUSE_FILTER_PASS);
@@ -298,12 +311,15 @@ void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_spacer", "begin"), &BoxContainer::add_spacer);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
+	ClassDB::bind_method(D_METHOD("is_flip_order_enabled"), &BoxContainer::is_flip_order_enabled);
+	ClassDB::bind_method(D_METHOD("set_flip_order", "enabled"), &BoxContainer::set_flip_order);
 
 	BIND_ENUM_CONSTANT(ALIGN_BEGIN);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
 	BIND_ENUM_CONSTANT(ALIGN_END);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_order"), "set_flip_order", "is_flip_order_enabled");
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {

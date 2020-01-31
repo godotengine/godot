@@ -23,6 +23,9 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode" default="0">
 			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
 		</member>
+		<member name="flip_order" type="bool" setter="set_flip_order" getter="is_flip_order_enabled" default="false">
+			When enabled, the container's children are arranged in inverted order (from right to left for horizontal and from bottom to top for vertical).
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
 	</members>
 	<constants>
