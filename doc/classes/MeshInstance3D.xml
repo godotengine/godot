@@ -4,7 +4,7 @@
 		Node that instances meshes into a scenario.
 	</brief_description>
 	<description>
-		MeshInstance3D is a node that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance3D] instead.
+		MeshInstance3D is a node that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used render 3D geometry and can be used to instance a single [Mesh] in many places. This allows reuse of geometry which can save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance3D] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,13 +30,22 @@
 				This helper creates a [StaticBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
+		<method name="get_active_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surface" type="int">
+			</argument>
+			<description>
+				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
+			</description>
+		</method>
 		<method name="get_surface_material" qualifiers="const">
 			<return type="Material">
 			</return>
 			<argument index="0" name="surface" type="int">
 			</argument>
 			<description>
-				Returns the [Material] for a surface of the [Mesh] resource.
+				Returns the override [Material] for the specified surface of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="get_surface_material_count" qualifiers="const">
@@ -54,7 +63,7 @@
 			<argument index="1" name="material" type="Material">
 			</argument>
 			<description>
-				Sets the [Material] for a surface of the [Mesh] resource.
+				Sets the override [Material] for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with the [Mesh] resource.
 			</description>
 		</method>
 	</methods>
