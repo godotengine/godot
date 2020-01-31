@@ -81,6 +81,7 @@ colors = {
     'section': [1, 4],  # bold, underline
     'state_off': [36],  # cyan
     'state_on': [1, 35],  # bold, magenta/plum
+    'bold': [1],  # bold
 }
 overall_progress_description_weigth = 10
 
@@ -227,7 +228,7 @@ class ClassStatus:
 
         output['items'] = items_progress.to_configured_colored_string()
 
-        output['overall'] = (description_progress + items_progress).to_colored_string('{percent}%', '{pad_percent}{s}')
+        output['overall'] = (description_progress + items_progress).to_colored_string(color('bold', '{percent}%'), '{pad_percent}{s}')
 
         if self.name.startswith('Total'):
             output['url'] = color('url', 'https://docs.godotengine.org/en/latest/classes/')
@@ -309,7 +310,7 @@ if flags['i']:
     table_columns.append('items')
 
 if flags['o'] == (not flags['i']):
-    table_column_names.append('Overall')
+    table_column_names.append(color('bold', 'Overall'))
     table_columns.append('overall')
 
 if flags['u']:
@@ -435,6 +436,11 @@ if len(table) > 2 or not flags['a']:
             row.append('')
     table.append(row)
 
+if flags['a']:
+    # Duplicate the headers at the bottom of the table so they can be viewed
+    # without having to scroll back to the top.
+    table.append(table_column_names)
+
 table_column_sizes = []
 for row in table:
     for cell_i, cell in enumerate(row):
@@ -460,7 +466,10 @@ for row_i, row in enumerate(table):
 
     print(row_string)
 
-    if row_i == 0 or row_i == len(table) - 2:
+    # Account for the possible double header (if the `a` flag is enabled).
+    # No need to have a condition for the flag, as this will behave correctly
+    # if the flag is disabled.
+    if row_i == 0 or row_i == len(table) - 3 or row_i == len(table) - 2:
         print(divider_string)
 
 print(divider_string)
