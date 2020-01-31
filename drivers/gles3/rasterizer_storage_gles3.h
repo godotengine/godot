@@ -528,6 +528,7 @@ public:
 
 	virtual void shader_set_code(RID p_shader, const String &p_code);
 	virtual String shader_get_code(RID p_shader) const;
+	virtual String shader_get_gen_code(RID p_shader, int p_function) const;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture);

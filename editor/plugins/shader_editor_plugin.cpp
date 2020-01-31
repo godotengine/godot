@@ -353,12 +353,37 @@ void ShaderEditor::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		_check_for_external_edit();
+	} else if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		code_button->set_icon(Control::get_icon("Shader", "EditorIcons"));
+
+		Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
+		Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
+		Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+		Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+		Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
+
+		final_code_box->set_syntax_coloring(true);
+		final_code_box->add_color_override("background_color", background_color);
+
+		for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
+
+			final_code_box->add_keyword_color(E->get(), keyword_color);
+		}
+
+		final_code_box->add_color_override("font_color", text_color);
+		final_code_box->add_color_override("symbol_color", symbol_color);
+		final_code_box->add_color_region("/*", "*/", comment_color, false);
+		final_code_box->add_color_region("//", "", comment_color, false);
 	}
 }
 
 void ShaderEditor::_params_changed() {
 
 	shader_editor->_validate_script();
+}
+
+void ShaderEditor::_show_final_code() {
+	final_code_container->set_visible(!final_code_container->is_visible());
 }
 
 void ShaderEditor::_editor_settings_changed() {
@@ -388,12 +413,14 @@ void ShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_reload_shader_from_disk", &ShaderEditor::_reload_shader_from_disk);
 	ClassDB::bind_method("_editor_settings_changed", &ShaderEditor::_editor_settings_changed);
 	ClassDB::bind_method("_text_edit_gui_input", &ShaderEditor::_text_edit_gui_input);
+	ClassDB::bind_method("_on_final_code_item_selected", &ShaderEditor::_on_final_code_item_selected);
 
 	ClassDB::bind_method("_update_bookmark_list", &ShaderEditor::_update_bookmark_list);
 	ClassDB::bind_method("_bookmark_item_pressed", &ShaderEditor::_bookmark_item_pressed);
 
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
+	ClassDB::bind_method("_show_final_code", &ShaderEditor::_show_final_code);
 	ClassDB::bind_method("apply_shaders", &ShaderEditor::apply_shaders);
 	ClassDB::bind_method("save_external_data", &ShaderEditor::save_external_data);
 }
@@ -483,6 +510,7 @@ void ShaderEditor::apply_shaders() {
 
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
+		final_code_box->set_text(VisualServer::get_singleton()->shader_get_gen_code(shader->get_rid(), final_func));
 		String editor_code = shader_editor->get_text_edit()->get_text();
 		if (shader_code != editor_code) {
 			shader->set_code(editor_code);
@@ -531,6 +559,13 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		TextEdit *tx = shader_editor->get_text_edit();
 		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
 		context_menu->grab_focus();
+	}
+}
+
+void ShaderEditor::_on_final_code_item_selected(int p_idx) {
+	if (final_func != p_idx) {
+		final_code_box->set_text(VisualServer::get_singleton()->shader_get_gen_code(shader->get_rid(), p_idx));
+		final_func = p_idx;
 	}
 }
 
@@ -680,14 +715,65 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
+	final_func = 0;
+	ShaderLanguage::get_keyword_list(&keyword_list);
+
+	code_button = memnew(ToolButton);
+	code_button->set_toggle_mode(true);
+	code_button->set_tooltip(TTR("Show final GLSL code."));
+	code_button->connect("pressed", this, "_show_final_code");
+
 	add_child(main_container);
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
+	hbc->add_spacer();
+	hbc->add_child(code_button);
 	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
-	main_container->add_child(shader_editor);
+
+	HSplitContainer *code_container = memnew(HSplitContainer);
+	code_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	code_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	shader_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	final_code_box = memnew(TextEdit);
+	final_code_box->set_show_line_numbers(true);
+	final_code_box->set_readonly(true);
+	final_code_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	final_code_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	final_code_box->set_custom_minimum_size(Size2(500 * EDSCALE, 0));
+
+	final_code_container = memnew(VBoxContainer);
+	final_code_container->set_visible(false);
+
+	PanelContainer *final_code_menu_panel = memnew(PanelContainer);
+	HBoxContainer *final_code_menu_container = memnew(HBoxContainer);
+
+	HBoxContainer *func_selector_container = memnew(HBoxContainer);
+	func_selector_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	OptionButton *final_code_func_selector = memnew(OptionButton);
+	final_code_func_selector->set_h_size_flags(SIZE_EXPAND_FILL);
+	final_code_func_selector->add_item("Vertex");
+	final_code_func_selector->add_item("Fragment");
+	final_code_func_selector->connect("item_selected", this, "_on_final_code_item_selected");
+	Label *final_code_func_selector_label = memnew(Label);
+	final_code_func_selector_label->set_text(TTR("Function") + ":");
+	func_selector_container->add_child(final_code_func_selector_label);
+	func_selector_container->add_child(final_code_func_selector);
+
+	final_code_menu_container->add_child(func_selector_container);
+
+	final_code_menu_panel->add_child(final_code_menu_container);
+	final_code_container->add_child(final_code_menu_panel);
+
+	final_code_container->add_child(final_code_box);
+
+	code_container->add_child(shader_editor);
+	code_container->add_child(final_code_container);
+
+	main_container->add_child(code_container);
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);

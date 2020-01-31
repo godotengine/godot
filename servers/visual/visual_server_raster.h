@@ -184,6 +184,7 @@ public:
 
 	BIND2(shader_set_code, RID, const String &)
 	BIND1RC(String, shader_get_code, RID)
+	BIND2RC(String, shader_get_gen_code, RID, int)
 
 	BIND2C(shader_get_param_list, RID, List<PropertyInfo> *)
 

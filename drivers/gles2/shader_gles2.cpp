@@ -1092,6 +1092,24 @@ void ShaderGLES2::use_material(void *p_material) {
 	}
 }
 
+String ShaderGLES2::get_gen_code(int p_function) {
+	int id = -1;
+	if (p_function == 0) {
+		id = version->vert_id;
+	} else if (p_function == 1) {
+		id = version->frag_id;
+	} else {
+		return "";
+	}
+	GLint length = 0;
+	glGetShaderiv(id, GL_SHADER_SOURCE_LENGTH, &length);
+	char *code = (char *)Memory::alloc_static(length + 1);
+	code[length] = '\0';
+	glGetShaderSource(id, length, NULL, code);
+	Memory::free_static(code);
+	return String(code);
+}
+
 ShaderGLES2::ShaderGLES2() {
 	version = NULL;
 	last_custom_code = 1;

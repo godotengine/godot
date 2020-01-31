@@ -187,6 +187,7 @@ public:
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
+	virtual String shader_get_gen_code(RID p_shader, int p_function) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 	Array _shader_get_param_list_bind(RID p_shader) const;
 

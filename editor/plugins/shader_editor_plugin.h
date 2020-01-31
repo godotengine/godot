@@ -101,17 +101,23 @@ class ShaderEditor : public PanelContainer {
 	MenuButton *search_menu;
 	PopupMenu *bookmarks_menu;
 	MenuButton *help_menu;
+	ToolButton *code_button;
 	PopupMenu *context_menu;
 	uint64_t idle;
+	int final_func;
 
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ConfirmationDialog *disk_changed;
 
 	ShaderTextEditor *shader_editor;
+	VBoxContainer *final_code_container;
+	TextEdit *final_code_box;
+	List<String> keyword_list;
 
 	void _menu_option(int p_option);
 	void _params_changed();
+	void _show_final_code();
 	mutable Ref<Shader> shader;
 
 	void _editor_settings_changed();
@@ -124,6 +130,7 @@ protected:
 	static void _bind_methods();
 	void _make_context_menu(bool p_selection, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _on_final_code_item_selected(int p_idx);
 
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);

@@ -257,6 +257,7 @@ public:
 
 	void shader_set_code(RID p_shader, const String &p_code) {}
 	String shader_get_code(RID p_shader) const { return ""; }
+	String shader_get_gen_code(RID p_shader, int p_function) const { return ""; }
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {}
 
 	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {}

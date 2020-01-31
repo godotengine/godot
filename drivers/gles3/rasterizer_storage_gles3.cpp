@@ -2240,6 +2240,14 @@ String RasterizerStorageGLES3::shader_get_code(RID p_shader) const {
 	return shader->code;
 }
 
+String RasterizerStorageGLES3::shader_get_gen_code(RID p_shader, int p_function) const {
+
+	const Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader, String());
+	shader->shader->bind();
+	return shader->shader->get_gen_code(p_function);
+}
+
 void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	_shader_dirty_list.remove(&p_shader->dirty_list);

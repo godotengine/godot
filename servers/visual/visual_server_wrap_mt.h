@@ -120,6 +120,7 @@ public:
 
 	FUNC2(shader_set_code, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
+	FUNC2RC(String, shader_get_gen_code, RID, int)
 
 	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
 

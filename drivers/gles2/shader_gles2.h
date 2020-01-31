@@ -245,6 +245,7 @@ public:
 	void add_custom_define(const String &p_define) {
 		custom_defines.push_back(p_define.utf8());
 	}
+	String get_gen_code(int p_function);
 
 	virtual ~ShaderGLES2();
 };
