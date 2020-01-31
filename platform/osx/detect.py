@@ -27,6 +27,9 @@ def get_opts():
         ('MACOS_SDK_PATH', 'Path to the macOS SDK', ''),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
+        BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
+        BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
+        BoolVariable('use_tsan', 'Use LLVM/GCC compiler thread sanitizer (TSAN))', False),
     ]
 
 
@@ -121,6 +124,21 @@ def configure(env):
         env.Append(CPPDEFINES=['TYPED_METHOD_BIND'])
         env["CC"] = "clang"
         env["LINK"] = "clang++"
+
+    if env['use_ubsan'] or env['use_asan'] or env['use_tsan']:
+        env.extra_suffix += "s"
+
+        if env['use_ubsan']:
+            env.Append(CCFLAGS=['-fsanitize=undefined'])
+            env.Append(LINKFLAGS=['-fsanitize=undefined'])
+
+        if env['use_asan']:
+            env.Append(CCFLAGS=['-fsanitize=address'])
+            env.Append(LINKFLAGS=['-fsanitize=address'])
+
+        if env['use_tsan']:
+            env.Append(CCFLAGS=['-fsanitize=thread'])
+            env.Append(LINKFLAGS=['-fsanitize=thread'])
 
     ## Dependencies
 
