@@ -958,7 +958,7 @@ void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
 InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
 	// string names of the SDL buttons in the same order as input_event.h godot buttons
-	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", NULL };
+	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", "touchpad", NULL };
 
 	static const char *axis[] = { "leftx", "lefty", "rightx", "righty", NULL };
 
