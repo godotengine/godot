@@ -193,6 +193,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_editable(false);
 		export_path->hide();
 		runnable->set_disabled(true);
+		open_directory->set_disabled(true);
 		parameters->edit(NULL);
 		presets->unselect_all();
 		duplicate_preset->set_disabled(true);
@@ -228,6 +229,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	open_directory->set_disabled(false);
+	open_directory->set_pressed(current->get_open_directory());
 	parameters->edit(current.ptr());
 
 	export_filter->select(current->get_export_filter());
@@ -472,6 +475,30 @@ void ProjectExportDialog::_runnable_pressed() {
 	} else {
 
 		current->set_runnable(false);
+	}
+
+	_update_presets();
+}
+
+void ProjectExportDialog::_open_directory_pressed () {
+	
+	if (updating)
+		return;
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	if (open_directory->is_pressed()) {
+
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
+			if (p->get_platform() == current->get_platform()) {
+				p->set_open_directory(current == p);
+			}
+		}
+	} else {
+
+		current->set_open_directory(false);
 	}
 
 	_update_presets();
@@ -893,6 +920,10 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	} else if (p_path.ends_with(".pck")) {
 		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
 	}
+
+	if(current->get_open_directory()) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
 }
 
 void ProjectExportDialog::_open_export_template_manager() {
@@ -978,6 +1009,10 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 		error_dialog->show();
 		error_dialog->popup_centered_minsize(Size2(300, 80));
 	}
+
+	if(current->get_open_directory()) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
 }
 
 void ProjectExportDialog::_export_all_dialog() {
@@ -1017,6 +1052,10 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 			error_dialog->popup_centered_minsize(Size2(300, 80));
 			ERR_PRINT("Failed to export project");
 		}
+
+		if (preset->get_open_directory()) {
+			OS::get_singleton()->shell_open(preset->get_export_path().get_base_dir());
+		}
 	}
 }
 
@@ -1026,6 +1065,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_edit_preset", &ProjectExportDialog::_edit_preset);
 	ClassDB::bind_method("_update_parameters", &ProjectExportDialog::_update_parameters);
 	ClassDB::bind_method("_runnable_pressed", &ProjectExportDialog::_runnable_pressed);
+	ClassDB::bind_method("_open_directory_pressed", &ProjectExportDialog::_open_directory_pressed);
 	ClassDB::bind_method("_name_changed", &ProjectExportDialog::_name_changed);
 	ClassDB::bind_method("_duplicate_preset", &ProjectExportDialog::_duplicate_preset);
 	ClassDB::bind_method("_delete_preset", &ProjectExportDialog::_delete_preset);
@@ -1115,6 +1155,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", this, "_runnable_pressed");
 	settings_vb->add_child(runnable);
+
+	open_directory = memnew(CheckButton);
+	open_directory->set_text(TTR("Open Export Directory"));
+	open_directory->set_tooltip(TTR("If checked,once the export is done,the path where you exported \n your game will be opened in your default file manager."));
+	open_directory->connect("pressed", this, "_open_directory_pressed");
+	settings_vb->add_child(open_directory);
 
 	export_path = memnew(EditorPropertyPath);
 	settings_vb->add_child(export_path);
@@ -1256,6 +1302,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	name->set_editable(false);
 	export_path->hide();
 	runnable->set_disabled(true);
+	open_directory->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
 	script_key_error->hide();

@@ -125,6 +125,15 @@ bool EditorExportPreset::is_runnable() const {
 	return runnable;
 }
 
+void EditorExportPreset::set_open_directory(bool p_enable) {
+	open_directory = p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::get_open_directory() const {
+	return open_directory;
+}
+
 void EditorExportPreset::set_export_filter(ExportFilter p_filter) {
 
 	export_filter = p_filter;
@@ -256,6 +265,7 @@ EditorExportPreset::EditorExportPreset() :
 		export_filter(EXPORT_ALL_RESOURCES),
 		export_path(""),
 		runnable(false),
+		open_directory(false),
 		script_mode(MODE_SCRIPT_COMPILED) {
 }
 
@@ -1167,6 +1177,7 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
+		config->set_value(section, "opendirectory", preset->get_open_directory());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
 		bool save_files = false;
@@ -1342,6 +1353,7 @@ void EditorExport::load_config() {
 
 		preset->set_name(config->get_value(section, "name"));
 		preset->set_runnable(config->get_value(section, "runnable"));
+		preset->set_open_directory(config->get_value(section, "opendirectory"));
 
 		if (config->has_section_key(section, "custom_features")) {
 			preset->set_custom_features(config->get_value(section, "custom_features"));

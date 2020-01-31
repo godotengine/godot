@@ -69,7 +69,7 @@ private:
 	String exporter;
 	Set<String> selected_files;
 	bool runnable;
-
+	bool open_directory;
 	Vector<String> patches;
 
 	friend class EditorExport;
@@ -106,6 +106,9 @@ public:
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
+
+	void set_open_directory(bool p_enable);
+	bool get_open_directory() const;
 
 	void set_export_filter(ExportFilter p_filter);
 	ExportFilter get_export_filter() const;
