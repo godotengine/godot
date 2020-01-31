@@ -79,7 +79,6 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"randf",
 	"rand_range",
 	"seed",
-	"rand_seed",
 	"deg2rad",
 	"rad2deg",
 	"linear2db",
@@ -156,7 +155,6 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_DECIMALS:
 		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
-		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
@@ -463,17 +461,6 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			uint64_t seed = *p_inputs[0];
 			Math::seed(seed);
-
-		} break;
-		case MATH_RANDSEED: {
-
-			VALIDATE_ARG_NUM(0);
-			uint64_t seed = *p_inputs[0];
-			int ret = Math::rand_from_seed(&seed);
-			Array reta;
-			reta.push_back(ret);
-			reta.push_back(seed);
-			*r_return = reta;
 
 		} break;
 		case MATH_DEG2RAD: {

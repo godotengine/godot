@@ -278,7 +278,6 @@ public:
 
 	static void seed(uint64_t x);
 	static void randomize();
-	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
 	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_MAX; }
 	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_MAX; }

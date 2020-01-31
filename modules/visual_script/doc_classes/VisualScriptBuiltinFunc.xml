@@ -124,7 +124,7 @@
 			Set the seed for the random number generator.
 		</constant>
 		<constant name="MATH_RANDSEED" value="36" enum="BuiltinFunc">
-			Return a random value from the given seed, along with the new seed.
+			[i]Deprecated method.[/i] If you used this method in previous versions, use [RandomNumberGenerator] instead.
 		</constant>
 		<constant name="MATH_DEG2RAD" value="37" enum="BuiltinFunc">
 			Convert the input from degrees to radians.

@@ -87,7 +87,6 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"randf",
 		"rand_range",
 		"seed",
-		"rand_seed",
 		"deg2rad",
 		"rad2deg",
 		"linear2db",
@@ -453,17 +452,6 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			uint64_t seed = *p_args[0];
 			Math::seed(seed);
 			r_ret = Variant();
-		} break;
-		case MATH_RANDSEED: {
-			VALIDATE_ARG_COUNT(1);
-			VALIDATE_ARG_NUM(0);
-			uint64_t seed = *p_args[0];
-			int ret = Math::rand_from_seed(&seed);
-			Array reta;
-			reta.push_back(ret);
-			reta.push_back(seed);
-			r_ret = reta;
-
 		} break;
 		case MATH_DEG2RAD: {
 			VALIDATE_ARG_COUNT(1);
@@ -1747,11 +1735,6 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		case MATH_SEED: {
 			MethodInfo mi("seed", PropertyInfo(Variant::INT, "seed"));
 			mi.return_val.type = Variant::NIL;
-			return mi;
-		} break;
-		case MATH_RANDSEED: {
-			MethodInfo mi("rand_seed", PropertyInfo(Variant::INT, "seed"));
-			mi.return_val.type = Variant::ARRAY;
 			return mi;
 		} break;
 		case MATH_DEG2RAD: {

@@ -927,12 +927,14 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDSEED: {
 
+			WARN_DEPRECATED_MSG("The method Randseed has been deprecated and will be removed in the future. Use RandomNumberGenerator class instead.");
 			VALIDATE_ARG_NUM(0);
 			uint64_t seed = *p_inputs[0];
-			int ret = Math::rand_from_seed(&seed);
+			RandomPCG rng = RandomPCG(seed);
+			int ret = rng.rand();
 			Array reta;
 			reta.push_back(ret);
-			reta.push_back(seed);
+			reta.push_back(rng.get_state());
 			*r_return = reta;
 
 		} break;

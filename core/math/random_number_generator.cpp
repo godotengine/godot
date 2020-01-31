@@ -33,10 +33,15 @@
 RandomNumberGenerator::RandomNumberGenerator() {}
 
 void RandomNumberGenerator::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &RandomNumberGenerator::set_seed);
-	ClassDB::bind_method(D_METHOD("get_seed"), &RandomNumberGenerator::get_seed);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
+	ClassDB::bind_method(D_METHOD("set_state", "state"), &RandomNumberGenerator::set_state);
+	ClassDB::bind_method(D_METHOD("get_state"), &RandomNumberGenerator::get_state);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "state"), "set_state", "get_state");
 
+	ClassDB::bind_method(D_METHOD("set_last_seed", "last_seed"), &RandomNumberGenerator::set_last_seed);
+	ClassDB::bind_method(D_METHOD("get_last_seed"), &RandomNumberGenerator::get_last_seed);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "last_seed"), "set_last_seed", "get_last_seed");
+
+	ClassDB::bind_method(D_METHOD("seed", "seed"), &RandomNumberGenerator::seed);
 	ClassDB::bind_method(D_METHOD("randi"), &RandomNumberGenerator::randi);
 	ClassDB::bind_method(D_METHOD("randf"), &RandomNumberGenerator::randf);
 	ClassDB::bind_method(D_METHOD("randfn", "mean", "deviation"), &RandomNumberGenerator::randfn, DEFVAL(0.0), DEFVAL(1.0));

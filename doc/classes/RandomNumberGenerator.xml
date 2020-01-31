@@ -71,11 +71,24 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
+		<method name="seed">
+			<return type="void">
+			</return>
+			<argument index="0" name="seed" type="int">
+			</argument>
+			<description>
+				Initializes the random number generator state based on the given seed value. A given seed will give a reproducible sequence of pseudo-random numbers.
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="-6398989897141750821">
-			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
-			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
+		<member name="last_seed" type="int" setter="set_last_seed" getter="get_last_seed" default="-6398989897141750821">
+			The last value that was used to seed the generator.
+			This property is for bookkeeping only; setting it does not affect the behavior of the generator.
+		</member>
+		<member name="state" type="int" setter="set_state" getter="get_state" default="-6332740101472756719">
+			The current state of the random number generator. Save and restore this property to restore the generator to a previous state.
+			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [method seed] instead.
 		</member>
 	</members>
 	<constants>

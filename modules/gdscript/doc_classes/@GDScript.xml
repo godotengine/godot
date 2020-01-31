@@ -922,15 +922,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="rand_seed">
-			<return type="Array">
-			</return>
-			<argument index="0" name="seed" type="int">
-			</argument>
-			<description>
-				Random from seed: pass a [code]seed[/code], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
-			</description>
-		</method>
 		<method name="randf">
 			<return type="float">
 			</return>

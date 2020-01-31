@@ -42,7 +42,7 @@
 String WSLPeer::generate_key() {
 	// Random key
 	RandomNumberGenerator rng;
-	rng.set_seed(OS::get_singleton()->get_unix_time());
+	rng.seed(OS::get_singleton()->get_unix_time());
 	PoolVector<uint8_t> bkey;
 	int len = 16; // 16 bytes, as per RFC
 	bkey.resize(len);
@@ -133,7 +133,7 @@ ssize_t wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *data, size
 int wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data) {
 	RandomNumberGenerator rng;
 	// TODO maybe use crypto in the future?
-	rng.set_seed(OS::get_singleton()->get_unix_time());
+	rng.seed(OS::get_singleton()->get_unix_time());
 	for (unsigned int i = 0; i < len; i++) {
 		buf[i] = (uint8_t)rng.randi_range(0, 255);
 	}

@@ -32,16 +32,9 @@
 
 #include "core/error_macros.h"
 
-RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
+RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED);
 
 #define PHI 0x9e3779b9
-
-uint32_t Math::rand_from_seed(uint64_t *seed) {
-	RandomPCG rng = RandomPCG(*seed, RandomPCG::DEFAULT_INC);
-	uint32_t r = rng.rand();
-	*seed = rng.get_seed();
-	return r;
-}
 
 void Math::seed(uint64_t x) {
 	default_rand.seed(x);
