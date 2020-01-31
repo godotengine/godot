@@ -84,6 +84,7 @@ public:
 	int get_surface_material_count() const;
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
+	Ref<Material> get_active_material(int p_surface) const;
 
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
