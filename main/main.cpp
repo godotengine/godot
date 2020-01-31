@@ -1900,6 +1900,8 @@ bool Main::start() {
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
+			// Speed up rendering slightly by disabling 3D features while in the project manager.
+			sml->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING);
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
 			project_manager = true;
 		}
