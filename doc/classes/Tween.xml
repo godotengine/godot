@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Tweens are useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them.
+		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween] node; it would be difficult to do the same thing with an [AnimationPlayer] node.
 		Here is a brief usage example that causes a 2D node to move smoothly between two positions:
 		[codeblock]
 		var tween = get_node("Tween")
