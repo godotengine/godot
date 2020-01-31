@@ -83,11 +83,11 @@ godot_int GDAPI godot_color_to_rgba32(const godot_color *p_self);
 
 godot_int GDAPI godot_color_to_abgr32(const godot_color *p_self);
 
-godot_int GDAPI godot_color_to_abgr64(const godot_color *p_self);
+uint64_t GDAPI godot_color_to_abgr64(const godot_color *p_self);
 
-godot_int GDAPI godot_color_to_argb64(const godot_color *p_self);
+uint64_t GDAPI godot_color_to_argb64(const godot_color *p_self);
 
-godot_int GDAPI godot_color_to_rgba64(const godot_color *p_self);
+uint64_t GDAPI godot_color_to_rgba64(const godot_color *p_self);
 
 godot_int GDAPI godot_color_to_argb32(const godot_color *p_self);
 

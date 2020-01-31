@@ -121,17 +121,17 @@ godot_int GDAPI godot_color_to_abgr32(const godot_color *p_self) {
 	return self->to_abgr32();
 }
 
-godot_int GDAPI godot_color_to_abgr64(const godot_color *p_self) {
+uint64_t GDAPI godot_color_to_abgr64(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
 	return self->to_abgr64();
 }
 
-godot_int GDAPI godot_color_to_argb64(const godot_color *p_self) {
+uint64_t GDAPI godot_color_to_argb64(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
 	return self->to_argb64();
 }
 
-godot_int GDAPI godot_color_to_rgba64(const godot_color *p_self) {
+uint64_t GDAPI godot_color_to_rgba64(const godot_color *p_self) {
 	const Color *self = (const Color *)p_self;
 	return self->to_rgba64();
 }
