@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NodePath" version="3.2">
+<class name="NodePath" version="4.0">
 	<brief_description>
 		Pre-parsed scene tree path.
 	</brief_description>
