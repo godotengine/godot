@@ -57,9 +57,6 @@ typedef struct {
 			int p_argcount, godot_variant_call_error *r_error);
 
 	void (*notification)(godot_pluginscript_instance_data *p_data, int p_notification);
-	// TODO: could this rpc mode stuff be moved to the godot_pluginscript_script_manifest ?
-	godot_method_rpc_mode (*get_rpc_mode)(godot_pluginscript_instance_data *p_data, const godot_string *p_method);
-	godot_method_rpc_mode (*get_rset_mode)(godot_pluginscript_instance_data *p_data, const godot_string *p_variable);
 
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
