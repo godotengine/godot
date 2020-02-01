@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInspector" inherits="ScrollContainer" version="4.0">
 	<brief_description>
+		A tool used to edit properties of the node selected.
 	</brief_description>
 	<description>
+		The inspector is a tab by default located on the right hand side of the Godot editor. It is used to edit the properties of the selected node. For example, if you hand a Sprite node selected, you will be able to edit the properties of the node, such as seting or reseting the tranform and animations. The inspector is contains the tools that are heavly needed in your game development workflow.
 	</description>
 	<tutorials>
 	</tutorials>
