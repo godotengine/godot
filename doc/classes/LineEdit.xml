@@ -22,6 +22,8 @@
 		- Ctrl + N: Like the down arrow key, move the cursor to the next line
 		- Ctrl + D: Like the Delete key, delete the character on the right side of cursor
 		- Ctrl + H: Like the Backspace key, delete the character on the left side of the cursor
+		- Ctrl + A: Like the Home key, move the cursor to the beginning of the line
+		- Ctrl + E: Like the End key, move the cursor to the end of the line
 		- Command + Left arrow: Like the Home key, move the cursor to the beginning of the line
 		- Command + Right arrow: Like the End key, move the cursor to the end of the line
 	</description>

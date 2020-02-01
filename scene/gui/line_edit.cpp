@@ -184,6 +184,12 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_H: {
 					remap_key = KEY_BACKSPACE;
 				} break;
+				case KEY_A: {
+					remap_key = KEY_HOME;
+				} break;
+				case KEY_E: {
+					remap_key = KEY_END;
+				} break;
 			}
 
 			if (remap_key != KEY_UNKNOWN) {
