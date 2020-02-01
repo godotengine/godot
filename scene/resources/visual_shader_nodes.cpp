@@ -3586,17 +3586,17 @@ String VisualShaderNodeIf::get_output_port_name(int p_port) const {
 String VisualShaderNodeIf::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	String code;
-	code += "\tif(abs(" + p_input_vars[0] + "-" + p_input_vars[1] + ")<" + p_input_vars[2] + ")\n"; // abs(a - b) < tolerance eg. a == b
+	code += "\tif(abs(" + p_input_vars[0] + " - " + p_input_vars[1] + ") < " + p_input_vars[2] + ")\n"; // abs(a - b) < tolerance eg. a == b
 	code += "\t{\n";
-	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[3] + ";\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[3] + ";\n";
 	code += "\t}\n";
-	code += "\telse if(" + p_input_vars[0] + "<" + p_input_vars[1] + ")\n"; // a < b
+	code += "\telse if(" + p_input_vars[0] + " < " + p_input_vars[1] + ")\n"; // a < b
 	code += "\t{\n";
-	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[5] + ";\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[5] + ";\n";
 	code += "\t}\n";
 	code += "\telse\n"; // a > b (or a >= b if abs(a - b) < tolerance is false)
 	code += "\t{\n";
-	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[4] + ";\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[4] + ";\n";
 	code += "\t}\n";
 	return code;
 }
@@ -3658,11 +3658,11 @@ String VisualShaderNodeSwitch::generate_code(Shader::Mode p_mode, VisualShader::
 	String code;
 	code += "\tif(" + p_input_vars[0] + ")\n";
 	code += "\t{\n";
-	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[1] + ";\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[1] + ";\n";
 	code += "\t}\n";
 	code += "\telse\n";
 	code += "\t{\n";
-	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[2] + ";\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[2] + ";\n";
 	code += "\t}\n";
 	return code;
 }
