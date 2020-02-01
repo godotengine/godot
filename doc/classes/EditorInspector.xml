@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInspector" inherits="ScrollContainer" version="3.2">
 	<brief_description>
+		The tab located by default in the right hand side of the editor. It is used to edit properties of the node selected.
 	</brief_description>
 	<description>
 	</description>
