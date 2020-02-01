@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" version="3.2">
+<class name="Transform2D" version="4.0">
 	<brief_description>
 		2D transformation (3×2 matrix).
 	</brief_description>
