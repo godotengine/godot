@@ -187,8 +187,7 @@ void PluginScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int
 }
 
 void PluginScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
-	const String variable = String(p_variable);
-	_desc.add_global_constant(_data, (godot_string *)&variable, (godot_variant *)&p_value);
+	_desc.add_global_constant(_data, (godot_string_name *)&p_variable, (godot_variant *)&p_value);
 }
 
 /* LOADER FUNCTIONS */
