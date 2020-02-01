@@ -662,6 +662,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						idx++;
 					}
 
+					str = str.replace("dus_", "_");
+
 					return _make_token(TK_IDENTIFIER, str);
 				}
 
