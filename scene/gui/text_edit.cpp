@@ -557,13 +557,25 @@ void TextEdit::_notification(int p_what) {
 				}
 				int minimap_draw_amount = minimap_visible_lines + get_line_wrap_count(minimap_line + 1);
 
-				// draw the minimap
-				Color viewport_color = (background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
+				// Draw the minimap.
+
+				// Add visual feedback when dragging or hovering the the visible area rectangle.
+				float viewport_alpha;
+				if (dragging_minimap) {
+					viewport_alpha = 0.25;
+				} else if (hovering_minimap) {
+					viewport_alpha = 0.175;
+				} else {
+					viewport_alpha = 0.1;
+				}
+
+				const Color viewport_color = (background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
 				if (rtl) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				} else {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				}
+
 				for (int i = 0; i < minimap_draw_amount; i++) {
 					minimap_line++;
 
@@ -1547,6 +1559,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 		}
+	}
+
+	if (draw_minimap && !dragging_selection) {
+		_update_minimap_hover();
 	}
 
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -5644,6 +5660,33 @@ void TextEdit::_scroll_lines_down() {
 }
 
 // Minimap
+
+void TextEdit::_update_minimap_hover() {
+	const Point2 mp = get_local_mouse_pos();
+	const int xmargin_end = get_size().width - style_normal->get_margin(SIDE_RIGHT);
+
+	const bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
+	if (!hovering_sidebar) {
+		if (hovering_minimap) {
+			// Only redraw if the hovering status changed.
+			hovering_minimap = false;
+			update();
+		}
+
+		// Return early to avoid running the operations below when not needed.
+		return;
+	}
+
+	const int row = get_minimap_line_at_pos(Point2i(mp.x, mp.y));
+
+	const bool new_hovering_minimap = row >= get_first_visible_line() && row <= get_last_full_visible_line();
+	if (new_hovering_minimap != hovering_minimap) {
+		// Only redraw if the hovering status changed.
+		hovering_minimap = new_hovering_minimap;
+		update();
+	}
+}
+
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
