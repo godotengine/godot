@@ -203,6 +203,11 @@
 				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
+		<signal name="connection_cancel">
+			<description>
+				Emitted when user ended dragging connection from connected port into empty space of the graph.
+			</description>
+		</signal>
 		<signal name="connection_from_empty">
 			<argument index="0" name="to" type="String">
 			</argument>

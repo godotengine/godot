@@ -567,6 +567,8 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			} else {
 				emit_signal("connection_to_empty", from, from_slot, ofs);
 			}
+		} else {
+			emit_signal("connection_cancel");
 		}
 
 		connecting = false;
@@ -1330,6 +1332,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
+	ADD_SIGNAL(MethodInfo("connection_cancel"));
 }
 
 GraphEdit::GraphEdit() {

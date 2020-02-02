@@ -189,6 +189,10 @@ class VisualShaderEditor : public VBoxContainer {
 	int to_slot;
 	int from_node;
 	int from_slot;
+	int swap_node;
+	int swap_slot;
+
+	void _connection_cancel();
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);

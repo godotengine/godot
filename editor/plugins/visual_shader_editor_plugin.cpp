@@ -1494,6 +1494,15 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 		if (E->get().to_node == to && E->get().to_port == p_to_index) {
 			undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
 			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+
+			if (swap_node != -1) {
+				if (visual_shader->can_connect_nodes(type, E->get().from_node, E->get().from_port, swap_node, swap_slot)) {
+					undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, swap_node, swap_slot);
+					undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, swap_node, swap_slot);
+				}
+				swap_node = -1;
+			}
+			break;
 		}
 	}
 
@@ -1512,6 +1521,9 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 
 	int from = p_from.to_int();
 	int to = p_to.to_int();
+
+	swap_node = to;
+	swap_slot = p_to_index;
 
 	//updating = true; seems graph edit can handle this, no need to protect
 	undo_redo->create_action(TTR("Nodes Disconnected"));
@@ -2055,6 +2067,11 @@ void VisualShaderEditor::_member_cancel() {
 	from_slot = -1;
 }
 
+void VisualShaderEditor::_connection_cancel() {
+	swap_node = -1;
+	swap_slot = -1;
+}
+
 void VisualShaderEditor::_tools_menu_option(int p_idx) {
 
 	TreeItem *category = members->get_root()->get_children();
@@ -2226,6 +2243,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_dragged", &VisualShaderEditor::_node_dragged);
 	ClassDB::bind_method("_connection_request", &VisualShaderEditor::_connection_request);
+	ClassDB::bind_method("_connection_cancel", &VisualShaderEditor::_connection_cancel);
 	ClassDB::bind_method("_disconnection_request", &VisualShaderEditor::_disconnection_request);
 	ClassDB::bind_method("_node_selected", &VisualShaderEditor::_node_selected);
 	ClassDB::bind_method("_scroll_changed", &VisualShaderEditor::_scroll_changed);
@@ -2293,6 +2311,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	to_slot = -1;
 	from_node = -1;
 	from_slot = -1;
+	swap_node = -1;
+	swap_slot = -1;
 
 	main_box = memnew(HSplitContainer);
 	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2315,6 +2335,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
 	graph->connect("disconnection_request", this, "_disconnection_request", varray(), CONNECT_DEFERRED);
 	graph->connect("node_selected", this, "_node_selected");
+	graph->connect("connection_cancel", this, "_connection_cancel");
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
 	graph->connect("copy_nodes_request", this, "_copy_nodes");
