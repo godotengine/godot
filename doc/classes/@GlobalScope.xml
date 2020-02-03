@@ -50,7 +50,7 @@
 			The [JavaScript] singleton.
 			[b]Note:[/b] Only implemented on HTML5.
 		</member>
-		<member name="Marshalls" type="Reference" setter="" getter="">
+		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
 		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
