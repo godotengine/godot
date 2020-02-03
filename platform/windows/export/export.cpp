@@ -88,8 +88,6 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "codesign/custom_options"), PoolStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), ""));
@@ -105,27 +103,28 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	}
 
 	if (!FileAccess::exists(rcedit_path)) {
-		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
+		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ". No icon or app information data will be included.");
 		return;
 	}
 
 #ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
+	// On non-Windows platforms, we need Wine to run rcedit.
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		ERR_PRINTS("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
+		ERR_PRINTS("Could not find Wine executable at " + wine_path + ". No icon or app information data will be included.");
 		return;
 	}
 
 	if (wine_path == String()) {
-		wine_path = "wine"; // try to run wine from PATH
+		// Try to run Wine from the `PATH`.
+		wine_path = "wine";
 	}
 #endif
 
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
-	String file_verion = p_preset->get("application/file_version");
-	String product_version = p_preset->get("application/product_version");
+	String file_version = GLOBAL_GET("application/config/version");
+	String product_version = GLOBAL_GET("application/config/version");
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
 	String file_description = p_preset->get("application/file_description");
@@ -139,9 +138,9 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 		args.push_back("--set-icon");
 		args.push_back(icon_path);
 	}
-	if (file_verion != String()) {
+	if (file_version != String()) {
 		args.push_back("--set-file-version");
-		args.push_back(file_verion);
+		args.push_back(file_version);
 	}
 	if (product_version != String()) {
 		args.push_back("--set-product-version");
