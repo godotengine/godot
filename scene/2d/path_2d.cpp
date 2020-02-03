@@ -120,9 +120,15 @@ void Path2D::_notification(int p_what) {
 }
 
 void Path2D::_curve_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
 
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
-		update();
+	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+		return;
+	}
+
+	update();
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
