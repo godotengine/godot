@@ -174,6 +174,7 @@ class VisualShaderNode : public Resource {
 	int port_preview;
 
 	Map<int, Variant> default_input_values;
+	Map<int, bool> port_const_values;
 
 protected:
 	bool simple_decl;
@@ -201,6 +202,9 @@ public:
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
 	Array get_default_input_values() const;
 	void set_default_input_values(const Array &p_values);
+
+	void set_input_port_constness(int p_port, bool p_enabled = true);
+	bool get_input_port_constness(int p_port) const;
 
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;

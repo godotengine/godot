@@ -15,6 +15,15 @@
 				Returns an [Array] containing default values for all of the input ports of the node in the form [code][index0, value0, index1, value1, ...][/code].
 			</description>
 		</method>
+		<method name="get_input_port_constness" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<description>
+				Returns the constness of input [code]port[/code] (see [method set_input_port_constness]).
+			</description>
+		</method>
 		<method name="get_input_port_default_value" qualifiers="const">
 			<return type="Variant">
 			</return>
@@ -31,6 +40,17 @@
 			</argument>
 			<description>
 				Sets the default input ports values using an [Array] of the form [code][index0, value0, index1, value1, ...][/code]. For example: [code][0, Vector3(0, 0, 0), 1, Vector3(0, 0, 0)][/code].
+			</description>
+		</method>
+		<method name="set_input_port_constness">
+			<return type="void">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool" default="true">
+			</argument>
+			<description>
+				Disables input port from incoming connections while keeping it changeable for user through input field in the node. In order to show that field the method [method set_input_port_default_value] should be used.
 			</description>
 		</method>
 		<method name="set_input_port_default_value">

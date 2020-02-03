@@ -648,9 +648,11 @@ void VisualShaderEditor::_update_graph() {
 			hb->add_constant_override("separation", 7 * EDSCALE);
 
 			Variant default_value;
+			bool is_const = false;
 
 			if (valid_left && !port_left_used) {
 				default_value = vsnode->get_input_port_default_value(i);
+				is_const = vsnode->get_input_port_constness(i);
 			}
 
 			if (default_value.get_type() != Variant::NIL) { // only a label
@@ -792,7 +794,7 @@ void VisualShaderEditor::_update_graph() {
 
 			node->add_child(hb);
 
-			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
+			node->set_slot(i + port_offset, valid_left && !is_const, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
 		}
 
 		if (vsnode->get_output_port_for_preview() >= 0) {

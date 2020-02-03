@@ -103,6 +103,19 @@ void VisualShaderNode::set_default_input_values(const Array &p_values) {
 	emit_changed();
 }
 
+void VisualShaderNode::set_input_port_constness(int p_port, bool p_enabled) {
+	port_const_values[p_port] = p_enabled;
+	emit_changed();
+}
+
+bool VisualShaderNode::get_input_port_constness(int p_port) const {
+	if (port_const_values.has(p_port)) {
+		return port_const_values[p_port];
+	}
+
+	return false;
+}
+
 String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	return String();
 }
@@ -115,6 +128,9 @@ void VisualShaderNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_output_port_for_preview", "port"), &VisualShaderNode::set_output_port_for_preview);
 	ClassDB::bind_method(D_METHOD("get_output_port_for_preview"), &VisualShaderNode::get_output_port_for_preview);
+
+	ClassDB::bind_method(D_METHOD("set_input_port_constness", "port", "enabled"), &VisualShaderNode::set_input_port_constness, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_input_port_constness", "port"), &VisualShaderNode::get_input_port_constness);
 
 	ClassDB::bind_method(D_METHOD("set_input_port_default_value", "port", "value"), &VisualShaderNode::set_input_port_default_value);
 	ClassDB::bind_method(D_METHOD("get_input_port_default_value", "port"), &VisualShaderNode::get_input_port_default_value);
@@ -1085,6 +1101,11 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	String *inputs = input_vars.ptrw();
 
 	for (int i = 0; i < input_count; i++) {
+
+		if (vsnode->get_input_port_constness(i)) {
+			continue;
+		}
+
 		ConnectionKey ck;
 		ck.node = node;
 		ck.port = i;
