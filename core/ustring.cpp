@@ -3324,7 +3324,7 @@ String String::humanize_size(uint64_t p_size) {
 
 	int prefix_idx = 0;
 
-	while (prefix_idx < prefixes.size() && p_size > (_div * 1024)) {
+	while (prefix_idx < prefixes.size() - 1 && p_size > (_div * 1024)) {
 		_div *= 1024;
 		prefix_idx++;
 	}
