@@ -115,6 +115,7 @@ class OS_X11 : public OS_Unix {
 	// IME
 	bool im_active;
 	Vector2 im_position;
+	Vector2 last_position_before_fs;
 
 	Size2 min_size;
 	Size2 max_size;
