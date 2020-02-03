@@ -2644,7 +2644,7 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 	code += output_initializer;
 	code += "\t{";
 	code += _expression;
-	code += "\n\t}";
+	code += "\n\t}\n";
 
 	return code;
 }
