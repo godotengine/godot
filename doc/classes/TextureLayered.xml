@@ -4,7 +4,7 @@
 		Base class for 3D texture types.
 	</brief_description>
 	<description>
-		Base class for [Texture3D] and [TextureArray]. Cannot be used directly.
+		Base class for [Texture3D] and [TextureArray]. Cannot be used directly, but contains all the functions necessary for accessing and using [Texture3D] and [TextureArray]. Data is set on a per-layer basis. For [Texture3D]s, the layer sepcifies the depth or Z-index, they can be treated as a bunch of 2D slices. Similarly, for [TextureArray]s, the layer specifies the array layer.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,24 +23,28 @@
 			<argument index="4" name="flags" type="int" default="4">
 			</argument>
 			<description>
+				Creates the [Texture3D] or [TextureArray] with specified [code]width[/code], [code]height[/code], and [code]depth[/code]. See [enum Image.Format] for [code]format[/code] options. See [enum Flags] enumerator for [code]flags[/code] options.
 			</description>
 		</method>
 		<method name="get_depth" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the depth of the texture. Depth is the 3rd dimension (typically Z-axis).
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
+				Returns the current format being used by this texture. See [enum Image.Format] for details.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the height of the texture. Height is typically represented by the Y-axis.
 			</description>
 		</method>
 		<method name="get_layer_data" qualifiers="const">
@@ -49,12 +53,14 @@
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+				Returns an [Image] resource with the data from specified [code]layer[/code].
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the width of the texture. Width is typically represented by the X-axis.
 			</description>
 		</method>
 		<method name="set_data_partial">
@@ -71,6 +77,7 @@
 			<argument index="4" name="mipmap" type="int" default="0">
 			</argument>
 			<description>
+				Partially sets the data for a specified [code]layer[/code] by overwriting using the data of the specified [code]image[/code]. [code]x_offset[/code] and [code]y_offset[/code] determine where the [Image] is "stamped" over the texture. The [code]image[/code] must fit within the texture.
 			</description>
 		</method>
 		<method name="set_layer_data">
@@ -81,23 +88,30 @@
 			<argument index="1" name="layer" type="int">
 			</argument>
 			<description>
+				Sets the data for the specified layer. Data takes the form of a 2-dimensional [Image] resource.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}">
+			Returns a dictionary with all the data used by this texture.
 		</member>
 		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
+			Specifies which [enum Flags] apply to this texture.
 		</member>
 	</members>
 	<constants>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
+			Texture will generate mipmaps on creation.
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
+			Texture will repeat when UV used is outside the 0-1 range.
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
+			Use filtering when reading from texture. Filtering smooths out pixels. Turning filtering off is slightly faster and more appropriate when you need access to individual pixels.
 		</constant>
 		<constant name="FLAGS_DEFAULT" value="4" enum="Flags">
+			Equivalent to [constant FLAG_FILTER].
 		</constant>
 	</constants>
 </class>
