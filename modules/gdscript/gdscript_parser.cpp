@@ -3167,7 +3167,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (error_set) {
 					return;
 				}
-				p_block->has_return = cf_while->body->has_return;
 				p_block->statements.push_back(cf_while);
 			} break;
 			case GDScriptTokenizer::TK_CF_FOR: {
@@ -3308,7 +3307,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				if (error_set) {
 					return;
 				}
-				p_block->has_return = cf_for->body->has_return;
 				p_block->statements.push_back(cf_for);
 			} break;
 			case GDScriptTokenizer::TK_CF_CONTINUE: {
