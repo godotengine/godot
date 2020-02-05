@@ -422,10 +422,14 @@ public:
 	Array clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
 	Array intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
 	Array exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
+	// All of the above, but accepts lists of polygons.
+	Array polygons_boolean_2d(PolyBooleanOperation p_operation, Array p_polygons_a, Array p_polygons_b = Variant());
 
 	// 2D polyline vs polygon operations.
 	Array clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
 	Array intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
+	// All of the above, but accepts lists of polypaths.
+	Array polylines_boolean_2d(PolyBooleanOperation p_operation, Array p_polylines_a, Array p_polygons_b);
 
 	// 2D offset polygons/polylines.
 	enum PolyJoinType {

@@ -790,45 +790,68 @@ public:
 		END_ROUND
 	};
 
-	static Vector<Vector<Point2> > merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+	static Vector<Vector<Point2> > polygons_boolean_2d(PolyBooleanOperation p_op, const Vector<Vector<Point2> > &p_polygons_a, const Vector<Vector<Point2> > &p_polygons_b = Vector<Vector<Point2> >()) {
+		return _polypaths_do_operation(p_op, p_polygons_a, p_polygons_b);
+	}
 
-		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
+	static Vector<Vector<Point2> > polylines_boolean_2d(PolyBooleanOperation p_op, const Vector<Vector<Point2> > &p_polylines, const Vector<Vector<Point2> > &p_polygons) {
+		return _polypaths_do_operation(p_op, p_polylines, p_polygons, true);
+	}
+
+	static Vector<Vector<Point2> > merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polygon_a);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon_b);
+		return _polypaths_do_operation(OPERATION_UNION, subject, clip);
 	}
 
 	static Vector<Vector<Point2> > clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
-		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polygon_a);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon_b);
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, subject, clip);
 	}
 
 	static Vector<Vector<Point2> > intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
-		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polygon_a);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon_b);
+		return _polypaths_do_operation(OPERATION_INTERSECTION, subject, clip);
 	}
 
 	static Vector<Vector<Point2> > exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
-		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polygon_a);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon_b);
+		return _polypaths_do_operation(OPERATION_XOR, subject, clip);
 	}
 
 	static Vector<Vector<Point2> > clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
-		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polyline);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon);
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, subject, clip, true);
 	}
 
 	static Vector<Vector<Point2> > intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
-		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
+		Vector<Vector<Point2> > subject;
+		subject.push_back(p_polyline);
+		Vector<Vector<Point2> > clip;
+		clip.push_back(p_polygon);
+		return _polypaths_do_operation(OPERATION_INTERSECTION, subject, clip, true);
 	}
 
 	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-
 		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
 	}
 
 	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-
 		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2> >(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
-
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
 	}
 
@@ -1015,7 +1038,7 @@ public:
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
 private:
-	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Vector<Point2> > &p_polypaths_a, const Vector<Vector<Point2> > &p_polypaths_b, bool is_a_open = false);
 	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 

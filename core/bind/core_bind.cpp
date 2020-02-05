@@ -1646,6 +1646,42 @@ Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const P
 	return Geometry::clip_polygon(p_points, p_plane);
 }
 
+Array _Geometry::polygons_boolean_2d(PolyBooleanOperation p_operation, Array p_polygons_a, Array p_polygons_b) {
+	Vector<Vector<Point2> > polygons_a;
+	for (int i = 0; i < p_polygons_a.size(); i++) {
+		polygons_a.push_back(p_polygons_a[i]);
+	}
+	Vector<Vector<Point2> > polygons_b;
+	for (int i = 0; i < p_polygons_b.size(); i++) {
+		polygons_b.push_back(p_polygons_b[i]);
+	}
+	Vector<Vector<Point2> > solution = Geometry::polygons_boolean_2d(Geometry::PolyBooleanOperation(p_operation), polygons_a, polygons_b);
+
+	Array ret;
+	for (int i = 0; i < solution.size(); i++) {
+		ret.push_back(solution[i]);
+	}
+	return ret;
+}
+
+Array _Geometry::polylines_boolean_2d(PolyBooleanOperation p_operation, Array p_polylines, Array p_polygons) {
+	Vector<Vector<Point2> > polylines;
+	for (int i = 0; i < p_polylines.size(); i++) {
+		polylines.push_back(p_polylines[i]);
+	}
+	Vector<Vector<Point2> > polygons;
+	for (int i = 0; i < p_polygons.size(); i++) {
+		polygons.push_back(p_polygons[i]);
+	}
+	Vector<Vector<Point2> > solution = Geometry::polylines_boolean_2d(Geometry::PolyBooleanOperation(p_operation), polylines, polygons);
+
+	Array ret;
+	for (int i = 0; i < solution.size(); i++) {
+		ret.push_back(solution[i]);
+	}
+	return ret;
+}
+
 Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
 
 	Vector<Vector<Point2> > polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
@@ -1814,9 +1850,11 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clip_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::clip_polygons_2d);
 	ClassDB::bind_method(D_METHOD("intersect_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::intersect_polygons_2d);
 	ClassDB::bind_method(D_METHOD("exclude_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::exclude_polygons_2d);
+	ClassDB::bind_method(D_METHOD("polygons_boolean_2d", "operation", "polygons_a", "polygons_b"), &_Geometry::polygons_boolean_2d, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
 	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
+	ClassDB::bind_method(D_METHOD("polylines_boolean_2d", "operation", "polylines", "polygons"), &_Geometry::polylines_boolean_2d);
 
 	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
 	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
