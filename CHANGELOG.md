@@ -250,6 +250,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Drag-and-drop support in the TileSet editor.
 - Ability to attach scripts to nodes by dragging a name from the script list to a node in the scene tree.
 - Icons are now displayed next to code completion items, making their type easier to distinguish.
+- TileMap property `centered_textures` can be used to center textures on their tile, instead of using the tile's top-left corner as position for the texture.
 - "Ignore" flag to ignore specific tiles when autotiling in the TileMap editor.
 - Keyboard shortcuts to rotate tiles in the TileMap editor.
   - Default shortcuts are <kbd>A</kbd> (rotate left), <kbd>S</kbd> (rotate right), <kbd>X</kbd> (flip horizontally), <kbd>Y</kbd> (flip vertically).
@@ -519,6 +520,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Graph lines are now thinner and opaque.
   - Graph line widths are now resized to match the editor scale.
   - Rounded values now display trailing zeroes to make their precision clearer.
+- TileMap support for transform operations on cell textures bigger than the cell size has been reworked to properly support isometric tiles.
+  - Breaks compatibility with some TileMaps from previous Godot versions. An opt-in `compatibility_mode` property can be used to restore the previous behavior.
 - Some TileMap editor options were moved to the toolbar.
 - The TileMap editor now displays coordinate information in the 2D viewport's bottom-left corner.
   - This fixes the TileMap editor width changing when hovering tiles in a small window.
