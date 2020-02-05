@@ -37,12 +37,11 @@ extern "C" {
 
 #include <stdint.h>
 
-#define GODOT_VARIANT_SIZE (16 + sizeof(void *))
-
 #ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VARIANT_SIZE];
+	int64_t _dont_touch_that[2]; // uses workaround to correct calculate sizeof(Variant) for armv7 with memory aligment to 8 bytes
+	int type;
 } godot_variant;
 #endif
 

@@ -38,6 +38,32 @@
 
 #include "scene/main/scene_tree.h"
 
+typedef int godot_variant_size_check[sizeof(godot_variant) == sizeof(Variant) ? 1 : -1];
+typedef int godot_string_size_check[sizeof(godot_string) == sizeof(String) ? 1 : -1];
+typedef int godot_string_name_size_check[sizeof(godot_string_name) == sizeof(StringName) ? 1 : -1];
+typedef int godot_vector2_size_check[sizeof(godot_vector2) == sizeof(Vector2) ? 1 : -1];
+typedef int godot_rect2_size_check[sizeof(godot_rect2) == sizeof(Rect2) ? 1 : -1];
+typedef int godot_vector3_size_check[sizeof(godot_vector3) == sizeof(Vector3) ? 1 : -1];
+typedef int godot_transform2d_size_check[sizeof(godot_transform2d) == sizeof(Transform2D) ? 1 : -1];
+typedef int godot_plane_size_check[sizeof(godot_plane) == sizeof(Plane) ? 1 : -1];
+typedef int godot_quat_size_check[sizeof(godot_quat) == sizeof(Quat) ? 1 : -1];
+typedef int godot_aabb_size_check[sizeof(godot_aabb) == sizeof(AABB) ? 1 : -1];
+typedef int godot_basis_size_check[sizeof(godot_basis) == sizeof(Basis) ? 1 : -1];
+typedef int godot_transform_size_check[sizeof(godot_transform) == sizeof(Transform) ? 1 : -1];
+typedef int godot_transform2d_size_check[sizeof(godot_transform2d) == sizeof(Transform2D) ? 1 : -1];
+typedef int godot_color_size_check[sizeof(godot_color) == sizeof(Color) ? 1 : -1];
+typedef int godot_node_path_size_check[sizeof(godot_node_path) == sizeof(NodePath) ? 1 : -1];
+typedef int godot_rid_size_check[sizeof(godot_rid) == sizeof(RID) ? 1 : -1];
+typedef int godot_dictionary_size_check[sizeof(godot_dictionary) == sizeof(Dictionary) ? 1 : -1];
+typedef int godot_array_size_check[sizeof(godot_array) == sizeof(Array) ? 1 : -1];
+typedef int godot_pool_byte_array_size_check[sizeof(godot_pool_byte_array) == sizeof(PoolByteArray) ? 1 : -1];
+typedef int godot_pool_int_array_size_check[sizeof(godot_pool_int_array) == sizeof(PoolIntArray) ? 1 : -1];
+typedef int godot_pool_real_array_size_check[sizeof(godot_pool_real_array) == sizeof(PoolRealArray) ? 1 : -1];
+typedef int godot_pool_string_array_size_check[sizeof(godot_pool_string_array) == sizeof(PoolStringArray) ? 1 : -1];
+typedef int godot_pool_vector2_array_size_check[sizeof(godot_pool_vector2_array) == sizeof(PoolVector2Array) ? 1 : -1];
+typedef int godot_pool_vector3_array_size_check[sizeof(godot_pool_vector3_array) == sizeof(PoolVector3Array) ? 1 : -1];
+typedef int godot_pool_color_array_size_check[sizeof(godot_pool_color_array) == sizeof(PoolColorArray) ? 1 : -1];
+
 static const String init_symbol = "gdnative_init";
 static const String terminate_symbol = "gdnative_terminate";
 static const String default_symbol_prefix = "godot_";

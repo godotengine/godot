@@ -65,13 +65,6 @@ typedef PoolVector<Vector2> PoolVector2Array;
 typedef PoolVector<Vector3> PoolVector3Array;
 typedef PoolVector<Color> PoolColorArray;
 
-// Temporary workaround until c++11 alignas()
-#ifdef __GNUC__
-#define GCC_ALIGNED_8 __attribute__((aligned(8)))
-#else
-#define GCC_ALIGNED_8
-#endif
-
 class Variant {
 public:
 	// If this changes the table in variant_op must be updated
@@ -123,8 +116,6 @@ private:
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
-	Type type;
-
 	struct ObjData {
 
 		Object *obj;
@@ -144,7 +135,9 @@ private:
 		Transform *_transform;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
-	} _data GCC_ALIGNED_8;
+	} _data;
+
+	Type type;
 
 	void reference(const Variant &p_variant);
 	void clear();
