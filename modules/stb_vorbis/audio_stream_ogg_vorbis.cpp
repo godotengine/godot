@@ -57,7 +57,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 		if (todo) {
 			//end of file!
-			if (vorbis_stream->loop) {
+			if (vorbis_stream->loop && mixed > 0) {
 				//loop
 				seek(vorbis_stream->loop_offset);
 				loops++;
