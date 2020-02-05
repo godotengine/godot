@@ -1845,7 +1845,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
-	ERR_FAIL_COND(p_event.is_null())
+	ERR_FAIL_COND(p_event.is_null());
 
 	//?
 	/*

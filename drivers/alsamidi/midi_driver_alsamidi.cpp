@@ -91,7 +91,7 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 				ret = snd_rawmidi_read(midi_in, &byte, 1);
 				if (ret < 0) {
 					if (ret != -EAGAIN) {
-						ERR_PRINTS("snd_rawmidi_read error: " + String(snd_strerror(ret)));
+						ERR_PRINT("snd_rawmidi_read error: " + String(snd_strerror(ret)));
 					}
 				} else {
 					if (byte & 0x80) {

@@ -974,7 +974,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nThis might be due to a configuration issue in the export preset or your export settings."), platform->get_name()));
 		}
 
-		ERR_PRINTS(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
+		ERR_PRINT(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
 		error_dialog->show();
 		error_dialog->popup_centered_minsize(Size2(300, 80));
 	}

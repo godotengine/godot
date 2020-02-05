@@ -748,7 +748,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			config.instance();
 			Error err = config->load(path + ".import");
 			if (err != OK) {
-				ERR_PRINTS("Could not parse: '" + path + "', not exported.");
+				ERR_PRINT("Could not parse: '" + path + "', not exported.");
 				continue;
 			}
 

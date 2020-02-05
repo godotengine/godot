@@ -966,7 +966,7 @@ void TranslationServer::set_locale(const String &p_locale) {
 		print_verbose(vformat("Unsupported locale '%s', falling back to '%s'.", p_locale, trimmed_locale));
 
 		if (!is_locale_valid(trimmed_locale)) {
-			ERR_PRINTS(vformat("Unsupported locale '%s', falling back to 'en'.", trimmed_locale));
+			ERR_PRINT(vformat("Unsupported locale '%s', falling back to 'en'.", trimmed_locale));
 			locale = "en";
 		} else {
 			locale = trimmed_locale;

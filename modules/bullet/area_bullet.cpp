@@ -167,7 +167,7 @@ bool AreaBullet::is_monitoring() const {
 }
 
 void AreaBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btGhost->setCollisionShape(get_main_shape());
 }
 
@@ -245,7 +245,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
 }
 
@@ -268,7 +268,7 @@ Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
-			WARN_PRINTS("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 			return Variant();
 	}
 }

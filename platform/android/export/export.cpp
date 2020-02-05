@@ -610,7 +610,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	static Error save_apk_so(void *p_userdata, const SharedObject &p_so) {
 		if (!p_so.path.get_file().begins_with("lib")) {
 			String err = "Android .so file names must start with \"lib\", but got: " + p_so.path;
-			ERR_PRINTS(err);
+			ERR_PRINT(err);
 			return FAILED;
 		}
 		APKExportData *ed = (APKExportData *)p_userdata;
@@ -631,7 +631,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		if (!exported) {
 			String abis_string = String(" ").join(abis);
 			String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
-			ERR_PRINTS(err);
+			ERR_PRINT(err);
 			return FAILED;
 		}
 		return OK;
@@ -1878,7 +1878,7 @@ public:
 								new_file += "//CHUNK_" + text + "_BEGIN\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in build.gradle for chunk: " + text);
+									ERR_PRINT("No end marker found in build.gradle for chunk: " + text);
 									f->seek(pos);
 								} else {
 
@@ -1914,7 +1914,7 @@ public:
 								new_file += "//DIR_" + text + "_BEGIN\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in build.gradle for dir: " + text);
+									ERR_PRINT("No end marker found in build.gradle for dir: " + text);
 									f->seek(pos);
 								} else {
 									//add chunk lines
@@ -1973,7 +1973,7 @@ public:
 								new_file += "<!--CHUNK_" + text + "_BEGIN-->\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
+									ERR_PRINT("No end marker found in AndroidManifest.xml for chunk: " + text);
 									f->seek(pos);
 								} else {
 									//add chunk lines
@@ -1992,7 +1992,7 @@ public:
 							String last_tag = "android:icon=\"@mipmap/icon\"";
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
-								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
+								ERR_PRINT("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
 								new_file += l + "\n";
 							} else {
 								String base = l.substr(0, last_tag_pos + last_tag.length());

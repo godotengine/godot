@@ -235,7 +235,7 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	Error err = VariantParser::parse(&ss, ret, errs, line);
 	if (err != OK) {
 		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
-		ERR_PRINTS(err_str);
+		ERR_PRINT(err_str);
 		ret = err_str;
 	}
 
@@ -247,11 +247,11 @@ MonoBoolean godot_icall_GD_type_exists(MonoString *p_type) {
 }
 
 void godot_icall_GD_pusherror(MonoString *p_str) {
-	ERR_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	ERR_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 void godot_icall_GD_pushwarning(MonoString *p_str) {
-	WARN_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
+	WARN_PRINT(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
 MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects) {

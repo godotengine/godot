@@ -277,7 +277,7 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
 template <typename T>
 inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL)
-		ERR_PRINTS("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
+		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 

@@ -638,7 +638,7 @@ Error ExportTemplateManager::install_android_template() {
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
 #endif
 			} else {
-				ERR_PRINTS("Can't uncompress file: " + to_write);
+				ERR_PRINT("Can't uncompress file: " + to_write);
 			}
 		}
 

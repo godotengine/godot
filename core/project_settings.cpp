@@ -206,7 +206,7 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 		name = feature_overrides[name];
 	}
 	if (!props.has(name)) {
-		WARN_PRINTS("Property not found: " + String(name));
+		WARN_PRINT("Property not found: " + String(name));
 		return false;
 	}
 	r_ret = props[name].variant;
@@ -579,7 +579,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			_convert_to_last_version(config_version);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}
@@ -612,7 +612,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
-		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
+		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
 		return err_text;
 	}
 

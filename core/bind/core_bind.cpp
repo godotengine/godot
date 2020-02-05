@@ -110,7 +110,7 @@ PoolStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 
 #ifndef DISABLE_DEPRECATED
 bool _ResourceLoader::has(const String &p_path) {
-	WARN_PRINTS("ResourceLoader.has() is deprecated, please replace it with the equivalent has_cached() or the new exists().");
+	WARN_PRINT("ResourceLoader.has() is deprecated, please replace it with the equivalent has_cached() or the new exists().");
 	return has_cached(p_path);
 }
 #endif // DISABLE_DEPRECATED
@@ -3217,7 +3217,7 @@ Ref<JSONParseResult> _JSON::parse(const String &p_json) {
 	result->error = JSON::parse(p_json, result->result, result->error_string, result->error_line);
 
 	if (result->error != OK) {
-		ERR_PRINTS(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
+		ERR_PRINT(vformat("Error parsing JSON at line %s: %s", result->error_line, result->error_string));
 	}
 	return result;
 }

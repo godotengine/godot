@@ -512,7 +512,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		default: {
-			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
+			ERR_PRINT("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 

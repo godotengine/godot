@@ -110,7 +110,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 			r_result.collider_id = gObj->get_instance_id();
 			r_result.collider = 0 == r_result.collider_id ? NULL : ObjectDB::get_instance(r_result.collider_id);
 		} else {
-			WARN_PRINTS("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
+			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
 		}
 		return true;
 	} else {
@@ -127,7 +127,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -157,7 +157,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return false;
 	}
 	btConvexShape *bt_convex_shape = static_cast<btConvexShape *>(btShape);
@@ -212,7 +212,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -244,7 +244,7 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
-		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
@@ -389,7 +389,7 @@ void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant 
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			break;
 		default:
-			WARN_PRINTS("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			break;
 	}
 }
@@ -412,7 +412,7 @@ Variant SpaceBullet::get_param(PhysicsServer::AreaParameter p_param) {
 		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return 0;
 		default:
-			WARN_PRINTS("This get parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This get parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			return Variant();
 	}
 }
@@ -428,7 +428,7 @@ void SpaceBullet::set_param(PhysicsServer::SpaceParameter p_param, real_t p_valu
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
-			WARN_PRINTS("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
+			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			break;
 	}
 }
@@ -444,7 +444,7 @@ real_t SpaceBullet::get_param(PhysicsServer::SpaceParameter p_param) {
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
-			WARN_PRINTS("The SpaceBullet  doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
+			WARN_PRINT("The SpaceBullet  doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
 			return 0.f;
 	}
 }

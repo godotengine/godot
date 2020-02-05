@@ -148,7 +148,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	const VariantContainer *v = props.getptr(p_name);
 	if (!v) {
-		WARN_PRINTS("EditorSettings::_get - Property not found: " + String(p_name));
+		WARN_PRINT("EditorSettings::_get - Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = v->variant;
@@ -794,13 +794,13 @@ void EditorSettings::create() {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/._sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/._sc_'.");
 		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/_sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
+			ERR_PRINT("Can't load config from path '" + exe_path + "/_sc_'.");
 		}
 	}
 	memdelete(d);
@@ -1056,7 +1056,7 @@ void EditorSettings::save() {
 	Error err = ResourceSaver::save(singleton->config_file_path, singleton);
 
 	if (err != OK) {
-		ERR_PRINTS("Error saving editor settings to " + singleton->config_file_path);
+		ERR_PRINT("Error saving editor settings to " + singleton->config_file_path);
 	} else {
 		print_verbose("EditorSettings: Save OK!");
 	}

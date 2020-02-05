@@ -341,7 +341,7 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 	ERR_FAIL_COND_V(p_nodes.size() == BSP_Tree::MAX_NODES, -1);
 
 	// should not reach here
-	ERR_FAIL_COND_V(p_indices.size() == 0, -1)
+	ERR_FAIL_COND_V(p_indices.size() == 0, -1);
 
 	int ic = p_indices.size();
 	const int *indices = p_indices.ptr();

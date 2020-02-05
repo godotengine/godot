@@ -320,7 +320,7 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 }
 
 void RigidBodyBullet::main_shape_changed() {
-	CRASH_COND(!get_main_shape())
+	CRASH_COND(!get_main_shape());
 	btBody->setCollisionShape(get_main_shape());
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
@@ -515,7 +515,7 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 			scratch_space_override_modificator();
 			break;
 		default:
-			WARN_PRINTS("Parameter " + itos(p_param) + " not supported by bullet. Value: " + itos(p_value));
+			WARN_PRINT("Parameter " + itos(p_param) + " not supported by bullet. Value: " + itos(p_value));
 	}
 }
 
@@ -536,7 +536,7 @@ real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
 		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE:
 			return gravity_scale;
 		default:
-			WARN_PRINTS("Parameter " + itos(p_param) + " not supported by bullet");
+			WARN_PRINT("Parameter " + itos(p_param) + " not supported by bullet");
 			return 0;
 	}
 }
@@ -619,7 +619,7 @@ Variant RigidBodyBullet::get_state(PhysicsServer::BodyState p_state) const {
 		case PhysicsServer::BODY_STATE_CAN_SLEEP:
 			return can_sleep;
 		default:
-			WARN_PRINTS("This state " + itos(p_state) + " is not supported by Bullet");
+			WARN_PRINT("This state " + itos(p_state) + " is not supported by Bullet");
 			return Variant();
 	}
 }

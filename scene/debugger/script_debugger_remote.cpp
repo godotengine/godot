@@ -92,7 +92,7 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 
-		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
+		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
 	};
 

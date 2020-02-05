@@ -53,7 +53,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 		Error err;
 		f = FileAccess::open(p_file, FileAccess::READ, &err);
 		if (!f) {
-			ERR_PRINTS("Error opening file '" + p_file + "'.");
+			ERR_PRINT("Error opening file '" + p_file + "'.");
 			return err;
 		}
 	}
@@ -66,7 +66,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 			continue;
 		Error err = loader[i]->load_image(p_image, f, p_force_linear, p_scale);
 		if (err != OK) {
-			ERR_PRINTS("Error loading image: " + p_file);
+			ERR_PRINT("Error loading image: " + p_file);
 		}
 
 		if (err != ERR_FILE_UNRECOGNIZED) {

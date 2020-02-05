@@ -192,14 +192,14 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 	Variant v;
 	err = JSON::parse(text, v, err_str, err_line);
 	if (err != OK) {
-		ERR_PRINTS("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
+		ERR_PRINT("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
 		return ERR_PARSE_ERROR;
 	}
 
 	Dictionary json = v;
 
 	if (!json.has("type") || String(json["type"]) != "feature_profile") {
-		ERR_PRINTS("Error parsing '" + p_path + "', it's not a feature profile.");
+		ERR_PRINT("Error parsing '" + p_path + "', it's not a feature profile.");
 		return ERR_PARSE_ERROR;
 	}
 
@@ -298,7 +298,7 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 			current.instance();
 			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
 			if (err != OK) {
-				ERR_PRINTS("Error loading default feature profile: " + current_profile);
+				ERR_PRINT("Error loading default feature profile: " + current_profile);
 				current_profile = String();
 				current.unref();
 			}

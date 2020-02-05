@@ -519,7 +519,7 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 
 Error AudioStreamSample::save_to_wav(const String &p_path) {
 	if (format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		WARN_PRINTS("Saving IMA_ADPC samples are not supported yet");
+		WARN_PRINT("Saving IMA_ADPC samples are not supported yet");
 		return ERR_UNAVAILABLE;
 	}
 

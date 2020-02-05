@@ -389,7 +389,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 				Spatial *parent_node = parent_lookup->value();
 
 				ERR_FAIL_COND_V_MSG(parent_node == NULL, state.root,
-						"Parent node invalid even though lookup successful, out of ram?")
+						"Parent node invalid even though lookup successful, out of ram?");
 
 				if (spatial != state.root) {
 					parent_node->add_child(spatial);

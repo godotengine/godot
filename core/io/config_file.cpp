@@ -275,7 +275,7 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
+			ERR_PRINT("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
 			memdelete(f);
 			return err;
 		}

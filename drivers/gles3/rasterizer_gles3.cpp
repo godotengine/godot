@@ -120,7 +120,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
 
-	ERR_PRINTS(output);
+	ERR_PRINT(output);
 }
 #endif // GLAD_ENABLED
 

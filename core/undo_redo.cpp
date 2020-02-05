@@ -293,7 +293,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				Variant::CallError ce;
 				obj->call(op.name, (const Variant **)argptrs.ptr(), argc, ce);
 				if (ce.error != Variant::CallError::CALL_OK) {
-					ERR_PRINTS("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
+					ERR_PRINT("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
 				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);

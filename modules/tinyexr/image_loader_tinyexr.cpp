@@ -69,7 +69,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	ret = ParseEXRHeaderFromMemory(&exr_header, &exr_version, w.ptr(), src_image_len, &err);
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
-			ERR_PRINTS(String(err));
+			ERR_PRINT(String(err));
 		}
 		return ERR_FILE_CORRUPT;
 	}
@@ -85,7 +85,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	ret = LoadEXRImageFromMemory(&exr_image, &exr_header, w.ptr(), src_image_len, &err);
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
-			ERR_PRINTS(String(err));
+			ERR_PRINT(String(err));
 		}
 		return ERR_FILE_CORRUPT;
 	}
