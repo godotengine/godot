@@ -2203,10 +2203,10 @@ void VisualShaderEditor::_update_preview() {
 	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types());
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
-		preview_text->set_line_as_marked(i, false);
+		preview_text->set_line_mark_position(i, false);
 	}
 	if (err != OK) {
-		preview_text->set_line_as_marked(sl.get_error_line() - 1, true);
+		preview_text->set_line_mark_position(sl.get_error_line() - 1, true);
 		error_text->set_visible(true);
 
 		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();

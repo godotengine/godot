@@ -688,7 +688,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/number_color", Color(0.92, 0.58, 0.2));
 	_initial_set("text_editor/highlighting/function_color", Color(0.4, 0.64, 0.81));
 	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
-	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
+	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.15));
 	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
 	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
 	_initial_set("text_editor/highlighting/executing_line_color", Color(0.2, 0.8, 0.2, 0.4));

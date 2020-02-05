@@ -1176,7 +1176,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color number_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color function_color = main_color;
 	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
-	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
+	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.15);
 	const Color bookmark_color = Color(0.08, 0.49, 0.98);
 	const Color breakpoint_color = error_color;
 	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);

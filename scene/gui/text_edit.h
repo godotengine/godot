@@ -77,7 +77,9 @@ public:
 
 		struct Line {
 			int width_cache : 24;
-			bool marked : 1;
+			// The mark's column position, if any. "0" means the line isn't marked.
+			// Only positive values make sense here.
+			int mark_position : 16;
 			bool breakpoint : 1;
 			bool bookmark : 1;
 			bool hidden : 1;
@@ -90,7 +92,7 @@ public:
 			String data;
 			Line() {
 				width_cache = 0;
-				marked = false;
+				mark_position = 0;
 				breakpoint = false;
 				bookmark = false;
 				hidden = false;
@@ -119,8 +121,8 @@ public:
 		int get_line_wrap_amount(int p_line) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
-		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
-		bool is_marked(int p_line) const { return text[p_line].marked; }
+		void set_mark_position(int p_line, int p_mark_position = 0) { text.write[p_line].mark_position = p_mark_position; }
+		int get_mark_position(int p_line) const { return text[p_line].mark_position; }
 		void set_bookmark(int p_line, bool p_bookmark) { text.write[p_line].bookmark = p_bookmark; }
 		bool is_bookmark(int p_line) const { return text[p_line].bookmark; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
@@ -576,9 +578,6 @@ public:
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
 
-	//void delete_char();
-	//void delete_line();
-
 	void begin_complex_operation();
 	void end_complex_operation();
 
@@ -588,7 +587,7 @@ public:
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
-	void set_line_as_marked(int p_line, bool p_marked);
+	void set_line_mark_position(int p_line, int p_column = 0);
 	void set_line_as_bookmark(int p_line, bool p_bookmark);
 	bool is_line_set_as_bookmark(int p_line) const;
 	void get_bookmarks(List<int> *p_bookmarks) const;
@@ -628,7 +627,7 @@ public:
 
 	void indent_left();
 	void indent_right();
-	int get_indent_level(int p_line) const;
+	int get_indent_level(int p_line, bool p_count_tabs_as_spaces = false) const;
 	bool is_line_comment(int p_line) const;
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {

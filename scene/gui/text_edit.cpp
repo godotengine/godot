@@ -304,7 +304,7 @@ void TextEdit::Text::set(int p_line, const String &p_text) {
 void TextEdit::Text::insert(int p_at, const String &p_text) {
 
 	Line line;
-	line.marked = false;
+	line.mark_position = 0;
 	line.safe = false;
 	line.breakpoint = false;
 	line.bookmark = false;
@@ -1155,8 +1155,13 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (text.is_marked(line)) {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
+					if (text.get_mark_position(line) >= 1) {
+						// Draw a subtle background all over the line to attract the user's attention.
+						// The underline is drawn on a per-character basis, so it's done in the loop below.
+						VisualServer::get_singleton()->canvas_item_add_rect(
+								ci,
+								Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()),
+								cache.mark_color);
 					}
 
 					if (str.length() == 0) {
@@ -1412,6 +1417,24 @@ void TextEdit::_notification(int p_what) {
 								if (brace_close_mismatch)
 									color = cache.brace_mismatch_color;
 								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
+							}
+						}
+
+						// Draw an underline to give more accurate information about the mark's location.
+						// The background line is drawn on a per-line basis, so it's done above (outside this loop).
+						if (text.get_mark_position(line) >= 2) {
+
+							// The mark provides column information.
+							if (j >= text.get_mark_position(line) - 1) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y + get_row_height() - 2), Size2i(char_w, 2)), Color(cache.mark_color.r, cache.mark_color.g, cache.mark_color.b, 0.8));
+							}
+						} else if (text.get_mark_position(line) == 1) {
+
+							// The mark doesn't provide column information (it's on the first character).
+							// We consider tabs as spaces for the drawing offset.
+							// Otherwise, the line would start too late when using tab indentation.
+							if (j >= get_indent_level(line, true)) {
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y + get_row_height() - 2), Size2i(char_w, 2)), Color(cache.mark_color.r, cache.mark_color.g, cache.mark_color.b, 0.8));
 							}
 						}
 
@@ -5591,10 +5614,11 @@ void TextEdit::_text_changed_emit() {
 	text_changed_dirty = false;
 }
 
-void TextEdit::set_line_as_marked(int p_line, bool p_marked) {
+void TextEdit::set_line_mark_position(int p_line, int p_column) {
 
 	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_marked(p_line, p_marked);
+	ERR_FAIL_COND_MSG(p_column < -1, "The column must be greater than or equal to -1 (-1 being the \"unmarked\" state).");
+	text.set_mark_position(p_line, p_column);
 	update();
 }
 
@@ -5828,7 +5852,7 @@ int TextEdit::get_last_unhidden_line() const {
 	return last_line;
 }
 
-int TextEdit::get_indent_level(int p_line) const {
+int TextEdit::get_indent_level(int p_line, bool p_count_tabs_as_spaces) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
@@ -5845,7 +5869,7 @@ int TextEdit::get_indent_level(int p_line) const {
 			break;
 		}
 	}
-	return tab_count * indent_size + whitespace_count;
+	return tab_count * (p_count_tabs_as_spaces ? 1 : indent_size) + whitespace_count;
 }
 
 bool TextEdit::is_line_comment(int p_line) const {

@@ -653,7 +653,8 @@ void ScriptTextEditor::_validate_script() {
 	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
-		te->set_line_as_marked(i, line == i);
+		// Setting the mark position to `0` makes the line non-marked (as it is by default).
+		te->set_line_mark_position(i, line == i ? col : 0);
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_as_safe(i, true);
