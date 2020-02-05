@@ -39,6 +39,12 @@ bool ScrollContainer::clips_input() const {
 
 Size2 ScrollContainer::get_minimum_size() const {
 
+	bool err = false;
+	Size2 oms = get_overriden_minimum_size(err);
+	if (!err) {
+		return oms;
+	}
+
 	Ref<StyleBox> sb = get_stylebox("bg");
 	Size2 min_size;
 

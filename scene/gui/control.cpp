@@ -805,7 +805,7 @@ uint64_t Control::get_modal_frame() const {
 	return data.modal_frame;
 }
 
-Size2 Control::get_minimum_size() const {
+Size2 Control::get_overriden_minimum_size(bool &err) const {
 
 	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
 	if (si) {
@@ -815,7 +815,14 @@ Size2 Control::get_minimum_size() const {
 		if (ce.error == Variant::CallError::CALL_OK)
 			return s;
 	}
+	err = true;
 	return Size2();
+}
+
+Size2 Control::get_minimum_size() const {
+
+	bool err = false;
+	return get_overriden_minimum_size(err);
 }
 
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
