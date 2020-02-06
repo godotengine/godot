@@ -369,6 +369,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
 	shader_editor->get_text_edit()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	shader_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
+	shader_editor->get_text_edit()->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
 	shader_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
 	shader_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));
 	shader_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
@@ -381,6 +382,9 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
 	shader_editor->get_text_edit()->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
 	shader_editor->get_text_edit()->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
+	shader_editor->get_text_edit()->set_show_line_length_guideline(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guideline"));
+	shader_editor->get_text_edit()->set_line_length_guideline_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_column"));
+	shader_editor->get_text_edit()->set_breakpoint_gutter_enabled(false);
 }
 
 void ShaderEditor::_bind_methods() {
