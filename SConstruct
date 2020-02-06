@@ -410,7 +410,7 @@ if selected_platform in platform_list:
     env.module_icons_paths = []
     env.doc_class_path = {}
 
-    for x in module_list:
+    for x in sorted(module_list):
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
@@ -427,7 +427,7 @@ if selected_platform in platform_list:
                   "signature in its config.py file, it should be "
                   "`can_build(env, platform)`." % x)
             can_build = config.can_build(selected_platform)
-        if (can_build):
+        if can_build:
             config.configure(env)
             env.module_list.append(x)
 
