@@ -1316,6 +1316,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
 	tf->set_texture(get_icon("ProjectIconLoading", "EditorIcons"));
+	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
 	}
