@@ -69,6 +69,7 @@ void CPUParticles::set_amount(int p_amount) {
 
 		for (int i = 0; i < p_amount; i++) {
 			w[i].active = false;
+			w[i].custom[3] = 0.0; // Make sure w component isn't garbage data
 		}
 	}
 
