@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "navigation_mesh_generator.h"
+
 #include "core/math/quick_hull.h"
 #include "core/os/thread.h"
 #include "editor/editor_settings.h"
@@ -45,10 +46,10 @@
 #include "scene/resources/shape.h"
 #include "scene/resources/sphere_shape.h"
 
+#include "modules/modules_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif
-
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif

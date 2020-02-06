@@ -34,7 +34,8 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
-#ifdef GDSCRIPT_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_GDSCRIPT_ENABLED
 
 #include "modules/gdscript/gdscript.h"
 #include "modules/gdscript/gdscript_compiler.h"
@@ -1091,7 +1092,7 @@ MainLoop *test(TestType p_type) {
 namespace TestGDScript {
 
 MainLoop *test(TestType p_type) {
-
+	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
 	return NULL;
 }
 } // namespace TestGDScript
