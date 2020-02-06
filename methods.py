@@ -238,27 +238,25 @@ def write_modules(modules):
         except IOError:
             pass
 
-    modules_cpp = (
-        """
-// modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
+    modules_cpp = """// register_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "register_module_types.h"
 
-"""
-        + includes_cpp
-        + """
+#include "modules/modules_enabled.gen.h"
+
+%s
 
 void register_module_types() {
-"""
-        + register_cpp
-        + """
+%s
 }
 
 void unregister_module_types() {
-"""
-        + unregister_cpp
-        + """
+%s
 }
-"""
+""" % (
+        includes_cpp,
+        register_cpp,
+        unregister_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
