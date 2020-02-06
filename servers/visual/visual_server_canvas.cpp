@@ -759,6 +759,9 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(!canvas_item);
 #ifdef DEBUG_ENABLED
 	int pointcount = p_points.size();
+	if (pointcount == 0) {
+		return;
+	}
 	ERR_FAIL_COND(pointcount < 3);
 	int color_size = p_colors.size();
 	int uv_size = p_uvs.size();
