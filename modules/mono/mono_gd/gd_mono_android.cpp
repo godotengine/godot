@@ -315,7 +315,7 @@ MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	char *alias_utf8 = mono_string_to_utf8_checked(p_alias, &mono_error);
 
 	if (!mono_error_ok(&mono_error)) {
-		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
+		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&mono_error) + "'.");
 		mono_error_cleanup(&mono_error);
 		return NULL;
 	}
