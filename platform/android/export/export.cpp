@@ -642,9 +642,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String dst_path = p_path.replace_first("res://", "assets/");
 
 		store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
-		if (ed->ep->step("File: " + p_path, 3 + p_file * 100 / p_total)) {
-			return ERR_SKIP;
-		}
 		return OK;
 	}
 
@@ -1497,7 +1494,7 @@ public:
 		String adb = EditorSettings::get_singleton()->get("export/android/adb");
 
 		// Export_temp APK.
-		if (ep.step("Exporting APK", 0)) {
+		if (ep.step("Exporting APK...", 0)) {
 			device_lock->unlock();
 			return ERR_SKIP;
 		}
@@ -1547,7 +1544,7 @@ public:
 		}
 
 		print_line("Installing to device (please wait...): " + devices[p_device].name);
-		if (ep.step("Installing to device (please wait...)", 2)) {
+		if (ep.step("Installing to device, please wait...", 2)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
@@ -1614,7 +1611,7 @@ public:
 			}
 		}
 
-		if (ep.step("Running on Device...", 3)) {
+		if (ep.step("Running on device...", 3)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 		args.clear();
@@ -2119,7 +2116,7 @@ public:
 		FileAccess *src_f = NULL;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-		if (ep.step("Creating APK", 0)) {
+		if (ep.step("Creating APK...", 0)) {
 			return ERR_SKIP;
 		}
 
@@ -2281,7 +2278,7 @@ public:
 			ret = unzGoToNextFile(pkg);
 		}
 
-		if (ep.step("Adding Files...", 1)) {
+		if (ep.step("Adding files...", 1)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 		Error err = OK;
