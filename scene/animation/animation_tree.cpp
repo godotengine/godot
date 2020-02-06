@@ -49,7 +49,7 @@ void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_parameter_default_value");
+		return get_script_instance()->call("get_parameter_default_value", p_parameter);
 	}
 	return Variant();
 }
@@ -397,7 +397,7 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_name");
+		return get_script_instance()->call("get_child_by_name", p_name);
 	}
 	return Ref<AnimationNode>();
 }
