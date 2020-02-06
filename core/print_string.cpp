@@ -72,36 +72,36 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 	ERR_FAIL_COND(l == NULL);
 }
 
-void print_line(String p_string) {
+void print_line(Variant p_variant) {
 
 	if (!_print_line_enabled)
 		return;
 
-	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
+	OS::get_singleton()->print("%s\n", String(p_variant).utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
 
-		l->printfunc(l->userdata, p_string, false);
+		l->printfunc(l->userdata, String(p_variant), false);
 		l = l->next;
 	}
 
 	_global_unlock();
 }
 
-void print_error(String p_string) {
+void print_error(Variant p_variant) {
 
 	if (!_print_error_enabled)
 		return;
 
-	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
+	OS::get_singleton()->printerr("%s\n", String(p_variant).utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
 
-		l->printfunc(l->userdata, p_string, true);
+		l->printfunc(l->userdata, String(p_variant), true);
 		l = l->next;
 	}
 
