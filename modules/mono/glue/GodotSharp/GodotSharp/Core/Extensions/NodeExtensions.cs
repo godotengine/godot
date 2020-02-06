@@ -9,7 +9,7 @@ namespace Godot
 
         public T GetNodeOrNull<T>(NodePath path) where T : class
         {
-            return GetNode(path) as T;
+            return GetNodeOrNull(path) as T;
         }
 
         public T GetChild<T>(int idx) where T : class

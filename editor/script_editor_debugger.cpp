@@ -806,25 +806,25 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			p.write[i] = arr[i];
 			if (i < perf_items.size()) {
 
-				float v = p[i];
-				String vs = rtos(v);
-				String tt = vs;
+				const float value = p[i];
+				String label = rtos(value);
+				String tooltip = label;
 				switch (Performance::MonitorType((int)perf_items[i]->get_metadata(1))) {
 					case Performance::MONITOR_TYPE_MEMORY: {
-						vs = String::humanize_size(v);
-						tt = vs;
+						label = String::humanize_size(value);
+						tooltip = label;
 					} break;
 					case Performance::MONITOR_TYPE_TIME: {
-						tt += " seconds";
-						vs += " s";
+						label = rtos(value * 1000).pad_decimals(2) + " ms";
+						tooltip = label;
 					} break;
 					default: {
-						tt += " " + perf_items[i]->get_text(0);
+						tooltip += " " + perf_items[i]->get_text(0);
 					} break;
 				}
 
-				perf_items[i]->set_text(1, vs);
-				perf_items[i]->set_tooltip(1, tt);
+				perf_items[i]->set_text(1, label);
+				perf_items[i]->set_tooltip(1, tooltip);
 				if (p[i] > perf_max[i])
 					perf_max.write[i] = p[i];
 			}
@@ -1622,6 +1622,7 @@ void ScriptEditorDebugger::_output_clear() {
 void ScriptEditorDebugger::_export_csv() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_mode = SAVE_CSV;
 	file_dialog->popup_centered_ratio();
 }

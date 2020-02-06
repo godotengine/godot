@@ -47,7 +47,7 @@ OpenSimplexNoise::~OpenSimplexNoise() {
 }
 
 void OpenSimplexNoise::_init_seeds() {
-	for (int i = 0; i < 6; ++i) {
+	for (int i = 0; i < MAX_OCTAVES; ++i) {
 		open_simplex_noise(seed + i * 2, &(contexts[i]));
 	}
 }
@@ -71,7 +71,10 @@ int OpenSimplexNoise::get_seed() {
 
 void OpenSimplexNoise::set_octaves(int p_octaves) {
 	if (p_octaves == octaves) return;
-	octaves = CLAMP(p_octaves, 1, 6);
+
+	ERR_FAIL_COND_MSG(p_octaves > MAX_OCTAVES, vformat("The number of OpenSimplexNoise octaves is limited to %d; ignoring the new value.", MAX_OCTAVES));
+
+	octaves = CLAMP(p_octaves, 1, MAX_OCTAVES);
 	emit_changed();
 }
 
@@ -182,7 +185,7 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_noise_3dv", "pos"), &OpenSimplexNoise::get_noise_3dv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, "1,6,1"), "set_octaves", "get_octaves");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, vformat("1,%d,1", MAX_OCTAVES)), "set_octaves", "get_octaves");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "period", PROPERTY_HINT_RANGE, "0.1,256.0,0.1"), "set_period", "get_period");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "persistence", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistence", "get_persistence");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");

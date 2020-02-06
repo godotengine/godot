@@ -322,7 +322,12 @@
 		<method name="sort">
 			<description>
 				Sorts the array.
-				[b]Note:[/b] strings are sorted in alphabetical, not natural order.
+				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
+				[codeblock]
+				var strings = ["string1", "string2", "string10", "string11"]
+				strings.sort()
+				print(strings) # Prints [string1, string10, string11, string2]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sort_custom">

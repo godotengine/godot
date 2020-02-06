@@ -1429,11 +1429,15 @@ void OS_X11::set_window_fullscreen(bool p_enabled) {
 		set_window_maximized(true);
 	}
 	set_wm_fullscreen(p_enabled);
-	if (!p_enabled && !current_videomode.always_on_top) {
+	if (!p_enabled && current_videomode.always_on_top) {
 		// Restore
 		set_window_maximized(false);
 	}
-
+	if (!p_enabled) {
+		set_window_position(last_position_before_fs);
+	} else {
+		last_position_before_fs = get_window_position();
+	}
 	current_videomode.fullscreen = p_enabled;
 }
 
@@ -3502,4 +3506,5 @@ OS_X11::OS_X11() {
 	window_focused = true;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
+	last_position_before_fs = Vector2();
 }

@@ -123,7 +123,7 @@ public class GodotEditText extends EditText {
 	}
 
 	private void setMaxInputLength(EditText p_edit_text, int p_max_input_length) {
-		if (p_max_input_length >= 0) {
+		if (p_max_input_length > 0) {
 			InputFilter[] filters = new InputFilter[1];
 			filters[0] = new InputFilter.LengthFilter(p_max_input_length);
 			p_edit_text.setFilters(filters);

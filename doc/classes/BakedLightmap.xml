@@ -18,7 +18,7 @@
 			<argument index="1" name="create_visual_debug" type="bool" default="false">
 			</argument>
 			<description>
-				Bakes the lightmaps within the currently edited scene.
+				Bakes the lightmaps within the currently edited scene. Returns a [enum BakeError] to signify if the bake was successful, or if unsuccessful, how the bake failed.
 			</description>
 		</method>
 		<method name="debug_bake">
@@ -81,14 +81,19 @@
 			More precise bake mode but can take considerably longer to bake.
 		</constant>
 		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+			Baking was successful.
 		</constant>
 		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="1" enum="BakeError">
+			Returns if no viable save path is found. This can happen where an [member image_path] is not specified or when the save location is invalid.
 		</constant>
 		<constant name="BAKE_ERROR_NO_MESHES" value="2" enum="BakeError">
+			Currently unused.
 		</constant>
 		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="3" enum="BakeError">
+			Returns when the baker cannot save per-mesh textures to file.
 		</constant>
 		<constant name="BAKE_ERROR_USER_ABORTED" value="4" enum="BakeError">
+			Returns if user cancels baking.
 		</constant>
 	</constants>
 </class>
