@@ -456,8 +456,17 @@ void TileMapEditor::_update_palette() {
 		entries.push_back(entry);
 	}
 
+
+	struct PaletteEntryNameComparator {
+		_FORCE_INLINE_ bool operator()(const _PaletteEntry &p_l, const _PaletteEntry &p_r) const {
+			String s_l = p_l.name;
+			String s_r = p_r.name;
+			return s_l.naturalnocasecmp_to(s_r) < 0;
+		}
+	};
+
 	if (sort_by_name) {
-		entries.sort();
+		entries.sort_custom<PaletteEntryNameComparator>();
 	}
 
 	for (int i = 0; i < entries.size(); i++) {
