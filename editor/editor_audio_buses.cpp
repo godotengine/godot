@@ -856,7 +856,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	HBoxContainer *audioprev_hbc = memnew(HBoxContainer);
 	audioprev_hbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	audioprev_hbc->set_mouse_filter(MOUSE_FILTER_PASS);
 	audio_value_preview_box->add_child(audioprev_hbc);
 
 	audio_value_preview_label = memnew(Label);
