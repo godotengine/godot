@@ -1301,6 +1301,22 @@ class VisualShaderNodeScalarUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeScalarUniform, VisualShaderNodeUniform);
 
 public:
+	enum Hint {
+		HINT_NONE,
+		HINT_RANGE,
+		HINT_RANGE_STEP,
+	};
+
+private:
+	Hint hint;
+	float hint_range_min;
+	float hint_range_max;
+	float hint_range_step;
+
+protected:
+	static void _bind_methods();
+
+public:
 	virtual String get_caption() const;
 
 	virtual int get_input_port_count() const;
@@ -1314,8 +1330,24 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_hint(Hint p_hint);
+	Hint get_hint() const;
+
+	void set_min(float p_value);
+	float get_min() const;
+
+	void set_max(float p_value);
+	float get_max() const;
+
+	void set_step(float p_value);
+	float get_step() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
 	VisualShaderNodeScalarUniform();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeScalarUniform::Hint)
 
 ///////////////////////////////////////
 
