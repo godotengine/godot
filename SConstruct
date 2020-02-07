@@ -78,7 +78,6 @@ env_base.__class__.add_module_version_string = methods.add_module_version_string
 
 env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
-env_base.__class__.split_lib = methods.split_lib
 
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
@@ -130,7 +129,6 @@ opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=extra werro
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
-opts.Add(BoolVariable('split_libmodules', "Split intermediate libmodules.a in smaller chunks to prevent exceeding linker command line size (forced to True when using MinGW)", False))
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))

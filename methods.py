@@ -257,67 +257,6 @@ def use_windows_spawn_fix(self, platform=None):
     self['SPAWN'] = mySpawn
 
 
-def split_lib(self, libname, src_list = None, env_lib = None):
-    env = self
-
-    num = 0
-    cur_base = ""
-    max_src = 64
-    list = []
-    lib_list = []
-
-    if src_list is None:
-        src_list = getattr(env, libname + "_sources")
-
-    if type(env_lib) == type(None):
-        env_lib = env
-
-    for f in src_list:
-        fname = ""
-        if type(f) == type(""):
-            fname = env.File(f).path
-        else:
-            fname = env.File(f)[0].path
-        fname = fname.replace("\\", "/")
-        base = "/".join(fname.split("/")[:2])
-        if base != cur_base and len(list) > max_src:
-            if num > 0:
-                lib = env_lib.add_library(libname + str(num), list)
-                lib_list.append(lib)
-                list = []
-            num = num + 1
-        cur_base = base
-        list.append(f)
-
-    lib = env_lib.add_library(libname + str(num), list)
-    lib_list.append(lib)
-
-    lib_base = []
-    env_lib.add_source_files(lib_base, "*.cpp")
-    lib = env_lib.add_library(libname, lib_base)
-    lib_list.insert(0, lib)
-
-    env.Prepend(LIBS=lib_list)
-
-    # When we split modules into arbitrary chunks, we end up with linking issues
-    # due to symbol dependencies split over several libs, which may not be linked
-    # in the required order. We use --start-group and --end-group to tell the
-    # linker that those archives should be searched repeatedly to resolve all
-    # undefined references.
-    # As SCons doesn't give us much control over how inserting libs in LIBS
-    # impacts the linker call, we need to hack our way into the linking commands
-    # LINKCOM and SHLINKCOM to set those flags.
-
-    if '-Wl,--start-group' in env['LINKCOM'] and '-Wl,--start-group' in env['SHLINKCOM']:
-        # Already added by a previous call, skip.
-        return
-
-    env['LINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
-            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
-    env['SHLINKCOM'] = str(env['LINKCOM']).replace('$_LIBFLAGS',
-            '-Wl,--start-group $_LIBFLAGS -Wl,--end-group')
-
-
 def save_active_platforms(apnames, ap):
 
     for x in ap:
