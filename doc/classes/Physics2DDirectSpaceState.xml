@@ -91,6 +91,13 @@
 			<argument index="6" name="collide_with_areas" type="bool" default="false">
 			</argument>
 			<description>
+				Checks whether a [code]point[/code] is inside any shape on any [CanvasLayer] (including layer "0"), unlike [method intersect_point] which only checks for intersections on [member CanvasLayer.layer] "0". The [member CanvasLayer.transform] for each [CanvasLayer] will be applied to the check before testing. Though some [member CanvasLayer.layer] must be passed as an argument to this method, it doesn't currently matter which id is passed. Shapes that overlap [code]point[/code] are returned in an array containing dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody]s or [Area]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_ray">
