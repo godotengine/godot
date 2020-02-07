@@ -106,7 +106,7 @@ void EditorPath::update_path() {
 
 				if (name == "")
 					name = r->get_class();
-			} else if (obj->is_class("ScriptEditorDebuggerInspectedObject"))
+			} else if (obj->is_class("EditorDebuggerRemoteObject"))
 				name = obj->call("get_title");
 			else if (Object::cast_to<Node>(obj))
 				name = Object::cast_to<Node>(obj)->get_name();

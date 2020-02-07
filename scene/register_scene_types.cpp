@@ -76,6 +76,7 @@
 #include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
@@ -777,10 +778,12 @@ void register_scene_types() {
 			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
+	SceneDebugger::initialize();
 }
 
 void unregister_scene_types() {
 
+	SceneDebugger::deinitialize();
 	clear_default_theme();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);

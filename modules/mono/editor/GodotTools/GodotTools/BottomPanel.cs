@@ -172,7 +172,7 @@ namespace GodotTools
                 return;
 
             // Notify running game for hot-reload
-            Internal.ScriptEditorDebuggerReloadScripts();
+            Internal.EditorDebuggerNodeReloadScripts();
 
             // Hot-reload in the editor
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();

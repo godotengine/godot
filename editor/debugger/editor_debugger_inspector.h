@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_run.h                                                         */
+/*  editor_debugger_inspector.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,44 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#ifndef EDITOR_DEBUGGER_INSPECTOR_H
+#define EDITOR_DEBUGGER_INSPECTOR_H
+#include "editor/editor_inspector.h"
 
-#include "core/os/os.h"
-#include "scene/main/node.h"
-class EditorRun {
-public:
-	enum Status {
+class EditorDebuggerRemoteObject : public Object {
 
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+	GDCLASS(EditorDebuggerRemoteObject, Object);
 
-	List<OS::ProcessID> pids;
-
-private:
-	bool debug_collisions;
-	bool debug_navigation;
-	Status status;
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
 public:
-	Status get_status() const;
-	Error run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints = false, const int &p_instances = 1);
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
+	bool editable = false;
+	ObjectID remote_object_id;
+	String type_name;
+	List<PropertyInfo> prop_list;
+	Map<StringName, Variant> prop_values;
 
-	void stop_child_process(OS::ProcessID p_pid);
-	bool has_child_process(OS::ProcessID p_pid) const;
-	int get_child_process_count() const { return pids.size(); }
+	ObjectID get_remote_object_id() { return remote_object_id; };
+	String get_title();
 
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
+	Variant get_variant(const StringName &p_name);
 
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
+	void clear() {
+		prop_list.clear();
+		prop_values.clear();
+	}
 
-	EditorRun();
+	void update() { _change_notify(); }
+
+	EditorDebuggerRemoteObject(){};
 };
 
-#endif // EDITOR_RUN_H
+class EditorDebuggerInspector : public EditorInspector {
+
+	GDCLASS(EditorDebuggerInspector, EditorInspector);
+
+private:
+	ObjectID inspected_object_id;
+	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
+	EditorDebuggerRemoteObject *variables;
+
+	void _object_selected(ObjectID p_object);
+	void _object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	EditorDebuggerInspector();
+	~EditorDebuggerInspector();
+
+	// Remote Object cache
+	ObjectID add_object(const Array &p_arr);
+	Object *get_object(ObjectID p_id);
+	void clear_cache();
+
+	// Stack Dump variables
+	String get_stack_variable(const String &p_var);
+	void add_stack_variable(const Array &p_arr);
+	void clear_stack_variables();
+};
+
+#endif // EDITOR_DEBUGGER_INSPECTOR_H

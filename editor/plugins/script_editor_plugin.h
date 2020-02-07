@@ -73,7 +73,7 @@ public:
 	ScriptEditorQuickOpen();
 };
 
-class ScriptEditorDebugger;
+class EditorDebuggerNode;
 
 class ScriptEditorBase : public VBoxContainer {
 
@@ -155,13 +155,6 @@ class ScriptEditor : public PanelContainer {
 		FILE_COPY_PATH,
 		FILE_TOOL_RELOAD,
 		FILE_TOOL_RELOAD_SOFT,
-		DEBUG_NEXT,
-		DEBUG_STEP,
-		DEBUG_BREAK,
-		DEBUG_CONTINUE,
-		DEBUG_SHOW,
-		DEBUG_SHOW_KEEP_OPEN,
-		DEBUG_WITH_EXTERNAL_EDITOR,
 		SEARCH_IN_FILES,
 		REPLACE_IN_FILES,
 		SEARCH_HELP,
@@ -233,7 +226,6 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
-	ScriptEditorDebugger *debugger;
 	ToolButton *scripts_visible;
 
 	String current_theme;
@@ -315,8 +307,6 @@ class ScriptEditor : public PanelContainer {
 
 	EditorScriptCodeCompletionCache *completion_cache;
 
-	void _editor_play();
-	void _editor_pause();
 	void _editor_stop();
 
 	int edit_pass;
@@ -335,7 +325,6 @@ class ScriptEditor : public PanelContainer {
 	void _set_execution(REF p_script, int p_line);
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
-	void _show_debugger(bool p_show);
 	void _update_window_menu();
 	void _script_created(Ref<Script> p_script);
 
@@ -457,7 +446,6 @@ public:
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 
-	ScriptEditorDebugger *get_debugger() { return debugger; }
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
 	static void register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func);
