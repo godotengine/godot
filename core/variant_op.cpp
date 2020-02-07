@@ -2957,7 +2957,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			} else {
 				return step < 0;
 			}
-			//return true;
+
 		} break;
 		case OBJECT: {
 
@@ -3308,8 +3308,6 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-
-			//r_iter=ref[0];
 
 			return ret;
 		} break;

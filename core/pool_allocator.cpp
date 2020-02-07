@@ -241,8 +241,6 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	ID retval = (entry_indices[new_entry_indices_pos] << CHECK_BITS) | entry.check;
 	mt_unlock();
 
-	//ERR_FAIL_COND_V( (uintptr_t)get(retval)%align != 0, retval );
-
 	return retval;
 }
 
@@ -512,7 +510,6 @@ void *PoolAllocator::get(ID p_mem) {
 	}
 	if (e->lock == 0) {
 
-		//assert(0);
 		mt_unlock();
 		ERR_PRINT("e->lock == 0");
 		return NULL;

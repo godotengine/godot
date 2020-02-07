@@ -268,8 +268,7 @@ void VideoPlayer::play() {
 	playback->stop();
 	playback->play();
 	set_process_internal(true);
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
-	//	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
+
 	last_audio_time = 0;
 };
 
@@ -281,7 +280,7 @@ void VideoPlayer::stop() {
 		return;
 
 	playback->stop();
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
+
 	resampler.flush();
 	set_process_internal(false);
 	last_audio_time = 0;
@@ -472,7 +471,7 @@ void VideoPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
-	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
+
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
@@ -497,8 +496,6 @@ VideoPlayer::VideoPlayer() {
 
 	buffering_ms = 500;
 
-	//	internal_stream.player=this;
-	//	stream_rid=AudioServer::get_singleton()->audio_stream_create(&internal_stream);
 	last_audio_time = 0;
 
 	wait_resampler = 0;
@@ -508,6 +505,6 @@ VideoPlayer::VideoPlayer() {
 VideoPlayer::~VideoPlayer() {
 
 	//	if (stream_rid.is_valid())
-	//		AudioServer::get_singleton()->free(stream_rid);
+
 	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes
 };

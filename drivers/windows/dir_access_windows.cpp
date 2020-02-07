@@ -215,10 +215,6 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	//p_file.replace("/","\\");
-
-	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
-
 	DWORD fileAttr;
 
 	fileAttr = GetFileAttributesW(p_file.c_str());
@@ -236,10 +232,6 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 		p_dir = get_current_dir().plus_file(p_dir);
 
 	p_dir = fix_path(p_dir);
-
-	//p_dir.replace("/","\\");
-
-	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
 	DWORD fileAttr;
 
@@ -295,8 +287,6 @@ Error DirAccessWindows::remove(String p_path) {
 	p_path = fix_path(p_path);
 
 	printf("erasing %s\n", p_path.utf8().get_data());
-	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
-	//DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);
 
 	DWORD fileAttr;
 

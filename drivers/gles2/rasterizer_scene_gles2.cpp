@@ -506,7 +506,6 @@ RID RasterizerSceneGLES2::reflection_probe_instance_create(RID p_probe) {
 	glGenRenderbuffers(1, &rpi->depth);
 
 	rpi->cubemap = 0;
-	//glGenTextures(1, &rpi->cubemap);
 
 	return rpi->self;
 }
@@ -1008,7 +1007,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	}
 
 	//if (p_material->shader->spatial.uses_sss) {
-	//	state.used_sss = true;
+
 	//}
 
 	if (p_material->shader->spatial.uses_screen_texture) {
@@ -2058,7 +2057,6 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 					light_clamp[3] = atlas_rect.size.y;*/
 				}
 
-				//	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_CLAMP, light_clamp);
 				state.scene_shader.set_uniform(SceneShaderGLES2::SHADOW_PIXEL_SIZE, Size2(1.0 / directional_shadow.size, 1.0 / directional_shadow.size));
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPLIT_OFFSETS, split_offsets);
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SHADOW_MATRIX, matrices[0]);

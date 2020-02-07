@@ -94,13 +94,13 @@ void OS_Android::initialize_core() {
 #ifdef USE_JAVA_FILE_ACCESS
 		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid> >(FileAccess::ACCESS_RESOURCES);
 #else
-		//FileAccess::make_default<FileAccessBufferedFA<FileAccessAndroid> >(FileAccess::ACCESS_RESOURCES);
+
 		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 #endif
 	}
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessUnix>::make_default();
+
 	if (use_apk_expansion)
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
 	else
@@ -178,8 +178,6 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
-	//power_manager = memnew(PowerAndroid);
-
 	return OK;
 }
 
@@ -209,7 +207,6 @@ GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
 
-	//print("ALERT: %s\n", p_alert.utf8().get_data());
 	godot_java->alert(p_alert, p_title);
 }
 
@@ -554,9 +551,6 @@ bool OS_Android::has_virtual_keyboard() const {
 
 int OS_Android::get_virtual_keyboard_height() const {
 	return godot_io_java->get_vk_height();
-
-	// ERR_PRINT("Cannot obtain virtual keyboard height.");
-	// return 0;
 }
 
 void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
@@ -728,9 +722,7 @@ void OS_Android::native_video_stop() {
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
 
-	//use_16bits_fbo = p_is_16;
 	//if (rasterizer)
-	//	rasterizer->set_force_16_bits_fbo(p_is_16);
 }
 
 void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p_name) {
@@ -780,7 +772,7 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 
 	main_loop = NULL;
 	gl_extensions = NULL;
-	//rasterizer = NULL;
+
 	use_gl2 = false;
 
 	godot_java = p_godot_java;

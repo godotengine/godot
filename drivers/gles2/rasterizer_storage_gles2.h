@@ -67,7 +67,6 @@ public:
 		int max_texture_size;
 
 		// TODO implement wireframe in GLES2
-		// bool generate_wireframes;
 
 		Set<String> extensions;
 

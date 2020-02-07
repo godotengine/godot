@@ -77,7 +77,7 @@ protected:
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
-	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 public:

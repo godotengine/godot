@@ -751,7 +751,7 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return;
 	}
@@ -764,7 +764,7 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
 		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
-		//return _button_event(p_last_id, p_device, p_button, p_pressed);
+
 		return;
 	}
 
@@ -833,7 +833,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
-		//return _axis_event(p_last_id, p_device, p_axis, p_value);
+
 		return;
 	};
 
@@ -898,7 +898,6 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		_axis_event(p_device, map.index, val);
 		return;
 	}
-	//printf("invalid mapping\n");
 }
 
 void InputDefault::joy_hat(int p_device, int p_val) {
@@ -1055,7 +1054,6 @@ void InputDefault::parse_mapping(String p_mapping) {
 		};
 	};
 	map_db.push_back(mapping);
-	//printf("added mapping with uuid %ls\n", mapping.uid.c_str());
 };
 
 void InputDefault::add_joy_mapping(String p_mapping, bool p_update_existing) {

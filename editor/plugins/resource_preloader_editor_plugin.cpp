@@ -45,8 +45,6 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_READY) {
-
-		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -65,7 +63,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 		if (resource.is_null()) {
 			dialog->set_text(TTR("ERROR: Couldn't load resource!"));
 			dialog->set_title(TTR("Error!"));
-			//dialog->get_cancel()->set_text("Close");
+
 			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
@@ -221,8 +219,6 @@ void ResourcePreloaderEditor::_update_library() {
 		}
 		ti->add_button(1, get_icon("Remove", "EditorIcons"), BUTTON_REMOVE, false, TTR("Remove"));
 	}
-
-	//player->add_resource("default",resource);
 }
 
 void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
@@ -362,8 +358,6 @@ void ResourcePreloaderEditor::_bind_methods() {
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
-	//add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
@@ -421,17 +415,15 @@ bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//preloader_editor->show();
+
 		button->show();
 		editor->make_bottom_panel_item_visible(preloader_editor);
-		//preloader_editor->set_process(true);
+
 	} else {
 
 		if (preloader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
-		//preloader_editor->hide();
-		//preloader_editor->set_process(false);
 	}
 }
 
@@ -443,9 +435,6 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 
 	button = editor->add_bottom_panel_item(TTR("ResourcePreloader"), preloader_editor);
 	button->hide();
-
-	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-	//preloader_editor->set_margin( MARGIN_TOP, 120 );
 }
 
 ResourcePreloaderEditorPlugin::~ResourcePreloaderEditorPlugin() {

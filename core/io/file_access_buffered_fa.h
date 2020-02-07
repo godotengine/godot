@@ -54,10 +54,6 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 			cache.offset = p_offset;
 			cache.buffer.resize(p_size);
 
-			// on PoolVector
-			//PoolVector<uint8_t>::Write write = cache.buffer.write();
-			//f.get_buffer(write.ptrw(), p_size);
-
 			// on vector
 			f.get_buffer(cache.buffer.ptrw(), p_size);
 
@@ -104,7 +100,6 @@ public:
 		Error ret = f._open(p_path, p_mode_flags);
 		if (ret != OK)
 			return ret;
-		//ERR_FAIL_COND_V( ret != OK, ret );
 
 		file.size = f.get_len();
 		file.offset = 0;

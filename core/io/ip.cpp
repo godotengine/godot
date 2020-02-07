@@ -74,7 +74,7 @@ struct _IP_ResolverPrivate {
 	Semaphore *sem;
 
 	Thread *thread;
-	//Semaphore* semaphore;
+
 	bool thread_abort;
 
 	void resolve_queues() {

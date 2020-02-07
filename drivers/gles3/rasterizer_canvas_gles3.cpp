@@ -183,10 +183,6 @@ void RasterizerCanvasGLES3::canvas_begin() {
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
 	}
 
-	//state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
-	//state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform());
-	//state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform());
-
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.canvas_item_ubo);
 	glBindVertexArray(data.canvas_quad_array);
 	state.using_texture_rect = true;
@@ -381,7 +377,7 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 
 		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(int) * 4 * p_vertex_count, p_bones);
 		glEnableVertexAttribArray(VS::ARRAY_BONES);
-		//glVertexAttribPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, false, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
+
 		glVertexAttribIPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, sizeof(int) * 4, CAST_INT_TO_UCHAR_PTR(buffer_ofs));
 		buffer_ofs += sizeof(int) * 4 * p_vertex_count;
 
@@ -650,7 +646,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					if (line->antialiased)
 						glEnable(GL_LINE_SMOOTH);
 #endif
-					//glLineWidth(line->width);
+
 					_draw_gui_primitive(2, verts, NULL, NULL);
 
 #ifdef GLES_OVER_GL
@@ -669,7 +665,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						line->to - t,
 					};
 
-					//glLineWidth(line->width);
 					_draw_gui_primitive(4, verts, NULL, NULL);
 #ifdef GLES_OVER_GL
 					if (line->antialiased) {
@@ -1213,8 +1208,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				_bind_canvas_texture(RID(), RID());
 				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true, NULL, NULL);
 
-				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
-				//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
 			} break;
 			case Item::Command::TYPE_TRANSFORM: {
 
@@ -1237,7 +1230,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 							glEnable(GL_SCISSOR_TEST);
 							//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
-							//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+
 							int y = storage->frame.current_rt->height - (current_clip->final_clip_rect.position.y + current_clip->final_clip_rect.size.y);
 							if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
 								y = current_clip->final_clip_rect.position.y;
@@ -1262,7 +1255,6 @@ void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 
 	state.canvas_texscreen_used = true;
 	//blur diffuse into effect mipmaps using separatable convolution
-	//storage->shaders.copy.set_conditional(CopyShaderGLES3::GAUSSIAN_HORIZONTAL,true);
 
 	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -1857,9 +1849,6 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 		light.basis[1][0] = p_light_xform[0][1];
 		light.basis[1][1] = p_light_xform[1][1];
 
-		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
-
-		//p_near=1;
 		CameraMatrix projection;
 		{
 			real_t fov = 90;
@@ -1961,8 +1950,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	} else {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
-	//glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	//glLineWidth(1.0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 

@@ -107,7 +107,6 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 
 void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int) {
 
-	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
 	Instance *B = p_B;
 
@@ -186,7 +185,6 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 }
 void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
 
-	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
 	Instance *B = p_B;
 
@@ -474,7 +472,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 				InstanceLightmapCaptureData *lightmap_capture = memnew(InstanceLightmapCaptureData);
 				instance->base_data = lightmap_capture;
-				//lightmap_capture->instance = VSG::scene_render->lightmap_capture_instance_create(p_base);
+
 			} break;
 			case VS::INSTANCE_GI_PROBE: {
 
@@ -1175,8 +1173,6 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 					color[c][n].z += p_octree[cell].light[i][2] / 1024.0 * amount;
 				}
 			}
-
-			//print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
 		}
 	}
 
@@ -1221,8 +1217,6 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
-
-	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 _FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
@@ -1274,15 +1268,13 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 		p_instance->lightmap_capture_data.resize(12);
 	}
 
-	//print_line("update captures for pos: " + p_instance->transform.origin);
-
 	for (int i = 0; i < 12; i++)
 		new (&p_instance->lightmap_capture_data.ptrw()[i]) Color;
 
 	//this could use some sort of blending..
 	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
 		const PoolVector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
-		//print_line("octree size: " + itos(octree->size()));
+
 		if (octree->size() == 0)
 			continue;
 		Transform to_cell_xform = VSG::storage->lightmap_capture_get_octree_cell_transform(E->get()->base);
@@ -1433,7 +1425,6 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				float x_min_cam = 0.f, x_max_cam = 0.f;
 				float y_min_cam = 0.f, y_max_cam = 0.f;
 				float z_min_cam = 0.f;
-				//float z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1472,8 +1463,6 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 					center /= 8.0;
 
-					//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
-
 					float radius = 0;
 
 					for (int j = 0; j < 8; j++) {
@@ -1495,7 +1484,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					//z_max_cam = z_vec.dot(center) + radius;
+
 					z_min_cam = z_vec.dot(center) - radius;
 
 					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
@@ -1799,8 +1788,6 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
 		float y_shift = height * camera_matrix.matrix[2][1];
 
-		// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
-
 		// - calculate our near plane size (horizontal only, right_near is mirrored)
 		float left_near = -eye_dist - ((width - x_shift) * 0.5);
 
@@ -1821,8 +1808,6 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		top_near += (top_near / z_near) * z_shift;
 		float bottom_near = -(height + y_shift) * 0.5;
 		bottom_near += (bottom_near / z_near) * z_shift;
-
-		// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
 
 		// - generate our frustum
 		CameraMatrix combined_matrix;
@@ -1856,8 +1841,6 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 	VSG::scene_render->set_scene_pass(render_pass);
 
-	//rasterizer->set_camera(camera->transform, camera_matrix,ortho);
-
 	Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 
 	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2).normalized());
@@ -1868,8 +1851,6 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
-
-	//light_samplers_culled=0;
 
 	/*
 	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
@@ -2071,8 +2052,6 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 	{ //setup shadow maps
 
-		//SortArray<Instance*,_InstanceLightsort> sorter;
-		//sorter.sort(light_cull_result,light_cull_count);
 		for (int i = 0; i < light_cull_count; i++) {
 
 			Instance *ins = light_cull_result[i];
@@ -2447,8 +2426,6 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 			int blockw = (header->width >> mipmap) >> 2;
 			int blockh = (header->height >> mipmap) >> 2;
 
-			//print_line("cell "+itos(i)+" level "+itos(level)+"mipmap: "+itos(mipmap)+" pos: "+Vector3(blockx,blocky,blockz)+" size "+Vector2(blockw,blockh));
-
 			uint32_t key = blockz * blockw * blockh + blocky * blockw + blockx;
 
 			Map<uint32_t, InstanceGIProbeData::CompBlockS3TC> &cmap = comp_blocks.write[mipmap];
@@ -2470,7 +2447,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		probe->dynamic.mipmaps_s3tc.resize(mipmap_count);
 
 		for (int i = 0; i < mipmap_count; i++) {
-			//print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
+
 			probe->dynamic.mipmaps_s3tc.write[i].resize(comp_blocks[i].size());
 			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc.write[i].write();
 			int block_idx = 0;
@@ -2674,8 +2651,6 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			int success_count = 0;
 
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 			for (int i = 0; i < p_leaf_count; i++) {
 
 				uint32_t idx = leaves[i];
@@ -2730,14 +2705,9 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 				}
 			}
 
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
-			// print_line("valid cells: " + itos(success_count));
-
 		} break;
 		case VS::LIGHT_OMNI:
 		case VS::LIGHT_SPOT: {
-
-			// uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 			Vector3 light_pos = light_cache.transform.origin;
 			Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
@@ -2838,7 +2808,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+
 		} break;
 	}
 }
@@ -2936,7 +2906,6 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 			if (stage >= probe_data->dynamic.mipmaps_3d.size())
 				continue; //no mipmap for this one
 
-			//print_line("generating mipmap stage: " + itos(stage));
 			int level_cell_count = probe_data->dynamic.level_cell_lists[i].size();
 			const uint32_t *level_cells = probe_data->dynamic.level_cell_lists[i].ptr();
 
@@ -3265,8 +3234,6 @@ void VisualServerScene::render_probes() {
 				} break;
 				case GI_UPDATE_STAGE_UPLOADING: {
 
-					//uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 					for (int i = 0; i < (int)probe->dynamic.mipmaps_3d.size(); i++) {
 
 						PoolVector<uint8_t>::Read r = probe->dynamic.mipmaps_3d[i].read();
@@ -3275,11 +3242,9 @@ void VisualServerScene::render_probes() {
 
 					probe->dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 
-					//print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 				} break;
 			}
 		}
-		//_update_gi_probe(gi_probe->self()->owner);
 
 		gi_probe = next;
 	}

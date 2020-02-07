@@ -238,8 +238,6 @@ void Area2DSW::call_queries() {
 	}
 
 	monitored_areas.clear();
-
-	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
 }
 
 Area2DSW::Area2DSW() :

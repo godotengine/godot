@@ -155,8 +155,6 @@ layout(location = 0) out vec4 frag_color;
 
 void main() {
 
-	//vec4 color = color_interp;
-
 #ifdef USE_PANORAMA
 
 	vec3 cube_normal = normalize(cube_interp);

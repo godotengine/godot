@@ -1521,14 +1521,12 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	int from = p_from.to_int();
 	int to = p_to.to_int();
 
-	//updating = true; seems graph edit can handle this, no need to protect
 	undo_redo->create_action(TTR("Nodes Disconnected"));
 	undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
-	//updating = false;
 }
 
 void VisualShaderEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
@@ -1596,7 +1594,6 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 	ERR_FAIL_COND(!vsnode.is_valid());
 
 	//do not rely on this, makes editor more complex
-	//EditorNode::get_singleton()->push_item(vsnode.ptr(), "", true);
 }
 
 void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
@@ -2318,7 +2315,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_TRANSFORM);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
-	//graph->add_valid_left_disconnect_type(0);
+
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
 	graph->connect("disconnection_request", this, "_disconnection_request", varray(), CONNECT_DEFERRED);
@@ -2839,20 +2836,18 @@ bool VisualShaderEditorPlugin::handles(Object *p_object) const {
 void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//editor->hide_animation_player_editors();
-		//editor->animation_panel_make_visible(true);
+
 		button->show();
 		editor->make_bottom_panel_item_visible(visual_shader_editor);
 		visual_shader_editor->update_custom_nodes();
 		visual_shader_editor->set_process_input(true);
-		//visual_shader_editor->set_process(true);
+
 	} else {
 
 		if (visual_shader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		visual_shader_editor->set_process_input(false);
-		//visual_shader_editor->set_process(false);
 	}
 }
 
@@ -3100,7 +3095,6 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 void EditorPropertyShaderMode::_option_selected(int p_which) {
 
 	//will not use this, instead will do all the logic setting manually
-	//emit_signal("property_changed", get_edited_property(), p_which);
 
 	Ref<VisualShader> visual_shader(Object::cast_to<VisualShader>(get_edited_object()));
 

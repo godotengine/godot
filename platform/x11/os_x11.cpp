@@ -234,8 +234,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	char* windowid = getenv("GODOT_WINDOWID");
 	if (windowid) {
 
-		//freopen("/home/punto/stdout", "w", stdout);
-		//reopen("/home/punto/stderr", "w", stderr);
+
+
 		x11_window = atol(windowid);
 
 		XWindowAttributes xwa;
@@ -832,7 +832,6 @@ void OS_X11::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-	//memdelete(rasterizer);
 
 	memdelete(power_manager);
 
@@ -1921,8 +1920,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// know Mod1 was ALT and Mod4 was META (applekey/winkey)
 	// just tried Mods until i found them.
 
-	//print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
-
 	Ref<InputEventKey> k;
 	k.instance();
 
@@ -2006,7 +2003,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		}
 	}
 
-	//printf("key: %x\n",k->get_scancode());
 	input->accumulate_input_event(k);
 }
 
@@ -2089,8 +2085,6 @@ void OS_X11::_window_changed(XEvent *event) {
 }
 
 void OS_X11::process_xevents() {
-
-	//printf("checking events %i\n", XPending(x11_display));
 
 	do_mouse_warp = false;
 
@@ -2198,7 +2192,6 @@ void OS_X11::process_xevents() {
 #ifdef TOUCH_ENABLED
 					case XI_TouchBegin: // Fall-through
 							// Disabled hand-in-hand with the grabbing
-							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
 
 					case XI_TouchEnd: {
 
@@ -2500,7 +2493,6 @@ void OS_X11::process_xevents() {
 
 				last_mouse_pos = pos;
 
-				// printf("rel: %d,%d\n", rel.x, rel.y );
 				// Don't propagate the motion event unless we have focus
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
@@ -3246,11 +3238,6 @@ void OS_X11::run() {
 		return;
 
 	main_loop->init();
-
-	//uint64_t last_ticks=get_ticks_usec();
-
-	//int frames=0;
-	//uint64_t frame=0;
 
 	while (!force_quit) {
 

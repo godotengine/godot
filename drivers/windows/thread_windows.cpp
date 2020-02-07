@@ -80,7 +80,6 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 	ERR_FAIL_COND(!tp);
 	WaitForSingleObject(tp->handle, INFINITE);
 	CloseHandle(tp->handle);
-	//`memdelete(tp);
 }
 
 void ThreadWindows::make_default() {

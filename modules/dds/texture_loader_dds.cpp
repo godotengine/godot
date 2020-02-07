@@ -240,7 +240,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			w = MAX(1, w >> 1);
 			h = MAX(1, h >> 1);
 			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
-			//printf("%i x %i - block: %i\n",w,h,bsize);
+
 			size += bsize;
 		}
 

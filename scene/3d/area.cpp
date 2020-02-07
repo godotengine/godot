@@ -232,7 +232,6 @@ void Area::_clear_monitoring() {
 
 			if (!node) //node may have been deleted in previous frame or at other legiminate point
 				continue;
-			//ERR_CONTINUE(!node);
 
 			if (!E->get().in_tree)
 				continue;
@@ -262,7 +261,6 @@ void Area::_clear_monitoring() {
 
 			if (!node) //node may have been deleted in previous frame or at other legiminate point
 				continue;
-			//ERR_CONTINUE(!node);
 
 			if (!E->get().in_tree)
 				continue;

@@ -63,7 +63,7 @@ class VehicleWheel : public Spatial {
 
 	VehicleBody *body;
 
-	//btVector3	m_wheelAxleCS; // const or modified by steering ?
+	// const or modified by steering ?
 
 	real_t m_steering;
 	real_t m_rotation;

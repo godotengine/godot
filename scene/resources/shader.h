@@ -66,7 +66,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	//void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
 
 	void set_code(const String &p_code);

@@ -1327,7 +1327,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 
 				if (i >= text.length()) {
 					// Do not do this, because if the cursor is at the end, its just fine that it takes no space.
-					// accum_width = font->get_char_size(' ').width;
+
 				} else {
 					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
 				}

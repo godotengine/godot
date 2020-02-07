@@ -175,7 +175,6 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 
 	Variant arr = get_array();
-	//int size = arr.call("size");
 
 	String pn = p_name;
 	if (pn.begins_with("array/")) {

@@ -47,9 +47,6 @@ void ReparentDialog::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
-		//RID ci = get_canvas_item();
-		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 }
 
@@ -69,7 +66,6 @@ void ReparentDialog::_reparent() {
 void ReparentDialog::set_current(const Set<Node *> &p_selection) {
 
 	tree->set_marked(p_selection, false, false);
-	//tree->set_selected(p_node->get_parent());
 }
 
 void ReparentDialog::_bind_methods() {
@@ -86,7 +82,6 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
@@ -95,18 +90,10 @@ ReparentDialog::ReparentDialog() {
 
 	tree->get_scene_tree()->connect("item_activated", this, "_reparent");
 
-	//Label *label = memnew( Label );
-	//label->set_position( Point2( 15,8) );
-	//label->set_text("Reparent Location (Select new Parent):");
-
 	keep_transform = memnew(CheckBox);
 	keep_transform->set_text(TTR("Keep Global Transform"));
 	keep_transform->set_pressed(true);
 	vbc->add_child(keep_transform);
-
-	//vbc->add_margin_child("Options:",node_only);
-
-	//cancel->connect("pressed", this,"_cancel");
 
 	get_ok()->set_text(TTR("Reparent"));
 }

@@ -43,7 +43,7 @@ class InputDefault : public Input {
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
 	Map<int, float> _joy_axis;
-	//Map<StringName,int> custom_action_press;
+
 	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;

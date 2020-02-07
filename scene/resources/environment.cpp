@@ -1325,7 +1325,7 @@ Environment::Environment() :
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
-	//ambient_sky_contribution = 1.0;
+
 	set_ambient_light_sky_contribution(1.0);
 	set_camera_feed_id(1);
 

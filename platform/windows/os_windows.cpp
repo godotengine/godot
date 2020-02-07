@@ -215,7 +215,6 @@ void OS_Windows::initialize_core() {
 
 	last_button_state = 0;
 
-	//RedirectIOToConsole();
 	maximized = false;
 	minimized = false;
 	borderless = false;
@@ -228,7 +227,7 @@ void OS_Windows::initialize_core() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessWindows>::make_default();
+
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
@@ -410,7 +409,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		{
 			if (main_loop)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
-			//force_quit=true;
+
 			return 0; // Jump Back
 		}
 		case WM_MOUSELEAVE: {
@@ -819,7 +818,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mb->set_control((wParam & MK_CONTROL) != 0);
 			mb->set_shift((wParam & MK_SHIFT) != 0);
 			mb->set_alt(alt_mem);
-			//mb->get_alt()=(wParam&MK_MENU)!=0;
+
 			if (mb->is_pressed())
 				last_button_state |= (1 << (mb->get_button_index() - 1));
 			else
@@ -926,7 +925,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
 			}
-			//return 0;								// Jump Back
+			// Jump Back
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
@@ -1265,7 +1264,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 
 	video_mode = p_desired;
-	//printf("**************** desired %s, mode %s\n", p_desired.fullscreen?"true":"false", video_mode.fullscreen?"true":"false");
+
 	RECT WindowRect;
 
 	WindowRect.left = 0;
@@ -1279,7 +1278,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	wc.lpfnWndProc = (WNDPROC)::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	//wc.hInstance = hInstance;
+
 	wc.hInstance = godot_hinstance ? godot_hinstance : GetModuleHandle(NULL);
 	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 	wc.hCursor = NULL; //LoadCursor(NULL, IDC_ARROW);
@@ -1538,7 +1537,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	set_ime_active(false);
 
 	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
-		//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
 		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);

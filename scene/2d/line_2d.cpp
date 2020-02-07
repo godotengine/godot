@@ -319,26 +319,6 @@ void Line2D::_draw() {
 			lb.uvs, Vector<int>(), Vector<float>(),
 			texture_rid, -1, RID(),
 			_antialiased, true);
-
-	// DEBUG
-	// Draw wireframe
-	//	if(lb.indices.size() % 3 == 0) {
-	//		Color col(0,0,0);
-	//		for(int i = 0; i < lb.indices.size(); i += 3) {
-	//			int vi = lb.indices[i];
-	//			int lbvsize = lb.vertices.size();
-	//			Vector2 a = lb.vertices[lb.indices[i]];
-	//			Vector2 b = lb.vertices[lb.indices[i+1]];
-	//			Vector2 c = lb.vertices[lb.indices[i+2]];
-	//			draw_line(a, b, col);
-	//			draw_line(b, c, col);
-	//			draw_line(c, a, col);
-	//		}
-	//		for(int i = 0; i < lb.vertices.size(); ++i) {
-	//			Vector2 p = lb.vertices[i];
-	//			draw_rect(Rect2(p.x-1, p.y-1, 2, 2), Color(0,0,0,0.5));
-	//		}
-	//	}
 }
 
 void Line2D::_gradient_changed() {

@@ -80,9 +80,6 @@ void PinJointSW::solve(real_t p_step) {
 
 	Vector3 normal(0, 0, 0);
 
-	//Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
-	//Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
-
 	for (int i = 0; i < 3; i++) {
 		normal[i] = 1;
 		real_t jacDiagABInv = real_t(1.) / m_jac[i].getDiagonal();

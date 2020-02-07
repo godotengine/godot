@@ -59,9 +59,6 @@ void main() {
 	}
 	*/
 
-	//normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
-	//normal.xy *= 1.0 + normal.z;
-
 	normal.z = 0.5 - 0.5 * ((normal.x * normal.x) + (normal.y * normal.y));
 	normal = normalize(normal);
 	/*
@@ -73,7 +70,6 @@ void main() {
 		normal.z = -normal.z;
 	}
 
-	//normal = normalize(vec3( uv_interp * 2.0 - 1.0, 1.0 ));
 	float depth = textureCube(source_cube, normal).r;
 
 	// absolute values for direction cosines, bigger value equals closer to basis axis

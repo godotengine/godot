@@ -92,8 +92,6 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 		IndentLevel current_level = indent_level.back()->get();
 		indent_level.push_back(current_level);
 		return true;
-		//_set_error("newline expected after ':'.");
-		//return false;
 	}
 
 	while (true) {
@@ -236,9 +234,6 @@ bool GDScriptParser::_get_completable_identifier(CompletionType p_type, StringNa
 }
 
 GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign, bool p_parsing_constant) {
-
-	//Vector<Node*> expressions;
-	//Vector<OperatorNode::Operator> operators;
 
 	Vector<Expression> expression;
 
@@ -1335,7 +1330,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			case GDScriptTokenizer::TK_OP_MOD:
 				op = OperatorNode::OP_MOD;
 				break;
-			//case GDScriptTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
+
 			case GDScriptTokenizer::TK_OP_SHIFT_LEFT: op = OperatorNode::OP_SHIFT_LEFT; break;
 			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT: op = OperatorNode::OP_SHIFT_RIGHT; break;
 			case GDScriptTokenizer::TK_OP_ASSIGN: {
@@ -2247,7 +2242,6 @@ void GDScriptParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBran
 		while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE && _parse_newline())
 			;
 
-		// GDScriptTokenizer::Token token = tokenizer->get_token();
 		if (error_set)
 			return;
 
@@ -3833,8 +3827,6 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							_set_error("Default parameter expected.");
 							return;
 						}
-
-						//tokenizer->advance();
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 							defaulting = true;

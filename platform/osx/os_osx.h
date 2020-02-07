@@ -70,7 +70,7 @@ public:
 
 	bool force_quit;
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
-	//Rasterizer *rasterizer;
+
 	VisualServer *visual_server;
 
 	List<String> args;
@@ -94,7 +94,7 @@ public:
 	void process_key_events();
 
 	void *framework;
-	//          pthread_key_t   current;
+
 	bool mouse_grab;
 	Point2 mouse_pos;
 
@@ -298,7 +298,6 @@ public:
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual void _set_use_vsync(bool p_enable);
-	//virtual bool is_vsync_enabled() const;
 
 	void run();
 

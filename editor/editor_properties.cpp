@@ -2114,7 +2114,6 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 void EditorPropertyResource::_menu_option(int p_which) {
 
-	//	scene_tree->popup_centered_ratio();
 	switch (p_which) {
 		case OBJ_MENU_LOAD: {
 
@@ -2540,7 +2539,7 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 			_update_menu_items();
 			Vector2 pos = mb->get_global_position();
-			//pos = assign->get_global_transform().xform(pos);
+
 			menu->set_as_minsize();
 			menu->set_global_position(pos);
 			menu->popup();

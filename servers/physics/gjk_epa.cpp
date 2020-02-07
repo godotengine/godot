@@ -723,7 +723,7 @@ struct	GJK
 					return(0);
 				}
 				// -- GODOT start --
-				//m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
+
 				m_status=eStatus::OutOfFaces;
 				// -- GODOT end --
 				return(0);

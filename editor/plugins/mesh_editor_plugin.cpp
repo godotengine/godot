@@ -52,8 +52,6 @@ void MeshEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 
-		//get_scene()->connect("node_removed",this,"_node_removed");
-
 		if (first_enter) {
 			//it's in propertyeditor so. could be moved around
 
@@ -92,7 +90,7 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 		Transform xform;
 		xform.basis.scale(Vector3(m, m, m));
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
-		//xform.origin.z -= aabb.get_longest_axis_size() * 2;
+
 		mesh_instance->set_transform(xform);
 	}
 }

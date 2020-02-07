@@ -405,7 +405,6 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 
-	//file->set_current_path(current_path);
 	if (p_resource->get_path() != "") {
 		file->set_current_path(p_resource->get_path());
 		if (extensions.size()) {

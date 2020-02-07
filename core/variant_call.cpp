@@ -140,8 +140,6 @@ struct _VariantCall {
 		}
 	};
 
-	//void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
-
 	static void make_func_return_variant(Variant::Type p_type, const StringName &p_name) {
 
 #ifdef DEBUG_ENABLED

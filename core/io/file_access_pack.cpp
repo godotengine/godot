@@ -50,7 +50,6 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 
 	PathMD5 pmd5(path.md5_buffer());
-	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
 
 	bool exists = files.has(pmd5);
 

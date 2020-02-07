@@ -35,7 +35,7 @@
 #import <CoreMotion/CoreMotion.h>
 
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-	//@property (strong, nonatomic) UIWindow *window;
+
 	ViewController *view_controller;
 	bool is_focus_out;
 };

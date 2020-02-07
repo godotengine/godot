@@ -6008,8 +6008,6 @@ void SpatialEditorPlugin::set_state(const Dictionary &p_state) {
 }
 
 void SpatialEditor::snap_cursor_to_plane(const Plane &p_plane) {
-
-	//cursor.pos=p_plane.project(cursor.pos);
 }
 
 Vector3 SpatialEditor::snap_point(Vector3 p_target, Vector3 p_start) const {

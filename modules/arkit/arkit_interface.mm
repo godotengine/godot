@@ -347,10 +347,10 @@ void ARKitInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_targ
 	// get the size of our screen
 	Rect2 screen_rect = p_screen_rect;
 
-	//		screen_rect.position.x += screen_rect.size.x;
-	//		screen_rect.size.x = -screen_rect.size.x;
-	//		screen_rect.position.y += screen_rect.size.y;
-	//		screen_rect.size.y = -screen_rect.size.y;
+
+
+
+
 
 	VSG::rasterizer->set_current_render_target(RID());
 	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
@@ -452,10 +452,10 @@ void ARKitInterface::process() {
 					// Plane 0 is our Y and Plane 1 is our CbCr buffer
 
 					// ignored, we check each plane separately
-					// image_width = CVPixelBufferGetWidth(pixelBuffer);
-					// image_height = CVPixelBufferGetHeight(pixelBuffer);
 
-					// printf("Pixel buffer %i - %i\n", image_width, image_height);
+
+
+
 
 					CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
@@ -573,7 +573,7 @@ void ARKitInterface::process() {
 
 					///@TODO it's there, but not there.. what to do with this...
 					// https://developer.apple.com/documentation/arkit/arlightestimate?language=objc
-					//				ambient_color_temperature = current_frame.lightEstimate.ambientColorTemperature;
+
 				}
 
 				// Process our camera

@@ -58,7 +58,7 @@ public class GodotDownloaderService extends DownloaderService {
 		Log.d("GODOT", "getting public key:" + prefs.getString("store_public_key", null));
 		return prefs.getString("store_public_key", null);
 
-		//return BASE64_PUBLIC_KEY;
+
 	}
 
 	/**

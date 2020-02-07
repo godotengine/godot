@@ -118,7 +118,7 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
 String AudioStreamMicrophone::get_stream_name() const {
 
 	//if (audio_stream.is_valid()) {
-	//return "Random: " + audio_stream->get_name();
+
 	//}
 	return "Microphone";
 }

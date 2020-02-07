@@ -95,8 +95,6 @@ public:
 		int depth_layer;
 		uint32_t layer_mask;
 
-		//RID sampled_light;
-
 		Vector<RID> materials;
 		Vector<RID> light_instances;
 		Vector<RID> reflection_probe_instances;
@@ -852,7 +850,7 @@ public:
 		bool visible;
 		bool behind;
 		bool update_when_visible;
-		//VS::MaterialBlendMode blend_mode;
+
 		int light_mask;
 		Vector<Command *> commands;
 		mutable bool custom_rect;

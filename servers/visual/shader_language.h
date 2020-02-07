@@ -764,8 +764,6 @@ private:
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
 
 public:
-	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
-
 	void clear();
 
 	static String get_shader_type(const String &p_code);

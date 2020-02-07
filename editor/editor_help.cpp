@@ -890,7 +890,7 @@ void EditorHelp::_update_doc() {
 					class_desc->pop();
 					if (enum_list[i].description != "") {
 						class_desc->push_font(doc_font);
-						//class_desc->add_text("  ");
+
 						class_desc->push_indent(1);
 						class_desc->push_color(comment_color);
 						_add_text(enum_list[i].description);

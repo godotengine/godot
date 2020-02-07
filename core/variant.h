@@ -169,7 +169,7 @@ public:
 	operator unsigned short() const;
 	operator signed char() const;
 	operator unsigned char() const;
-	//operator long unsigned int() const;
+
 	operator int64_t() const;
 	operator uint64_t() const;
 #ifdef NEED_LONG_INT

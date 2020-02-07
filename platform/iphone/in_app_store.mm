@@ -318,7 +318,7 @@ InAppStore::InAppStore() {
 
 	TransObserver *observer = [[TransObserver alloc] init];
 	[[SKPaymentQueue defaultQueue] addTransactionObserver:observer];
-	//pending_transactions = [NSMutableDictionary dictionary];
+
 };
 
 void InAppStore::finish_transaction(String product_id) {

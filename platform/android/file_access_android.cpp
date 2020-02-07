@@ -55,7 +55,7 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	a = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 	if (!a)
 		return ERR_CANT_OPEN;
-	//ERR_FAIL_COND_V(!a,ERR_FILE_NOT_FOUND);
+
 	len = AAsset_getLength(a);
 	pos = 0;
 	eof = false;

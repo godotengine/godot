@@ -373,9 +373,6 @@ struct HeightMapShapeSW : public ConcaveShapeSW {
 	int depth;
 	real_t cell_size;
 
-	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
-	//void _cull(int p_idx,_CullParams *p_params) const;
-
 	void _setup(PoolVector<real_t> p_heights, int p_width, int p_depth, real_t p_cell_size);
 
 public:

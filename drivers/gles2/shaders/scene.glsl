@@ -1025,7 +1025,7 @@ varying vec3 view_interp;
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
-	// use albedo * metallic as colored specular reflectance at 0 angle for metallic materials;
+
 	// see https://google.github.io/filament/Filament.md.html
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
@@ -1069,9 +1069,9 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	float k = 0.5 * alpha;
 	return 0.5 / (cos_theta_m * (1.0 - k) + k);
 
-	// float cos2 = cos_theta_m * cos_theta_m;
-	// float sin2 = (1.0 - cos2);
-	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
+
+
+
 }
 */
 
@@ -1317,13 +1317,13 @@ LIGHT_SHADER_CODE
 		float XdotH = dot(T, H);
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH, cNdotH);
-		//float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
+
 		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
 
 #else
 		float alpha_ggx = roughness * roughness;
 		float D = D_GGX(cNdotH, alpha_ggx);
-		//float G = G_GGX_2cos(cNdotL, alpha_ggx) * G_GGX_2cos(cNdotV, alpha_ggx);
+
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif
 		// F
@@ -1345,7 +1345,7 @@ LIGHT_SHADER_CODE
 #endif
 		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
 		float Fr = mix(.04, 1.0, cLdotH5);
-		//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+
 		float Gr = V_GGX(cNdotL, cNdotV, 0.25);
 
 		float clearcoat_specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
@@ -1530,7 +1530,7 @@ FRAGMENT_SHADER_CODE
 	normalmap.z = sqrt(max(0.0, 1.0 - dot(normalmap.xy, normalmap.xy)));
 
 	normal = normalize(mix(normal_interp, tangent * normalmap.x + binormal * normalmap.y + normal * normalmap.z, normaldepth)) * side;
-	//normal = normalmap;
+
 #endif
 
 	normal = normalize(normal);
@@ -2138,7 +2138,6 @@ FRAGMENT_SHADER_CODE
 #ifdef BASE_PASS
 	gl_FragColor.rgb += emission;
 #endif
-	// gl_FragColor = vec4(normal, 1.0);
 
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)

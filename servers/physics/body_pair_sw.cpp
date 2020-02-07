@@ -59,9 +59,6 @@ void BodyPairSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 
 
 	// check if we already have the contact
 
-	//Vector3 local_A = A->get_inv_transform().xform(p_point_A);
-	//Vector3 local_B = B->get_inv_transform().xform(p_point_B);
-
 	Vector3 local_A = A->get_inv_transform().basis.xform(p_point_A);
 	Vector3 local_B = B->get_inv_transform().basis.xform(p_point_B - offset_B);
 

@@ -545,9 +545,6 @@ protected:
 
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
-	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
-	//void _call_deferred_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
-
 	Variant _call_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
@@ -651,8 +648,6 @@ public:
 	}
 
 	/* IAPI */
-	//void set(const String& p_name, const Variant& p_value);
-	//Variant get(const String& p_name) const;
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
 	Variant get(const StringName &p_name, bool *r_valid = NULL) const;

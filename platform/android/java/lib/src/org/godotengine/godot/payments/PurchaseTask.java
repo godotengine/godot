@@ -68,7 +68,7 @@ abstract public class PurchaseTask {
 		try {
 			buyIntentBundle = mService.getBuyIntent(3, context.getApplicationContext().getPackageName(), sku, "inapp", hash);
 		} catch (RemoteException e) {
-			//Log.d("XXX", "Error: " + e.getMessage());
+
 			error(e.getMessage());
 			return;
 		}
@@ -81,7 +81,7 @@ abstract public class PurchaseTask {
 		} else if (rc instanceof Long) {
 			responseCode = (int)((Long)rc).longValue();
 		}
-		//Log.d("XXX", "Buy intent response code: " + responseCode);
+
 		if (responseCode == 1 || responseCode == 3 || responseCode == 4) {
 			canceled();
 			return;
@@ -95,12 +95,12 @@ abstract public class PurchaseTask {
 		pc.setConsumableValue("validation_hash", sku, hash);
 		try {
 			if (context == null) {
-				//Log.d("XXX", "No context!");
+
 			}
 			if (pendingIntent == null) {
-				//Log.d("XXX", "No pending intent");
+
 			}
-			//Log.d("XXX", "Starting activity for purchase!");
+
 			context.startIntentSenderForResult(
 					pendingIntent.getIntentSender(),
 					PaymentsManager.REQUEST_CODE_FOR_PURCHASE,

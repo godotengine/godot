@@ -376,7 +376,7 @@ public:
 		capsule_params["height"] = 1;
 		Transform shape_xform;
 		shape_xform.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
-		//shape_xform.origin=Vector3(1,1,1);
+
 		ps->shape_set_data(capsule_shape, capsule_params);
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);

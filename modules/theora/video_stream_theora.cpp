@@ -90,8 +90,6 @@ void VideoStreamPlaybackTheora::video_write(void) {
 		PoolVector<uint8_t>::Write w = frame_data.write();
 		char *dst = (char *)w.ptr();
 
-		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
-
 		if (px_fmt == TH_PF_444) {
 
 			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
@@ -310,13 +308,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		px_fmt = ti.pixel_fmt;
 		switch (ti.pixel_fmt) {
 			case TH_PF_420:
-				//printf(" 4:2:0 video\n");
+
 				break;
 			case TH_PF_422:
-				//printf(" 4:2:2 video\n");
+
 				break;
 			case TH_PF_444:
-				//printf(" 4:4:4 video\n");
+
 				break;
 			case TH_PF_RSVD:
 			default:
@@ -349,7 +347,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	if (vorbis_p) {
 		vorbis_synthesis_init(&vd, &vi);
 		vorbis_block_init(&vd, &vb);
-		//_setup(vi.channels, vi.rate);
+
 	} else {
 		/* tear down the partial vorbis setup */
 		vorbis_info_clear(&vi);
@@ -378,7 +376,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		return;
 
 	if (!playing || paused) {
-		//printf("not playing\n");
+
 		return;
 	};
 
@@ -484,8 +482,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 				if (th_decode_packetin(td, &op, &videobuf_granulepos) == 0) {
 					videobuf_time = th_granule_time(td, videobuf_granulepos);
 
-					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
-
 					/* is it already too old to be useful?  This is only actually
 					 useful cosmetically after a SIGSTOP.  Note that we have to
 					 decode the frame even if we don't show it (for now) due to
@@ -511,7 +507,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 #else
 		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
-			//printf("video done, stopping\n");
+
 			stop();
 			return;
 		};
@@ -526,15 +522,11 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		}
 
 		/* If playback has begun, top audio buffer off immediately. */
-		//if(stateflag) audio_write_nonblocking();
 
 		/* are we at or past time for this video frame? */
 		if (videobuf_ready && videobuf_time <= get_time()) {
 
-			//video_write();
-			//videobuf_ready=0;
 		} else {
-			//printf("frame at %f not ready (time %f), ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 		}
 
 		float tdiff = videobuf_time - get_time();

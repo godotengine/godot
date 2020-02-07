@@ -211,7 +211,6 @@ Error ContextGL_Windows::initialize() {
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
 	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
-	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;
 }

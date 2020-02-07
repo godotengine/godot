@@ -1254,7 +1254,6 @@ void Node::remove_child(Node *p_child) {
 	}
 
 	ERR_FAIL_COND_MSG(idx == -1, "Cannot remove child node " + p_child->get_name() + " as it is not a child of this node.");
-	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
 	//if (data.scene) { does not matter
 
@@ -2545,7 +2544,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 	SceneTree *tree_changed_a = NULL;
 	SceneTree *tree_changed_b = NULL;
 
-	//ERR_FAIL_COND(p_scene && data.parent && !data.parent->data.scene); //nobug if both are null
+	//nobug if both are null
 
 	if (data.tree) {
 		_propagate_exit_tree();

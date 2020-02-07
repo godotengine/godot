@@ -55,7 +55,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 	@Override
 	public boolean onDown(MotionEvent event) {
 		super.onDown(event);
-		//Log.i("GodotGesture", "onDown");
+
 		return true;
 	}
 
@@ -67,12 +67,12 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 
 	@Override
 	public void onLongPress(MotionEvent event) {
-		//Log.i("GodotGesture", "onLongPress");
+
 	}
 
 	@Override
 	public boolean onDoubleTap(MotionEvent event) {
-		//Log.i("GodotGesture", "onDoubleTap");
+
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
 		queueEvent(new Runnable() {
@@ -86,7 +86,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 
 	@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-		//Log.i("GodotGesture", "onScroll");
+
 		final int x = Math.round(distanceX);
 		final int y = Math.round(distanceY);
 		queueEvent(new Runnable() {
@@ -100,7 +100,7 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 
 	@Override
 	public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-		//Log.i("GodotGesture", "onFling");
+
 		return true;
 	}
 }

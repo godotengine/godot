@@ -43,8 +43,6 @@ void EditorScript::add_root_node(Node *p_node) {
 		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
 		return;
 	}
-
-	//editor->set_edited_scene(p_node);
 }
 
 EditorInterface *EditorScript::get_editor_interface() {

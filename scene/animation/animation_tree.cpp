@@ -162,7 +162,6 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
-	//inputs.write[p_input].last_pass = state->last_pass;
 	float activity = 0;
 	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
@@ -944,7 +943,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							Vector3 scale;
 
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
-							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+							//used for testing, should be removed
 
 							if (t->process_pass != process_pass) {
 

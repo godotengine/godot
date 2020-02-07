@@ -124,8 +124,6 @@ Error AudioDriverALSA::init_device() {
 	status = snd_pcm_hw_params(pcm_handle, hwparams);
 	CHECK_FAIL(status < 0);
 
-	//snd_pcm_hw_params_free(&hwparams);
-
 	snd_pcm_sw_params_alloca(&swparams);
 
 	status = snd_pcm_sw_params_current(pcm_handle, swparams);

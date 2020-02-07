@@ -203,7 +203,7 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	if (time_total > time_roll_over)
-		time_total = 0; //roll over every day (should be customz
+		time_total = 0;
 
 	storage->frame.time[0] = time_total;
 	storage->frame.time[1] = Math::fmod(time_total, 3600);

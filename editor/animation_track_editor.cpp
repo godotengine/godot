@@ -1536,7 +1536,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			float extra = (zoomw / scale) * 0.5;
 
 			//if (time_min < -0.001)
-			//	time_min -= extra;
+
 			time_max += extra;
 			set_min(time_min);
 			set_max(time_max);
@@ -3335,7 +3335,7 @@ void AnimationTrackEditor::update_keying() {
 		return;
 
 	keying = keying_enabled;
-	//_update_menu();
+
 	emit_signal("keying_changed");
 }
 

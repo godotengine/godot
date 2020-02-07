@@ -127,7 +127,7 @@ struct Color {
 
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
-		//const float Emax = 31.0f;
+
 		const float N = 9.0f;
 
 		float sharedexp = 65408.000f; //(( pow2to9  - 1.0f)/ pow2to9)*powf( 2.0f, 31.0f - 15.0f);

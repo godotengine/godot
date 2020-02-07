@@ -138,8 +138,6 @@ void OS_UWP::initialize_core() {
 
 	last_button_state = 0;
 
-	//RedirectIOToConsole();
-
 	ThreadUWP::make_default();
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();

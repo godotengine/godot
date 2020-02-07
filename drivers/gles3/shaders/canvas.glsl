@@ -608,7 +608,6 @@ FRAGMENT_SHADER_CODE
 		s.xyz /= s.w;
 		su = s.x * 0.5 + 0.5;
 		sz = s.z * 0.5 + 0.5;
-		//sz=lightlength(light_vec);
 
 		highp float shadow_attenuation = 0.0;
 
@@ -713,7 +712,6 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-		//color *= shadow_attenuation;
 		color = mix(real_light_shadow_color, color, shadow_attenuation);
 //use shadows
 #endif
@@ -721,6 +719,6 @@ FRAGMENT_SHADER_CODE
 
 //use lighting
 #endif
-	//color.rgb *= color.a;
+
 	frag_color = color;
 }

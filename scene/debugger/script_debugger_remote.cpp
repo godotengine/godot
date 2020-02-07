@@ -758,7 +758,6 @@ void ScriptDebuggerRemote::_poll_events() {
 		ERR_CONTINUE(cmd[0].get_type() != Variant::STRING);
 
 		String command = cmd[0];
-		//cmd.remove(0);
 
 		if (command == "break") {
 

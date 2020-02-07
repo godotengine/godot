@@ -73,7 +73,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	if (bottom_editor != NULL && bottom_editor->is_visible()) {
 		ms.height += get_constant("vseparation", "Tree");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
-		//bems.width += get_constant("item_margin", "Tree");
+
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
@@ -1451,8 +1451,6 @@ void EditorInspector::update_tree() {
 			draw_red = true;
 		}
 	}
-
-	//	TreeItem *current_category = NULL;
 
 	String filter = search_box ? search_box->get_text() : "";
 	String group;

@@ -90,7 +90,7 @@ private:
 
 	Button *makedir;
 	Access access;
-	//Button *action;
+
 	VBoxContainer *vbox;
 	Mode mode;
 	bool can_create_dir;

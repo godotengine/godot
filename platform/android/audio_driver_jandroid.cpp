@@ -71,10 +71,6 @@ Error AudioDriverAndroid::init() {
 	   }
 */
 
-	//Android_JNI_SetupThread();
-
-	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
-
 	JNIEnv *env = ThreadAndroid::get_env();
 	int mix_rate = GLOBAL_DEF_RST("audio/mix_rate", 44100);
 

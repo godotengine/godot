@@ -266,8 +266,6 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	}
 	//faster to set than to check..
 
-	//bool prev_collided=collided;
-
 	collided = CollisionSolver2DSW::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
 
@@ -389,8 +387,6 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 		if (gather_A | gather_B) {
 
-			//Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
-
 			global_A += offset_A;
 			global_B += offset_A;
 
@@ -427,7 +423,6 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
-		//c.acc_bias_impulse=0;
 
 #ifdef ACCUMULATE_IMPULSES
 		{

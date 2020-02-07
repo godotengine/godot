@@ -52,7 +52,7 @@ class EditorLog : public VBoxContainer {
 	Label *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
-	//PaneDrag *pd;
+
 	ToolButton *tool_button;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
@@ -61,7 +61,6 @@ class EditorLog : public VBoxContainer {
 
 	Thread::ID current;
 
-	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);

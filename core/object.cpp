@@ -435,7 +435,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
-		//set_meta(p_name,p_value);
+
 		metadata = p_value.duplicate();
 		if (r_valid)
 			*r_valid = true;
@@ -746,14 +746,12 @@ void Object::call_multilevel(const StringName &p_method, const Variant **p_args,
 		return;
 	}
 
-	//Variant ret;
 	OBJ_DEBUG_LOCK
 
 	Variant::CallError error;
 
 	if (script_instance) {
 		script_instance->call_multilevel(p_method, p_args, p_argcount);
-		//_test_call_error(p_method,error);
 	}
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
@@ -778,11 +776,8 @@ void Object::call_multilevel_reversed(const StringName &p_method, const Variant 
 		_test_call_error(p_method, error);
 	}
 
-	//Variant ret;
-
 	if (script_instance) {
 		script_instance->call_multilevel_reversed(p_method, p_args, p_argcount);
-		//_test_call_error(p_method,error);
 	}
 }
 
@@ -859,7 +854,6 @@ void Object::call_multilevel(const StringName &p_name, VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
-	//Variant::CallError error;
 	call_multilevel(p_name, argptr, argc);
 }
 
@@ -1068,7 +1062,7 @@ Array Object::_get_method_list_bind() const {
 	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
 
 		Dictionary d = E->get();
-		//va.push_back(d);
+
 		ret.push_back(d);
 	}
 
@@ -1503,8 +1497,6 @@ bool Object::is_connected(const StringName &p_signal, Object *p_to_object, const
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 
 	return s->slot_map.has(target);
-	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
-	//return (E!=NULL);
 }
 
 void Object::disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {

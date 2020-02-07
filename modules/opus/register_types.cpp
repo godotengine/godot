@@ -40,13 +40,7 @@ void register_opus_types() {
 	// in the audio thread.
 	// Currently the implementation even reads files from the audio thread,
 	// and this is not how audio programming works.
-
-	//opus_stream_loader = memnew(ResourceFormatLoaderAudioStreamOpus);
-	//ResourceLoader::add_resource_format_loader(opus_stream_loader);
-	//ClassDB::register_class<AudioStreamOpus>();
 }
 
 void unregister_opus_types() {
-
-	//memdelete(opus_stream_loader);
 }

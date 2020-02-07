@@ -1053,10 +1053,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
 	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
 
-	//jmethodID getDeclaredMethods = env->GetMethodID(bclass,"getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
-
-	//ERR_FAIL_COND_V(!getDeclaredMethods,Ref<JavaClass>());
-
 	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, getDeclaredMethods);
 
 	ERR_FAIL_COND_V(!methods, Ref<JavaClass>());

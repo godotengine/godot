@@ -251,7 +251,7 @@ RID VisualServer::_make_test_cube() {
 
 	/*
 	test_material = fixed_material_create();
-	//material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
+
 	fixed_material_set_texture( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
 	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
 	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_EMISSION, Color(0.2,0.2,0.2) );
@@ -2309,7 +2309,6 @@ void VisualServer::_bind_methods() {
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
 
 	ERR_FAIL_COND(p_margins.size() != 4);
-	//canvas_item_add_style_box(p_item,p_rect,p_source,p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);
 }
 
 void VisualServer::_camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {
@@ -2365,7 +2364,6 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 
 VisualServer::VisualServer() {
 
-	//ERR_FAIL_COND(singleton);
 	singleton = this;
 
 	GLOBAL_DEF_RST("rendering/vram_compression/import_bptc", false);

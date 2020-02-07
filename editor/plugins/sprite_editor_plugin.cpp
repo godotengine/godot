@@ -607,8 +607,6 @@ SpriteEditorPlugin::SpriteEditorPlugin(EditorNode *p_node) {
 	sprite_editor = memnew(SpriteEditor);
 	editor->get_viewport()->add_child(sprite_editor);
 	make_visible(false);
-
-	//sprite_editor->options->hide();
 }
 
 SpriteEditorPlugin::~SpriteEditorPlugin() {

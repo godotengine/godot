@@ -52,7 +52,7 @@ struct ColladaImport {
 	Vector<Ref<Animation> > animations;
 
 	struct NodeMap {
-		//String path;
+
 		Spatial *node;
 		int bone;
 		List<int> anim_tracks;
@@ -224,9 +224,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						return OK;
 					//well, it's an ambient light..
 					Light *l = memnew(DirectionalLight);
-					//l->set_color(Light::COLOR_AMBIENT,ld.color);
-					//l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
-					//l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
+
 					node = l;
 
 				} else if (ld.mode == Collada::LightData::MODE_DIRECTIONAL) {
@@ -249,14 +247,10 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						l = memnew(OmniLight);
 					else {
 						l = memnew(SpotLight);
-						//l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
-						//l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
 					}
 
 					//
-					//l->set_color(Light::COLOR_DIFFUSE,ld.color);
-					//l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
-					//l->approximate_opengl_attenuation(ld.constant_att,ld.linear_att,ld.quad_att);
+
 					node = l;
 				}
 
@@ -318,7 +312,6 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 			} else {
 				//mesh since nothing else
 				node = memnew(MeshInstance);
-				//Object::cast_to<MeshInstance>(node)->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
@@ -385,7 +378,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 				material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
 				material->set_albedo(Color(1, 1, 1, 1));
-				//material->set_parameter(SpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -410,8 +403,6 @@ Error ColladaImport::_create_material(const String &p_target) {
 				material->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
 				material->set_specular(1.0);
 
-				//material->set_texture(SpatialMaterial::PARAM_SPECULAR,texture);
-				//material->set_parameter(SpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -439,7 +430,6 @@ Error ColladaImport::_create_material(const String &p_target) {
 				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, texture);
 				material->set_emission(Color(1, 1, 1, 1));
 
-				//material->set_parameter(SpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
@@ -466,11 +456,8 @@ Error ColladaImport::_create_material(const String &p_target) {
 			if (texture.is_valid()) {
 				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
 				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
-				//material->set_emission(Color(1,1,1,1));
 
-				//material->set_texture(SpatialMaterial::PARAM_NORMAL,texture);
 			} else {
-				//missing_textures.push_back(texfile.get_file());
 			}
 		}
 	}
@@ -723,8 +710,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				amount = 3; //triangles;
 			}
 
-			//COLLADA_PRINT("amount: "+itos(amount));
-
 			int prev2[2] = { 0, 0 };
 
 			for (int j = 0; j < amount; j++) {
@@ -810,7 +795,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 				vertex.fix_unit_scale(collada);
 				int index = 0;
-				//COLLADA_PRINT("vertex: "+vertex.vertex);
 
 				if (vertex_set.has(vertex)) {
 
@@ -865,8 +849,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				vertex_array.write[i].tangent.normal = local_xform.basis.xform(vertex_array[i].tangent.normal).normalized();
 				if (local_xform_mirror) {
 					//i shouldn't do this? wtf?
-					//vertex_array[i].normal*=-1.0;
-					//vertex_array[i].tangent.normal*=-1.0;
 				}
 			}
 		}
@@ -922,12 +904,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					Vector<int> bones;
 					weights.resize(VS::ARRAY_WEIGHTS_SIZE);
 					bones.resize(VS::ARRAY_WEIGHTS_SIZE);
-					//float sum=0.0;
+
 					for (int l = 0; l < VS::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
 							weights.write[l] = vertex_array[k].weights[l].weight;
 							bones.write[l] = vertex_array[k].weights[l].bone_idx;
-							//sum += vertex_array[k].weights[l].weight;
+
 						} else {
 
 							weights.write[l] = 0;
@@ -980,7 +962,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				}
 
 				a[Mesh::ARRAY_INDEX] = Variant();
-				//a.resize(Mesh::ARRAY_MAX); //no need for index
+				//no need for index
 				mr.push_back(a);
 			}
 
@@ -1488,7 +1470,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		}
 	}
 
-	//animation->set_loop(true);
 	//create animation tracks
 
 	Vector<float> base_snapshots;
@@ -1788,7 +1769,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 		if (r_missing_deps) {
 
 			for (int i = 0; i < state.missing_textures.size(); i++) {
-				//EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
+
 				r_missing_deps->push_back(state.missing_textures[i]);
 			}
 		}

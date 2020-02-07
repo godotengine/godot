@@ -82,7 +82,7 @@ private:
 	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
+
 		return next_power_of_2(p_elements * sizeof(T));
 	}
 

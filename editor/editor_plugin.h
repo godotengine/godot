@@ -83,7 +83,7 @@ public:
 	void inspect_object(Object *p_obj, const String &p_for_property = String());
 
 	EditorSelection *get_selection();
-	//EditorImportExport *get_import_export();
+
 	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();

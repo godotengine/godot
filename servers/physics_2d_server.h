@@ -620,7 +620,6 @@ protected:
 public:
 	Physics2DServer::MotionResult *get_result_ptr() const { return const_cast<Physics2DServer::MotionResult *>(&result); }
 
-	//bool is_colliding() const;
 	Vector2 get_motion() const;
 	Vector2 get_motion_remainder() const;
 

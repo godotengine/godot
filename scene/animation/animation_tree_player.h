@@ -126,7 +126,6 @@ private:
 	struct Input {
 
 		StringName node;
-		//Input() { node=-1;  }
 	};
 
 	struct NodeBase {

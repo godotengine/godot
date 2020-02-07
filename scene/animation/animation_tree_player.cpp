@@ -497,11 +497,6 @@ float AnimationTreePlayer::_process_node(const StringName &p_node, AnimationNode
 			float rem = 0;
 			if (!an->animation.is_null()) {
 
-				//float pos = an->time;
-				//float delta = p_time;
-
-				//const Animation *a = an->animation.operator->();
-
 				if (p_seek) {
 					an->time = p_time;
 					an->step = 0;
@@ -972,7 +967,6 @@ void AnimationTreePlayer::add_node(NodeType p_type, const StringName &p_node) {
 		}
 	}
 
-	//n->name+=" "+itos(p_node);
 	node_map[p_node] = n;
 }
 
@@ -1417,11 +1411,8 @@ Error AnimationTreePlayer::connect_nodes(const StringName &p_src_node, const Str
 	ERR_FAIL_COND_V(!node_map.has(p_dst_node), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_src_node == p_dst_node, ERR_INVALID_PARAMETER);
 
-	//NodeBase *src = node_map[p_src_node];
 	NodeBase *dst = node_map[p_dst_node];
 	ERR_FAIL_INDEX_V(p_dst_input, dst->inputs.size(), ERR_INVALID_PARAMETER);
-
-	//int oldval = dst->inputs[p_dst_input].node;
 
 	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {
 

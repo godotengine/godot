@@ -58,8 +58,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
 	bool ignore_resource_parsing;
 
-	//Map<String,String> remaps;
-
 	Map<int, ExtResource> ext_resources;
 
 	int resources_total;
@@ -71,7 +69,6 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	mutable int lines;
 
 	Map<String, String> remaps;
-	//void _printerr();
 
 	static Error _parse_sub_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText *>(p_self)->_parse_sub_resource(p_stream, r_res, line, r_err_str); }
 	static Error _parse_ext_resources(void *p_self, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText *>(p_self)->_parse_ext_resource(p_stream, r_res, line, r_err_str); }

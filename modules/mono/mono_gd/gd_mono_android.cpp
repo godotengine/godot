@@ -271,12 +271,9 @@ MonoBoolean _gd_mono_init_cert_store() {
 	// The JNI code is the equivalent of:
 	//
 	// try {
-	// 	certStoreLocal = KeyStore.getInstance("AndroidCAStore");
-	// 	certStoreLocal.load(null);
-	//	certStore = certStoreLocal;
-	//	return true;
+
 	// } catch (Exception e) {
-	//	return false;
+
 	// }
 
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -306,10 +303,8 @@ MonoBoolean _gd_mono_init_cert_store() {
 MonoArray *_gd_mono_android_cert_store_lookup(MonoString *p_alias) {
 	// The JNI code is the equivalent of:
 	//
-	// Certificate certificate = certStore.getCertificate(alias);
+
 	// if (certificate == null)
-	//	return null;
-	// return certificate.getEncoded();
 
 	MonoError mono_error;
 	char *alias_utf8 = mono_string_to_utf8_checked(p_alias, &mono_error);
@@ -494,11 +489,9 @@ static void interop_get_active_network_dns_servers(char **r_dns_servers, int *dn
 	// The JNI code is the equivalent of:
 	//
 	// ConnectivityManager connectivityManager = (ConnectivityManager)getApplicationContext()
-	// 		.getSystemService(Context.CONNECTIVITY_SERVICE);
-	// Network activeNerwork = connectivityManager.getActiveNetwork();
-	// LinkProperties linkProperties = connectivityManager.getLinkProperties(activeNerwork);
+
 	// List<String> dnsServers = linkProperties.getDnsServers().stream()
-	// 		.map(inetAddress -> inetAddress.getHostAddress()).collect(Collectors.toList());
+	//  	.map(inetAddress -> inetAddress.getHostAddress()).collect(Collectors.toList());
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(get_build_version_sdk_int() < 23);

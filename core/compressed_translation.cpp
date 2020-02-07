@@ -90,7 +90,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 				ps.compressed = src_s;
 			} else {
 				dst_s.resize(ret);
-				//ps.orig_len=;
+
 				ps.compressed = dst_s;
 			}
 		} else {

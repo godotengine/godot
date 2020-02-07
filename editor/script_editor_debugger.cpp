@@ -1313,9 +1313,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					ppeer->set_stream_peer(connection);
 
-					//EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
-					//emit_signal("show_debugger",true);
-
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
@@ -1330,7 +1327,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					error_count = 0;
 					warning_count = 0;
 					profiler_signature.clear();
-					//live_edit_root->set_text("/root");
 
 					EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 					EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
@@ -1618,9 +1614,6 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 }
 
 void ScriptEditorDebugger::_output_clear() {
-
-	//output->clear();
-	//output->push_color(Color(0,0,0));
 }
 
 void ScriptEditorDebugger::_export_csv() {

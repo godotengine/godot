@@ -98,17 +98,12 @@ class Area2DSW : public CollisionObject2DSW {
 	Map<BodyKey, BodyState> monitored_bodies;
 	Map<BodyKey, BodyState> monitored_areas;
 
-	//virtual void shape_changed_notify(Shape2DSW *p_shape);
-	//virtual void shape_deleted_notify(Shape2DSW *p_shape);
 	Set<Constraint2DSW *> constraints;
 
 	virtual void _shapes_changed();
 	void _queue_monitor_update();
 
 public:
-	//_FORCE_INLINE_ const Matrix32& get_inverse_transform() const { return inverse_transform; }
-	//_FORCE_INLINE_ SpaceSW* get_owner() { return owner; }
-
 	void set_monitor_callback(ObjectID p_id, const StringName &p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id; }
 

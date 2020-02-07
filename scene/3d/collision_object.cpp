@@ -353,7 +353,6 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	} else {
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 	}
-	//set_transform_notify(true);
 }
 
 void CollisionObject::set_capture_input_on_drag(bool p_capture) {
@@ -386,8 +385,6 @@ CollisionObject::CollisionObject() {
 	ray_pickable = true;
 	set_notify_transform(true);
 	//owner=
-
-	//set_transform_notify(true);
 }
 
 CollisionObject::~CollisionObject() {

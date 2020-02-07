@@ -92,7 +92,7 @@ void FileAccessNetworkClient::_thread_func() {
 		if (err != OK)
 			ERR_PRINT("sem->wait() failed");
 		DEBUG_TIME("sem_unlock");
-		//DEBUG_PRINT("semwait returned "+itos(werr));
+
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
 		lock_mutex();
 		DEBUG_PRINT("MUTEX PASS");
@@ -197,7 +197,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 	Error err = client->connect_to_host(ip, p_port);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot connect to host with IP: " + String(ip) + " and port: " + itos(p_port));
 	while (client->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
-		//DEBUG_PRINT("trying to connect....");
+
 		OS::get_singleton()->delay_usec(1000);
 	}
 
@@ -304,7 +304,6 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	last_page = -1;
 	last_page_buff = NULL;
 
-	//buffers.clear();
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
@@ -401,15 +400,12 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 
 int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	//bool eof=false;
 	if (pos + p_length > total_size) {
 		eof_flag = true;
 	}
 	if (pos + p_length >= total_size) {
 		p_length = total_size - pos;
 	}
-
-	//FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 
 	uint8_t *buff = last_page_buff;
 

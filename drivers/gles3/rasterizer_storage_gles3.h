@@ -643,8 +643,6 @@ public:
 		Vector<AABB> skeleton_bone_aabb;
 		Vector<bool> skeleton_bone_used;
 
-		//bool packed;
-
 		struct BlendShape {
 			GLuint vertex_id;
 			GLuint array_id;

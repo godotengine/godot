@@ -433,7 +433,7 @@ void ScriptTextEditor::add_callback(const String &p_function, PoolStringArray p_
 		code_editor->get_text_edit()->deselect();
 		pos = code_editor->get_text_edit()->get_line_count() + 2;
 		String func = script->get_language()->make_function("", p_function, p_args);
-		//code=code+func;
+
 		code_editor->get_text_edit()->cursor_set_line(pos + 1);
 		code_editor->get_text_edit()->cursor_set_column(1000000); //none shall be that big
 		code_editor->get_text_edit()->insert_text_at_cursor("\n\n" + func);
@@ -1417,7 +1417,7 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
 	}
-	// highlighter_menu->set_item_checked(p_idx, true);
+
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
 }
 

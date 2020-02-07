@@ -92,9 +92,6 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_margin", "margin", "offset"), &StyleBox::set_default_margin);
 	ClassDB::bind_method(D_METHOD("get_default_margin", "margin"), &StyleBox::get_default_margin);
 
-	//ClassDB::bind_method(D_METHOD("set_default_margin"),&StyleBox::set_default_margin);
-	//ClassDB::bind_method(D_METHOD("get_default_margin"),&StyleBox::get_default_margin);
-
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &StyleBox::get_margin);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &StyleBox::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_center_size"), &StyleBox::get_center_size);

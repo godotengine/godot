@@ -63,8 +63,6 @@ class EditorHistory {
 	Vector<History> history;
 	int current;
 
-	//Vector<EditorPlugin*> editor_plugins;
-
 	struct PropertyData {
 
 		String name;

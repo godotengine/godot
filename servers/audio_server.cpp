@@ -836,7 +836,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 
 	Bus::Effect fx;
 	fx.effect = p_effect;
-	//fx.instance=p_effect->instance();
+
 	fx.enabled = true;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;

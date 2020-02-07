@@ -87,7 +87,7 @@ abstract public class ReleaseAllConsumablesTask {
 
 	public void consumeItAll() {
 		try {
-			//Log.d("godot", "consumeItall for " + context.getPackageName());
+
 			Bundle bundle = mService.getPurchases(3, context.getPackageName(), "inapp", null);
 
 			if (bundle.getInt("RESPONSE_CODE") == 0) {
@@ -96,12 +96,12 @@ abstract public class ReleaseAllConsumablesTask {
 				final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
 
 				if (myPurchases == null || myPurchases.size() == 0) {
-					//Log.d("godot", "No purchases!");
+
 					notRequired();
 					return;
 				}
 
-				//Log.d("godot", "# products to be consumed:" + myPurchases.size());
+
 				for (int i = 0; i < myPurchases.size(); i++) {
 
 					try {
@@ -110,7 +110,7 @@ abstract public class ReleaseAllConsumablesTask {
 						String sku = inappPurchaseData.getString("productId");
 						String token = inappPurchaseData.getString("purchaseToken");
 						String signature = mySignatures.get(i);
-						//Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
+
 						new ReleaseAllConsumablesAsyncTask(this, sku, receipt, signature, token).execute();
 					} catch (JSONException e) {
 					}
@@ -123,9 +123,9 @@ abstract public class ReleaseAllConsumablesTask {
 
 	private String doInBackground(String token) {
 		try {
-			//Log.d("godot", "Requesting to consume an item with token ." + token);
+
 			int response = mService.consumePurchase(3, context.getPackageName(), token);
-			//Log.d("godot", "consumePurchase response: " + response);
+
 			if (response == 0 || response == 8) {
 				return null;
 			}

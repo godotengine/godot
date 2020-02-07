@@ -53,7 +53,7 @@ public:
 private:
 	ContextGL_X11_Private *p;
 	OS::VideoMode default_video_mode;
-	//::Colormap x11_colormap;
+
 	::Display *x11_display;
 	::Window &x11_window;
 	bool double_buffer;

@@ -82,9 +82,9 @@ public class GodotIO {
 
 	public int file_open(String path, boolean write) {
 
-		//System.out.printf("file_open: Attempt to Open %s\n",path);
 
-		//Log.v("MyApp", "TRYING TO OPEN FILE: " + path);
+
+
 		if (write)
 			return -1;
 
@@ -95,7 +95,7 @@ public class GodotIO {
 
 		} catch (Exception e) {
 
-			//System.out.printf("Exception on file_open: %s\n",path);
+
 			return -1;
 		}
 
@@ -276,7 +276,7 @@ public class GodotIO {
 			return -1;
 		}
 
-		//System.out.printf("Opened dir: %s\n",path);
+
 		++last_dir_id;
 		dirs.put(last_dir_id, ad);
 
@@ -289,7 +289,7 @@ public class GodotIO {
 			return false;
 		}
 		AssetDir ad = dirs.get(id);
-		//System.out.printf("go next: %d,%d\n",ad.current,ad.files.length);
+
 		int idx = ad.current;
 		if (idx > 0)
 			idx--;
@@ -317,7 +317,7 @@ public class GodotIO {
 		}
 
 		AssetDir ad = dirs.get(id);
-		//System.out.printf("go next: %d,%d\n",ad.current,ad.files.length);
+
 
 		if (ad.current >= ad.files.length) {
 			ad.current++;
@@ -342,7 +342,7 @@ public class GodotIO {
 
 		am = p_activity.getAssets();
 		activity = p_activity;
-		//streams = new HashMap<Integer, AssetData>();
+
 		streams = new SparseArray<AssetData>();
 		dirs = new SparseArray<AssetDir>();
 	}
@@ -362,7 +362,7 @@ public class GodotIO {
 
 		System.out.printf("audioInit: initializing audio:\n");
 
-		//Log.v("Godot", "Godot audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + ((float)sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
+
 
 		// Let the user pick a larger buffer if they really want -- but ye
 		// gods they probably shouldn't, the minimums are horrifyingly high
@@ -374,7 +374,7 @@ public class GodotIO {
 
 		audioStartThread();
 
-		//Log.v("Godot", "Godot audio: got " + ((mAudioTrack.getChannelCount() >= 2) ? "stereo" : "mono") + " " + ((mAudioTrack.getAudioFormat() == AudioFormat.ENCODING_PCM_16BIT) ? "16-bit" : "8-bit") + " " + ((float)mAudioTrack.getSampleRate() / 1000f) + "kHz, " + desiredFrames + " frames buffer");
+
 
 		buf = new short[desiredFrames * 2];
 		return buf;
@@ -420,7 +420,7 @@ public class GodotIO {
 			}
 			mAudioThread = null;
 
-			//Log.v("Godot", "Finished waiting for audio thread");
+
 		}
 
 		if (mAudioTrack != null) {
@@ -495,8 +495,8 @@ public class GodotIO {
 		if (edit != null)
 			edit.showKeyboard(p_existing_text, p_max_input_length);
 
-		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
+
 	};
 
 	public void hideKeyboard() {
@@ -584,7 +584,7 @@ public class GodotIO {
 		String what = "";
 		switch (idx) {
 			case SYSTEM_DIR_DESKTOP: {
-				//what=Environment.DIRECTORY_DOCUMENTS;
+
 				what = Environment.DIRECTORY_DOWNLOADS;
 			} break;
 			case SYSTEM_DIR_DCIM: {
@@ -593,7 +593,7 @@ public class GodotIO {
 			} break;
 			case SYSTEM_DIR_DOCUMENTS: {
 				what = Environment.DIRECTORY_DOWNLOADS;
-				//what=Environment.DIRECTORY_DOCUMENTS;
+
 			} break;
 			case SYSTEM_DIR_DOWNLOADS: {
 				what = Environment.DIRECTORY_DOWNLOADS;

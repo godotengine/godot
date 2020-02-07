@@ -46,8 +46,6 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 		RES resource = resdata[i];
 		ERR_CONTINUE(!resource.is_valid());
 		resources[name] = resource;
-
-		//add_resource(name,resource);
 	}
 }
 

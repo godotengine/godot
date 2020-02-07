@@ -706,7 +706,7 @@ SoftBody::SoftBody() :
 		ray_pickable(true) {
 
 	PhysicsServer::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
-	//set_notify_transform(true);
+
 	set_physics_process_internal(true);
 }
 

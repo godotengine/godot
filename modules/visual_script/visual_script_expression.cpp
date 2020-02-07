@@ -427,13 +427,10 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 								}
 
 							} break;
-							//case '\"': res='\"'; break;
-							//case '\\': res='\\'; break;
-							//case '/': res='/'; break;
+
 							default: {
 								res = next;
-								//r_err_str="Invalid escape sequence";
-								//return ERR_PARSE_ERROR;
+
 							} break;
 						}
 
@@ -1233,7 +1230,6 @@ public:
 	VisualScriptInstance *instance;
 	VisualScriptExpression *expression;
 
-	//virtual int get_working_memory_size() const { return 0; }
 	//execute by parsing the tree directly
 	virtual bool _execute(const Variant **p_inputs, VisualScriptExpression::ENode *p_node, Variant &r_ret, String &r_error_str, Variant::CallError &ce) {
 

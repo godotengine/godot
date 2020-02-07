@@ -111,14 +111,11 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 	int32_t max_bone_weights = 4;
 	//if (p_flags & IMPORT_ANIMATION_EIGHT_WEIGHTS) {
-	//	const int eight_bones = 8;
-	//	importer.SetPropertyBool(AI_CONFIG_PP_LBW_MAX_WEIGHTS, eight_bones);
-	//	max_bone_weights = eight_bones;
+
 	//}
 
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
 
-	//importer.SetPropertyFloat(AI_CONFIG_PP_DB_THRESHOLD, 1.0f);
 	int32_t post_process_Steps = aiProcess_CalcTangentSpace |
 								 aiProcess_GlobalScale |
 								 // imports models and listens to their file scale for CM to M conversions
@@ -342,7 +339,6 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			const aiNode *parent_assimp_node = element_assimp_node->mParent;
 
 			String node_name = AssimpUtils::get_assimp_string(element_assimp_node->mName);
-			//print_verbose("node: " + node_name);
 
 			Spatial *spatial = NULL;
 			Transform transform = AssimpUtils::assimp_matrix_transform(element_assimp_node->mTransformation);
@@ -679,7 +675,7 @@ void EditorSceneImporterAssimp::RegenerateBoneStack(ImportState &state) {
 
 			// doubtful this is required right now but best to check
 			if (!state.bone_stack.find(bone)) {
-				//print_verbose("[assimp] bone stack added: " + String(bone->mName.C_Str()) );
+
 				state.bone_stack.push_back(bone);
 			}
 		}
@@ -720,7 +716,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 	//?
 	//if ((p_path.get_file().get_extension().to_lower() == "glb" || p_path.get_file().get_extension().to_lower() == "gltf") && Math::is_equal_approx(ticks_per_second, 0.0f)) {
-	//	ticks_per_second = 1000.0f;
+
 	//}
 
 	if (Math::is_equal_approx(ticks_per_second, 0.0f)) {
@@ -1323,7 +1319,6 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 		surface_indices.push_back(mesh_index);
 	}
 
-	//surface_indices.sort();
 	String mesh_key;
 	for (int i = 0; i < surface_indices.size(); i++) {
 		if (i > 0) {

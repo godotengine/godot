@@ -508,7 +508,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 							float distance = listener_area_pos.length();
 							float attenuation = Math::db2linear(_get_attenuation_db(distance));
 
-							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
+							//logarithmic attenuation, like in real life
 
 							float center_val[3] = { 0.5f, 0.25f, 0.16666f };
 							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
@@ -621,14 +621,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			active = true;
 			setplay = -1;
 			//do not update, this makes it easier to animate (will shut off otherwise)
-			///_change_notify("playing"); //update property in editor
+			//update property in editor
 		}
 
 		//stop playing if no longer active
 		if (!active) {
 			set_physics_process_internal(false);
 			//do not update, this makes it easier to animate (will shut off otherwise)
-			//_change_notify("playing"); //update property in editor
+			//update property in editor
 			emit_signal("finished");
 		}
 	}

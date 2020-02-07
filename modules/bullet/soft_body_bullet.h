@@ -77,12 +77,12 @@ private:
 	Vector<int> pinned_nodes;
 
 	// Other property to add
-	//btScalar				kVC;			// Volume conversation coefficient [0,+inf]
-	//btScalar				kDF;			// Dynamic friction coefficient [0,1]
-	//btScalar				kMT;			// Pose matching coefficient [0,1]
-	//btScalar				kCHR;			// Rigid contacts hardness [0,1]
-	//btScalar				kKHR;			// Kinetic contacts hardness [0,1]
-	//btScalar				kSHR;			// Soft contacts hardness [0,1]
+	// Volume conversation coefficient [0,+inf]
+	// Dynamic friction coefficient [0,1]
+	// Pose matching coefficient [0,1]
+	// Rigid contacts hardness [0,1]
+	// Kinetic contacts hardness [0,1]
+	// Soft contacts hardness [0,1]
 
 public:
 	SoftBodyBullet();

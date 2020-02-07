@@ -711,9 +711,6 @@ void GridMap::_notification(int p_what) {
 
 			navigation = NULL;
 
-			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
-			//_update_octants_callback();
-			//_update_area_instances();
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				VS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
 			}

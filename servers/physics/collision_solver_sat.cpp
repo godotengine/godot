@@ -101,8 +101,6 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	if (Math::is_zero_approx(rel_A.dot(c))) {
 
 		// should handle somehow..
-		//ERR_PRINT("TODO FIX");
-		//return;
 
 		Vector3 axis = rel_A.normalized(); //make an axis
 		Vector3 base_A = p_points_A[0] - axis * axis.dot(p_points_A[0]);
@@ -208,7 +206,6 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 	}
 
 	// generate contacts
-	//Plane plane_A(p_points_A[0],p_points_A[1],p_points_A[2]);
 
 	for (int i = 0; i < clipbuf_len; i++) {
 
@@ -786,7 +783,6 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 				for (int l = 0; l < 3; l++)
 					point += p_transform_a.basis.get_axis(l) * he[l];
 
-				//Vector3 axis = (point - cyl_axis * cyl_axis.dot(point)).normalized();
 				Vector3 axis = Plane(cyl_axis, 0).project(point).normalized();
 
 				if (!separator.test_axis(axis))
@@ -1280,7 +1276,6 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 	for (int i = 0; i < face_count_A; i++) {
 
 		Vector3 axis = p_transform_a.xform(faces_A[i].plane).normal;
-		//Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
 
 		if (!separator.test_axis(axis))
 			return;
@@ -1290,7 +1285,6 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 	for (int i = 0; i < face_count_B; i++) {
 
 		Vector3 axis = p_transform_b.xform(faces_B[i].plane).normal;
-		//Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
 
 		if (!separator.test_axis(axis))
 			return;
@@ -1390,7 +1384,6 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 	// faces of A
 	for (int i = 0; i < face_count; i++) {
 
-		//Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
 		Vector3 axis = p_transform_a.basis.xform(faces[i].plane.normal).normalized();
 
 		if (!separator.test_axis(axis))

@@ -263,13 +263,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 								}
 
 							} break;
-							//case '\"': res='\"'; break;
-							//case '\\': res='\\'; break;
-							//case '/': res='/'; break;
+
 							default: {
 								res = next;
-								//r_err_str="Invalid escape sequence";
-								//return ERR_PARSE_ERROR;
+
 							} break;
 						}
 
@@ -1864,7 +1861,6 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			PoolVector<String>::Read r = data.read();
 			const String *ptr = r.ptr();
 			String s;
-			//write_string("\n");
 
 			for (int i = 0; i < len; i++) {
 

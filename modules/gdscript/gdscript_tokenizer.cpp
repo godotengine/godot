@@ -521,7 +521,7 @@ void GDScriptTokenizerText::_advance() {
 #endif // DEBUG_ENABLED
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
-						//_make_error("Unterminated Comment");
+
 						_make_token(TK_EOF);
 						return;
 					}

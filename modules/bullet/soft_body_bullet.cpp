@@ -423,14 +423,12 @@ void SoftBodyBullet::setup_soft_body() {
 
 	// Clusters allow to have Soft vs Soft collision but doesn't work well right now
 
-	//bt_soft_body->m_cfg.kSRHR_CL = 1;// Soft vs rigid hardness [0,1] (cluster only)
-	//bt_soft_body->m_cfg.kSKHR_CL = 1;// Soft vs kinematic hardness [0,1] (cluster only)
-	//bt_soft_body->m_cfg.kSSHR_CL = 1;// Soft vs soft hardness [0,1] (cluster only)
-	//bt_soft_body->m_cfg.kSR_SPLT_CL = 1; // Soft vs rigid impulse split [0,1] (cluster only)
-	//bt_soft_body->m_cfg.kSK_SPLT_CL = 1; // Soft vs kinematic impulse split [0,1] (cluster only)
-	//bt_soft_body->m_cfg.kSS_SPLT_CL = 1; // Soft vs Soft impulse split [0,1] (cluster only)
-	//bt_soft_body->m_cfg.collisions = btSoftBody::fCollision::CL_SS + btSoftBody::fCollision::CL_RS + btSoftBody::fCollision::VF_SS;
-	//bt_soft_body->generateClusters(64);
+	// Soft vs rigid hardness [0,1] (cluster only)
+	// Soft vs kinematic hardness [0,1] (cluster only)
+	// Soft vs soft hardness [0,1] (cluster only)
+	// Soft vs rigid impulse split [0,1] (cluster only)
+	// Soft vs kinematic impulse split [0,1] (cluster only)
+	// Soft vs Soft impulse split [0,1] (cluster only)
 
 	bt_soft_body->m_cfg.piterations = simulation_precision;
 	bt_soft_body->m_cfg.viterations = simulation_precision;

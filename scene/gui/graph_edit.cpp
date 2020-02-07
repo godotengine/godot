@@ -813,7 +813,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		just_selected = true;
 		// TODO: Remove local mouse pos hack if/when InputEventMouseMotion is fixed to support floats
-		//drag_accum+=Vector2(mm->get_relative().x,mm->get_relative().y);
+
 		drag_accum = get_local_mouse_position() - drag_origin;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -1018,12 +1018,10 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
 			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
 			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
 		}
 		if (b->get_button_index() == BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);

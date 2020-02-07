@@ -560,7 +560,6 @@ public:
 		Map<String, Node *> scene_map;
 		Set<String> idref_joints;
 		Map<String, String> sid_to_node_map;
-		//Map<String,NodeJoint*> bone_map;
 
 		Map<String, Transform> bone_rest_map;
 

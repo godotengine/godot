@@ -82,7 +82,6 @@ class Ref {
 			reference = p_ref;
 	}
 
-	//virtual Reference * get_reference() const { return reference; }
 public:
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;

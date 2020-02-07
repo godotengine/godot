@@ -105,9 +105,6 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 
 		const Ref<InputEvent> e = E->get();
 
-		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
-		//	continue;
-
 		int device = e->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
 			if (e->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
@@ -327,8 +324,6 @@ void InputMap::load_default() {
 	key.instance();
 	key->set_scancode(KEY_END);
 	action_add_event("ui_end", key);
-
-	//set("display/window/handheld/orientation", "landscape");
 }
 
 InputMap::InputMap() {

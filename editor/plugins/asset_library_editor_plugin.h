@@ -320,9 +320,6 @@ public:
 	virtual void edit(Object *p_object) {}
 	virtual bool handles(Object *p_object) const { return false; }
 	virtual void make_visible(bool p_visible);
-	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
-	//virtual Dictionary get_state() const;
-	//virtual void set_state(const Dictionary& p_state);
 
 	AssetLibraryEditorPlugin(EditorNode *p_node);
 	~AssetLibraryEditorPlugin();

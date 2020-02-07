@@ -152,7 +152,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		if (file->eof_reached()) {
 
-			//ERR_PRINT("EOF REACH");
 			break;
 		}
 

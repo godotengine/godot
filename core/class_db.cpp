@@ -621,8 +621,6 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 
 			for (int i = 0; i < method->get_argument_count(); i++) {
 
-				//Variant::Type t=method->get_argument_type(i);
-
 				minfo.arguments.push_back(method->get_argument_info(i));
 			}
 
@@ -1025,7 +1023,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 			if (psg->index >= 0) {
 				Variant index = psg->index;
 				const Variant *arg[2] = { &index, &p_value };
-				//p_object->call(psg->setter,arg,2,ce);
+
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 2, ce);
 				} else {
@@ -1450,8 +1448,6 @@ void ClassDB::cleanup_defaults() {
 }
 
 void ClassDB::cleanup() {
-
-	//OBJTYPE_LOCK; hah not here
 
 	const StringName *k = NULL;
 

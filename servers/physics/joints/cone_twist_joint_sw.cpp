@@ -164,7 +164,7 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 	// Get Frame into world space
 	if (m_swingSpan1 >= real_t(0.05f)) {
 		b1Axis2 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_axis(1));
-		//swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
+
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis2);
 		swing1 = atan2fast(swy, swx);
@@ -175,7 +175,7 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 
 	if (m_swingSpan2 >= real_t(0.05f)) {
 		b1Axis3 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_axis(2));
-		//swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
+
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis3);
 		swing2 = atan2fast(swy, swx);

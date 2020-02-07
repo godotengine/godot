@@ -172,7 +172,6 @@ protected:
 	};
 	struct BodyState {
 
-		//int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};

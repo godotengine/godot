@@ -117,7 +117,7 @@ public:
 		FILE_TYPE_DIR,
 	};
 
-	//virtual DirType get_file_type() const=0;
+
 */
 	static DirAccess *create(AccessType p_access);
 

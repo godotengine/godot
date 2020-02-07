@@ -1067,7 +1067,7 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 
 	for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
 		//if (!variables[E->get()]._export)
-		//	continue;
+
 		PropertyInfo pi = variables[E->get()].info;
 		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 		p_list->push_back(pi);
@@ -1144,7 +1144,7 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 		Dictionary func = funcs[i];
 
 		StringName name = func["name"];
-		//int id=func["function_id"];
+
 		add_function(name);
 
 		set_function_scroll(name, func["scroll"]);
@@ -1344,9 +1344,6 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("custom_signal_swap_argument", "name", "argidx", "withidx"), &VisualScript::custom_signal_swap_argument);
 	ClassDB::bind_method(D_METHOD("remove_custom_signal", "name"), &VisualScript::remove_custom_signal);
 	ClassDB::bind_method(D_METHOD("rename_custom_signal", "name", "new_name"), &VisualScript::rename_custom_signal);
-
-	//ClassDB::bind_method(D_METHOD("set_variable_info","name","info"),&VScript::set_variable_info);
-	//ClassDB::bind_method(D_METHOD("get_variable_info","name"),&VScript::set_variable_info);
 
 	ClassDB::bind_method(D_METHOD("set_instance_base_type", "type"), &VisualScript::set_instance_base_type);
 
@@ -2584,7 +2581,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-	//VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node = _call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);

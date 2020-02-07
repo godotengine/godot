@@ -42,7 +42,6 @@ static inline float undenormalise(volatile float f) {
 
 	v.f = f;
 
-	// original: return (v.i & 0x7f800000) == 0 ? 0.0f : f;
 	// version from Tim Blechmann:
 	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
 }

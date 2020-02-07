@@ -197,8 +197,6 @@ bool OS::is_stdout_verbose() const {
 }
 
 void OS::dump_memory_to_file(const char *p_file) {
-
-	//Memory::dump_static_mem_to_file(p_file);
 }
 
 static FileAccess *_OSPRF = NULL;
@@ -433,7 +431,6 @@ Error OS::set_cwd(const String &p_cwd) {
 
 bool OS::has_touchscreen_ui_hint() const {
 
-	//return false;
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 

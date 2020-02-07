@@ -62,8 +62,6 @@ public:
 		m_0MinvJt = inertiaInvA * m_aJ;
 		m_1MinvJt = inertiaInvB * m_bJ;
 		m_Adiag = massInvA + m_0MinvJt.dot(m_aJ) + massInvB + m_1MinvJt.dot(m_bJ);
-
-		//btAssert(m_Adiag > real_t(0.0));
 	}
 
 	real_t getRelativeVelocity(const Vector3 &linvelA, const Vector3 &angvelA, const Vector3 &linvelB, const Vector3 &angvelB) {
@@ -366,7 +364,7 @@ VehicleWheel::VehicleWheel() {
 	engine_traction = false;
 
 	m_steering = real_t(0.);
-	//m_engineForce = real_t(0.);
+
 	m_rotation = real_t(0.);
 	m_deltaRotation = real_t(0.);
 	m_brake = real_t(0.);
@@ -401,7 +399,7 @@ void VehicleBody::_update_wheel_transform(VehicleWheel &wheel, PhysicsDirectBody
 	*/
 
 	wheel.m_raycastInfo.m_hardPointWS = chassisTrans.xform(wheel.m_chassisConnectionPointCS);
-	//wheel.m_raycastInfo.m_hardPointWS+=s->get_linear_velocity()*s->get_step();
+
 	wheel.m_raycastInfo.m_wheelDirectionWS = chassisTrans.get_basis().xform(wheel.m_wheelDirectionCS).normalized();
 	wheel.m_raycastInfo.m_wheelAxleWS = chassisTrans.get_basis().xform(wheel.m_wheelAxleCS).normalized();
 }
@@ -426,7 +424,7 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 			right[2], up[2], fwd[2]);
 
 	wheel.m_worldTransform.set_basis(steeringMat * rotatingMat * basis2);
-	//wheel.m_worldTransform.set_basis(basis2 * (steeringMat * rotatingMat));
+
 	wheel.m_worldTransform.set_origin(
 			wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength);
 }
@@ -484,9 +482,6 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 		real_t denominator = wheel.m_raycastInfo.m_contactNormalWS.dot(wheel.m_raycastInfo.m_wheelDirectionWS);
 
 		Vector3 chassis_velocity_at_contactPoint;
-		//Vector3 relpos = wheel.m_raycastInfo.m_contactPointWS-getRigidBody()->getCenterOfMassPosition();
-
-		//chassis_velocity_at_contactPoint = getRigidBody()->getVelocityInLocalPoint(relpos);
 
 		chassis_velocity_at_contactPoint = s->get_linear_velocity() +
 										   (s->get_angular_velocity()).cross(wheel.m_raycastInfo.m_contactPointWS - s->get_transform().origin); // * mPos);
@@ -563,7 +558,6 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
-	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
 
 	if (normalLenSqr > real_t(1.1)) {
 		impulse = real_t(0.);
@@ -659,7 +653,7 @@ VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirec
 		Vector3 r0 = frictionPosWorld - body1->get_global_transform().origin;
 		Vector3 c0 = (r0).cross(frictionDirectionWorld);
 		Vector3 vec = s->get_inverse_inertia_tensor().xform_inv(c0).cross(r0);
-		//denom1= body1->get_inverse_mass() + frictionDirectionWorld.dot(vec);
+
 
 	}
 	*/
@@ -725,12 +719,9 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
 
-				//const btTransform& wheelTrans = getWheelTransformWS( i );
-
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
 
 				m_axle.write[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
-				//m_axle[i] = wheelInfo.m_raycastInfo.m_wheelAxleWS;
 
 				const Vector3 &surfNormalWS = wheelInfo.m_raycastInfo.m_contactNormalWS;
 				real_t proj = m_axle[i].dot(surfNormalWS);
@@ -756,8 +747,6 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 	{
 		for (int wheel = 0; wheel < wheels.size(); wheel++) {
 			VehicleWheel &wheelInfo = *wheels[wheel];
-
-			//class btRigidBody* groundObject = (class btRigidBody*) wheelInfo.m_raycastInfo.m_groundObject;
 
 			real_t rollingFriction = 0.f;
 
@@ -845,7 +834,6 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				//apply friction impulse on the ground
 				//todo
-				//groundObject->applyImpulse(-sideImp,rel_pos2);
 			}
 		}
 	}
@@ -886,7 +874,6 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 		Vector3 relpos = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
 
 		state->apply_impulse(relpos, impulse);
-		//getRigidBody()->applyImpulse(impulse, relpos);
 	}
 
 	_update_friction(state);
@@ -993,7 +980,6 @@ VehicleBody::VehicleBody() {
 	ccd = false;
 
 	exclude.insert(get_rid());
-	//PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 
 	set_mass(40);
 }

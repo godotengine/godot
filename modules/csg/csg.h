@@ -158,7 +158,6 @@ struct CSGBrushOperation {
 
 		Map<Vector3, int> vertex_map;
 		void add_face(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, const Vector2 &p_uv_a, const Vector2 &p_uv_b, const Vector2 &p_uv_c, bool p_smooth, bool p_invert, const Ref<Material> &p_material, bool p_from_b);
-		//		void add_face(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, bool p_from_b);
 
 		float vertex_snap;
 		void mark_inside_faces();

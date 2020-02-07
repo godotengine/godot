@@ -627,7 +627,6 @@ static void _collision_circle_rectangle(const Shape2DSW *p_a, const Transform2D 
 
 	const Vector2 &sphere = p_transform_a.elements[2];
 	const Vector2 *axis = &p_transform_b.elements[0];
-	//const Vector2& half_extents = rectangle_B->get_half_extents();
 
 	if (!separator.test_axis(axis[0].normalized()))
 		return;
@@ -1045,13 +1044,13 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D 
 	Physics2DServer::ShapeType type_A = p_shape_A->get_type();
 
 	ERR_FAIL_COND_V(type_A == Physics2DServer::SHAPE_LINE, false);
-	//ERR_FAIL_COND_V(type_A==Physics2DServer::SHAPE_RAY,false);
+
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
 	Physics2DServer::ShapeType type_B = p_shape_B->get_type();
 
 	ERR_FAIL_COND_V(type_B == Physics2DServer::SHAPE_LINE, false);
-	//ERR_FAIL_COND_V(type_B==Physics2DServer::SHAPE_RAY,false);
+
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {

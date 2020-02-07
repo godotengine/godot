@@ -461,7 +461,6 @@ public:
 
 	void flush_all() {
 
-		//ERR_FAIL_COND(sync);
 		lock();
 		while (flush_one(false))
 			;

@@ -258,8 +258,6 @@ void HingeJointSW::solve(real_t p_step) {
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
 
-	//real_t tau = real_t(0.3);
-
 	//linear part
 	if (!m_angularOnly) {
 		Vector3 rel_pos1 = pivotAInW - A->get_transform().origin;

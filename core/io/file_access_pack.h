@@ -98,7 +98,6 @@ private:
 	Vector<PackSource *> sources;
 
 	PackedDir *root;
-	//Map<String,PackedDir*> dirs;
 
 	static PackedData *singleton;
 	bool disabled;

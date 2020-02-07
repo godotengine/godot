@@ -333,7 +333,7 @@ public:
 		type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED
 		// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
-		//bind->set_return_type("Variant");
+
 		type->method_order.push_back(p_name);
 #endif
 

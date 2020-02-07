@@ -513,7 +513,7 @@ static int frame_count = 0;
 		default: {
 			if (OSIPhone::get_singleton()) {
 				// OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1],
-				// accel[2]);
+
 				if (motionInitialised) {
 					// Just using polling approach for now, we can set this up so it sends
 					// data to us in intervals, might be better. See Apple reference pages
@@ -616,7 +616,7 @@ static int frame_count = 0;
 
 	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
-	// application.idleTimerDisabled = YES;
+
 
 	// Create a full-screen window
 	window = [[UIWindow alloc] initWithFrame:rect];
@@ -673,8 +673,8 @@ static int frame_count = 0;
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
 
-	// OSIPhone::screen_width = rect.size.width - rect.origin.x;
-	// OSIPhone::screen_height = rect.size.height - rect.origin.y;
+
+
 
 	mainViewController = view_controller;
 

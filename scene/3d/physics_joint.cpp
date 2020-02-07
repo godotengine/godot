@@ -574,8 +574,6 @@ float ConeTwistJoint::get_param(Param p_param) const {
 RID ConeTwistJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	Transform gt = get_global_transform();
-	//Vector3 cone_twistpos = gt.origin;
-	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -923,8 +921,6 @@ void Generic6DOFJoint::set_precision(int p_precision) {
 RID Generic6DOFJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	Transform gt = get_global_transform();
-	//Vector3 cone_twistpos = gt.origin;
-	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 

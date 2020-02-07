@@ -144,7 +144,6 @@ class EditorHelp : public VBoxContainer {
 	void _add_text(const String &p_bbcode);
 	bool scroll_locked;
 
-	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 
@@ -154,7 +153,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized();
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
-	//void _update_history_buttons();
+
 	void _update_doc();
 
 	void _request_help(const String &p_string);

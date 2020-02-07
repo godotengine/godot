@@ -164,7 +164,6 @@ public:
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
-	//String operator+(CharType p_char) const;
 
 	String &operator+=(const String &);
 	String &operator+=(CharType p_char);

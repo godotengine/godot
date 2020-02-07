@@ -460,7 +460,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
-			//  bool shared = count&0x80000000;
+
 			count &= 0x7FFFFFFF;
 
 			buf += 4;
@@ -505,7 +505,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
-			//  bool shared = count&0x80000000;
+
 			count &= 0x7FFFFFFF;
 
 			buf += 4;
@@ -576,7 +576,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			PoolVector<int> data;
 
 			if (count) {
-				//const int*rbuf=(const int*)buf;
+
 				data.resize(count);
 				PoolVector<int>::Write w = data.write();
 				for (int32_t i = 0; i < count; i++) {
@@ -602,7 +602,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			PoolVector<float> data;
 
 			if (count) {
-				//const float*rbuf=(const float*)buf;
+
 				data.resize(count);
 				PoolVector<float>::Write w = data.write();
 				for (int32_t i = 0; i < count; i++) {
@@ -628,7 +628,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			if (r_len)
 				(*r_len) += 4;
-			//printf("string count: %i\n",count);
 
 			for (int32_t i = 0; i < count; i++) {
 

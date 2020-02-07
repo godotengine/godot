@@ -73,7 +73,7 @@ PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int
 	// Construct
 	// TODO: Support arguments in the constructor?
 	// There is currently no way to get the constructor function name of the script.
-	// instance->call("__init__", p_args, p_argcount, r_error);
+
 	if (p_argcount > 0) {
 		WARN_PRINT("PluginScript doesn't support arguments in the constructor");
 	}
@@ -193,7 +193,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
 			// TODO: implement PluginscriptLanguage::debug_break_parse
 			// if (ScriptDebugger::get_singleton()) {
-			// 	_language->debug_break_parse(get_path(), 0, msg);
+
 			// }
 			ERR_FAIL_V_MSG(NULL, msg);
 		}

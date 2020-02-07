@@ -103,8 +103,6 @@ public:
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1);
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1);
 
-	// virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
-
 	virtual void reload_all_scripts();
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload);
 

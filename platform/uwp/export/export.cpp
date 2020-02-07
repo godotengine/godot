@@ -521,14 +521,13 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 			bh.compressed_size = strm.total_out - total_out_before;
 
-			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + bh.compressed_size);
 			for (uint64_t i = 0; i < bh.compressed_size; i++)
 				file_buffer.write[start + i] = strm_out[i];
 		} else {
 			bh.compressed_size = block_size;
-			//package->store_buffer(strm_in.ptr(), block_size);
+
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + block_size);
 			for (uint64_t i = 0; i < bh.compressed_size; i++)
@@ -551,7 +550,6 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 		deflate(&strm, Z_FINISH);
 
-		//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 		int start = file_buffer.size();
 		file_buffer.resize(file_buffer.size() + (strm.total_out - total_out_before));
 		for (uint64_t i = 0; i < (strm.total_out - total_out_before); i++)

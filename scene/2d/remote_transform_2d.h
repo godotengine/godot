@@ -48,7 +48,7 @@ class RemoteTransform2D : public Node2D {
 
 	void _update_remote();
 	void _update_cache();
-	//void _node_exited_scene();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

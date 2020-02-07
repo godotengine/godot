@@ -236,7 +236,7 @@ int dom2godot_scancode(int dom_keycode) {
 	}
 
 	switch (dom_keycode) {
-		//case DOM_VK_CANCEL: return KEY_UNKNOWN;
+
 		case DOM_VK_HELP: return KEY_HELP;
 		case DOM_VK_BACK_SPACE: return KEY_BACKSPACE;
 		case DOM_VK_TAB: return KEY_TAB;
@@ -290,13 +290,13 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_DOWN:
 			return KEY_DOWN;
 
-			//case DOM_VK_SELECT: return KEY_UNKNOWN;
+
 
 		case DOM_VK_PRINTSCREEN:
 		case DOM_VK_PRINT:
 			return KEY_PRINT;
 
-		//case DOM_VK_EXECUTE: return KEY_UNKNOWN;
+
 		case DOM_VK_INSERT: return KEY_INSERT;
 		case DOM_VK_DELETE: return KEY_DELETE;
 

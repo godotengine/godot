@@ -114,7 +114,6 @@ Size2 ViewportTexture::get_size() const {
 }
 RID ViewportTexture::get_rid() const {
 
-	//ERR_FAIL_COND_V_MSG(!vp, RID(), "Viewport Texture must be set to use it.");
 	return proxy;
 }
 
@@ -310,7 +309,6 @@ void Viewport::_notification(int p_what) {
 				contact_3d_debug_instance = VisualServer::get_singleton()->instance_create();
 				VisualServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				VisualServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world()->get_scenario());
-				//VisualServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
 			}
 
 			VS::get_singleton()->viewport_set_active(viewport, true);
@@ -357,7 +355,7 @@ void Viewport::_notification(int p_what) {
 				world_2d->_remove_viewport(this);
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport, RID());
-			//			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
+
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 			if (contact_2d_debug.is_valid()) {
 				VisualServer::get_singleton()->free(contact_2d_debug);
@@ -1634,8 +1632,6 @@ void Viewport::_gui_show_tooltip() {
 
 void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
 
-	//_block();
-
 	Ref<InputEvent> ev = p_input;
 
 	//mouse wheel events can't be stopped
@@ -1683,8 +1679,6 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		ev = ev->xformed_by(ci->get_transform()); //transform event upwards
 		ci = ci->get_parent_item();
 	}
-
-	//_unblock();
 }
 
 void Viewport::_gui_call_notification(Control *p_control, int p_what) {
@@ -1713,8 +1707,6 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 
 		ci = ci->get_parent_item();
 	}
-
-	//_unblock();
 }
 Control *Viewport::_gui_find_control(const Point2 &p_global) {
 
@@ -1769,7 +1761,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	//subwindows first!!
 
 	if (!p_node->is_visible()) {
-		//return _find_next_visible_control_at_pos(p_node,p_global,r_inv_xform);
+
 		return NULL; //canvas item hidden, discard
 	}
 
@@ -1910,8 +1902,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					return;
 				}
 
-				//Matrix32 parent_xform;
-
 				/*
 				if (data.parent_canvas_item)
 					parent_xform=data.parent_canvas_item->get_global_transform();
@@ -2000,7 +1990,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			_gui_cancel_tooltip();
-			//gui.tooltip_popup->hide();
 
 		} else {
 
@@ -2237,8 +2226,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.tooltip_timer = gui.tooltip_delay;
 			}
 		}
-
-		//pos = gui.focus_inv_xform.xform(pos);
 
 		mm->set_position(pos);
 
@@ -2824,7 +2811,7 @@ void Viewport::input(const Ref<InputEvent> &p_event) {
 	if (!is_input_handled()) {
 		_gui_input_event(p_event);
 	}
-	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
+	//special one for GUI, as controls use their own process check
 }
 
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2832,10 +2819,9 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", p_event);
-	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
+
 	if (!get_tree()->input_handled && Object::cast_to<InputEventKey>(*p_event) != NULL) {
 		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", p_event);
-		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 	}
 
 	if (physics_object_picking && !get_tree()->input_handled) {
@@ -3310,7 +3296,6 @@ void Viewport::_bind_methods() {
 
 void Viewport::_subwindow_visibility_changed() {
 
-	// unfortunately, we don't know the sender, i.e. which subwindow changed;
 	// so we have to check them all.
 	gui.subwindow_visibility_dirty = true;
 }
@@ -3330,9 +3315,8 @@ Viewport::Viewport() {
 	viewport_textures.insert(default_texture.ptr());
 	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
 
-	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;
-	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
+
 	audio_listener_2d = false;
 	transparent_bg = false;
 	parent = NULL;
@@ -3348,7 +3332,6 @@ Viewport::Viewport() {
 
 	vflip = false;
 
-	//clear=true;
 	update_mode = UPDATE_WHEN_VISIBLE;
 
 	physics_object_picking = false;
@@ -3379,7 +3362,6 @@ Viewport::Viewport() {
 	//window tooltip
 	gui.tooltip_timer = -1;
 
-	//gui.tooltip_timer->force_parent_owned();
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
@@ -3417,6 +3399,4 @@ Viewport::~Viewport() {
 		E->get()->vp = NULL;
 	}
 	VisualServer::get_singleton()->free(viewport);
-	//SpatialSoundServer::get_singleton()->free(internal_listener);
-	//SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
 }

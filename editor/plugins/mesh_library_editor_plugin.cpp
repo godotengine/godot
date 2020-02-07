@@ -129,10 +129,6 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 				if (sb->is_shape_owner_disabled(E->get()))
 					continue;
 
-				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
-
-				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
-
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
 
 					Ref<Shape> collision = sb->shape_owner_get_shape(E->get(), k);

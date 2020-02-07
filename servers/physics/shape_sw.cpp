@@ -364,8 +364,6 @@ void BoxShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_sup
 		real_t dot = p_normal.dot(axis);
 		if (Math::abs(dot) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
-			//Vector3 axis_b;
-
 			bool neg = dot < 0;
 			r_amount = 4;
 
@@ -1182,7 +1180,6 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx, _SegmentCullParams *p_param
 		return; //test against whole AABB, which isn't very costly
 	*/
 
-	//printf("addr: %p\n",bvh);
 	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 
 		return;
@@ -1430,7 +1427,6 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 	bvh->left = _volume_sw_build_bvh(p_elements, split, count);
 	bvh->right = _volume_sw_build_bvh(&p_elements[split], p_size - split, count);
 
-	//printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
 	count++;
 	return bvh;
 }
@@ -1441,7 +1437,6 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_arra
 
 	p_bvh_array[idx].aabb = p_bvh_tree->aabb;
 	p_bvh_array[idx].face_index = p_bvh_tree->face_index;
-	//printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
 
 	if (p_bvh_tree->left) {
 		p_bvh_array[idx].left = ++p_idx;
