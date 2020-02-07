@@ -36,10 +36,10 @@
 
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/script_editor_debugger.h"
 #include "main/main.h"
 
 #include "../csharp_script.h"
@@ -305,8 +305,8 @@ void godot_icall_Internal_ReloadAssemblies(MonoBoolean p_soft_reload) {
 #endif
 }
 
-void godot_icall_Internal_ScriptEditorDebuggerReloadScripts() {
-	ScriptEditor::get_singleton()->get_debugger()->reload_scripts();
+void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
+	EditorDebuggerNode::get_singleton()->reload_scripts();
 }
 
 MonoBoolean godot_icall_Internal_ScriptEditorEdit(MonoObject *p_resource, int32_t p_line, int32_t p_col, MonoBoolean p_grab_focus) {
@@ -348,9 +348,9 @@ void godot_icall_Internal_EditorRunStop() {
 }
 
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
-	ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-	if (sed) {
-		sed->reload_scripts();
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	if (ed) {
+		ed->reload_scripts();
 	}
 }
 
@@ -446,7 +446,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetEditorApiHash", (void *)godot_icall_Internal_GetEditorApiHash);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_IsAssembliesReloadingNeeded", (void *)godot_icall_Internal_IsAssembliesReloadingNeeded);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ReloadAssemblies", (void *)godot_icall_Internal_ReloadAssemblies);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebuggerReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebuggerReloadScripts);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorDebuggerNodeReloadScripts", (void *)godot_icall_Internal_EditorDebuggerNodeReloadScripts);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", (void *)godot_icall_Internal_ScriptEditorEdit);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", (void *)godot_icall_Internal_EditorNodeShowScriptScreen);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", (void *)godot_icall_Internal_GetScriptsMetadataOrNothing);

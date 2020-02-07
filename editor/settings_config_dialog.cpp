@@ -32,13 +32,13 @@
 
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor_file_system.h"
 #include "editor_log.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
-#include "script_editor_debugger.h"
 
 void EditorSettingsDialog::ok_pressed() {
 
@@ -119,9 +119,8 @@ void EditorSettingsDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-			undo_redo->set_method_notify_callback(sed->_method_changeds, sed);
-			undo_redo->set_property_notify_callback(sed->_property_changeds, sed);
+			undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, NULL);
+			undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, NULL);
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
 		case NOTIFICATION_ENTER_TREE: {

@@ -32,10 +32,10 @@
 
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/script_editor_debugger.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -870,7 +870,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 
-	ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_edit()->is_line_set_as_breakpoint(p_row));
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_edit()->is_line_set_as_breakpoint(p_row));
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
@@ -1294,7 +1294,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			int line = tx->cursor_get_line();
 			bool dobreak = !tx->is_line_set_as_breakpoint(line);
 			tx->set_line_as_breakpoint(line, dobreak);
-			ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
+			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
 
@@ -1305,7 +1305,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				int line = E->get();
 				bool dobreak = !tx->is_line_set_as_breakpoint(line);
 				tx->set_line_as_breakpoint(line, dobreak);
-				ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
+				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {

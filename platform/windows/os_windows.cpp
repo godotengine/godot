@@ -34,6 +34,7 @@
 #include "os_windows.h"
 
 #include "core/io/marshalls.h"
+#include "core/script_language.h"
 #include "core/version_generated.gen.h"
 
 #if defined(OPENGL_ENABLED)

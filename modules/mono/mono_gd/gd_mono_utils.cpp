@@ -38,7 +38,7 @@
 #include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/script_editor_debugger.h"
+#include "editor/debugger/script_editor_debugger.h"
 #endif
 
 #include "../csharp_script.h"
