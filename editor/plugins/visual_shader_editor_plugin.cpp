@@ -556,6 +556,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
+		Ref<VisualShaderNodeScalarUniform> scalar_uniform = vsnode;
 		if (uniform.is_valid()) {
 			graph->add_child(node);
 			_update_created_node(node);
@@ -570,7 +571,9 @@ void VisualShaderEditor::_update_graph() {
 				//shortcut
 				VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
 				node->set_slot(0, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
-				continue;
+				if (!scalar_uniform.is_valid()) {
+					continue;
+				}
 			}
 			port_offset++;
 		}
@@ -582,11 +585,16 @@ void VisualShaderEditor::_update_graph() {
 			}
 		}
 
-		if (custom_editor && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
+		if (custom_editor && !scalar_uniform.is_valid() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
 			//will be embedded in first port
 		} else if (custom_editor) {
+
 			port_offset++;
 			node->add_child(custom_editor);
+			if (scalar_uniform.is_valid()) {
+				custom_editor->call_deferred("_show_prop_names", true);
+				continue;
+			}
 			custom_editor = NULL;
 		}
 
@@ -2972,6 +2980,13 @@ public:
 	bool updating;
 	Ref<VisualShaderNode> node;
 	Vector<EditorProperty *> properties;
+	Vector<Label *> prop_names;
+
+	void _show_prop_names(bool p_show) {
+		for (int i = 0; i < prop_names.size(); i++) {
+			prop_names[i]->set_visible(p_show);
+		}
+	}
 
 	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, Ref<VisualShaderNode> p_node) {
 		parent_resource = p_parent_resource;
@@ -2981,7 +2996,20 @@ public:
 
 		for (int i = 0; i < p_properties.size(); i++) {
 
-			add_child(p_properties[i]);
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			add_child(hbox);
+
+			Label *prop_name = memnew(Label);
+			String prop_name_str = p_names[i];
+			prop_name_str = prop_name_str.capitalize() + ":";
+			prop_name->set_text(prop_name_str);
+			prop_name->set_visible(false);
+			hbox->add_child(prop_name);
+			prop_names.push_back(prop_name);
+
+			p_properties[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(p_properties[i]);
 
 			bool res_prop = Object::cast_to<EditorPropertyResource>(p_properties[i]);
 			if (res_prop) {
@@ -3003,6 +3031,7 @@ public:
 		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request);
 		ClassDB::bind_method("_resource_selected", &VisualShaderNodePluginDefaultEditor::_resource_selected);
 		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector);
+		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names);
 	}
 };
 

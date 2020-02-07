@@ -3039,6 +3039,11 @@ String VisualShaderNodeScalarUniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeScalarUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	if (hint == HINT_RANGE) {
+		return "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ");\n";
+	} else if (hint == HINT_RANGE_STEP) {
+		return "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ");\n";
+	}
 	return "uniform float " + get_uniform_name() + ";\n";
 }
 
@@ -3046,7 +3051,83 @@ String VisualShaderNodeScalarUniform::generate_code(Shader::Mode p_mode, VisualS
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 }
 
+void VisualShaderNodeScalarUniform::set_hint(Hint p_hint) {
+	hint = p_hint;
+	emit_changed();
+}
+
+VisualShaderNodeScalarUniform::Hint VisualShaderNodeScalarUniform::get_hint() const {
+	return hint;
+}
+
+void VisualShaderNodeScalarUniform::set_min(float p_value) {
+	hint_range_min = p_value;
+	emit_changed();
+}
+
+float VisualShaderNodeScalarUniform::get_min() const {
+	return hint_range_min;
+}
+
+void VisualShaderNodeScalarUniform::set_max(float p_value) {
+	hint_range_max = p_value;
+	emit_changed();
+}
+
+float VisualShaderNodeScalarUniform::get_max() const {
+	return hint_range_max;
+}
+
+void VisualShaderNodeScalarUniform::set_step(float p_value) {
+	hint_range_step = p_value;
+	emit_changed();
+}
+
+float VisualShaderNodeScalarUniform::get_step() const {
+	return hint_range_step;
+}
+
+void VisualShaderNodeScalarUniform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_hint", "hint"), &VisualShaderNodeScalarUniform::set_hint);
+	ClassDB::bind_method(D_METHOD("get_hint"), &VisualShaderNodeScalarUniform::get_hint);
+
+	ClassDB::bind_method(D_METHOD("set_min", "value"), &VisualShaderNodeScalarUniform::set_min);
+	ClassDB::bind_method(D_METHOD("get_min"), &VisualShaderNodeScalarUniform::get_min);
+
+	ClassDB::bind_method(D_METHOD("set_max", "value"), &VisualShaderNodeScalarUniform::set_max);
+	ClassDB::bind_method(D_METHOD("get_max"), &VisualShaderNodeScalarUniform::get_max);
+
+	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeScalarUniform::set_step);
+	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeScalarUniform::get_step);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range+Step"), "set_hint", "get_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min"), "set_min", "get_min");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max"), "set_max", "get_max");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step"), "set_step", "get_step");
+
+	BIND_ENUM_CONSTANT(HINT_NONE);
+	BIND_ENUM_CONSTANT(HINT_RANGE);
+	BIND_ENUM_CONSTANT(HINT_RANGE_STEP);
+}
+
+Vector<StringName> VisualShaderNodeScalarUniform::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("hint");
+	if (hint == HINT_RANGE || hint == HINT_RANGE_STEP) {
+		props.push_back("min");
+		props.push_back("max");
+	}
+	if (hint == HINT_RANGE_STEP) {
+		props.push_back("step");
+	}
+	return props;
+}
+
 VisualShaderNodeScalarUniform::VisualShaderNodeScalarUniform() {
+	hint = HINT_NONE;
+	hint_range_min = 0.0;
+	hint_range_max = 1.0;
+	hint_range_step = 0.1;
 }
 
 ////////////// Boolean Uniform
