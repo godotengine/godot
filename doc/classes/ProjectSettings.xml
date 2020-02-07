@@ -514,6 +514,14 @@
 			If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], enables vertical synchronization via the operating system's window compositor when in windowed mode and the compositor is enabled. This will prevent stutter in certain situations. (Windows only.)
 			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
 		</member>
+		<member name="editor/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
+			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
+			It is possible to make another executable run Godot by using the [code]%command%[/code] placeholder. The placeholder will be replaced with Godot's own command line. Program-specific arguments should be placed [i]before[/i] the placeholder, whereas Godot-specific arguments should be placed [i]after[/i] the placeholder.
+			For example, this can be used to force the project to run on the dedicated GPU in a NVIDIA Optimus system on Linux:
+			[codeblock]
+			prime-run %command%
+			[/codeblock]
+		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
