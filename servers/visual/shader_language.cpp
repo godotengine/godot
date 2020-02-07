@@ -3301,9 +3301,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								_set_error("Index out of range (0-1)");
 								return NULL;
 							}
-						} else {
-							_set_error("Only integer constants are allowed as index at the moment");
-							return NULL;
 						}
 
 						switch (expr->get_datatype()) {
@@ -3327,9 +3324,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								_set_error("Index out of range (0-2)");
 								return NULL;
 							}
-						} else {
-							_set_error("Only integer constants are allowed as index at the moment");
-							return NULL;
 						}
 
 						switch (expr->get_datatype()) {
@@ -3352,9 +3346,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								_set_error("Index out of range (0-3)");
 								return NULL;
 							}
-						} else {
-							_set_error("Only integer constants are allowed as index at the moment");
-							return NULL;
 						}
 
 						switch (expr->get_datatype()) {
