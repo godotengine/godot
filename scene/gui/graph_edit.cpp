@@ -261,6 +261,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->connect("raise_request", this, "_graph_node_raised", varray(gn));
 		gn->connect("item_rect_changed", connections_layer, "update");
 		_graph_node_moved(gn);
+		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
 }
 
