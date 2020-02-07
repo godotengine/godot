@@ -542,6 +542,14 @@
 		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
+		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
+			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
+			It is possible to make another executable run Godot by using the [code]%command%[/code] placeholder. The placeholder will be replaced with Godot's own command line. Program-specific arguments should be placed [i]before[/i] the placeholder, whereas Godot-specific arguments should be placed [i]after[/i] the placeholder.
+			For example, this can be used to force the project to run on the dedicated GPU in a NVIDIA Optimus system on Linux:
+			[codeblock]
+			prime-run %command%
+			[/codeblock]
+		</member>
 		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>

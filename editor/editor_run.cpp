@@ -183,14 +183,49 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		args.push_back(p_scene);
 	}
 
+	String exec = OS::get_singleton()->get_executable_path();
+
 	if (p_custom_args != "") {
-		Vector<String> cargs = p_custom_args.split(" ", false);
-		for (int i = 0; i < cargs.size(); i++) {
-			args.push_back(cargs[i].replace(" ", "%20"));
+		// Allow the user to specify a command to run, similar to Steam's launch options.
+		// In this case, Godot will no longer be run directly; it's up to the underlying command
+		// to run it. For instance, this can be used on Linux to force a running project
+		// to use Optimus using `prime-run` or similar.
+		// Example: `prime-run %command% --time-scale 0.5`
+		const int placeholder_pos = p_custom_args.find("%command%");
+
+		Vector<String> custom_args;
+
+		if (placeholder_pos != -1) {
+			// Prepend executable-specific custom arguments.
+			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
+			Vector<String> exec_args = p_custom_args.substr(0, placeholder_pos).split(" ", false);
+			if (exec_args.size() >= 1) {
+				exec = exec_args[0];
+				exec_args.remove(0);
+
+				// Append the Godot executable name before we append executable arguments
+				// (since the order is reversed when using `push_front()`).
+				args.push_front(OS::get_singleton()->get_executable_path());
+			}
+
+			for (int i = exec_args.size() - 1; i >= 0; i--) {
+				// Iterate backwards as we're pushing items in the reverse order.
+				args.push_front(exec_args[i].replace(" ", "%20"));
+			}
+
+			// Append Godot-specific custom arguments.
+			custom_args = p_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
+			for (int i = 0; i < custom_args.size(); i++) {
+				args.push_back(custom_args[i].replace(" ", "%20"));
+			}
+		} else {
+			// Append Godot-specific custom arguments.
+			custom_args = p_custom_args.split(" ", false);
+			for (int i = 0; i < custom_args.size(); i++) {
+				args.push_back(custom_args[i].replace(" ", "%20"));
+			}
 		}
 	}
-
-	String exec = OS::get_singleton()->get_executable_path();
 
 	printf("Running: %s", exec.utf8().get_data());
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {
