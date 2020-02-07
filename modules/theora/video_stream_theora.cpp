@@ -363,8 +363,10 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 };
 
 float VideoStreamPlaybackTheora::get_time() const {
-
-	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
+	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
+	// systematically return 0. Now that it gives a proper latency, it broke this
+	// code where the delay compensation likely never really worked.
+	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
 };
 
 Ref<Texture> VideoStreamPlaybackTheora::get_texture() const {
