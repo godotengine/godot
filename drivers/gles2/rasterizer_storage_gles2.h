@@ -71,6 +71,8 @@ public:
 
 		Set<String> extensions;
 
+		bool texture_3d_supported;
+		bool texture_array_supported;
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
@@ -109,6 +111,8 @@ public:
 		GLuint black_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
+		GLuint white_tex_3d;
+		GLuint white_tex_array;
 
 		GLuint mipmap_blur_fbo;
 		GLuint mipmap_blur_color;
@@ -414,6 +418,7 @@ public:
 
 		Map<StringName, RID> default_textures;
 
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		bool valid;

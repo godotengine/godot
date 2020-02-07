@@ -103,6 +103,13 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 #define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleEXT
 #define glFramebufferTexture2DMultisample glFramebufferTexture2DMultisampleEXT
 
+PFNGLTEXIMAGE3DOESPROC glTexImage3DOES;
+PFNGLTEXSUBIMAGE3DOESPROC glTexSubImage3DOES;
+PFNGLCOMPRESSEDTEXSUBIMAGE3DOESPROC glCompressedTexSubImage3DOES;
+#define glTexImage3D glTexImage3DOES
+#define glTexSubImage3D glTexSubImage3DOES
+#define glCompressedTexSubImage3D glCompressedTexSubImage3DOES
+
 #elif defined(UWP_ENABLED)
 #include <GLES2/gl2ext.h>
 #define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleANGLE
@@ -112,6 +119,11 @@ PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT
 #define GL_TEXTURE_3D 0x806F
 #define GL_MAX_SAMPLES 0x8D57
 #endif //!GLES_OVER_GL
+
+#if !defined(GLES_OVER_GL)
+#define GL_TEXTURE_2D_ARRAY 0x8C1A
+#define GL_TEXTURE_3D 0x806F
+#endif
 
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
@@ -566,11 +578,23 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
 		} break;
-		case VS::TEXTURE_TYPE_2D_ARRAY:
+		case VS::TEXTURE_TYPE_2D_ARRAY: {
+			if (config.texture_array_supported) {
+				texture->target = GL_TEXTURE_2D_ARRAY;
+				texture->images.resize(p_depth_3d);
+			} else {
+				WARN_PRINT_ONCE("Texture Arrays not supported on this hardware.");
+				return;
+			}
+		} break;
 		case VS::TEXTURE_TYPE_3D: {
-			texture->target = GL_TEXTURE_3D;
-			ERR_PRINT("3D textures and Texture Arrays are not supported in GLES2. Please switch to the GLES3 backend.");
-			return;
+			if (config.texture_3d_supported) {
+				texture->target = GL_TEXTURE_3D;
+				texture->images.resize(p_depth_3d);
+			} else {
+				WARN_PRINT_ONCE("3D textures not supported on this hardware.");
+				return;
+			}
 		} break;
 		default: {
 			ERR_PRINT("Unknown texture type!");
@@ -615,7 +639,42 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+#if defined(GLES_OVER_GL) || defined(ANDROID_ENABLED)
+	if ((p_type == VS::TEXTURE_TYPE_3D && config.texture_3d_supported) || (p_type == VS::TEXTURE_TYPE_2D_ARRAY && config.texture_array_supported)) {
+
+		int width = p_width;
+		int height = p_height;
+		int depth = p_depth_3d;
+
+		int mipmaps = 0;
+
+		while (width > 0 || height > 0 || (p_type == VS::TEXTURE_TYPE_3D && depth > 0)) {
+			width = MAX(1, width);
+			height = MAX(1, height);
+			depth = MAX(1, depth);
+
+			glTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, format, type, NULL);
+
+			width /= 2;
+			height /= 2;
+
+			if (p_type == VS::TEXTURE_TYPE_3D) {
+				depth /= 2;
+			}
+
+			mipmaps++;
+
+			if (!(p_flags & VS::TEXTURE_FLAG_MIPMAPS))
+				break;
+		}
+#ifdef GLES_OVER_GL
+		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
+#endif
+
+	} else
+#endif
+			if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, NULL);
 	}
@@ -627,8 +686,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	Texture *texture = texture_owner.getornull(p_texture);
 
 	ERR_FAIL_COND(!texture);
-	if (texture->target == GL_TEXTURE_3D) {
-		// Target is set to a 3D texture or array texture, exit early to avoid spamming errors
+	if ((texture->type == VS::TEXTURE_TYPE_2D_ARRAY && !config.texture_array_supported) || (texture->type == VS::TEXTURE_TYPE_3D && !config.texture_3d_supported)) {
 		return;
 	}
 	ERR_FAIL_COND(!texture->active);
@@ -673,7 +731,23 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 		}
 	}
 
-	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_layer] : GL_TEXTURE_2D;
+	GLenum blit_target = GL_TEXTURE_2D;
+
+	switch (texture->type) {
+		case VS::TEXTURE_TYPE_2D: {
+			blit_target = GL_TEXTURE_2D;
+		} break;
+		case VS::TEXTURE_TYPE_CUBEMAP: {
+			ERR_FAIL_INDEX(p_layer, 6);
+			blit_target = _cube_side_enum[p_layer];
+		} break;
+		case VS::TEXTURE_TYPE_2D_ARRAY: {
+			blit_target = GL_TEXTURE_2D_ARRAY;
+		} break;
+		case VS::TEXTURE_TYPE_3D: {
+			blit_target = GL_TEXTURE_3D;
+		} break;
+	}
 
 	texture->data_size = img->get_data().size();
 	PoolVector<uint8_t>::Read read = img->get_data().read();
@@ -730,23 +804,41 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 		int size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
+		if (texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) {
 
-		if (compressed) {
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			if (compressed) {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-			int bw = w;
-			int bh = h;
+				int bw = w;
+				int bh = h;
 
-			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
-		} else {
-
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			if (texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
-				glTexSubImage2D(blit_target, i, 0, 0, w, h, format, type, &read[ofs]);
+				glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
 			} else {
-				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);
+
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				if (texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+					glTexSubImage2D(blit_target, i, 0, 0, w, h, format, type, &read[ofs]);
+				} else {
+					glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);
+				}
 			}
 		}
+#if defined(GLES_OVER_GL) || defined(ANDROID_ENABLED)
+		else {
+			if (texture->compressed) {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+				int bw = w;
+				int bh = h;
+
+				glCompressedTexSubImage3D(blit_target, i, 0, 0, p_layer, bw, bh, 1, internal_format, size, &read[ofs]);
+			} else {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+				glTexSubImage3D(blit_target, i, 0, 0, p_layer, w, h, 1, format, type, &read[ofs]);
+			}
+		}
+#endif
 
 		tsize += size;
 
@@ -1492,6 +1584,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 	p_shader->texture_count = gen_code.texture_uniforms.size();
 	p_shader->texture_hints = gen_code.texture_hints;
+	p_shader->texture_types = gen_code.texture_types;
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
@@ -1639,11 +1732,19 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 			case ShaderLanguage::TYPE_SAMPLER2DARRAY:
 			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
-			case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_USAMPLER2DARRAY: {
+
+				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "TextureArray";
+			} break;
+
 			case ShaderLanguage::TYPE_SAMPLER3D:
 			case ShaderLanguage::TYPE_ISAMPLER3D:
 			case ShaderLanguage::TYPE_USAMPLER3D: {
-				// Not implemented in GLES2
+				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture3D";
 			} break;
 		}
 
@@ -5795,6 +5896,8 @@ void RasterizerStorageGLES2::initialize() {
 	config.depth_type = GL_UNSIGNED_INT;
 
 #ifdef GLES_OVER_GL
+	config.texture_3d_supported = true;
+	config.texture_array_supported = config.extensions.has("GL_EXT_texture_array");
 	config.float_texture_supported = true;
 	config.s3tc_supported = true;
 	config.pvrtc_supported = false;
@@ -5802,6 +5905,8 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_npot_repeat_mipmap = true;
 	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT24;
 #else
+	config.texture_3d_supported = config.extensions.has("GL_OES_texture_3D");
+	config.texture_array_supported = false;
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
@@ -5840,6 +5945,9 @@ void RasterizerStorageGLES2::initialize() {
 	void *gles2_lib = dlopen("libGLESv2.so", RTLD_LAZY);
 	glRenderbufferStorageMultisampleEXT = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glRenderbufferStorageMultisampleEXT");
 	glFramebufferTexture2DMultisampleEXT = (PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)dlsym(gles2_lib, "glFramebufferTexture2DMultisampleEXT");
+	glTexImage3DOES = (PFNGLTEXIMAGE3DOESPROC)dlsym(gles2_lib, "glTexImage3DOES");
+	glTexSubImage3DOES = (PFNGLTEXSUBIMAGE3DOESPROC)dlsym(gles2_lib, "glTexSubImage3DOES");
+	glCompressedTexSubImage3DOES = (PFNGLCOMPRESSEDTEXSUBIMAGE3DOESPROC)dlsym(gles2_lib, "glCompressedTexSubImage3DOES");
 #endif
 #endif
 
@@ -6062,6 +6170,26 @@ void RasterizerStorageGLES2::initialize() {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, anisotexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+#if defined(GLES_OVER_GL) || defined(ANDROID_ENABLED)
+		glGenTextures(1, &resources.white_tex_3d);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_3D, resources.white_tex_3d);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, 2, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
+
+#ifdef GLES_OVER_GL
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
+#endif
+
+		glGenTextures(1, &resources.white_tex_array);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, resources.white_tex_array);
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, 8, 8, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 8, 8, 1, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
+		glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	}
 
 	// skeleton buffer

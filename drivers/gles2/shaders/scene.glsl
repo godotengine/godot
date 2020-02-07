@@ -10,6 +10,12 @@ precision highp float;
 precision highp int;
 #endif
 
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
+
 /* clang-format on */
 #include "stdlib.glsl"
 /* clang-format off */
@@ -671,6 +677,12 @@ VERTEX_SHADER_CODE
 
 /* clang-format off */
 [fragment]
+
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
 
 // texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
 // Do not copy these defines in the vertex section.
