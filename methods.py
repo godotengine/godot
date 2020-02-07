@@ -160,20 +160,22 @@ def detect_modules():
         except IOError:
             pass
 
-    modules_cpp = """
-// modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
+    modules_cpp = """// register_module_types.gen.cpp
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "register_module_types.h"
 
-""" + includes_cpp + """
+#include "modules/modules_enabled.gen.h"
+
+%s
 
 void register_module_types() {
-""" + register_cpp + """
+%s
 }
 
 void unregister_module_types() {
-""" + unregister_cpp + """
+%s
 }
-"""
+""" % (includes_cpp, register_cpp, unregister_cpp)
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
@@ -200,37 +202,10 @@ def win32_spawn(sh, escape, cmd, args, env):
         print("=====")
     return rv
 
-"""
-def win32_spawn(sh, escape, cmd, args, spawnenv):
-	import win32file
-	import win32event
-	import win32process
-	import win32security
-	for var in spawnenv:
-		spawnenv[var] = spawnenv[var].encode('ascii', 'replace')
-
-	sAttrs = win32security.SECURITY_ATTRIBUTES()
-	StartupInfo = win32process.STARTUPINFO()
-	newargs = ' '.join(map(escape, args[1:]))
-	cmdline = cmd + " " + newargs
-
-	# check for any special operating system commands
-	if cmd == 'del':
-		for arg in args[1:]:
-			win32file.DeleteFile(arg)
-		exit_code = 0
-	else:
-		# otherwise execute the command.
-		hProcess, hThread, dwPid, dwTid = win32process.CreateProcess(None, cmdline, None, None, 1, 0, spawnenv, None, StartupInfo)
-		win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-		exit_code = win32process.GetExitCodeProcess(hProcess)
-		win32file.CloseHandle(hProcess);
-		win32file.CloseHandle(hThread);
-	return exit_code
-"""
 
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
+
 
 def use_windows_spawn_fix(self, platform=None):
 

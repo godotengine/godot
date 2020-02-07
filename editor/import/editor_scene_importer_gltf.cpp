@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
+
 #include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"

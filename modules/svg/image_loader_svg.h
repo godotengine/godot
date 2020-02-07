@@ -34,12 +34,13 @@
 #include "core/io/image_loader.h"
 #include "core/ustring.h"
 
-#include <nanosvg.h>
-#include <nanosvgrast.h>
-
 /**
 	@author Daniel Ramirez <djrmuv@gmail.com>
 */
+
+// Forward declare and include thirdparty headers in .cpp.
+struct NSVGrasterizer;
+struct NSVGimage;
 
 class SVGRasterizer {
 

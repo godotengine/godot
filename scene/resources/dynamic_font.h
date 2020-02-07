@@ -31,7 +31,9 @@
 #ifndef DYNAMIC_FONT_H
 #define DYNAMIC_FONT_H
 
-#ifdef FREETYPE_ENABLED
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_FREETYPE_ENABLED
+
 #include "core/io/resource_loader.h"
 #include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
