@@ -46,6 +46,7 @@ public:
 
 private:
 	bool vertical;
+	bool flip_order;
 	AlignMode align;
 
 	void _resort();
@@ -60,6 +61,9 @@ public:
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;
+
+	void set_flip_order(bool p_enabled);
+	bool is_flip_order_enabled() const;
 
 	virtual Size2 get_minimum_size() const;
 
