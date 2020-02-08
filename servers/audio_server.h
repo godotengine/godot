@@ -240,9 +240,6 @@ private:
 
 	Mutex *audio_data_lock;
 
-	float output_latency;
-	uint64_t output_latency_ticks;
-
 	void init_channels_and_buffers();
 
 	void _mix_step();
