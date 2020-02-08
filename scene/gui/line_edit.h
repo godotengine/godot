@@ -132,6 +132,7 @@ private:
 	void _emit_text_change();
 	bool expand_to_text_length;
 
+	void update_cached_width();
 	void update_placeholder_width();
 
 	bool caret_blink_enabled;
