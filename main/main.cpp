@@ -79,6 +79,8 @@
 #include "editor/project_manager.h"
 #endif
 
+#include <stdint.h>
+
 /* Static members */
 
 // Singletons
@@ -1119,6 +1121,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps", PropertyInfo(Variant::INT, "physics/common/physics_fps", PROPERTY_HINT_RANGE, "1,120,1,or_greater"));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
+	GLOBAL_DEF("physics/common/timestep/method", "Jitter Fix");
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/timestep/method", PropertyInfo(Variant::STRING, "physics/common/timestep/method", PROPERTY_HINT_ENUM, "Jitter Fix,Fixed,Semi Fixed"));
+	Engine::get_singleton()->_physics_stretch_ticks = GLOBAL_DEF("physics/common/timestep/timescale_stretch_ticks", true);
+
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
 
@@ -1951,6 +1957,35 @@ bool Main::is_iterating() {
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
+// returns usecs taken by the physics tick
+uint64_t Main::physics_tick(float p_physics_delta) {
+	uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
+
+	PhysicsServer::get_singleton()->sync();
+	PhysicsServer::get_singleton()->flush_queries();
+
+	Physics2DServer::get_singleton()->sync();
+	Physics2DServer::get_singleton()->flush_queries();
+
+	if (OS::get_singleton()->get_main_loop()->iteration(p_physics_delta)) {
+		// UINT64_MAX indicates we want to stop the loop through the physics iterations
+		return UINT64_MAX;
+	}
+
+	message_queue->flush();
+
+	PhysicsServer::get_singleton()->step(p_physics_delta);
+
+	Physics2DServer::get_singleton()->end_sync();
+	Physics2DServer::get_singleton()->step(p_physics_delta);
+
+	message_queue->flush();
+
+	Engine::get_singleton()->_physics_frames++;
+
+	return OS::get_singleton()->get_ticks_usec() - physics_begin;
+}
+
 bool Main::iteration() {
 
 	//for now do not error on this
@@ -1960,21 +1995,21 @@ bool Main::iteration() {
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
-	main_timer_sync.set_cpu_ticks_usec(ticks);
-	main_timer_sync.set_fixed_fps(fixed_fps);
 
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
 	int physics_fps = Engine::get_singleton()->get_iterations_per_second();
-	float frame_slice = 1.0 / physics_fps;
 
-	float time_scale = Engine::get_singleton()->get_time_scale();
+	// main_timer_sync will deal with time_scale and limiting the max number of physics ticks
+	MainFrameTime advance;
+	main_timer_sync.advance(advance, physics_fps, ticks, fixed_fps);
 
-	MainFrameTime advance = main_timer_sync.advance(frame_slice, physics_fps);
-	double step = advance.idle_step;
-	double scaled_step = step * time_scale;
+	double scaled_step = advance.scaled_frame_delta;
 
-	Engine::get_singleton()->_frame_step = step;
+	// Note Engine::_frame_step was previously the step unadjusted for timescale.
+	// It was unused within Godot, although perhaps used in custom Modules, I'm assuming this was a bug
+	// as scaled step makes more sense.
+	Engine::get_singleton()->_frame_step = scaled_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
 
 	uint64_t physics_process_ticks = 0;
@@ -1984,50 +2019,40 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	static const int max_physics_steps = 8;
-	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
-		step -= (advance.physics_steps - max_physics_steps) * frame_slice;
-		advance.physics_steps = max_physics_steps;
-	}
-
 	bool exit = false;
 
 	Engine::get_singleton()->_in_physics = true;
 
+	float physics_delta = advance.physics_fixed_step_delta;
+
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 
-		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
+		// special case, if using variable physics timestep and the last physics step
+		if (advance.physics_variable_step && (iters == (advance.physics_steps - 1))) {
+			// substitute the variable delta
+			physics_delta = advance.physics_variable_step_delta;
+		}
 
-		PhysicsServer::get_singleton()->sync();
-		PhysicsServer::get_singleton()->flush_queries();
+		// returns the time taken by the physics tick
+		uint64_t physics_usecs = physics_tick(physics_delta);
 
-		Physics2DServer::get_singleton()->sync();
-		Physics2DServer::get_singleton()->flush_queries();
-
-		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
+		// in the special case of wanting to exit the loop we are passing
+		// UINT64_MAX which will never occur normally.
+		if (physics_usecs == UINT64_MAX) {
 			exit = true;
 			break;
 		}
 
-		message_queue->flush();
-
-		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
-
-		Physics2DServer::get_singleton()->end_sync();
-		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
-
-		message_queue->flush();
-
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		Engine::get_singleton()->_physics_frames++;
+		// performance stats
+		physics_process_ticks = MAX(physics_process_ticks, physics_usecs); // keep the largest one for reference
+		physics_process_max = MAX(physics_usecs, physics_process_max);
 	}
 
 	Engine::get_singleton()->_in_physics = false;
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
+	if (OS::get_singleton()->get_main_loop()->idle(scaled_step)) {
 		exit = true;
 	}
 	message_queue->flush();
@@ -2060,6 +2085,8 @@ bool Main::iteration() {
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
+			// note that frame_slice is original physics delta, before time_scale applied
+			float frame_slice = 1.0 / physics_fps;
 			script_debugger->profiling_set_frame_times(USEC_TO_SEC(frame_time), USEC_TO_SEC(idle_process_ticks), USEC_TO_SEC(physics_process_ticks), frame_slice);
 		}
 		script_debugger->idle_poll();

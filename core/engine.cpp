@@ -89,6 +89,10 @@ float Engine::get_time_scale() const {
 	return _time_scale;
 }
 
+bool Engine::get_physics_stretch_ticks() const {
+	return _physics_stretch_ticks;
+}
+
 Dictionary Engine::get_version_info() const {
 
 	Dictionary dict;
@@ -225,6 +229,7 @@ Engine::Engine() {
 	_fps = 1;
 	_target_fps = 0;
 	_time_scale = 1.0;
+	_physics_stretch_ticks = true;
 	_pixel_snap = false;
 	_physics_frames = 0;
 	_idle_frames = 0;
