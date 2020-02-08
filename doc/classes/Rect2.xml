@@ -133,8 +133,11 @@
 			</return>
 			<argument index="0" name="b" type="Rect2">
 			</argument>
+			<argument index="1" name="include_borders" type="bool" default="false">
+			</argument>
 			<description>
-				Returns [code]true[/code] if the [Rect2] overlaps with another.
+				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
+				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx">

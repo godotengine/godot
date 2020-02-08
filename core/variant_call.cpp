@@ -389,7 +389,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Rect2, has_no_area);
 	VCALL_LOCALMEM1R(Rect2, has_point);
 	VCALL_LOCALMEM1R(Rect2, is_equal_approx);
-	VCALL_LOCALMEM1R(Rect2, intersects);
+	VCALL_LOCALMEM2R(Rect2, intersects);
 	VCALL_LOCALMEM1R(Rect2, encloses);
 	VCALL_LOCALMEM1R(Rect2, clip);
 	VCALL_LOCALMEM1R(Rect2, merge);
@@ -1660,7 +1660,7 @@ void register_variant_methods() {
 	ADDFUNC0R(RECT2, BOOL, Rect2, has_no_area, varray());
 	ADDFUNC1R(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
 	ADDFUNC1R(RECT2, BOOL, Rect2, is_equal_approx, RECT2, "rect", varray());
-	ADDFUNC1R(RECT2, BOOL, Rect2, intersects, RECT2, "b", varray());
+	ADDFUNC2R(RECT2, BOOL, Rect2, intersects, RECT2, "b", BOOL, "include_borders", varray(false));
 	ADDFUNC1R(RECT2, BOOL, Rect2, encloses, RECT2, "b", varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, clip, RECT2, "b", varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, merge, RECT2, "b", varray());
