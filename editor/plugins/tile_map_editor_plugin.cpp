@@ -377,7 +377,8 @@ struct _PaletteEntry {
 	String name;
 
 	bool operator<(const _PaletteEntry &p_rhs) const {
-		return name < p_rhs.name;
+		
+		return name.naturalnocasecmp_to(p_rhs.name) < 0;
 	}
 };
 } // namespace
