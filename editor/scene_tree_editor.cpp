@@ -343,53 +343,49 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 		}
 
-		if (p_node->is_class("CanvasItem")) {
+		if (p_node->is_class("CanvasItem") || p_node->is_class("Spatial")) {
 
-			bool is_locked = p_node->has_meta("_edit_lock_"); //_edit_group_
-			if (is_locked)
+			const bool is_locked = p_node->has_meta("_edit_lock_");
+			if (is_locked) {
 				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+			}
 
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped)
+			const bool is_grouped = p_node->has_meta("_edit_group_");
+			if (is_grouped) {
 				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
-
-			bool v = p_node->call("is_visible");
-			if (v)
-				item->add_button(0, get_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			else
-				item->add_button(0, get_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-
-			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
-
-			_update_visibility_color(p_node, item);
-		} else if (p_node->is_class("Spatial")) {
-
-			bool is_locked = p_node->has_meta("_edit_lock_");
-			if (is_locked)
-				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
-
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped)
-				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
-
-			bool v = p_node->call("is_visible");
-			if (v)
-				item->add_button(0, get_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			else
-				item->add_button(0, get_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-
-			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
-				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
-
-			_update_visibility_color(p_node, item);
+			}
 		} else if (p_node->is_class("AnimationPlayer")) {
 
-			bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
-
+			const bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
 			if (is_pinned) {
 				item->add_button(0, get_icon("Pin", "EditorIcons"), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
 			}
+		}
+
+		if (p_node->has_method("is_visible")) {
+			const bool is_visible = p_node->call("is_visible");
+			if (is_visible) {
+				item->add_button(0, get_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+			} else {
+				item->add_button(0, get_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+			}
+
+			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed")) {
+				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
+			}
+
+			_update_visibility_color(p_node, item);
+		} else {
+			// The node can't be hidden, add a disabled visibility icon and explain why.
+			item->add_button(
+					0,
+					get_icon("GuiVisibilityVisible", "EditorIcons"),
+					BUTTON_VISIBILITY,
+					true,
+					TTR("Visiblity can only be toggled for nodes that inherit from CanvasItem or Spatial."));
+
+			// Make the icon even more transparent to avoid confusion with "implicitly hidden" icons.
+			item->set_button_color(0, BUTTON_VISIBILITY, Color(1, 1, 1, 0.6));
 		}
 	}
 

@@ -1205,7 +1205,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				o.y += (label_h - s.height) / 2;
 				o += cache.button_pressed->get_offset();
 
-				b->draw(ci, o, p_item->cells[i].buttons[j].disabled ? Color(1, 1, 1, 0.5) : p_item->cells[i].buttons[j].color);
+				// Fade out disabled buttons.
+				b->draw(ci, o, p_item->cells[i].buttons[j].color * Color(1, 1, 1, (p_item->cells[i].buttons[j].disabled ? 0.5 : 1)));
 				w -= s.width + cache.button_margin;
 				bw += s.width + cache.button_margin;
 			}
