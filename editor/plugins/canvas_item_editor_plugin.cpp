@@ -4967,6 +4967,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			zoom = scale_x < scale_y ? scale_x : scale_y;
 			zoom *= 0.90;
 			viewport->update();
+			_update_zoom_label();
 			call_deferred("_popup_callback", VIEW_CENTER_TO_SELECTION);
 		}
 	}
