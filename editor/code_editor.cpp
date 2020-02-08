@@ -517,6 +517,11 @@ void FindReplaceBar::_replace_text_entered(const String &p_text) {
 	if (selection_only->is_pressed() && text_edit->is_selection_active()) {
 		_replace_all();
 		_hide_bar();
+	} else if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		_replace();
+		search_prev();
+	} else {
+		_replace();
 	}
 }
 
