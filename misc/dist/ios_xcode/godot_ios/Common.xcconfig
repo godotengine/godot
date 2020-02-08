@@ -1,0 +1,229 @@
+// 
+// This file defines common settings that should be enabled for every new
+// project. Typically, you want to use Debug, Release, or a similar variant
+// instead.
+//
+
+SDKROOT = iphoneos;
+ARCHS = $(ARCHS_STANDARD)
+VALID_ARCHS = $(ARCHS_STANDARD) x86_64;
+WRAPPER_EXTENSION = app;
+CLANG_CXX_LANGUAGE_STANDARD = gnu++0x;
+CLANG_CXX_LIBRARY = libc++;
+GCC_C_LANGUAGE_STANDARD = gnu99;
+
+// Disable legacy-compatible header searching
+ALWAYS_SEARCH_USER_PATHS = NO
+
+// Architectures to build
+ARCHS = $(ARCHS_STANDARD)
+
+// Whether to warn when a floating-point value is used as a loop counter
+CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES
+
+// Whether to warn about use of rand() and random() being used instead of arc4random()
+CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES
+
+// Whether to warn about strcpy() and strcat()
+CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES
+
+// Whether to enable module imports
+CLANG_ENABLE_MODULES = YES
+
+// Enable ARC
+CLANG_ENABLE_OBJC_ARC = YES
+
+// Warn about block captures of implicitly autoreleasing parameters.
+CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES
+
+// Warn about implicit conversions to boolean values that are suspicious.
+// For example, writing 'if (foo)' with 'foo' being the name a function will trigger a warning.
+CLANG_WARN_BOOL_CONVERSION = YES
+
+// Warn about suspicious uses of the comma operator.
+CLANG_WARN_COMMA = YES
+
+// Warn about implicit conversions of constant values that cause the constant value to change,
+// either through a loss of precision, or entirely in its meaning.
+CLANG_WARN_CONSTANT_CONVERSION = YES
+
+// Whether to warn when overriding deprecated methods
+CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES
+
+// Warn about direct accesses to the Objective-C 'isa' pointer instead of using a runtime API.
+CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR
+
+// Warn about declaring the same method more than once within the same @interface.
+CLANG_WARN__DUPLICATE_METHOD_MATCH = YES
+
+// Warn about loop bodies that are suspiciously empty.
+CLANG_WARN_EMPTY_BODY = YES
+
+// Warn about implicit conversions between different kinds of enum values.
+// For example, this can catch issues when using the wrong enum flag as an argument to a function or method.
+CLANG_WARN_ENUM_CONVERSION = YES
+
+// Whether to warn on implicit conversions between signed/unsigned types
+CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO
+
+// Warn about implicit conversions between pointers and integers.
+// For example, this can catch issues when one incorrectly intermixes using NSNumbers and raw integers.
+CLANG_WARN_INT_CONVERSION = YES
+
+// Warn about non-literal expressions that evaluate to zero being treated as a null pointer.
+CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES
+
+// Warn about implicit capture of self (e.g. direct ivar access)
+CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES
+
+// Warn about implicit conversions from Objective-C literals to values of incompatible type.
+CLANG_WARN_OBJC_LITERAL_CONVERSION = YES
+
+// Don't warn about repeatedly using a weak reference without assigning the weak reference to a strong reference. Too many false positives.
+CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = NO
+
+// Warn about classes that unintentionally do not subclass a root class (such as NSObject).
+CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR
+
+// Warn about ranged-based for loops.
+CLANG_WARN_RANGE_LOOP_ANALYSIS = YES
+
+// Whether to warn on suspicious implicit conversions
+CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES
+
+// Warn about non-prototype declarations.
+CLANG_WARN_STRICT_PROTOTYPES = YES
+
+// Warn if an API that is newer than the deployment target is used without "if (@available(...))" guards.
+CLANG_WARN_UNGUARDED_AVAILABILITY = YES
+
+// Warn about incorrect uses of nullable values
+CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION = YES
+
+// Warn for missing nullability attributes
+CLANG_ANALYZER_NONNULL = YES
+
+// Warn when a non-localized string is passed to a user-interface method expecting a localized string
+CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
+
+// Warn about potentially unreachable code
+CLANG_WARN_UNREACHABLE_CODE = YES
+
+// The format of debugging symbols
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
+// Whether to compile assertions in
+ENABLE_NS_ASSERTIONS = YES
+
+// Whether to require objc_msgSend to be cast before invocation
+ENABLE_STRICT_OBJC_MSGSEND = YES
+
+// Which C variant to use
+GCC_C_LANGUAGE_STANDARD = gnu99
+
+// Whether to enable exceptions for Objective-C
+GCC_ENABLE_OBJC_EXCEPTIONS = YES
+
+// Whether to generate debugging symbols
+GCC_GENERATE_DEBUGGING_SYMBOLS = YES
+
+// Whether to precompile the prefix header (if one is specified)
+GCC_PRECOMPILE_PREFIX_HEADER = YES
+
+// Whether to enable strict aliasing, meaning that two pointers of different
+// types (other than void * or any id type) cannot point to the same memory
+// location
+GCC_STRICT_ALIASING = YES
+
+// Whether symbols not explicitly exported are hidden by default (this primarily
+// only affects C++ code)
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+
+// Whether static variables are thread-safe by default
+GCC_THREADSAFE_STATICS = NO
+
+// Which compiler to use
+GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+
+// Whether warnings are treated as errors
+GCC_TREAT_WARNINGS_AS_ERRORS = YES
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
+
+// Whether to warn about 64-bit values being implicitly shortened to 32 bits
+GCC_WARN_64_TO_32_BIT_CONVERSION = YES
+
+// Whether to warn about fields missing from structure initializers (only if
+// designated initializers aren't used)
+GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES
+
+// Whether to warn about missing function prototypes
+GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO
+
+// Whether to warn about implicit conversions in the signedness of the type
+// a pointer is pointing to (e.g., 'int *' getting converted to 'unsigned int *')
+GCC_WARN_ABOUT_POINTER_SIGNEDNESS = YES
+
+// Whether to warn when the value returned from a function/method/block does not
+// match its return type
+GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR
+
+// Whether to warn on a class not implementing all the required methods of
+// a protocol it declares conformance to
+GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = YES
+
+// Whether to warn when switching on an enum value, and all possibilities are
+// not accounted for
+GCC_WARN_CHECK_SWITCH_STATEMENTS = YES
+
+// Whether to warn about the use of four-character constants
+GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES
+
+// Whether to warn about an aggregate data type's initializer not being fully
+// bracketed (e.g., array initializer syntax)
+GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES
+
+// Whether to warn about missing braces or parentheses that make the meaning of
+// the code ambiguous
+GCC_WARN_MISSING_PARENTHESES = YES
+
+// Whether to warn about unsafe comparisons between values of different
+// signedness
+GCC_WARN_SIGN_COMPARE = YES
+
+// Whether to warn about the arguments to printf-style functions not matching
+// the format specifiers
+GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES
+
+// Warn if a "@selector(...)" expression referring to an undeclared selector is found
+GCC_WARN_UNDECLARED_SELECTOR = YES
+
+// Warn if a variable might be clobbered by a setjmp call or if an automatic variable is used without prior initialization.
+GCC_WARN_UNINITIALIZED_AUTOS = YES
+
+// Whether to warn about static functions that are unused
+GCC_WARN_UNUSED_FUNCTION = YES
+
+// Whether to warn about labels that are unused
+GCC_WARN_UNUSED_LABEL = YES
+
+// Whether to warn about variables that are never used
+GCC_WARN_UNUSED_VARIABLE = YES
+
+// Whether to run the static analyzer with every build
+RUN_CLANG_STATIC_ANALYZER = YES
+
+// Don't treat unknown warnings as errors, and disable GCC compatibility warnings and unused static const variable warnings
+WARNING_CFLAGS = -Wno-error=unknown-warning-option -Wno-gcc-compat -Wno-unused-const-variable
+
+// This setting is on for new projects as of Xcode ~6.3, though it is still not
+// the default. It warns if the same variable is declared in two binaries that
+// are linked together.
+GCC_NO_COMMON_BLOCKS = YES
+
+// This warnings detects when a function will recursively call itself on every
+// code path though that function. More information can be found here:
+// http://lists.llvm.org/pipermail/cfe-commits/Week-of-Mon-20131216/096004.html
+CLANG_WARN_INFINITE_RECURSION = YES
+
+CLANG_WARN_SUSPICIOUS_MOVE = YES
+

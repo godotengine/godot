@@ -1,0 +1,22 @@
+#include "Common.xcconfig"
+
+//
+//  Build Settings
+//
+ENABLE_BITCODE = NO;
+
+//
+//  Deploy Settings
+//
+TARGETED_DEVICE_FAMILY = 1,2; // Target iPhone and iPad
+IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+
+PRODUCT_NAME = $(TARGET_NAME);
+
+// 
+// Godot Exported from Editor
+//
+
