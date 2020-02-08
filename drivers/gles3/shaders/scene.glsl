@@ -1769,6 +1769,7 @@ FRAGMENT_SHADER_CODE
 #ifdef AMBIENT_LIGHT_DISABLED
 	ambient_light = vec3(0.0, 0.0, 0.0);
 #else
+#if !defined(SPECULAR_DISABLED)
 	{
 
 		{ //read radiance from dual paraboloid
@@ -1779,6 +1780,7 @@ FRAGMENT_SHADER_CODE
 			env_reflection_light = radiance;
 		}
 	}
+#endif
 #ifndef USE_LIGHTMAP
 	{
 
