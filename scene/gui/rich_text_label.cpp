@@ -2016,8 +2016,12 @@ bool RichTextLabel::is_scroll_following() const {
 
 Error RichTextLabel::parse_bbcode(const String &p_bbcode) {
 
-	clear();
-	return append_bbcode(p_bbcode);
+	// Fix Issue 35553: check if bbcode is enable and filled before parsing bbcode and overwrite text property
+	if (use_bbcode && p_bbcode.length() > 0) {
+		clear();
+		return append_bbcode(p_bbcode);
+	} else
+		return OK;
 }
 
 Error RichTextLabel::append_bbcode(const String &p_bbcode) {
