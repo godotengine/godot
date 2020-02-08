@@ -1721,8 +1721,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 
 Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-	if (!script.is_valid())
-		ERR_FAIL_V(Variant());
+	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
