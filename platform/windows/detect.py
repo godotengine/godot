@@ -293,12 +293,7 @@ def configure_mingw(env):
 
     ## Compiler configuration
 
-    if (os.name == "nt"):
-        # Force splitting libmodules.a in multiple chunks to work around
-        # issues reaching the linker command line size limit, which also
-        # seem to induce huge slowdown for 'ar' (GH-30892).
-        env['split_libmodules'] = True
-    else:
+    if os.name != "nt":
         env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
     if (env["bits"] == "default"):
