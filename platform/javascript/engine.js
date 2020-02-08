@@ -131,9 +131,9 @@
 			);
 		};
 
-		this.startGame = function(execName, mainPack) {
+		this.startGame = function(mainPack) {
 
-			executableName = execName;
+			executableName = getBaseName(mainPack);
 			var mainArgs = [ '--main-pack', mainPack ];
 
 			return Promise.all([
