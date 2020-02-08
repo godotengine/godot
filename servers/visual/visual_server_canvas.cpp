@@ -183,7 +183,7 @@ void VisualServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		VisualServerRaster::redraw_request();
 	}
 
-	if ((ci->commands != NULL && p_clip_rect.intersects_touch(global_rect)) || ci->vp_render || ci->copy_back_buffer) {
+	if ((ci->commands != NULL && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
 		ci->final_transform = xform;
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);

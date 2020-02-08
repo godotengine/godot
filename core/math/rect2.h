@@ -47,28 +47,26 @@ struct Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
-	inline bool intersects(const Rect2 &p_rect) const {
-		if (position.x >= (p_rect.position.x + p_rect.size.width))
-			return false;
-		if ((position.x + size.width) <= p_rect.position.x)
-			return false;
-		if (position.y >= (p_rect.position.y + p_rect.size.height))
-			return false;
-		if ((position.y + size.height) <= p_rect.position.y)
-			return false;
-
-		return true;
-	}
-
-	inline bool intersects_touch(const Rect2 &p_rect) const {
-		if (position.x > (p_rect.position.x + p_rect.size.width))
-			return false;
-		if ((position.x + size.width) < p_rect.position.x)
-			return false;
-		if (position.y > (p_rect.position.y + p_rect.size.height))
-			return false;
-		if ((position.y + size.height) < p_rect.position.y)
-			return false;
+	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+		if (p_include_borders) {
+			if (position.x > (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) < p_rect.position.x)
+				return false;
+			if (position.y > (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) < p_rect.position.y)
+				return false;
+		} else {
+			if (position.x >= (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) <= p_rect.position.x)
+				return false;
+			if (position.y >= (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) <= p_rect.position.y)
+				return false;
+		}
 
 		return true;
 	}
