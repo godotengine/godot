@@ -91,17 +91,23 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_LOCK) {
-		undo_redo->create_action(TTR("Unlock Node"));
-
-		if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
-
+		bool is_locked = n->has_meta("_edit_lock_");
+		int idx = item->get_button_by_id(p_column, p_id);
+		
+		undo_redo->create_action(TTR("Toggle Lock"));
+		if (is_locked) {
+			print_line("Yes");
+			item->set_button(p_column, idx, get_icon("Lock", "EditorIcons"));
 			undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
 			undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
-			undo_redo->add_do_method(this, "_update_tree", Variant());
-			undo_redo->add_undo_method(this, "_update_tree", Variant());
-			undo_redo->add_do_method(this, "emit_signal", "node_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+		} else {
+			print_line("No");
+			item->set_button(p_column, idx, get_icon("Unlock", "EditorIcons"));
+			undo_redo->add_do_method(n, "set_meta", "_edit_lock_", true);
+			undo_redo->add_undo_method(n, "remove_meta", "_edit_lock_");
 		}
+		undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 
