@@ -5023,8 +5023,12 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		} else {
 			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
 		}
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
-		center_split->set_collapsed(false);
+
+		if (center_split->is_vertical()) {
+			center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
+			center_split->set_collapsed(false);
+		}
+
 		if (bottom_panel_raise->is_pressed()) {
 			top_split->hide();
 		}
@@ -5034,8 +5038,12 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("panel", "TabContainer"));
 		bottom_panel_items[p_idx].button->set_pressed(false);
 		bottom_panel_items[p_idx].control->set_visible(false);
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
-		center_split->set_collapsed(true);
+
+		if (center_split->is_vertical()) {
+			center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
+			center_split->set_collapsed(true);
+		}
+
 		bottom_panel_raise->hide();
 		if (bottom_panel_raise->is_pressed()) {
 			top_split->show();
@@ -5448,6 +5456,24 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	top_split->set_visible(!p_pressed);
 }
 
+void EditorNode::_bottom_panel_move_pressed() {
+	if (center_split->is_vertical()) {
+		// Move the bottom panel to the right to make better use of wide displays.
+		center_split->set_vertical(false);
+		center_split->add_theme_icon_override("grabber", theme->get_icon("GuiHsplitter", "EditorIcons"));
+		bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDockRight", "EditorIcons"));
+		bottom_panel_move->set_icon(gui_base->get_theme_icon("ArrowDown", "EditorIcons"));
+		// Always allow moving the dragger if the panel is moved to the right.
+		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
+	} else {
+		// Move the bottom panel back to the bottom.
+		center_split->set_vertical(true);
+		center_split->add_theme_icon_override("grabber", theme->get_icon("GuiVsplitter", "EditorIcons"));
+		bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
+		bottom_panel_move->set_icon(gui_base->get_theme_icon("ArrowRight", "EditorIcons"));
+	}
+}
+
 void EditorNode::_update_video_driver_color() {
 	// TODO: Probably should de-hardcode this and add to editor settings.
 	if (video_driver->get_text() == "GLES2") {
@@ -5528,6 +5554,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
+	ClassDB::bind_method("_bottom_panel_raise_toggled", &EditorNode::_bottom_panel_raise_toggled);
+	ClassDB::bind_method("_bottom_panel_move_pressed", &EditorNode::_bottom_panel_move_pressed);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
@@ -6604,6 +6632,8 @@ EditorNode::EditorNode() {
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
 	bottom_panel_vb = memnew(VBoxContainer);
+	// Make tabs display at the bottom when the bottom bar is moved to the right.
+	bottom_panel_vb->set_alignment(BoxContainer::ALIGN_END);
 	bottom_panel->add_child(bottom_panel_vb);
 
 	bottom_panel_hb = memnew(HBoxContainer);
@@ -6623,13 +6653,18 @@ EditorNode::EditorNode() {
 	bottom_panel_raise = memnew(Button);
 	bottom_panel_raise->set_flat(true);
 	bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
-
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KEY_MASK_SHIFT | KEY_F12));
-
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
 	bottom_panel_raise->set_toggle_mode(true);
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
+
+	bottom_panel_move = memnew(Button);
+	bottom_panel_move->set_flat(true);
+	bottom_panel_move->set_icon(gui_base->get_theme_icon("ArrowRight", "EditorIcons"));
+	bottom_panel_move->set_shortcut(ED_SHORTCUT("editor/bottom_panel_move", TTR("Toggle Bottom Panel Position"), KEY_MASK_SHIFT | KEY_F10));
+	bottom_panel_hb->add_child(bottom_panel_move);
+	bottom_panel_move->connect("pressed", callable_mp(this, &EditorNode::_bottom_panel_move_pressed));
 
 	log = memnew(EditorLog);
 	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
