@@ -116,10 +116,11 @@ protected:
 	virtual String get_configuration_warning() const;
 
 protected:
+	void _update_physics_server();
 	void _draw_soft_mesh();
 
 public:
-	void update_physics_server();
+	void prepare_physics_server();
 	void become_mesh_owner();
 
 	void set_collision_mask(uint32_t p_mask);
