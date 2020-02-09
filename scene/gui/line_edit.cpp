@@ -358,11 +358,20 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					FALLTHROUGH;
 				}
 				case KEY_LEFT: {
-
 #ifndef APPLE_STYLE_KEYS
-					if (!k->get_alt())
+					if (!k->get_alt()) {
 #endif
+						if (selection.enabled && !k->get_shift()) {
+							set_cursor_position(selection.begin);
+							deselect();
+							handled = true;
+							break;
+						}
+
 						shift_selection_check_pre(k->get_shift());
+#ifndef APPLE_STYLE_KEYS
+					}
+#endif
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
@@ -405,8 +414,20 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					FALLTHROUGH;
 				}
 				case KEY_RIGHT: {
+#ifndef APPLE_STYLE_KEYS
+					if (!k->get_alt()) {
+#endif
+						if (selection.enabled && !k->get_shift()) {
+							set_cursor_position(selection.end);
+							deselect();
+							handled = true;
+							break;
+						}
 
-					shift_selection_check_pre(k->get_shift());
+						shift_selection_check_pre(k->get_shift());
+#ifndef APPLE_STYLE_KEYS
+					}
+#endif
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_command()) {
