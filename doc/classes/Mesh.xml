@@ -161,9 +161,6 @@
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 			Mesh array uses indices.
 		</constant>
-		<constant name="ARRAY_COMPRESS_BASE" value="9" enum="ArrayFormat">
-			Used internally to calculate other [code]ARRAY_COMPRESS_*[/code] enum values. Do not use.
-		</constant>
 		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) vertex array.
 		</constant>
