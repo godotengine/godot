@@ -325,6 +325,17 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit->connect("text_entered", this, "_on_search_text_entered");
 	gc->add_child(_search_text_line_edit);
 
+	_replace_label = memnew(Label);
+	_replace_label->set_text(TTR("Replace:"));
+	_replace_label->hide();
+	gc->add_child(_replace_label);
+
+	_replace_text_line_edit = memnew(LineEdit);
+	_replace_text_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	_replace_text_line_edit->connect("text_entered", this, "_on_replace_text_entered");
+	_replace_text_line_edit->hide();
+	gc->add_child(_replace_text_line_edit);
+
 	gc->add_child(memnew(Control)); // Space to maintain the grid aligned.
 
 	{
@@ -385,6 +396,8 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Button *cancel_button = get_ok();
 	cancel_button->set_text(TTR("Cancel"));
+
+	_mode = SEARCH_MODE;
 }
 
 void FindInFilesDialog::set_search_text(String text) {
@@ -392,9 +405,38 @@ void FindInFilesDialog::set_search_text(String text) {
 	_on_search_text_modified(text);
 }
 
+void FindInFilesDialog::set_replace_text(String text) {
+	_replace_text_line_edit->set_text(text);
+}
+
+void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
+	if (_mode == p_mode) {
+		return;
+	}
+
+	_mode = p_mode;
+
+	if (p_mode == SEARCH_MODE) {
+		set_title(TTR("Find in Files"));
+		_replace_label->hide();
+		_replace_text_line_edit->hide();
+	} else if (p_mode == REPLACE_MODE) {
+		set_title(TTR("Replace in Files"));
+		_replace_label->show();
+		_replace_text_line_edit->show();
+	}
+
+	// After hiding some child controls, recalculate proper dialog size.
+	set_size(Size2(get_size().x, 0));
+}
+
 String FindInFilesDialog::get_search_text() const {
 	String text = _search_text_line_edit->get_text();
 	return text.strip_edges();
+}
+
+String FindInFilesDialog::get_replace_text() const {
+	return _replace_text_line_edit->get_text();
 }
 
 bool FindInFilesDialog::is_match_case() const {
@@ -473,9 +515,26 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 }
 
 void FindInFilesDialog::_on_search_text_entered(String text) {
-	// This allows to trigger a global search without leaving the keyboard
+	// This allows to trigger a global search without leaving the keyboard.
 	if (!_find_button->is_disabled()) {
-		custom_action("find");
+		if (_mode == SEARCH_MODE) {
+			custom_action("find");
+		}
+	}
+
+	if (!_replace_button->is_disabled()) {
+		if (_mode == REPLACE_MODE) {
+			custom_action("replace");
+		}
+	}
+}
+
+void FindInFilesDialog::_on_replace_text_entered(String text) {
+	// This allows to trigger a global search without leaving the keyboard.
+	if (!_replace_button->is_disabled()) {
+		if (_mode == REPLACE_MODE) {
+			custom_action("replace");
+		}
 	}
 }
 
@@ -492,6 +551,7 @@ void FindInFilesDialog::_bind_methods() {
 	ClassDB::bind_method("_on_folder_selected", &FindInFilesDialog::_on_folder_selected);
 	ClassDB::bind_method("_on_search_text_modified", &FindInFilesDialog::_on_search_text_modified);
 	ClassDB::bind_method("_on_search_text_entered", &FindInFilesDialog::_on_search_text_entered);
+	ClassDB::bind_method("_on_replace_text_entered", &FindInFilesDialog::_on_replace_text_entered);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_FIND_REQUESTED));
 	ADD_SIGNAL(MethodInfo(SIGNAL_REPLACE_REQUESTED));
@@ -575,7 +635,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container->add_child(_replace_line_edit);
 
 		_replace_all_button = memnew(Button);
-		_replace_all_button->set_text(TTR("Replace all (no undo)"));
+		_replace_all_button->set_text(TTR("Replace All (NO UNDO)"));
 		_replace_all_button->connect("pressed", this, "_on_replace_all_clicked");
 		_replace_container->add_child(_replace_all_button);
 
@@ -600,6 +660,10 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 		_results_display->set_column_expand(0, true);
 		_results_display->set_columns(1);
 	}
+}
+
+void FindInFilesPanel::set_replace_text(String text) {
+	_replace_line_edit->set_text(text);
 }
 
 void FindInFilesPanel::clear() {
@@ -906,7 +970,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 }
 
 String FindInFilesPanel::get_replace_text() {
-	return _replace_line_edit->get_text().strip_edges();
+	return _replace_line_edit->get_text();
 }
 
 void FindInFilesPanel::update_replace_buttons() {
