@@ -58,6 +58,7 @@
 
 #define RULER_WIDTH (15 * EDSCALE)
 #define SCALE_HANDLE_DISTANCE 25
+#define MOVE_HANDLE_DISTANCE 25
 
 class SnapDialog : public ConfirmationDialog {
 
@@ -1866,14 +1867,16 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 					drag_type = DRAG_SCALE_BOTH;
 
-					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
-					Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-					if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
-						drag_type = DRAG_SCALE_X;
-					}
-					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-					if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
-						drag_type = DRAG_SCALE_Y;
+					if (show_transformation_gizmos) {
+						Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
+						Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+							drag_type = DRAG_SCALE_X;
+						}
+						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+							drag_type = DRAG_SCALE_Y;
+						}
 					}
 
 					drag_from = transform.affine_inverse().xform(b->get_position());
@@ -1924,7 +1927,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 						scale.y = scale.x * ratio;
 					}
 				} else if (drag_type == DRAG_SCALE_Y) {
-					scale.y += scale_factor.y;
+					scale.y -= scale_factor.y;
 					if (uniform) {
 						scale.x = scale.y / ratio;
 					}
@@ -1983,6 +1986,24 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 				if (selection.size() > 0) {
 					drag_type = DRAG_MOVE;
+
+					CanvasItem *canvas_item = drag_selection[0];
+					Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
+					Transform2D unscaled_transform = (transform * parent_xform * canvas_item->_edit_get_transform()).orthonormalized();
+					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+					if (show_transformation_gizmos) {
+						Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+						Rect2 x_handle_rect = Rect2(move_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+							drag_type = DRAG_MOVE_X;
+						}
+						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, move_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+						if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+							drag_type = DRAG_MOVE_Y;
+						}
+					}
+
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					drag_selection = selection;
 					_save_canvas_item_state(drag_selection);
@@ -1992,7 +2013,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (drag_type == DRAG_MOVE) {
+	if (drag_type == DRAG_MOVE || drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
 		// Move the nodes
 		if (m.is_valid()) {
 
@@ -2014,7 +2035,15 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			} else {
 				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
 			}
+
 			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, NULL, drag_selection);
+
+			if (drag_type == DRAG_MOVE_X) {
+				new_pos.y = previous_pos.y;
+			} else if (drag_type == DRAG_MOVE_Y) {
+				new_pos.x = previous_pos.x;
+			}
+
 			bool single_axis = m->get_shift();
 			if (single_axis) {
 				if (ABS(new_pos.x - previous_pos.x) > ABS(new_pos.y - previous_pos.y)) {
@@ -3235,10 +3264,39 @@ void CanvasItemEditor::_draw_selection() {
 				}
 			}
 
-			// Draw the rescale handles
+			// Draw the move handles
 			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
-			if ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+			if (tool == TOOL_MOVE && show_transformation_gizmos) {
+				if (_is_node_movable(canvas_item)) {
+					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
+					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+					Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+					viewport->draw_set_transform_matrix(simple_xform);
+
+					Vector<Point2> points;
+					points.push_back(Vector2(move_factor.x * EDSCALE, 5 * EDSCALE));
+					points.push_back(Vector2(move_factor.x * EDSCALE, -5 * EDSCALE));
+					points.push_back(Vector2((move_factor.x + 10) * EDSCALE, 0));
+
+					viewport->draw_colored_polygon(points, get_color("axis_x_color", "Editor"));
+					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
+
+					points.clear();
+					points.push_back(Vector2(5 * EDSCALE, move_factor.y * EDSCALE));
+					points.push_back(Vector2(-5 * EDSCALE, move_factor.y * EDSCALE));
+					points.push_back(Vector2(0, (move_factor.y + 10) * EDSCALE));
+
+					viewport->draw_colored_polygon(points, get_color("axis_y_color", "Editor"));
+					viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+
+					viewport->draw_set_transform_matrix(viewport->get_transform());
+				}
+			}
+
+			// Draw the rescale handles
+			if (show_transformation_gizmos && ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y)) {
 				if (_is_node_movable(canvas_item)) {
 					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
@@ -3253,9 +3311,9 @@ void CanvasItemEditor::_draw_selection() {
 							scale_factor.y += offset.x;
 						}
 					} else if (drag_type == DRAG_SCALE_Y) {
-						scale_factor.y -= offset.y;
+						scale_factor.y += offset.y;
 						if (uniform) {
-							scale_factor.x -= offset.y;
+							scale_factor.x += offset.y;
 						}
 					}
 
@@ -3264,9 +3322,9 @@ void CanvasItemEditor::_draw_selection() {
 					viewport->draw_rect(x_handle_rect, get_color("axis_x_color", "Editor"));
 					viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_color("axis_x_color", "Editor"), Math::round(EDSCALE), true);
 
-					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 					viewport->draw_rect(y_handle_rect, get_color("axis_y_color", "Editor"));
-					viewport->draw_line(Point2(), Point2(0, -scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
+					viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_color("axis_y_color", "Editor"), Math::round(EDSCALE), true);
 
 					viewport->draw_set_transform_matrix(viewport->get_transform());
 				}
@@ -4381,10 +4439,8 @@ void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
-
 	last_option = MenuOption(p_op);
 	switch (p_op) {
-
 		case SHOW_GRID: {
 			show_grid = !show_grid;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
@@ -4407,6 +4463,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_edit_locks = !show_edit_locks;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
 			view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+			viewport->update();
+		} break;
+		case SHOW_TRANSFORMATION_GIZMOS: {
+			show_transformation_gizmos = !show_transformation_gizmos;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+			view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
 			viewport->update();
 		} break;
 		case SNAP_USE_NODE_PARENT: {
@@ -5035,6 +5097,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_helpers"] = show_helpers;
 	state["show_zoom_control"] = zoom_hb->is_visible();
 	state["show_edit_locks"] = show_edit_locks;
+	state["show_transformation_gizmos"] = show_transformation_gizmos;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_scale"] = snap_scale;
 	state["snap_relative"] = snap_relative;
@@ -5173,6 +5236,12 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
 	}
 
+	if (state.has("show_transformation_gizmos")) {
+		show_transformation_gizmos = state["show_transformation_gizmos"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+		view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
+	}
+
 	if (state.has("show_zoom_control")) {
 		// This one is not user-controllable, but instrumentable
 		zoom_hb->set_visible(state["show_zoom_control"]);
@@ -5265,6 +5334,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_helpers = false;
 	show_rulers = true;
 	show_guides = true;
+	show_transformation_gizmos = true;
 	show_edit_locks = true;
 	zoom = 1.0 / MAX(1, EDSCALE);
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
@@ -5596,6 +5666,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_edit_locks", TTR("Show Group And Lock Icons")), SHOW_EDIT_LOCKS);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_transformation_gizmos", TTR("Show Transformation Gizmos")), SHOW_TRANSFORMATION_GIZMOS);
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
