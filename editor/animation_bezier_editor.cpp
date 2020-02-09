@@ -577,7 +577,7 @@ void AnimationBezierTrackEdit::_clear_selection_for_anim(const Ref<Animation> &p
 
 	if (!(animation == p_anim))
 		return;
-	//selection.clear();
+
 	_clear_selection();
 }
 
@@ -1131,7 +1131,6 @@ void AnimationBezierTrackEdit::delete_selection() {
 		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->commit_action();
-		//selection.clear();
 	}
 }
 
@@ -1200,5 +1199,5 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	add_child(menu);
 	menu->connect("id_pressed", this, "_menu_selected");
 
-	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
+	//scroll has to work too for selection
 }

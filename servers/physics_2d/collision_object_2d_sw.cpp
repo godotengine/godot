@@ -48,8 +48,6 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	if (!pending_shape_update_list.in_list()) {
 		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
 void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
@@ -63,8 +61,6 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 	if (!pending_shape_update_list.in_list()) {
 		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
 void CollisionObject2DSW::set_shape_metadata(int p_index, const Variant &p_metadata) {
@@ -83,8 +79,6 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 	if (!pending_shape_update_list.in_list()) {
 		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
 void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
@@ -105,12 +99,11 @@ void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 		if (!pending_shape_update_list.in_list()) {
 			Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
-		//_update_shapes();
+
 	} else if (!p_disabled && shape.bpid == 0) {
 		if (!pending_shape_update_list.in_list()) {
 			Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
-		//_update_shapes(); // automatically adds shape with bpid == 0
 	}
 }
 
@@ -144,8 +137,6 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 	if (!pending_shape_update_list.in_list()) {
 		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	// _update_shapes();
-	// _shapes_changed();
 }
 
 void CollisionObject2DSW::_set_static(bool p_static) {

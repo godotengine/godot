@@ -230,7 +230,6 @@ void PathSpatialGizmo::redraw() {
 		return;
 
 	PoolVector<Vector3> v3a = c->tessellate();
-	//PoolVector<Vector3> v3a=c->get_baked_points();
 
 	int v3s = v3a.size();
 	if (v3s == 0)
@@ -243,8 +242,6 @@ void PathSpatialGizmo::redraw() {
 
 		v3p.push_back(r[i]);
 		v3p.push_back(r[i + 1]);
-		//v3p.push_back(r[i]);
-		//v3p.push_back(r[i]+Vector3(0,0.2,0));
 	}
 
 	if (v3p.size() > 1) {
@@ -465,7 +462,6 @@ void PathEditorPlugin::edit(Object *p_object) {
 			pre->get_curve()->emit_signal("changed");
 		}
 	}
-	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool PathEditorPlugin::handles(Object *p_object) const {

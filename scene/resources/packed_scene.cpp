@@ -74,8 +74,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 	if (prop_count)
 		props = &variants[0];
 
-	//Vector<Variant> properties;
-
 	const NodeData *nd = &nodes[0];
 
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
@@ -176,8 +174,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			node = Object::cast_to<Node>(obj);
 
 		} else {
-			//print_line("Class is disabled for: " + itos(n.type));
-			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {
@@ -315,8 +311,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 	for (int i = 0; i < cc; i++) {
 
 		const ConnectionData &c = cdata[i];
-		//ERR_FAIL_INDEX_V( c.from, nc, NULL );
-		//ERR_FAIL_INDEX_V( c.to, nc, NULL );
 
 		NODE_FROM_ID(cfrom, c.from);
 		NODE_FROM_ID(cto, c.to);
@@ -333,8 +327,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		cfrom->connect(snames[c.signal], cto, snames[c.method], binds, CONNECT_PERSIST | c.flags);
 	}
-
-	//Node *s = ret_nodes[0];
 
 	//remove nodes that could not be added, likely as a result that
 	while (stray_instances.size()) {
@@ -501,7 +493,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		// the version above makes more sense, because it does not rely on placeholder or usage flag
 		// in the script, just the default value function.
 		// if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
-		// 	isdefault = true; //is script default value
+		//is script default value
 		// }
 
 		if (pack_state_stack.size()) {
@@ -681,9 +673,6 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 	List<MethodInfo> _signals;
 	p_node->get_signal_list(&_signals);
 	_signals.sort();
-
-	//ERR_FAIL_COND_V( !node_map.has(p_node), ERR_BUG);
-	//NodeData &nd = nodes[node_map[p_node]];
 
 	for (List<MethodInfo>::Element *E = _signals.front(); E; E = E->next()) {
 
@@ -1089,7 +1078,6 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND(!p_dictionary.has("nodes"));
 	ERR_FAIL_COND(!p_dictionary.has("conn_count"));
 	ERR_FAIL_COND(!p_dictionary.has("conns"));
-	//ERR_FAIL_COND( !p_dictionary.has("path"));
 
 	int version = 1;
 	if (p_dictionary.has("version"))
@@ -1199,8 +1187,6 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	for (int i = 0; i < editable_instances.size(); i++) {
 		editable_instances.write[i] = ei[i];
 	}
-
-	//path=p_dictionary["path"];
 }
 
 Dictionary SceneState::get_bundled_scene() const {

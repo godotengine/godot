@@ -886,7 +886,6 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
 	float steps = length(screen_rel) / length(pixel_incr);
 	steps = min(2000.0, steps); // put a limit to avoid freezing in some strange situation
-	//steps = 10.0;
 
 	vec4 incr = (dest - source) / steps;
 	float ratio = 0.0;
@@ -943,10 +942,6 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// It nevertheless approximates GGX well with k = alpha/2.
 	float k = 0.5 * alpha;
 	return 0.5 / (cos_theta_m * (1.0 - k) + k);
-
-	// float cos2 = cos_theta_m * cos_theta_m;
-	// float sin2 = (1.0 - cos2);
-	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
 }
 
 float D_GGX(float cos_theta_m, float alpha) {
@@ -1499,8 +1494,6 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds, ve
 	/*	out_diff.rgb = voxel_cone_trace(probe,cell_size,probe_pos,normalize((probe_xform * vec4(ref_vec,0.0)).xyz),0.0 ,100.0);
 	out_diff.a = 1.0;
 	return;*/
-	//out_diff = vec4(textureLod(probe,probe_pos*cell_size,3.0).rgb,1.0);
-	//return;
 
 	//this causes corrupted pixels, i have no idea why..
 	if (any(bvec2(any(lessThan(probe_pos, vec3(0.0))), any(greaterThan(probe_pos, bounds))))) {
@@ -1509,7 +1502,6 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds, ve
 
 	vec3 blendv = abs(probe_pos / bounds * 2.0 - 1.0);
 	float blend = clamp(1.0 - max(blendv.x, max(blendv.y, blendv.z)), 0.0, 1.0);
-	//float blend=1.0;
 
 	float max_distance = length(bounds);
 
@@ -1560,7 +1552,6 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds, ve
 	vec3 irr_light = voxel_cone_trace(probe, cell_size, probe_pos, environment, blend_ambient, ref_vec, max(min_ref_tan, tan(roughness * 0.5 * M_PI * 0.99)), max_distance, p_bias);
 
 	irr_light *= multiplier;
-	//irr_light=vec3(0.0);
 
 	out_spec += vec4(irr_light * blend, blend);
 }

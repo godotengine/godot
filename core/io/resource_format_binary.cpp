@@ -989,7 +989,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	String path = p_original_path != "" ? p_original_path : p_path;
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+
 	ria->open(f);
 
 	return ria;
@@ -1037,13 +1037,11 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+
 	ria->get_dependencies(f, p_dependencies, p_add_types);
 }
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
-
-	//Error error=OK;
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
@@ -1074,7 +1072,6 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
 		//not normal
 
-		//error=ERR_FILE_UNRECOGNIZED;
 		memdelete(f);
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file '" + local_path + "'.");
 	} else {
@@ -1124,7 +1121,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 		ria->res_path = ria->local_path;
 		ria->remaps = p_map;
-		//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+
 		ria->open(f);
 
 		err = ria->poll();
@@ -1253,7 +1250,7 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ria->res_path = ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+
 	String r = ria->recognize(f);
 	return r;
 }

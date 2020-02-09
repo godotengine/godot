@@ -87,8 +87,6 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		//		ERR_FAIL_COND(alloc->lock>0); should not be illegal to lock this for copy on write, as it's a copy on write after all
-
 		// Refcount should not be zero, otherwise it's a misuse of COW
 		if (alloc->refcount.get() == 1)
 			return; //nothing to do

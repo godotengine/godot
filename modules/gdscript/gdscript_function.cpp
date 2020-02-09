@@ -276,8 +276,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 
-	//GDScriptLanguage::get_singleton()->calls++;
-
 #endif
 
 	uint32_t alloca_size = 0;
@@ -296,7 +294,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		p_instance = p_state->instance;
 		defarg = p_state->defarg;
 		self = p_state->self;
-		//stack[p_state->result_pos]=p_state->result; //assign stack with result
+		//assign stack with result
 
 	} else {
 
@@ -516,7 +514,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
 
 							GDScript *cmp = static_cast<GDScript *>(obj_A->get_script_instance()->get_script().ptr());
-							//bool found=false;
+
 							while (cmp) {
 
 								if (cmp == scr_B) {
@@ -1123,7 +1121,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 
-				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
 				ip += argc + 1;
 			}
 			DISPATCH_OPCODE;
@@ -1275,7 +1272,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
 				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
-				//gdfs->state.result_pos=ip+ipofs-1;
+
 				gdfs->state.defarg = defarg;
 				gdfs->state.instance = p_instance;
 				gdfs->function = this;

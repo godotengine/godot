@@ -194,5 +194,4 @@ VisualServerWrapMT::~VisualServerWrapMT() {
 
 	memdelete(visual_server);
 	memdelete(alloc_mutex);
-	//finish();
 }

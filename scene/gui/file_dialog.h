@@ -72,7 +72,7 @@ private:
 
 	Button *makedir;
 	Access access;
-	//Button *action;
+
 	VBoxContainer *vbox;
 	Mode mode;
 	LineEdit *dir;

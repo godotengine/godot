@@ -40,7 +40,6 @@ public:
 		float a1, a2;
 		float b0, b1, b2;
 
-		//bool operator==(const Coeffs &p_rv) { return (FLOATS_EQ(a1,p_rv.a1) && FLOATS_EQ(a2,p_rv.a2) && FLOATS_EQ(b1,p_rv.b1) && FLOATS_EQ(b2,p_rv.b2) && FLOATS_EQ(b0,p_rv.b0) ); }
 		Coeffs() { a1 = a2 = b0 = b1 = b2 = 0.0; }
 	};
 

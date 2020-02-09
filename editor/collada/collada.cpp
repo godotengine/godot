@@ -99,9 +99,7 @@ Transform Collada::fix_transform(const Transform &p_transform) {
 	}
 #endif
 
-	//tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
 	return tr;
-	//return state.matrix_fix * p_transform;
 }
 
 static Transform _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
@@ -400,7 +398,7 @@ Vector<float> Collada::_read_float_array(XMLParser &parser) {
 			// parse float data
 			String str = parser.get_node_data();
 			array = str.split_floats_mk(splitters, false);
-			//array=str.split_floats(" ",false);
+
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
 			break; // end parsing text
 	}
@@ -1589,7 +1587,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 		if (parser.has_attribute("sid")) { //bones may not have sid
 			joint->sid = parser.get_attribute_value("sid");
-			//state.bone_map[joint->sid]=joint;
+
 		} else if (state.idref_joints.has(name)) {
 			joint->sid = name; //kind of a cheat but..
 		} else if (parser.has_attribute("name")) {
@@ -2399,12 +2397,11 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 			}
 
 			//but most exporters seem to work only if i do this..
-			//p_node->default_transform = p_node->get_global_transform();
 
-			//p_node->default_transform=Transform(); //this seems to be correct, because bind shape makes the object local to the skeleton
+			//this seems to be correct, because bind shape makes the object local to the skeleton
 			p_node->ignore_anim = true; // collada may animate this later, if it does, then this is not supported (redo your original asset and don't animate the base mesh)
 			p_node->parent = sk;
-			//sk->children.push_back(0,p_node); //avoid INFINITE loop
+			//avoid INFINITE loop
 			p_mgeom->push_back(p_node);
 			return true;
 		}

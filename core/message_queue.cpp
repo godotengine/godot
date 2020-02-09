@@ -138,7 +138,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	msg->type = TYPE_NOTIFICATION;
 	msg->instance_id = p_id;
-	//msg->target;
+
 	msg->notification = p_notification;
 
 	buffer_end += sizeof(Message);

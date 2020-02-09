@@ -108,7 +108,7 @@ void Physics2DServerWrapMT::init() {
 	if (create_thread) {
 
 		step_sem = Semaphore::create();
-		//OS::get_singleton()->release_rendering_thread();
+
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
 		}
@@ -178,5 +178,4 @@ Physics2DServerWrapMT::~Physics2DServerWrapMT() {
 
 	memdelete(physics_2d_server);
 	memdelete(alloc_mutex);
-	//finish();
 }

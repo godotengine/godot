@@ -279,12 +279,12 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				this should normally go UP, but if we already been here, we go down
 				*/
 				if (case9s.has(Point2i(curx, cury))) {
-					//found, so we go down, and delete from case9s;
+
 					stepx = 0;
 					stepy = 1;
 					case9s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go up, and add to case9s;
+
 					stepx = 0;
 					stepy = -1;
 					case9s.insert(Point2i(curx, cury));
@@ -301,12 +301,12 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				this normally go RIGHT, but if its coming from RIGHT, it should go LEFT
 				*/
 				if (case6s.has(Point2i(curx, cury))) {
-					//found, so we go left, and delete from case6s;
+
 					stepx = -1;
 					stepy = 0;
 					case6s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go right, and add to case6s;
+
 					stepx = 1;
 					stepy = 0;
 					case6s.insert(Point2i(curx, cury));

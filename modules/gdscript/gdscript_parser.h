@@ -192,7 +192,7 @@ public:
 		BlockNode *initializer;
 		BlockNode *ready;
 		ClassNode *owner;
-		//Vector<Node*> initializers;
+
 		int end_line;
 
 		ClassNode() {

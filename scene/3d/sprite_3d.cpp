@@ -177,8 +177,6 @@ void SpriteBase3D::_im_update() {
 	_draw();
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_update() {
@@ -492,8 +490,7 @@ void Sprite3D::_draw() {
 		SWAP(x_axis, y_axis);
 
 		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
-			//SWAP(vertices[i].x,vertices[i].y);
+
 			if (axis == Vector3::AXIS_Y) {
 				vertices[i].y = -vertices[i].y;
 			} else if (axis == Vector3::AXIS_X) {
@@ -821,8 +818,7 @@ void AnimatedSprite3D::_draw() {
 		SWAP(x_axis, y_axis);
 
 		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
-			//SWAP(vertices[i].x,vertices[i].y);
+
 			if (axis == Vector3::AXIS_Y) {
 				vertices[i].y = -vertices[i].y;
 			} else if (axis == Vector3::AXIS_X) {

@@ -73,7 +73,6 @@ class SpriteEditor : public Control {
 
 	void _menu_option(int p_option);
 
-	//void _create_uv_lines();
 	friend class SpriteEditorPlugin;
 
 	void _debug_uv_draw();

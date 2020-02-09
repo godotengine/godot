@@ -522,7 +522,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 		c->hide();
 	else {
 		c->show();
-		//call_deferred("set_current_tab",0);
+
 		first = true;
 		current = 0;
 		previous = 0;

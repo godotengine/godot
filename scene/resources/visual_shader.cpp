@@ -576,7 +576,6 @@ void VisualShader::set_mode(Mode p_mode) {
 			Ref<VisualShaderNodeInput> input = E->get().node;
 			if (input.is_valid()) {
 				input->shader_mode = shader_mode;
-				//input->input_index = 0;
 			}
 		}
 

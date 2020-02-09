@@ -670,7 +670,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	int pos = 0;
 	int prev_pos = 0;
-	//int slices=1;
+
 	if (p_slice < 0)
 		return "";
 	if (find(p_splitter) == -1)
@@ -684,7 +684,6 @@ String String::get_slice(String p_splitter, int p_slice) const {
 			pos = length(); //reached end
 
 		int from = prev_pos;
-		//int to=pos;
 
 		if (p_slice == i) {
 
@@ -1441,7 +1440,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				}
 
 				if (skip == 1 && (c & 0x1E) == 0) {
-					//printf("overlong rejected\n");
+
 					_UNICERROR("overlong rejected");
 					return true; //reject overlong
 				}
@@ -1501,7 +1500,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			//printf("overlong rejected\n");
+
 			_UNICERROR("no space left");
 			return true; //reject overlong
 		}
@@ -1530,7 +1529,6 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 			}
 		}
 
-		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
 			unichar = ' '; //too long for windows
 		}
@@ -2504,7 +2502,6 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (p_keys.size() == 0)
 		return -1;
 
-	//int src_len=p_str.length();
 	const String *keys = &p_keys[0];
 	int key_count = p_keys.size();
 	int len = length();

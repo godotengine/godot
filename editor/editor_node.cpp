@@ -483,7 +483,6 @@ void EditorNode::_notification(int p_what) {
 
 			bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
 
-			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 
@@ -736,7 +735,6 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 
-		//current_option = -1;
 		Vector<String> errors;
 		for (Set<String>::Element *E = dependency_errors[p_resource].front(); E; E = E->next()) {
 
@@ -3676,7 +3674,6 @@ void EditorNode::register_editor_types() {
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
-	//ClassDB::register_type<EditorImportExport>();
 }
 
 void EditorNode::unregister_editor_types() {
@@ -3696,9 +3693,8 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 
 	if (script.is_valid()) {
 		// Uncommenting would break things! Consider adding a parameter if you need it.
-		// StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+
 		// if (name != StringName())
-		// 	return name;
 
 		// should probably be deprecated in 4.x
 		StringName base = script->get_instance_base_type();
@@ -6036,7 +6032,6 @@ EditorNode::EditorNode() {
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(Viewport);
-	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
 	scene_root->set_disable_3d(true);
 
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);

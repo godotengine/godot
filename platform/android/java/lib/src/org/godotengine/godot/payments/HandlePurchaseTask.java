@@ -44,26 +44,26 @@ abstract public class HandlePurchaseTask {
 	}
 
 	public void handlePurchaseRequest(int resultCode, Intent data) {
-		//Log.d("XXX", "Handling purchase response");
+
 		if (resultCode == Activity.RESULT_OK) {
 			try {
-				//int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+
 				PaymentsCache pc = new PaymentsCache(context);
 
 				String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-				//Log.d("XXX", "Purchase data:" + purchaseData);
+
 				String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
-				//Log.d("XXX", "Purchase signature:" + dataSignature);
-				//Log.d("SARLANGA", purchaseData);
+
+
 
 				JSONObject jo = new JSONObject(purchaseData);
-				//String sku = jo.getString("productId");
-				//alert("You have bought the " + sku + ". Excellent choice, aventurer!");
-				//String orderId = jo.getString("orderId");
-				//String packageName = jo.getString("packageName");
+
+
+
+
 				String productId = jo.getString("productId");
-				//Long purchaseTime = jo.getLong("purchaseTime");
-				//Integer state = jo.getInt("purchaseState");
+
+
 				String developerPayload = jo.getString("developerPayload");
 				String purchaseToken = jo.getString("purchaseToken");
 
@@ -71,7 +71,7 @@ abstract public class HandlePurchaseTask {
 					error("Untrusted callback");
 					return;
 				}
-				//Log.d("XXX", "Este es el product ID:" + productId);
+
 				pc.setConsumableValue("ticket_signautre", productId, dataSignature);
 				pc.setConsumableValue("ticket", productId, purchaseData);
 				pc.setConsumableFlag("block", productId, true);

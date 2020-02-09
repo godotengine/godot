@@ -252,7 +252,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 	ERR_FAIL_COND_V(p_step == 0, new_arr);
 	if (Array::_clamp_index(p_begin) == Array::_clamp_index(p_end)) { // don't include element twice
 		new_arr.resize(1);
-		// new_arr[0] = 1;
+
 		new_arr[0] = ARRAY_GET_DEEP(Array::_clamp_index(p_begin), p_deep);
 		return new_arr;
 	} else {

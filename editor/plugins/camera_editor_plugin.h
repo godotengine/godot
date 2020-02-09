@@ -58,7 +58,6 @@ class CameraEditorPlugin : public EditorPlugin {
 
 	GDCLASS(CameraEditorPlugin, EditorPlugin);
 
-	//CameraEditor *camera_editor;
 	EditorNode *editor;
 
 public:

@@ -329,7 +329,6 @@ public:
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
 
-	//void simulate_motion(const Transform& p_xform,real_t p_step);
 	void call_queries();
 	void wakeup_neighbours();
 

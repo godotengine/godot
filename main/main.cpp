@@ -1954,7 +1954,6 @@ static uint64_t idle_process_max = 0;
 bool Main::iteration() {
 
 	//for now do not error on this
-	//ERR_FAIL_COND_V(iterating, false);
 
 	iterating++;
 

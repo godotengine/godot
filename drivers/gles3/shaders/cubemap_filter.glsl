@@ -258,7 +258,6 @@ void main() {
 	vec2 uv = (uv_interp * 2.0) - 1.0;
 	vec3 N = texelCoordToVec(uv, face_id);
 #endif
-	//vec4 color = color_interp;
 
 #ifdef USE_DIRECT_WRITE
 

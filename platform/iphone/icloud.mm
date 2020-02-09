@@ -302,7 +302,7 @@ Error ICloud::initial_sync() {
 ICloud::ICloud() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
-	//connected = false;
+
 
 	[[NSNotificationCenter defaultCenter]
 			addObserverForName:NSUbiquitousKeyValueStoreDidChangeExternallyNotification
@@ -315,8 +315,8 @@ ICloud::ICloud() {
 						Dictionary ret;
 						ret["type"] = "key_value_changed";
 
-						//PoolStringArray result_keys;
-						//Array result_values;
+
+
 						Dictionary keyValues;
 						String reason = "";
 

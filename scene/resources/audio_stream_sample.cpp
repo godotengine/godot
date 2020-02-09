@@ -165,8 +165,6 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 						ima_adpcm[i].loop_step_index = ima_adpcm[i].step_index;
 						ima_adpcm[i].loop_predictor = ima_adpcm[i].predictor;
 					}
-
-					//printf("%i - %i - pred %i\n",int(ima_adpcm[i].last_nibble),int(nibble),int(ima_adpcm[i].predictor));
 				}
 			}
 

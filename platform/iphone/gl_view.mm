@@ -561,12 +561,12 @@ static void clear_touches() {
 };
 
 - (void)open_keyboard {
-	//keyboard_text = p_existing;
+
 	[self becomeFirstResponder];
 };
 
 - (void)hide_keyboard {
-	//keyboard_text = p_existing;
+
 	[self resignFirstResponder];
 };
 
@@ -666,8 +666,8 @@ static void clear_touches() {
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
 
-	//self.autoresizesSubviews = YES;
-	//[self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
+
+
 
 	return self;
 }
@@ -706,7 +706,7 @@ static void clear_touches() {
 				_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
 				CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
 
-			//NSLog(@"time: %@", video_current_time);
+
 
 			[_instance.avPlayer seekToTime:video_current_time];
 			video_current_time = kCMTimeZero;

@@ -235,8 +235,6 @@ void DirAccessJAndroid::setup(jobject p_io) {
 	_dir_next = env->GetMethodID(cls, "dir_next", "(I)Ljava/lang/String;");
 	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
 	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
-
-	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {

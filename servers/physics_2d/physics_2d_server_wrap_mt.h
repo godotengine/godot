@@ -76,7 +76,6 @@ public:
 #define server_name physics_2d_server
 #include "servers/server_wrap_mt_common.h"
 
-	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(line_shape)
 	FUNCRID(ray_shape)
 	FUNCRID(segment_shape)
@@ -131,7 +130,6 @@ public:
 
 	/* AREA API */
 
-	//FUNC0RID(area);
 	FUNCRID(area);
 
 	FUNC2(area_set_space, RID, RID);
@@ -174,7 +172,6 @@ public:
 
 	/* BODY API */
 
-	//FUNC2RID(body,BodyMode,bool);
 	FUNCRID(body)
 
 	FUNC2(body_set_space, RID, RID);
@@ -281,10 +278,6 @@ public:
 
 	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
 	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
-
-	///FUNC3RID(pin_joint,const Vector2&,RID,RID);
-	///FUNC5RID(groove_joint,const Vector2&,const Vector2&,const Vector2&,RID,RID);
-	///FUNC4RID(damped_spring_joint,const Vector2&,const Vector2&,RID,RID);
 
 	//TODO need to convert this to FUNCRID, but it's a hassle..
 

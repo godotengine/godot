@@ -361,8 +361,6 @@ void Theme::set_default_font(const Ref<Font> &p_font) {
 
 void Theme::set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture> &p_icon) {
 
-	//ERR_FAIL_COND(p_icon.is_null());
-
 	bool new_value = !icon_map.has(p_type) || !icon_map[p_type].has(p_name);
 
 	if (icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
@@ -474,8 +472,6 @@ void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) 
 
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_type, const Ref<StyleBox> &p_style) {
 
-	//ERR_FAIL_COND(p_style.is_null());
-
 	bool new_value = !style_map.has(p_type) || !style_map[p_type].has(p_name);
 
 	if (style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid()) {
@@ -548,8 +544,6 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 }
 
 void Theme::set_font(const StringName &p_name, const StringName &p_type, const Ref<Font> &p_font) {
-
-	//ERR_FAIL_COND(p_font.is_null());
 
 	bool new_value = !font_map.has(p_type) || !font_map[p_type].has(p_name);
 

@@ -3221,8 +3221,6 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 		}
 	}
 
-	// undo_redo->create_action("Rescan Functions");
-
 	for (Set<int>::Element *E = nodes_to_move.front(); E; E = E->next()) {
 		int id = E->get();
 
@@ -3269,8 +3267,6 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
-
-	// undo_redo->commit_action();
 }
 
 void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos) {
@@ -4351,7 +4347,6 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				undo_redo->add_do_method(script.ptr(), "remove_node", function, E->key());
 				undo_redo->add_do_method(script.ptr(), "add_node", new_fn, E->key(), E->get(), script->get_node_position(function, E->key()));
 
-				// undo_redo->add_undo_method(script.ptr(), "remove_node", new_fn, E->key()); not needed cause we already remove the function :P
 				undo_redo->add_undo_method(script.ptr(), "add_node", function, E->key(), E->get(), script->get_node_position(function, E->key()));
 			}
 

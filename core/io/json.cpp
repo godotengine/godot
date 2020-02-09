@@ -236,13 +236,10 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 								index += 4; //will add at the end anyway
 
 							} break;
-							//case '\"': res='\"'; break;
-							//case '\\': res='\\'; break;
-							//case '/': res='/'; break;
+
 							default: {
 								res = next;
-								//r_err_str="Invalid escape sequence";
-								//return ERR_PARSE_ERROR;
+
 							} break;
 						}
 

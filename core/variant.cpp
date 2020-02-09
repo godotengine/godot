@@ -1466,7 +1466,6 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			stack.push_back(d.id());
 
-			//const String *K=NULL;
 			String str("{");
 			List<Variant> keys;
 			d.get_key_list(&keys);

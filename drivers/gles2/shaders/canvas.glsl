@@ -148,7 +148,6 @@ void main() {
 
 	outvec.xy = dst_rect.xy + abs(dst_rect.zw) * select(vertex, vec2(1.0, 1.0) - vertex, lessThan(src_rect.zw, vec2(0.0, 0.0)));
 
-	// outvec.xy = dst_rect.xy + abs(dst_rect.zw) * vertex;
 #else
 	vec4 outvec = vec4(vertex.xy, 0.0, 1.0);
 
@@ -512,7 +511,6 @@ FRAGMENT_SHADER_CODE
 		s.xyz /= s.w;
 		su = s.x * 0.5 + 0.5;
 		sz = s.z * 0.5 + 0.5;
-		//sz=lightlength(light_vec);
 
 		highp float shadow_attenuation = 0.0;
 
@@ -611,7 +609,6 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-		//color *= shadow_attenuation;
 		color = mix(real_light_shadow_color, color, shadow_attenuation);
 //use shadows
 #endif

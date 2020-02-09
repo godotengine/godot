@@ -595,7 +595,7 @@ public:
 		if (Geometry::point_in_projected_triangle(contact, p_triangle[0], p_triangle[1], p_triangle[2])) {
 			r_triangle_contact = contact;
 			r_sphere_contact = p_sphere_pos - p_normal * p_sphere_radius;
-			//printf("solved inside triangle\n");
+
 			return true;
 		}
 

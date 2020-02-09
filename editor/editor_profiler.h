@@ -121,7 +121,6 @@ private:
 
 	bool updating_frame;
 
-	//int cursor_metric;
 	int hover_metric;
 
 	float graph_height;

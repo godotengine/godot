@@ -99,9 +99,6 @@ void Body2DSW::update_inertias() {
 
 		} break;
 	}
-	//_update_inertia_tensor();
-
-	//_update_shapes();
 }
 
 void Body2DSW::set_active(bool p_active) {
@@ -118,8 +115,6 @@ void Body2DSW::set_active(bool p_active) {
 			return; //static bodies can't become active
 		if (get_space())
 			get_space()->body_add_to_active_list(&active_list);
-
-		//still_time=0;
 	}
 	/*
 	if (!space)
@@ -277,7 +272,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 			if (mode == Physics2DServer::BODY_MODE_KINEMATIC) {
 
 				new_transform = p_variant;
-				//wakeup_neighbours();
+
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -326,9 +321,9 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 			bool do_sleep = p_variant;
 			if (do_sleep) {
 				linear_velocity = Vector2();
-				//biased_linear_velocity=Vector3();
+
 				angular_velocity = 0;
-				//biased_angular_velocity=Vector3();
+
 				set_active(false);
 			} else {
 				if (mode != Physics2DServer::BODY_MODE_STATIC)
@@ -422,7 +417,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		return;
 
 	Area2DSW *def_area = get_space()->get_default_area();
-	// Area2DSW *damp_area = def_area;
+
 	ERR_FAIL_COND(!def_area);
 
 	int ac = areas.size();
@@ -433,7 +428,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		// damp_area = aa[ac-1].area;
+
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			Physics2DServer::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
 			switch (mode) {
@@ -528,8 +523,6 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		}
 	}
 
-	//motion=linear_velocity*p_step;
-
 	first_integration = false;
 	biased_angular_velocity = 0;
 	biased_linear_velocity = Vector2();
@@ -538,7 +531,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	// damp_area=NULL; // clear the area, so it is set in the next frame
+	// clear the area, so it is set in the next frame
 	def_area = NULL; // clear the area, so it is set in the next frame
 	contact_count = 0;
 }
@@ -571,8 +564,6 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 
 	if (continuous_cd_mode != Physics2DServer::CCD_MODE_DISABLED)
 		new_transform = get_transform();
-
-	//_update_inertia_tensor();
 }
 
 void Body2DSW::wakeup_neighbours() {

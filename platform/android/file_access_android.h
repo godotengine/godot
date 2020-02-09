@@ -73,8 +73,6 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
-	//static void make_default();
-
 	FileAccessAndroid();
 	~FileAccessAndroid();
 };

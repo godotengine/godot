@@ -64,7 +64,6 @@ class PhysicsServerSW : public PhysicsServer {
 	mutable RID_Owner<BodySW> body_owner;
 	mutable RID_Owner<JointSW> joint_owner;
 
-	//void _clear_query(QuerySW *p_query);
 	friend class CollisionObjectSW;
 	SelfList<CollisionObjectSW>::List pending_shape_update_list;
 	void _update_shapes();

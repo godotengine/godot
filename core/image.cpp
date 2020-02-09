@@ -631,9 +631,6 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 		if (src_yofs_down >= p_src_height)
 			src_yofs_down = p_src_height - 1;
 
-		//src_yofs_up*=CC;
-		//src_yofs_down*=CC;
-
 		uint32_t y_ofs_up = src_yofs_up * p_src_width * CC;
 		uint32_t y_ofs_down = src_yofs_down * p_src_width * CC;
 
@@ -1226,8 +1223,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
 	//technically, you can still compress up to 1 px no matter the format, so commenting this
-	//int minw, minh;
-	//get_format_min_pixel_size(p_format, minw, minh);
+
 	int minw = 1, minh = 1;
 
 	while (true) {
@@ -1680,7 +1676,6 @@ void Image::create(const char **p_xpm) {
 						uint8_t col_r = 0;
 						uint8_t col_g = 0;
 						uint8_t col_b = 0;
-						//uint8_t col_a=255;
 
 						for (int i = 0; i < 6; i++) {
 
@@ -2261,9 +2256,6 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 			int src_x = clipped_src_rect.position.x + j;
 			int src_y = clipped_src_rect.position.y + i;
 
-			// If the mask's pixel is transparent then we skip it
-			//Color c = msk->get_pixel(src_x, src_y);
-			//if (c.a == 0) continue;
 			if (msk->get_pixel(src_x, src_y).a != 0) {
 
 				int dst_x = dest_rect.position.x + j;

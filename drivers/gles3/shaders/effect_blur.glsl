@@ -256,7 +256,7 @@ void main() {
 #endif
 
 #ifndef DOF_NEAR_FIRST_TAP
-	//color_accum=vec4(vec3(color_accum.a),1.0);
+
 #endif
 	frag_color = color_accum;
 

@@ -450,7 +450,7 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 
 			{
 				AABB test_aabb = aabb;
-				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
+				//grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size * 0.5; //quarter size, for fast aabb test
 
 				if (!fast_tri_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
@@ -734,7 +734,7 @@ void VoxelLightBaker::_check_init_light() {
 		_fixup_plot(0, 0); //pre fixup, so normal, albedo, emission, etc. work for lighting.
 		bake_light.resize(bake_cells.size());
 		print_line("bake light size: " + itos(bake_light.size()));
-		//zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
+
 		first_leaf = -1;
 		_init_light_plot(0, 0, 0, 0, 0, CHILD_EMPTY);
 	}
@@ -932,10 +932,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 	Plane clip[3];
 	int clip_planes = 0;
 
-	// uint64_t us = OS::get_singleton()->get_ticks_usec();
-
 	Vector3 light_pos = to_cell_space.xform(p_pos) + Vector3(0.5, 0.5, 0.5);
-	//Vector3 spot_axis = -light_cache.transform.basis.get_axis(2).normalized();
 
 	float local_radius = to_cell_space.basis.xform(Vector3(0, 0, 1)).length() * p_radius;
 
@@ -1060,8 +1057,6 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 
 	Plane clip[3];
 	int clip_planes = 0;
-
-	// uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 	Vector3 light_pos = to_cell_space.xform(p_pos) + Vector3(0.5, 0.5, 0.5);
 	Vector3 spot_axis = to_cell_space.basis.xform(p_axis).normalized();
@@ -1300,8 +1295,6 @@ void VoxelLightBaker::_plot_triangle(Vector2 *vertices, Vector3 *positions, Vect
 
 		x[j] = vertices[j].x * width;
 		y[j] = vertices[j].y * height;
-		//x[j] = CLAMP(x[j], 0, bt.width - 1);
-		//y[j] = CLAMP(y[j], 0, bt.height - 1);
 	}
 
 	// sort the points vertically
@@ -1332,11 +1325,10 @@ void VoxelLightBaker::_plot_triangle(Vector2 *vertices, Vector3 *positions, Vect
 	for (int yi = y[0]; yi <= (y[2] > height - 1 ? height - 1 : y[2]); yi++) {
 		if (yi >= 0) {
 			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
-				//pixels[int(x + y * width)] = color;
 
 				Vector2 v0 = Vector2(x[1] - x[0], y[1] - y[0]);
 				Vector2 v1 = Vector2(x[2] - x[0], y[2] - y[0]);
-				//vertices[2] - vertices[0];
+
 				Vector2 v2 = Vector2(xi - x[0], yi - y[0]);
 				float d00 = v0.dot(v0);
 				float d01 = v0.dot(v1);
@@ -1363,10 +1355,10 @@ void VoxelLightBaker::_plot_triangle(Vector2 *vertices, Vector3 *positions, Vect
 			}
 
 			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
-				//pixels[int(x + y * width)] = color;
+
 				Vector2 v0 = Vector2(x[1] - x[0], y[1] - y[0]);
 				Vector2 v1 = Vector2(x[2] - x[0], y[2] - y[0]);
-				//vertices[2] - vertices[0];
+
 				Vector2 v2 = Vector2(xi - x[0], yi - y[0]);
 				float d00 = v0.dot(v0);
 				float d01 = v0.dot(v1);
@@ -1725,8 +1717,6 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 				break;
 			if (z < 0 || z >= size)
 				break;
-
-			//int level_limit = max_level;
 
 			cell = 0; //start from root
 			for (int j = 0; j < max_level; j++) {
@@ -2130,12 +2120,12 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 					w[i * 3 + 0] = CLAMP(lightmap_ptr[i].light.x * 255, 0, 255);
 					w[i * 3 + 1] = CLAMP(lightmap_ptr[i].light.y * 255, 0, 255);
 					w[i * 3 + 2] = CLAMP(lightmap_ptr[i].light.z * 255, 0, 255);
-					//w[i * 3 + 0] = CLAMP(lightmap_ptr[i].normal.x * 255, 0, 255);
-					//w[i * 3 + 1] = CLAMP(lightmap_ptr[i].normal.y * 255, 0, 255);
-					//w[i * 3 + 2] = CLAMP(lightmap_ptr[i].normal.z * 255, 0, 255);
-					//w[i * 3 + 0] = CLAMP(lightmap_ptr[i].pos.x / (1 << (cell_subdiv - 1)) * 255, 0, 255);
-					//w[i * 3 + 1] = CLAMP(lightmap_ptr[i].pos.y / (1 << (cell_subdiv - 1)) * 255, 0, 255);
-					//w[i * 3 + 2] = CLAMP(lightmap_ptr[i].pos.z / (1 << (cell_subdiv - 1)) * 255, 0, 255);
+
+
+
+
+
+
 				}
 			}
 
@@ -2254,7 +2244,6 @@ PoolVector<int> VoxelLightBaker::create_gi_probe_data() {
 				w32[ofs++] = em;
 			}
 
-			//w32[ofs++]=bake_cells[i].used_sides;
 			{ //normal
 
 				Vector3 n(bake_cells[i].normal[0], bake_cells[i].normal[1], bake_cells[i].normal[2]);
@@ -2302,7 +2291,7 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 				col.b += bake_light[p_idx].direct_accum[i][2];
 			}
 		}
-		//Color col = Color(bake_cells[p_idx].emission[0], bake_cells[p_idx].emission[1], bake_cells[p_idx].emission[2]);
+
 		p_multimesh->set_instance_color(idx, col);
 
 		idx++;

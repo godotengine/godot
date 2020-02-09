@@ -415,7 +415,6 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					float d = n.dot(E->get());
 					if (d < 1.0)
 						E->get() += n * (1.0 - d);
-					//E->get()+=n;
 				}
 			}
 		}

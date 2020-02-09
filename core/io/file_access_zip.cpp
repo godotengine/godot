@@ -162,7 +162,6 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 
 bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 
-	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
 		return false;
 
@@ -211,7 +210,6 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files);
-		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
 
 		if ((i + 1) < gi.number_entry) {
 			unzGoToNextFile(zfile);
@@ -243,7 +241,6 @@ ZipArchive *ZipArchive::get_singleton() {
 ZipArchive::ZipArchive() {
 
 	instance = this;
-	//fa_create_func = FileAccess::get_create_func();
 }
 
 ZipArchive::~ZipArchive() {

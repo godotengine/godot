@@ -480,7 +480,7 @@ static void _parser_show_class(const GDScriptParser::ClassNode *p_class, int p_i
 			_parser_show_function(p_class->functions[i], p_indent);
 		print_line("\n");
 	}
-	//_parser_show_function(p_class->initializer,p_indent);
+
 	print_line("\n");
 }
 

@@ -145,8 +145,6 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	full_dir = full_dir.replace("\\", "/");
 
-	//int slices = full_dir.get_slice_count("/");
-
 	String base;
 
 	if (full_dir.begins_with("res://"))
@@ -280,7 +278,6 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 
 Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
-	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
 

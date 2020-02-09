@@ -42,11 +42,6 @@ void Path2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			//button_create->set_icon( get_icon("Edit","EditorIcons"));
-			//button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
-			//set_pressed_button(button_edit);
-			//button_edit->set_pressed(true);
-
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
 
@@ -455,7 +450,6 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 void Path2DEditor::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("_menu_option"),&Path2DEditor::_menu_option);
 	ClassDB::bind_method(D_METHOD("_node_visibility_changed"), &Path2DEditor::_node_visibility_changed);
 	ClassDB::bind_method(D_METHOD("_mode_selected"), &Path2DEditor::_mode_selected);
 	ClassDB::bind_method(D_METHOD("_handle_option_pressed"), &Path2DEditor::_handle_option_pressed);

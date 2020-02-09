@@ -833,7 +833,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 
-				// state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 				state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
 				Rect2 source = np->source;
@@ -1349,7 +1348,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 			default: {
 				// FIXME: Proper error handling if relevant
-				//print_line("other");
+
 			} break;
 		}
 	}
@@ -1530,7 +1529,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 						_copy_texscreen(Rect2());
 
 						// blend mode will have been enabled so make sure we disable it again later on
-						//last_blend_mode = last_blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_DISABLED ? last_blend_mode : -1;
 					}
 
 					if (storage->frame.current_rt->copy_screen_effect.color) {
@@ -1860,9 +1858,6 @@ void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, cons
 		light.basis[1][0] = p_light_xform[0][1];
 		light.basis[1][1] = p_light_xform[1][1];
 
-		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
-
-		//p_near=1;
 		CameraMatrix projection;
 		{
 			real_t fov = 90;
@@ -1962,15 +1957,6 @@ void RasterizerCanvasGLES2::reset_canvas() {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
-
-	// bind the back buffer to a texture so shaders can use it.
-	// It should probably use texture unit -3 (as GLES2 does as well) but currently that's buggy.
-	// keeping this for now as there's nothing else that uses texture unit 2
-	// TODO ^
-	if (storage->frame.current_rt) {
-		// glActiveTexture(GL_TEXTURE0 + 2);
-		// glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

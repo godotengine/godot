@@ -872,7 +872,7 @@ void CPUParticles::_particles_process(float p_delta) {
 			Vector3 org = emission_xform.origin;
 			Vector3 diff = position - org;
 			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector3();
-			//apply tangential acceleration;
+
 			if (flags[FLAG_DISABLE_Z]) {
 
 				Vector2 yx = Vector2(diff.y, diff.x);

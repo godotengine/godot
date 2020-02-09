@@ -2799,8 +2799,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 	Vector<Expression> expression;
 
-	//Vector<TokenType> operators;
-
 	while (true) {
 
 		Node *expr = NULL;
@@ -4322,7 +4320,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 		} else if (tk.type == TK_CF_CASE) {
-			// case x : break; | return;
 
 			if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_CASE) {
 				_set_tkpos(pos);

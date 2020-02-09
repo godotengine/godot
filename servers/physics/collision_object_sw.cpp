@@ -46,8 +46,6 @@ void CollisionObjectSW::add_shape(ShapeSW *p_shape, const Transform &p_transform
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
 void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
@@ -60,8 +58,6 @@ void CollisionObjectSW::set_shape(int p_index, ShapeSW *p_shape) {
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_transform) {
 
@@ -72,8 +68,6 @@ void CollisionObjectSW::set_shape_transform(int p_index, const Transform &p_tran
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
 void CollisionObjectSW::set_shape_as_disabled(int p_idx, bool p_enable) {
@@ -113,8 +107,6 @@ void CollisionObjectSW::remove_shape(int p_index) {
 	if (!pending_shape_update_list.in_list()) {
 		PhysicsServerSW::singleton->pending_shape_update_list.add(&pending_shape_update_list);
 	}
-	//_update_shapes();
-	//_shapes_changed();
 }
 
 void CollisionObjectSW::_set_static(bool p_static) {

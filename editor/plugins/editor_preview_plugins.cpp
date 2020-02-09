@@ -383,7 +383,6 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
 	light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
 	light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
 
@@ -681,7 +680,6 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 	}
 
 	imgdata.release();
-	//post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;
@@ -782,7 +780,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	camera = VS::get_singleton()->camera_create();
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);
 	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
-	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
+
 	VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
 	light = VS::get_singleton()->directional_light_create();
@@ -791,19 +789,17 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+
 	light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
 
 	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = VS::get_singleton()->mesh_create();
 	mesh_instance = VS::get_singleton()->instance_create();
 	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
-	//VS::get_singleton()->free(sphere);
 	VS::get_singleton()->free(mesh_instance);
 	VS::get_singleton()->free(viewport);
 	VS::get_singleton()->free(light);

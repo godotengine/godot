@@ -58,7 +58,7 @@ void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
 	item.icon_transposed = false;
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
-	//item.text=p_item;
+
 	item.selectable = p_selectable;
 	item.selected = false;
 	item.disabled = false;
@@ -892,7 +892,6 @@ void ItemList::_notification(int p_what) {
 				if (items[i].text != "") {
 
 					Size2 s = font->get_string_size(items[i].text);
-					//s.width=MIN(s.width,fixed_column_width);
 
 					if (icon_mode == ICON_MODE_TOP) {
 						minsize.x = MAX(minsize.x, s.width);
@@ -1075,7 +1074,6 @@ void ItemList::_notification(int p_what) {
 			if (items[i].icon.is_valid()) {
 
 				Size2 icon_size;
-				//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
 
 				if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 					icon_size = fixed_icon_size * icon_scale;

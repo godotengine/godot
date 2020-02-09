@@ -80,7 +80,7 @@ public:
 
 		int i, step_idx = 0, prev = 0;
 		uint8_t *out = w.ptr();
-		//int16_t xm_prev=0;
+
 		const float *in = p_data.ptr();
 
 		/* initial value is zero */
@@ -106,9 +106,6 @@ public:
 					printf("clippy!\n",xm_sample);
 				*/
 			}
-
-			//xm_sample=xm_sample+xm_prev;
-			//xm_prev=xm_sample;
 
 			diff = (int)xm_sample - prev;
 
@@ -139,10 +136,10 @@ public:
 				prev += vpdiff;
 
 			if (prev > 32767) {
-				//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
+
 				prev = 32767;
 			} else if (prev < -32768) {
-				//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip down %i\n",i,xm_sample,prev,diff,vpdiff,prev);
+
 				prev = -32768;
 			}
 

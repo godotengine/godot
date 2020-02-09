@@ -109,15 +109,6 @@ public:
 		Color default_ambient;
 		Color default_bg;
 
-		// ResolveShaderGLES3 resolve_shader;
-		// ScreenSpaceReflectionShaderGLES3 ssr_shader;
-		// EffectBlurShaderGLES3 effect_blur_shader;
-		// SubsurfScatteringShaderGLES3 sss_shader;
-		// SsaoMinifyShaderGLES3 ssao_minify_shader;
-		// SsaoShaderGLES3 ssao_shader;
-		// SsaoBlurShaderGLES3 ssao_blur_shader;
-		// ExposureShaderGLES3 exposure_shader;
-
 		/*
 		struct SceneDataUBO {
 			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes

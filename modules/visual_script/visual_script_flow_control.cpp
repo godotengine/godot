@@ -132,8 +132,6 @@ public:
 	bool with_value;
 
 	virtual int get_working_memory_size() const { return 1; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -233,10 +231,6 @@ public:
 	VisualScriptCondition *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 1; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
-
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE)
@@ -318,10 +312,6 @@ class VisualScriptNodeInstanceWhile : public VisualScriptNodeInstance {
 public:
 	VisualScriptWhile *node;
 	VisualScriptInstance *instance;
-
-	//virtual int get_working_memory_size() const { return 1; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -407,8 +397,6 @@ public:
 	VisualScriptInstance *instance;
 
 	virtual int get_working_memory_size() const { return 2; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -546,8 +534,6 @@ public:
 	int steps;
 
 	virtual int get_working_memory_size() const { return 1; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -640,10 +626,6 @@ class VisualScriptNodeInstanceSwitch : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 	int case_count;
-
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -819,9 +801,6 @@ VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGues
 	if (script != String()) {
 		tg.script = ResourceLoader::load(script);
 	}
-	//if (!tg.script.is_valid()) {
-	//	tg.gdclass = base_type;
-	//}
 
 	return tg;
 }
@@ -831,10 +810,6 @@ public:
 	VisualScriptInstance *instance;
 	StringName base_type;
 	String script;
-
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
@@ -934,6 +909,6 @@ void register_visual_script_flow_control_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("flow_control/iterator", create_node_generic<VisualScriptIterator>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/sequence", create_node_generic<VisualScriptSequence>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/switch", create_node_generic<VisualScriptSwitch>);
-	//VisualScriptLanguage::singleton->add_register_func("flow_control/input_filter", create_node_generic<VisualScriptInputFilter>);
+
 	VisualScriptLanguage::singleton->add_register_func("flow_control/type_cast", create_node_generic<VisualScriptTypeCast>);
 }

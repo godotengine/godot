@@ -58,7 +58,7 @@ godot_object GDAPI *godot_global_get_singleton(char *p_name) {
 godot_method_bind GDAPI *godot_method_bind_get_method(const char *p_classname, const char *p_methodname) {
 
 	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
-	// MethodBind *mb = ClassDB::get_method("Node", "get_name");
+
 	return (godot_method_bind *)mb;
 }
 

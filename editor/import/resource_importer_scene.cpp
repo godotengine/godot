@@ -1524,7 +1524,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	memdelete(scene);
 
 	//this is not the time to reimport, wait until import process is done, import file is saved, etc.
-	//EditorNode::get_singleton()->reload_scene(p_source_file);
 
 	return OK;
 }

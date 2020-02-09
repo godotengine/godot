@@ -155,8 +155,7 @@ real_t G6DOFTranslationalLimitMotorSW::solveLinearAxis(
 		const Vector3 &anchorPos) {
 
 	///find relative velocity
-	//    Vector3 rel_pos1 = pointInA - body1->get_transform().origin;
-	//    Vector3 rel_pos2 = pointInB - body2->get_transform().origin;
+
 	Vector3 rel_pos1 = anchorPos - body1->get_transform().origin;
 	Vector3 rel_pos2 = anchorPos - body2->get_transform().origin;
 
@@ -311,15 +310,11 @@ bool Generic6DOFJointSW::setup(real_t p_timestep) {
 	//calculates transform
 	calculateTransforms();
 
-	//  const Vector3& pivotAInW = m_calculatedTransformA.origin;
-	//  const Vector3& pivotBInW = m_calculatedTransformB.origin;
 	calcAnchorPos();
 	Vector3 pivotAInW = m_AnchorPos;
 	Vector3 pivotBInW = m_AnchorPos;
 
 	// not used here
-	//    Vector3 rel_pos1 = pivotAInW - A->get_transform().origin;
-	//    Vector3 rel_pos2 = pivotBInW - B->get_transform().origin;
 
 	Vector3 normalWorld;
 	//linear part
@@ -351,8 +346,6 @@ bool Generic6DOFJointSW::setup(real_t p_timestep) {
 
 void Generic6DOFJointSW::solve(real_t p_timestep) {
 	m_timeStep = p_timestep;
-
-	//calculateTransforms();
 
 	int i;
 

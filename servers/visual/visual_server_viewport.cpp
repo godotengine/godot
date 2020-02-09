@@ -205,8 +205,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				VSG::canvas_render->canvas_light_shadow_buffer_update(light->shadow_buffer, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders, &light->shadow_matrix_cache);
 				light = light->shadows_next_ptr;
 			}
-
-			//VSG::canvas_render->reset_canvas();
 		}
 
 		VSG::rasterizer->restore_render_target(!scenario_draw_canvas_bg && can_draw_3d);
@@ -258,8 +256,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				_draw_3d(p_viewport, p_eye);
 			}
 		}
-
-		//VSG::canvas_render->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
 }
 
@@ -536,7 +532,7 @@ void VisualServerViewport::viewport_set_disable_3d(RID p_viewport, bool p_disabl
 	ERR_FAIL_COND(!viewport);
 
 	viewport->disable_3d = p_disable;
-	//VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, p_disable);
+
 	//this should be just for disabling rendering of 3D, to actually disable it, set usage
 }
 

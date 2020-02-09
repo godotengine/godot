@@ -423,8 +423,6 @@ bool GDNative::terminate() {
 
 	initialized = false;
 
-	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
-
 	OS::get_singleton()->close_dynamic_library(native_handle);
 	native_handle = NULL;
 

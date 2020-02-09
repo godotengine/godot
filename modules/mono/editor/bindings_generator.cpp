@@ -1571,6 +1571,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 			// The default value of an argument must be constant. Otherwise we make it Nullable and do the following:
 			// Type arg_in = arg.HasValue ? arg.Value : <non-const default value>;
+
 			String arg_in = iarg.name;
 			arg_in += "_in";
 

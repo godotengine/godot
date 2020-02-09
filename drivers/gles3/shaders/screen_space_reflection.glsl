@@ -76,8 +76,6 @@ void main() {
 		frag_color = vec4(0.0);
 		return;
 	}
-	//ray_dir = normalize(view_dir - normal * dot(normal,view_dir) * 2.0);
-	//ray_dir = normalize(vec3(1.0, 1.0, -1.0));
 
 	////////////////
 
@@ -185,7 +183,6 @@ void main() {
 			//blend fading out towards external margin
 			vec2 margin_grad = mix(pos - viewport_size, -pos, lessThan(pos, vec2(0.0)));
 			margin_blend = 1.0 - smoothstep(0.0, margin.x, max(margin_grad.x, margin_grad.y));
-			//margin_blend = 1.0;
 		}
 
 		vec2 final_pos;
@@ -237,7 +234,6 @@ void main() {
 				vec2 sample_pos = (line_begin + cone_dir * (cone_len - radius)) * pixel_size;
 				// radius is in pixels, so it's natural that log2(radius) maps to the right mipmap for the amount of pixels
 				float mipmap = clamp(log2(radius), 0.0, max_mipmap);
-				//mipmap = max(mipmap - 1.0, 0.0);
 
 				// do sampling
 

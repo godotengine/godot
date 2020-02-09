@@ -653,14 +653,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		// Leaving the unused types commented because looking these constants up
 		// again later would be annoying
-		// const int CHUNK_AXML_FILE = 0x00080003;
-		// const int CHUNK_RESOURCEIDS = 0x00080180;
+
 		const int CHUNK_STRINGS = 0x001C0001;
-		// const int CHUNK_XML_END_NAMESPACE = 0x00100101;
+
 		const int CHUNK_XML_END_TAG = 0x00100103;
-		// const int CHUNK_XML_START_NAMESPACE = 0x00100100;
+
 		const int CHUNK_XML_START_TAG = 0x00100102;
-		// const int CHUNK_XML_TEXT = 0x00100104;
+
 		const int UTF8_FLAG = 0x00000100;
 
 		Vector<String> string_table;
@@ -668,11 +667,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		uint32_t ofs = 8;
 
 		uint32_t string_count = 0;
-		//uint32_t styles_count = 0;
+
 		uint32_t string_flags = 0;
 		uint32_t string_data_offset = 0;
 
-		//uint32_t styles_offset = 0;
 		uint32_t string_table_begins = 0;
 		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
@@ -729,10 +727,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					int iofs = ofs + 8;
 
 					string_count = decode_uint32(&p_manifest[iofs]);
-					//styles_count = decode_uint32(&p_manifest[iofs + 4]);
+
 					string_flags = decode_uint32(&p_manifest[iofs + 8]);
 					string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-					//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
+
 					/*
 					printf("string count: %i\n",string_count);
 					printf("flags: %i\n",string_flags);
@@ -1188,7 +1186,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			len >>= 8;
 		}
 		offset += 2;
-		//printf("len %i, unicode: %i\n",len,int(p_utf8));
 
 		if (p_utf8) {
 
@@ -1305,7 +1302,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		encode_uint32(ret.size(), &ret.write[4]);
 
 		p_manifest = ret;
-		//printf("end\n");
 	}
 
 	void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data) {

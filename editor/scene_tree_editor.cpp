@@ -425,7 +425,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (!valid) {
-			//item->set_selectable(0,marked_selectable);
+
 			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 			item->set_selectable(0, false);
 		}
@@ -1196,7 +1196,6 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", this, "_cell_multi_selected");
 	tree->connect("button_pressed", this, "_cell_button_pressed");
 	tree->connect("nothing_selected", this, "_deselect_items");
-	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
 	add_child(error);

@@ -336,8 +336,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
-
-		//update();
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;

@@ -202,8 +202,6 @@ void GraphNode::_notification(int p_what) {
 				sb = get_stylebox(selected ? "selectedframe" : "frame");
 			}
 
-			//sb=sb->duplicate();
-			//sb->call("set_modulate",modulate);
 			Ref<Texture> port = get_icon("port");
 			Ref<Texture> close = get_icon("close");
 			Ref<Texture> resizer = get_icon("resizer");

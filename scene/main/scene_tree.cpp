@@ -130,7 +130,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 
 	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
-	//E->get().last_tree_version=0;
+
 	E->get().changed = true;
 	return &E->get();
 }
@@ -440,18 +440,16 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 
 	_flush_ugc();
 	root_lock--;
-	//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
+	//flushing here causes UI and other places slowness
 
 	root_lock++;
 
 	if (!input_handled) {
 		call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_unhandled_input", ev); //special one for GUI, as controls use their own process check
 		_flush_ugc();
-		//		input_handled = true; - no reason to set this as handled
 		root_lock--;
-		//MessageQueue::get_singleton()->flush(); //flushing here causes UI and other places slowness
+		//flushing here causes UI and other places slowness
 	} else {
-		//		input_handled = true; - no reason to set this as handled
 		root_lock--;
 	}
 
@@ -500,10 +498,6 @@ void SceneTree::_update_font_oversampling(float p_ratio) {
 }
 
 bool SceneTree::idle(float p_time) {
-
-	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -943,7 +937,6 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 			continue;
 
 		n->call_multilevel(p_method, (const Variant **)v, 1);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
 	}
 
 	call_lock--;
@@ -983,7 +976,6 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 			continue;
 
 		n->notification(p_notification);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
 	}
 
 	call_lock--;
@@ -2066,7 +2058,6 @@ SceneTree::SceneTree() {
 	multiplayer_poll = true;
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
-	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = NULL;

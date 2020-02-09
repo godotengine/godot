@@ -189,8 +189,6 @@ Error DynamicFontAtSize::_load() {
 		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
-	//error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
-
 	if (error == FT_Err_Unknown_File_Format) {
 
 		FT_Done_FreeType(library);

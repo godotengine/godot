@@ -546,9 +546,9 @@ void register_scene_types() {
 	ClassDB::register_class<Node2D>();
 	ClassDB::register_class<CPUParticles2D>();
 	ClassDB::register_class<Particles2D>();
-	//ClassDB::register_class<ParticleAttractor2D>();
+
 	ClassDB::register_class<Sprite>();
-	//ClassDB::register_type<ViewportSprite>();
+
 	ClassDB::register_class<SpriteFrames>();
 	ClassDB::register_class<AnimatedSprite>();
 	ClassDB::register_class<Position2D>();

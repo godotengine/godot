@@ -196,7 +196,7 @@ void AnimationPlayer::_notification(int p_what) {
 				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
-			//_set_process(false);
+
 			clear_caches();
 		} break;
 		case NOTIFICATION_READY: {
@@ -380,7 +380,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				Vector3 scale;
 
 				Error err = a->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
-				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+				//used for testing, should be removed
 
 				if (err != OK)
 					continue;
@@ -405,8 +405,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				if (!nc->node)
 					continue;
-
-				//StringName property=a->track_get_path(i).get_property();
 
 				Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.find(a->track_get_path(i).get_concatenated_subnames());
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
@@ -953,7 +951,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				if (end_notify)
 					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
-				//stop();
+
 				playing = false;
 				_set_process(false);
 				if (end_notify)
@@ -1352,7 +1350,6 @@ void AnimationPlayer::seek_delta(float p_time, float p_delta) {
 	if (speed_scale != 0.0)
 		p_delta /= speed_scale;
 	_animation_process(p_delta);
-	//playback.current.pos=p_time;
 }
 
 bool AnimationPlayer::is_valid() const {

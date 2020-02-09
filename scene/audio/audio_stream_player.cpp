@@ -246,7 +246,6 @@ float AudioStreamPlayer::get_pitch_scale() const {
 void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
-		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
 		stop_has_priority = false;
 		active = true;

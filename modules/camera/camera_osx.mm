@@ -131,8 +131,8 @@
 
 	// For now, version 1, we're just doing the bare minimum to make this work...
 	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-	// int _width = CVPixelBufferGetWidth(pixelBuffer);
-	// int _height = CVPixelBufferGetHeight(pixelBuffer);
+
+
 
 	// It says that we need to lock this on the documentation pages but it's not in the samples
 	// need to lock our base address so we can access our pixel buffers, better safe then sorry?

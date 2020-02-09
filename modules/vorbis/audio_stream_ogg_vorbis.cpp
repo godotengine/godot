@@ -32,7 +32,6 @@
 
 size_t AudioStreamPlaybackOGGVorbis::_ov_read_func(void *p_dst, size_t p_data, size_t p_count, void *_f) {
 
-	//printf("read to %p, %i bytes, %i nmemb, %p\n",p_dst,p_data,p_count,_f);
 	FileAccess *fa = (FileAccess *)_f;
 	size_t read_total = p_data * p_count;
 
@@ -48,10 +47,8 @@ size_t AudioStreamPlaybackOGGVorbis::_ov_read_func(void *p_dst, size_t p_data, s
 
 int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int whence) {
 
-	//printf("seek to %p, offs %i, whence %i\n",_f,(int)offs,whence);
-
 #ifdef SEEK_SET
-	//printf("seek set defined\n");
+
 	FileAccess *fa = (FileAccess *)_f;
 
 	if (whence == SEEK_SET) {
@@ -68,7 +65,7 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int 
 		ERR_PRINT("Vorbis seek function failure: Unexpected value in _whence\n");
 	}
 	int ret = fa->eof_reached() ? -1 : 0;
-	//printf("returning %i\n",ret);
+
 	return ret;
 
 #else
@@ -77,7 +74,6 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int 
 }
 int AudioStreamPlaybackOGGVorbis::_ov_close_func(void *_f) {
 
-	//printf("close %p\n",_f);
 	if (!_f)
 		return 0;
 	FileAccess *fa = (FileAccess *)_f;
@@ -86,8 +82,6 @@ int AudioStreamPlaybackOGGVorbis::_ov_close_func(void *_f) {
 	return 0;
 }
 long AudioStreamPlaybackOGGVorbis::_ov_tell_func(void *_f) {
-
-	//printf("close %p\n",_f);
 
 	FileAccess *fa = (FileAccess *)_f;
 	return fa->get_position();
@@ -197,7 +191,6 @@ void AudioStreamPlaybackOGGVorbis::stop() {
 
 	_clear_stream();
 	playing = false;
-	//_clear();
 }
 
 float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
@@ -342,7 +335,7 @@ void AudioStreamPlaybackOGGVorbis::_clear_stream() {
 	_close_file();
 
 	stream_loaded = false;
-	//stream_channels=1;
+
 	playing = false;
 }
 

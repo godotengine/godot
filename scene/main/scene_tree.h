@@ -95,7 +95,7 @@ private:
 	struct Group {
 
 		Vector<Node *> nodes;
-		//uint64_t last_tree_version;
+
 		bool changed;
 		Group() { changed = false; };
 	};
@@ -178,7 +178,6 @@ private:
 	int collision_debug_contacts;
 
 	void _change_scene(Node *p_to);
-	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer> > timers;
 
@@ -369,9 +368,6 @@ public:
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
-
-	//void change_scene(const String& p_path);
-	//Node *get_loaded_scene();
 
 	void set_edited_scene_root(Node *p_node);
 	Node *get_edited_scene_root() const;

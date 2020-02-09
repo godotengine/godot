@@ -353,7 +353,6 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx + 1] = v.tangent.y;
 					w[idx + 2] = v.tangent.z;
 
-					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
 					w[idx + 3] = d < 0 ? -1 : 1;
 				}

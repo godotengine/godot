@@ -148,7 +148,7 @@ public class GLUtils {
 			if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
 				Log.i(TAG, String.format("  %s: %d\n", name, value[0]));
 			} else {
-				// Log.w(TAG, String.format("  %s: failed\n", name));
+
 				while (egl.eglGetError() != EGL10.EGL_SUCCESS)
 					;
 			}

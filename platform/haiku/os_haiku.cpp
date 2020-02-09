@@ -200,7 +200,6 @@ int OS_Haiku::get_mouse_button_state() const {
 }
 
 void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
-	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
 }
 
 OS::CursorShape OS_Haiku::get_cursor_shape() const {

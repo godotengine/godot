@@ -932,7 +932,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			}
 			final int pointer_idx = event.getPointerId(event.getActionIndex());
 
-			//System.out.printf("gaction: %d\n",event.getAction());
+
 			final int action = event.getAction() & MotionEvent.ACTION_MASK;
 			mView.queueEvent(new Runnable() {
 				@Override
@@ -940,7 +940,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 					switch (action) {
 						case MotionEvent.ACTION_DOWN: {
 							GodotLib.touch(0, 0, evcount, arr);
-							//System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
+
 						} break;
 						case MotionEvent.ACTION_MOVE: {
 							GodotLib.touch(1, 0, evcount, arr);
@@ -952,11 +952,11 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 						} break;
 						case MotionEvent.ACTION_POINTER_UP: {
 							GodotLib.touch(4, pointer_idx, evcount, arr);
-							//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+
 						} break;
 						case MotionEvent.ACTION_POINTER_DOWN: {
 							GodotLib.touch(3, pointer_idx, evcount, arr);
-							//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+
 						} break;
 						case MotionEvent.ACTION_CANCEL:
 						case MotionEvent.ACTION_UP: {

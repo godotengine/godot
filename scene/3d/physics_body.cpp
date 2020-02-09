@@ -390,7 +390,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 		if (!E) {
 
 			E = contact_monitor->body_map.insert(objid, BodyState());
-			//E->get().rc=0;
+
 			E->get().in_tree = node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree, make_binds(objid));
@@ -400,7 +400,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 				}
 			}
 		}
-		//E->get().rc++;
+
 		if (node)
 			E->get().shapes.insert(ShapePair(p_body_shape, p_local_shape));
 
@@ -409,8 +409,6 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 		}
 
 	} else {
-
-		//E->get().rc--;
 
 		if (node)
 			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
@@ -488,8 +486,6 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
-
-			//bool found=false;
 
 			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
 			if (!E) {
@@ -1057,7 +1053,6 @@ RigidBody::RigidBody() :
 	linear_damp = -1;
 	angular_damp = -1;
 
-	//angular_velocity=0;
 	sleeping = false;
 	ccd = false;
 

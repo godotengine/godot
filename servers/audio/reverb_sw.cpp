@@ -279,7 +279,6 @@ bool ReverbSW::process(int *p_input, int *p_output, int p_frames, int p_stereo_s
 	unsigned int Offset;
 
 	int lwl, lwr, rwl, rwr;
-	//unsigned char HZShift;
 
 	// CODE
 
@@ -355,8 +354,6 @@ bool ReverbSW::process(int *p_input, int *p_output, int p_frames, int p_stereo_s
 		LM_SETSRCOFFSET(nRevaNewR);
 		LM_SETSRCOFFSET(nRevbNewL);
 		LM_SETSRCOFFSET(nRevbNewR);
-
-		//SETMIN ( aSample, p_output.Size - p_output.Offset );
 
 		for (unsigned int cSample = 0; cSample < aSample; cSample++) {
 

@@ -65,7 +65,6 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 	for (int yi = y[0]; yi <= (y[2] > height - 1 ? height - 1 : y[2]); yi++) {
 		if (yi >= 0) {
 			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
-				//pixels[int(x + y * width)] = color;
 
 				p_bitmap->set_bit(Point2(xi, yi), true);
 			}
@@ -129,8 +128,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 			_plot_triangle(src_bitmap, v);
 		}
-
-		//src_bitmap->convert_to_image()->save_png("bitmap" + itos(i) + ".png");
 
 		//grow by 1 for each side
 

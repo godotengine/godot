@@ -122,7 +122,7 @@ vec2 tapLocation(int sampleNumber, float spinAngle, out float ssR) {
 /** Read the camera-space position of the point at screen-space pixel ssP + unitOffset * ssR.  Assumes length(unitOffset) == 1 */
 vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 	// Derivation:
-	//  mipLevel = floor(log(ssR / MAX_OFFSET));
+
 	int mipLevel = clamp(int(floor(log2(ssR))) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
 
 	ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
@@ -184,7 +184,6 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 
 	// A: From the HPG12 paper
 	// Note large epsilon to avoid overdarkening within cracks
-	//return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
 
 	// B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
 	float f = max(radius2 - vv, 0.0);
@@ -193,10 +192,8 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 	// C: Medium contrast (which looks better at high radii), no division.  Note that the
 	// contribution still falls off with radius^2, but we've adjusted the rate in a way that is
 	// more computationally efficient and happens to be aesthetically pleasing.
-	// return 4.0 * max(1.0 - vv * invRadius2, 0.0) * max(vn - bias, 0.0);
 
 	// D: Low contrast, no division operation
-	// return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
 }
 
 void main() {
@@ -214,8 +211,6 @@ void main() {
 	}
 	*/
 
-	//visibility = -C.z / camera_z_far;
-	//return;
 #if 0
 	vec3 n_C = texelFetch(source_normal, ssC, 0).rgb * 2.0 - 1.0;
 #else

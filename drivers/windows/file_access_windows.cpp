@@ -315,7 +315,7 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 bool FileAccessWindows::file_exists(const String &p_name) {
 
 	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
+
 	String filename = fix_path(p_name);
 	_wfopen_s(&g, filename.c_str(), L"rb");
 	if (g == NULL) {

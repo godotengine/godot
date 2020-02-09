@@ -725,7 +725,6 @@ void CurveEditor::_draw() {
 		Vector2 pos = curve.get_point_position(i);
 		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(3), i == _selected_point ? selected_point_color : point_color);
 		// TODO Circles are prettier. Needs a fix! Or a texture
-		//draw_circle(pos, 2, point_color);
 	}
 
 	// Hover

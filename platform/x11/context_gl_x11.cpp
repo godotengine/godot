@@ -86,8 +86,6 @@ static void set_class_hint(Display *p_display, Window p_window) {
 
 Error ContextGL_X11::initialize() {
 
-	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
-
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 
 	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);

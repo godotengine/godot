@@ -1448,7 +1448,6 @@ Physics2DServerSW::Physics2DServerSW() {
 
 	singletonsw = this;
 	BroadPhase2DSW::create_func = BroadPhase2DHashGrid::_create;
-	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
 	active = true;
 	island_count = 0;

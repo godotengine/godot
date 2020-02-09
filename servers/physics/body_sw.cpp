@@ -133,8 +133,6 @@ void BodySW::update_inertias() {
 		} break;
 	}
 
-	//_update_shapes();
-
 	_update_transform_dependant();
 }
 
@@ -152,8 +150,6 @@ void BodySW::set_active(bool p_active) {
 			return; //static bodies can't become active
 		if (get_space())
 			get_space()->body_add_to_active_list(&active_list);
-
-		//still_time=0;
 	}
 	/*
 	if (!space)
@@ -247,7 +243,7 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
 			_set_static(p_mode == PhysicsServer::BODY_MODE_STATIC);
-			//set_active(p_mode==PhysicsServer::BODY_MODE_KINEMATIC);
+
 			set_active(p_mode == PhysicsServer::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector3();
 			angular_velocity = Vector3();
@@ -295,7 +291,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 
 			if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
-				//wakeup_neighbours();
+
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -344,9 +340,9 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 			bool do_sleep = p_variant;
 			if (do_sleep) {
 				linear_velocity = Vector3();
-				//biased_linear_velocity=Vector3();
+
 				angular_velocity = Vector3();
-				//biased_angular_velocity=Vector3();
+
 				set_active(false);
 			} else {
 				set_active(true);
@@ -449,7 +445,6 @@ void BodySW::integrate_forces(real_t p_step) {
 		return;
 
 	AreaSW *def_area = get_space()->get_default_area();
-	// AreaSW *damp_area = def_area;
 
 	ERR_FAIL_COND(!def_area);
 
@@ -461,7 +456,7 @@ void BodySW::integrate_forces(real_t p_step) {
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		// damp_area = aa[ac-1].area;
+
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			PhysicsServer::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
 			switch (mode) {
@@ -559,8 +554,6 @@ void BodySW::integrate_forces(real_t p_step) {
 	applied_force = Vector3();
 	applied_torque = Vector3();
 	first_integration = false;
-
-	//motion=linear_velocity*p_step;
 
 	biased_angular_velocity = Vector3();
 	biased_linear_velocity = Vector3();
@@ -774,12 +767,12 @@ BodySW::BodySW() :
 
 	mass = 1;
 	kinematic_safe_margin = 0.01;
-	//_inv_inertia=Transform();
+
 	_inv_mass = 1;
 	bounce = 0;
 	friction = 1;
 	omit_force_integration = false;
-	//applied_torque=0;
+
 	island_step = 0;
 	island_next = NULL;
 	island_list_next = NULL;

@@ -236,7 +236,6 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage *message) {
 
 	Ref<InputEventMouseButton> mouse_event;
 	mouse_event.instance();
-	//GetKeyModifierState(mouse_event, modifiers);
 
 	mouse_event->set_button_index(wheel_delta_y < 0 ? 4 : 5);
 	mouse_event->set_button_mask(last_button_mask);

@@ -94,7 +94,7 @@ class OS_X11 : public OS_Unix {
 #if defined(OPENGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
-	//Rasterizer *rasterizer;
+
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -197,7 +197,7 @@ class OS_X11 : public OS_Unix {
 	int video_driver_index;
 	bool maximized;
 	bool window_focused;
-	//void set_wm_border(bool p_enabled);
+
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
 
@@ -309,7 +309,6 @@ public:
 	virtual void set_context(int p_context);
 
 	virtual void _set_use_vsync(bool p_enable);
-	//virtual bool is_vsync_enabled() const;
 
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();

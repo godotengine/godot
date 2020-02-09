@@ -139,7 +139,6 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 
 		//DO NOT snap here, it's confusing in 3D for adding points.
 		//Let the snap happen when the point is being moved, instead.
-		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
 		Vector<Vector2> poly = node->call("get_polygon");
 
@@ -409,10 +408,6 @@ void Polygon3DEditor::_polygon_draw() {
 		imgeom->add_vertex(point);
 		imgeom->set_color(Color(1, 0.3, 0.1, 0.8));
 		imgeom->add_vertex(next_point);
-
-		//Color col=Color(1,0.3,0.1,0.8);
-		//vpc->draw_line(point,next_point,col,2);
-		//vpc->draw_texture(handle,point-handle->get_size()*0.5);
 	}
 
 	rect = rect.grow(1);

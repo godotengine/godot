@@ -260,7 +260,6 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 			dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));
 			dialog->set_title(TTR("Error!"));
 
-			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
@@ -314,7 +313,7 @@ void SpriteFramesEditor::_paste_pressed() {
 	if (!r.is_valid()) {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
-		//dialog->get_cancel()->set_text("Close");
+
 		dialog->get_ok()->set_text(TTR("Close"));
 		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
@@ -710,7 +709,6 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	anim_loop->set_pressed(frames->get_animation_loop(edited_anim));
 
 	updating = false;
-	//player->add_resource("default",resource);
 }
 
 void SpriteFramesEditor::edit(SpriteFrames *p_frames) {

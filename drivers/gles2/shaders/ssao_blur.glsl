@@ -44,8 +44,8 @@ uniform int filter_scale;
 
 // Gaussian coefficients
 const float gaussian[R + 1] =
-		//float[](0.356642, 0.239400, 0.072410, 0.009869);
-		//float[](0.398943, 0.241971, 0.053991, 0.004432, 0.000134);  // stddev = 1.0
+
+		// stddev = 1.0
 		float[](0.153170, 0.144893, 0.122649, 0.092902, 0.062970); // stddev = 2.0
 //float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
 
@@ -62,14 +62,11 @@ void main() {
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
 
 	float depth = texelFetch(source_depth, ssC, 0).r;
-	//vec3 normal = texelFetch(source_normal,ssC,0).rgb * 2.0 - 1.0;
 
 	depth = depth * 2.0 - 1.0;
 	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
 
 	float depth_divide = 1.0 / camera_z_far;
-
-	//depth *= depth_divide;
 
 	/*
 	if (depth > camera_z_far * 0.999) {
@@ -96,15 +93,12 @@ void main() {
 			float value = texelFetch(source_ssao, clamp(ppos, ivec2(0), clamp_limit), 0).r;
 			ivec2 rpos = clamp(ppos, ivec2(0), clamp_limit);
 			float temp_depth = texelFetch(source_depth, rpos, 0).r;
-			//vec3 temp_normal = texelFetch(source_normal, rpos, 0).rgb * 2.0 - 1.0;
 
 			temp_depth = temp_depth * 2.0 - 1.0;
 			temp_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - temp_depth * (camera_z_far - camera_z_near));
-			//			temp_depth *= depth_divide;
 
 			// spatial domain: offset gaussian tap
 			float weight = 0.3 + gaussian[abs(r)];
-			//weight *= max(0.0,dot(temp_normal,normal));
 
 			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
 			weight *= max(0.0, 1.0 - edge_sharpness * abs(temp_depth - depth));

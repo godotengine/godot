@@ -86,7 +86,7 @@ bool GDScriptCompiler::_create_unary_operator(CodeGen &codegen, const GDScriptPa
 	codegen.opcodes.push_back(op); //which operator
 	codegen.opcodes.push_back(src_address_a); // argument 1
 	codegen.opcodes.push_back(src_address_a); // argument 2 (repeated)
-	//codegen.opcodes.push_back(GDScriptFunction::ADDR_TYPE_NIL); // argument 2 (unary only takes one parameter)
+	// argument 2 (unary only takes one parameter)
 	return true;
 }
 
@@ -270,7 +270,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 					if (scr->constants.has(identifier)) {
 
-						//int idx=scr->constants[identifier];
 						int idx = codegen.get_name_map_pos(identifier);
 						return idx | (GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS); //argument (stack root)
 					}
@@ -909,8 +908,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptParser::OperatorNode::OP_MOD: {
 					if (!_create_binary_operator(codegen, on, Variant::OP_MODULE, p_stack_level)) return -1;
 				} break;
-				//case GDScriptParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
-				//case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
+
 				case GDScriptParser::OperatorNode::OP_BIT_AND: {
 					if (!_create_binary_operator(codegen, on, Variant::OP_BIT_AND, p_stack_level)) return -1;
 				} break;
@@ -1032,7 +1030,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							if (named) {
 
 								key_idx = codegen.get_name_map_pos(static_cast<const GDScriptParser::IdentifierNode *>(E->get()->arguments[1])->name);
-								//printf("named key %x\n",key_idx);
 
 							} else {
 
@@ -1043,7 +1040,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 								GDScriptParser::Node *key = E->get()->arguments[1];
 								key_idx = _parse_expression(codegen, key, slevel);
-								//printf("expr key %x\n",key_idx);
 
 								//stack was raised here if retval was stack but..
 							}
@@ -1547,8 +1543,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				// since we are using properties now for most class access, allow shadowing of class members to make user's life easier.
 				//
 				//if (_is_class_member_property(codegen, lv->name)) {
-				//	_set_error("Name for local variable '" + String(lv->name) + "' can't shadow class property of the same name.", lv);
-				//	return ERR_ALREADY_EXISTS;
+
 				//}
 
 				codegen.add_stack_identifier(lv->name, p_stack_level++);
@@ -1589,8 +1584,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 			// since we are using properties now for most class access, allow shadowing of class members to make user's life easier.
 			//
 			//if (_is_class_member_property(p_script, p_func->arguments[i])) {
-			//	_set_error("Name for argument '" + String(p_func->arguments[i]) + "' can't shadow class property of the same name.", p_func);
-			//	return ERR_ALREADY_EXISTS;
+
 			//}
 
 			codegen.add_stack_identifier(p_func->arguments[i], i);

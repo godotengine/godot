@@ -109,14 +109,12 @@ bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_e
 	Vector2 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
-	//printf("den is %i\n",den);
 	if (Math::abs(den) <= CMP_EPSILON) {
 
 		return false;
 	}
 
 	real_t dist = (normal.dot(p_begin) - d) / den;
-	//printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
 
@@ -500,7 +498,6 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 		}
 	}
 
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
 	return collided; //todo
 }
 
@@ -621,7 +618,6 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 			r_normal = -r_normal;
 	}
 
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
 	return inters; //todo
 }
 

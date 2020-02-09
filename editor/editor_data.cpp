@@ -987,7 +987,6 @@ EditorData::EditorData() {
 
 	current_edited_scene = -1;
 
-	//load_imported_scenes_from_globals();
 	script_class_load_icon_paths();
 }
 
@@ -1025,8 +1024,6 @@ void EditorSelection::add_node(Node *p_node) {
 	selection[p_node] = meta;
 
 	p_node->connect("tree_exiting", this, "_node_removed", varray(p_node), CONNECT_ONESHOT);
-
-	//emit_signal("selection_changed");
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1043,7 +1040,6 @@ void EditorSelection::remove_node(Node *p_node) {
 		memdelete(meta);
 	selection.erase(p_node);
 	p_node->disconnect("tree_exiting", this, "_node_removed");
-	//emit_signal("selection_changed");
 }
 bool EditorSelection::is_selected(Node *p_node) const {
 

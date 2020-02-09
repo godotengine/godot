@@ -781,7 +781,7 @@ void Octree<T, use_pairs, AL>::_remove_element(Element *p_element) {
 	if (use_pairs) {
 
 		int remaining = p_element->pair_list.size();
-		//p_element->pair_list.clear();
+
 		ERR_FAIL_COND(remaining);
 	}
 }

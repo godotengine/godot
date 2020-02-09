@@ -615,7 +615,6 @@ void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 	}
 
 	states.erase(p_name);
-	//path.erase(p_name);
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_name || transitions[i].to == p_name) {
@@ -671,7 +670,7 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 		current = p_new_name;
 	}*/
 
-	//path.clear(); //clear path
+	//clear path
 	emit_signal("tree_changed");
 }
 

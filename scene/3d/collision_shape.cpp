@@ -193,7 +193,6 @@ bool CollisionShape::is_disabled() const {
 
 CollisionShape::CollisionShape() {
 
-	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = NULL;
 	parent = NULL;
@@ -204,7 +203,6 @@ CollisionShape::CollisionShape() {
 CollisionShape::~CollisionShape() {
 	if (!shape.is_null())
 		shape->unregister_owner(this);
-	//VisualServer::get_singleton()->free(indicator);
 }
 
 void CollisionShape::_update_debug_shape() {

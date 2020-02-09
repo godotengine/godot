@@ -225,7 +225,6 @@ void EditorProfiler::_update_plot() {
 		int *column = columnv.ptrw();
 
 		Map<StringName, int> plot_prev;
-		//Map<StringName,int> plot_max;
 
 		for (int i = 0; i < w; i++) {
 
@@ -529,7 +528,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
-			//cursor_metric=x;
+
 			updating_frame = true;
 
 			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better

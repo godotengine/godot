@@ -477,7 +477,7 @@ void App::OnWindowSizeChanged(CoreWindow ^ sender, WindowSizeChangedEventArgs ^ 
 	// On Windows Phone 8.1, the window size changes when the device is rotated.
 	// The default framebuffer will not be automatically resized when this occurs.
 	// It is therefore up to the app to handle rotation-specific logic in its rendering code.
-	//os->screen_size_changed();
+
 	UpdateWindowSize(args->Size);
 #endif
 }

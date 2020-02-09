@@ -620,7 +620,7 @@ void EditorFileSystem::scan() {
 		_scan_filesystem();
 		if (filesystem)
 			memdelete(filesystem);
-		//file_type_cache.clear();
+
 		filesystem = new_filesystem;
 		new_filesystem = NULL;
 		_update_scan_actions();
@@ -638,8 +638,6 @@ void EditorFileSystem::scan() {
 		scan_total = 0;
 		s.priority = Thread::PRIORITY_LOW;
 		thread = Thread::create(_thread_func, this, s);
-		//tree->hide();
-		//progress->show();
 	}
 }
 

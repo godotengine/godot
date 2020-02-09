@@ -133,7 +133,6 @@ class GridMap : public Spatial {
 			return key < p_key.key;
 		}
 
-		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
 		OctantKey() { key = 0; }
 	};
 

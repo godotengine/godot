@@ -280,7 +280,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
-	//_GodotInputMonitorChange();
+
 }
 
 - (void)showAbout:(id)sender {
@@ -291,7 +291,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 @end
 
 @interface GodotWindowDelegate : NSObject {
-	//_Godotwindow* window;
+
 }
 
 @end
@@ -299,7 +299,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 @implementation GodotWindowDelegate
 
 - (BOOL)windowShouldClose:(id)sender {
-	//_GodotInputWindowCloseRequest(window);
+
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 
@@ -1505,7 +1505,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsBestResolutionOpenGLSurface:NO];
 	}
 
-	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
+
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
 	[window_object setAcceptsMouseMovedEvents:YES];
@@ -1684,7 +1684,7 @@ void OS_OSX::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-	//memdelete(rasterizer);
+
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -2775,7 +2775,7 @@ static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
 		CFStringAppendCharacters(output, chars, 1);
 	}
 
-	//CFStringUppercase(output, NULL);
+
 
 	return (NSString *)output;
 }
@@ -2913,10 +2913,10 @@ void OS_OSX::run() {
 		set_window_fullscreen(true);
 	}
 
-	//uint64_t last_ticks=get_ticks_usec();
 
-	//int frames=0;
-	//uint64_t frame=0;
+
+
+
 
 	bool quit = false;
 

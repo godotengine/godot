@@ -188,7 +188,6 @@ public:
 	virtual Rect2 get_item_rect() const;
 
 	Sprite3D();
-	//~Sprite3D();
 };
 
 class AnimatedSprite3D : public SpriteBase3D {

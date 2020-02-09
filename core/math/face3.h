@@ -225,7 +225,6 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 
 			if (axis.length_squared() < 0.0001)
 				continue; // coplanar
-			//axis.normalize();
 
 			Vector3 sup2 = Vector3(
 					(axis.x > 0) ? -half_extents.x : half_extents.x,
