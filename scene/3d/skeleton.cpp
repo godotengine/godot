@@ -32,6 +32,7 @@
 
 #include "core/message_queue.h"
 
+#include "core/engine.h"
 #include "core/project_settings.h"
 #include "scene/3d/physics_body.h"
 #include "scene/resources/surface_tool.h"
@@ -332,6 +333,27 @@ void Skeleton::_notification(int p_what) {
 
 			dirty = false;
 		} break;
+
+#ifndef _3D_DISABLED
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// This is active only if the skeleton animates the physical bones
+			// and the state of the bone is not active.
+			if (animate_physical_bones) {
+				for (int i = 0; i < bones.size(); i += 1) {
+					if (bones[i].physical_bone) {
+						if (bones[i].physical_bone->is_simulating_physics() == false) {
+							bones[i].physical_bone->reset_to_rest_position();
+						}
+					}
+				}
+			}
+		} break;
+		case NOTIFICATION_READY: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				set_physics_process_internal(true);
+			}
+		} break;
+#endif
 	}
 }
 
@@ -584,6 +606,27 @@ void Skeleton::localize_rests() {
 
 #ifndef _3D_DISABLED
 
+void Skeleton::set_animate_physical_bones(bool p_animate) {
+	animate_physical_bones = p_animate;
+
+	if (Engine::get_singleton()->is_editor_hint() == false) {
+		bool sim = false;
+		for (int i = 0; i < bones.size(); i += 1) {
+			if (bones[i].physical_bone) {
+				bones[i].physical_bone->reset_physics_simulation_state();
+				if (bones[i].physical_bone->is_simulating_physics()) {
+					sim = true;
+				}
+			}
+		}
+		set_physics_process_internal(sim == false && p_animate);
+	}
+}
+
+bool Skeleton::get_animate_physical_bones() const {
+	return animate_physical_bones;
+}
+
 void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
@@ -653,12 +696,14 @@ void _pb_stop_simulation(Node *p_node) {
 	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
 	if (pb) {
 		pb->set_simulate_physics(false);
-		pb->set_static_body(false);
 	}
 }
 
 void Skeleton::physical_bones_stop_simulation() {
 	_pb_stop_simulation(this);
+	if (Engine::get_singleton()->is_editor_hint() == false && animate_physical_bones) {
+		set_physics_process_internal(true);
+	}
 }
 
 void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector<int> &p_sim_bones) {
@@ -669,24 +714,17 @@ void _pb_start_simulation(const Skeleton *p_skeleton, Node *p_node, const Vector
 
 	PhysicalBone *pb = Object::cast_to<PhysicalBone>(p_node);
 	if (pb) {
-		bool sim = false;
 		for (int i = p_sim_bones.size() - 1; 0 <= i; --i) {
 			if (p_sim_bones[i] == pb->get_bone_id() || p_skeleton->is_bone_parent_of(pb->get_bone_id(), p_sim_bones[i])) {
-				sim = true;
+				pb->set_simulate_physics(true);
 				break;
 			}
-		}
-
-		pb->set_simulate_physics(true);
-		if (sim) {
-			pb->set_static_body(false);
-		} else {
-			pb->set_static_body(true);
 		}
 	}
 }
 
 void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
+	set_physics_process_internal(false);
 
 	Vector<int> sim_bones;
 	if (p_bones.size() <= 0) {
@@ -836,11 +874,15 @@ void Skeleton::_bind_methods() {
 
 #ifndef _3D_DISABLED
 
+	ClassDB::bind_method(D_METHOD("set_animate_physical_bones"), &Skeleton::set_animate_physical_bones);
+	ClassDB::bind_method(D_METHOD("get_animate_physical_bones"), &Skeleton::get_animate_physical_bones);
+
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
 	ClassDB::bind_method(D_METHOD("physical_bones_start_simulation", "bones"), &Skeleton::physical_bones_start_simulation_on, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
 #endif // _3D_DISABLED
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
@@ -848,6 +890,7 @@ void Skeleton::_bind_methods() {
 
 Skeleton::Skeleton() {
 
+	animate_physical_bones = true;
 	dirty = false;
 	process_order_dirty = true;
 }

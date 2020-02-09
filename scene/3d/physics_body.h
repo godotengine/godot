@@ -562,8 +562,6 @@ private:
 	Skeleton *parent_skeleton;
 	Transform body_offset;
 	Transform body_offset_inverse;
-	bool static_body;
-	bool _internal_static_body;
 	bool simulate_physics;
 	bool _internal_simulate_physics;
 	int bone_id;
@@ -613,9 +611,6 @@ public:
 	void set_body_offset(const Transform &p_offset);
 	const Transform &get_body_offset() const;
 
-	void set_static_body(bool p_static);
-	bool is_static_body();
-
 	void set_simulate_physics(bool p_simulate);
 	bool get_simulate_physics();
 	bool is_simulating_physics();
@@ -641,16 +636,15 @@ public:
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 
+	void reset_physics_simulation_state();
+	void reset_to_rest_position();
+
 	PhysicalBone();
 	~PhysicalBone();
 
 private:
 	void update_bone_id();
 	void update_offset();
-	void reset_to_rest_position();
-
-	void _reset_physics_simulation_state();
-	void _reset_staticness_state();
 
 	void _start_physics_simulation();
 	void _stop_physics_simulation();
