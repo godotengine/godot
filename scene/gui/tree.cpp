@@ -3630,6 +3630,17 @@ TreeItem *Tree::search_item_text(const String &p_find, int *r_col, bool p_select
 	return _search_item_text(from->get_next_visible(true), p_find, r_col, p_selectable);
 }
 
+TreeItem *Tree::get_item_with_text(const String &p_find) const {
+	for (TreeItem *current = root; current; current = current->get_next_visible()) {
+		for (int i = 0; i < columns.size(); i++) {
+			if (current->get_text(i) == p_find) {
+				return current;
+			}
+		}
+	}
+	return NULL;
+}
+
 void Tree::_do_incr_search(const String &p_add) {
 
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
