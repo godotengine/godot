@@ -72,14 +72,27 @@ void EditorRunNative::_notification(int p_what) {
 		if (changed) {
 
 			for (Map<int, MenuButton *>::Element *E = menus.front(); E; E = E->next()) {
-
 				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E->key());
 				MenuButton *mb = E->get();
+				mb->hide();
+
+				// Check if export preset exists for the current checked platform
+				bool preset_exist = false;
+				Ref<EditorExportPreset> preset;
+				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count() && !preset_exist; i++) {
+					preset = EditorExport::get_singleton()->get_export_preset(i);
+					if (preset->get_platform() == eep) preset_exist = true;
+				}
+				if (!preset_exist) continue;
+
+				// Check if preset is configured properly
+				String export_error;
+				bool missing_templates;
+				bool can_export = eep->can_export(preset, export_error, missing_templates);
+
 				int dc = eep->get_options_count();
 
-				if (dc == 0) {
-					mb->hide();
-				} else {
+				if (dc > 0 && can_export) {
 					mb->get_popup()->clear();
 					mb->show();
 					mb->set_tooltip(eep->get_options_tooltip());
