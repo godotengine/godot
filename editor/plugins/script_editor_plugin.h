@@ -163,6 +163,7 @@ class ScriptEditor : public PanelContainer {
 		DEBUG_SHOW_KEEP_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 		SEARCH_IN_FILES,
+		REPLACE_IN_FILES,
 		SEARCH_HELP,
 		SEARCH_WEBSITE,
 		REQUEST_DOCS,
@@ -404,6 +405,7 @@ class ScriptEditor : public PanelContainer {
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
 	void _on_find_in_files_requested(String text);
+	void _on_replace_in_files_requested(String text);
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PoolStringArray paths);
