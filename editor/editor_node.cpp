@@ -555,14 +555,17 @@ void EditorNode::_notification(int p_what) {
 				opening_prev = false;
 			}
 
-			if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
-				unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
-				_update_title();
+			uint64_t current_version = editor_data.get_undo_redo().get_version();
+
+			if (last_checked_version != current_version) {
+				_update_scene_tabs();
+				last_checked_version = current_version;
 			}
 
-			if (last_checked_version != editor_data.get_undo_redo().get_version()) {
-				_update_scene_tabs();
-				last_checked_version = editor_data.get_undo_redo().get_version();
+			bool unsaved = saved_version != current_version;
+			if (unsaved_cache != unsaved) {
+				_update_title();
+				unsaved_cache = unsaved;
 			}
 
 			// Update the animation frame of the update spinner.

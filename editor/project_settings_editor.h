@@ -102,6 +102,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 protected:
 	void _notification(int p_what);
+	void unhandled_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
@@ -116,6 +117,7 @@ public:
 	void queue_save();
 
 	ProjectSettingsEditor(EditorData *p_data);
+	virtual ~ProjectSettingsEditor();
 };
 
 #endif // PROJECT_SETTINGS_EDITOR_H

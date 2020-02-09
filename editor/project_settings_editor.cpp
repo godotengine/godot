@@ -498,9 +498,23 @@ void ProjectSettingsEditor::_notification(int p_what) {
 	}
 }
 
+void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+			undo_redo->undo();
+			set_input_as_handled();
+		}
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			undo_redo->redo();
+			set_input_as_handled();
+		}
+	}
+}
+
 void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save"), &ProjectSettingsEditor::queue_save);
-
 	ClassDB::bind_method(D_METHOD("_update_action_map_editor"), &ProjectSettingsEditor::_update_action_map_editor);
 }
 
@@ -508,8 +522,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	singleton = this;
 	set_title(TTR("Project Settings (project.godot)"));
 
+	set_process_unhandled_input(true);
+
 	ps = ProjectSettings::get_singleton();
-	undo_redo = &p_data->get_undo_redo();
+	undo_redo = memnew(UndoRedo);
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
@@ -575,7 +591,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	header->add_child(del_button);
 
 	inspector = memnew(SectionedInspector);
-	inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	inspector->get_inspector()->set_undo_redo(undo_redo);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->register_search_box(search_box);
 	inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
@@ -658,4 +674,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
 	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+}
+
+ProjectSettingsEditor::~ProjectSettingsEditor() {
+	memdelete(undo_redo);
 }
