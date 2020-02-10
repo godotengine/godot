@@ -163,6 +163,7 @@ protected:
 private:
 	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
+	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
 	void _on_result_selected();
 	void _on_item_edited();
@@ -190,6 +191,7 @@ private:
 	Label *_search_text_label;
 	Tree *_results_display;
 	Label *_status_label;
+	Button *_refresh_button;
 	Button *_cancel_button;
 	ProgressBar *_progress_bar;
 	Map<String, TreeItem *> _file_items;
